@@ -1,2 +1,3 @@
 # qdl
-the QDL programming language
+The QDL programming language
+
