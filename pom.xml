@@ -47,11 +47,12 @@
     <modules>
         <module>language</module>
         <module>website</module>
-<!--
-        <module>workspace</module>
-        <module>oauth</module>
-        <module>test</module>
--->
+        <module>tests</module>
+        <!--
+                <module>workspace</module>
+                <module>oauth</module>
+                <module>test</module>
+        -->
     </modules>
     <build>
         <plugins>

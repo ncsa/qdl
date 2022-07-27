@@ -146,7 +146,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
 
     
 
-      m := '/home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/main/resources/modules/test.mdl'
+      m := '/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/test.mdl'
   q :=module_load(m)
   )ws set debug on
    module_import(q)

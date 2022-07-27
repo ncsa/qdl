@@ -97,7 +97,7 @@ module[
      ];
 /*
 E.g.
-    module_load('/home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/main/resources/modules/curves.mdl')
+    module_load('/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/curves.mdl')
     module_import('qdl:/math/curves')
     r(t.)->1
     polar_plot(@r(), ⟦0;2*pi();20⟧)

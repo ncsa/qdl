@@ -1,16 +1,15 @@
 package edu.uiuc.ncsa.qdl;
 
+import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.IndexError;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import net.sf.json.JSONObject;
 
 import java.math.BigDecimal;
-
-import static edu.uiuc.ncsa.qdl.evaluate.OpEvaluator.*;
 
 /**
  * A class for testing the parser. Write little scripts, test that the state is what is should be.
@@ -841,9 +840,9 @@ public class ParserTest extends AbstractQDLTester {
         addLine(script, "a.0+=b;"); // 0 + 3 = 3
         addLine(script, "a.1-=b;"); // 1 - 3 = -2
         addLine(script, "a.2*=b;"); // 2 * 3 =  6
-        addLine(script, "a.12" + TIMES2 + "=b;"); // 12 * 3 =  36
+        addLine(script, "a.12" + OpEvaluator.TIMES2 + "=b;"); // 12 * 3 =  36
         addLine(script, "a.3/=b;"); //   3/3 =  1
-        addLine(script, "a.15" + DIVIDE2 + "=b;"); //   15/3 =  5
+        addLine(script, "a.15" + OpEvaluator.DIVIDE2 + "=b;"); //   15/3 =  5
         addLine(script, "a.4%=b;"); //   4%3 =  1
         addLine(script, "a.5^=b;"); //   5^3 =  125
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
@@ -905,17 +904,17 @@ public class ParserTest extends AbstractQDLTester {
         addLine(script, "a.0 := a<b;"); //F
         addLine(script, "a.1 := a>b;"); // T
         addLine(script, "a.2 := a==b;"); //F
-        addLine(script, "a.12 := a" + EQUALS2 + "b;"); //F
+        addLine(script, "a.12 := a" + OpEvaluator.EQUALS2 + "b;"); //F
         addLine(script, "a.3 := a!=b;"); // T
-        addLine(script, "a.13 := a" + NOT_EQUAL2 + "b;"); // T
+        addLine(script, "a.13 := a" + OpEvaluator.NOT_EQUAL2 + "b;"); // T
         addLine(script, "a.4 := a<=a;"); //T
-        addLine(script, "a.14 := a" + LESS_THAN_EQUAL3 + "a;"); //T
+        addLine(script, "a.14 := a" + OpEvaluator.LESS_THAN_EQUAL3 + "a;"); //T
         addLine(script, "a.6 := b>=b;"); //T
-        addLine(script, "a.16 := b" + MORE_THAN_EQUAL3 + "b;"); //T
+        addLine(script, "a.16 := b" + OpEvaluator.MORE_THAN_EQUAL3 + "b;"); //T
         addLine(script, "a.8 := a==a;"); //T
-        addLine(script, "a.18 := a" + EQUALS2 + "a;"); //T
+        addLine(script, "a.18 := a" + OpEvaluator.EQUALS2 + "a;"); //T
         addLine(script, "a.9 := a!=a;"); //F
-        addLine(script, "a.19 := a" + NOT_EQUAL2 + "a;"); //F
+        addLine(script, "a.19 := a" + OpEvaluator.NOT_EQUAL2 + "a;"); //F
         switch (testCase) {
             case 1:
                 // XML
@@ -972,7 +971,7 @@ public class ParserTest extends AbstractQDLTester {
         addLine(script, "b:=10;");
         addLine(script, "c:=-5;");
         addLine(script, "d:=a<b&&c<a;");
-        addLine(script, "e:=!(a<b" + AND2 + "c<a);");
+        addLine(script, "e:=!(a<b" + OpEvaluator.AND2 + "c<a);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
 
         interpreter.execute(script.toString());

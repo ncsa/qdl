@@ -49,7 +49,7 @@ public class IniParserDriver {
     }
     public static void main(String[] args) throws Throwable{
         IniParserDriver iniParserDriver = new IniParserDriver();
-        FileReader fileReader = new FileReader("/home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/main/antlr4/iniFile/test.ini");
+        FileReader fileReader = new FileReader("/home/ncsa/dev/ncsa-git/qdl/language/src/main/antlr4/iniFile/test.ini");
         StemVariable out = iniParserDriver.parse(fileReader);
         System.out.println(out);
 

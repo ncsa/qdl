@@ -44,7 +44,7 @@ import java.util.List;
 
 /**
  * Class that is the workhorse for {@link QDLHTTPModule}. See the blurb <br/>
- * /home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/main/docs/http-extension.odt
+ * /home/ncsa/dev/ncsa-git/qdl/language/src/main/docs/http-extension.odt
  * <p>Created by Jeff Gaynor<br>
  * on 10/5/21 at  7:02 AM
  */

@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl;
 
+import edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.IOEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.QDLIOException;
@@ -19,11 +20,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.FILE_OP_AUTO;
-import static edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.FILE_OP_INPUT_STREAM;
-import static edu.uiuc.ncsa.qdl.vfs.VFSPaths.PATH_SEPARATOR;
-import static edu.uiuc.ncsa.qdl.vfs.VFSPaths.SCHEME_DELIMITER;
 
 /** Large and complex text of the VFS (Virtual File System). This repeats the
  * same tests on several different store types, including databases, zip files
@@ -99,7 +95,7 @@ public class VFSTest extends AbstractQDLTester {
     }
 
     protected void testMkdir(VFSFileProvider vfs) throws Throwable {
-        String testHeadPath = vfs.getScheme() + SCHEME_DELIMITER + vfs.getMountPoint();
+        String testHeadPath = vfs.getScheme() + VFSPaths.SCHEME_DELIMITER + vfs.getMountPoint();
         if (!vfs.canWrite()) {
             // If it is not writeable ALL of these should get intercepted before any othe processing
             // takes place.
@@ -154,12 +150,12 @@ public class VFSTest extends AbstractQDLTester {
     protected void testReadable(VFSFileProvider vfs) throws Throwable {
         boolean orig = vfs.canRead();
         vfs.setRead(false);
-        String testHeadPath = vfs.getScheme() + SCHEME_DELIMITER + vfs.getMountPoint();
+        String testHeadPath = vfs.getScheme() + VFSPaths.SCHEME_DELIMITER + vfs.getMountPoint();
         String testFileName = "foo.txt";
         String p = testHeadPath + testFileName;
         boolean bad = true;
         try {
-            vfs.get(p, FILE_OP_AUTO);
+            vfs.get(p, AbstractEvaluator.FILE_OP_AUTO);
         } catch (QDLIOException q) {
             bad = false;
         }
@@ -199,7 +195,7 @@ public class VFSTest extends AbstractQDLTester {
         boolean orig = vfs.canWrite();
         vfs.setWrite(false);
         VFSEntry fileEntry = makeFE();
-        String testHeadPath = vfs.getScheme() + SCHEME_DELIMITER + vfs.getMountPoint();
+        String testHeadPath = vfs.getScheme() + VFSPaths.SCHEME_DELIMITER + vfs.getMountPoint();
         String testFileName = "foo.txt";
         String p = testHeadPath + testFileName;
         fileEntry.setPath(p);
@@ -243,7 +239,7 @@ public class VFSTest extends AbstractQDLTester {
      * @throws Throwable
      */
     protected void testStayInStore(VFSFileProvider vfs) throws Throwable {
-        String testHeadPath = vfs.getScheme() + SCHEME_DELIMITER + vfs.getMountPoint();
+        String testHeadPath = vfs.getScheme() + VFSPaths.SCHEME_DELIMITER + vfs.getMountPoint();
 
         String testFileName = "/";
         String p = testHeadPath + testFileName;
@@ -267,37 +263,37 @@ public class VFSTest extends AbstractQDLTester {
      */
     protected void testMultipleSchemes(VFSFileProvider vfs) throws Throwable {
         VFSEntry fileEntry = makeFE();
-        String testHeadPath = vfs.getScheme() + SCHEME_DELIMITER + vfs.getMountPoint();
+        String testHeadPath = vfs.getScheme() + VFSPaths.SCHEME_DELIMITER + vfs.getMountPoint();
         String testFileName = "foo.txt";
         String p = testHeadPath + testFileName;
         vfs.put(p, fileEntry);
 
         assert vfs.contains(p);
         assert !vfs.contains(p + "1"); // show that not every file is in store.
-        VFSEntry entry = vfs.get(p, FILE_OP_AUTO);
+        VFSEntry entry = vfs.get(p, AbstractEvaluator.FILE_OP_AUTO);
         assert entry.getLines().get(0).equals(fileEntry.getLines().get(0));
         assert entry.getLines().get(1).equals(fileEntry.getLines().get(1));
 
         // And now the reader
-        VFSEntry entry1 = vfs.get(p, FILE_OP_INPUT_STREAM);
+        VFSEntry entry1 = vfs.get(p, AbstractEvaluator.FILE_OP_INPUT_STREAM);
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(entry1.getInputStream()));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(0));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(1));
         bufferedReader.close();
 
         vfs.setScheme("w00fity");
-        testHeadPath = vfs.getScheme() + SCHEME_DELIMITER + vfs.getMountPoint();
-        assert testHeadPath.startsWith("w00fity" + SCHEME_DELIMITER);
+        testHeadPath = vfs.getScheme() + VFSPaths.SCHEME_DELIMITER + vfs.getMountPoint();
+        assert testHeadPath.startsWith("w00fity" + VFSPaths.SCHEME_DELIMITER);
         p = testHeadPath + testFileName;
         // rerun the tests above because they have to work no matter how the vfs is configured
         assert vfs.contains(p) : "Could not get file at \"" + p + "\"";
         assert !vfs.contains(p + "1"); // show that not every file is in store.
-        entry = vfs.get(p, FILE_OP_AUTO);
+        entry = vfs.get(p, AbstractEvaluator.FILE_OP_AUTO);
         assert entry.getLines().get(0).equals(fileEntry.getLines().get(0));
         assert entry.getLines().get(1).equals(fileEntry.getLines().get(1));
 
         // And now the reader
-         entry1 = vfs.get(p, FILE_OP_INPUT_STREAM);
+         entry1 = vfs.get(p, AbstractEvaluator.FILE_OP_INPUT_STREAM);
         bufferedReader = new BufferedReader(new InputStreamReader(entry1.getInputStream()));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(0));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(1));
@@ -316,18 +312,18 @@ public class VFSTest extends AbstractQDLTester {
      */
     protected void testMultipleSchemesAndMountPoint(VFSFileProvider vfs) throws Throwable {
         VFSEntry fileEntry = makeFE();
-        String testHeadPath = vfs.getScheme() + SCHEME_DELIMITER + vfs.getMountPoint();
+        String testHeadPath = vfs.getScheme() + VFSPaths.SCHEME_DELIMITER + vfs.getMountPoint();
         String testFileName = "foo.txt";
         String p = testHeadPath + testFileName;
         vfs.put(p, fileEntry);
 
         assert vfs.contains(p);
         assert !vfs.contains(p + "1"); // show that not every file is in store.
-        VFSEntry entry = vfs.get(p, FILE_OP_AUTO);
+        VFSEntry entry = vfs.get(p, AbstractEvaluator.FILE_OP_AUTO);
         assert entry.getLines().get(0).equals(fileEntry.getLines().get(0));
         assert entry.getLines().get(1).equals(fileEntry.getLines().get(1));
         // And now the reader
-        VFSEntry entry1 = vfs.get(p, FILE_OP_INPUT_STREAM);
+        VFSEntry entry1 = vfs.get(p, AbstractEvaluator.FILE_OP_INPUT_STREAM);
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(entry1.getInputStream()));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(0));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(1));
@@ -335,19 +331,19 @@ public class VFSTest extends AbstractQDLTester {
 
         vfs.setScheme("fnord");
         vfs.setMountPoint("blarg");
-        testHeadPath = vfs.getScheme() + SCHEME_DELIMITER + vfs.getMountPoint();
-        assert testHeadPath.startsWith("fnord" + SCHEME_DELIMITER);
-        assert testHeadPath.endsWith(PATH_SEPARATOR + "blarg" + PATH_SEPARATOR);
+        testHeadPath = vfs.getScheme() + VFSPaths.SCHEME_DELIMITER + vfs.getMountPoint();
+        assert testHeadPath.startsWith("fnord" + VFSPaths.SCHEME_DELIMITER);
+        assert testHeadPath.endsWith(VFSPaths.PATH_SEPARATOR + "blarg" + VFSPaths.PATH_SEPARATOR);
         p = testHeadPath + testFileName;
         // rerun the tests above because they have to work no matter how the vfs is configured
         assert vfs.contains(p) : "Could not get file at \"" + p + "\"";
         assert !vfs.contains(p + "1"); // show that not every file is in store.
-        entry = vfs.get(p, FILE_OP_AUTO);
+        entry = vfs.get(p, AbstractEvaluator.FILE_OP_AUTO);
         assert entry.getLines().get(0).equals(fileEntry.getLines().get(0));
         assert entry.getLines().get(1).equals(fileEntry.getLines().get(1));
 
         // And now the reader
-         entry1 = vfs.get(p, FILE_OP_INPUT_STREAM);
+         entry1 = vfs.get(p, AbstractEvaluator.FILE_OP_INPUT_STREAM);
         bufferedReader = new BufferedReader(new InputStreamReader(entry1.getInputStream()));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(0));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(1));
@@ -370,52 +366,52 @@ public class VFSTest extends AbstractQDLTester {
      */
     protected void testMultipleMount(VFSFileProvider vfs) throws Throwable {
         VFSEntry fileEntry = makeFE();
-        String testHeadPath = vfs.getScheme() + SCHEME_DELIMITER + vfs.getMountPoint();
+        String testHeadPath = vfs.getScheme() + VFSPaths.SCHEME_DELIMITER + vfs.getMountPoint();
         String testFileName = "foo.txt";
         String p = testHeadPath + testFileName;
         vfs.put(p, fileEntry);
 
         assert vfs.contains(p);
         assert !vfs.contains(p + "1"); // show that not every file is in store.
-        VFSEntry entry = vfs.get(p, FILE_OP_AUTO);
+        VFSEntry entry = vfs.get(p, AbstractEvaluator.FILE_OP_AUTO);
         assert entry.getLines().get(0).equals(fileEntry.getLines().get(0));
         assert entry.getLines().get(1).equals(fileEntry.getLines().get(1));
         // And now the reader
-        VFSEntry entry1 = vfs.get(p, FILE_OP_INPUT_STREAM);
+        VFSEntry entry1 = vfs.get(p, AbstractEvaluator.FILE_OP_INPUT_STREAM);
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(entry1.getInputStream()));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(0));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(1));
         bufferedReader.close();
 
-        vfs.setMountPoint(PATH_SEPARATOR + "w00f");
-        testHeadPath = vfs.getScheme() + SCHEME_DELIMITER + vfs.getMountPoint();
-        assert testHeadPath.endsWith(PATH_SEPARATOR + "w00f" + PATH_SEPARATOR);
+        vfs.setMountPoint(VFSPaths.PATH_SEPARATOR + "w00f");
+        testHeadPath = vfs.getScheme() + VFSPaths.SCHEME_DELIMITER + vfs.getMountPoint();
+        assert testHeadPath.endsWith(VFSPaths.PATH_SEPARATOR + "w00f" + VFSPaths.PATH_SEPARATOR);
         p = testHeadPath + testFileName;
         // rerun the tests above because they have to work no matter how the vfs is configured
         assert vfs.contains(p) : "Could not get file at \"" + p + "\"";
         assert !vfs.contains(p + "1"); // show that not every file is in store.
-        entry = vfs.get(p, FILE_OP_AUTO);
+        entry = vfs.get(p, AbstractEvaluator.FILE_OP_AUTO);
         assert entry.getLines().get(0).equals(fileEntry.getLines().get(0));
         assert entry.getLines().get(1).equals(fileEntry.getLines().get(1));
         // And now the reader
-        entry1 = vfs.get(p, FILE_OP_INPUT_STREAM);
+        entry1 = vfs.get(p, AbstractEvaluator.FILE_OP_INPUT_STREAM);
         bufferedReader = new BufferedReader(new InputStreamReader(entry1.getInputStream()));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(0));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(1));
         bufferedReader.close();
         // let's beat a dead horse and do it again
         vfs.setMountPoint("/onomatopoeia");
-        testHeadPath = vfs.getScheme() + SCHEME_DELIMITER + vfs.getMountPoint();
+        testHeadPath = vfs.getScheme() + VFSPaths.SCHEME_DELIMITER + vfs.getMountPoint();
         assert testHeadPath.endsWith("/onomatopoeia/");
         p = testHeadPath + testFileName;
         // rerun the tests above because they have to work no matter how the vfs is configured
         assert vfs.contains(p);
         assert !vfs.contains(p + "1"); // show that not every file is in store.
-        entry = vfs.get(p, FILE_OP_AUTO);
+        entry = vfs.get(p, AbstractEvaluator.FILE_OP_AUTO);
         assert entry.getLines().get(0).equals(fileEntry.getLines().get(0));
         assert entry.getLines().get(1).equals(fileEntry.getLines().get(1));
         // And now the reader
-        entry1 = vfs.get(p, FILE_OP_INPUT_STREAM);
+        entry1 = vfs.get(p, AbstractEvaluator.FILE_OP_INPUT_STREAM);
         bufferedReader = new BufferedReader(new InputStreamReader(entry1.getInputStream()));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(0));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(1));
@@ -427,7 +423,7 @@ public class VFSTest extends AbstractQDLTester {
 
 
     public void testFilePassThrough() throws Throwable {
-        String rootDir = "/home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/test/resources";
+        String rootDir = "/home/ncsa/dev/ncsa-git/qdl/language/src/test/resources";
         VFSPassThruFileProvider vfs = new VFSPassThruFileProvider(
                 rootDir,
                 "qdl-vfs",
@@ -582,17 +578,17 @@ public class VFSTest extends AbstractQDLTester {
 
     public void testZipVFS() throws Throwable {
 
-        String pathToZip = "/home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/test/resources/vfs-test/vfs-test.zip";
+        String pathToZip = "/home/ncsa/dev/ncsa-git/qdl/tests/src/test/resources/vfs-test/vfs-test.zip";
         // now for the path inside the zip file. Note that when mounted, this is absolute with respect to the
         // mount point. See the readme in the folder with the vfs-test.zip file for more info
-        String mountPoint = PATH_SEPARATOR;
+        String mountPoint = VFSPaths.PATH_SEPARATOR;
         String scheme = "qdl-zip";
-        String storeRoot = scheme + SCHEME_DELIMITER + mountPoint; // prepend this to the paths in the zip
+        String storeRoot = scheme + VFSPaths.SCHEME_DELIMITER + mountPoint; // prepend this to the paths in the zip
 
         String dirInZip = mountPoint + "root/other/sub-folder1";
         String fileInZip = mountPoint + "root/other/sub-folder1/math.txt";
         String pathInsideTheZip = mountPoint + "root/other/sub-folder1";
-        String testPath = scheme + SCHEME_DELIMITER + pathInsideTheZip;
+        String testPath = scheme + VFSPaths.SCHEME_DELIMITER + pathInsideTheZip;
         VFSZipFileProvider vfs = new VFSZipFileProvider(pathToZip,
                 scheme,
                 mountPoint,
@@ -616,14 +612,14 @@ public class VFSTest extends AbstractQDLTester {
         assert dir[0].equals("root/");
 
         assert vfs.contains(storeRoot + fileInZip);
-        VFSEntry e = vfs.get(storeRoot + fileInZip, FILE_OP_AUTO);
+        VFSEntry e = vfs.get(storeRoot + fileInZip, AbstractEvaluator.FILE_OP_AUTO);
 
         assert e.getText().equals("2+2 =4\n"); // contains a single line of text.
         testMkdir(vfs);
     }
 
     public void testServerMode() throws Throwable {
-        String rootDir = "/home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/test/resources";
+        String rootDir = "/home/ncsa/dev/ncsa-git/qdl/tests/src/test/resources";
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "    cfg.type := 'pass_through';");
@@ -646,7 +642,7 @@ public class VFSTest extends AbstractQDLTester {
     }
 
     public void testServerModeBad() throws Throwable {
-        String rootDir = "/home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/test/resources";
+        String rootDir = "/home/ncsa/dev/ncsa-git/qdl/language/src/test/resources";
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         state.setServerMode(true);
@@ -680,7 +676,7 @@ public class VFSTest extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testServerModes() throws Throwable{
-        String rootDir = "/home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/test/resources";
+        String rootDir = "/home/ncsa/dev/ncsa-git/qdl/language/src/test/resources";
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         state.setServerMode(true);

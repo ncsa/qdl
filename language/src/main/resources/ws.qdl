@@ -2,7 +2,7 @@
    A set of commands to test ws serialization to/from XML. Note that this loads a function (armstrong)
    and a pair of minimal modules, one embedded in the other.
    load this as (in default configuration, which  has a java module) as
-   script_load('/home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/main/resources/ws.qdl');
+   script_load('/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/ws.qdl');
    Then save it, reload it or whatever. It also gives some basic types.
 */
 script_load('armstrong_numbers.qdl');

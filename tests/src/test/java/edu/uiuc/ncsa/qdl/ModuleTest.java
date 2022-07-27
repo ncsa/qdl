@@ -1002,7 +1002,7 @@ cannot access '__a'
     (vs. running a module) and is special cased in the VariableState/FunctionState objects. Mostly this is to
     guard against a change that breaks this. Simple, basic and essentail regression checks.
      */
-    protected static String testModulePath = "/home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/main/resources/modules/test.mdl";
+    protected static String testModulePath = "/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/test.mdl";
 
     // ML = module_load
     public void testMLIntrinsicFunction() throws Throwable {

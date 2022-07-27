@@ -2444,7 +2444,7 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok42", state) : "failure processing a\\>[star(),[0,0,0]]";
     }
 
-    public static String BIG_JSON_OBJECT = "/home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/main/resources/test.json";
+    public static String BIG_JSON_OBJECT = "/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/test.json";
 
     /**
      * This grabs a large randomly generated JSON object (which is stashed for reproducibility)
@@ -2480,7 +2480,7 @@ public class StemTest extends AbstractQDLTester {
          // x. is a very messy configuration from an OA4MP script.
          // This is everything from the test below.
 
-         x. := from_json(file_read('/home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/test/resources/extract.json'));
+         x. := from_json(file_read('/home/ncsa/dev/ncsa-git/qdl/language/src/test/resources/extract.json'));
 
           z. := x\qdl\*\xmd
           size(z.)==2 && (z.0.'exec_phase'=='pre_auth') && (size(z.1.'exec_phase')==3);
@@ -2510,7 +2510,7 @@ public class StemTest extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testJSONExtractions2() throws Throwable {
-        String jsonFile = "/home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/test/resources/extract.json";
+        String jsonFile = "/home/ncsa/dev/ncsa-git/qdl/tests/src/test/resources/extract.json";
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "x. := from_json(file_read('" + jsonFile + "'));");

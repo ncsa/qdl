@@ -44,7 +44,7 @@ public class IOFunctionTest extends AbstractQDLTester {
     }
 
     public void testIniFileRead() throws Throwable {
-        String file = "/home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/main/resources/sample.ini";
+        String file = "/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/sample.ini";
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "out. := file_read('" + file + "', 2);"); // INIT files are type 2

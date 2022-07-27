@@ -9,11 +9,11 @@
 <comment>workspace serialization</comment>
 <entry key="aa"> a. := to_list(5);</entry>
 <entry key="cfg_file">/home/ncsa/dev/csd/config/servers.xml</entry>
-<entry key="q">/home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/test/resources </entry>
+<entry key="q">/home/ncsa/dev/ncsa-git/qdl/language/src/test/resources </entry>
 <entry key="id">ashigaru:command.line2</entry>
 <entry key="java_modules">edu.uiuc.ncsa.qdl.extensions.example.QDLLoaderImpl</entry>
 <entry key="externalModules">edu.uiuc.ncsa.myproxy.oa4mp.qdl.OA2QDLLoader</entry>
-<entry key="m">load_script('/home/ncsa/dev/ncsa-git/security-lib/ncsa-qdl/src/test/resources/module_example.qdl')</entry>
+<entry key="m">load_script('/home/ncsa/dev/ncsa-git/qdl/language/src/test/resources/module_example.qdl')</entry>
 <entry key="boot_script">/home/ncsa/dev/ncsa-git/oa4mp/oa4mp-qdl/src/main/resources/oa2-boot.qdl</entry>
 <entry key="qdl_root">/home/ncsa/dev/qdl</entry>
 <entry key="home_dir">/home/ncsa/dev/qdl</entry>

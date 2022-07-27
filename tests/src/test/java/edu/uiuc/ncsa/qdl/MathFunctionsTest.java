@@ -7,8 +7,8 @@ import edu.uiuc.ncsa.qdl.expressions.VariableNode;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
-import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.Constant;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.VStack;
 import edu.uiuc.ncsa.qdl.variables.VThing;
 
