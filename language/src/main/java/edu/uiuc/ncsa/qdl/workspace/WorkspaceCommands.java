@@ -225,7 +225,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     /**
-     * Replaces ) commands prefixed with a > by their value from the symbol table.
+     * Replaces ) commands prefixed with a by their value from the symbol table.
      *
      * @param inputLine
      * @return

@@ -24,6 +24,16 @@ public class FunctionRecord implements XThing {
         this.key = key;
     }
 
+    public boolean isAnonymous() {
+        return anonymous;
+    }
+
+    public void setAnonymous(boolean anonymous) {
+        this.anonymous = anonymous;
+    }
+
+    boolean anonymous = false;
+
     public boolean isLambda() {
         return lambda;
     }

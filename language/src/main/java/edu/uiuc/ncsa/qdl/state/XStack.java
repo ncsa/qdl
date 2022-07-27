@@ -39,7 +39,7 @@ import java.util.*;
  *     0           f(x)-&gt;x^3
  *     1           f(x)-&gt;x^2
  * </pre>
- * Calls to <@link {@link XStack#get(XKey)} would peek at 0 and return f(x)-&gt;x^3
+ * Calls to  {@link XStack#get(XKey)} would peek at 0 and return f(x)-&gt;x^3
  * inside the block. This is how local state overrides the parent state.
  * Blocks of course can be for loops, functions, conditionals etc. Were there no
  * entry for f(x) in the block, then {@link XStack} would return f(x)-&gt;x^2.

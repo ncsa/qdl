@@ -147,7 +147,6 @@ public class SymbolTableImpl extends AbstractSymbolTable implements SymbolTable 
      * remove a symbol. Returns true if removed. False otherwise.
      *
      * @param symbol
-     * @return
      */
     @Override
     public void remove(String symbol) {

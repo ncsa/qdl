@@ -115,7 +115,7 @@ public class ParsingMap extends HashMap<String, ParseRecord> {
      * Find the parent or grandparent etc. of the node in this map.
      * A common pattern is, e.g. having a heavily parenthesized expression
      * in the source like <br/><br/>
-     * <code>(((a<b) &&...</code><br/><br/>
+     * <code>(((a&lt;b) &amp;&amp;...</code><br/><br/>
      * which may have arbitrarily many association contexts wrapped around it.
      * Our creation of the standard tree omits such parsing cruft so this will trace back
      * to the ancestor.

@@ -229,7 +229,6 @@ public class XMLUtilsV2 {
      * You write the start element, invoke this, then write the end element.
      * @param xsw
      * @param collection
-     * @return
      */
     public static void toCDATA(XMLStreamWriter xsw, Collection collection) throws XMLStreamException {
            JSONArray jsonArray = new JSONArray();

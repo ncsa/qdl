@@ -9,8 +9,6 @@ package edu.uiuc.ncsa.qdl.util;
 //
 // RJHM van den Bergh , rvdb@comweb.nl
 
-import edu.uiuc.ncsa.security.core.exceptions.GeneralException;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -102,7 +100,7 @@ public class Console extends WindowAdapter implements WindowListener, ActionList
 		// testing part
 		// you may omit this part for your application
 		//
-		System.out.println("Hello World 2");
+	/*	System.out.println("Hello World 2");
 		System.out.println("All fonts available to Graphic2D:\n");
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		String[] fontNames=ge.getAvailableFontFamilyNames();
@@ -111,7 +109,7 @@ public class Console extends WindowAdapter implements WindowListener, ActionList
 		// We do it with a separate Thread becasue we don't wan't to break a Thread used by the Console.
 		System.out.println("\nLets throw an error on this console");
 		GeneralException generalException = new GeneralException();
-		                    generalException.printStackTrace();
+		                    generalException.printStackTrace();*/
 /*
 		errorThrower=new Thread(this);
 		errorThrower.setDaemon(true);
@@ -194,7 +192,8 @@ public class Console extends WindowAdapter implements WindowListener, ActionList
 	}
 
 	void printEventInfo(PrintStream printStream, KeyEvent event, String msg ){
-		printStream.println(event.toString());
+		//printStream.println(event.toString());
+		printStream.print((char)event.getKeyChar());
 	}
 	public static void main(String[] arg)
 	{
@@ -205,7 +204,7 @@ public class Console extends WindowAdapter implements WindowListener, ActionList
 		KeyListener listener = new KeyListener() {
 			@Override
 			public void keyPressed(KeyEvent event) {
-			    printEventInfo(System.out,  event, "Key Pressed");
+		//	    printEventInfo(System.out,  event, "Key Pressed");
 			}
 
 			@Override
@@ -215,7 +214,7 @@ public class Console extends WindowAdapter implements WindowListener, ActionList
 
 			@Override
 			public void keyReleased(KeyEvent event) {
-				printEventInfo(System.out,  event, "Key Released");
+			//	printEventInfo(System.out,  event, "Key Released");
 			}
 		};
 		 return listener;

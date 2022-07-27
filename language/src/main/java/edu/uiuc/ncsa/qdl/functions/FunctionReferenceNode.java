@@ -36,7 +36,6 @@ public class FunctionReferenceNode implements StatementWithResultInterface {
     }
 
     String alias = null;
-    ;
 
     @Override
     public String getAlias() {
@@ -55,6 +54,16 @@ public class FunctionReferenceNode implements StatementWithResultInterface {
     public void setFunctionName(String functionName) {
         this.functionName = functionName;
     }
+
+    public boolean isAnonymous() {
+        return anonymous;
+    }
+
+    public void setAnonymous(boolean anonymous) {
+        this.anonymous = anonymous;
+    }
+
+    boolean anonymous = false;
 
     String functionName;
     Object result;

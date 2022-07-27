@@ -214,7 +214,7 @@ public class OpEvaluator extends AbstractEvaluator {
     public static int numericDigits = 15; // default precision for decimals.
 
     /**
-     * No listing for these yet since they are not the standard func() pattern, e.g. a < b.
+     * No listing for these yet since they are not the standard func() pattern, e.g. a &lt; b.
      *
      * @return
      */

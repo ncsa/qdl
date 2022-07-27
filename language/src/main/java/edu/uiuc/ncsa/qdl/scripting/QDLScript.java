@@ -89,7 +89,6 @@ public class QDLScript extends FileEntry implements ScriptInterface {
     /**
      * Returns the lines of text representation. Mostly the corresponding constructor is a convenience.
      *
-     * @return
      */
     protected void renderContent(Reader rawScript) {
         if (!hasContent()) {

@@ -118,7 +118,7 @@ public class HTTPClient implements QDLModuleMetaClass {
      * 2 args - uri path + stem of parameters
      *
      * @param objects
-     * @return a valid get/delete string of host+uri_path+?key0=value0&key1=value1...
+     * @return a valid get/delete string of host+uri_path+?key0=value0&amp;key1=value1...
      */
     protected String paramsToRequest(Object[] objects) throws UnsupportedEncodingException {
         String actualHost = host;

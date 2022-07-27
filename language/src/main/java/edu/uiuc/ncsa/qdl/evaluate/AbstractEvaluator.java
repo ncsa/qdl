@@ -907,6 +907,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             LambdaDefinitionNode lds = (LambdaDefinitionNode) arg0;
             if (!lds.hasName()) {
                 lds.getFunctionRecord().name = tempFname(state);
+                lds.getFunctionRecord().setAnonymous(true);
             }
             if (pushNewState) {
                 FTable ft = new FTable();
@@ -917,12 +918,14 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             }
             frn = new FunctionReferenceNode();
             frn.setFunctionName(lds.getFunctionRecord().name);
+            frn.setAnonymous(lds.getFunctionRecord().isAnonymous());
         }
 
         if ((arg0 instanceof FunctionDefinitionStatement)) {
             LambdaDefinitionNode lds = new LambdaDefinitionNode(((FunctionDefinitionStatement) arg0));
             if (!lds.hasName()) {
                 lds.getFunctionRecord().name = tempFname(state);
+                lds.getFunctionRecord().setAnonymous(true);
             }
             if (pushNewState) {
                 //FunctionTableImpl ft = new FunctionTableImpl();
@@ -934,6 +937,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             }
             frn = new FunctionReferenceNode();
             frn.setFunctionName(lds.getFunctionRecord().name);
+            frn.setAnonymous(lds.getFunctionRecord().isAnonymous());
 
         }
         if (arg0 instanceof FunctionReferenceNode) {

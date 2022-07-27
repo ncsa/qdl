@@ -34,7 +34,7 @@ public class LocalBlockStatement extends BlockStatement{
     }
 
     /**
-     * If this is called in a function.e.g., f(x)->local[...] then this is the set of arguments.
+     * If this is called in a function.e.g., f(x)-&gt;local[...] then this is the set of arguments.
      * These should be added to the state.
      * @return
      */

@@ -1901,7 +1901,7 @@ public class StemEvaluator extends AbstractEvaluator {
 
 
     /**
-     * <code>include_keys(stem., var | list.);</code><br/<br/> include keys on the right in the resulting stem
+     * <code>include_keys(stem., var | list.);</code><br/><br/> include keys on the right in the resulting stem
      *
      * @param polyad
      * @param state

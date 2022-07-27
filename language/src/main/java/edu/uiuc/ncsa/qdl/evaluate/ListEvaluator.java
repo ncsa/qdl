@@ -4,6 +4,7 @@ import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.expressions.ExpressionImpl;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.expressions.VariableNode;
+import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
 import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNode;
 import edu.uiuc.ncsa.qdl.state.State;
@@ -550,6 +551,9 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
                     }
                 }
             }
+            if(frn.isAnonymous()){
+                    state.getFTStack().remove(new FKey(frn.getFunctionName(), f.getArgCount()));
+                }
             polyad.setResult(result);
             polyad.setResultType(Constant.SET_TYPE);
             polyad.setEvaluated(true);
@@ -574,6 +578,9 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
                         outStem.putLongOrString(key, value);
                     }
                 }
+            }
+            if(frn.isAnonymous()){
+                state.getFTStack().remove(new FKey(frn.getFunctionName(), f.getArgCount()));
             }
             polyad.setResult(outStem);
             polyad.setResultType(Constant.STEM_TYPE);

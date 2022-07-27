@@ -1745,7 +1745,7 @@ public class SystemEvaluator extends AbstractEvaluator {
      * This will use the path information and try to resolve the script based on that.
      * Contract is
      * <ol>
-     *     <li>name start with a # ==> this is a file. If server mode, fail. if abs, do it, if rel resolve against file path</li>
+     *     <li>name start with a # ==&gt; this is a file. If server mode, fail. if abs, do it, if rel resolve against file path</li>
      *     <li>name is scheme qualified: if absolute, just get it, if relative, resolve against same scheme</li>
      *     <li>no qualification: if absolute path and server mode, fail, if relative, try against each path  </li>
      * </ol>
