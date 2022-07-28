@@ -65,7 +65,7 @@
                     <dependencySourceIncludes>
                         <dependencySourceInclude>edu.uiuc.ncsa.qdl.*</dependencySourceInclude>
                     </dependencySourceIncludes>
-                    <excludePackageNames>ch.*;edu.uiuc.ncsa.security.*;com.*;org.*;javax.*</excludePackageNames>
+                    <excludePackageNames>src.*;ch.*;edu.uiuc.ncsa.security.*;com.*;org.*;javax.*</excludePackageNames>
                 </configuration>
             </plugin>
         </plugins>

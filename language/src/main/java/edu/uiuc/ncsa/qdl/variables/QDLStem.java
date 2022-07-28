@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import static edu.uiuc.ncsa.qdl.state.legacy.SymbolTable.var_regex;
+import static edu.uiuc.ncsa.qdl.state.VariableState.var_regex;
 import static edu.uiuc.ncsa.qdl.variables.StemConverter.convert;
 
 /**
@@ -277,7 +277,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
     }
 
     public Object put(int index, Object value) {
-        return put(new Long(index), value);
+        return put(Long.valueOf(index), value);
     }
 
     /* *******
@@ -385,7 +385,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
             return r.get(0);
         }
         if (key instanceof Integer) {
-            return get(new Long((Integer) key));
+            return get(Long.valueOf((Integer) key));
         }
         if (key instanceof Long) {
             return get((Long) key);

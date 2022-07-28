@@ -9,16 +9,16 @@ import edu.uiuc.ncsa.qdl.exceptions.UnknownSymbolException;
 import edu.uiuc.ncsa.qdl.module.MIStack;
 import edu.uiuc.ncsa.qdl.module.MTStack;
 import edu.uiuc.ncsa.qdl.module.Module;
-import edu.uiuc.ncsa.qdl.state.legacy.SymbolStack;
-import edu.uiuc.ncsa.qdl.state.legacy.SymbolTable;
-import edu.uiuc.ncsa.qdl.variables.*;
+import edu.uiuc.ncsa.qdl.variables.QDLNull;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
+import edu.uiuc.ncsa.qdl.variables.VStack;
+import edu.uiuc.ncsa.qdl.variables.VThing;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
 
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static edu.uiuc.ncsa.qdl.state.legacy.SymbolTable.int_regex;
 import static edu.uiuc.ncsa.qdl.variables.StemVariable.STEM_INDEX_MARKER;
 
 /**
@@ -26,6 +26,8 @@ import static edu.uiuc.ncsa.qdl.variables.StemVariable.STEM_INDEX_MARKER;
  * on 2/2/20 at  6:42 AM
  */
 public abstract class VariableState extends NamespaceAwareState {
+   public static String var_regex = "^[a-zA-Z0-9_$]+[a-zA-Z0-9_$\\.]*";
+    public static String int_regex = "[1-9][0-9]*";
     public VariableState(VStack vStack,
                          OpEvaluator opEvaluator,
                          MetaEvaluator metaEvaluator,
@@ -314,9 +316,8 @@ public abstract class VariableState extends NamespaceAwareState {
      *
      * @param variableName
      * @param value
-     * @param st
      */
-    private void setValueImportAware(String variableName, Object value, SymbolTable st) {
+/*    private void setValueImportAware(String variableName, Object value, SymbolTable st) {
         if (isImportMode()) {
             if (st instanceof SymbolTable) {
                 st.setValue(variableName, value);
@@ -326,7 +327,7 @@ public abstract class VariableState extends NamespaceAwareState {
         } else {
             st.setValue(variableName, value);
         }
-    }
+    }*/
 
     private void setValueImportAware(String variableName, Object value) {
         VThing vThing = new VThing(new XKey(variableName), value);
@@ -362,7 +363,6 @@ public abstract class VariableState extends NamespaceAwareState {
         }
 
         VThing v = null;
-        SymbolTable st = null;
         XKey xKey = new XKey(variableName);
         boolean didIt = false;
         if (isExtrinsic(variableName)) {

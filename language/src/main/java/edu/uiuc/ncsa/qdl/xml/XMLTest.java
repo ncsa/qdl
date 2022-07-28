@@ -3,15 +3,12 @@ package edu.uiuc.ncsa.qdl.xml;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.StateUtils;
-import edu.uiuc.ncsa.qdl.state.legacy.SymbolStack;
-import edu.uiuc.ncsa.qdl.state.legacy.SymbolTableImpl;
 import edu.uiuc.ncsa.qdl.variables.StemVariable;
 
 import javax.xml.stream.*;
 import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.stream.util.XMLEventAllocator;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -196,16 +193,6 @@ public class XMLTest {
         interpreter.execute("k := 12.34^5;");
         interpreter.execute("s. := [1,2]~{'a':'b'};");
         state.toXML(xsw);
-    }
-
-    protected static void testSymbols(XMLStreamWriter xsw) throws XMLStreamException {
-        SymbolStack stack = new SymbolStack();
-        SymbolTableImpl st0 = new SymbolTableImpl();
-        st0.setValue("my_long", 42L);
-        st0.setValue("my_string", "abcd goldfish");
-        st0.setValue("my_decimal", new BigDecimal("-432.456"));
-        stack.addParent(st0);
-        st0.toXML(xsw);
     }
 
 }

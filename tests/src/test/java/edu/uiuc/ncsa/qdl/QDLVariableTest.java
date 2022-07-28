@@ -3,9 +3,9 @@ package edu.uiuc.ncsa.qdl;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.parsing.QDLParserDriver;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.state.legacy.SymbolStack;
-import edu.uiuc.ncsa.qdl.state.legacy.SymbolTable;
-import edu.uiuc.ncsa.qdl.state.legacy.SymbolTableImpl;
+import edu.uiuc.ncsa.qdl.state.XKey;
+import edu.uiuc.ncsa.qdl.variables.VTable;
+import edu.uiuc.ncsa.qdl.variables.VThing;
 
 /**
  * Test that directly test the functioning of variables and state. These typically create and manipulate stacks
@@ -24,16 +24,18 @@ public class QDLVariableTest extends AbstractQDLTester {
      */
      
     public void testVariables() throws Exception {
-        SymbolTable st = new SymbolTableImpl();
-        st.setValue("a", 12345L);
-        assert st.resolveValue("a").equals(new Long(12345));
-        st.setValue("b", Boolean.TRUE);
-        assert st.resolveValue("b") == Boolean.TRUE;
-        st.setValue("c", Boolean.FALSE);
-        assert st.resolveValue("c") == Boolean.FALSE;
+
+        VTable vTable = new VTable();
+
+        vTable.put(new VThing(new XKey("a"), 12345L));
+        assert ((VThing)vTable.get(new XKey("a"))).getValue().equals(12345L);
+        vTable.put(new VThing(new XKey("b"), Boolean.TRUE));
+        assert ((VThing)vTable.get(new XKey("b"))).getValue() == Boolean.TRUE;
+        vTable.put(new VThing(new XKey("c"), Boolean.FALSE));
+        assert ((VThing)vTable.get(new XKey("c"))).getValue() == Boolean.FALSE;
         String value = "mairzy((%^998e98nfg98u";
-        st.setValue("e",  value );
-        assert st.resolveValue("e").equals(value);
+        vTable.put(new VThing(new XKey("e"),  value ));
+        assert ((VThing)vTable.get(new XKey("e"))).getValue().equals(value);
     }
 
     /**
@@ -135,41 +137,7 @@ public class QDLVariableTest extends AbstractQDLTester {
      * @throws Exception
      */
 
-    /**
-     * This also checks for deep resolution and then it sets the value and then reads it.
-     * So each variable is set in a different symbol table (emulating having a complex
-     * set of modules and control structures). This test is to show that a single
-     * stem that accesses all of them gets resolved right.
-     *
-     * @throws Exception
-     */
-     
-    public void testDeepResolutionAndSetVariable() throws Exception {
-        SymbolTableImpl st0 = new SymbolTableImpl();
-        SymbolTableImpl st1 = new SymbolTableImpl();
-        SymbolTableImpl st2 = new SymbolTableImpl();
-        SymbolTableImpl st3 = new SymbolTableImpl();
-        SymbolTableImpl st4 = new SymbolTableImpl();
-        SymbolStack stack = new SymbolStack();
-
-        st4.setValue("z", 1L);
-        stack.addParent(st4);
-        st3.setValue("y.1", 2L);
-        stack.addParent(st3);
-        st2.setValue("x.2", 3L);
-        stack.addParent(st2);
-        st1.setValue("w.3", 4L);
-        stack.addParent(st0);
-        st0.setValue("A.4", 5L);
-        stack.addParent(st1);
-        // first test, i = 0, so foo.i should resolve to foo.0
-        String stem = "A.w.x.y.z";
-        // so now we set the value.
-        stack.setValue(stem, "6");
-        Object output = stack.resolveValue(stem);
-        assert output.equals("6") : "expected 6 and got " + stack.resolveValue(stem);
-        assert stack.isDefined(stem);
-    }
+  
 
     /**
      * Regression test after parser updated to use . as bona fide operator (rather than having it folded into

@@ -1,6 +1,3 @@
-ch.obermuhlner.math.big
-ch.obermuhlner.math.big.internal
-ch.obermuhlner.math.big.stream
 edu.uiuc.ncsa.qdl.config
 edu.uiuc.ncsa.qdl.evaluate
 edu.uiuc.ncsa.qdl.exceptions
@@ -17,7 +14,6 @@ edu.uiuc.ncsa.qdl.module
 edu.uiuc.ncsa.qdl.parsing
 edu.uiuc.ncsa.qdl.scripting
 edu.uiuc.ncsa.qdl.state
-edu.uiuc.ncsa.qdl.state.legacy
 edu.uiuc.ncsa.qdl.statements
 edu.uiuc.ncsa.qdl.types
 edu.uiuc.ncsa.qdl.util
@@ -25,14 +21,3 @@ edu.uiuc.ncsa.qdl.variables
 edu.uiuc.ncsa.qdl.vfs
 edu.uiuc.ncsa.qdl.workspace
 edu.uiuc.ncsa.qdl.xml
-edu.uiuc.ncsa.security.storage
-edu.uiuc.ncsa.security.storage.cli
-edu.uiuc.ncsa.security.storage.data
-edu.uiuc.ncsa.security.storage.sql
-edu.uiuc.ncsa.security.storage.sql.derby
-edu.uiuc.ncsa.security.storage.sql.h2
-edu.uiuc.ncsa.security.storage.sql.internals
-edu.uiuc.ncsa.security.storage.sql.mariadb
-edu.uiuc.ncsa.security.storage.sql.mysql
-edu.uiuc.ncsa.security.storage.sql.postgres
-src.org.antlr.v4.unicode

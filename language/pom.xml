@@ -78,7 +78,19 @@
                     </items>
                 </configuration>
             </plugin>
-
+            <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-javadoc-plugin</artifactId>
+                 <version>3.4.0</version>
+                 <configuration>
+                     <!--<aggregate>true</aggregate>-->
+                     <includeDependencySources>true</includeDependencySources>
+                     <dependencySourceIncludes>
+                         <dependencySourceInclude>edu.uiuc.ncsa.qdl.*</dependencySourceInclude>
+                     </dependencySourceIncludes>
+                     <excludePackageNames>src.*;ch.*;edu.uiuc.ncsa.security.*;com.*;org.*;javax.*</excludePackageNames>
+                 </configuration>
+             </plugin>
         </plugins>
     </build>
     <dependencies>
@@ -171,12 +183,7 @@
             <artifactId>big-math</artifactId>
             <version>2.3.0</version>
         </dependency>
-<!--        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.1</version>
-            <scope>test</scope>
-        </dependency>-->
+
     </dependencies>
 
     <profiles>

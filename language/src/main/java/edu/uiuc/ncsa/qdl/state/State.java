@@ -13,7 +13,6 @@ import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.module.*;
 import edu.uiuc.ncsa.qdl.scripting.QDLScript;
 import edu.uiuc.ncsa.qdl.scripting.Scripts;
-import edu.uiuc.ncsa.qdl.state.legacy.SymbolStack;
 import edu.uiuc.ncsa.qdl.statements.TryCatch;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.variables.Constant;
@@ -29,6 +28,7 @@ import edu.uiuc.ncsa.qdl.xml.XMLUtils;
 import edu.uiuc.ncsa.qdl.xml.XMLUtilsV2;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
+import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
 import edu.uiuc.ncsa.security.core.util.MetaDebugUtil;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
@@ -258,14 +258,14 @@ public class State extends FunctionState implements QDLConstants {
 
         systemConstants.put(SYS_VAR_TYPE_CHARACTERS, characters);
         StemVariable varTypes = new StemVariable();
-        varTypes.put(SYS_VAR_TYPE_STRING, new Long(Constant.STRING_TYPE));
-        varTypes.put(SYS_VAR_TYPE_STEM, new Long(Constant.STEM_TYPE));
-        varTypes.put(SYS_VAR_TYPE_BOOLEAN, new Long(Constant.BOOLEAN_TYPE));
-        varTypes.put(SYS_VAR_TYPE_NULL, new Long(Constant.NULL_TYPE));
-        varTypes.put(SYS_VAR_TYPE_INTEGER, new Long(Constant.LONG_TYPE));
-        varTypes.put(SYS_VAR_TYPE_DECIMAL, new Long(Constant.DECIMAL_TYPE));
-        varTypes.put(SYS_VAR_TYPE_UNDEFINED, new Long(Constant.UNKNOWN_TYPE));
-        varTypes.put(SYS_VAR_TYPE_SET, new Long(Constant.SET_TYPE));
+        varTypes.put(SYS_VAR_TYPE_STRING, (long) Constant.STRING_TYPE);
+        varTypes.put(SYS_VAR_TYPE_STEM, (long) Constant.STEM_TYPE);
+        varTypes.put(SYS_VAR_TYPE_BOOLEAN, (long) Constant.BOOLEAN_TYPE);
+        varTypes.put(SYS_VAR_TYPE_NULL, (long) Constant.NULL_TYPE);
+        varTypes.put(SYS_VAR_TYPE_INTEGER, (long) Constant.LONG_TYPE);
+        varTypes.put(SYS_VAR_TYPE_DECIMAL, (long) Constant.DECIMAL_TYPE);
+        varTypes.put(SYS_VAR_TYPE_UNDEFINED, (long) Constant.UNKNOWN_TYPE);
+        varTypes.put(SYS_VAR_TYPE_SET, (long) Constant.SET_TYPE);
         systemConstants.put(SYS_VAR_TYPES, varTypes);
 
         StemVariable detokenizeTypes = new StemVariable();
@@ -279,10 +279,10 @@ public class State extends FunctionState implements QDLConstants {
         errorCodes.put(SYS_ERROR_CODE_DEFAULT_USER_ERROR, TryCatch.RESERVED_USER_ERROR_CODE);
         systemConstants.put(SYS_ERROR_CODES, errorCodes);
         StemVariable fileTypes = new StemVariable();
-        fileTypes.put(SYS_FILE_TYPE_BINARY, new Long(IOEvaluator.FILE_OP_BINARY));
-        fileTypes.put(SYS_FILE_TYPE_STEM, new Long(IOEvaluator.FILE_OP_TEXT_STEM));
-        fileTypes.put(SYS_FILE_TYPE_STRING, new Long(IOEvaluator.FILE_OP_TEXT_STRING));
-        fileTypes.put(SYS_FILE_TYPE_INIT, new Long(IOEvaluator.FILE_OP_TEXT_INI));
+        fileTypes.put(SYS_FILE_TYPE_BINARY, (long) IOEvaluator.FILE_OP_BINARY);
+        fileTypes.put(SYS_FILE_TYPE_STEM, (long) IOEvaluator.FILE_OP_TEXT_STEM);
+        fileTypes.put(SYS_FILE_TYPE_STRING, (long) IOEvaluator.FILE_OP_TEXT_STRING);
+        fileTypes.put(SYS_FILE_TYPE_INIT, (long) IOEvaluator.FILE_OP_TEXT_INI);
         systemConstants.put(SYS_FILE_TYPES, fileTypes);
 
         StemVariable uriFields = new StemVariable();
@@ -776,12 +776,13 @@ public class State extends FunctionState implements QDLConstants {
                                 XMLUtilsV2.deserializeVariables(xer, this, xmlSerializationState);
                             } else {
                                 // Legacy.
-                                VStack vStack = new VStack();
+                                throw new NotImplementedException("Legacy viable state storage no longer supported.");
+/*                                VStack vStack = new VStack();
                                 SymbolStack st = new SymbolStack();
                                 st.fromXML(xer);
                                 // Have to transfer functions over.
                                 vStack.fromJSON(st.toJSON(), null);
-                                setvStack(vStack);
+                                setvStack(vStack);*/
                             }
                             break;
                         case FUNCTION_TABLE_STACK_TAG:
@@ -837,12 +838,13 @@ public class State extends FunctionState implements QDLConstants {
                 case XMLEvent.START_ELEMENT:
                     switch (xe.asStartElement().getName().getLocalPart()) {
                         case STACKS_TAG:
-                            SymbolStack st = new SymbolStack();
+                            throw new NotImplementedException("Legacy variable storage no longer supported");
+/*                            SymbolStack st = new SymbolStack();
                             st.fromXML(xer);
                             VStack vStack = new VStack();
                             vStack.fromJSON(st.toJSON(), null);
-                            setvStack(vStack);
-                            break;
+                            setvStack(vStack);*/
+                        //    break;
                         case FUNCTIONS_TAG:
                             XMLUtils.oldDeserializeFunctions(xer, xp, this);
                             break;

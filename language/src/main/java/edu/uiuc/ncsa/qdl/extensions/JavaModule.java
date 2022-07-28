@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import static edu.uiuc.ncsa.qdl.state.legacy.SymbolTable.var_regex;
+import static edu.uiuc.ncsa.qdl.state.VariableState.var_regex;
 
 /**
  * This will let you create your own extensions to QDL in Java. Simply implement the interfaces

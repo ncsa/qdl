@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static edu.uiuc.ncsa.qdl.state.legacy.SymbolTable.var_regex;
+import static edu.uiuc.ncsa.qdl.state.VariableState.var_regex;
 import static edu.uiuc.ncsa.qdl.variables.Constant.*;
 import static edu.uiuc.ncsa.qdl.variables.StemUtility.LAST_AXIS_ARGUMENT_VALUE;
 import static edu.uiuc.ncsa.qdl.variables.StemVariable.STEM_INDEX_MARKER;
@@ -1257,13 +1257,13 @@ public class StemEvaluator extends AbstractEvaluator {
 
         long size = 0;
         if (isSet(arg)) {
-            size = new Long(((QDLSet) arg).size());
+            size = ((QDLSet) arg).size();
         }
         if (isStem(arg)) {
-            size = new Long(((QDLStem) arg).size());
+            size =  ((QDLStem) arg).size();
         }
         if (arg instanceof String) {
-            size = new Long(arg.toString().length());
+            size = arg.toString().length();
         }
         polyad.setResult(size);
         polyad.setResultType(LONG_TYPE);
