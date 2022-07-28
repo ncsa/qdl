@@ -16,29 +16,29 @@ The QD Language
 
 Documentation
 
-    *{{{pdf/qdl_reference.pdf}QDL Reference Manual}}
+    *{{{./pdf/qdl_reference.pdf}QDL Reference Manual}}
 
-    *{{{pdf/qdl_workspace.pdf}QDL Workspace Reference Manual}}
+    *{{{./pdf/qdl_workspace.pdf}QDL Workspace Reference Manual}}
 
-    *{{{pdf/qdl_configuration.pdf}QDL Configuration Reference Manual}}
+    *{{{./pdf/qdl_configuration.pdf}QDL Configuration Reference Manual}}
 
-    *{{{pdf/qdl_extensions.pdf}Writing your own extensions to QDL}}
+    *{{{./pdf/qdl_extensions.pdf}Writing your own extensions to QDL}}
 
-    *{{{pdf/iso6429.pdf}How to use the (experimental) ISO 6429 terminal support.}}
+    *{{{./pdf/iso6429.pdf}How to use the (experimental) ISO 6429 terminal support.}}
 
-    *{{{pdf/qdl_scripting.pdf.pdf}General introduction to writing scripts with QDL}}
+    *{{{./pdf/qdl_scripting.pdf.pdf}General introduction to writing scripts with QDL}}
 
-    *{{{pdf/qdl_ini_file.pdf}QDL's ini file}}
+    *{{{./pdf/qdl_ini_file.pdf}QDL's ini file}}
 
-    *{{{pdf/tutorial.pdf}A basic tutorial to QDL}}
+    *{{{./pdf/tutorial.pdf}A basic tutorial to QDL}}
 
 Standard Extensions
 
-    *{{{pdf/http-extension.pdf}HTTP extension.}}
+    *{{{./pdf/http-extension.pdf}HTTP extension.}}
 
-    *{{{pdf/qdldb_extension.pdf}The database extension.}}
+    *{{{./pdf/qdldb_extension.pdf}The database extension.}}
 
 
 Javadoc for QDL
 
-    *{{{apidocs/index.html}Javadoc for the QDL implementation}}
+    *{{{./apidocs/index.html}Javadoc for the QDL implementation}}

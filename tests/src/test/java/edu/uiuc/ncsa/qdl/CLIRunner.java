@@ -149,51 +149,6 @@ public class CLIRunner {
         }
     }
 
-    protected void jsonToXML() throws Exception {
-        /* add this to pom
-                <dependency>
-            <groupId>xom</groupId>
-            <artifactId>xom</artifactId>
-            <version>1.2.5</version>
-        </dependency>
-         */
-
-        /*  Next block read JSON and convert to XML.
-            JSONObject j = JSONObject.fromObject(jsonCfg);
-            XMLSerializer serializer = new XMLSerializer();
-            serializer.setTypeHintsCompatibility(false);
-            String xml = serializer.write(j);
-            System.out.println(xml);*/
-    }
-
-    static String xmlConfig = "    <service name=\"localhost:scitokens.fileStore\"\n" +
-            "             version=\"1.0\"\n" +
-            "             refreshTokenLifetime=\"1000000\"\n" +
-            "             refreshTokenEnabled=\"true\"\n" +
-            "             clientSecretLength=\"128\"\n" +
-            "             issueATasSciToken=\"true\"\n" +
-            "             issuer=\"https://localhost:9443/scitokens-server\"\n" +
-            "             enableTwoFactorSupport=\"true\"\n" +
-            "             disableDefaultStores=\"true\"\n" +
-            "             debug=\"true\"\n" +
-            "             address=\"https://localhost:9443/scitokens-server\">\n" +
-            "        <logging\n" +
-            "                logFileName=\"/tmp/scitokens-server.xml\"\n" +
-            "                logName=\"oa4mp\"\n" +
-            "                logSize=\"100000\"\n" +
-            "                logFileCount=\"2\"\n" +
-            "                debug=\"tue\"/>\n" +
-            "        <JSONWebKey defaultKeyID=\"9k0HPG3moXENne\">\n" +
-            "            <path><![CDATA[/home/ncsa/dev/csd/config/keys.jwk]]></path>\n" +
-            "        </JSONWebKey>\n" +
-            "        <fileStore path=\"/home/ncsa/temp/oa4mp2/fileStore\">\n" +
-            "            <transactions/>\n" +
-            "            <clients/>\n" +
-            "            <clientApprovals/>\n" +
-            "            <permissions/>\n" +
-            "            <adminClients/>\n" +
-            "        </fileStore>\n" +
-            "    </service>";
 
     static String jsonCfg = "{\"config\":  [ \"Configuration that contains new scripting notation 2/25/2019\", \"This is currently deployed on production for LSST clients to link users, setting voPersonExternalID\", \"then searching ldap-test for this value.\"]," +
             "\"claims\":  { " +

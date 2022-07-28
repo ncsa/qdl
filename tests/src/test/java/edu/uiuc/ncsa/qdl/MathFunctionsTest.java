@@ -26,7 +26,7 @@ public class MathFunctionsTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
 
         Polyad polyad = new Polyad(MathEvaluator.ABS_VALUE);
-        ConstantNode left = new ConstantNode(new Long(-5), Constant.LONG_TYPE);
+        ConstantNode left = new ConstantNode((long) -5, Constant.LONG_TYPE);
         polyad.addArgument(left);
         polyad.evaluate(state);
         assert (Long) polyad.getResult() == 5L;
@@ -42,10 +42,10 @@ public class MathFunctionsTest extends AbstractQDLTester {
 
         VStack symbolTable = state.getVStack();
         QDLStem arg = new QDLStem();
-        arg.put("0", new Long(-12345L));
-        arg.put("1", new Long(2468L));
-        arg.put("2", new Long(-1000000L));
-        arg.put("3", new Long(987654321L));
+        arg.put("0", -12345L);
+        arg.put("1", 2468L);
+        arg.put("2", -1000000L);
+        arg.put("3", 987654321L);
 
         symbolTable.put(new VThing(new XKey("arg."), arg));
         VariableNode argNode = new VariableNode("arg.");

@@ -25,6 +25,12 @@ lowriter --headless --convert-to pdf ~/dev/ncsa-git/qdl/language/src/main/docs/q
 lowriter --headless --convert-to pdf ~/dev/ncsa-git/qdl/language/src/main/docs/http-extension.odt
 echo "done converting PDFs"
 
+# Uncomment the next two lines if you want/need to regenerate all of the parser.
+# Generally you should not need to do this ever:
+
+# cd $QDL_ROOT/language/src/main/antlr
+# ./build.sh
+
 # build qdl proper
 cd $QDL_ROOT
 mvn clean install

@@ -49,8 +49,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
+                <version>3.12.0</version>
                 <configuration>
-                    <locales>en,fr</locales>
+                    <locales>en</locales>
                 </configuration>
             </plugin>
           
@@ -59,11 +60,12 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.4.0</version>
                 <configuration>
-                    <aggregate>true</aggregate>
+                    <!--<aggregate>true</aggregate>-->
                     <includeDependencySources>true</includeDependencySources>
                     <dependencySourceIncludes>
-                        <dependencySourceInclude>edu.uiuc.ncsa:*</dependencySourceInclude>
+                        <dependencySourceInclude>edu.uiuc.ncsa.qdl.*</dependencySourceInclude>
                     </dependencySourceIncludes>
+                    <excludePackageNames>ch.*;edu.uiuc.ncsa.security.*;com.*;org.*;javax.*</excludePackageNames>
                 </configuration>
             </plugin>
         </plugins>
@@ -71,9 +73,7 @@
 
     <reporting>
         <plugins>
-            <plugin>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -81,9 +81,10 @@
                 <configuration>
                     <includeDependencySources>true</includeDependencySources>
                     <dependencySourceIncludes>
-                        <dependencySourceInclude>edu.uiuc.ncsa.qdl:*</dependencySourceInclude>
+                        <dependencySourceInclude>edu.uiuc.ncsa.qdl.*</dependencySourceInclude>
                     </dependencySourceIncludes>
-                    <excludePackageNames>com.*;org.*;javax.*</excludePackageNames>
+                    <excludePackageNames>ch.*;edu.uiuc.ncsa.security.*;com.*;org.*;javax.*</excludePackageNames>
+
                 </configuration>
             </plugin>
         </plugins>

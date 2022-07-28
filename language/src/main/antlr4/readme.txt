@@ -1,9 +1,11 @@
-To build the antlr parser, you need to run the build script from this directory.
+This directory contains the grammar and build script for the QDL language parser.
 
-***
- --> cat the build.sh script and read what it says! <--
-***
+To use:
 
-You should probably just export the target (OUT_DIR) and source (SOURCE_DIR) directories from that file
-to make it easier to poke around.
-Also you need to reimport and rebuild everything in IntelliJ!!
+ * switch to this directory (Antlr does not work from another one)
+ * Set any paths in build.sh you need for your system
+ * run build.sh (this repopulates the generated directory)
+ * re-import the package ini_generated
+ * rebuild the entire project
+
+Note that generated should, of course, never be touched directly.
