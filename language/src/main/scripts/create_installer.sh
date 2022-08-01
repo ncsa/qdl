@@ -48,8 +48,8 @@ cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/docs/jsonpath.pdf docs
 
 mkdir "etc"
 cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/min-cfg.xml etc/min-cfg.xml
-cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/qdl.nanorc etc/qdl.nanorc
-cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/qdl.nanorc-2.3.1 etc/qdl.nanorc-2.3.1
+cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/nano/qdl.nanorc etc/qdl.nanorc
+cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/nano/qdl.nanorc-2.3.1 etc/qdl.nanorc-2.3.1
 cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/sample.ini etc/sample.ini
 mkdir "etc/modules"
 cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/math-x.mdl etc/modules

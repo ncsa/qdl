@@ -1,0 +1,1 @@
+autocmd BufNewFile,BufRead *.[mq]dl setf qdl

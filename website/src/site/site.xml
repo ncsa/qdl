@@ -25,9 +25,10 @@
 
     <menu name="Quick reference">
       <item name="FAQ" href="faq.html"/>
-      <item name="Language Reference" href="docs/qdl_reference.pdf"/>
-      <item name="Configuration Reference" href="docs/qdl_configuration.pdf"/>
-      <item name="Workspace Reference" href="docs/qdl_workspace.pdf"/>
+      <item name="Language Reference" href="pdf/qdl_reference.pdf"/>
+      <item name="Configuration Reference" href="pdf/qdl_configuration.pdf"/>
+      <item name="Workspace Reference" href="pdf/qdl_workspace.pdf"/>
+      <item name="Quickstart Tutorial" href="pdf/tutorial.pdf"/>
     </menu>
 
     <menu ref="reports" />
