@@ -12,6 +12,8 @@ import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.functions.FR_WithState;
 import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
+import edu.uiuc.ncsa.qdl.gui.editor.EditDoneEvent;
+import edu.uiuc.ncsa.qdl.gui.editor.QDLEditor;
 import edu.uiuc.ncsa.qdl.module.MIStack;
 import edu.uiuc.ncsa.qdl.module.MTKey;
 import edu.uiuc.ncsa.qdl.module.MTStack;
@@ -37,6 +39,7 @@ import edu.uiuc.ncsa.qdl.xml.XMLUtils;
 import edu.uiuc.ncsa.security.core.Logable;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.GeneralException;
+import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.*;
 import edu.uiuc.ncsa.security.util.cli.*;
 import edu.uiuc.ncsa.security.util.cli.editing.EditorEntry;
@@ -121,10 +124,20 @@ public class WorkspaceCommands implements Logable, Serializable {
         env = xp;
     }
 
+    public boolean isSwingGUI() {
+        return swingGUI;
+    }
+
+    public void setSwingGUI(boolean swingGUI) {
+        this.swingGUI = swingGUI;
+    }
+
+    boolean swingGUI = false;
+
     CommandLineTokenizer CLT = new CommandLineTokenizer('\'');
     protected static final String FUNCS_COMMAND = ")funcs";
     protected static final String HELP_COMMAND = ")help"; // show various types of help
-    protected static final String OFF_COMMAND = ")off";
+    public static final String OFF_COMMAND = ")off";
     protected static final String BUFFER2_COMMAND = ")buffer";
     protected static final String SHORT_BUFFER2_COMMAND = ")b";
     protected static final String EXECUTE_COMMAND = ")";
@@ -353,6 +366,51 @@ public class WorkspaceCommands implements Logable, Serializable {
         if (autosaveThread != null) {
             autosaveThread.setStopThread(true);
             autosaveThread.interrupt();
+        }
+
+    }
+
+    Map<UUID, Integer> currentEditorSessions = new HashMap<>();
+
+    protected void _doGUIEditor(BufferManager.BufferRecord br) {
+        QDLEditor qdlEditor = new QDLEditor(this, br.alias);
+
+        currentEditorSessions.put(qdlEditor.getID(), bufferManager.getIndex(br));
+        if (br.getContent() == null) {
+            qdlEditor.setup("");
+        } else {
+            qdlEditor.setup(StringUtils.listToString(br.getContent()));
+        }
+    }
+
+    public void editDone(EditDoneEvent editDoneEvent) {
+        switch (editDoneEvent.getType()) {
+            case EditDoneEvent.TYPE_BUFFER:
+                int editorID = currentEditorSessions.get(editDoneEvent.id);
+                BufferManager.BufferRecord br = bufferManager.getBufferRecord(editorID);
+                if (br.memoryOnly) {
+                    br.content = StringUtils.stringToList(editDoneEvent.content);
+                }
+                currentEditorSessions.remove(editDoneEvent.id);
+                break;
+            case EditDoneEvent.TYPE_FILE:
+                throw new NotImplementedException("File saves in the QDL editor should be handled there.");
+            case EditDoneEvent.TYPE_FUNCTION:
+                String f = editDoneEvent.content;
+                try {
+                    getInterpreter().execute(f);
+                    FR_WithState fr_withState = getState().resolveFunction(editDoneEvent.getLocalName(), editDoneEvent.getArgCount(), true); // get it again because it was overwritten
+                    fr_withState.functionRecord.sourceCode = StringUtils.stringToList(f); // update source in the record.
+                } catch (Throwable t) {
+                    if (DebugUtil.isEnabled()) {
+                        t.printStackTrace();
+                    }
+
+                    say("could not interpret function:" + t.getMessage());
+                }
+                break;
+            case EditDoneEvent.TYPE_VARIABLE:
+                break;
         }
 
     }
@@ -682,7 +740,16 @@ public class WorkspaceCommands implements Logable, Serializable {
         if (useExternalEditor()) {
             _doExternalEdit(f);
         } else {
-
+            if (isSwingGUI()) {
+                try {
+                    QDLEditor qdlEditor = new QDLEditor(f);
+                    qdlEditor.setType(EditDoneEvent.TYPE_FILE);
+                    qdlEditor.setup();
+                } catch (Throwable e) {
+                    say("Error editing file '" + f.getAbsolutePath() + "', " + e.getMessage());
+                }
+                return RC_CONTINUE;
+            }
             try {
                 List<String> content;
                 if (f.exists()) {
@@ -1287,7 +1354,12 @@ public class WorkspaceCommands implements Logable, Serializable {
         if (useExternalEditor()) {
             result = _doExternalEdit(br.getContent());
         } else {
-            result = _doLineEditor(br.getContent());
+            if (isSwingGUI()) {
+                _doGUIEditor(br);
+                return RC_CONTINUE;
+            } else {
+                result = _doLineEditor(br.getContent());
+            }
         }
         if (result == null || result.isEmpty()) {
             return RC_NO_OP;
@@ -2219,7 +2291,14 @@ public class WorkspaceCommands implements Logable, Serializable {
         if (useExternalEditor()) {
             f = _doExternalEdit(f);
         } else {
+            if (isSwingGUI()) {
+                QDLEditor qdlEditor = new QDLEditor();
+                qdlEditor.setType(EditDoneEvent.TYPE_FUNCTION);
+                qdlEditor.setup(StringUtils.listToString(f));
+                return RC_CONTINUE;
+            }
             f = _doLineEditor(f);
+
         }
         try {
             getInterpreter().execute(f);
@@ -2537,6 +2616,12 @@ public class WorkspaceCommands implements Logable, Serializable {
         if (useExternalEditor()) {
             content = _doExternalEdit(content);
         } else {
+            if (isSwingGUI()) {
+                QDLEditor qdlEditor = new QDLEditor();
+                qdlEditor.setType(EditDoneEvent.TYPE_VARIABLE);
+                qdlEditor.setup(StringUtils.listToString(content));
+                return RC_CONTINUE;
+            }
             content = _doLineEditor(content);
         }
 
@@ -2547,12 +2632,10 @@ public class WorkspaceCommands implements Logable, Serializable {
                 getState().setValue(varName, newStem);
             } else {
                 String newValue = StringUtils.listToString(content);
-
                 getState().setValue(varName, newValue);
             }
         } else {
             String newValue = StringUtils.listToString(content);
-
             newValue = newValue.trim();
             if (!newValue.endsWith(";")) {
                 newValue = newValue + ";";
@@ -2699,8 +2782,8 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say(onlineHelp.get(realName));
                 if (altName != null) {
                     String altKey = null;
-                    if (QDLTerminal.getCharLookupMap().containsKey(altName)) {
-                        altKey = QDLTerminal.getCharLookupMap().get(altName);
+                    if (QDLTerminal.getReverseCharLookupMap().containsKey(altName)) {
+                        altKey = QDLTerminal.getReverseCharLookupMap().get(altName);
                     }
                     say("unicode: " + altName + " (" + StringUtils.toUnicode(altName) + ")" + (altKey == null ? "" : ", alt + " + altKey));
                 }
@@ -4160,7 +4243,8 @@ public class WorkspaceCommands implements Logable, Serializable {
         boolean echo = qdlInterpreter.isEchoModeOn();
         qdlInterpreter.setPrettyPrint(false);
         qdlInterpreter.setEchoModeOn(false);
-        qdlInterpreter.execute(reader);
+        QDLRunner runner = qdlInterpreter.execute(reader);
+        lastResult = runner.getLastResult();
         setPrettyPrint(pp);
         setEchoModeOn(echo);
         setDebugOn(debugOn);
@@ -4168,6 +4252,12 @@ public class WorkspaceCommands implements Logable, Serializable {
         qdlInterpreter.setPrettyPrint(pp);
         qdlInterpreter.setDebugOn(debugOn);
     }
+
+    public Object getLastResult() {
+        return lastResult;
+    }
+
+    Object lastResult;
 
     public void qdlSave(Writer fileWriter) throws Throwable {
         fileWriter.write("// QDL workspace " + (isTrivial(getWSID()) ? "" : getWSID()) + " dump, saved on " + (new Date()) + "\n");
@@ -4385,7 +4475,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             }
             say("sorry, but '" + f.getAbsolutePath() + "' does not exist");
             t.printStackTrace();
-        } 
+        }
         return false;
     }
 
@@ -5134,7 +5224,8 @@ public class WorkspaceCommands implements Logable, Serializable {
             rootDir = new File(inputLine.getNextArgFor(CLA_HOME_DIR));
         } else {
             String currentDirectory = System.getProperty("user.dir");
-            rootDir = new File(inputLine.getNextArgFor(currentDirectory));
+            //rootDir = new File(inputLine.getNextArgFor(currentDirectory));
+            rootDir = new File(currentDirectory);
         }
 
         if (inputLine.hasArg(CLA_ENVIRONMENT)) {

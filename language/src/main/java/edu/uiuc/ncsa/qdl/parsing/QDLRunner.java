@@ -96,6 +96,11 @@ public class QDLRunner implements Serializable {
         run(siEntry.lineNumber + 1, siEntry.state);
     }
 
+    public Object getLastResult() {
+        return lastResult;
+    }
+
+    Object lastResult = null;
     protected void run(int startIndex, State currentState) {
         for (int i = startIndex; i < elements.size(); i++) {
             //for (Element element : elements) {
@@ -107,6 +112,7 @@ public class QDLRunner implements Serializable {
                 if (stmt instanceof ModuleStatement) {
                     ModuleStatement ms = (ModuleStatement) stmt;
                     ms.evaluate(currentState);
+                    lastResult = null;
                 } else {
                     if (isEchoModeOn()) {
                         // used by the workspace to print each statement's result to the console.
@@ -143,7 +149,7 @@ public class QDLRunner implements Serializable {
                         }
                     }
                     try {
-                        stmt.evaluate(currentState);
+                       lastResult = stmt.evaluate(currentState);
                     } catch (InterruptException ix) {
                         if (!ix.getSiEntry().initialized) {
                             // if it was set up, pass it up the stack
@@ -157,7 +163,6 @@ public class QDLRunner implements Serializable {
                 }
             }
         }
-
     }
 
 }

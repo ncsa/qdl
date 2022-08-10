@@ -938,7 +938,11 @@ subset(b., 3, 6)
         @Override
         public Object next() {
             if (arrayIterator.hasNext()) {
-                return arrayIterator.next();
+                Object obj = arrayIterator.next();
+                if(obj instanceof SparseEntry){
+                    return ((SparseEntry)obj).entry;
+                }
+                return obj;
             }
             if (objectsOnly) {
                 return ((SparseEntry) sparseEntryIterator.next()).entry;

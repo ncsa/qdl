@@ -1,0 +1,337 @@
+package edu.uiuc.ncsa.qdl.gui;
+
+import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.qdl.workspace.QDLTerminal;
+import edu.uiuc.ncsa.qdl.workspace.QDLWorkspace;
+import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
+import edu.uiuc.ncsa.security.util.cli.InputLine;
+import org.fife.ui.autocomplete.AutoCompletion;
+import org.fife.ui.autocomplete.CompletionProvider;
+import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static java.awt.event.InputEvent.ALT_DOWN_MASK;
+import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
+
+/**
+ * <p>Created by Jeff Gaynor<br>
+ * on 8/9/22 at  7:12 AM
+ */
+public class SwingTerminal implements TerminalInterface {
+    public JPanel getMainPanel() {
+        return panel1;
+    }
+
+    private JPanel panel1;
+
+    public RSyntaxTextArea getInput() {
+        return input;
+    }
+
+    private RSyntaxTextArea input;
+
+    public JTextArea getOutput() {
+        return output;
+    }
+
+    private JTextArea output;
+
+    public JLabel getPrompt() {
+        return prompt;
+    }
+
+    private JLabel prompt;
+
+
+    public SwingTerminal() {
+        init();
+    }
+
+    @Override
+    public void setPrompt(String text) {
+        prompt.setText(text);
+        if (firstPass) {
+            firstPass = false;
+            // Skip putting the splash screen in the buffer or the inputs and outputs
+            // are out of sync by 1.
+        } else {
+            previousResults.add(0, getResultText());
+        }
+    }
+
+    StringBuffer currentLine;
+
+    @Override
+    public StringBuffer getCurrentLine() {
+        if (currentLine == null) {
+            currentLine = new StringBuffer();
+        }
+        return currentLine;
+    }
+
+    @Override
+    public void clearCurrentLine() {
+        currentLine = null;
+    }
+
+    List<String> previousResults = new ArrayList<>();
+    List<String> previousLines = new ArrayList<>();
+    int previousLineIndex = 0;
+    boolean firstPass = true;
+    int altMask = ALT_DOWN_MASK;
+    int ctrlMask = CTRL_DOWN_MASK;
+
+    /**
+     * Initialize this with internal state, such as the listeners and {@link Data}
+     * for {@link QDLSwingIO}. Should be called in constructor.
+     */
+    protected void init() {
+   /*   How to do a key binding. Probably should switch to these at some point...
+        KeyStroke key = KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK);
+           panel1.getInputMap().put(key,"∈");*/
+
+        input.getCaret().setVisible(true);
+        input.addKeyListener(new QDLCharKeyAdapter());
+        input.addKeyListener(new HistoryKeyAdapter());
+
+        output.addKeyListener(new HistoryKeyAdapter());
+
+        // setup IO
+        data = new Data();
+        qdlSwingIO = new QDLSwingIO(this, data);
+        Thread qdlioThread = new Thread(qdlSwingIO);
+        qdlioThread.start();
+    }
+
+    /**
+     * This will listen for key strokes that are remapped to special characters
+     * E.g. alt+e is ∈. This might be re-writable as a key binding but won't
+     * be able to use the mechanisms in other terminals, adding the maintenence issues.
+     * So it looks to be a lot of work.
+     * The main argument for doing this is speed -- at some point this is going to get
+     * slow if there is a lot of text to wade through since it has to do surgery
+     * on the entire text area. If that happens, a rewrite is in order.
+     */
+    public class QDLCharKeyAdapter extends KeyAdapter {
+        @Override
+        public void keyTyped(KeyEvent e) {
+            String keyValue = String.valueOf(e.getKeyChar());
+            int position = input.getCaretPosition();
+
+
+            switch (e.getKeyChar()) {
+                case KeyEvent.VK_ENTER:
+                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
+                        String current = input.getText();
+                        if (current.equals(WorkspaceCommands.OFF_COMMAND + " y")) {
+                            shutdown();
+                        }
+                        // previousResults.add(0, getResultText());
+                        previousLines.add(0, current);
+                        previousLineIndex = 0; // reset this
+                        output.setText(null);
+                        data.send(current);
+                        clearCurrentLine();
+                        input.setText(null);
+                        prompt.setText(null);
+                        return;
+
+                    }
+                default:
+
+                    // masks off that alt key is down, ctrl key is up.
+                    boolean gotOne = false;
+
+                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == altMask) {
+                        // only alt mask is down
+                        if (getCharMap().containsKey(keyValue)) {
+                            keyValue = getCharMap().get(keyValue); // exactly one
+                            gotOne = true;
+                        }
+                    }
+
+                    if (gotOne) {
+                        // Only handle special characters if you have one, otherwise
+                        // let Swing do the work
+                        String x = input.getText();
+                        x = x.substring(0, position) + keyValue + (x.length() == position ? "" : x.substring(position));
+                        input.setText(null);
+                        input.setText(x);
+                        input.repaint();
+                        try {
+                            if (position < x.length()) {
+                                input.setCaretPosition(position + 1);
+                            }
+                        } catch (Throwable t) {
+                            // sometime caret position can be wrong if user has moved mouse. Bail
+                        }
+
+                    } else {
+                        super.keyTyped(e);
+                    }
+            } // end switch
+        }
+    }
+
+    /**
+     * This listens for ctrl+up or down arrows and will scroll through the input/outputs in tandem
+     */
+    public class HistoryKeyAdapter extends KeyAdapter {
+        protected int arrowUp(int ndx, List<String> lines, JTextArea textArea) {
+            if (ndx == lines.size() - 1) {
+                textArea.setText(lines.get(ndx));
+                return ndx;
+            }
+            textArea.setText(lines.get((ndx) % lines.size()));
+            return ndx + 1;
+        }
+
+        protected int arrowDown(int ndx, List<String> lines, JTextArea textArea) {
+            if (ndx == 0) {
+                // repeated down arrow just puts an empty line in.
+                textArea.setText(null);
+                return ndx;
+            }
+            ndx = ndx % lines.size(); // make sure it's not too big
+            ndx = Math.max(0, ndx - 1);
+            textArea.setText(lines.get(ndx));
+            return ndx;
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) {
+            // Things like cursor keys register as "key pressed" not "key typed"
+            // hence can be handled separately.
+            super.keyPressed(e);
+            if (previousLines.isEmpty()) {
+                return;
+            }
+
+            switch (e.getKeyCode()) {
+                case KeyEvent.VK_UP:
+                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
+                        arrowUp(previousLineIndex, previousResults, output);
+                        previousLineIndex = arrowUp(previousLineIndex, previousLines, input);
+
+                    }
+                    break;
+                case KeyEvent.VK_DOWN:
+                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
+                        arrowDown(previousLineIndex, previousResults, output);
+                        previousLineIndex = arrowDown(previousLineIndex, previousLines, input);
+                    }
+                    break;
+            }
+        }
+    }
+
+    Data data;
+
+    public void setResultText(String x) {
+        output.setText(null);
+        output.setText(x);
+    }
+
+    public String getResultText() {
+        return output.getText();
+    }
+
+    public QDLSwingIO getQdlSwingIO() {
+        return qdlSwingIO;
+    }
+
+    QDLSwingIO qdlSwingIO;
+
+    public Map<String, String> getCharMap() {
+        return QDLTerminal.getCharLookupMap();
+    }
+
+    public void setup(JFrame frame, List<String> functions)  {
+        System.setProperty("awt.useSystemAAFontSettings","on");
+        frame.setContentPane(getMainPanel());
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
+        atmf.putMapping("text/qdl", "edu.uiuc.ncsa.qdl.gui.flex.QDLSyntax");
+        CompletionProvider provider = QDLSwingUtil.createCompletionProvider(functions);
+        AutoCompletion ac = new AutoCompletion(provider);
+        ac.install(getInput());
+        input.setSyntaxEditingStyle("text/qdl");
+        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        int w = (int) dimension.getWidth() * 3 / 4;
+        int h = (int) dimension.getHeight() * 3 / 4;
+        frame.setSize(w, h);
+        int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
+        int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
+        frame.setLocation(x, y);
+        String laf = UIManager.getSystemLookAndFeelClassName();
+        try {
+            UIManager.setLookAndFeel(laf);
+        } catch (Throwable e) {
+            // really should never happen
+            e.printStackTrace();
+        }
+        frame.setVisible(true);
+    }
+
+    public static void main(String[] args) throws Throwable {
+        JFrame frame = new JFrame("QDL Terminal");
+        SwingTerminal swingTerminal = new SwingTerminal();
+        frame.setContentPane(swingTerminal.panel1);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
+        atmf.putMapping("text/qdl", "edu.uiuc.ncsa.qdl.gui.flex.QDLSyntax");
+        swingTerminal.input.setSyntaxEditingStyle("text/qdl");
+        // Folding sounds nice, but is going to be quite some work here. This turns on java -style
+        // curly brace folding.
+        /*FoldParserManager.get().addFoldParserMapping("text/qdl", new CurlyFoldParser());
+        swingTerminal.input.setCodeFoldingEnabled(true);*/
+
+        State state = new State();
+        CompletionProvider provider = QDLSwingUtil.createCompletionProvider(state);
+        AutoCompletion ac = new AutoCompletion(provider);
+        ac.install(swingTerminal.input);
+        state.setIoInterface(swingTerminal.qdlSwingIO);
+        WorkspaceCommands workspaceCommands = new WorkspaceCommands(swingTerminal.qdlSwingIO);
+        workspaceCommands.setState(state);
+        QDLWorkspace qdlWorkspace = new QDLWorkspace(workspaceCommands);
+        workspaceCommands.setWorkspace(qdlWorkspace);
+        try {
+            workspaceCommands.init(new InputLine());
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        swingTerminal.workspaceCommands = workspaceCommands;
+
+        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        int w = (int) dimension.getWidth() * 3 / 4;
+        int h = (int) dimension.getHeight() * 3 / 4;
+        frame.setSize(w, h);
+        int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
+        int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
+        frame.setLocation(x, y);
+        String laf = UIManager.getSystemLookAndFeelClassName();
+        UIManager.setLookAndFeel(laf);
+        frame.setVisible(true);
+        qdlWorkspace.mainLoop();
+    }
+
+    public WorkspaceCommands getWorkspaceCommands() {
+        return workspaceCommands;
+    }
+
+    WorkspaceCommands workspaceCommands;
+
+    @Override
+    public void shutdown() {
+        System.exit(0);
+    }
+}

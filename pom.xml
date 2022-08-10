@@ -17,12 +17,9 @@
 
     <url>http://www.ncsa.illinois.edu</url>
     <scm>
-        <developerConnection>
-            scm:svn:https://jeff92@svn.code.sf.net/p/cilogon/code/trunk/edu.uiuc.ncsa/ncsa-security-all
-        </developerConnection>
-        <connection>scm:svn:https://jeff92@svn.code.sf.net/p/cilogon/code/trunk/edu.uiuc.ncsa/ncsa-security-all
-        </connection>
-        <url>scm:svn:https://jeff92@svn.code.sf.net/p/cilogon/code/trunk/edu.uiuc.ncsa/ncsa-security-all</url>
+        <developerConnection>scm:git:ssh://github.com/ncsa/qdl.git</developerConnection>
+        <connection>scm:git:ssh://github.com/ncsa/qdl.git</connection>
+        <url>scm:git:ssh://github.com/ncsa/qdl.git</url>
     </scm>
     <licenses>
         <license>
@@ -48,11 +45,7 @@
         <module>language</module>
         <module>website</module>
         <module>tests</module>
-        <!--
-                <module>workspace</module>
-                <module>oauth</module>
-                <module>test</module>
-        -->
+        <module>gui</module>
     </modules>
     <build>
         <plugins>
@@ -63,7 +56,8 @@
             </plugin>
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.1.1</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <version>3.2.1</version>
                 <executions>
                     <execution>
                         <id>bundle-sources</id>

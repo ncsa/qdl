@@ -7,7 +7,7 @@
             <question>What does QDL mean?</question>
             <answer>It refers to navigational bearings (taken in a regular and precise way
                 and are essential for proper aviation.) It is so easy to code quickly and easily that
-                it also is humorously referred to as "quick and dirty" language.
+                it also is humorously referred to as "quick and dirty language".
             </answer>
         </faq>
         <faq id="Executive summary">
@@ -43,7 +43,7 @@
                 </p>
                     <ul>
                         <li>one is constantly tweaking the server code or</li>
-                        <li>fixes that to run the bare-bone protocol and has a scripting language</li>
+                        <li>one fixes it to run the bare-bone protocol and has a scripting language</li>
                     </ul>
                 <p>that can be invoked at regular intervals in processing to handle the special cases.</p>
             </answer>
@@ -80,7 +80,7 @@
                     <br/>
                     * Small is beautiful
                     <br/>
-                    * Aim at probabilities (what you are likely to do) vs. possibilities (edge cases)
+                    * Aim at probabilities (what you are likely to do) not possibilities (edge cases)
                     <br/>
                     * Simple things should be simple
                     <br/>
@@ -98,12 +98,14 @@
                     something like
                     </p>
                 <pre>
-                    my_variable. := sqrt(my_variable.);
+my_variable. := sqrt(my_variable.);
                 </pre>
                 <p>Once you get the knack of it though, it is very easy to work with data
                 and mostly you tell QDL what you want to happen to your data and it does it.
                 This can immensely streamline what would be large chunks of code in other
                 languages.</p>
+                <p>A good comparison is in the <a href="https://ncsa.github.io/qdl/pdf/qdl_reference.pdf">reference manual</a>
+                with  Armstrong numbers. Just search for Armstrong there.</p>
             </answer>
             </faq>
         <faq id="subsetting">
@@ -112,15 +114,15 @@
             on corresponding elements with the same index. This means you always will get
             a (possibly improper) subset of the indices. <i>E.g.</i>
             <pre>
-                a. := [;10]; // 10 elements, 0,1,...,9
-                b. := [;4]*2; // 4 elements, values are 0,2,4,6
-                a.^b.;
-            [1,1,16,729]
+    a. := [;10]; // 10 elements, 0,1,...,9
+    b. := [;4]*2; // 4 elements, values are 0,2,4,6
+    a.^b.; // raise each element of a. to corresponding power in b.
+[1,1,16,729]
             </pre>
             <p>In this case, since there are only 4 elements, in b., only 4 elements get returned.</p>
             <p>The reason for this is quite practical. We <i>could</i> do something like supply
-            missign default values (actually, most languages do), but that would mean that the system
-            is, in essence, generating data. That is a big no-no. If yo do an operation on some stems
+            missing default values (actually, most languages do), but that would mean that the system
+            is, in essence, generating data. That is a big no-no. If you do an operation on some stems
             and the result is smaller than you suspect, that tells you straight off the bat your
             inputs were off. </p>
             </answer>

@@ -1,6 +1,7 @@
 package edu.uiuc.ncsa.qdl.workspace;
 
 import edu.uiuc.ncsa.qdl.exceptions.*;
+import edu.uiuc.ncsa.qdl.gui.SwingTerminal;
 import edu.uiuc.ncsa.qdl.statements.Statement;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.variables.StemVariable;
@@ -11,7 +12,10 @@ import edu.uiuc.ncsa.security.util.cli.InputLine;
 import edu.uiuc.ncsa.security.util.terminal.ISO6429IO;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.Serializable;
+import java.util.List;
 import java.util.*;
 
 import static edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands.*;
@@ -61,9 +65,9 @@ public class QDLWorkspace implements Serializable {
         if (t instanceof BreakException) {
             return;//ignore it
         }
-        if(t instanceof ReturnException){
+        if (t instanceof ReturnException) {
             // Can only get one here if the user enters it on the command line
-            workspaceCommands.say(((ReturnException)t).result.toString());
+            workspaceCommands.say(((ReturnException) t).result.toString());
             return;
         }
         if (t instanceof UnknownSymbolException) {
@@ -136,96 +140,106 @@ public class QDLWorkspace implements Serializable {
         return out;
     }
 
-    protected void run() throws Throwable {
-        boolean isExit = false;
+    public boolean execute(String input) {
+        if (input == null) {
+            // about the only way to get a null here is if the user is piping in
+            // something via std in and it hits the end of the stream.
+            if (workspaceCommands.isDebugOn()) {
+                workspaceCommands.say("exiting");
+            }
+            return true;
+        }
+        input = input.trim();
+        boolean storeLine = true;
+        String out = null;
+        if (input.equals(HISTORY_COMMAND) || input.startsWith(HISTORY_COMMAND + " ")) {
+            try {
+                out = doHistory(input);
+            } catch (Throwable t) {
+                workspaceCommands.say("could not not do history command:" + t.getMessage());
+            }
+            if (out == null) {
+                // nothing in the buffer
+                return true;
+            }
+            storeLine = false;
+        }
+        if (input.equals(REPEAT_COMMAND) || input.startsWith(REPEAT_COMMAND + " ")) {
+            out = doRepeatCommand(input);
+            storeLine = out == null;
+        }
+
+        if (storeLine) {
+            // Store it if it was not retrieved from the command history.
+            workspaceCommands.commandHistory.add(0, input);
+        } else {
+            input = out; // repeat the command
+        }
+
+        // Good idea to strip off comments in parser, but the regex here needs to be
+        // quite clever to match ' and // within them (e.g. any url in a string fails at the command line).
+        // Another option is to write a small parser in antlr for the command line...
+
+        //    input = input.split("//")[0]; // if there is a line comment, strip it.
+     /*            if (input.equals("%")) {
+                     input = lastCommand;
+                 } else {
+                     lastCommand = input;
+                 }
+
+                 */
+
+        if (input.startsWith(")")) {
+            switch (workspaceCommands.execute(input)) {
+                case RC_EXIT_NOW:
+                    return false; // exit now, darnit.
+                case RC_NO_OP:
+                case RC_CONTINUE:
+                    return true;
+                case RC_RELOAD:
+                    workspaceCommands.say("not quite ready for prime time. Check back later");
+            }
+        }
+
+        boolean echoMode = workspaceCommands.isEchoModeOn();
+        boolean prettyPrint = workspaceCommands.isPrettyPrint();
+
+        try {
+            if (input != null && !input.isEmpty()) {
+                // if you try to evaluate only a ";" then you will get a syntax exception from
+                // the parser for an empty statement.
+                if (workspaceCommands.isEchoModeOn() && !input.endsWith(";")) {
+                    input = input + ";"; // add it since they forgot
+                }
+                workspaceCommands.getInterpreter().execute(input);
+            }
+        } catch (Throwable t) {
+
+            // If there is an exception while local mode is running, we don't want to trash the user's
+            // echo mode, since that causes every subsequent command to fail at least until they
+            // figure it `out and turn it back on.
+            workspaceCommands.setEchoModeOn(echoMode);
+            workspaceCommands.setPrettyPrint(prettyPrint);
+            handleException(t);
+        }
+        return true;
+    }
+
+    /**
+     * Execute main event loop.
+     *
+     * @throws Throwable
+     */
+    public void mainLoop() throws Throwable {
+        boolean keepLooping = true;
 
         // Main loop. The default is to be running QDL commands and if there is a
         // command to the workspace, then it gets forwarded. 
-        while (!isExit) {
+        while (keepLooping) {
             String input;
             input = workspaceCommands.readline(INDENT);
-            if (input == null) {
-                // about the only way to get a null here is if the user is piping in
-                // something via std in and it hits the end of the stream.
-                if (workspaceCommands.isDebugOn()) {
-                    workspaceCommands.say("exiting");
-                }
-                return;
-            }
-            input = input.trim();
-            boolean storeLine = true;
-            String out = null;
-            if (input.equals(HISTORY_COMMAND) || input.startsWith(HISTORY_COMMAND + " ")) {
-                try {
-                    out = doHistory(input);
-                } catch (Throwable t) {
-                    workspaceCommands.say("could not not do history command:" + t.getMessage());
-                }
-                if (out == null) {
-                    // nothing in the buffer
-                    continue;
-                }
-                storeLine = false;
-            }
-            if (input.equals(REPEAT_COMMAND) || input.startsWith(REPEAT_COMMAND + " ")) {
-                out = doRepeatCommand(input);
-                storeLine = out == null;
-            }
-
-            if (storeLine) {
-                // Store it if it was not retrieved from the command history.
-                workspaceCommands.commandHistory.add(0, input);
-            } else {
-                input = out; // repeat the command
-            }
-
-            // Good idea to strip off comments in parser, but the regex here needs to be
-            // quite clever to match ' and // within them (e.g. any url fails at the command line).
-            // Another option is to write a small parser in antlr for the command line...
-
-            //    input = input.split("//")[0]; // if there is a line comment, strip it.
-/*            if (input.equals("%")) {
-                input = lastCommand;
-            } else {
-                lastCommand = input;
-            }
-
-            */
-
-            if (input.startsWith(")")) {
-                switch (workspaceCommands.execute(input)) {
-                    case RC_EXIT_NOW:
-                        isExit = true;
-                        return; // exit now, darnit.
-                    case RC_NO_OP:
-                    case RC_CONTINUE:
-                        continue;
-                    case RC_RELOAD:
-                        workspaceCommands.say("not quite ready for prime time. Check back later");
-                }
-            }
-
-            boolean echoMode = workspaceCommands.isEchoModeOn();
-            boolean prettyPrint = workspaceCommands.isPrettyPrint();
-
-            try {
-                if (input != null && !input.isEmpty()) {
-                    // if you try to evaluate only a ";" then you will get a syntax exception from
-                    // the parser for an empty statement.
-                    if (workspaceCommands.isEchoModeOn() && !input.endsWith(";")) {
-                        input = input + ";"; // add it since they forgot
-                    }
-                    workspaceCommands.getInterpreter().execute(input);
-                }
-            } catch (Throwable t) {
-
-                // If there is an exception while local mode is running, we don't want to trash the user's
-                // echo mode, since that causes every subsequent command to fail at least until they
-                // figure it `out and turn it back on.
-                workspaceCommands.setEchoModeOn(echoMode);
-                workspaceCommands.setPrettyPrint(prettyPrint);
-                handleException(t);
-            }
+            //  System.out.println("  got fom readline:" + input);
+            keepLooping = execute(input);
         }
     }
 
@@ -432,18 +446,37 @@ public class QDLWorkspace implements Serializable {
             vector.add(arg);
         }
         InputLine argLine = new InputLine(vector); // now we have a bunch of utilities for this
-        WorkspaceCommands workspaceCommands;
-        boolean isoTerminal = false;
+        WorkspaceCommands workspaceCommands = null;
+        boolean isoTerminal = argLine.hasArg("-ansi");
+        argLine.removeSwitch("-ansi");
+        boolean isSwingGui = argLine.hasArg("-gui");
+        argLine.removeSwitch("-gui");
+        if (isSwingGui && isoTerminal) {
+            isoTerminal = false; // can't have both. GUI wins
+        }
         //System.setProperty("org.jline.terminal.dumb", "true"); // kludge for jline
         ISO6429IO iso6429IO = null; // only make one of these if you need it because jLine takes over all IO!
-        if (argLine.hasArg("-ansi")) {
-            QDLTerminal qdlTerminal = new QDLTerminal(null);
-            iso6429IO = new ISO6429IO(qdlTerminal, true);
-            workspaceCommands = new WorkspaceCommands(iso6429IO);
-            workspaceCommands.setAnsiModeOn(true);
-            isoTerminal = true;
+        SwingTerminal swingTerminal = null;
+        if (isSwingGui) {
+            if (GraphicsEnvironment.isHeadless()) {
+                System.out.println("GUI not supported in this environment -- no graphics.");
+                return;
+            }
+            swingTerminal = new SwingTerminal();
+            workspaceCommands = new WorkspaceCommands(swingTerminal.getQdlSwingIO());
+
         } else {
-            workspaceCommands = new WorkspaceCommands(new BasicIO());
+
+            if (isoTerminal) {
+                QDLTerminal qdlTerminal = new QDLTerminal(null);
+                iso6429IO = new ISO6429IO(qdlTerminal, true);
+                workspaceCommands = new WorkspaceCommands(iso6429IO);
+                workspaceCommands.setAnsiModeOn(true);
+                isoTerminal = true;
+            } else {
+                workspaceCommands = new WorkspaceCommands(new BasicIO());
+            }
+
         }
         workspaceCommands.init(argLine);
         if (workspaceCommands.isRunScript()) {
@@ -466,7 +499,14 @@ public class QDLWorkspace implements Serializable {
             iso6429IO.getScreenSize(); // Figure this out.
             iso6429IO.setLoggingFacade(workspaceCommands.logger);
         }
-        qc.run();
+        if (isSwingGui) {
+            JFrame jFrame = new JFrame();
+            swingTerminal.setup(jFrame, functions);
+            workspaceCommands.getState().setIoInterface(swingTerminal.getQdlSwingIO());
+            workspaceCommands.setSwingGUI(true);
+            // Add completion with current set of functions from workspace.
+        }
+        qc.mainLoop();
     }
 
     public static final String MACRO_COMMENT_DELIMITER = "//";

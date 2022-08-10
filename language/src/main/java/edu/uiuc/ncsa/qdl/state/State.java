@@ -613,6 +613,7 @@ public class State extends FunctionState implements QDLConstants {
         newState.setScriptPaths(getScriptPaths());
         newState.setModulePaths(getModulePaths());
         newState.setVfsFileProviders(getVfsFileProviders());
+        newState.setIoInterface(getIoInterface());
         return newState;
     }
 

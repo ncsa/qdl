@@ -10,7 +10,7 @@
 
 The QD Language
 
-    The QD Language is a general purpose scripting language that is designed to work on aggregate
+    The QDL Programming Language is a general purpose scripting language that is designed to work on aggregate
     objects. It includes the usual constructs for a language such as looping, conditionals,
     switch statements and encapsulation.
 
@@ -36,7 +36,7 @@ Standard Extensions
 
     *{{{./pdf/http-extension.pdf}HTTP extension.}}
 
-    *{{{./pdf/qdldb_extension.pdf}The database extension.}}
+    *{{{./pdf/qdldb-extension.pdf}The database extension.}}
 
 
 Javadoc for QDL

@@ -155,6 +155,12 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>edu.uiuc.ncsa.security</groupId>
+            <artifactId>util</artifactId>
+            <version>5.2-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.29</version>
@@ -183,7 +189,19 @@
             <artifactId>big-math</artifactId>
             <version>2.3.0</version>
         </dependency>
+        <!-- For the swing GUI -->
+        <dependency>
+            <groupId>com.fifesoft</groupId>
+            <artifactId>autocomplete</artifactId>
+            <version>3.2.0</version>
+        </dependency>
 
+        <dependency>
+            <groupId>com.fifesoft</groupId>
+            <artifactId>rsyntaxtextarea</artifactId>
+            <version>3.2.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <profiles>

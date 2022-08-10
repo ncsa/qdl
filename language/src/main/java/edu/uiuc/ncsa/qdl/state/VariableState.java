@@ -98,18 +98,18 @@ public abstract class VariableState extends NamespaceAwareState {
             // Don't allow assignments of wrong type, but do let them set a stem to null.
             if (w.isStem()) {
                 if (!(value instanceof QDLStem) && !(value instanceof QDLNull)) {
-                    throw new IndexError("Error: You cannot set a scalar value to the stem variable '" + variableName + "'", null);
+                    throw new IndexError("Error: You cannot set a scalar value '" + value + "' to the stem variable '" + variableName + "'", null);
                 }
             } else {
                 if (value instanceof QDLStem) {
-                    throw new IndexError("Error: You cannot set the scalar variable '" + variableName + "' to a stem value", null);
+                    throw new IndexError("Error: You cannot set the scalar variable '" + variableName + "' to the stem value '" + value +"'", null);
                 }
             }
             gsrNSStemOp(w, OP_SET, value, new HashSet<>());
             return;
         }
         if (value instanceof QDLStem) {
-            throw new IndexError("Error: You cannot set the scalar variable '" + variableName + "' to a stem value",null);
+            throw new IndexError("Error: You cannot set the scalar variable '" + variableName + "' to the stem value '" + value + "'",null);
         }
 
         gsrNSScalarOp(variableName, OP_SET, value, checkedAliases);

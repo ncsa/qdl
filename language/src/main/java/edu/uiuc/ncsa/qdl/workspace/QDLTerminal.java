@@ -62,8 +62,37 @@ public class QDLTerminal extends ISO6429Terminal {
         return charMap;
     }
 
+    static Map<String, String> reverseCharLookupMap = null;
     static Map<String, String> charLookupMap = null;
 
+    /**
+     * Does <i>reverse</i> lookup for help, so this is the map with possible entries
+     * <pre>
+     *  {π=p, ≁=~, τ=t, ∅=n, ∆=D, ≈=?, ∈=e, ⌈=k, ∉=E, ⌊=l,
+     *   →=d, ≔=:, ≕=", ×=*, ⊗=@, ≠=\, ≡==, ⊢=s, ≤=<, ≥=>,
+     *   ⟦={, ∧=&, ⟧=}, ⊨=a, ∨=|, ∩=i, ∪=u, ¬=!, ¯=-, ·=.,
+     *   ÷=/, ⁺=+, »='}
+     * </pre>
+     * @return
+     */
+    public static Map<String, String> getReverseCharLookupMap() {
+        if (reverseCharLookupMap == null) {
+            reverseCharLookupMap = new HashMap<>();
+            char[] localChars = characterMap();
+            for(int i = 0; i < localChars.length; i++){
+                char c = localChars[i];
+                if(c != 0){
+                    reverseCharLookupMap.put(Character.toString(localChars[i]), Character.toString((char)i));
+                }
+            }
+        }
+        return reverseCharLookupMap;
+    }
+
+    /**
+     * This is the map of ascii to special characters
+     * @return
+     */
     public static Map<String, String> getCharLookupMap() {
         if (charLookupMap == null) {
             charLookupMap = new HashMap<>();
@@ -71,7 +100,7 @@ public class QDLTerminal extends ISO6429Terminal {
             for(int i = 0; i < localChars.length; i++){
                 char c = localChars[i];
                 if(c != 0){
-                    charLookupMap.put(Character.toString(localChars[i]), Character.toString((char)i));
+                    charLookupMap.put(Character.toString((char)i), Character.toString(localChars[i]));
                 }
             }
         }
