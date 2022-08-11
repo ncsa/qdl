@@ -202,6 +202,11 @@
             <version>3.2.0</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+             <groupId>com.intellij</groupId>
+             <artifactId>forms_rt</artifactId>
+             <version>7.0.3</version>
+         </dependency>
     </dependencies>
 
     <profiles>
@@ -243,6 +248,7 @@
                             </execution>
                         </executions>
                     </plugin>
+
                 </plugins>
             </build>
         </profile>

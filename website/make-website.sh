@@ -19,6 +19,7 @@ lowriter --headless --convert-to pdf ~/dev/ncsa-git/qdl/language/src/main/docs/t
 lowriter --headless --convert-to pdf ~/dev/ncsa-git/qdl/language/src/main/docs/qdl_ini_file.odt
 lowriter --headless --convert-to pdf ~/dev/ncsa-git/qdl/language/src/main/docs/qdldb-extension.odt
 lowriter --headless --convert-to pdf ~/dev/ncsa-git/qdl/language/src/main/docs/http-extension.odt
+lowriter --headless --convert-to pdf ~/dev/ncsa-git/qdl/language/src/main/docs/qdl_swing_gui.odt
 echo "done converting PDFs"
 
 # ===============

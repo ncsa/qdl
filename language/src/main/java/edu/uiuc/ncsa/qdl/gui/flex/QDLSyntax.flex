@@ -1,5 +1,5 @@
 /*
- * Generated on 8/9/22, 11:58 AM
+ * Generated on 8/11/22, 8:01 AM
  */
 package edu.uiuc.ncsa.qdl.gui.flex;
 
@@ -201,7 +201,9 @@ WhiteSpace				= ([ \t\f]+)
 CharLiteral	= ([\']({AnyCharacterButApostropheOrBackSlash}|{Escape})[\'])
 UnclosedCharLiteral			= ([\'][^\'\n]*)
 ErrorCharLiteral			= ({UnclosedCharLiteral}[\'])
-/* No string literals */
+StringLiteral				= ([\"]({AnyCharacterButDoubleQuoteOrBackSlash}|{Escape})*[\"])
+UnclosedStringLiteral		= ([\"]([\\].|[^\\\"])*[^\"]?)
+ErrorStringLiteral			= ({UnclosedStringLiteral}[\"])
 
 MLCBegin					= "/*"
 MLCEnd					= "*/"
@@ -213,7 +215,7 @@ IntegerLiteral			= ({Digit}+)
 /* No hex literals */
 FloatLiteral			= (({Digit}+)("."{Digit}+)?(e[+-]?{Digit}+)? | ({Digit}+)?("."{Digit}+)(e[+-]?{Digit}+)?)
 ErrorNumberFormat			= (({IntegerLiteral}|{FloatLiteral}){NonSeparator}+)
-
+BooleanLiteral				= ("true"|"false")
 
 Separator					= ([\(\)\{\}\[\]])
 Separator2				= ([\;,.])
@@ -244,12 +246,11 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "body" |
 "catch" |
 "define" |
+"do" |
 "else" |
-"false" |
 "if" |
 "module" |
 "then" |
-"true" |
 "try" |
 "while"		{ addToken(Token.RESERVED_WORD); }
 
@@ -262,6 +263,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "Integer" |
 "List" |
 "Null" |
+"Number" |
 "Set" |
 "Stem" |
 "String"		{ addToken(Token.DATA_TYPE); }
@@ -400,7 +402,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "vfs_unmount" |
 "ws_macro"		{ addToken(Token.FUNCTION); }
 
-	
+	{BooleanLiteral}			{ addToken(Token.LITERAL_BOOLEAN); }
 
 	{LineTerminator}				{ addNullToken(); return firstToken; }
 
@@ -412,7 +414,9 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 	{CharLiteral}				{ addToken(Token.LITERAL_CHAR); }
 {UnclosedCharLiteral}		{ addToken(Token.ERROR_CHAR); addNullToken(); return firstToken; }
 {ErrorCharLiteral}			{ addToken(Token.ERROR_CHAR); }
-	/* No string literals */
+	{StringLiteral}				{ addToken(Token.LITERAL_STRING_DOUBLE_QUOTE); }
+{UnclosedStringLiteral}		{ addToken(Token.ERROR_STRING_DOUBLE); addNullToken(); return firstToken; }
+{ErrorStringLiteral}			{ addToken(Token.ERROR_STRING_DOUBLE); }
 
 	/* Comment literals. */
 	{MLCBegin}	{ start = zzMarkedPos-2; yybegin(MLC); }
@@ -424,7 +428,8 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 	{Separator2}					{ addToken(Token.IDENTIFIER); }
 
 	/* Operators. */
-	"#" |
+	"!=" |
+"#" |
 "%" |
 "&&" |
 "*" |
@@ -433,7 +438,11 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "/" |
 "/\\" |
 ":=" |
+"<" |
+"<=" |
 "=:" |
+">" |
+">=" |
 "@" |
 "[|" |
 "\\" |

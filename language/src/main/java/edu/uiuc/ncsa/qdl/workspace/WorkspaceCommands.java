@@ -396,23 +396,15 @@ public class WorkspaceCommands implements Logable, Serializable {
             case EditDoneEvent.TYPE_FILE:
                 throw new NotImplementedException("File saves in the QDL editor should be handled there.");
             case EditDoneEvent.TYPE_FUNCTION:
-                String f = editDoneEvent.content;
-                try {
-                    getInterpreter().execute(f);
-                    FR_WithState fr_withState = getState().resolveFunction(editDoneEvent.getLocalName(), editDoneEvent.getArgCount(), true); // get it again because it was overwritten
-                    fr_withState.functionRecord.sourceCode = StringUtils.stringToList(f); // update source in the record.
-                } catch (Throwable t) {
-                    if (DebugUtil.isEnabled()) {
-                        t.printStackTrace();
-                    }
-
-                    say("could not interpret function:" + t.getMessage());
-                }
+                restoreFunction(StringUtils.stringToList(editDoneEvent.content), editDoneEvent.getLocalName(), editDoneEvent.getArgState());
                 break;
             case EditDoneEvent.TYPE_VARIABLE:
+                int x = editDoneEvent.getArgState();
+                boolean isText = (x%2) == 1;
+                boolean isStem = (2<= x);
+                restoreVariable(editDoneEvent.getLocalName(), StringUtils.stringToList(editDoneEvent.content), isText, isStem);
                 break;
         }
-
     }
 
     public static class SIEntries extends TreeMap<Integer, SIEntry> {
@@ -2293,16 +2285,24 @@ public class WorkspaceCommands implements Logable, Serializable {
         } else {
             if (isSwingGUI()) {
                 QDLEditor qdlEditor = new QDLEditor();
+                qdlEditor.setWorkspaceCommands(this); // or callback fails
                 qdlEditor.setType(EditDoneEvent.TYPE_FUNCTION);
+                qdlEditor.setLocalName(fName);
+                qdlEditor.setArgState(argCount);
                 qdlEditor.setup(StringUtils.listToString(f));
                 return RC_CONTINUE;
             }
             f = _doLineEditor(f);
 
         }
+        return restoreFunction(f, fName, argCount);
+    }
+
+    protected int restoreFunction(List<String> f, String fName, int argCount){
         try {
             getInterpreter().execute(f);
-            fr_withState = getState().resolveFunction(fName, argCount, true); // get it again because it was overwritten
+            // Might not need these next two statements after revisions of FStack?
+            FR_WithState fr_withState = getState().resolveFunction(fName, argCount, true); // get it again because it was overwritten
             fr_withState.functionRecord.sourceCode = f; // update source in the record.
         } catch (Throwable t) {
             if (DebugUtil.isEnabled()) {
@@ -2313,7 +2313,6 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         return RC_CONTINUE;
     }
-
     private int _funcsDrop(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("drop fname [arg_count]");
@@ -2619,12 +2618,17 @@ public class WorkspaceCommands implements Logable, Serializable {
             if (isSwingGUI()) {
                 QDLEditor qdlEditor = new QDLEditor();
                 qdlEditor.setType(EditDoneEvent.TYPE_VARIABLE);
+                qdlEditor.setLocalName(varName);
+                qdlEditor.setArgState((isText?1:0) + (isStem?2:0));
                 qdlEditor.setup(StringUtils.listToString(content));
                 return RC_CONTINUE;
             }
             content = _doLineEditor(content);
         }
+        return restoreVariable(varName, content, isText, isStem);
+    }
 
+    protected int restoreVariable(String varName, List<String> content, boolean isText, boolean isStem) {
         if (isText) {
             if (isStem) {
                 StemVariable newStem = new StemVariable();
@@ -3134,6 +3138,8 @@ public class WorkspaceCommands implements Logable, Serializable {
                     return NOT_SET;
                 }
                 return rootDir.getAbsolutePath();
+            case OVERWRITE_BASE_FUNCTIONS_ON:
+                return getState().isAllowBaseFunctionOverrides();
             default:
                 return "unknown workspace variable";
         }

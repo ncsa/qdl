@@ -457,27 +457,40 @@ public class QDLWorkspace implements Serializable {
         //System.setProperty("org.jline.terminal.dumb", "true"); // kludge for jline
         ISO6429IO iso6429IO = null; // only make one of these if you need it because jLine takes over all IO!
         SwingTerminal swingTerminal = null;
-        if (isSwingGui) {
-            if (GraphicsEnvironment.isHeadless()) {
-                System.out.println("GUI not supported in this environment -- no graphics.");
-                return;
+        boolean supportsGUI = !GraphicsEnvironment.isHeadless();
+        if (supportsGUI && isSwingGui) {
+            try {
+                swingTerminal = new SwingTerminal();
+                workspaceCommands = new WorkspaceCommands(swingTerminal.getQdlSwingIO());
+            }catch(AWTError awtError){
+                System.out.println("warning -- could not start graphical environment: " + awtError.getMessage());
+                isSwingGui = false;
+                isoTerminal = false;
+                workspaceCommands = new WorkspaceCommands(new BasicIO());
             }
-            swingTerminal = new SwingTerminal();
-            workspaceCommands = new WorkspaceCommands(swingTerminal.getQdlSwingIO());
-
         } else {
-
-            if (isoTerminal) {
-                QDLTerminal qdlTerminal = new QDLTerminal(null);
-                iso6429IO = new ISO6429IO(qdlTerminal, true);
-                workspaceCommands = new WorkspaceCommands(iso6429IO);
-                workspaceCommands.setAnsiModeOn(true);
+            if(isSwingGui){
+                System.out.println("warning -- no graphics support, defaulting to ansi");
                 isoTerminal = true;
+                isSwingGui = false;
+            }
+            if (isoTerminal) {
+                try {
+                    QDLTerminal qdlTerminal = new QDLTerminal(null);
+                    iso6429IO = new ISO6429IO(qdlTerminal, true);
+                    workspaceCommands = new WorkspaceCommands(iso6429IO);
+                    workspaceCommands.setAnsiModeOn(true);
+                    isoTerminal = true;
+                }catch(Throwable t){
+                    System.out.println("could not load ANSI terminal: " + t.getMessage());
+                    isoTerminal = false;
+                    workspaceCommands = new WorkspaceCommands(new BasicIO());
+                }
             } else {
                 workspaceCommands = new WorkspaceCommands(new BasicIO());
             }
-
         }
+
         workspaceCommands.init(argLine);
         if (workspaceCommands.isRunScript()) {
             return;

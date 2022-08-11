@@ -23,7 +23,7 @@
             <constraints/>
             <properties>
               <background color="-1"/>
-              <font name="Ubuntu Mono" size="16" style="1"/>
+              <font swing-font="InternalFrame.titleFont"/>
               <foreground color="-16777216"/>
             </properties>
           </component>
@@ -40,8 +40,10 @@
             <constraints/>
             <properties>
               <background color="-16776961"/>
-              <font name="Ubuntu Mono" size="16" style="1"/>
+              <editable value="false"/>
+              <font swing-font="InternalFrame.titleFont"/>
               <foreground color="-256"/>
+              <text value=""/>
             </properties>
           </component>
         </children>

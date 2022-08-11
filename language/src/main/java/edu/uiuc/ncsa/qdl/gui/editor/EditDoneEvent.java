@@ -12,7 +12,7 @@ public class EditDoneEvent {
     public static final int TYPE_FILE = 2;
     public static final int TYPE_BUFFER = 3;
     String localName;
-    int argCount = 0;
+    int argState = 0;
 
     public String getLocalName() {
         return localName;
@@ -22,12 +22,12 @@ public class EditDoneEvent {
         this.localName = localName;
     }
 
-    public int getArgCount() {
-        return argCount;
+    public int getArgState() {
+        return argState;
     }
 
-    public void setArgCount(int argCount) {
-        this.argCount = argCount;
+    public void setArgState(int argState) {
+        this.argState = argState;
     }
 
     public int getType() {
