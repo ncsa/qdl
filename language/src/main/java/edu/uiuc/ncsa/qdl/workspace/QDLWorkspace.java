@@ -515,6 +515,7 @@ public class QDLWorkspace implements Serializable {
         if (isSwingGui) {
             JFrame jFrame = new JFrame();
             swingTerminal.setup(jFrame, functions);
+            swingTerminal.setWorkspaceCommands(workspaceCommands);
             workspaceCommands.getState().setIoInterface(swingTerminal.getQdlSwingIO());
             workspaceCommands.setSwingGUI(true);
             // Add completion with current set of functions from workspace.

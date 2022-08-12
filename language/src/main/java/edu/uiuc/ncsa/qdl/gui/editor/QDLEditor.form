@@ -18,7 +18,7 @@
           <component id="6c459" class="org.fife.ui.rsyntaxtextarea.RSyntaxTextArea" binding="input">
             <constraints/>
             <properties>
-              <font name="Ubuntu Mono" size="14" style="1"/>
+              <font name="DialogInput" size="14" style="1"/>
             </properties>
           </component>
         </children>

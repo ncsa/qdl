@@ -2841,8 +2841,22 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
 
+    public HashMap<String, String> getOnlineHelp() {
+        return onlineHelp;
+    }
+
     HashMap<String, String> onlineHelp = new HashMap<>();
+
+    public HashMap<String, String> getOnlineExamples() {
+        return onlineExamples;
+    }
+
     HashMap<String, String> onlineExamples = new HashMap<>();
+
+    public DoubleHashMap<String, String> getAltLookup() {
+        return altLookup;
+    }
+
     DoubleHashMap<String, String> altLookup = new DoubleHashMap<>();
 
     /**
@@ -4179,7 +4193,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 target = new File(fName);
             } else {
                 if (currentWorkspace == null) {
-                    say("sorry, no default file set.");
+                    say("sorry, no workspace file set.");
                     return RC_NO_OP;
                 } else {
                     target = currentWorkspace;
@@ -4574,7 +4588,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             fName = inputLine.getArg(FIRST_ARG_INDEX);
         } else {
             if (currentWorkspace == null) {
-                say("sorry, no default file set.");
+                say("sorry, no workspace file set.");
                 return RC_NO_OP;
             } else {
                 target = currentWorkspace;

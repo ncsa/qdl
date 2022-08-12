@@ -139,7 +139,7 @@ public class QDLEditor {
         final JScrollPane scrollPane1 = new JScrollPane();
         mainPanel.add(scrollPane1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         input = new RSyntaxTextArea();
-        Font inputFont = this.$$$getFont$$$("Ubuntu Mono", Font.BOLD, 14, input.getFont());
+        Font inputFont = this.$$$getFont$$$("DialogInput", Font.BOLD, 14, input.getFont());
         if (inputFont != null) input.setFont(inputFont);
         scrollPane1.setViewportView(input);
     }
@@ -236,6 +236,7 @@ public class QDLEditor {
                 // Only handle special characters if you have one, otherwise
                 // let Swing do the work
                 String x = input.getText();
+
                 x = x.substring(0, position) + keyValue + (x.length() == position ? "" : x.substring(position));
                 input.setText(null);
                 input.setText(x);

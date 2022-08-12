@@ -140,7 +140,8 @@ public class SwingTerminal implements TerminalInterface {
         panel1.add(scrollPane1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(-1, 200), null, 0, false));
         input = new RSyntaxTextArea();
         input.setBackground(new Color(-1));
-        Font inputFont = UIManager.getFont("InternalFrame.titleFont");
+        input.setCloseCurlyBraces(false);
+        Font inputFont = this.$$$getFont$$$("DialogInput", Font.BOLD, 14, input.getFont());
         if (inputFont != null) input.setFont(inputFont);
         input.setForeground(new Color(-16777216));
         scrollPane1.setViewportView(input);
@@ -149,7 +150,7 @@ public class SwingTerminal implements TerminalInterface {
         output = new JTextArea();
         output.setBackground(new Color(-16776961));
         output.setEditable(false);
-        Font outputFont = UIManager.getFont("InternalFrame.titleFont");
+        Font outputFont = this.$$$getFont$$$("DialogInput", Font.BOLD, 14, output.getFont());
         if (outputFont != null) output.setFont(outputFont);
         output.setForeground(new Color(-256));
         output.setText("");
@@ -157,6 +158,28 @@ public class SwingTerminal implements TerminalInterface {
         prompt = new JLabel();
         prompt.setText("Label");
         panel1.add(prompt, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    private Font $$$getFont$$$(String fontName, int style, int size, Font currentFont) {
+        if (currentFont == null) return null;
+        String resultName;
+        if (fontName == null) {
+            resultName = currentFont.getName();
+        } else {
+            Font testFont = new Font(fontName, Font.PLAIN, 10);
+            if (testFont.canDisplay('a') && testFont.canDisplay('1')) {
+                resultName = fontName;
+            } else {
+                resultName = currentFont.getName();
+            }
+        }
+        Font font = new Font(resultName, style >= 0 ? style : currentFont.getStyle(), size >= 0 ? size : currentFont.getSize());
+        boolean isMac = System.getProperty("os.name", "").toLowerCase(Locale.ENGLISH).startsWith("mac");
+        Font fontWithFallback = isMac ? new Font(font.getFamily(), font.getStyle(), font.getSize()) : new StyleContext().getFont(font.getFamily(), font.getStyle(), font.getSize());
+        return fontWithFallback instanceof FontUIResource ? fontWithFallback : new FontUIResource(fontWithFallback);
     }
 
     /**
@@ -222,6 +245,7 @@ public class SwingTerminal implements TerminalInterface {
                         x = x.substring(0, position) + keyValue + (x.length() == position ? "" : x.substring(position));
                         input.setText(null);
                         input.setText(x);
+                        System.out.println(input.getText());
                         input.repaint();
                         try {
                             if (position < x.length()) {
@@ -271,8 +295,57 @@ public class SwingTerminal implements TerminalInterface {
 
 
             switch (e.getKeyCode()) {
+                case KeyEvent.VK_S:
+                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
+                        String x = ")save";
+                        String old = output.getText();
+                        workspaceCommands.execute(x);
+                        String resp = output.getText();
+                        output.setText(old);
+                        JOptionPane.showMessageDialog(frame, resp);
+
+                    }
+                    break;
+                case KeyEvent.VK_F2:
+                    String text = input.getSelectedText();
+                    if (text == null) {
+                        // See if they selected something in output
+                        text = output.getSelectedText();
+                    }
+                    if(text!=null) {
+                        // just in case they swiped a little too much.
+                        text = text.trim();
+                    }
+                    String title = "Help for " + (text == null?"(not found)":text);
+                    String helpMessage = "no help available";
+                    if (workspaceCommands.getAltLookup().getByValue(text) != null) {
+                        text = workspaceCommands.getAltLookup().getByValue(text);
+                    }
+                    if (workspaceCommands.getOnlineHelp().containsKey(text)) {
+                        helpMessage = workspaceCommands.getOnlineHelp().get(text);
+                        if (workspaceCommands.getOnlineExamples().containsKey(text)) {
+                            helpMessage = helpMessage + "\n--------\nExamples\n--------\n" + workspaceCommands.getOnlineExamples().get(text);
+                        }
+                    }
+                    showHelp(title, helpMessage);
+/*
+                    JOptionPane.showMessageDialog(
+                            null,
+                            helpMessage,
+                            title,
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+*/
+                    break;
                 case KeyEvent.VK_F1:
-                    JOptionPane.showMessageDialog(frame, "ctrl+q exits, ctrl+↑ ctrl+↓ navigate history.");
+                    String title1 = "Help for GUI";
+                    String message1 = "F1 this message\n" +
+                            "F2 display online help for highlighted text\n" +
+                            "ctrl+space autocomplete\n" +
+                            "ctrl+s saves\n" +
+                            "ctrl+q exits (no save!)\n" +
+                            "ctrl+↑ ctrl+↓ navigate history.";
+                    showHelp(title1, message1);
                     break;
                 case KeyEvent.VK_Q:
                     if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
@@ -280,6 +353,7 @@ public class SwingTerminal implements TerminalInterface {
                         int out = JOptionPane.showConfirmDialog(frame, "Are you sure you want to quit? No save is done.", "quit workspace", JOptionPane.WARNING_MESSAGE);
                         if (out == JOptionPane.YES_OPTION || out == JOptionPane.OK_OPTION) {
                             frame.dispose();
+                            System.exit(0);
                         }
                     }
                     break;
@@ -306,6 +380,23 @@ public class SwingTerminal implements TerminalInterface {
         }
     }
 
+    protected void showHelp(String title, String message) {
+        JTextArea textArea = new JTextArea(25, 100);
+        textArea.setFont(new Font("DialogInput", Font.PLAIN, 12));
+        textArea.setText(message);
+        textArea.setCaretPosition(0); // put it at the top
+        textArea.setEditable(false);
+
+        // wrap a scrollpane around it
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        JOptionPane.showMessageDialog(
+                null,
+                scrollPane,
+                title,
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
     Data data;
 
     public void setResultText(String x) {
@@ -330,6 +421,8 @@ public class SwingTerminal implements TerminalInterface {
     JFrame frame;
 
     public void setup(JFrame frame1, List<String> functions) {
+        UIManager.put("OptionPane.messageFont", new Font("DialogInput", Font.BOLD, 14));
+        UIManager.put("OptionPane.buttonFont", new Font("DialogInput", Font.PLAIN, 12));
         frame = frame1;
         System.setProperty("awt.useSystemAAFontSettings", "on");
         frame.setTitle("QDL Workspace (version 1.4-QDL_SNAPSHOT)");
@@ -402,6 +495,10 @@ public class SwingTerminal implements TerminalInterface {
 
     public WorkspaceCommands getWorkspaceCommands() {
         return workspaceCommands;
+    }
+
+    public void setWorkspaceCommands(WorkspaceCommands workspaceCommands) {
+        this.workspaceCommands = workspaceCommands;
     }
 
     WorkspaceCommands workspaceCommands;

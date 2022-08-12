@@ -23,7 +23,8 @@
             <constraints/>
             <properties>
               <background color="-1"/>
-              <font swing-font="InternalFrame.titleFont"/>
+              <closeCurlyBraces value="false"/>
+              <font name="DialogInput" size="14" style="1"/>
               <foreground color="-16777216"/>
             </properties>
           </component>
@@ -41,7 +42,7 @@
             <properties>
               <background color="-16776961"/>
               <editable value="false"/>
-              <font swing-font="InternalFrame.titleFont"/>
+              <font name="DialogInput" size="14" style="1"/>
               <foreground color="-256"/>
               <text value=""/>
             </properties>
