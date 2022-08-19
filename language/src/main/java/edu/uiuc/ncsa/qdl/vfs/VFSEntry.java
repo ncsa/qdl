@@ -1,6 +1,6 @@
 package edu.uiuc.ncsa.qdl.vfs;
 
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 
 import java.io.InputStream;
@@ -23,7 +23,7 @@ public interface VFSEntry extends Serializable {
     byte[] getContents();
     String getType();
     boolean isBinaryType();
-    StemVariable convertToStem();
+    QDLStem convertToStem();
     String getPath();
     void setPath(String newPath);
 

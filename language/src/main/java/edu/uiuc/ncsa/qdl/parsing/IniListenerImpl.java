@@ -2,7 +2,7 @@ package edu.uiuc.ncsa.qdl.parsing;
 
 import edu.uiuc.ncsa.qdl.ini_generated.iniListener;
 import edu.uiuc.ncsa.qdl.ini_generated.iniParser;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -14,21 +14,21 @@ import java.math.BigDecimal;
  * on 10/11/21 at  8:15 AM
  */
 public class IniListenerImpl implements iniListener {
-    public StemVariable getOutput() {
+    public QDLStem getOutput() {
         return output;
     }
 
-    public void setOutput(StemVariable output) {
+    public void setOutput(QDLStem output) {
         this.output = output;
     }
 
-    StemVariable output = null;
+    QDLStem output = null;
 
-    public IniListenerImpl(StemVariable output) {
+    public IniListenerImpl(QDLStem output) {
         this.output = output;
     }
 
-    StemVariable currentStem;
+    QDLStem currentStem;
 
     @Override
     public void enterIni(iniParser.IniContext ctx) {
@@ -42,7 +42,7 @@ public class IniListenerImpl implements iniListener {
 
     @Override
     public void enterSection(iniParser.SectionContext ctx) {
-        currentStem = new StemVariable();
+        currentStem = new QDLStem();
     }
 
     @Override
@@ -90,7 +90,7 @@ public class IniListenerImpl implements iniListener {
             currentLineValue = convertEntryToValue(ctx.entry(0));
             return;
         }
-        StemVariable stemList = new StemVariable();
+        QDLStem stemList = new QDLStem();
         for (int i = 0; i < entryCount; i++) {
             if(ctx.entry(i)==null){
                 continue;

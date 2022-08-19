@@ -56,7 +56,6 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
                     names.add(key + "(" + aaa + ")");
                 }
             } catch (Throwable t) {
-                System.out.println("key = " + key + " failed");
                 t.printStackTrace();
             }
         }

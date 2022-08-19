@@ -4,7 +4,7 @@ import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.VThing;
 import edu.uiuc.ncsa.qdl.vfs.FileEntry;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
@@ -45,14 +45,14 @@ public class QDLScript extends FileEntry implements ScriptInterface {
 
     boolean fromCode = false;
 
-    StemVariable scriptArglist = null;
+    QDLStem scriptArglist = null;
     boolean isRunScript = false;
 
-    public StemVariable getScriptArglist() {
+    public QDLStem getScriptArglist() {
         return scriptArglist;
     }
 
-    public void setScriptArglist(StemVariable scriptArglist) {
+    public void setScriptArglist(QDLStem scriptArglist) {
         this.scriptArglist = scriptArglist;
     }
 
@@ -64,7 +64,7 @@ public class QDLScript extends FileEntry implements ScriptInterface {
         this.scriptArgName = scriptArgName;
     }
 
-    public static String DEFAULT_ARG_NAME = "__args" + StemVariable.STEM_INDEX_MARKER;
+    public static String DEFAULT_ARG_NAME = "__args" + QDLStem.STEM_INDEX_MARKER;
     String scriptArgName = DEFAULT_ARG_NAME; // default
 
     public boolean isRunScript() {

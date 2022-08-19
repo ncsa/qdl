@@ -9,7 +9,7 @@ import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
 
 import java.util.ArrayList;
 
-import static edu.uiuc.ncsa.qdl.variables.StemVariable.STEM_INDEX_MARKER;
+import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -135,13 +135,13 @@ public class StemUtility {
         if (depth <= 0) {
             return walker.action(inStem);
         }
-        StemVariable outStem = new StemVariable();
+        QDLStem outStem = new QDLStem();
         for (Object key1 : inStem.keySet()) {
             Object obj = inStem.get(key1);
             if (!isStem(obj)) {
                 continue;
             }
-            outStem.putLongOrString(key1, axisWalker((StemVariable) obj, depth - 1, walker));
+            outStem.putLongOrString(key1, axisWalker((QDLStem) obj, depth - 1, walker));
         }
         return outStem;
     }
@@ -244,14 +244,14 @@ public class StemUtility {
          w.x1 == (w.).'h.i.j.';  // true
          */
     // See list_formatting.txt for possible improvement to display stems.
-    public static void formatList(StemVariable stem){
+    public static void formatList(QDLStem stem){
         if(!stem.isList()){
              throw new IllegalArgumentException("cannot format general stem");
         }
              for(Object key : stem.keySet()){
                  Object obj = stem.get(key);
-                 if(obj instanceof StemVariable){
-                     StemVariable stemVariable = (StemVariable) obj;
+                 if(obj instanceof QDLStem){
+                     QDLStem stemVariable = (QDLStem) obj;
                      String row = "";
                      for(Object key2: stemVariable.keySet()){
                          row = row + stemVariable.get(key2) + " ";
@@ -266,11 +266,11 @@ public class StemUtility {
       //   }
     }
     public static void main(String[] args){
-        StemVariable outerStem = new StemVariable();
+        QDLStem outerStem = new QDLStem();
         for(int k = 0; k <5l ; k++){
-            StemVariable stemVariable0 = new StemVariable();
+            QDLStem stemVariable0 = new QDLStem();
             for(int j = 0 ;j < 4; j++){
-                StemVariable stemVariable = new StemVariable();
+                QDLStem stemVariable = new QDLStem();
                 for(int i = 0; i<5; i++){
                     stemVariable.put(i, k + "_" + j + "_" + i);
                 }

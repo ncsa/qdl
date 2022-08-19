@@ -5,7 +5,7 @@ import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 import edu.uiuc.ncsa.qdl.variables.Constant;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 
 import java.math.BigDecimal;
 
@@ -53,7 +53,7 @@ public class ClosedSliceNode extends ExpressionImpl{
 
         BigDecimal bd2 = new BigDecimal(arg2.toString());
 
-        StemVariable out = new StemVariable();
+        QDLStem out = new QDLStem();
         // Yuck. This is why nobody likes BigDecimals. This is (arg1 - arg0)/(arg2 - 1)
         BigDecimal fudgeFactor = bd1.subtract(bd0, OpEvaluator.getMathContext()).divide(bd2.subtract(BigDecimal.ONE, OpEvaluator.getMathContext()), OpEvaluator.getMathContext());
         for(long i = 0L; i < arg2; i++){

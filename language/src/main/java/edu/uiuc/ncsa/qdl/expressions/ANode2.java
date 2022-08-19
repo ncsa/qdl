@@ -10,7 +10,7 @@ import edu.uiuc.ncsa.qdl.variables.QDLNull;
 import edu.uiuc.ncsa.qdl.variables.StemListNode;
 
 import static edu.uiuc.ncsa.qdl.variables.Constant.*;
-import static edu.uiuc.ncsa.qdl.variables.StemVariable.STEM_INDEX_MARKER;
+import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
 
 /**
  * Very much improved way to handle assignments. Use this

@@ -3,7 +3,7 @@ package edu.uiuc.ncsa.qdl.scripting;
 import edu.uiuc.ncsa.qdl.evaluate.StemEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator;
 import edu.uiuc.ncsa.qdl.util.QDLVersion;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
@@ -40,7 +40,7 @@ public class AnotherJSONUtil implements ScriptingConstants {
             rc = new ArrayList<Object>();
             for (int i = 0; i < jsonArray.size(); i++) {
                 if (jsonArray.get(i) instanceof JSON) {
-                    StemVariable s = new StemVariable();
+                    QDLStem s = new QDLStem();
                     if (jsonArray.get(i) instanceof JSONObject) {
                         s.fromJSON(jsonArray.getJSONObject(i));
                     } else {
@@ -62,7 +62,7 @@ public class AnotherJSONUtil implements ScriptingConstants {
                 }
             }
         } else {
-            StemVariable stemVariable = new StemVariable();
+            QDLStem stemVariable = new QDLStem();
             stemVariable.fromJSON((JSONObject) json);
             rc = new ArrayList<>();
             rc.add(stemVariable);
@@ -202,7 +202,7 @@ public class AnotherJSONUtil implements ScriptingConstants {
                     out = out + obj.toString();
                 }
                 if (obj instanceof JSON) {
-                    StemVariable stemVariable = new StemVariable();
+                    QDLStem stemVariable = new QDLStem();
                     if (obj instanceof JSONArray) {
                         stemVariable.fromJSON((JSONArray) obj);
                     } else {

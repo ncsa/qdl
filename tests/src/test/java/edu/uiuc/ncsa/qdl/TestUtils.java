@@ -9,7 +9,7 @@ import edu.uiuc.ncsa.qdl.module.MIStack;
 import edu.uiuc.ncsa.qdl.module.MTStack;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.VStack;
 import edu.uiuc.ncsa.qdl.variables.VThing;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
@@ -106,7 +106,7 @@ public class TestUtils {
         vStack.put(new VThing(new XKey("string"), "a string"));
         vStack.put(new VThing(new XKey("long"), 2468L));
         vStack.put(new VThing(new XKey("boolean"), Boolean.TRUE));
-        StemVariable stemVariable =new StemVariable();
+        QDLStem stemVariable =new QDLStem();
         stemVariable.put(0, AbstractQDLTester.getRandomString());
         stemVariable.put(1, AbstractQDLTester.getRandomString());
         stemVariable.put(2, AbstractQDLTester.getRandomString());

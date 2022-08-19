@@ -42,7 +42,7 @@ public class StemListNode implements StatementWithResultInterface {
          this.alias = alias;
     }
 
-    StemVariable result;
+    QDLStem result;
 
     @Override
     public Object getResult() {
@@ -51,7 +51,7 @@ public class StemListNode implements StatementWithResultInterface {
 
     @Override
     public void setResult(Object object) {
-        if (!(result instanceof StemVariable)) {
+        if (!(result instanceof QDLStem)) {
             throw new IllegalStateException("error: cannot set a " + getClass().getSimpleName() + " to type " + object.getClass().getSimpleName());
         }
 
@@ -94,7 +94,7 @@ public class StemListNode implements StatementWithResultInterface {
 
     @Override
     public Object evaluate(State state) {
-        result = new StemVariable();
+        result = new QDLStem();
         long i = 0;
         for (StatementWithResultInterface stmt : statements) {
             stmt.evaluate(state);
@@ -127,10 +127,10 @@ public class StemListNode implements StatementWithResultInterface {
         for (StatementWithResultInterface s : statements) {
             newSLN.getStatements().add(s.makeCopy());
         }
-        StemVariable newStem = new StemVariable();
+        QDLStem newStem = new QDLStem();
 
         // Kludge, but it works.
-        newStem.fromJSON((JSONObject) ((StemVariable) getResult()).toJSON());
+        newStem.fromJSON((JSONObject) ((QDLStem) getResult()).toJSON());
         newSLN.setResult(newStem);
         newSLN.setSourceCode(getSourceCode());
         newSLN.setEvaluated(isEvaluated());

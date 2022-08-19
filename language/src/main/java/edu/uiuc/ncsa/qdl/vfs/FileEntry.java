@@ -1,6 +1,6 @@
 package edu.uiuc.ncsa.qdl.vfs;
 
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import org.apache.commons.codec.binary.Base64;
 
@@ -129,8 +129,8 @@ public class FileEntry implements VFSEntry {
     }
 
     @Override
-    public StemVariable convertToStem() {
-        StemVariable out = new StemVariable();
+    public QDLStem convertToStem() {
+        QDLStem out = new QDLStem();
         int i = 0;
         //Read from the stream
         for (String content : getLines()) {

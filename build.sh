@@ -8,8 +8,8 @@ DEPLOY_ROOT=/home/ncsa/dev/temp-deploy
 QDL_ROOT=/home/ncsa/dev/ncsa-git/qdl
 
 # Uncomment the next two lines if you want/need to regenerate all of the parser.
-# Generally you should not need to do this except quite rarely, since it imples
-# a language change:
+# Generally you should rarely need to do this  since it implies
+# a change to the QDL language itself:
 
 # cd $QDL_ROOT/language/src/main/antlr
 # ./build.sh

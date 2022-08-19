@@ -3,7 +3,7 @@ package edu.uiuc.ncsa.qdl.xml;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.StateUtils;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 
 import javax.xml.stream.*;
 import javax.xml.stream.events.Characters;
@@ -112,8 +112,8 @@ public class XMLTest {
         write(xsw, 42L);
         write(xsw, new BigDecimal("123.456"));
         write(xsw, Boolean.TRUE);
-        StemVariable stem = new StemVariable();
-        StemVariable stem1 = new StemVariable();
+        QDLStem stem = new QDLStem();
+        QDLStem stem1 = new QDLStem();
         stem.listAppend("a");
         stem.listAppend("b");
         stem1.listAppend("p");

@@ -4,7 +4,7 @@ import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.VStack;
 import edu.uiuc.ncsa.qdl.variables.VThing;
 import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
@@ -527,7 +527,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
         vStack.put(new VThing(new XKey("a"), Boolean.TRUE));
         vStack.put(new VThing(new XKey("b"), "foo"));
         vStack.put(new VThing(new XKey("x"), new BigDecimal("123.456789")));
-        StemVariable s = new StemVariable();
+        QDLStem s = new QDLStem();
         s.put("a", 5L);
         s.put("foo", "bar");
         vStack.put(new VThing(new XKey("s."), s));

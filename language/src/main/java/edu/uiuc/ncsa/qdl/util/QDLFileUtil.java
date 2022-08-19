@@ -2,7 +2,6 @@ package edu.uiuc.ncsa.qdl.util;
 
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.StemUtility;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
 import edu.uiuc.ncsa.security.core.util.FileUtil;
 
 import java.io.File;
@@ -19,9 +18,9 @@ import java.util.List;
  */
 public class QDLFileUtil extends FileUtil {
 
-    public static StemVariable readFileAsStem(String fileName) throws Throwable {
+    public static QDLStem readFileAsStem(String fileName) throws Throwable {
         checkFile(fileName);
-        StemVariable out = new StemVariable();
+        QDLStem out = new QDLStem();
         Path path = Paths.get(fileName);
 
         List<String> contents = Files.readAllLines(path);

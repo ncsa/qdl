@@ -181,6 +181,33 @@ module[
       » once. This returns the name of the imported module.
        return(module_import(module_load(path)));
     ];
+
+    define[
+      jload(path)
+    ][
+      » Convenience to import a java module and load an instance of it all at
+      » once. This returns the name of the imported module.
+       return(module_import(module_load(path, 'java')));
+    ];
+
+      // make sure it loads in the main process.
+      lib_load(name)->module_import(module_load(info('lib').name, 'java'));
+
+/*
+    define[
+      lib_load(name)
+    ][
+      » Convenience to import one of the library java modules and load an instance
+      » of it all at once. This returns the name of the imported module.
+      » E.g.
+      »     lib_load('http')
+      » http
+      » loads the info('lib').'http' module.
+       say('attempting to load ' + info('lib').name + '...');
+       return(module_import(module_load(info('lib').name, 'java')));
+    ];
+*/
+
     define[
       m_set(x., y., z)
       ][

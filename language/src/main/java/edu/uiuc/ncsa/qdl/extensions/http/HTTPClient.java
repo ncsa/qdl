@@ -4,7 +4,7 @@ import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
 import edu.uiuc.ncsa.qdl.extensions.QDLModuleMetaClass;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
@@ -100,6 +100,7 @@ public class HTTPClient implements QDLModuleMetaClass {
     public static final String CONTENT_FORM = "application/x-www-form-urlencoded";
     public static final String CONTENT_JSON = "application/json";
     public static final String CONTENT_HTML = "text/html";
+    public static final String CONTENT_TEXT = "text/plain; charset=UTF-8";
 
     protected void checkInit() {
         if (StringUtils.isTrivial(host)) {
@@ -122,16 +123,16 @@ public class HTTPClient implements QDLModuleMetaClass {
      */
     protected String paramsToRequest(Object[] objects) throws UnsupportedEncodingException {
         String actualHost = host;
-        StemVariable parameters = null;
+        QDLStem parameters = null;
         if (objects.length == 2) {
             actualHost = actualHost + (actualHost.endsWith("/") ? "" : "/") + objects[0];
-            parameters = (StemVariable) objects[1];
+            parameters = (QDLStem) objects[1];
         }
         if (objects.length == 0) {
-            parameters = new StemVariable(); // empty
+            parameters = new QDLStem(); // empty
         }
         if (objects.length == 1) {
-            parameters = (StemVariable) objects[0];
+            parameters = (QDLStem) objects[0];
         }
         // make the parameters.
         String p = parameters.size() == 0 ? "" : "?";
@@ -259,20 +260,20 @@ public class HTTPClient implements QDLModuleMetaClass {
      * @param response
      * @return
      */
-    public StemVariable getResponseStem(HttpResponse response) throws IOException {
-        StemVariable s = new StemVariable();
-        StemVariable responseStem = new StemVariable();
+    public QDLStem getResponseStem(HttpResponse response) throws IOException {
+        QDLStem s = new QDLStem();
+        QDLStem responseStem = new QDLStem();
         responseStem.put("code", (long) response.getStatusLine().getStatusCode());
         responseStem.put("message", response.getStatusLine().getReasonPhrase());
         s.put("status", responseStem);
         HttpEntity entity = response.getEntity();
-        StemVariable stemResponse = null;
+        QDLStem stemResponse = null;
         String rawResult = EntityUtils.toString(entity);
         if ((entity.getContentType() != null) && entity.getContentType().getValue().contains("application/json")) {
             stemResponse = jsonToStemJSON(rawResult);
         } else {
             // alternately, try to chunk it up
-            stemResponse = new StemVariable();
+            stemResponse = new QDLStem();
             if (!StringUtils.isTrivial(rawResult)) {
                 stemResponse.addList(StringUtils.stringToList(rawResult));
             }
@@ -280,7 +281,7 @@ public class HTTPClient implements QDLModuleMetaClass {
 
         s.put("content", stemResponse);
         Header[] headers = response.getAllHeaders();
-        StemVariable h = new StemVariable();
+        QDLStem h = new QDLStem();
         for (int i = 0; i < headers.length; i++) {
             Header header = headers[i];
             h.put(header.getName(), header.getValue());
@@ -306,13 +307,13 @@ public class HTTPClient implements QDLModuleMetaClass {
         public Object evaluate(Object[] objects, State state) {
             JSONObject oldHeaders = headers;
             if (objects.length == 1) {
-                if (objects[0] instanceof StemVariable) {
-                    headers = (JSONObject) ((StemVariable) objects[0]).toJSON();
+                if (objects[0] instanceof QDLStem) {
+                    headers = (JSONObject) ((QDLStem) objects[0]).toJSON();
                 } else {
                     throw new IllegalArgumentException(getName() + " requires a stem as its argument if present");
                 }
             }
-            StemVariable stemVariable = new StemVariable();
+            QDLStem stemVariable = new QDLStem();
             if (oldHeaders != null) {
                 stemVariable.fromJSON(oldHeaders);
             }
@@ -341,8 +342,8 @@ public class HTTPClient implements QDLModuleMetaClass {
         }
     }
 
-    protected StemVariable jsonToStemJSON(String rawJSON) {
-        StemVariable stemVariable = new StemVariable();
+    protected QDLStem jsonToStemJSON(String rawJSON) {
+        QDLStem stemVariable = new QDLStem();
         try {
             stemVariable.fromJSON(JSONObject.fromObject(rawJSON));
             return stemVariable;
@@ -521,7 +522,21 @@ public class HTTPClient implements QDLModuleMetaClass {
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> doxx = new ArrayList<>();
-            doxx.add(getName() + "({uri_path,} payload.) do a post with the payload. ");
+            doxx.add(getName() + "({uri_path,} string|stem.) do a post with the payload as a string or stem. ");
+            doxx.add("uri_path is optional and will use whatever was set with the " + HOST_METHOD + " function.");
+            doxx.add("You may supply it and add query parameters to it, for instance.");
+            doxx.add("If you send along a simple string, it will be treated as the entire body of the post.");
+            doxx.add("Various content types and their uses are:");
+            doxx.add("(none)         \n  string only          \n   body of the post is the string, content type set to " + CONTENT_TEXT);
+            doxx.add(CONTENT_TEXT + "\n  payload is a string. \n   body is the string");
+            doxx.add(CONTENT_FORM + "\n  payload is a stem.   \n   body is form encoded key=value pairs. See eg. below");
+            doxx.add(CONTENT_JSON + "\n  payload is a stem.   \n   body is the stem converted to JSON");
+            doxx.add(CONTENT_HTML + "\n  payload is a string  \n   body is the string");
+            doxx.add("anything else  \n  string only          \n   body is the string");
+            doxx.add("E.g.");
+            doxx.add("If you send the payload of {'a':'b', 'c':'d'} with content type '" + CONTENT_FORM + "',");
+            doxx.add("the resulting post body would be \n");
+            doxx.add("a=b&c=d");
             return doxx;
         }
     }
@@ -545,9 +560,10 @@ public class HTTPClient implements QDLModuleMetaClass {
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> doxx = new ArrayList<>();
-            doxx.add(getName() + "({uri_path,} payload.) do a put with the payload. ");
-            doxx.add("Note that the payload will be the body of the post.");
+            doxx.add(getName() + "({uri_path,} string | payload.) do a put with the payload. ");
+            doxx.add("Note that the payload will be the body of the post. If a string, the whole string is the body.");
             doxx.add("If you need to add authorization headers, set them in the header() function first.");
+            doxx.add("See Post for details of how payloads and content types are handled");
             return doxx;
         }
     }
@@ -556,14 +572,19 @@ public class HTTPClient implements QDLModuleMetaClass {
         // if the type is form encoded, escape each element in the payload.
         // If JSON, send the payload as a JSON blob.
         String uriPath = "";
-        StemVariable payload = null;
+        QDLStem payload = null;
+        String stringPayload = null;
         checkInit();
         switch (objects.length) {
             case 1:
-                if (objects[0] instanceof StemVariable) {
-                    payload = (StemVariable) objects[0];
+                if (objects[0] instanceof QDLStem) {
+                    payload = (QDLStem) objects[0];
                 } else {
-                    throw new IllegalArgumentException("monadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a stem as its argument");
+                    if (objects[0] instanceof String) {
+                        stringPayload = (String) objects[0];
+                    } else {
+                        throw new IllegalArgumentException("monadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a stem or string as its argument");
+                    }
                 }
 
                 break;
@@ -573,47 +594,76 @@ public class HTTPClient implements QDLModuleMetaClass {
                 } else {
                     throw new IllegalArgumentException("dyadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a string as it first argument");
                 }
-                if (objects[1] instanceof StemVariable) {
-                    payload = (StemVariable) objects[1];
+                if (objects[1] instanceof QDLStem) {
+                    payload = (QDLStem) objects[1];
                 } else {
-                    throw new IllegalArgumentException("dyadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a stem as its second argument");
+                    if (objects[1] instanceof String) {
+                        stringPayload = (String) objects[1];
+                    } else {
+                        throw new IllegalArgumentException("dyadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a stem or string as its second argument");
+                    }
                 }
                 break;
             default:
                 throw new IllegalArgumentException((isPost ? POST_METHOD : PUT_METHOD) + " requires one or two arguments");
         }
+        //Content-Type: text/plain; charset=UTF-8
         String contentType = "Content-Type";
+        boolean isStringArg = stringPayload != null;
         String body = "";
         String actualHost = host;
         if (0 < uriPath.length()) {
             actualHost = (actualHost.endsWith("/") ? "" : "/");
-        }
-        if (headers.containsKey(contentType)) {
-            switch (headers.getString(contentType)) {
-                case CONTENT_JSON:
-                    body = payload.toJSON().toString();
-                    break;
-                case CONTENT_FORM:
-                    boolean isFirst = true;
-                    for (Object key : payload.keySet()) {
-                        body = body + (isFirst ? "" : "&") + key + "=" + payload.get(key);
-                        if (isFirst) isFirst = false;
-                    }
-                    break;
-            }
         }
         HttpEntityEnclosingRequest request;
         if (isPost) {
             request = new HttpPost(actualHost);
         } else {
             request = new HttpPut(actualHost);
-
         }
         HttpEntity httpEntity = null;
+
+        if (headers.containsKey(contentType)) {
+            switch (headers.getString(contentType)) {
+                case CONTENT_JSON:
+                    if (isStringArg) {
+                        body = stringPayload;
+                    } else {
+                        body = payload.toJSON().toString();
+                    }
+                    break;
+                case CONTENT_FORM:
+                    if (isStringArg) {
+                        throw new IllegalArgumentException("Cannot have " + contentType + " of " + CONTENT_FORM + " with a string. You must use a stem.");
+                    }
+                    boolean isFirst = true;
+                    for (Object key : payload.keySet()) {
+                        body = body + (isFirst ? "" : "&") + key + "=" + payload.get(key);
+                        if (isFirst) isFirst = false;
+                    }
+                    break;
+                default:
+                case CONTENT_TEXT:
+                case CONTENT_HTML:
+                    if (!isStringArg) {
+                        throw new IllegalArgumentException("Cannot have a stem argument for this content type.");
+                    }
+                    body = stringPayload;
+                    break;
+            }
+        } else {
+            if (StringUtils.isTrivial(stringPayload)) {
+                throw new IllegalArgumentException("Must specify " + contentType + " for payload stem.");
+            } else {
+                request.addHeader(contentType, CONTENT_TEXT);
+                body = stringPayload;
+            }
+        }
         try {
             httpEntity = new ByteArrayEntity(body.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException unsupportedEncodingException) {
-            throw new NFWException("UTF-8is, apparently buested in Java:" + unsupportedEncodingException.getMessage());
+        } catch (
+                UnsupportedEncodingException unsupportedEncodingException) {
+            throw new NFWException("UTF-8 is, apparently busted in Java:" + unsupportedEncodingException.getMessage());
         }
         request.setEntity(httpEntity);
 
@@ -625,9 +675,11 @@ public class HTTPClient implements QDLModuleMetaClass {
         try {
             CloseableHttpResponse response = httpClient.execute((HttpUriRequest) request);
             return getResponseStem(response);
-        } catch (ClientProtocolException e) {
+        } catch (
+                ClientProtocolException e) {
             throw new QDLException("could not do " + (isPost ? POST_METHOD : PUT_METHOD) + " because of protocol error:'" + e.getMessage() + "'");
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             throw new QDLException("could not do " + (isPost ? POST_METHOD : PUT_METHOD) + " because of I/O error:'" + e.getMessage() + "'");
         }
     }
@@ -691,7 +743,8 @@ public class HTTPClient implements QDLModuleMetaClass {
     }
 
     public static String CREATE_CREDENTIALS_METHOD = "credentials";
-    public class CreateCredentials implements QDLFunction{
+
+    public class CreateCredentials implements QDLFunction {
         @Override
         public String getName() {
             return CREATE_CREDENTIALS_METHOD;
@@ -709,7 +762,7 @@ public class HTTPClient implements QDLModuleMetaClass {
                 String password = URLEncoder.encode(objects[1].toString(), "UTF-8");
                 String raw = username + ":" + password;
                 return Base64.getEncoder().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
-            }catch(UnsupportedEncodingException unsupportedEncodingException){
+            } catch (UnsupportedEncodingException unsupportedEncodingException) {
                 throw new NFWException("Encoding failed:'" + unsupportedEncodingException.getMessage() + "'");
             }
         }

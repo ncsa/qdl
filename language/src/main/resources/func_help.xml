@@ -3921,7 +3921,7 @@ And each key is separated by |'s
 
  E.g.
    alt + = yields ≡
-   alt + & == alt + shift + 7 yields ∧
+   alt + & == alt + shift + 7 yields ∧ (logical AND)
 
   ~ |  ! |  @ |  # |  $ |  % |  ^ |  & |  * |  ( |  ) |  _ |  + |
   ≁ |  ¬ |  ⊗ |    |    |    |    |  ∧ |  × |    |    |    |  ⁺ |

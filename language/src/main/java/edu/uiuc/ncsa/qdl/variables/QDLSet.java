@@ -34,7 +34,7 @@ public class QDLSet extends HashSet {
      * @param array
      */
     public void fromJSON(JSONArray array) {
-        StemVariable stemVariable = new StemVariable();
+        QDLStem stemVariable = new QDLStem();
         stemVariable.fromJSON(array);
         clear();
         addAll(stemVariable.getQDLList().values());
@@ -166,8 +166,8 @@ public class QDLSet extends HashSet {
        }
         return list;
    }
-    public StemVariable toStem(){
-        StemVariable outStem = new StemVariable();
+    public QDLStem toStem(){
+        QDLStem outStem = new QDLStem();
         outStem.getQDLList().addAll(this);
 //        outStem.addList(convertToList());
         return outStem;

@@ -67,7 +67,7 @@ public class TestDyadicOperations extends AbstractQDLTester {
 
     public void testStemScalarPlus() throws Exception {
         State state = testUtils.getNewState();
-        StemVariable stemVariable = new StemVariable();
+        QDLStem stemVariable = new QDLStem();
         stemVariable.put("foo", 1L);
         stemVariable.put("bar", new BigDecimal("345.432"));
         stemVariable.put("baz", -34L);

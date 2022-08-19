@@ -35,8 +35,8 @@ public class StemConverter {
          if(obj instanceof BigDecimal) return InputFormUtil.inputForm((BigDecimal) obj);
          return obj.toString();
      }
-    public static StemVariable convert(JSONArray array) {
-        StemVariable out = new StemVariable();
+    public static QDLStem convert(JSONArray array) {
+        QDLStem out = new QDLStem();
         QDLList qdlList = new QDLList();
         qdlList.addAll(array);
         out.setQDLList(qdlList);
@@ -52,9 +52,9 @@ public class StemConverter {
         return out;
 */
     }
-    public static StemVariable convert(JSONObject object) {
+    public static QDLStem convert(JSONObject object) {
 
-          StemVariable out = new StemVariable();
+          QDLStem out = new QDLStem();
           for (Object key : object.keySet()) {
               Object obj = object.get(key);
               out.put(key.toString(), convert(obj));

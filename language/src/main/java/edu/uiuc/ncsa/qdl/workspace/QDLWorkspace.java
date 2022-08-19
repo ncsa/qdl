@@ -4,7 +4,7 @@ import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.gui.SwingTerminal;
 import edu.uiuc.ncsa.qdl.statements.Statement;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
 import edu.uiuc.ncsa.security.util.cli.BasicIO;
 import edu.uiuc.ncsa.security.util.cli.CommandLineTokenizer;
@@ -45,8 +45,6 @@ public class QDLWorkspace implements Serializable {
         if (getLogger() != null) {
             getLogger().error(t);
         }
-        int lineNumber = -1;
-        int colNumber = -1;
         String errorStatement = "";
         if (t instanceof QDLExceptionWithTrace) {
             QDLExceptionWithTrace qq = (QDLExceptionWithTrace) t;
@@ -356,7 +354,7 @@ public class QDLWorkspace implements Serializable {
             } else {
                 newList = workspaceCommands.commandHistory;
             }
-            StemVariable stemVariable = new StemVariable();
+            QDLStem stemVariable = new QDLStem();
             if (hasMessage) {
                 stemVariable.put(0, message);
             }

@@ -3,7 +3,7 @@ package edu.uiuc.ncsa.qdl.state;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.uiuc.ncsa.qdl.variables.StemVariable.STEM_INDEX_MARKER;
+import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
 
 /**
  * If we get a stem variable, this has the components to it

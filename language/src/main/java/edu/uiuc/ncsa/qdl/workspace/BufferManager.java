@@ -6,7 +6,7 @@ import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.variables.Constant;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.vfs.VFSPaths;
 import edu.uiuc.ncsa.qdl.xml.XMLUtilsV2;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
@@ -274,7 +274,7 @@ public class BufferManager implements Serializable {
         if (request.getResultType() != Constant.STEM_TYPE) {
             throw new IllegalStateException("Error: Could not read file \"" + fName + "\"");
         }
-        StemVariable stem = (StemVariable) request.getResult();
+        QDLStem stem = (QDLStem) request.getResult();
         if (stem == null) {
             return null;
         }
@@ -349,7 +349,7 @@ public class BufferManager implements Serializable {
             // Some save logic first
             File f = new File(currentBR.src);
             Polyad request = new Polyad(IOEvaluator.WRITE_FILE);
-            StemVariable stemVariable = new StemVariable();
+            QDLStem stemVariable = new QDLStem();
             List<Object> castList = new LinkedList<>();
             castList.addAll(currentBR.getContent());
             stemVariable.addList(castList);

@@ -3,7 +3,7 @@ package edu.uiuc.ncsa.qdl.expressions;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 import edu.uiuc.ncsa.qdl.variables.Constant;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -35,7 +35,7 @@ public class VariableNode extends ExpressionImpl {
         if(variableReference == null){
             return false;
         }
-        return variableReference.endsWith(StemVariable.STEM_INDEX_MARKER);
+        return variableReference.endsWith(QDLStem.STEM_INDEX_MARKER);
      }
 
     @Override

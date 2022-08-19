@@ -30,7 +30,7 @@ import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.util.QDLVersion;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.VStack;
 import edu.uiuc.ncsa.qdl.vfs.AbstractVFSFileProvider;
 import edu.uiuc.ncsa.qdl.vfs.VFSEntry;
@@ -386,6 +386,9 @@ public class WorkspaceCommands implements Logable, Serializable {
     public void editDone(EditDoneEvent editDoneEvent) {
         switch (editDoneEvent.getType()) {
             case EditDoneEvent.TYPE_BUFFER:
+                if(currentEditorSessions.isEmpty()){
+                    break; // do nothing. They hit save an extra time
+                }
                 int editorID = currentEditorSessions.get(editDoneEvent.id);
                 BufferManager.BufferRecord br = bufferManager.getBufferRecord(editorID);
                 if (br.memoryOnly) {
@@ -1518,8 +1521,8 @@ public class WorkspaceCommands implements Logable, Serializable {
         getState().getMetaEvaluator().evaluate(request, getState());
         Object obj = request.getResult();
         int i = 0;
-        if (obj instanceof StemVariable) {
-            StemVariable stemVariable = (StemVariable) obj;
+        if (obj instanceof QDLStem) {
+            QDLStem stemVariable = (QDLStem) obj;
             for (Object key : stemVariable.keySet()) {
                 i++;
                 say(String.valueOf(stemVariable.get(key)));
@@ -2588,12 +2591,12 @@ public class WorkspaceCommands implements Logable, Serializable {
         String varName = inputLine.getLastArg();
         List<String> content = new ArrayList<>();
         boolean isDefined = getState().isDefined(varName);
-        boolean isStem = varName.endsWith(StemVariable.STEM_INDEX_MARKER);
+        boolean isStem = varName.endsWith(QDLStem.STEM_INDEX_MARKER);
         if (isDefined) {
             if (isText) {
                 if (isStem) {
                     // convert stem to list
-                    StemVariable v = (StemVariable) getState().getValue(varName);
+                    QDLStem v = (QDLStem) getState().getValue(varName);
                     if (!v.isList()) {
                         say("sorry, but only a list of strings can be edited as text");
                         return RC_NO_OP;
@@ -2631,7 +2634,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     protected int restoreVariable(String varName, List<String> content, boolean isText, boolean isStem) {
         if (isText) {
             if (isStem) {
-                StemVariable newStem = new StemVariable();
+                QDLStem newStem = new QDLStem();
                 newStem.addList(content);
                 getState().setValue(varName, newStem);
             } else {
@@ -3895,6 +3898,14 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("xml compression " + (compressXML ? "on" : "off"));
                 break;
             case SAVE_DIR:
+                try {
+                    VFSEntry vfsEntry = getState().getFileFromVFS(value, 0);
+                    if(vfsEntry != null){
+
+                    }
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
                 saveDir = new File(value);
                 if (!saveDir.exists()) {
                     say("warning the directory \"" + saveDir.getAbsolutePath() + "\" does not exist");

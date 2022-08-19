@@ -1,11 +1,13 @@
 package edu.uiuc.ncsa.qdl.gui;
 
+import com.formdev.flatlaf.FlatLightLaf;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.workspace.QDLTerminal;
 import edu.uiuc.ncsa.qdl.workspace.QDLWorkspace;
 import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
+import edu.uiuc.ncsa.security.core.util.StringUtils;
 import edu.uiuc.ncsa.security.util.cli.InputLine;
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
@@ -303,49 +305,43 @@ public class SwingTerminal implements TerminalInterface {
                         String resp = output.getText();
                         output.setText(old);
                         JOptionPane.showMessageDialog(frame, resp);
-
                     }
                     break;
-                case KeyEvent.VK_F2:
+                case KeyEvent.VK_F1:
+                    // If no selected text, put up a generic help message. Otherwise,
+                    // search online help.
                     String text = input.getSelectedText();
                     if (text == null) {
                         // See if they selected something in output
                         text = output.getSelectedText();
                     }
-                    if(text!=null) {
+                    if (text != null) {
                         // just in case they swiped a little too much.
                         text = text.trim();
                     }
-                    String title = "Help for " + (text == null?"(not found)":text);
-                    String helpMessage = "no help available";
-                    if (workspaceCommands.getAltLookup().getByValue(text) != null) {
-                        text = workspaceCommands.getAltLookup().getByValue(text);
-                    }
-                    if (workspaceCommands.getOnlineHelp().containsKey(text)) {
-                        helpMessage = workspaceCommands.getOnlineHelp().get(text);
-                        if (workspaceCommands.getOnlineExamples().containsKey(text)) {
-                            helpMessage = helpMessage + "\n--------\nExamples\n--------\n" + workspaceCommands.getOnlineExamples().get(text);
+
+                    if (StringUtils.isTrivial(text)) {
+                        String title1 = "Help for GUI";
+                        String message1 = "F1 help for selected text or this message\n" +
+                                "ctrl+space autocomplete\n" +
+                                "ctrl+s saves\n" +
+                                "ctrl+q exits (no save!)\n" +
+                                "ctrl+↑ ctrl+↓ navigate history.";
+                        showHelp(title1, message1);
+                    } else {
+                        String title = "Help for " +  text;
+                        String helpMessage = "no help available for '" + text + "'";
+                        if (workspaceCommands.getAltLookup().getByValue(text) != null) {
+                            text = workspaceCommands.getAltLookup().getByValue(text);
                         }
+                        if (workspaceCommands.getOnlineHelp().containsKey(text)) {
+                            helpMessage = workspaceCommands.getOnlineHelp().get(text);
+                            if (workspaceCommands.getOnlineExamples().containsKey(text)) {
+                                helpMessage = helpMessage + "\n--------\nExamples\n--------\n" + workspaceCommands.getOnlineExamples().get(text);
+                            }
+                        }
+                        showHelp(title, helpMessage);
                     }
-                    showHelp(title, helpMessage);
-/*
-                    JOptionPane.showMessageDialog(
-                            null,
-                            helpMessage,
-                            title,
-                            JOptionPane.INFORMATION_MESSAGE
-                    );
-*/
-                    break;
-                case KeyEvent.VK_F1:
-                    String title1 = "Help for GUI";
-                    String message1 = "F1 this message\n" +
-                            "F2 display online help for highlighted text\n" +
-                            "ctrl+space autocomplete\n" +
-                            "ctrl+s saves\n" +
-                            "ctrl+q exits (no save!)\n" +
-                            "ctrl+↑ ctrl+↓ navigate history.";
-                    showHelp(title1, message1);
                     break;
                 case KeyEvent.VK_Q:
                     if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
@@ -380,6 +376,13 @@ public class SwingTerminal implements TerminalInterface {
         }
     }
 
+    /**
+     * Show's help for the selected area. Note that this allows for editing and copy paste
+     * to the main window (standard Swing dialog does not)
+     *
+     * @param title
+     * @param message
+     */
     protected void showHelp(String title, String message) {
         JTextArea textArea = new JTextArea(25, 100);
         textArea.setFont(new Font("DialogInput", Font.PLAIN, 12));
@@ -389,12 +392,26 @@ public class SwingTerminal implements TerminalInterface {
 
         // wrap a scrollpane around it
         JScrollPane scrollPane = new JScrollPane(textArea);
-        JOptionPane.showMessageDialog(
+        JOptionPane helpPane = new JOptionPane();
+        JDialog dialog = helpPane.createDialog(null, title);
+        dialog.setModal(false);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setContentPane(scrollPane);
+
+        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        int w = (int) dimension.getWidth() / 2;
+        int h = (int) dimension.getHeight() / 2;
+        dialog.setSize(w, h);
+        int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
+        int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
+        dialog.setLocation(x, y);
+        dialog.setVisible(true);
+ /*       JOptionPane.showMessageDialog(
                 null,
                 scrollPane,
                 title,
                 JOptionPane.INFORMATION_MESSAGE
-        );
+        );*/
     }
 
     Data data;
@@ -421,10 +438,13 @@ public class SwingTerminal implements TerminalInterface {
     JFrame frame;
 
     public void setup(JFrame frame1, List<String> functions) {
+
+/*
         UIManager.put("OptionPane.messageFont", new Font("DialogInput", Font.BOLD, 14));
         UIManager.put("OptionPane.buttonFont", new Font("DialogInput", Font.PLAIN, 12));
+*/
         frame = frame1;
-        System.setProperty("awt.useSystemAAFontSettings", "on");
+        //System.setProperty("awt.useSystemAAFontSettings", "on");
         frame.setTitle("QDL Workspace (version 1.4-QDL_SNAPSHOT)");
         frame.setContentPane(getMainPanel());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -441,11 +461,16 @@ public class SwingTerminal implements TerminalInterface {
         int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
         int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
         frame.setLocation(x, y);
-        String laf = UIManager.getSystemLookAndFeelClassName();
+/*        String laf = UIManager.getSystemLookAndFeelClassName();
         try {
             UIManager.setLookAndFeel(laf);
         } catch (Throwable e) {
             // really should never happen
+            e.printStackTrace();
+        }*/
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf());
+        } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
         frame.setVisible(true);

@@ -63,7 +63,7 @@ public class StemPath<V extends StemPathEntry> extends ArrayList<V> {
        stemPath.add(new StemPathEntry("long#%$path", true));
        System.out.println(stemPath.toPath(true));
        System.out.println(stemPath.toPath(false));
-       StemVariable stemVariable = new StemVariable();
+       QDLStem stemVariable = new QDLStem();
        stemVariable.put("a.b", "blarg");
        stemVariable.put("foo", "woof");
        stemVariable.put("mairzy doats", "fnord");

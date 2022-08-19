@@ -1,7 +1,5 @@
 package edu.uiuc.ncsa.qdl.extensions;
 
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
-
 import java.io.Serializable;
 
 /**
@@ -24,7 +22,7 @@ public interface QDLVariable extends Serializable {
     /**
      * The value. The basic Java types that QDL knows are {@link Boolean},
      * {@link String}, {@link Long}, {@link java.math.BigDecimal},
-     * and {@link StemVariable}.
+     * and {@link QDLStem}.
      *
      * @return
      */

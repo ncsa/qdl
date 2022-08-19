@@ -593,7 +593,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
         HashSet hashSet = new HashSet();
         for (Object key : keySet()) {
             Object value = get(key);
-            if (value instanceof StemVariable) {
+            if (value instanceof QDLStem) {
                 QDLStem ss = ((QDLStem) value).almostUnique();
                 hashSet.addAll(ss.getQDLList().values());
             } else {
@@ -852,7 +852,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
      * @return
      */
     public IndexList newGet(IndexList indexList, boolean strictMatching) {
-        if (indexList.get(indexList.size() - 1) instanceof StemVariable) {
+        if (indexList.get(indexList.size() - 1) instanceof QDLStem) {
             QDLStem ndx = (QDLStem) indexList.get(indexList.size() - 1);
             if (!ndx.isList()) {
                 throw new IllegalArgumentException("stem index list must be a list");
@@ -1388,8 +1388,8 @@ public class QDLStem implements Map<String, Object>, Serializable {
                 output = output + ",\n";
             }
             Object o = get(key);
-            if (o instanceof StemVariable) {
-                output = output + newIndent + key + STEM_ENTRY_CONNECTOR + ((StemVariable) o).toString(indentFactor, newIndent);
+            if (o instanceof QDLStem) {
+                output = output + newIndent + key + STEM_ENTRY_CONNECTOR + ((QDLStem) o).toString(indentFactor, newIndent);
             } else {
                 output = output + newIndent + key + STEM_ENTRY_CONNECTOR + convert(o);
             }

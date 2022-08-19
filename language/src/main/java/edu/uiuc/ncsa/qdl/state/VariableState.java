@@ -19,7 +19,7 @@ import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static edu.uiuc.ncsa.qdl.variables.StemVariable.STEM_INDEX_MARKER;
+import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
 
 /**
  * <p>Created by Jeff Gaynor<br>

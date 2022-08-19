@@ -5,10 +5,7 @@ import edu.uiuc.ncsa.qdl.extensions.QDLModuleMetaClass;
 import edu.uiuc.ncsa.qdl.extensions.QDLVariable;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
-import edu.uiuc.ncsa.qdl.variables.Constant;
-import edu.uiuc.ncsa.qdl.variables.QDLNull;
-import edu.uiuc.ncsa.qdl.variables.QDLSet;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.security.core.exceptions.GeneralException;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
@@ -70,10 +67,10 @@ public class QDLDB implements QDLModuleMetaClass {
             if (objects.length != 1) {
                 throw new IllegalArgumentException("missing argument.");
             }
-            if (!(objects[0] instanceof StemVariable)) {
+            if (!(objects[0] instanceof QDLStem)) {
                 throw new IllegalArgumentException(getName() + " requires a stem as its argument");
             }
-            StemVariable stemVariable = (StemVariable) objects[0];
+            QDLStem stemVariable = (QDLStem) objects[0];
             if (!stemVariable.containsKey(TYPE_ARG)) {
                 throw new IllegalArgumentException("missing " + TYPE_ARG + " argument");
             }
@@ -152,12 +149,12 @@ public class QDLDB implements QDLModuleMetaClass {
             // This provides
             // #1 a statement. If prepared, then
             // #1 List of values
-            StemVariable outStem = new StemVariable();
+            QDLStem outStem = new QDLStem();
             String rawStatement = (String) objects[0];
             List args = null;
             if (objects.length == 2) {
-                if (objects[1] instanceof StemVariable) {
-                    StemVariable stemVariable = (StemVariable) objects[1];
+                if (objects[1] instanceof QDLStem) {
+                    QDLStem stemVariable = (QDLStem) objects[1];
                     if (stemVariable.isList()) {
                         args = stemVariable.getQDLList().toJSON();
                     } else {
@@ -268,7 +265,7 @@ public class QDLDB implements QDLModuleMetaClass {
                 stmt.setBoolean(i, (Boolean) value);
                 return;
             }
-            if ((value instanceof StemVariable) || (value instanceof QDLSet)) {
+            if ((value instanceof QDLStem) || (value instanceof QDLSet)) {
                 stmt.setString(i, InputFormUtil.inputForm(value));
                 return;
             }
@@ -349,8 +346,8 @@ public class QDLDB implements QDLModuleMetaClass {
             String rawStatement = (String) objects[0];
             List args = null;
             if (objects.length == 2) {
-                if (objects[1] instanceof StemVariable) {
-                    StemVariable stemVariable = (StemVariable) objects[1];
+                if (objects[1] instanceof QDLStem) {
+                    QDLStem stemVariable = (QDLStem) objects[1];
                     if (stemVariable.isList()) {
                         args = stemVariable.getQDLList().toJSON();
                     } else {
@@ -437,12 +434,12 @@ public class QDLDB implements QDLModuleMetaClass {
             return TYPE_VAR_NAME;
         }
 
-        StemVariable types = null;
+        QDLStem types = null;
 
         @Override
         public Object getValue() {
             if (types == null) {
-                types = new StemVariable();
+                types = new QDLStem();
                 types.put("VARCHAR", new Long(VARCHAR));
                 types.put("CHAR", new Long(CHAR));
                 types.put("LONGVARCHAR", new Long(LONGVARCHAR));
@@ -487,8 +484,8 @@ public class QDLDB implements QDLModuleMetaClass {
         String rawStatement = (String) objects[0];
         List args = null;
         if (objects.length == 2) {
-            if (objects[1] instanceof StemVariable) {
-                StemVariable stemVariable = (StemVariable) objects[1];
+            if (objects[1] instanceof QDLStem) {
+                QDLStem stemVariable = (QDLStem) objects[1];
                 if (stemVariable.isList()) {
                     args = stemVariable.getQDLList().toJSON();
                 } else {

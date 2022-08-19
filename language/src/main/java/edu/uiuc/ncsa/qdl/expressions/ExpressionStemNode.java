@@ -5,14 +5,14 @@ import edu.uiuc.ncsa.qdl.state.StemMultiIndex;
 import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 import edu.uiuc.ncsa.qdl.variables.Constant;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import static edu.uiuc.ncsa.qdl.variables.Constant.*;
-import static edu.uiuc.ncsa.qdl.variables.StemVariable.STEM_INDEX_MARKER;
+import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -220,7 +220,7 @@ The following are working:
 
         // Simplest case.
         if (getLeftArg().getResultType() == STEM_TYPE || (getLeftArg() instanceof VariableNode)) {
-            StemVariable s = null;
+            QDLStem s = null;
             if(getLeftArg() instanceof VariableNode){
                 VariableNode vNode = (VariableNode)getLeftArg();
                 if(!state.isStem(vNode.getVariableReference())){
@@ -228,14 +228,14 @@ The following are working:
                 }
                 Object obj = state.getValue(vNode.getVariableReference());
                 if(obj == null && setValue){
-                    s = new StemVariable();
+                    s = new QDLStem();
                     // add it to the symbol table
                     state.setValue(vNode.getVariableReference(), s);
                 }else{
-                    s = (StemVariable)  obj;
+                    s = (QDLStem)  obj;
                 }
             }else{
-                 s = (StemVariable) getLeftArg().getResult();
+                 s = (QDLStem) getLeftArg().getResult();
             }
             if (setValue) {
                 if (getRightArg().getResult() instanceof Long) {
@@ -299,7 +299,7 @@ The following are working:
             swri = esn.getLeftArg();
         }
 
-        StemVariable stemVariable = (StemVariable) esn.getLeftArg().getResult();
+        QDLStem stemVariable = (QDLStem) esn.getLeftArg().getResult();
         Object r1 = null;
         if (setValue) {
             r1 = stemVariable.put(r.toString(), newValue);
@@ -338,7 +338,7 @@ The following are working:
      * @return
      */
     protected Object doLeftSVCase(StatementWithResultInterface leftArg, List<StatementWithResultInterface> indices, State state) {
-        StemVariable stemLeft = (StemVariable) leftArg.getResult();
+        QDLStem stemLeft = (QDLStem) leftArg.getResult();
         if(stemLeft == null){
             if(indices.get(0) instanceof VariableNode) {
                 return ((VariableNode)indices.get(0)).getVariableReference();

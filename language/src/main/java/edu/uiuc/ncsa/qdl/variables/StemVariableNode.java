@@ -52,7 +52,7 @@ public class StemVariableNode implements StatementWithResultInterface {
     }
 
     String variableReference;
-    StemVariable result = new StemVariable();
+    QDLStem result = new QDLStem();
 
     public ArrayList<StemEntryNode> getStatements() {
         return statements;
@@ -99,7 +99,7 @@ public class StemVariableNode implements StatementWithResultInterface {
 
     @Override
     public Object evaluate(State state) {
-        result = new StemVariable();
+        result = new QDLStem();
         for (StemEntryNode sen : getStatements()) {
             sen.evaluate(state);
             Object value = ((HasResultInterface) sen.getValue()).getResult();
@@ -146,10 +146,10 @@ public class StemVariableNode implements StatementWithResultInterface {
         for (StemEntryNode s : statements) {
             newSVN.getStatements().add((StemEntryNode) s.makeCopy());
         }
-        StemVariable newStem = new StemVariable();
+        QDLStem newStem = new QDLStem();
 
         // Kludge, but it works.
-        newStem.fromJSON((JSONObject) ((StemVariable) getResult()).toJSON());
+        newStem.fromJSON((JSONObject) ((QDLStem) getResult()).toJSON());
         newSVN.setResult(newStem);
         newSVN.setSourceCode(getSourceCode());
         newSVN.setEvaluated(isEvaluated());

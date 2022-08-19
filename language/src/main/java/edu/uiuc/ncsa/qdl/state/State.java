@@ -3,6 +3,7 @@ package edu.uiuc.ncsa.qdl.state;
 import edu.uiuc.ncsa.qdl.config.QDLEnvironment;
 import edu.uiuc.ncsa.qdl.evaluate.*;
 import edu.uiuc.ncsa.qdl.extensions.JavaModule;
+import edu.uiuc.ncsa.qdl.extensions.crypto.CryptoLoader;
 import edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader;
 import edu.uiuc.ncsa.qdl.extensions.http.QDLHTTPLoader;
 import edu.uiuc.ncsa.qdl.functions.FKey;
@@ -16,7 +17,7 @@ import edu.uiuc.ncsa.qdl.scripting.Scripts;
 import edu.uiuc.ncsa.qdl.statements.TryCatch;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.variables.Constant;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.VStack;
 import edu.uiuc.ncsa.qdl.vfs.VFSEntry;
 import edu.uiuc.ncsa.qdl.vfs.VFSFileProvider;
@@ -139,48 +140,48 @@ public class State extends FunctionState implements QDLConstants {
         this.restrictedIO = isRestrictedIO;
     }
 
-    public StemVariable getSystemConstants() {
+    public QDLStem getSystemConstants() {
         if (systemConstants == null) {
             createSystemConstants();
         }
         return systemConstants;
     }
 
-    public void setSystemConstants(StemVariable systemConstants) {
+    public void setSystemConstants(QDLStem systemConstants) {
         this.systemConstants = systemConstants;
     }
 
-    StemVariable systemConstants = null;
+    QDLStem systemConstants = null;
 
-    public StemVariable getSystemInfo() {
+    public QDLStem getSystemInfo() {
         return systemInfo;
     }
 
-    public void setSystemInfo(StemVariable systemInfo) {
+    public void setSystemInfo(QDLStem systemInfo) {
         this.systemInfo = systemInfo;
     }
 
-    StemVariable systemInfo = null;
+    QDLStem systemInfo = null;
 
     public void createSystemInfo(QDLEnvironment qe) {
         if (systemInfo != null) {
             return;
         }
-        systemInfo = new StemVariable();
+        systemInfo = new QDLStem();
         // Add some from Java, if not in server mode.
         if (!isServerMode()) {
-            StemVariable os = new StemVariable();
+            QDLStem os = new QDLStem();
             os.put(SYS_INFO_OS_VERSION, System.getProperty("os.version"));
             os.put(SYS_INFO_OS_NAME, System.getProperty("os.name"));
             os.put(SYS_INFO_OS_ARCHITECTURE, System.getProperty("os.arch"));
 
             systemInfo.put(SYS_INFO_OS, os);
-            StemVariable system = new StemVariable();
+            QDLStem system = new QDLStem();
             system.put(SYS_INFO_JVM_VERSION, System.getProperty("java.version"));
             system.put(SYS_INFO_INIT_MEMORY, (Runtime.getRuntime().totalMemory() / (1024 * 1024)) + " MB");
             system.put(SYS_INFO_SYSTEM_PROCESSORS, Runtime.getRuntime().availableProcessors());
             systemInfo.put(SYS_INFO_SYSTEM, system);
-            StemVariable user = new StemVariable();
+            QDLStem user = new QDLStem();
             user.put(SYS_INFO_USER_INVOCATION_DIR, System.getProperty("user.dir"));
             user.put(SYS_INFO_USER_HOME_DIR, System.getProperty("user.home"));
             systemInfo.put(SYS_INFO_USER, user);
@@ -188,7 +189,7 @@ public class State extends FunctionState implements QDLConstants {
 
 
         if (qe != null && qe.isEnabled()) {
-            StemVariable qdl_props = new StemVariable();
+            QDLStem qdl_props = new QDLStem();
             qdl_props.put(SYS_BOOT_QDL_HOME, qe.getWSHomeDir());
             if (!qe.getBootScript().isEmpty()) {
                 qdl_props.put(SYS_BOOT_BOOT_SCRIPT, qe.getBootScript());
@@ -201,15 +202,16 @@ public class State extends FunctionState implements QDLConstants {
             qdl_props.put(SYS_BOOT_RESTRICTED_IO_MODE, isRestrictedIO());
             qdl_props.put(SYS_SCRIPTS_PATH, qe.getScriptPath());
             systemInfo.put(SYS_BOOT, qdl_props);
-            StemVariable versionInfo = addManifestConstants(qe.getWSHomeDir());
+            QDLStem versionInfo = addManifestConstants(qe.getWSHomeDir());
             if (versionInfo != null) {
                 systemInfo.put(SYS_QDL_VERSION, versionInfo);
             }
         }
         // get modules
-        StemVariable libStem = new StemVariable();
+        QDLStem libStem = new QDLStem();
         libStem.put("http", QDLHTTPLoader.class.getCanonicalName());
         libStem.put("db", QDLDBLoader.class.getCanonicalName());
+        libStem.put("crypto", CryptoLoader.class.getCanonicalName());
         systemInfo.put("lib",libStem);
 
 
@@ -220,9 +222,9 @@ public class State extends FunctionState implements QDLConstants {
             return;
         }
         // Start off with the actual constants that the system must have
-        systemConstants = new StemVariable();
+        systemConstants = new QDLStem();
 
-        StemVariable characters = new StemVariable();
+        QDLStem characters = new QDLStem();
         characters.put("00ac", OpEvaluator.NOT2);
         characters.put("00af", OpEvaluator.MINUS2);
         characters.put("00b7", QDLConstants.STEM_PATH_MARKER2);
@@ -257,7 +259,7 @@ public class State extends FunctionState implements QDLConstants {
 
 
         systemConstants.put(SYS_VAR_TYPE_CHARACTERS, characters);
-        StemVariable varTypes = new StemVariable();
+        QDLStem varTypes = new QDLStem();
         varTypes.put(SYS_VAR_TYPE_STRING, (long) Constant.STRING_TYPE);
         varTypes.put(SYS_VAR_TYPE_STEM, (long) Constant.STEM_TYPE);
         varTypes.put(SYS_VAR_TYPE_BOOLEAN, (long) Constant.BOOLEAN_TYPE);
@@ -268,24 +270,24 @@ public class State extends FunctionState implements QDLConstants {
         varTypes.put(SYS_VAR_TYPE_SET, (long) Constant.SET_TYPE);
         systemConstants.put(SYS_VAR_TYPES, varTypes);
 
-        StemVariable detokenizeTypes = new StemVariable();
+        QDLStem detokenizeTypes = new QDLStem();
         detokenizeTypes.put(SYS_DETOKENIZE_PREPEND, StringEvaluator.DETOKENIZE_PREPEND_VALUE);
         detokenizeTypes.put(SYS_DETOKENIZE_OMIT_DANGLING_DELIMITER, StringEvaluator.DETOKENIZE_OMIT_DANGLING_DELIMITER_VALUE);
         systemConstants.put(SYS_DETOKENIZE_TYPE, detokenizeTypes);
 
-        StemVariable errorCodes = new StemVariable();
+        QDLStem errorCodes = new QDLStem();
         errorCodes.put(SYS_ERROR_CODE_SYSTEM_ERROR, TryCatch.RESERVED_SYSTEM_ERROR_CODE);
         errorCodes.put(SYS_ASSERT_CODE_SYSTEM_ERROR, TryCatch.RESERVED_ASSERTION_CODE);
         errorCodes.put(SYS_ERROR_CODE_DEFAULT_USER_ERROR, TryCatch.RESERVED_USER_ERROR_CODE);
         systemConstants.put(SYS_ERROR_CODES, errorCodes);
-        StemVariable fileTypes = new StemVariable();
+        QDLStem fileTypes = new QDLStem();
         fileTypes.put(SYS_FILE_TYPE_BINARY, (long) IOEvaluator.FILE_OP_BINARY);
         fileTypes.put(SYS_FILE_TYPE_STEM, (long) IOEvaluator.FILE_OP_TEXT_STEM);
         fileTypes.put(SYS_FILE_TYPE_STRING, (long) IOEvaluator.FILE_OP_TEXT_STRING);
         fileTypes.put(SYS_FILE_TYPE_INIT, (long) IOEvaluator.FILE_OP_TEXT_INI);
         systemConstants.put(SYS_FILE_TYPES, fileTypes);
 
-        StemVariable uriFields = new StemVariable();
+        QDLStem uriFields = new QDLStem();
         uriFields.put(URI_AUTHORITY, URI_AUTHORITY);
         uriFields.put(URI_HOST, URI_HOST);
         uriFields.put(URI_FRAGMENT, URI_FRAGMENT);
@@ -297,7 +299,7 @@ public class State extends FunctionState implements QDLConstants {
         uriFields.put(URI_USER_INFO, URI_USER_INFO);
         systemConstants.put(URI_FIELDS, uriFields);
 
-        StemVariable logLevels = new StemVariable();
+        QDLStem logLevels = new QDLStem();
         logLevels.put(SYS_LOG_NONE, SystemEvaluator.LOG_LEVEL_NONE);
         logLevels.put(SYS_LOG_TRACE, SystemEvaluator.LOG_LEVEL_TRACE);
         logLevels.put(SYS_LOG_INFO, SystemEvaluator.LOG_LEVEL_INFO);
@@ -328,8 +330,8 @@ public class State extends FunctionState implements QDLConstants {
      *
      * @return
      */
-    protected StemVariable addManifestConstants(String path) {
-        StemVariable versionInfo = new StemVariable();
+    protected QDLStem addManifestConstants(String path) {
+        QDLStem versionInfo = new QDLStem();
         List<String> manifest = null;
         try {
             manifest = QDLFileUtil.readFileAsLines(path + (path.endsWith("/") ? "" : "/") + "lib/build-info.txt");
@@ -614,6 +616,7 @@ public class State extends FunctionState implements QDLConstants {
         newState.setModulePaths(getModulePaths());
         newState.setVfsFileProviders(getVfsFileProviders());
         newState.setIoInterface(getIoInterface());
+        newState.systemInfo = systemInfo;
         return newState;
     }
 

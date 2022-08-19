@@ -5,7 +5,7 @@ import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 import edu.uiuc.ncsa.qdl.variables.Constant;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 
 import java.math.BigDecimal;
 
@@ -34,7 +34,7 @@ public class OpenSliceNode extends ExpressionImpl {
         } else {
             arg2 = 1L;
         }
-        StemVariable out;
+        QDLStem out;
         if (areAnyBD(arg0, arg1, arg2)) {
             out = doDecimalCase(arg0, arg1, arg2);
         } else {
@@ -59,7 +59,7 @@ public class OpenSliceNode extends ExpressionImpl {
         return (args instanceof BigDecimal) || (args instanceof Long);
     }
 
-    public StemVariable doDecimalCase(Object... args) {
+    public QDLStem doDecimalCase(Object... args) {
         BigDecimal start = null;
         if (args[0] instanceof BigDecimal) {
             start = (BigDecimal) args[0];
@@ -87,7 +87,7 @@ public class OpenSliceNode extends ExpressionImpl {
               throw new IllegalArgumentException("cannot do slice from " + start + " to " + stop + " by increment of " + step);
            }
 
-        StemVariable out = new StemVariable();
+        QDLStem out = new QDLStem();
         out.put(0L, start);
         BigDecimal result = start.add(step, OpEvaluator.getMathContext());
         while (result.compareTo(stop) < 0) {
@@ -110,7 +110,7 @@ public class OpenSliceNode extends ExpressionImpl {
         return out;
     }
 
-    protected StemVariable doLongCase(Object... args) {
+    protected QDLStem doLongCase(Object... args) {
         long start = (Long) args[0];
         long stop = (Long) args[1];
         long step = (Long) args[2];
@@ -123,7 +123,7 @@ public class OpenSliceNode extends ExpressionImpl {
         Long result = start;
         Long i = 0L;
 
-        StemVariable out = new StemVariable();
+        QDLStem out = new QDLStem();
         if (stop < start) {
             // decrement case, so step <0
             while (result > stop) {

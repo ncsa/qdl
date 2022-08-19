@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 import static edu.uiuc.ncsa.qdl.state.VariableState.var_regex;
 import static edu.uiuc.ncsa.qdl.variables.Constant.*;
 import static edu.uiuc.ncsa.qdl.variables.StemUtility.LAST_AXIS_ARGUMENT_VALUE;
-import static edu.uiuc.ncsa.qdl.variables.StemVariable.STEM_INDEX_MARKER;
+import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
 
 /**
  * <p>Created by Jeff Gaynor<br>

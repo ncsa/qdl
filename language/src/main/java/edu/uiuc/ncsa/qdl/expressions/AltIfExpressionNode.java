@@ -3,7 +3,7 @@ package edu.uiuc.ncsa.qdl.expressions;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
 import edu.uiuc.ncsa.qdl.variables.Constant;
-import edu.uiuc.ncsa.qdl.variables.StemVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 
 import java.util.ArrayList;
 
@@ -50,9 +50,9 @@ public class AltIfExpressionNode extends ExpressionImpl {
     @Override
     public Object evaluate(State state) {
         Object arg0 = getIF().evaluate(state);
-        if(arg0 instanceof StemVariable){
-            StemVariable out = new StemVariable();
-            StemVariable inStem = (StemVariable) arg0;
+        if(arg0 instanceof QDLStem){
+            QDLStem out = new QDLStem();
+            QDLStem inStem = (QDLStem) arg0;
             for(Object key : inStem.keySet()){
                    Object obj = inStem.get(key);
                    if(!(obj instanceof Boolean)){

@@ -264,7 +264,7 @@ subset(b., 3, 6)
     public QDLList unique() {
         HashSet set = new HashSet();
         for (Object obj : this) {
-            if (obj instanceof StemVariable) {
+            if (obj instanceof QDLStem) {
                 QDLStem ss = ((QDLStem) obj).almostUnique();
                 set.addAll(ss.getQDLList().unique());
             } else {
@@ -397,7 +397,7 @@ subset(b., 3, 6)
             if (obj == null) {
                 throw new seGapException();
             }
-            if (obj instanceof StemVariable) {
+            if (obj instanceof QDLStem) {
                 if (isFirst) {
                     isFirst = false;
                     output = output + "\n";
@@ -452,7 +452,7 @@ subset(b., 3, 6)
 
     /**
      * This exports the current list as a {@link JSONArray}. Note that there is no
-     * analog for importing one -- use the {@link StemVariable#fromJSON(JSONObject)}
+     * analog for importing one -- use the {@link QDLStem#fromJSON(JSONObject)}
      * to do that, since the result will in general be a stem (if one element of the
      * array is a JSONObject, then the index has to make it a stem -- this is just how the
      * bookkeeping is done).
@@ -584,7 +584,7 @@ subset(b., 3, 6)
         }
         long index = 0L;
         Object obj = get(0);
-        s.add(new Long(size()));
+        s.add((long) size());
         Object currentEntry = obj;
         while (currentEntry != null) {
             if (currentEntry instanceof QDLStem) {
@@ -592,7 +592,7 @@ subset(b., 3, 6)
                 if (s1.getQDLList().size() == 0) {
                     break;
                 }
-                s.add(new Long(s1.getQDLList().size()));
+                s.add((long) s1.getQDLList().size());
                 currentEntry = s1.getQDLList().get(0L);
             } else {
                 break;
@@ -602,7 +602,7 @@ subset(b., 3, 6)
     }
 
     public Long getRank() {
-        return new Long(dim().size());
+        return (long) dim().size();
     }
 
     public ArrayList values() {
