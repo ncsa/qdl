@@ -15,6 +15,7 @@ import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -655,6 +656,7 @@ public class IOEvaluator extends AbstractEvaluator {
                             xProperties.put(FileEntry.CONTENT_TYPE, FileEntry.TEXT_TYPE);
                             lines.add(obj2.toString());
                         }
+                        break;
                     default:
                         throw new BadArgException("unknown file type '" + fileType + "'", polyad.getArgAt(2));
                 }
@@ -850,6 +852,12 @@ public class IOEvaluator extends AbstractEvaluator {
         } catch (Throwable t) {
             if (t instanceof QDLException) {
                 throw (RuntimeException) t;
+            }
+            if(t instanceof FileNotFoundException){
+                throw new QDLFileNotFoundException("'" + fileName + "' not found:" + t.getMessage());
+            }
+            if(t instanceof IllegalAccessException){
+                throw new QDLFileAccessException("access denied to '" + fileName + "':" + t.getMessage());
             }
             throw new QDLException("Error reading file '" + fileName + "'" + t.getMessage());
         }

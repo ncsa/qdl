@@ -46,6 +46,7 @@
         <module>website</module>
         <module>tests</module>
         <module>gui</module>
+        <module>qdl-sas</module>
     </modules>
     <build>
         <plugins>

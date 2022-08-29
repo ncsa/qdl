@@ -10,76 +10,27 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>gui</artifactId>
+    <packaging>war</packaging>
+
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
     </properties>
      <dependencies>
-         <dependency>
-             <groupId>com.fifesoft</groupId>
-             <artifactId>rsyntaxtextarea</artifactId>
-             <version>3.2.0</version>
-         </dependency>
-         <dependency>
-             <groupId>com.fifesoft</groupId>
-             <artifactId>autocomplete</artifactId>
-             <version>3.2.0</version>
-         </dependency>
 
          <dependency>
-             <groupId>com.fifesoft</groupId>
-             <artifactId>rsyntaxtextarea</artifactId>
-             <version>3.2.0</version>
-             <scope>compile</scope>
+             <groupId>edu.uiuc.ncsa.security</groupId>
+             <artifactId>sas-server</artifactId>
+             <version>5.2-SNAPSHOT</version>
+             <type>jar</type>
          </dependency>
          <dependency>
              <groupId>edu.uiuc.ncsa.qdl</groupId>
              <artifactId>language</artifactId>
              <version>1.4-QDL-SNAPSHOT</version>
          </dependency>
+
      </dependencies>
-    <profiles>
-           <profile>
-               <id>gui</id>
-               <build>
-                   <plugins>
-                       <plugin>
-                           <artifactId>maven-assembly-plugin</artifactId>
-                           <version>3.1.0</version>
-                           <configuration>
-
-                               <archive>
-                                   <manifest>
-                                       <addClasspath>true</addClasspath>
-                                       <mainClass>edu.uiuc.ncsa.qdl.gui.SwingTerminal</mainClass>
-                                   </manifest>
-                                   <manifestEntries>
-                                       <application-version>${project.version}</application-version>
-                                       <application-name>${project.name}</application-name>
-                                       <build-time>${timestamp}</build-time>
-                                       <implementation-version>${project.version}</implementation-version>
-                                       <implementation-build>${buildNumber}</implementation-build>
-                                   </manifestEntries>
-                               </archive>
-                               <descriptorRefs>
-                                   <descriptorRef>jar-with-dependencies</descriptorRef>
-                               </descriptorRefs>
-                               <finalName>qdl-gui</finalName>
-
-                           </configuration>
-                           <executions>
-                               <execution>
-                                   <id>make-my-jar-with-dependencies</id>
-                                   <phase>package</phase>
-                                   <goals>
-                                       <goal>single</goal>
-                                   </goals>
-                               </execution>
-                           </executions>
-                       </plugin>
-                   </plugins>
-               </build>
-           </profile>
-       </profiles>
+  
 </project>

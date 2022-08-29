@@ -35,15 +35,15 @@ public class BufferManager implements Serializable {
 
 
     public static class BufferRecord implements Serializable{
-        String alias;
-        String src;
-        String link;
-        boolean edited = false;
-        boolean deleted = false;
-        List<String> content = null;
-        boolean memoryOnly = false;
-        String srcSavePath = null;
-        String linkSavePath = null;
+        public String alias;
+        public String src;
+        public String link;
+        public boolean edited = false;
+        public boolean deleted = false;
+        public List<String> content = null;
+        public boolean memoryOnly = false;
+        public String srcSavePath = null;
+        public String linkSavePath = null;
 
 
         public List<String> getContent() {

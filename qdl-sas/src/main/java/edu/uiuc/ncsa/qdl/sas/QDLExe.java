@@ -1,0 +1,137 @@
+package edu.uiuc.ncsa.qdl.sas;
+
+import edu.uiuc.ncsa.qdl.gui.editor.EditDoneEvent;
+import edu.uiuc.ncsa.qdl.sas.action.BufferSaveAction;
+import edu.uiuc.ncsa.qdl.sas.action.GetHelpTopicAction;
+import edu.uiuc.ncsa.qdl.sas.response.BufferSaveResponse;
+import edu.uiuc.ncsa.qdl.sas.response.GetHelpTopicResponse;
+import edu.uiuc.ncsa.qdl.sas.response.ListFunctionsResponse;
+import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.qdl.workspace.BufferManager;
+import edu.uiuc.ncsa.qdl.workspace.QDLWorkspace;
+import edu.uiuc.ncsa.sas.Executable;
+import edu.uiuc.ncsa.sas.StringIO;
+import edu.uiuc.ncsa.sas.exceptions.SASException;
+import edu.uiuc.ncsa.sas.thing.action.Action;
+import edu.uiuc.ncsa.sas.thing.action.ExecuteAction;
+import edu.uiuc.ncsa.sas.thing.response.OutputResponse;
+import edu.uiuc.ncsa.sas.thing.response.Response;
+import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
+import edu.uiuc.ncsa.security.util.cli.IOInterface;
+import edu.uiuc.ncsa.security.util.cli.InputLine;
+
+import static edu.uiuc.ncsa.security.core.util.StringUtils.stringToList;
+
+/**
+ * <p>Created by Jeff Gaynor<br>
+ * on 8/24/22 at  12:01 PM
+ */
+public class QDLExe implements Executable, QDLSASConstants {
+    public QDLExe() {
+        init();
+    }
+
+    QDLWorkspace qdlWorkspace;
+
+    QDLSASWorkspaceCommands workspaceCommands;
+    public State createState(){
+        return new State();
+    }
+    protected void init(){
+        State state = createState();
+        workspaceCommands = new QDLSASWorkspaceCommands();
+        workspaceCommands.setState(state);
+        try {
+            workspaceCommands.fromConfigFile(new InputLine("foo", "-cfg", "/home/ncsa/dev/csd/config/qdl-cfg.xml"));
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        qdlWorkspace = new QDLWorkspace(workspaceCommands);
+
+        StringIO stringIO = new StringIO("");
+        workspaceCommands.setIoInterface(stringIO);
+        try {
+            workspaceCommands.init(new InputLine());
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        setIO(stringIO);
+    }
+
+
+/*    @Override
+    public void execute(Action action) {
+        switch (action.getType()) {
+            case SASConstants.ACTION_EXECUTE:
+                ExecuteAction executeAction = (ExecuteAction) action;
+                qdlWorkspace.execute(executeAction.getArg());
+                break;
+        }
+    }*/
+
+    IOInterface ioInterface;
+
+    @Override
+    public Response execute(Action action) {
+        Object rr = null;
+        switch (action.getType()) {
+            case ACTION_EXECUTE:
+                ExecuteAction executeAction = (ExecuteAction) action;
+                rr = qdlWorkspace.execute(executeAction.getArg());
+                if (rr instanceof Response) {
+                    return (Response) rr;
+                }
+                return new OutputResponse(action, ((StringIO) getIO()).getOutput().toString());
+            case ACTION_INVOKE:
+                throw new NotImplementedException("invoke needs to be implemented");
+            case ACTION_LIST_FUNCTIONS:
+                return new ListFunctionsResponse(action, workspaceCommands.getFunctionList());
+            case ACTION_GET_HELP_TOPIC:
+                GetHelpTopicAction getHelpTopicAction = (GetHelpTopicAction) action;
+                GetHelpTopicResponse helpTopicResponse = new GetHelpTopicResponse(action);
+                helpTopicResponse.setHelp(workspaceCommands.getHelpTopic(getHelpTopicAction.getName()));
+                helpTopicResponse.setExample(workspaceCommands.getHelpTopicExample(getHelpTopicAction.getName()));
+                return helpTopicResponse;
+            case ACTION_BUFFER_SAVE:
+                return bufferSave((BufferSaveAction) action);
+            default:
+                throw new SASException("unknown action \"" + action.getType());
+        }
+
+    }
+
+    protected Response bufferSave(BufferSaveAction bsa) {
+        BufferSaveResponse bufferSaveResponse = new BufferSaveResponse();
+        BufferManager.BufferRecord br;
+        switch (bsa.getEditObjectType()) {
+            case EditDoneEvent.TYPE_BUFFER:
+                br = workspaceCommands.getBufferManager().getBufferRecord(bsa.getLocalName());
+                br.setContent(stringToList(bsa.getContent()));
+                return bufferSaveResponse;
+            case EditDoneEvent.TYPE_FILE:
+                workspaceCommands.restoreFile(stringToList(bsa.getContent()), bsa.getLocalName());
+                return bufferSaveResponse;
+            case EditDoneEvent.TYPE_FUNCTION:
+                workspaceCommands.restoreFunction(stringToList(bsa.getContent()), bsa.getLocalName(), bsa.getArgState());
+                return bufferSaveResponse;
+            case EditDoneEvent.TYPE_VARIABLE:
+                int x = bsa.getArgState();
+                boolean isText = (x % 2) == 1;
+                boolean isStem = (2 <= x);
+                workspaceCommands.restoreVariable(bsa.getLocalName(), stringToList(bsa.getContent()), isText, isStem);
+                return bufferSaveResponse;
+        }
+        return bufferSaveResponse;
+    }
+
+
+    @Override
+    public IOInterface getIO() {
+        return ioInterface;
+    }
+
+    @Override
+    public void setIO(IOInterface io) {
+        this.ioInterface = io;
+    }
+}

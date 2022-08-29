@@ -38,7 +38,7 @@
    - EOL (end of line) ends a statement not a ;.
 
    Differences with python/windows
-   - entries are typed as boolen, number, string or aggregate
+   - entries are typed as boolean, number, string or aggregate
    - lines and sections may have valid QDL identifiers, including some unicode
    - strings allow for escaped unicode
    - comments are line or block, not ; or #

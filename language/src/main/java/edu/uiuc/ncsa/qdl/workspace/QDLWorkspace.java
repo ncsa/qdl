@@ -5,6 +5,7 @@ import edu.uiuc.ncsa.qdl.gui.SwingTerminal;
 import edu.uiuc.ncsa.qdl.statements.Statement;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
+import edu.uiuc.ncsa.sas.thing.response.Response;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
 import edu.uiuc.ncsa.security.util.cli.BasicIO;
 import edu.uiuc.ncsa.security.util.cli.CommandLineTokenizer;
@@ -138,7 +139,7 @@ public class QDLWorkspace implements Serializable {
         return out;
     }
 
-    public boolean execute(String input) {
+    public Object execute(String input) {
         if (input == null) {
             // about the only way to get a null here is if the user is piping in
             // something via std in and it hits the end of the stream.
@@ -188,14 +189,21 @@ public class QDLWorkspace implements Serializable {
                  */
 
         if (input.startsWith(")")) {
-            switch (workspaceCommands.execute(input)) {
-                case RC_EXIT_NOW:
-                    return false; // exit now, darnit.
-                case RC_NO_OP:
-                case RC_CONTINUE:
-                    return true;
-                case RC_RELOAD:
-                    workspaceCommands.say("not quite ready for prime time. Check back later");
+            Object rc = workspaceCommands.execute(input);
+            if(rc instanceof Response){
+                return rc;
+            }
+            if (rc instanceof Integer) {
+                int rc12 = (Integer) rc;
+                switch (rc12) {
+                    case RC_EXIT_NOW:
+                        return false; // exit now, darnit.
+                    case RC_NO_OP:
+                    case RC_CONTINUE:
+                        return true;
+                    case RC_RELOAD:
+                        workspaceCommands.say("not quite ready for prime time. Check back later");
+                }
             }
         }
 
@@ -237,7 +245,7 @@ public class QDLWorkspace implements Serializable {
             String input;
             input = workspaceCommands.readline(INDENT);
             //  System.out.println("  got fom readline:" + input);
-            keepLooping = execute(input);
+            keepLooping = (Boolean)execute(input);
         }
     }
 
@@ -245,16 +253,21 @@ public class QDLWorkspace implements Serializable {
         //   boolean isExit = false;
         for (String command : commands) {
             if (command.startsWith(")")) {
-                switch (workspaceCommands.execute(command)) {
-                    case RC_EXIT_NOW:
-                        // isExit = true;
-                        return; // exit now, darnit.
-                    case RC_NO_OP:
-                    case RC_CONTINUE:
-                        continue;
-                    case RC_RELOAD:
-                        workspaceCommands.say("not quite ready for prime time. Check back later");
+                Object r = workspaceCommands.execute(command);
+                if (r instanceof Integer) {
+                    int rc = (Integer) r;
+                    switch (rc) {
+                        case RC_EXIT_NOW:
+                            // isExit = true;
+                            return; // exit now, darnit.
+                        case RC_NO_OP:
+                        case RC_CONTINUE:
+                            continue;
+                        case RC_RELOAD:
+                            workspaceCommands.say("not quite ready for prime time. Check back later");
+                    }
                 }
+
             }
             boolean echoMode = workspaceCommands.isEchoModeOn();
             boolean prettyPrint = workspaceCommands.isPrettyPrint();
@@ -460,14 +473,14 @@ public class QDLWorkspace implements Serializable {
             try {
                 swingTerminal = new SwingTerminal();
                 workspaceCommands = new WorkspaceCommands(swingTerminal.getQdlSwingIO());
-            }catch(AWTError awtError){
+            } catch (AWTError awtError) {
                 System.out.println("warning -- could not start graphical environment: " + awtError.getMessage());
                 isSwingGui = false;
                 isoTerminal = false;
                 workspaceCommands = new WorkspaceCommands(new BasicIO());
             }
         } else {
-            if(isSwingGui){
+            if (isSwingGui) {
                 System.out.println("warning -- no graphics support, defaulting to ansi");
                 isoTerminal = true;
                 isSwingGui = false;
@@ -479,7 +492,7 @@ public class QDLWorkspace implements Serializable {
                     workspaceCommands = new WorkspaceCommands(iso6429IO);
                     workspaceCommands.setAnsiModeOn(true);
                     isoTerminal = true;
-                }catch(Throwable t){
+                } catch (Throwable t) {
                     System.out.println("could not load ANSI terminal: " + t.getMessage());
                     isoTerminal = false;
                     workspaceCommands = new WorkspaceCommands(new BasicIO());

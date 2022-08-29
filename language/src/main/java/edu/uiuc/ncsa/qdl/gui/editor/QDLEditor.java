@@ -93,13 +93,13 @@ public class QDLEditor {
         return uuid;
     }
 
-    UUID uuid = UUID.randomUUID();
-    private RSyntaxTextArea input;
+    protected UUID uuid = UUID.randomUUID();
+    protected RSyntaxTextArea input;
     private JPanel mainPanel;
 
-    int altMask = ALT_DOWN_MASK;
-    int ctrlMask = CTRL_DOWN_MASK;
-    JFrame jFrame;
+    protected int altMask = ALT_DOWN_MASK;
+    protected int ctrlMask = CTRL_DOWN_MASK;
+    protected JFrame jFrame;
 
     public QDLEditor() {
         init();
@@ -174,6 +174,25 @@ public class QDLEditor {
     }
 
     public class ControlOperations extends KeyAdapter {
+        /**
+         * Updates i.e. saves the content
+         */
+        protected void saveContent() {
+            if (file == null) {
+                EditDoneEvent editDoneEvent = new EditDoneEvent(uuid, input.getText());
+                editDoneEvent.setType(getType());
+                editDoneEvent.setLocalName(getLocalName());
+                editDoneEvent.setArgState(getArgState());
+                workspaceCommands.editDone(editDoneEvent);
+            } else {
+                try {
+                    FileUtil.writeStringToFile(file.getAbsolutePath(), input.getText());
+                } catch (Throwable ex) {
+                    JOptionPane.showMessageDialog(jFrame, "could not save file:" + ex.getMessage());
+                }
+            }
+        }
+
         @Override
         public void keyPressed(KeyEvent e) {
             switch (e.getKeyCode()) {
@@ -181,23 +200,10 @@ public class QDLEditor {
                     JOptionPane.showMessageDialog(jFrame, "ctrl+s saves the buffer, ctrl+q exits.");
                     break;
                 case KeyEvent.VK_S:
+                    // ctrl s == save
                     if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
-                        if (file == null) {
-                            EditDoneEvent editDoneEvent = new EditDoneEvent(uuid, input.getText());
-                            editDoneEvent.setType(getType());
-                            editDoneEvent.setLocalName(getLocalName());
-                            editDoneEvent.setArgState(getArgState());
-                            workspaceCommands.editDone(editDoneEvent);
-                        } else {
-                            try {
-                                FileUtil.writeStringToFile(file.getAbsolutePath(), input.getText());
-                            } catch (Throwable ex) {
-                                JOptionPane.showMessageDialog(jFrame, "could not save file:" + ex.getMessage());
-                            }
-                        }
-                        // ctrl s == save
+                        saveContent();
                     }
-
                     break;
                 case KeyEvent.VK_Q:
                     if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {

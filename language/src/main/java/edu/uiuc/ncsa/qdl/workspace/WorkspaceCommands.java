@@ -28,14 +28,12 @@ import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.util.QDLVersion;
-import edu.uiuc.ncsa.qdl.variables.Constant;
-import edu.uiuc.ncsa.qdl.variables.QDLNull;
-import edu.uiuc.ncsa.qdl.variables.QDLStem;
-import edu.uiuc.ncsa.qdl.variables.VStack;
+import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.qdl.vfs.AbstractVFSFileProvider;
 import edu.uiuc.ncsa.qdl.vfs.VFSEntry;
 import edu.uiuc.ncsa.qdl.vfs.VFSFileProvider;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
+import edu.uiuc.ncsa.sas.thing.response.Response;
 import edu.uiuc.ncsa.security.core.Logable;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.GeneralException;
@@ -73,8 +71,7 @@ import java.util.zip.GZIPOutputStream;
 
 import static edu.uiuc.ncsa.qdl.config.QDLConfigurationConstants.*;
 import static edu.uiuc.ncsa.qdl.config.QDLConfigurationLoaderUtils.*;
-import static edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.FILE_OP_BINARY;
-import static edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.FILE_OP_TEXT_STRING;
+import static edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.*;
 import static edu.uiuc.ncsa.qdl.util.InputFormUtil.*;
 import static edu.uiuc.ncsa.qdl.vfs.VFSPaths.SCHEME_DELIMITER;
 import static edu.uiuc.ncsa.security.core.util.StringUtils.*;
@@ -272,7 +269,7 @@ public class WorkspaceCommands implements Logable, Serializable {
      */
     public List<String> commandHistory = new LinkedList<>();
 
-    public int execute(String inline) {
+    public Object execute(String inline) {
         try {
             return execute2(inline);
         } catch (Throwable t) {
@@ -285,7 +282,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     }
 
-    public int execute2(String inline) {
+    public Object execute2(String inline) {
 
         inline = TemplateUtil.replaceAll(inline, env); // allow replacements in commands too...
         InputLine inputLine = new InputLine(CLT.tokenize(inline));
@@ -295,7 +292,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 return doFileCommands(inputLine);
             case SHORT_BUFFER2_COMMAND:
             case BUFFER2_COMMAND:
-                return _doNewBufferCommand(inputLine);
+                return doBufferCommand(inputLine);
             case CLEAR_COMMAND:
                 return _wsClear(inputLine);
             case EDIT_COMMAND:
@@ -386,7 +383,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     public void editDone(EditDoneEvent editDoneEvent) {
         switch (editDoneEvent.getType()) {
             case EditDoneEvent.TYPE_BUFFER:
-                if(currentEditorSessions.isEmpty()){
+                if (currentEditorSessions.isEmpty()) {
                     break; // do nothing. They hit save an extra time
                 }
                 int editorID = currentEditorSessions.get(editDoneEvent.id);
@@ -403,8 +400,8 @@ public class WorkspaceCommands implements Logable, Serializable {
                 break;
             case EditDoneEvent.TYPE_VARIABLE:
                 int x = editDoneEvent.getArgState();
-                boolean isText = (x%2) == 1;
-                boolean isStem = (2<= x);
+                boolean isText = (x % 2) == 1;
+                boolean isStem = (2 <= x);
                 restoreVariable(editDoneEvent.getLocalName(), StringUtils.stringToList(editDoneEvent.content), isText, isStem);
                 break;
         }
@@ -459,7 +456,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
     }
 
-    private int doSICommand(InputLine inputLine) {
+    protected Object doSICommand(InputLine inputLine) {
         if (inputLine.size() <= ACTION_INDEX) {
             say("Sorry, please supply an argument (e.g. --help)");
             return RC_NO_OP;
@@ -502,7 +499,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_NO_OP;
     }
 
-    private int _doSIRemove(InputLine inputLine) {
+    protected Object _doSIRemove(InputLine inputLine) {
         if (!inputLine.hasArgAt(FIRST_ARG_INDEX)) {
             say("sorry, no pid given.");
             return RC_CONTINUE;
@@ -530,7 +527,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_NO_OP;
     }
 
-    private int _doSISet(InputLine inputLine) {
+    protected Object _doSISet(InputLine inputLine) {
         if (!inputLine.hasArgAt(FIRST_ARG_INDEX)) {
             say("currently active process id is " + currentPID);
             return RC_CONTINUE;
@@ -566,7 +563,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_NO_OP;
     }
 
-    private int _doSIResume(InputLine inputLine) {
+    protected Object _doSIResume(InputLine inputLine) {
         try {
             int pid = 0;
             if (inputLine.getCommand().equals(RESUME_COMMAND)) {
@@ -645,7 +642,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     protected int ___SI_LINE_NR = 5;
     protected int ___SI_SIZE = 6;
 
-    protected int _doSIList(InputLine inputLine) {
+    protected Object _doSIList(InputLine inputLine) {
         // entry is
         // pid status  timestamp size message
         // pid is an integer
@@ -683,7 +680,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
 
-    protected int doFileCommands(InputLine inputLine) {
+    protected Object doFileCommands(InputLine inputLine) {
         if (inputLine.size() <= ACTION_INDEX) {
             say("Sorry, please supply an argument (e.g. --help)");
             return RC_NO_OP;
@@ -725,17 +722,45 @@ public class WorkspaceCommands implements Logable, Serializable {
         return hasEditors() && !getQdlEditors().isEmpty() && isUseExternalEditor() && !getExternalEditorName().equals(LINE_EDITOR_NAME);
     }
 
-    private int _doFileEdit(InputLine inputLine) {
+    protected Object _doFileEdit(InputLine inputLine) {
         String source = inputLine.getArg(FIRST_ARG_INDEX);
-        File f = new File(source);
-        // don't care if it exists, that's the editor's problem.
-        if (!f.isAbsolute()) {
-            f = new File(rootDir, f.getAbsolutePath());
+        List<String> content;
+        Polyad fRead = new Polyad();
+        fRead.setName(IOEvaluator.READ_FILE);
+        fRead.addArgument(new ConstantNode(source));
+        fRead.addArgument(new ConstantNode(Long.valueOf(FILE_OP_TEXT_STEM)));
+        try {
+            QDLStem lines = (QDLStem) fRead.evaluate(getState()); // stem of lines
+            content = lines.getQDLList();
+        } catch (QDLFileNotFoundException fnf) {
+            content = new ArrayList<>();
         }
-        if (useExternalEditor()) {
-            _doExternalEdit(f);
+
+/*
         } else {
-            if (isSwingGUI()) {
+            File f = new File(source);
+            // don't care if it exists, that's the editor's problem.
+            if (!f.isAbsolute()) {
+                f = new File(rootDir, f.getAbsolutePath());
+            }
+            if (!f.canRead()) {
+                say("error reading file");
+            }
+        }
+*/
+        if (useExternalEditor()) {
+            _doExternalEdit(content);
+        } else {
+            List<String> output = new ArrayList<>();
+            Object rc = editFile(content, output, source);
+            if (rc instanceof Response) {
+                return rc;
+            }
+            if (rc.equals(RC_CONTINUE)) {
+                return rc;
+            }
+            restoreFile(output, source);
+         /*   if (isSwingGUI()) {
                 try {
                     QDLEditor qdlEditor = new QDLEditor(f);
                     qdlEditor.setType(EditDoneEvent.TYPE_FILE);
@@ -746,7 +771,6 @@ public class WorkspaceCommands implements Logable, Serializable {
                 return RC_CONTINUE;
             }
             try {
-                List<String> content;
                 if (f.exists()) {
                     content = _doLineEditor(FileUtil.readFileAsLines(f.getAbsolutePath()));
                 } else {
@@ -760,14 +784,43 @@ public class WorkspaceCommands implements Logable, Serializable {
                 fileWriter.close();
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
-            }
+            }*/
         }
         return RC_CONTINUE;
     }
 
+    public Object editFile(List<String> input, List<String> output, String fileName) {
+        if (isSwingGUI()) {
+            File f = new File(fileName);
+            try {
+                QDLEditor qdlEditor = new QDLEditor(f);
+                qdlEditor.setType(EditDoneEvent.TYPE_FILE);
+                qdlEditor.setup();
+            } catch (Throwable e) {
+                say("Error editing file '" + f.getAbsolutePath() + "', " + e.getMessage());
+            }
+            return RC_CONTINUE;
+        }
+
+        return RC_CONTINUE;
+    }
+
+    public Object restoreFile(List<String> content, String fileName) {
+        Polyad fWrite = new Polyad();
+        fWrite.setName(IOEvaluator.WRITE_FILE);
+        fWrite.addArgument(new ConstantNode(fileName));
+        fWrite.addArgument(new ConstantNode(StringUtils.listToString(content)));
+        fWrite.evaluate(getState());
+        return RC_CONTINUE;
+    }
+
+    public BufferManager getBufferManager() {
+        return bufferManager;
+    }
+
     BufferManager bufferManager = new BufferManager();
 
-    private int _doNewBufferCommand(InputLine inputLine) {
+    private Object doBufferCommand(InputLine inputLine) {
         if (inputLine.size() <= ACTION_INDEX) {
             return _doBufferList(inputLine);
         }
@@ -824,7 +877,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
     }
 
-    private int _doBufferReload(InputLine inputLine) {
+    protected Object _doBufferReload(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("reload handle | alias - re-read the buffer from storage.");
             say("If the buffer resides in memory, this has no effect");
@@ -861,7 +914,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     String bufferDefaultSavePath = null;
 
-    private int _doBufferPath(InputLine inputLine) {
+    protected Object _doBufferPath(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("path {new_path}");
             say("(no arg) - show the current default path for saving buffers. This is used ");
@@ -925,7 +978,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
-    private int _doBufferCheck(InputLine inputLine) {
+    protected Object _doBufferCheck(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("check n {-st} {-src} -- check the syntax of buffer n");
             say("-st - will print whole stack track if present, otherwise just the error message");
@@ -985,7 +1038,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_NO_OP;
     }
 
-    protected int _doBufferReset(InputLine inputLine) {
+    protected Object _doBufferReset(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("reset");
             sayi("Drops ALL buffers and the handle resets to zero. Do this only if you have to.");
@@ -1002,7 +1055,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     boolean isSI = true;
 
-    protected int _doBufferRun(InputLine inputLine) {
+    protected Object _doBufferRun(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("run (handle | alias) [& | !]");
             sayi("Run the given buffer. This will execute as if you had typed it in to the current session. ");
@@ -1126,7 +1179,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     State defaultState;
     int currentPID = 0;
 
-    protected int _doBufferWrite(InputLine inputLine) {
+    protected Object _doBufferWrite(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("(write | save) (index | alias) {path}");
             sayi("Write (aka save) the buffer. If there is a link, the target is written to the source.");
@@ -1208,7 +1261,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     public static String EDITOR_REMOVE = "rm";
     public static String EDITOR_CLEAR_SCREEN;
 
-    private int _doEditor(InputLine inputLine) {
+    protected Object _doEditor(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             sayi("list - list available editors");
             sayi("add name [-clear_screen] exec  - add a (basic) editor configuration.");
@@ -1243,18 +1296,12 @@ public class WorkspaceCommands implements Logable, Serializable {
             }
             // At this point all that should be left is the executable (and a list of arguments.)
             String exec = inputLine.getArg(1);
-/*            List<String> args = new ArrayList<>();
-            for(int i = 1; i < inputLine.getArgCount(); i++){
-                EditorArg editorArg = new EditorArg();
-                editorArg.
-                  args.add(inputLine.getArg(i));
-            }*/
+
 
             EditorEntry ee = new EditorEntry();
             ee.name = name;
             ee.exec = exec;
             ee.clearScreen = isClearScreen;
-//            ee.args =
             getQdlEditors().put(ee);
             say("added '" + name + "' with executable '" + exec + "' ");
             File file = new File(exec);
@@ -1311,7 +1358,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
-    private int _doBufferEdit(InputLine inputLine) {
+    protected Object _doBufferEdit(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("edit (handle | alias)");
             sayi("invoke the editor on the given buffer");
@@ -1345,7 +1392,23 @@ public class WorkspaceCommands implements Logable, Serializable {
             br.setContent(content);
         }
         // so no buffer. There are a couple ways to get it.
-        List<String> result;
+        List<String> result = new ArrayList<>();
+        Object rc = invokeEditor(br, result);
+        if (rc instanceof Response) {
+            return rc;
+        }
+        if (rc.equals(RC_CONTINUE)) {
+            return RC_CONTINUE;
+        }
+        if (result.isEmpty()) {
+            return RC_NO_OP;
+        }
+        br.setContent(result);
+        br.edited = true;
+        return RC_CONTINUE;
+    }
+
+    protected Object invokeEditor(BufferManager.BufferRecord br, List<String> result) {
         if (useExternalEditor()) {
             result = _doExternalEdit(br.getContent());
         } else {
@@ -1356,12 +1419,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 result = _doLineEditor(br.getContent());
             }
         }
-        if (result == null || result.isEmpty()) {
-            return RC_NO_OP;
-        }
-        br.setContent(result);
-        br.edited = true;
-        return RC_CONTINUE;
+        return RC_NO_OP;
     }
 
     private List<String> _doLineEditor(List<String> content) {
@@ -1481,7 +1539,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     }
 
-    protected int _doBufferDelete(InputLine inputLine) {
+    protected Object _doBufferDelete(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("(delete | rm) handle | alias)");
             sayi("removes the buffer. This does NOT touch the physical file in any way.");
@@ -1504,7 +1562,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
-    private int _fileDir(InputLine inputLine) {
+    protected Object _fileDir(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("(dir | ls) path");
             sayi("List contents of the directory. Note if this is a single file, nothing will be listed.");
@@ -1533,7 +1591,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
-    private int _fileMkDir(InputLine inputLine) {
+    protected Object _fileMkDir(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("mkdir path");
             sayi("Make a directory in the file system. This creates all intermediate paths too if needed.");
@@ -1550,7 +1608,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     }
 
-    private int _fileRmDir(InputLine inputLine) {
+    protected Object _fileRmDir(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("rmdir path");
             sayi("Removes the given path (but not the intermediate paths.)");
@@ -1567,7 +1625,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     }
 
-    private int _fileDelete(InputLine inputLine) {
+    protected Object _fileDelete(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("(delete | rm) filename");
             sayi("Delete the file.");
@@ -1587,7 +1645,7 @@ public class WorkspaceCommands implements Logable, Serializable {
      * Copies <i>any</i> two files on the system including between VFS.
      */
 
-    private int _fileCopy(InputLine inputLine) {
+    protected Object _fileCopy(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("copy source target [-binary]");
             sayi("Copy a file from the source to the target. Note that the workspace is VFS aware.");
@@ -1601,7 +1659,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return _fileCopy(source, target, isBinary);
     }
 
-    private int _fileCopy(String source, String target, boolean isBinary) {
+    protected Object _fileCopy(String source, String target, boolean isBinary) {
 
         try {
             String readIt = IOEvaluator.READ_FILE + "('" + source + "'," + (isBinary ? FILE_OP_BINARY : FILE_OP_TEXT_STRING) + ")";
@@ -1613,7 +1671,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
-    private int _doBufferList(InputLine inputLine) {
+    protected Object _doBufferList(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("ls | list");
             sayi("list all buffers with information about them.");
@@ -1634,7 +1692,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     // q. := ws_macro([')b create temp -m',')b create foo /tmp/foo.qdl',')b link f2 /tmp/foo2.qdl /tmp/lll.qdl',')b'])
-    private int _doBufferShow(InputLine inputLine) {
+    protected Object _doBufferShow(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("show (handle | alias) {-src}");
             sayi("Show the buffer. If the buffer is linked, it will show the target.");
@@ -1706,7 +1764,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return ndx + a + br;
     }
 
-    private int _doBufferLink(InputLine inputLine) {
+    protected Object _doBufferLink(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("link alias source target [-copy]");
             sayi("Creates a link (for external editing) from source to target. Source must exist.");
@@ -1775,7 +1833,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     protected static final String BUFFER_IN_MEMORY_ONLY_SWITCH = "-m";
 
-    private int _doBufferCreate(InputLine inputLine) {
+    protected Object _doBufferCreate(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("create alias {path | " + BUFFER_IN_MEMORY_ONLY_SWITCH + "}");
             sayi("create a new buffer for the path and give it the local name of alias.");
@@ -1865,7 +1923,7 @@ public class WorkspaceCommands implements Logable, Serializable {
      * @param inputLine
      * @return
      */
-    private int doEnvCommand(InputLine inputLine) {
+    protected Object doEnvCommand(InputLine inputLine) {
         if (!inputLine.hasArgAt(ACTION_INDEX)) {
             return _envList(inputLine);
         }
@@ -1923,7 +1981,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
     }
 
-    private int _envSave(InputLine inputLine) {
+    protected Object _envSave(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("save [filename]");
             sayi("Saves the environment. If there is a default file it will save to that.");
@@ -1948,7 +2006,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
-    private int _envLoad(InputLine inputLine) {
+    protected Object _envLoad(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("load file");
             sayi("Load the given file as the current environment. This adds to the current environment");
@@ -1978,7 +2036,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
-    private int _envDrop(InputLine inputLine) {
+    protected Object _envDrop(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("drop variable");
             say("Drop i.e. remove the named variable from the environment.");
@@ -1995,7 +2053,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
-    private int _envGet(InputLine inputLine) {
+    protected Object _envGet(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("get variable");
             sayi("get the value for the given variable,");
@@ -2011,7 +2069,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
-    private int _envSet(InputLine inputLine) {
+    protected Object _envSet(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("set variable value");
             sayi("sets the variable to the given value. Caution, only string values are " +
@@ -2044,7 +2102,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
-    private int _envList(InputLine inputLine) {
+    protected Object _envList(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("list");
             sayi("List all the variables and their values in the current environment.");
@@ -2068,7 +2126,7 @@ public class WorkspaceCommands implements Logable, Serializable {
      * @param inputLine
      * @return
      */
-    private int doModulesCommand(InputLine inputLine) {
+    protected Object doModulesCommand(InputLine inputLine) {
         if (inputLine.hasArg(HELP_SWITCH)) {
             say("Modules commands:");
             sayi("[list] - list all loaded modules and their aliases. Default is to list modules.");
@@ -2134,7 +2192,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
     }
 
-    private int _moduleImports(InputLine inputLine) {
+    protected Object _moduleImports(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("imports");
             sayi("A table of imported modules and their aliases. ");
@@ -2154,7 +2212,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return printList(inputLine, aliases);
     }
 
-    private int _modulesList(InputLine inputLine) {
+    protected Object _modulesList(InputLine inputLine) {
         TreeSet<String> m = new TreeSet<>();
         if (getState().getMTemplates().keySet() == null || getState().getMTemplates().keySet().isEmpty()) {
             say("(no imported modules)");
@@ -2199,7 +2257,7 @@ public class WorkspaceCommands implements Logable, Serializable {
      * @param inputLine
      * @return
      */
-    private int doFuncs(InputLine inputLine) {
+    protected Object doFuncs(InputLine inputLine) {
         if ((!inputLine.hasArg(HELP_SWITCH)) && (!inputLine.hasArgs() || inputLine.getArg(ACTION_INDEX).startsWith(SWITCH))) {
             return _funcsList(inputLine);
         }
@@ -2232,7 +2290,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
-    private int _doFuncEdit(InputLine inputLine) {
+    protected Object _doFuncEdit(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("edit {arg_count} - edit the function with arg_count arguments");
             say("arg_count - a zero or positive integer. If omitted, the default is 0");
@@ -2283,7 +2341,15 @@ public class WorkspaceCommands implements Logable, Serializable {
 //            return RC_NO_OP;
         }
         List<String> f = StringUtils.stringToList(inputForm);
-        if (useExternalEditor()) {
+        List<String> output = new ArrayList<>();
+        Object rc = functionEdit(f, output, fName, argCount);
+        if (rc instanceof Response) {
+            return rc;
+        }
+        if (rc.equals(RC_CONTINUE)) {
+            return RC_CONTINUE;
+        }
+/*        if (useExternalEditor()) {
             f = _doExternalEdit(f);
         } else {
             if (isSwingGUI()) {
@@ -2297,16 +2363,35 @@ public class WorkspaceCommands implements Logable, Serializable {
             }
             f = _doLineEditor(f);
 
-        }
-        return restoreFunction(f, fName, argCount);
+        }*/
+        return restoreFunction(output, fName, argCount);
     }
 
-    protected int restoreFunction(List<String> f, String fName, int argCount){
+    public Object functionEdit(List<String> inputForm, List<String> output, String fName, int argCount) {
+        // return value is thje return code or response, so pass in output as argument.
+        if (useExternalEditor()) {
+            inputForm = _doExternalEdit(inputForm);
+        } else {
+            if (isSwingGUI()) {
+                QDLEditor qdlEditor = new QDLEditor();
+                qdlEditor.setWorkspaceCommands(this); // or callback fails
+                qdlEditor.setType(EditDoneEvent.TYPE_FUNCTION);
+                qdlEditor.setLocalName(fName);
+                qdlEditor.setArgState(argCount);
+                qdlEditor.setup(StringUtils.listToString(inputForm));
+                return RC_CONTINUE;
+            }
+            inputForm = _doLineEditor(inputForm);
+        }
+        return RC_NO_OP;
+    }
+
+    public Object restoreFunction(List<String> inputForm, String fName, int argCount) {
         try {
-            getInterpreter().execute(f);
+            getInterpreter().execute(inputForm);
             // Might not need these next two statements after revisions of FStack?
             FR_WithState fr_withState = getState().resolveFunction(fName, argCount, true); // get it again because it was overwritten
-            fr_withState.functionRecord.sourceCode = f; // update source in the record.
+            fr_withState.functionRecord.sourceCode = inputForm; // update source in the record.
         } catch (Throwable t) {
             if (DebugUtil.isEnabled()) {
                 t.printStackTrace();
@@ -2316,7 +2401,8 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         return RC_CONTINUE;
     }
-    private int _funcsDrop(InputLine inputLine) {
+
+    protected Object _funcsDrop(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("drop fname [arg_count]");
             sayi("Removes the function from the current workspace. Note this applies to user-defined functions, not imported functions.");
@@ -2346,7 +2432,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
-    private int _funcsHelp(InputLine inputLine) {
+    protected Object _funcsHelp(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("help [fname arg_count] [-r regex]");
             sayi("List help for functions.");
@@ -2394,7 +2480,7 @@ public class WorkspaceCommands implements Logable, Serializable {
      * @param list      A simple list items, e.g., names of functions or variables.
      * @return
      */
-    protected int printList(InputLine inputLine, TreeSet<String> list) {
+    protected Object printList(InputLine inputLine, TreeSet<String> list) {
         if (list.isEmpty()) {
             return RC_CONTINUE;
         }
@@ -2476,7 +2562,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
-    protected int _funcsListSystem(InputLine inputLine) {
+    protected Object _funcsListSystem(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("system");
             sayi("List all system (built-in) functions.");
@@ -2485,7 +2571,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
         boolean listFQ = inputLine.hasArg(FQ_SWITCH);
         TreeSet<String> funcs = getState().getMetaEvaluator().listFunctions(listFQ);
-        int rc = printList(inputLine, funcs);
+        Object rc = printList(inputLine, funcs);
         say(funcs.size() + " total functions");
         return rc;
     }
@@ -2494,7 +2580,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     public static final String LIST_INTRINSIC_SWITCH = "-intrinsic";
     public static final String LIST_EXTRINSIC_SWITCH = "-extrinsic";
 
-    protected int _funcsList(InputLine inputLine) {
+    protected Object _funcsList(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("list [" + COMPACT_ALIAS_SWITCH + "|" + LIST_MODULES_SWITCH + "]");
             sayi("List all user defined functions.");
@@ -2512,7 +2598,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         boolean useCompactNotation = inputLine.hasArg(COMPACT_ALIAS_SWITCH);
         TreeSet<String> funcs = getState().listFunctions(useCompactNotation, null, includeModules, showIntrinsic);
         // These are fully qualified.
-        int rc = -1;
+        Object rc = -1;
         if (listFQ) {
             rc = printList(inputLine, funcs);
             say(funcs.size() + " total functions");
@@ -2534,13 +2620,77 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     /**
+     * This is used in public facing queries to the workspace, from e.g. an SAS
+     * instance getting/updating the current functions in the workspace.
+     *
+     * @return
+     */
+    public List<String> getFunctionList() {
+        List<String> functions = new ArrayList<>();
+        functions.addAll(state.getMetaEvaluator().listFunctions(false));
+        functions.addAll(state.listFunctions(true,
+                null, true, false));
+        return functions;
+    }
+
+    protected String[] resolveRealHelpName(String text) {
+        String realName = null;
+        String altName = null;
+        if (onlineHelp.containsKey(text) || altLookup.getByValue(text) != null) { // show single topic
+            if (onlineHelp.containsKey(text)) {
+                realName = text;
+                altName = altLookup.get(realName);
+            } else {
+                altName = text;
+                realName = altLookup.getByValue(text);
+            }
+            return new String[]{realName, altName};
+        }
+        return null;
+    }
+
+    public String getHelpTopic(String text) {
+        String[] names = resolveRealHelpName(text);
+        if (names == null) {
+            return null;
+        }
+        String realName = names[0];
+        String altName = names[1];
+        // now we have the real name (main entry name) and the alt name.
+        String out = onlineHelp.get(realName);
+        if (altName != null) {
+            String altKey = null;
+            if (QDLTerminal.getReverseCharLookupMap().containsKey(altName)) {
+                altKey = QDLTerminal.getReverseCharLookupMap().get(altName);
+            }
+            out = out + "\n" + "unicode: " + altName + " (" + StringUtils.toUnicode(altName) + ")" + (altKey == null ? "" : ", alt + " + altKey);
+        }
+        return out;
+    }
+
+    public String getHelpTopicExample(String text) {
+        String[] names = resolveRealHelpName(text);
+        if (names == null) {
+            return "sorry, no help for '" + text + "'";
+        }
+        if (names == null) {
+            return null;
+        }
+        if (onlineExamples.containsKey(names[0])) {
+            return onlineExamples.get(names[0]);
+        }
+        return null;
+    }
+
+
+    /**
      * Either show all variables (no arg or argument of "list") or <br/><br/>
      * drop name -- remove the given symbol from the local symbol table. This does not effect modules.
      *
      * @param inputLine
      * @return
      */
-    private int doVars(InputLine inputLine) {
+    protected Object doVars(InputLine inputLine) {
         if (!inputLine.hasArg(HELP_SWITCH) && (!inputLine.hasArgs() || inputLine.getArg(ACTION_INDEX).startsWith(SWITCH))) {
             return _varsList(inputLine);
         }
@@ -2584,7 +2734,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     public static final String EDIT_TEXT_FLAG = "-x";
 
-    private int _doVarEdit(InputLine inputLine) {
+    protected Object _doVarEdit(InputLine inputLine) {
         // process flags first
         boolean isText = inputLine.hasArg(EDIT_TEXT_FLAG);
         inputLine.removeSwitch(EDIT_TEXT_FLAG);
@@ -2614,7 +2764,15 @@ public class WorkspaceCommands implements Logable, Serializable {
                 content.add(inputForm);
             }
         }
-
+        List<String> output = new ArrayList<>();
+        Object rc = editVariable(content, output, varName, isText, isStem);
+        if (rc instanceof Response) {
+            return rc;
+        }
+        if (rc.equals(RC_CONTINUE)) {
+            return rc;
+        }
+/*
         if (useExternalEditor()) {
             content = _doExternalEdit(content);
         } else {
@@ -2622,16 +2780,35 @@ public class WorkspaceCommands implements Logable, Serializable {
                 QDLEditor qdlEditor = new QDLEditor();
                 qdlEditor.setType(EditDoneEvent.TYPE_VARIABLE);
                 qdlEditor.setLocalName(varName);
-                qdlEditor.setArgState((isText?1:0) + (isStem?2:0));
+                qdlEditor.setArgState((isText ? 1 : 0) + (isStem ? 2 : 0));
                 qdlEditor.setup(StringUtils.listToString(content));
                 return RC_CONTINUE;
             }
             content = _doLineEditor(content);
         }
+
+*/
         return restoreVariable(varName, content, isText, isStem);
     }
 
-    protected int restoreVariable(String varName, List<String> content, boolean isText, boolean isStem) {
+    public Object editVariable(List<String> inputForm, List<String> output, String varName, boolean isText, boolean isStem) {
+        if (useExternalEditor()) {
+            output = _doExternalEdit(inputForm);
+        } else {
+            if (isSwingGUI()) {
+                QDLEditor qdlEditor = new QDLEditor();
+                qdlEditor.setType(EditDoneEvent.TYPE_VARIABLE);
+                qdlEditor.setLocalName(varName);
+                qdlEditor.setArgState((isText ? 1 : 0) + (isStem ? 2 : 0));
+                qdlEditor.setup(StringUtils.listToString(inputForm));
+                return RC_CONTINUE;
+            }
+            output = _doLineEditor(inputForm);
+        }
+        return RC_NO_OP;
+    }
+
+    public Object restoreVariable(String varName, List<String> content, boolean isText, boolean isStem) {
         if (isText) {
             if (isStem) {
                 QDLStem newStem = new QDLStem();
@@ -2662,13 +2839,13 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
-    protected int _varsSystem(InputLine inputLine) {
+    protected Object _varsSystem(InputLine inputLine) {
         TreeSet<String> sysVars = new TreeSet<>();
         //  sysVars.addAll(getState().getSystemVars().listVariables());
         return printList(inputLine, sysVars);
     }
 
-    private int _varsDrop(InputLine inputLine) {
+    protected Object _varsDrop(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("drop name");
             sayi("Drops i.e. removes the given variable from the current workspace.");
@@ -2684,7 +2861,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
-    private int _varsList(InputLine inputLine) {
+    protected Object _varsList(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("list [" + COMPACT_ALIAS_SWITCH + "]");
             sayi("Lists the variables in the current workspace.");
@@ -2724,7 +2901,7 @@ public class WorkspaceCommands implements Logable, Serializable {
      * @param inputLine
      * @return
      */
-    private int doHelp(InputLine inputLine) {
+    protected Object doHelp(InputLine inputLine) {
         if (!inputLine.hasArgs()) { // so no arguments
             showGeneralHelp();
             return RC_CONTINUE;
@@ -2746,16 +2923,14 @@ public class WorkspaceCommands implements Logable, Serializable {
             }
             return printList(inputLine, treeSet);
         }
-        if (name.equals(ONLINE_HELP_COMMAND)) {
+        if (name.equals(ONLINE_HELP_COMMAND)) {  // show every topic
             TreeSet<String> treeSet = new TreeSet<>();
             // For display in full listing
             for (String key : onlineHelp.keySet()) {
                 if (altLookup.containsKey(key)) {
                     treeSet.add(key + " (" + altLookup.get(key) + ")");
-
                 } else {
                     treeSet.add(key);
-
                 }
             }
             //treeSet.addAll(onlineHelp.keySet());
@@ -2767,39 +2942,38 @@ public class WorkspaceCommands implements Logable, Serializable {
             return printList(inputLine, treeSet);
 
         }
-        if (onlineHelp.containsKey(name) || altLookup.getByValue(name) != null) {
-            String realName = null;
-            String altName = null;
-            if (onlineHelp.containsKey(name)) {
-                realName = name;
-                altName = altLookup.get(realName);
-            } else {
-                altName = name;
-                realName = altLookup.getByValue(name);
-            }
+        String[] names = resolveRealHelpName(name);
 
+
+        if (names == null) {
+            say("no examples for " + name);
+        } else {
+
+            String realName = names[0];
+            String altName = names[1];
             if (doOnlineExample) {
-                if (onlineExamples.containsKey(realName)) {
-                    say(onlineExamples.get(realName));
-
-                } else {
+                String x = getHelpTopic(realName);
+                if (x == null) {
                     say("no examples for " + name);
+                } else {
+                    say(x);
                 }
+
             } else {
-                say(onlineHelp.get(realName));
-                if (altName != null) {
-                    String altKey = null;
-                    if (QDLTerminal.getReverseCharLookupMap().containsKey(altName)) {
-                        altKey = QDLTerminal.getReverseCharLookupMap().get(altName);
+                String x = getHelpTopic(realName);
+                if (x == null) {
+                    say("no help for " + name);
+                } else {
+                    say(onlineHelp.get(realName));
+                    if (onlineExamples.containsKey(realName)) {
+                        say("use -ex to see examples for this topic.");
                     }
-                    say("unicode: " + altName + " (" + StringUtils.toUnicode(altName) + ")" + (altKey == null ? "" : ", alt + " + altKey));
-                }
-                if (onlineExamples.containsKey(realName)) {
-                    say("use -ex to see examples for this topic.");
                 }
             }
             return RC_CONTINUE;
         }
+
+
         if (name.endsWith(State.NS_DELIMITER)) {
             List<String> doxx = getState().listModuleDoc(name);
             if (doxx.isEmpty()) {
@@ -2812,6 +2986,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             return RC_CONTINUE;
 
         }
+
         // Not a system function, so see if it is user defined. Find any arg count first
         int argCount = -1; // means return every similarly named function.
         String rawArgCount = null;
@@ -2823,10 +2998,12 @@ public class WorkspaceCommands implements Logable, Serializable {
             if (rawArgCount != null) {
                 argCount = Integer.parseInt(rawArgCount);
             }
-        } catch (Throwable t) {
+        } catch (
+                Throwable t) {
             say("Sorry, but \"" + rawArgCount + "\" is not an integer");
             return RC_CONTINUE;
         }
+
         List<String> doxx = getState().listFunctionDoc(name, argCount);
         if (doxx.isEmpty()) {
             if (-1 < argCount) {
@@ -2874,7 +3051,7 @@ public class WorkspaceCommands implements Logable, Serializable {
      * @param inputLine
      * @return
      */
-    protected int doWS(InputLine inputLine) {
+    protected Object doWS(InputLine inputLine) {
         if (!inputLine.hasArgs()) { // so no arguments
             say("no command found");
             return RC_CONTINUE;
@@ -2931,7 +3108,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     }
 
-    private int _wsListDrop(InputLine inputLine) {
+    protected Object _wsListDrop(InputLine inputLine) {
         // Drop a workspace or collection of them
         if (inputLine.hasArg("--help")) {
             say(")lib drop file | " + REGEX_SWITCH + " regex [-f]");
@@ -3024,7 +3201,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
 
-    private int _fileVFS(InputLine inputLine) {
+    protected Object _fileVFS(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("vfs");
             sayi("Print any information about mounted virtual file systems.");
@@ -3757,7 +3934,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return wsLibEntry;
     }
 
-    private int _wsSet(InputLine inputLine) {
+    protected Object _wsSet(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("set ws_variable value");
             sayi("Set the value of the given workspace variable topo the given value.");
@@ -3900,7 +4077,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             case SAVE_DIR:
                 try {
                     VFSEntry vfsEntry = getState().getFileFromVFS(value, 0);
-                    if(vfsEntry != null){
+                    if (vfsEntry != null) {
 
                     }
                 } catch (Throwable e) {
@@ -4026,7 +4203,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
 
-    private int _wsEchoMode(InputLine inputLine) {
+    protected Object _wsEchoMode(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("echo (on | off) [-pp (on | off)]");
             sayi("Toggle the echo mode so every command is printed if it has output.");
@@ -4062,7 +4239,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
-    private int _wsClear(InputLine inputLine) {
+    protected Object _wsClear(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("clear [" + RELOAD_FLAG + "]");
             sayi("Clear the state *completely*. This includes all virtual file systems and buffers.");
@@ -4562,7 +4739,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     public final String RELOAD_FLAG = SWITCH + "reload";
     public final String SKIP_BAD_MODULES_FLAG = SWITCH + "skip_bad_modules";
 
-    private int _wsLoad(InputLine inputLine) {
+    protected Object _wsLoad(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             say("load [filename] [" + KEEP_WSF + "] ");
 
@@ -4822,7 +4999,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     State state;
 
-    protected State getState() {
+    public State getState() {
         if (state == null) {
             VStack stack = new VStack();
             state = new State(
@@ -4917,7 +5094,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         this.qdlEditors = qdlEditors;
     }
 
-    protected void fromConfigFile(InputLine inputLine) throws Throwable {
+    public void fromConfigFile(InputLine inputLine) throws Throwable {
         String cfgname = inputLine.hasArg(CONFIG_NAME_FLAG) ? inputLine.getNextArgFor(CONFIG_NAME_FLAG) : "default";
 //      Old style -- single inheritance
         ConfigurationNode node = ConfigUtil.findConfiguration(

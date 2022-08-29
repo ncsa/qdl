@@ -212,6 +212,12 @@
             <artifactId>flatlaf</artifactId>
             <version>2.4</version>
         </dependency>
+        <dependency>
+            <groupId>edu.uiuc.ncsa.security</groupId>
+            <artifactId>sas-server</artifactId>
+            <version>5.2-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 
     <profiles>
