@@ -23,6 +23,7 @@ public interface VFSEntry extends Serializable {
     byte[] getContents();
     String getType();
     boolean isBinaryType();
+    byte[] getBytes();
     QDLStem convertToStem();
     String getPath();
     void setPath(String newPath);

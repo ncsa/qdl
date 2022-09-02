@@ -17,11 +17,14 @@ import edu.uiuc.ncsa.security.storage.sql.mysql.MySQLConnectionPool;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/** Large and complex text of the VFS (Virtual File System). This repeats the
+/**
+ * Large and complex text of the VFS (Virtual File System). This repeats the
  * same tests on several different store types, including databases, zip files
  * and the underlying file system.
  * <p>Created by Jeff Gaynor<br>
@@ -92,6 +95,7 @@ public class VFSTest extends AbstractQDLTester {
         testStayInStore(vfs);
         testWriteable(vfs);
         testReadable(vfs);
+        testBinaryRoundTrip(vfs);
     }
 
     protected void testMkdir(VFSFileProvider vfs) throws Throwable {
@@ -145,6 +149,60 @@ public class VFSTest extends AbstractQDLTester {
         vfs.rmdir(testHeadPath + "VFS_TEST/a");
         assert vfs.dir(testHeadPath + "VFS_TEST").length == 0;
         vfs.rmdir(testHeadPath + "VFS_TEST");
+    }
+
+    protected void testBinaryRoundTrip(VFSFileProvider vfs1) throws Throwable {
+        if (!(vfs1 instanceof VFSPassThruFileProvider)) {
+            return; // not supported at this time
+        }
+        int byteCount = 2048;
+        // First test: write a binary file outside of the VFS. It should get read by the VFS correctly
+        VFSPassThruFileProvider vfs = (VFSPassThruFileProvider) vfs1;
+        String testHeadPath = vfs.getScheme() + VFSPaths.SCHEME_DELIMITER + vfs.getMountPoint();
+        String testFileName = "bin_read_test.txt";
+        String p = testHeadPath + testFileName;
+        String realPath = vfs.getRealPath(p);
+        File file = new File(realPath);
+        file.deleteOnExit(); // clean up.
+
+        byte[] bytes = new byte[byteCount];
+        getRandom().nextBytes(bytes);
+        // first test. Create a file and
+        Files.write(Paths.get(realPath), bytes);
+
+        VFSEntry vfsEntry = vfs.get(p, AbstractEvaluator.FILE_OP_BINARY);
+        assert vfsEntry.isBinaryType();
+        byte[] readBytes = vfsEntry.getBytes();
+        assert readBytes.length == bytes.length : "Wrong byte count. Exprected " + bytes.length + " but got " + readBytes.length;
+        for (int i = 0; i < bytes.length; i++) {
+            if (bytes[i] != readBytes[i]) {
+                assert false : "byte comparison failed at index " + i + ", wanted " + ((char) bytes[i]) + " but got " + ((char) readBytes[i]);
+            }
+        }
+        // Second test: Write a binary file using the VFS, read it directly.
+
+        testFileName = "bin_write_test.txt";
+        p = testHeadPath + testFileName;
+        realPath = vfs.getRealPath(p);
+        file = new File(realPath);
+        file.deleteOnExit(); // clean up.
+
+         bytes = new byte[byteCount];
+        getRandom().nextBytes(bytes);
+        FileEntry fileEntry = new FileEntry(bytes);
+        assert fileEntry.isBinaryType();
+        vfs.put(p, fileEntry);
+        // so read it now
+        readBytes = Files.readAllBytes(Paths.get(realPath));
+
+        assert readBytes.length == bytes.length : "Wrong byte count. Exprected " + bytes.length + " but got " + readBytes.length;
+        for (int i = 0; i < bytes.length; i++) {
+            if (bytes[i] != readBytes[i]) {
+                assert false : "byte comparison failed at index " + i + ", wanted " + ((char) bytes[i]) + " but got " + ((char) readBytes[i]);
+            }
+        }
+
+
     }
 
     protected void testReadable(VFSFileProvider vfs) throws Throwable {
@@ -293,7 +351,7 @@ public class VFSTest extends AbstractQDLTester {
         assert entry.getLines().get(1).equals(fileEntry.getLines().get(1));
 
         // And now the reader
-         entry1 = vfs.get(p, AbstractEvaluator.FILE_OP_INPUT_STREAM);
+        entry1 = vfs.get(p, AbstractEvaluator.FILE_OP_INPUT_STREAM);
         bufferedReader = new BufferedReader(new InputStreamReader(entry1.getInputStream()));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(0));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(1));
@@ -343,7 +401,7 @@ public class VFSTest extends AbstractQDLTester {
         assert entry.getLines().get(1).equals(fileEntry.getLines().get(1));
 
         // And now the reader
-         entry1 = vfs.get(p, AbstractEvaluator.FILE_OP_INPUT_STREAM);
+        entry1 = vfs.get(p, AbstractEvaluator.FILE_OP_INPUT_STREAM);
         bufferedReader = new BufferedReader(new InputStreamReader(entry1.getInputStream()));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(0));
         assert bufferedReader.readLine().equals(fileEntry.getLines().get(1));
@@ -657,7 +715,8 @@ public class VFSTest extends AbstractQDLTester {
         }
         assert good : "was able to access file in server mode.";
     }
-    boolean testServerCall(StringBuffer script, State state) throws Throwable{
+
+    boolean testServerCall(StringBuffer script, State state) throws Throwable {
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         boolean good = false;
         try {
@@ -673,9 +732,10 @@ public class VFSTest extends AbstractQDLTester {
      * There are many places where server mode should prohibit access. This is a list
      * of them for regression testing, since having this contract change without warning
      * could be very bad  indeed for any servers.
+     *
      * @throws Throwable
      */
-    public void testServerModes() throws Throwable{
+    public void testServerModes() throws Throwable {
         String rootDir = "/home/ncsa/dev/ncsa-git/qdl/language/src/test/resources";
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();

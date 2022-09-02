@@ -5,6 +5,7 @@ import edu.uiuc.ncsa.qdl.exceptions.QDLIOException;
 import edu.uiuc.ncsa.qdl.util.QDLVersion;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 
+import static edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.FILE_OP_BINARY;
 import static edu.uiuc.ncsa.qdl.vfs.VFSPaths.*;
 
 /**
@@ -136,9 +137,10 @@ public abstract class AbstractVFSFileProvider implements VFSFileProvider {
      * @param path
      * @return
      */
-   public static boolean isAbsolute(String path) {
+    public static boolean isAbsolute(String path) {
         return getUnqPath(path).startsWith(VFSPaths.PATH_SEPARATOR);
     }
+
     /**
      * Resolves this against any current directory and returns the unqualified *relative* path against the
      * store's root path.
@@ -248,28 +250,38 @@ public abstract class AbstractVFSFileProvider implements VFSFileProvider {
         return new String[0];
     }
 
+    @Override
+    public boolean isDirectory(String path) {
+        if (!canRead()) {
+            throw new QDLIOException("Error: You do not have permission to read from the virtual file system");
+        }
+        checkPath(path);
+        return false;
+    }
+
     /**
-       * Use this for stores that keep everything in a flat list (like a database table or hash map of file
-       * paths.) You use {@link VFSPaths#toPathComponents(String)} on the argument to the {@link #dir(String)}command
-       * and specify if it is the root node (since figuring that out is store dependent). This then compares
-       * paths by lengths to give back the right one.
-       * @param top
-       * @param target
-       * @param isRoot
-       * @return
-       */
-      protected boolean isChildOf(String[] top, String target, boolean isRoot) {
-          String[] other = VFSPaths.toPathComponents(target);
-          if (isRoot) {
-              // Special case of the root directory
-              if (other.length == 1) return true;
-          }
-          if (top.length + 1 != other.length) return false;
-          for (int i = 0; i < top.length; i++) {
-              if (!top[i].equals(other[i])) return false;
-          }
-          return true;
-      }
+     * Use this for stores that keep everything in a flat list (like a database table or hash map of file
+     * paths.) You use {@link VFSPaths#toPathComponents(String)} on the argument to the {@link #dir(String)}command
+     * and specify if it is the root node (since figuring that out is store dependent). This then compares
+     * paths by lengths to give back the right one.
+     *
+     * @param top
+     * @param target
+     * @param isRoot
+     * @return
+     */
+    protected boolean isChildOf(String[] top, String target, boolean isRoot) {
+        String[] other = VFSPaths.toPathComponents(target);
+        if (isRoot) {
+            // Special case of the root directory
+            if (other.length == 1) return true;
+        }
+        if (top.length + 1 != other.length) return false;
+        for (int i = 0; i < top.length; i++) {
+            if (!top[i].equals(other[i])) return false;
+        }
+        return true;
+    }
 
     @Override
     public boolean mkdir(String path) {
@@ -301,5 +313,14 @@ public abstract class AbstractVFSFileProvider implements VFSFileProvider {
     @Override
     public boolean easSupported() {
         return false;
+    }
+
+    @Override
+    public long length(String path) throws Throwable {
+        VFSEntry entry = get(path, FILE_OP_BINARY);
+        if (entry.getBytes() == null) {
+            return 0L;
+        }
+        return entry.getBytes().length;
     }
 }

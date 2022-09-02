@@ -5,6 +5,8 @@ import edu.uiuc.ncsa.qdl.exceptions.QDLIOException;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static edu.uiuc.ncsa.qdl.vfs.VFSPaths.PATH_SEPARATOR;
 
@@ -28,6 +30,7 @@ public class VFSPassThruFileProvider extends AbstractVFSFileProvider {
     public VFSEntry get(String path, int type) throws Throwable {
         super.get(path, type);
         String realPath = getRealPath(path);
+
         try {
             return FileEntries.fileToEntry(realPath, type);
         }catch(Throwable t){
@@ -44,9 +47,10 @@ public class VFSPassThruFileProvider extends AbstractVFSFileProvider {
     @Override
     public void put(String path, VFSEntry entry) throws Throwable {
         super.put(path, entry);
-
         if (entry.isBinaryType()) {
-            QDLFileUtil.writeFileAsBinary(getRealPath(path), entry.getText());
+            Files.write(Paths.get(getRealPath(path)), entry.getBytes());
+            
+            //QDLFileUtil.writeFileAsBinary(getRealPath(path), entry.getText());
         } else {
             QDLFileUtil.writeStringToFile(getRealPath(path), entry.getText());
         }
@@ -128,4 +132,19 @@ public class VFSPassThruFileProvider extends AbstractVFSFileProvider {
         }
         f.delete();
     }
+
+    @Override
+    public boolean isDirectory(String path) {
+        super.isDirectory(path);
+        String realPath = getRealPath(path);
+
+        File f = new File(realPath);
+        return f.isDirectory();
+    }
+    @Override
+    public long length(String path) throws Throwable {
+        return new File(getRealPath(path)).length(); // KISS
+    }
+
+
 }

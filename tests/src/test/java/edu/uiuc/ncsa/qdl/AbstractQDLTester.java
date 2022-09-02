@@ -271,13 +271,13 @@ public class AbstractQDLTester extends TestBase {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         WorkspaceCommands workspaceCommands = new WorkspaceCommands();
         workspaceCommands.setState(state);
-        workspaceCommands.javaSave(baos);
+        workspaceCommands._xmlWSJavaSave(baos);
 
         // Deserialize the workspace
         // Need pretty print. This takes the place or writing it to a file, then reading it.
         //  System.out.println("XML:\n" + pp);
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        workspaceCommands.javaLoad(bais);
+        workspaceCommands._xmlWSJavaLoad(bais);
         return workspaceCommands.getInterpreter().getState();
     }
 
@@ -295,7 +295,7 @@ public class AbstractQDLTester extends TestBase {
         OutputStreamWriter osw = new OutputStreamWriter(baos);
         WorkspaceCommands workspaceCommands = new WorkspaceCommands();
         workspaceCommands.setState(state);
-        workspaceCommands.qdlSave(osw);
+        workspaceCommands._xmlWSQDLSave(osw);
      //   System.out.println(new String(baos.toByteArray()));
 
         // Deserialize the workspace
@@ -304,7 +304,7 @@ public class AbstractQDLTester extends TestBase {
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         InputStreamReader inputStreamReader = new InputStreamReader(bais);
         QDLInterpreter qdlInterpreter  = new QDLInterpreter(null, state.newCleanState());
-        workspaceCommands.qdlLoad(qdlInterpreter, inputStreamReader);
+        workspaceCommands._xmlWSQDLLoad(qdlInterpreter, inputStreamReader);
         return qdlInterpreter.getState();
     }
 

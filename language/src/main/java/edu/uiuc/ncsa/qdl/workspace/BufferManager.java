@@ -1,12 +1,7 @@
 package edu.uiuc.ncsa.qdl.workspace;
 
-import edu.uiuc.ncsa.qdl.evaluate.IOEvaluator;
-import edu.uiuc.ncsa.qdl.expressions.ConstantNode;
-import edu.uiuc.ncsa.qdl.expressions.Polyad;
-import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.variables.Constant;
-import edu.uiuc.ncsa.qdl.variables.QDLStem;
+import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.vfs.VFSPaths;
 import edu.uiuc.ncsa.qdl.xml.XMLUtilsV2;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
@@ -21,9 +16,11 @@ import javax.xml.stream.events.XMLEvent;
 import java.io.File;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
-import static edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.FILE_OP_TEXT_STEM;
 import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
 
 /**
@@ -34,7 +31,7 @@ import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
 public class BufferManager implements Serializable {
 
 
-    public static class BufferRecord implements Serializable{
+    public static class BufferRecord implements Serializable {
         public String alias;
         public String src;
         public String link;
@@ -68,12 +65,12 @@ public class BufferManager implements Serializable {
 
         public String toString() {
             String x = alias + ": ";
-            if(memoryOnly){
+            if (memoryOnly) {
                 x = x + src;
-            }else{
-                x = x +  srcSavePath ;
-                if(isLink()){
-                 x = x +   " --> " + linkSavePath;
+            } else {
+                x = x + srcSavePath;
+                if (isLink()) {
+                    x = x + " --> " + linkSavePath;
                 }
             }
             return x;
@@ -94,10 +91,10 @@ public class BufferManager implements Serializable {
             xsw.writeAttribute(BR_EDITED, Boolean.toString(edited));
             xsw.writeAttribute(BR_DELETED, Boolean.toString(deleted));
             xsw.writeAttribute(BR_MEMORY_ONLY, Boolean.toString(memoryOnly));
-            if(srcSavePath != null){
+            if (srcSavePath != null) {
                 xsw.writeAttribute(BR_SOURCE_SAVE_PATH, srcSavePath);
             }
-            if(linkSavePath != null){
+            if (linkSavePath != null) {
                 xsw.writeAttribute(BR_LINK_SAVE_PATH, linkSavePath);
             }
             if (content != null && !content.isEmpty()) {
@@ -266,25 +263,8 @@ public class BufferManager implements Serializable {
     }
 
 
-    protected List<String> readFile(String fName) {
-        Polyad request = new Polyad(IOEvaluator.READ_FILE);
-        request.addArgument(new ConstantNode(fName, Constant.STRING_TYPE));
-        request.addArgument(new ConstantNode(new Long(FILE_OP_TEXT_STEM), Constant.LONG_TYPE));
-        getState().getMetaEvaluator().evaluate(request, getState());
-        if (request.getResultType() != Constant.STEM_TYPE) {
-            throw new IllegalStateException("Error: Could not read file \"" + fName + "\"");
-        }
-        QDLStem stem = (QDLStem) request.getResult();
-        if (stem == null) {
-            return null;
-        }
-        ArrayList<String> response = new ArrayList<>();
-        Iterator iterator = stem.getQDLList().iterator(true);
-        while(iterator.hasNext()){
-            response.add(iterator.next().toString());
-        }
-        return response;
-
+    protected List<String> readFile(String fName) throws Throwable {
+        return QDLFileUtil.readTextFileAsLines(getState(), fName);
     }
 
     public List<String> read(int index, boolean useSource) throws Throwable {
@@ -298,7 +278,6 @@ public class BufferManager implements Serializable {
     }
 
     /**
-     *
      * @param parent
      * @param name
      * @return
@@ -323,7 +302,7 @@ public class BufferManager implements Serializable {
         }
     }
 
-    public boolean write(BufferRecord currentBR) {
+    public boolean write(BufferRecord currentBR) throws Throwable {
         //BufferRecord currentBR = getBufferRecord(index);
         if (currentBR == null) {
             return false;
@@ -332,12 +311,8 @@ public class BufferManager implements Serializable {
 
         if (currentBR.isLink()) {
             // save br.link to br.src
-            String readIt = IOEvaluator.READ_FILE + "('" + currentBR.linkSavePath + "')";
-            String raw = IOEvaluator.WRITE_FILE + "('" + currentBR.srcSavePath + "'," + readIt + ");";
             try {
-                QDLInterpreter parser = new QDLInterpreter(getState());
-                parser.setEchoModeOn(false);// no output
-                parser.execute(raw);
+                QDLFileUtil.writeTextFile(getState(), QDLFileUtil.readTextFile(getState(), currentBR.linkSavePath), currentBR.srcSavePath);
             } catch (Throwable throwable) {
                 getState().error("could not write file", throwable);
                 return false;
@@ -347,19 +322,8 @@ public class BufferManager implements Serializable {
 
         if (currentBR.edited) {
             // Some save logic first
-            File f = new File(currentBR.src);
-            Polyad request = new Polyad(IOEvaluator.WRITE_FILE);
-            QDLStem stemVariable = new QDLStem();
-            List<Object> castList = new LinkedList<>();
-            castList.addAll(currentBR.getContent());
-            stemVariable.addList(castList);
-            request.addArgument(new ConstantNode(currentBR.srcSavePath, Constant.STRING_TYPE));
-            request.addArgument(new ConstantNode(stemVariable, Constant.STEM_TYPE));
-            Long type = new Long(FILE_OP_TEXT_STEM); // or it bombs as an integer
-            request.addArgument(new ConstantNode(type, Constant.LONG_TYPE)); // or its will be treated as binary
-            getState().getMetaEvaluator().evaluate(request, getState());
-            currentBR.setContent(null); // flush the buffer.
-            currentBR.edited = false;
+
+            QDLFileUtil.writeTextFile(getState(), currentBR.srcSavePath, currentBR.getContent());
             return true;
         }
         return false;

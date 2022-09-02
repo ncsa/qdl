@@ -90,4 +90,10 @@ public class VFSMemoryFileProvider extends AbstractVFSFileProvider {
         String realPath = getRealPath(path);
          map.remove(realPath);
     }
+
+    @Override
+    public boolean isDirectory(String path) {
+        super.isDirectory(path);
+        return map.containsKey(getRealPath(path));
+    }
 }

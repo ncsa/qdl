@@ -7,7 +7,6 @@ import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.workspace.QDLTerminal;
 import edu.uiuc.ncsa.qdl.workspace.QDLWorkspace;
 import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
-import edu.uiuc.ncsa.security.core.util.StringUtils;
 import edu.uiuc.ncsa.security.util.cli.InputLine;
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
@@ -24,6 +23,7 @@ import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.*;
 
+import static edu.uiuc.ncsa.security.core.util.StringUtils.isTrivial;
 import static java.awt.event.InputEvent.ALT_DOWN_MASK;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 
@@ -162,7 +162,7 @@ public class SwingTerminal implements TerminalInterface {
         output.setText("");
         scrollPane2.setViewportView(output);
         prompt = new JLabel();
-        prompt.setText("Label");
+        prompt.setText("    ");
         panel1.add(prompt, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
@@ -254,7 +254,6 @@ public class SwingTerminal implements TerminalInterface {
                         x = x.substring(0, position) + keyValue + (x.length() == position ? "" : x.substring(position));
                         input.setText(null);
                         input.setText(x);
-                        System.out.println(input.getText());
                         input.repaint();
                         try {
                             if (position < x.length()) {
@@ -329,7 +328,7 @@ public class SwingTerminal implements TerminalInterface {
                         text = text.trim();
                     }
 
-                    if (StringUtils.isTrivial(text)) {
+                    if (isTrivial(text)) {
                         String title1 = "Help for GUI";
                         String message1 = "F1 help for selected text or this message\n" +
                                 "ctrl+space autocomplete\n" +
@@ -380,18 +379,25 @@ public class SwingTerminal implements TerminalInterface {
         }
 
         protected String getHelp(String text) {
-            return createHelpMessage(
+            return createHelpMessage(workspaceCommands.getFunctionHelp(text),
                     workspaceCommands.getHelpTopic(text),
                     workspaceCommands.getHelpTopicExample(text));
         }
 
-        protected String createHelpMessage(String text, String example) {
-
-            if (StringUtils.isTrivial(text)) {
+        protected String createHelpMessage(String functionHelp, String text, String example) {
+            if (isTrivial(text) && isTrivial(functionHelp)) {
                 return "no help available for '" + text + "'";
             }
-            String message = text;
-            if (!StringUtils.isTrivial(example)) {
+
+            String message = "";
+            if (!isTrivial(functionHelp)) {
+                message = "\n--------\nUser defined functions\n--------\n" + functionHelp + "\n";
+            }
+
+            if (!isTrivial(text)) {
+                message = message + "\n--------\nOnline help\n--------\n" + text;
+            }
+            if (!isTrivial(example)) {
                 message = message + "\n--------\nExamples\n--------\n" + example;
             }
             return message;

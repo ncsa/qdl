@@ -88,6 +88,30 @@ public class QDLSwingUtil {
         provider.addCompletion(new BasicCompletion(provider, "Stem"));
         provider.addCompletion(new BasicCompletion(provider, "String"));
 
+        // workspace commands -- can't start with a ) since auto complete for () completely screws up
+        provider.addCompletion(new BasicCompletion(provider, "buffer"));
+        provider.addCompletion(new BasicCompletion(provider, "clear"));
+        provider.addCompletion(new BasicCompletion(provider, "edit"));
+        provider.addCompletion(new BasicCompletion(provider, "env"));
+        provider.addCompletion(new BasicCompletion(provider, "funcs"));
+        provider.addCompletion(new BasicCompletion(provider, "help"));
+        provider.addCompletion(new BasicCompletion(provider, "load"));
+        provider.addCompletion(new BasicCompletion(provider, "modules"));
+        provider.addCompletion(new BasicCompletion(provider, "off"));
+        provider.addCompletion(new BasicCompletion(provider, "save"));
+        provider.addCompletion(new BasicCompletion(provider, "si"));
+        provider.addCompletion(new BasicCompletion(provider, "vars"));
+        provider.addCompletion(new BasicCompletion(provider, "ws"));
+
+
+        provider.addCompletion(new BasicCompletion(provider, "list"));
+        provider.addCompletion(new BasicCompletion(provider, "link"));
+        provider.addCompletion(new BasicCompletion(provider, "create"));
+        provider.addCompletion(new BasicCompletion(provider, "read"));
+        provider.addCompletion(new BasicCompletion(provider, "write"));
+        provider.addCompletion(new BasicCompletion(provider, "drop"));
+
+
         // Add a couple of "shorthand" completions. These completions don't
         // require the input text to be the same thing as the replacement text.
    /*

@@ -9,9 +9,9 @@ import edu.uiuc.ncsa.qdl.module.QDLModule;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
-import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.SparseEntry;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
@@ -233,7 +233,7 @@ public class XMLUtils implements XMLConstants {
                             doLoop = false;
                             break;
                     }
-                    if(doLoop) { // only advance the cursor if we have whitespace!
+                    if (doLoop) { // only advance the cursor if we have whitespace!
                         xe = xer.nextEvent();
                     }
                 }
@@ -648,9 +648,8 @@ public class XMLUtils implements XMLConstants {
 
     }
 
-    public static XMLEventReader getReader(File f) {
+    public static XMLEventReader getXMLEventReader(Reader reader) {
         try {
-            FileReader reader = new FileReader(f);
             XMLInputFactory xmlif = XMLInputFactory.newInstance();
             return xmlif.createXMLEventReader(reader);
         } catch (Throwable t) {
@@ -658,6 +657,31 @@ public class XMLUtils implements XMLConstants {
         return null;
 
     }
+
+
+
+    public static XMLEventReader getReader(File f) {
+        try {
+            return getXMLEventReader(new FileReader(f));
+        } catch (Throwable throwable) {
+
+        }
+        return null;
+    }
+
+    public static XMLEventReader getZippedReader(byte[] byteArray) {
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(byteArray);
+            // Reconstruct the XML as a string, preserving whitespace.
+            GZIPInputStream gzipInputStream = new GZIPInputStream(bais, 65536);
+            Reader r = new InputStreamReader(gzipInputStream);
+            return getXMLEventReader(r);
+        } catch (IOException ioException) {
+
+        }
+        return null;
+    }
+
 
     public static XMLEventReader getZippedReader(File f) {
         FileInputStream fis = null;
@@ -668,12 +692,14 @@ public class XMLUtils implements XMLConstants {
             byte[] b = new byte[(int) f.length()];
             fis.read(b);
             fis.close();
+            return getZippedReader(b);
+/*
             ByteArrayInputStream bais = new ByteArrayInputStream(b);
             // Reconstruct the XML as a string, preserving whitespace.
             gzipInputStream = new GZIPInputStream(bais, 65536);
             Reader r = new InputStreamReader(gzipInputStream);
-            XMLInputFactory xmlif = XMLInputFactory.newInstance();
-            return xmlif.createXMLEventReader(r);
+            return getXMLEventReader(r);
+*/
         } catch (Throwable t) {
             if (fis != null) {
                 try {

@@ -2,6 +2,7 @@ package edu.uiuc.ncsa.qdl.vfs;
 
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
+import edu.uiuc.ncsa.security.core.util.StringUtils;
 import org.apache.commons.codec.binary.Base64;
 
 import java.io.*;
@@ -27,7 +28,8 @@ public class FileEntry implements VFSEntry {
     List<String> lines = new ArrayList<>();
 
     public boolean isBinaryType() {
-        return getType().equals(BINARY_TYPE);
+      //  return getType().equals(BINARY_TYPE);
+        return getProperties().getString(CONTENT_TYPE).equals(BINARY_TYPE);
     }
 
     public boolean hasContent() {
@@ -38,6 +40,39 @@ public class FileEntry implements VFSEntry {
         this.xp = xp;
     }
 
+    public FileEntry(byte[] bytes) {
+        XProperties xp = new XProperties();
+        xp.put(FileEntry.CONTENT_TYPE, FileEntry.BINARY_TYPE);
+        this.xp = xp;
+        this.bytes = bytes;
+    }
+
+    public FileEntry(byte[] bytes, XProperties xp) {
+        this.bytes = bytes;
+        xp.put(FileEntry.CONTENT_TYPE, FileEntry.BINARY_TYPE);
+        this.xp = xp;
+    }
+
+    public byte[] getBytes() {
+        return bytes;
+    }
+
+    public void setBytes(byte[] bytes) {
+        this.bytes = bytes;
+    }
+
+    byte[] bytes = null;
+
+    public FileEntry(List<String> lines) {
+        XProperties xp = new XProperties();
+        xp.put(CONTENT_TYPE, TEXT_TYPE);
+        this.lines = lines;
+        this.xp = xp;
+    }
+    public FileEntry(String lines) {
+        this(StringUtils.stringToList(lines));
+
+    }
     public FileEntry(List<String> lines, XProperties xp) {
         this.xp = xp;
         this.lines = lines;
@@ -59,6 +94,9 @@ public class FileEntry implements VFSEntry {
 
     @Override
     public byte[] getContents() {
+        if(bytes != null){
+            return bytes;
+        }
         if (getProperties().getString(CONTENT_TYPE).equals(TEXT_TYPE)) {
             return getText().getBytes();
         }

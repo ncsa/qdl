@@ -212,14 +212,14 @@ public class WSXMLSerializer {
             json.put(RUN_SCRIPT_PATH, workspaceCommands.runScriptPath);
         }
         if (workspaceCommands.currentWorkspace != null) {
-            json.put(CURRENT_WORKSPACE, workspaceCommands.currentWorkspace.getAbsolutePath());
+            json.put(CURRENT_WORKSPACE, workspaceCommands.currentWorkspace);
         }
 
         if (workspaceCommands.rootDir != null) {
-            json.put(ROOT_DIR, workspaceCommands.rootDir.getAbsolutePath());
+            json.put(ROOT_DIR, workspaceCommands.rootDir);
         }
         if (workspaceCommands.saveDir != null) {
-            json.put(SAVE_DIR, workspaceCommands.saveDir.getAbsolutePath());
+            json.put(SAVE_DIR, workspaceCommands.saveDir);
         }
         if (workspaceCommands.description != null) {
             json.put(DESCRIPTION, workspaceCommands.description);
@@ -262,14 +262,14 @@ public class WSXMLSerializer {
             xsw.writeAttribute(RUN_SCRIPT_PATH, workspaceCommands.runScriptPath);
         }
         if (workspaceCommands.currentWorkspace != null) {
-            xsw.writeAttribute(CURRENT_WORKSPACE, workspaceCommands.currentWorkspace.getAbsolutePath());
+            xsw.writeAttribute(CURRENT_WORKSPACE, workspaceCommands.currentWorkspace);
         }
 
         if (workspaceCommands.rootDir != null) {
-            xsw.writeAttribute(ROOT_DIR, workspaceCommands.rootDir.getAbsolutePath());
+            xsw.writeAttribute(ROOT_DIR, workspaceCommands.rootDir);
         }
         if (workspaceCommands.saveDir != null) {
-            xsw.writeAttribute(SAVE_DIR, workspaceCommands.saveDir.getAbsolutePath());
+            xsw.writeAttribute(SAVE_DIR, workspaceCommands.saveDir);
         }
 
         // Done with attributes
@@ -603,13 +603,13 @@ public class WSXMLSerializer {
             workspaceCommands.runScriptPath = json.getString(RUN_SCRIPT_PATH);
         }
         if (json.containsKey(CURRENT_WORKSPACE)) {
-            workspaceCommands.currentWorkspace = new File(json.getString(CURRENT_WORKSPACE));
+            workspaceCommands.currentWorkspace = json.getString(CURRENT_WORKSPACE);
         }
         if (json.containsKey(ROOT_DIR)) {
-            workspaceCommands.rootDir = new File(json.getString(ROOT_DIR));
+            workspaceCommands.rootDir = json.getString(ROOT_DIR);
         }
         if (json.containsKey(SAVE_DIR)) {
-            workspaceCommands.saveDir = new File(json.getString(SAVE_DIR));
+            workspaceCommands.saveDir =json.getString(SAVE_DIR);
         }
         if (json.containsKey(DESCRIPTION)) {
             workspaceCommands.description = json.getString(DESCRIPTION);
@@ -652,16 +652,16 @@ public class WSXMLSerializer {
                     testCommands.setDebugOn(Boolean.parseBoolean(v));
                     break;
                 case CURRENT_WORKSPACE:
-                    testCommands.currentWorkspace = new File(v);
+                    testCommands.currentWorkspace = v;
                     break;
                 case START_TS:
                     testCommands.startTimeStamp = Iso8601.string2Date(v).getTime();
                     break;
                 case ROOT_DIR:
-                    testCommands.rootDir = new File(v);
+                    testCommands.rootDir = v;
                     break;
                 case SAVE_DIR:
-                    testCommands.saveDir = new File(v);
+                    testCommands.saveDir = v;
                     break;
                 case ENV_FILE:
                     testCommands.envFile = new File(v);

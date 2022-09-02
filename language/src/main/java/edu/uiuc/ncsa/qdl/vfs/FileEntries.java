@@ -11,6 +11,7 @@ import org.apache.commons.codec.binary.Base64;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -85,6 +86,12 @@ public class FileEntries {
         XProperties xp = getXProperties(id, f);
         return new FileEntry(new FileInputStream(f), xp);
     }
+    public static FileEntry toEntryWithBinary(String id, File f) throws Throwable {
+        XProperties xp = getXProperties(id, f);
+        byte[] contents = Files.readAllBytes(Paths.get(f.getAbsolutePath()));
+        return new FileEntry(contents, xp);
+    }
+
 
     public static JSONObject toJSON(String id, File f, int type) throws Throwable {
         XProperties xp = getXProperties(id, f);
@@ -121,6 +128,9 @@ public class FileEntries {
     public static FileEntry fileToEntry(File file, int type) throws Throwable {
         if(type == FILE_OP_INPUT_STREAM){
             return toEntryWithInputStream(file.getName(), file);
+        }
+        if(type == FILE_OP_BINARY){
+             return toEntryWithBinary(file.getName(), file);
         }
         return fromJSON(toJSON(file, type));
     }

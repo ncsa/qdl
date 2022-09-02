@@ -32,6 +32,16 @@ public class GetHelpTopicResponse extends Response implements QDLSASConstants {
     public void setHelp(String help) {
         this.help = help;
     }
+
+    public String getFunctionHelp() {
+        return functionHelp;
+    }
+
+    public void setFunctionHelp(String functionHelp) {
+        this.functionHelp = functionHelp;
+    }
+
+    String functionHelp;
     String example;
 
     public boolean hasExample() {
@@ -54,6 +64,7 @@ public class GetHelpTopicResponse extends Response implements QDLSASConstants {
         JSONObject json = super.serialize();
         json.put(RESPONSE_CONTENT, help==null?"":help);
         json.put(KEY_HELP_EXAMPLE, example==null?"":example);
+        json.put(KEY_FUNCTION_HELP, functionHelp==null?"":functionHelp);
         return json;
     }
 
@@ -65,6 +76,9 @@ public class GetHelpTopicResponse extends Response implements QDLSASConstants {
         }
         if(json.containsKey(KEY_HELP_EXAMPLE)){
             example = json.getString(KEY_HELP_EXAMPLE);
+        }
+        if(json.containsKey(KEY_FUNCTION_HELP)){
+            functionHelp = json.getString(KEY_FUNCTION_HELP);
         }
     }
 }

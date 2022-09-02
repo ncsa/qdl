@@ -211,6 +211,7 @@ public class QDLEditor {
                         int out = JOptionPane.showConfirmDialog(jFrame, "Are you sure you want to quit?", "close editor", JOptionPane.WARNING_MESSAGE);
                         if (out == JOptionPane.YES_OPTION || out == JOptionPane.OK_OPTION) {
                             jFrame.dispose();
+                         //TODO clean up old workspace commands current edit session by id.   workspaceCommands.curre
                         }
                     }
                     break;

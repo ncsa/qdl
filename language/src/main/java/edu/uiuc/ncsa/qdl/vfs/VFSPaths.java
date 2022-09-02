@@ -29,6 +29,12 @@ import java.util.jar.JarFile;
  * on 2/29/20 at  7:03 AM
  */
 public class VFSPaths {
+    public static boolean isVFSPath(String path){
+        if(path == null || path.isEmpty()){
+            return true;
+        }
+        return path.indexOf(SCHEME_DELIMITER) != -1;
+    }
     public static String SCHEME_DELIMITER = "#";
     public static String PATH_SEPARATOR = "/";
     public static String THIS_COMPONENT = ".";
@@ -102,29 +108,6 @@ public class VFSPaths {
     public static String getUnqPath(String fqPath) {
         return fqPath.substring(fqPath.indexOf(SCHEME_DELIMITER) + 1);
     }
-
-/*
-    public static String[] getComponents() {
-        if (components == null) {
-            // remove any empty paths
-            String[] firstTry = path.getPath().split(VFSFileProvider.PATH_SEPARATOR);
-            String[] components = new String[firstTry.length];
-            int j = 0;
-            for(int i  = 0; i < firstTry.length; i++){
-                if(firstTry[i] != null && !firstTry[i].isEmpty()){
-                    components[j++] = firstTry[i];
-                }
-            }
-            if(components.length != firstTry.length){
-                this.components = new String[j];
-                System.arraycopy(components,0, this.components,0,this.components.length);
-            }else{
-                this.components = components;
-            }
-        }
-        return components;
-    }
-*/
 
 
     public static String getFileName(String path) {
@@ -244,8 +227,8 @@ public class VFSPaths {
 
     /**
      * Resolves the relativePath against the path. So if path=A#/a/b/c and relativePath=B#q/r
-     * then this returns A#/a/b/c/q/r. Note two edge cases. If the relativePath si actually absolute,
-     * this will return that. If the relative Path is trivial, the the path is returned.
+     * then this returns A#/a/b/c/q/r. Note two edge cases. If the relativePath is actually absolute,
+     * this will return that. If the relativePath is trivial, the path is returned.
      * In point of  fact <br/><br/>
      *      relativize(p,resolve(p,q)).equals(q) <br/><br/>
      *  as long as they have the same scheme (or the relative path gets the scheme of the path).

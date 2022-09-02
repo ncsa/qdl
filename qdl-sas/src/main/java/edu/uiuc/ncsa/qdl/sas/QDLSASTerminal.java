@@ -129,7 +129,7 @@ public class QDLSASTerminal extends SwingTerminal implements QDLSASConstants {
             GetHelpTopicAction getHelpTopicAction = new GetHelpTopicAction(text);
             try {
                 GetHelpTopicResponse helpTopicResponse = (GetHelpTopicResponse) sasClient.execute(getHelpTopicAction);
-                return createHelpMessage(helpTopicResponse.getHelp(), helpTopicResponse.getExample());
+                return createHelpMessage(helpTopicResponse.getFunctionHelp(), helpTopicResponse.getHelp(), helpTopicResponse.getExample());
 
             } catch (Throwable t) {
                 t.printStackTrace();

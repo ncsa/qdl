@@ -6,9 +6,9 @@ import edu.uiuc.ncsa.qdl.parsing.IniParserDriver;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
-import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.vfs.*;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
@@ -608,12 +608,12 @@ public class IOEvaluator extends AbstractEvaluator {
         if (polyad.getArgCount() == 3) {
             Object obj3 = polyad.evalArg(2, state);
             checkNull(obj3, polyad.getArgAt(2));
-            if(isBoolean(obj3)){
+            if (isBoolean(obj3)) {
                 // Allow to send true = base64 or false (default
-                if((Boolean)obj3){
+                if ((Boolean) obj3) {
                     fileType = FILE_OP_BINARY;
                 }
-            }else {
+            } else {
                 if (!isLong(obj3)) {
                     throw new BadArgException("The third argument to '" + WRITE_FILE + "' must be an integer.", polyad.getArgAt(2));
                 }
@@ -806,7 +806,7 @@ public class IOEvaluator extends AbstractEvaluator {
                     if (hasVF) {
                         polyad.setResult(vfsEntry.convertToStem());// if this is binary, the contents are a single base64 encoded string.
                     } else {
-                        polyad.setResult(QDLFileUtil.readFileAsStem(fileName));
+                        polyad.setResult(QDLFileUtil.readTextFileAsStem(state,fileName));
                     }
                     // Read as lines, put in a stem
                     polyad.setResultType(Constant.STEM_TYPE);
@@ -818,7 +818,7 @@ public class IOEvaluator extends AbstractEvaluator {
                     if (hasVF) {
                         content = vfsEntry.getText();
                     } else {
-                        content = QDLFileUtil.readFileAsString(fileName);
+                        content = QDLFileUtil.readTextFile(state,fileName);
                     }
                     if (StringUtils.isTrivial(content)) {
                         polyad.setResult(new QDLStem());
@@ -853,10 +853,10 @@ public class IOEvaluator extends AbstractEvaluator {
             if (t instanceof QDLException) {
                 throw (RuntimeException) t;
             }
-            if(t instanceof FileNotFoundException){
+            if (t instanceof FileNotFoundException) {
                 throw new QDLFileNotFoundException("'" + fileName + "' not found:" + t.getMessage());
             }
-            if(t instanceof IllegalAccessException){
+            if (t instanceof IllegalAccessException) {
                 throw new QDLFileAccessException("access denied to '" + fileName + "':" + t.getMessage());
             }
             throw new QDLException("Error reading file '" + fileName + "'" + t.getMessage());

@@ -36,7 +36,6 @@ public class VFSMySQLProvider extends AbstractVFSFileProvider {
     public static int FILENAME_INDEX = 1;
 
     protected String[] getPrimaryKey(String path) {
-
         path = getRealPath(VFSPaths.normalize(path));
         path = unqualifyPath(path); // no schemes in database.
         String[] output = new String[2];
@@ -199,5 +198,11 @@ public class VFSMySQLProvider extends AbstractVFSFileProvider {
     @Override
     public boolean easSupported() {
         return true;
+    }
+
+    @Override
+    public boolean isDirectory(String path) {
+        super.isDirectory(path);
+      return  db.containsEntry(getPrimaryKey(path));
     }
 }

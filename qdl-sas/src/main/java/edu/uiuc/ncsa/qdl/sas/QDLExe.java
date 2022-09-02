@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl.sas;
 
+import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.gui.editor.EditDoneEvent;
 import edu.uiuc.ncsa.qdl.sas.action.BufferSaveAction;
 import edu.uiuc.ncsa.qdl.sas.action.GetHelpTopicAction;
@@ -89,18 +90,23 @@ public class QDLExe implements Executable, QDLSASConstants {
             case ACTION_GET_HELP_TOPIC:
                 GetHelpTopicAction getHelpTopicAction = (GetHelpTopicAction) action;
                 GetHelpTopicResponse helpTopicResponse = new GetHelpTopicResponse(action);
+                helpTopicResponse.setFunctionHelp(workspaceCommands.getFunctionHelp(getHelpTopicAction.getName()));
                 helpTopicResponse.setHelp(workspaceCommands.getHelpTopic(getHelpTopicAction.getName()));
                 helpTopicResponse.setExample(workspaceCommands.getHelpTopicExample(getHelpTopicAction.getName()));
                 return helpTopicResponse;
             case ACTION_BUFFER_SAVE:
-                return bufferSave((BufferSaveAction) action);
+                try {
+                    return bufferSave((BufferSaveAction) action);
+                } catch (Throwable e) {
+                    throw new QDLException("buffer save failed", e);
+                }
             default:
                 throw new SASException("unknown action \"" + action.getType());
         }
 
     }
 
-    protected Response bufferSave(BufferSaveAction bsa) {
+    protected Response bufferSave(BufferSaveAction bsa) throws Throwable {
         BufferSaveResponse bufferSaveResponse = new BufferSaveResponse();
         BufferManager.BufferRecord br;
         switch (bsa.getEditObjectType()) {

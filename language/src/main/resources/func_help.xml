@@ -4295,7 +4295,57 @@ return everything. Compare with say
 [9,11]]]>
        </body>
     </entry>
+           <entry id="vfs">
+              <body>
+<![CDATA[vfs - virtual file system
+QDL allows for mounting various types of file systems, including
+in memory, a database,
+The way to access them is using via strings (the arguments to file
+operatiosn like dir, mkdir, etc) of the form
+name#path
+E.g.
+   script_run('ramdisk#/tmp/matrix.qdl');
 
+would resolve the file system volume named ramdisk and look for the mount point /tmp. Then the
+file matrix.qdl would be found relative to that.
+
+It is important to note that completely unrelated systems may be grouped into a single
+logical volume.
+
+E.g. A possible topology
+In this case the following VFS's have been created for a project
+
+volume   mount point      physical location
+-----    -----------      -----------------
+data     /sources         /home/public/ligo/experiment_42
+         /scripts         /afs/ncsa/ligo/shared/scripts.zip
+         /hardware/uw     my sql database of equipment hosted at university #1
+         /hardware/psu    derby database of equipment hosted at  university #2
+
+output   /shared          /home/public/shared
+         /mydata          /home/bob/grant23344/data
+
+So here a file like data#/scripts/boot.sh would look like a regular file -- the
+user need not worry that it is actually an entry in a zip file. This allows
+very different sources to be integrated into logical volumes. Note that the references
+in the workspace do not need to change, so you can write scripts that access
+e.g. data#/sources/ncc_1701.hdf and hand them off to someone else to mount
+completely different physical systems.
+]]>
+              </body>
+           </entry>
+    <!--
+    <entry id="">
+       <body>
+  <![CDATA[
+  ]]>
+       </body>
+       <example>
+   <![CDATA[
+   ]]>
+        </example>
+    </entry>
+   -->
     <!--
         entry template
     -->

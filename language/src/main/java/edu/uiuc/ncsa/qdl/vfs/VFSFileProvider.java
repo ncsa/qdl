@@ -153,6 +153,7 @@ public interface VFSFileProvider extends Serializable {
      * @return
      */
     boolean easSupported();
-
+    boolean isDirectory(String path);
+    long length(String path) throws Throwable;
 
 }
