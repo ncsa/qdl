@@ -69,7 +69,11 @@ public class QDLFileUtil extends FileUtil {
      */
     public static List<String> readTextFileAsLines(State state, String fullPath) throws Throwable {
         if (isVFSPath(fullPath)) {
-            StringUtils.stringToList(readTextVFS(state, fullPath));
+            String x = readTextVFS(state, fullPath);
+            if(x == null){
+                return null;
+            }
+          return  StringUtils.stringToList(x);
         }
         if (state.isServerMode()) {
             throw new QDLServerModeException("unsupported in server mode");
@@ -215,12 +219,18 @@ public class QDLFileUtil extends FileUtil {
     public static byte[] readBinaryVFS(State state, String path) throws Throwable {
         VFSFileProvider vfs = getVfsFileProvider(state, path);
         VFSEntry vfsEntry = vfs.get(path, AbstractEvaluator.FILE_OP_BINARY);
+        if(vfsEntry == null){
+            throw new QDLFileNotFoundException();
+        }
         return vfsEntry.getBytes();
     }
 
     public static String readTextVFS(State state, String path) throws Throwable {
         VFSFileProvider vfs = getVfsFileProvider(state, path);
         VFSEntry vfsEntry = vfs.get(path, AbstractEvaluator.FILE_OP_TEXT_STRING);
+        if(vfsEntry == null){
+            throw new QDLFileNotFoundException();
+        }
         return vfsEntry.getText();
     }
 

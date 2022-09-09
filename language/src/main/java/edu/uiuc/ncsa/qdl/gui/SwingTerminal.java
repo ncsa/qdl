@@ -18,6 +18,7 @@ import javax.swing.*;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.text.StyleContext;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
@@ -425,6 +426,16 @@ public class SwingTerminal implements TerminalInterface {
         dialog.setModal(false);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.setContentPane(scrollPane);
+         AbstractAction escapeAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                dialog.dispose();
+            }
+        };
+        dialog.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "ESCAPE_KEY");
+        dialog.getRootPane().getActionMap().put("ESCAPE_KEY", escapeAction);
+
 
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
         int w = (int) dimension.getWidth() / 2;

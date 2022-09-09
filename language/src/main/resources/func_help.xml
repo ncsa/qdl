@@ -4243,7 +4243,10 @@ See also: pick]]>
        </body>
        <example>
    <![CDATA[Let us say you read in a large JSON object which had a structure like
+   
 z.content.clients.i.transactions.j.user_uid
+
+Where i and j are integers, but the rest of the elements are to remain fixed.
 You could simply get all of the clients and user ids for the 0th transactions with
 
    z\content\clients\*\transactions\0\user_uid
@@ -4299,9 +4302,9 @@ return everything. Compare with say
               <body>
 <![CDATA[vfs - virtual file system
 QDL allows for mounting various types of file systems, including
-in memory, a database,
+in memory, a database.
 The way to access them is using via strings (the arguments to file
-operatiosn like dir, mkdir, etc) of the form
+operations like dir, mkdir, etc) of the form
 name#path
 E.g.
    script_run('ramdisk#/tmp/matrix.qdl');

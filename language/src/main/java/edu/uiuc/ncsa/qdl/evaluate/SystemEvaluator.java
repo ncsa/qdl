@@ -1763,40 +1763,26 @@ public class SystemEvaluator extends AbstractEvaluator {
                 throw new IllegalArgumentException("File access forbidden in server mode.");
             }
             name = name.substring(1);
-            File file = new File(name);
-            if (file.isAbsolute()) {
-                return new QDLScript(QDLFileUtil.readFileAsLines(name), null);
-            }
-            // so its relative.
-            for (String p : paths) {
-                if (!p.contains(SCHEME_DELIMITER)) {
-                    File test = new File(p, name);
-                    if (test.exists() && test.isFile() && test.canRead()) {
-                        return new QDLScript(QDLFileUtil.readFileAsLines(test.getCanonicalPath()), null);
-                    }
-                }
-            }
-            return null;
+            return new QDLScript(QDLFileUtil.readTextFileAsLines(state, name), null);
+
         }
         // case 2: Scheme qualified.
         if (name.contains(SCHEME_DELIMITER)) {
             String tempName = name.substring(1 + name.indexOf(SCHEME_DELIMITER));
             File testFile = new File(tempName);
-            if (testFile.isAbsolute()) {
-                if (state.hasVFSProviders()) {
-                    return state.getScriptFromVFS(name);
-                }
+            if (QDLFileUtil.isAbsolute(tempName)) {
+                return new QDLScript(QDLFileUtil.readTextFileAsLines(state, name), null);
             }
+            // So it is of the form volume#relative/path
             String caput = name.substring(0, name.indexOf(SCHEME_DELIMITER));
             for (String p : paths) {
                 if (p.startsWith(caput)) {
                     DebugUtil.trace(SystemEvaluator.class, " trying path = " + p + tempName);
-
-                    QDLScript q = state.getScriptFromVFS(p + tempName);
-                    if (q != null) {
-                        DebugUtil.trace(SystemEvaluator.class, " got path = " + p + tempName);
-
-                        return q;
+                    try {
+                        List<String> lines = QDLFileUtil.readTextFileAsLines(state, p + tempName);
+                        return new QDLScript(lines, null);
+                    } catch (FileNotFoundException | QDLFileNotFoundException fnf) {
+                        // rock on
                     }
                 }
             }
@@ -1814,14 +1800,11 @@ public class SystemEvaluator extends AbstractEvaluator {
             for (String p : paths) {
                 String resourceName = p + name;
                 DebugUtil.trace(SystemEvaluator.class, " path = " + resourceName);
-                if (state.isVFSFile(resourceName)) {
-                    if (state.isVFSFile(resourceName)) {
-                        if (state.hasVFSProviders()) {
-                            QDLScript script = state.getScriptFromVFS(resourceName);
-                            if (script != null) {
-                                return script;
-                            }
-                        }
+                if (QDLFileUtil.isVFSPath(resourceName)) {
+                    try {
+                        return new QDLScript(QDLFileUtil.readTextFileAsLines(state, resourceName), null);
+                    } catch (FileNotFoundException | QDLFileNotFoundException fnf) {
+                        // rock on
                     }
                 } else {
                     testFile = new File(resourceName);
@@ -2698,7 +2681,8 @@ public class SystemEvaluator extends AbstractEvaluator {
         boolean isDef = false;
         try {
             polyad.evalArg(0, state);
-        } catch (IndexError | UnknownSymbolException | IllegalStateException exception) { // ESN's can throw illegal arg exception
+        } catch (IndexError | UnknownSymbolException |
+                 IllegalStateException exception) { // ESN's can throw illegal arg exception
             polyad.setResult(isDef);
             polyad.setResultType(Constant.BOOLEAN_TYPE);
             polyad.setEvaluated(true);

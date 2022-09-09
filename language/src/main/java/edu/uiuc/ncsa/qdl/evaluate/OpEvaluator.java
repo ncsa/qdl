@@ -557,23 +557,24 @@ public class OpEvaluator extends AbstractEvaluator {
             return;
         }
         Object obj0 = dyad.evalArg(0, state);
-        if ((obj0 instanceof QDLNull)) {
+/*        if ((obj0 instanceof QDLNull)) {
             throw new QDLExceptionWithTrace("cannot do union on a null", dyad.getLeftArgument());
-
-        }
-        if ((obj0 instanceof QDLNull)) {
-            throw new QDLExceptionWithTrace("cannot do union on a null", dyad.getRightArgument());
-        }
+        }*/
 
         QDLStem stem0 = null;
         QDLStem stem1 = null;
-
-        if (obj0 instanceof QDLStem) {
-            stem0 = (QDLStem) obj0;
-        } else {
+        if ((obj0 instanceof QDLNull)) {
             stem0 = new QDLStem();
-            stem0.put(0L, obj0);
+            stem0.put(0L, QDLNull.getInstance());
+        }else{
+            if (obj0 instanceof QDLStem) {
+                stem0 = (QDLStem) obj0;
+            } else {
+                stem0 = new QDLStem();
+                stem0.put(0L, obj0);
+            }
         }
+
 
 
         if (obj1 instanceof QDLStem) {

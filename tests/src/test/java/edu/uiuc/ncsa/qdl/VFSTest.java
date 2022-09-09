@@ -792,4 +792,49 @@ public class VFSTest extends AbstractQDLTester {
         assert testServerCall(script, state) : " was able to call " + SystemEvaluator.MODULE_LOAD + " on a non VFS file in server mode";
     }
 
+    /**
+     * Tests that scripts can be resolved correctly. This just calls a really dumb script to show
+     * that the paths all work
+     * @throws Throwable
+     */
+    public void testScripts() throws Throwable{
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        // tests absolute path, not in server mode.
+        /*
+        cfg.type :='pass_through';
+        cfg.scheme := 'vfs2';
+        cfg.mount_point := '/test2';
+        cfg.access := 'rw';
+        cfg.root_dir := '/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/script-test';
+        vfs_mount(cfg.);
+        script_path('vfs2#/test:vfs2#/test2');
+         */
+        String testEchoFile = "vfs2#echo.qdl";
+        addLine(script, "vfs_cfg.type :='pass_through';");
+        addLine(script, "vfs_cfg.scheme := 'vfs2';");
+        addLine(script, "vfs_cfg.mount_point := '/test2';");
+        addLine(script, "vfs_cfg.access := 'rw';");
+        addLine(script, "vfs_cfg.root_dir := '/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/script-test';");
+        addLine(script, "vfs_mount(vfs_cfg.);");  // Now we have a functional VFS with the target file in it.
+        addLine(script, "script_path('vfs2#/test:vfs2#/test2');");
+        // tests with volume name
+        addLine(script, "ok0 := 0 == script_run('vfs2#echo.qdl', 0);");
+        addLine(script, "ok1 := 1 == script_run('vfs2#/test2/echo.qdl', 1);"); // FQ
+        addLine(script, "ok2 := 2 == script_run('vfs2#sub_dir/echo2.qdl',2);");
+        addLine(script, "ok3 := 3 == script_run('vfs2#/test2/sub_dir/echo2.qdl',3);");
+
+        // test relying on the script path
+        addLine(script, "ok4 := 4 == script_run('echo.qdl',4);");
+        addLine(script, "ok5 := 5 == script_run('sub_dir/echo2.qdl',5);");
+
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "Did not get right value echoed back";
+        assert getBooleanValue("ok1", state) : "Did not get right value echoed back";
+        assert getBooleanValue("ok2", state) : "Did not get right value echoed back";
+        assert getBooleanValue("ok3", state) : "Did not get right value echoed back";
+        assert getBooleanValue("ok4", state) : "Did not get right value echoed back";
+        assert getBooleanValue("ok5", state) : "Did not get right value echoed back";
+}
 }
