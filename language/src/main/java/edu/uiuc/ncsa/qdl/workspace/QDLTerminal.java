@@ -69,8 +69,8 @@ public class QDLTerminal extends ISO6429Terminal {
      * Does <i>reverse</i> lookup for help, so this is the map with possible entries
      * <pre>
      *  {π=p, ≁=~, τ=t, ∅=n, ∆=D, ≈=?, ∈=e, ⌈=k, ∉=E, ⌊=l,
-     *   →=d, ≔=:, ≕=", ×=*, ⊗=@, ≠=\, ≡==, ⊢=s, ≤=<, ≥=>,
-     *   ⟦={, ∧=&, ⟧=}, ⊨=a, ∨=|, ∩=i, ∪=u, ¬=!, ¯=-, ·=.,
+     *   →=d, ≔=:, ≕=", ×=*, ⊗=@, ≠=\, ≡==, ⊢=s, ≤=&lt;, ≥=&gt;,
+     *   ⟦={, ∧=&amp;, ⟧=}, ⊨=a, ∨=|, ∩=i, ∪=u, ¬=!, ¯=-, ·=.,
      *   ÷=/, ⁺=+, »='}
      * </pre>
      * @return

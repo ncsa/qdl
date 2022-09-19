@@ -298,8 +298,16 @@ public class QDLWorkspace implements Serializable {
             workspaceCommands.say(REPEAT_COMMAND + " = repeat the last command. Identical to " + HISTORY_COMMAND + " 0");
             return null;
         }
+        cmdLine = cmdLine.substring(REPEAT_COMMAND.length());
         if (0 < workspaceCommands.commandHistory.size()) {
-            return workspaceCommands.commandHistory.get(0);
+            String current = workspaceCommands.commandHistory.get(0);
+            if(cmdLine.trim().length() == 0){
+                return current;
+            }
+            current = current + " " + cmdLine;
+            workspaceCommands.commandHistory.add(0, current);
+            return current;
+            //return workspaceCommands.commandHistory.get(0);
         }
         workspaceCommands.say("no commands found");
         return null;
@@ -314,7 +322,7 @@ public class QDLWorkspace implements Serializable {
 
     protected String doHistory(String cmdLine) {
         if (cmdLine.contains("--help")) {
-            workspaceCommands.say(HISTORY_COMMAND + " [int | " + HISTORY_CLEAR_SWITCH + " | " + HISTORY_TRUNCATE_SWITCH + " n]");
+            workspaceCommands.say(HISTORY_COMMAND + " [int | " + HISTORY_CLEAR_SWITCH + " | " + HISTORY_TRUNCATE_SWITCH + " n] [more]");
 
             workspaceCommands.say("(no args) {" + HISTORY_REVERSE_SWITCH + "|" + SHORT_HISTORY_REVERSE_SWITCH + "}" + " show complete history, executing nothing");
             workspaceCommands.say("    The normal order is from most recent. Including the switch reverses the order");
@@ -326,7 +334,12 @@ public class QDLWorkspace implements Serializable {
             workspaceCommands.say("    is from most recent to first entered. If the " + HISTORY_REVERSE_SWITCH + " is present the order is ");
             workspaceCommands.say("    original entry order");
             workspaceCommands.say(HISTORY_SIZE_SWITCH + "  - returns the number of commands in the current history.");
+            workspaceCommands.say( "[more]  - you may add additional commands to be appended to the given history element.\n" +
+                    "A new entry in the command history is made.");
 
+            workspaceCommands.say("E.g.:");
+            workspaceCommands.say("    )h 4 =: a");
+            workspaceCommands.say("would execute element 4 from the command history and set the value to a.");
             workspaceCommands.say("See also:" + REPEAT_COMMAND);
             return null; // do nothing
         }
@@ -424,10 +437,30 @@ public class QDLWorkspace implements Serializable {
         if (st.hasMoreTokens()) {
             try {
                 int lineNo = Integer.parseInt(st.nextToken());
+                String rest = "";
+                while(st.hasMoreTokens()){
+                    rest = rest + " " + st.nextToken();
+                }
                 lineNo = (lineNo < 0) ? (workspaceCommands.commandHistory.size() + lineNo) : lineNo;
+
+                if(rest.trim().length() == 0){
+                    if (0 <= lineNo && lineNo < workspaceCommands.commandHistory.size()) {
+                        return workspaceCommands.commandHistory.get(lineNo);
+                    }
+                }else{
+                    if (0 <= lineNo && lineNo < workspaceCommands.commandHistory.size()) {
+                        String current = workspaceCommands.commandHistory.get(lineNo) + rest;
+                        workspaceCommands.commandHistory.add(0, current);
+                        return current;
+                    }
+                }
+
+/*
+
                 if (0 <= lineNo && lineNo < workspaceCommands.commandHistory.size()) {
                     return workspaceCommands.commandHistory.get(lineNo);
                 }
+*/
             } catch (Throwable t) {
                 // do nothing, just print out the history.
             }

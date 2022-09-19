@@ -25,7 +25,10 @@ echo "done converting PDFs"
 # ===============
 cd $QDL_ROOT/language
 mvn javadoc:javadoc
+cd $QDL_ROOT/qdl-sas
+mvn javadoc:javadoc
 cp -r $QDL_ROOT/language/target/site/apidocs/* $GITHUB_ROOT/apidocs
+cp -r $QDL_ROOT/qdl-sas/target/site/apidocs/* $GITHUB_ROOT/apidocs
 cd $QDL_ROOT/website
 mvn clean site
 # Note the source directory in the next command has no apidocs subdirectory, so this overlays

@@ -5295,6 +5295,10 @@ public class WorkspaceCommands implements Logable, Serializable {
         ConfigurationNode node = ConfigUtil.findConfiguration(
                 inputLine.getNextArgFor(CONFIG_FILE_FLAG),
                 cfgname, CONFIG_TAG_NAME);
+         fromConfigFile(inputLine, node);
+    }
+    
+    public void fromConfigFile(InputLine inputLine, ConfigurationNode node) throws Throwable {
 
         // New style -- multi-inheritance.
         //     ConfigurationNode node = ConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgname, CONFIG_TAG_NAME );
@@ -5343,7 +5347,6 @@ public class WorkspaceCommands implements Logable, Serializable {
         assertionsOn = qe.isAssertionsOn();
         if (isRunScript) {
             runScriptPath = inputLine.getNextArgFor(CLA_RUN_SCRIPT_ON);
-
         }
         state.setAllowBaseFunctionOverrides(qe.isAllowOverwriteBaseFunctions());
         boolean isVerbose = qe.isWSVerboseOn();

@@ -32,7 +32,7 @@ import java.util.List;
  *     <li>{@link #readBinaryFile(State, String)}  - returns byte array</li>
  *     <li>{@link #writeBinaryFile(State, String, byte[])}  -- writes a byte array</li>
  *     <li>{@link #readTextFile(State, String)}  - reads a text file as a string</li>
- *     <li>{@link #readTextFileAsLines(State, String)}  - reads a text file as an array of strings. </l}i>
+ *     <li>{@link #readTextFileAsLines(State, String)}  - reads a text file as an array of strings. </li>
  *     <li>{@link #readTextFileAsStem(State, String)}  - reads a text file as a stem list. </li>
  *     <li>{@link #writeTextFile(State, String, String)}</li>
  *     <li>{@link #readAttributes(State, String)} - get the attributes for a file (length, name, path...)</li>
