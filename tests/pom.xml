@@ -5,7 +5,7 @@
     <parent>
         <artifactId>qdl</artifactId>
         <groupId>edu.uiuc.ncsa.qdl</groupId>
-        <version>1.4-QDL-SNAPSHOT</version>
+        <version>1.4.8</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -19,12 +19,12 @@
        <dependency>
            <groupId>edu.uiuc.ncsa.qdl</groupId>
            <artifactId>language</artifactId>
-           <version>1.4-QDL-SNAPSHOT</version>
+           <version>1.4.8</version>
        </dependency>
        <dependency>
            <groupId>edu.uiuc.ncsa.qdl</groupId>
            <artifactId>language</artifactId>
-           <version>1.4-QDL-SNAPSHOT</version>
+           <version>1.4.8</version>
            <scope>test</scope>
        </dependency>
        <dependency>
