@@ -332,13 +332,16 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         Object arg1 = polyad.evalArg(0, state);
         checkNull(arg1, polyad.getArgAt(0), state);
         Object arg2 = null;
-        UnknownSymbolException usx = null;
+        //UnknownSymbolException usx = null;
+        QDLException usx = null;
         try {
             if(!name.equals(OpEvaluator.IS_A)){ // special case is_a operator
                 arg2 = polyad.evalArg(1, state);
                 checkNull(arg2, polyad.getArgAt(1), state);
             }
-        } catch (UnknownSymbolException unknownSymbolException) {
+            // CIL-1498 -- catch a generic exception here rather than unknown symbol or some such
+            // since exceptions are now all wrapped. Basically only QDLException gets thrown any more.
+        } catch (QDLException unknownSymbolException) {
             usx = unknownSymbolException;
         }
         // Short circuit dyadic logical && ||

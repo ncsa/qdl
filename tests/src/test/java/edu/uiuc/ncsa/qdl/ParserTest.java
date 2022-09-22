@@ -637,6 +637,7 @@ public class ParserTest extends AbstractQDLTester {
     public void testShortCircuitLogical() throws Throwable {
         StringBuffer script = new StringBuffer();
         addLine(script, "a := 1;");
+        addLine(script, "zzz.'a' := 1;");
         // short circuits
         // Note that d. is not defined, so this will throw an undefined symbol error
         // if the evaluation is attempted.
@@ -650,7 +651,11 @@ public class ParserTest extends AbstractQDLTester {
         addLine(script, "i := 0 < 3 ∧  1 < 3 && 2 < 3;"); //true
         addLine(script, "j := false ||  true || d.5 == 5;"); //true
         addLine(script, "k := true ||  false || d.5 == 5;"); //true
+        // Making sure very important case of is_defined short circuits right.
         addLine(script, "l := is_defined(d.) && d.3 ≤ 5 ;"); //false -- d. undefined
+        addLine(script, "m := is_defined(zzz.'b') && 3 == zzz.'b' ;"); //false -- zzz.b
+        addLine(script, "n := is_defined(yyy.'a') && 3 == zzz.'b' ;"); //false -- yyy. is undefined
+        addLine(script, "p := is_defined(zzz.'a') && 1 == zzz.'a' ;"); //true
         // before implementing this, the last test would have failed since
         // the system would still check d.3, which is undefined.
         State state = testUtils.getNewState();
@@ -668,6 +673,9 @@ public class ParserTest extends AbstractQDLTester {
         assert getBooleanValue("j", state);
         assert getBooleanValue("k", state);
         assert !getBooleanValue("l", state);
+        assert !getBooleanValue("m", state);
+        assert !getBooleanValue("n", state);
+        assert getBooleanValue("p", state);
     }
 
     /**

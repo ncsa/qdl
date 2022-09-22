@@ -339,7 +339,7 @@ public class SwingTerminal implements TerminalInterface {
                         showHelp(title1, message1);
                     } else {
                         String title = "Help for " + text;
-                        String helpMessage = "no help available for '" + text + "'";
+                        String helpMessage = "no help available for " + (isTrivial(text) ? "this topic" : "' + text + '");
                         String x = getHelp(text);
                         if (x != null) {
                             helpMessage = x;
@@ -387,7 +387,7 @@ public class SwingTerminal implements TerminalInterface {
 
         protected String createHelpMessage(String functionHelp, String text, String example) {
             if (isTrivial(text) && isTrivial(functionHelp)) {
-                return "no help available for '" + text + "'";
+                return "no help available for " + (isTrivial(text) ? "this topic" : "' + text + '");
             }
 
             String message = "";
@@ -426,7 +426,7 @@ public class SwingTerminal implements TerminalInterface {
         dialog.setModal(false);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.setContentPane(scrollPane);
-         AbstractAction escapeAction = new AbstractAction() {
+        AbstractAction escapeAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 dialog.dispose();
