@@ -132,9 +132,9 @@ public class QDLWorkspace implements Serializable {
         if (!statement.hasTokenPosition()) {
             return "";
         }
-        String out = " at (" + statement.getTokenPosition().line + ", " + statement.getTokenPosition().col + ")";
+        String out = " At (" + statement.getTokenPosition().line + ", " + statement.getTokenPosition().col + ")";
         if (qq.isScript()) {
-            out = out + " in script '" + qq.getScriptName() + "'";
+            out = out + " in:\n" + qq.stackTrace();
         }
         return out;
     }
@@ -175,7 +175,15 @@ public class QDLWorkspace implements Serializable {
             input = out; // repeat the command
         }
 
-        // Good idea to strip off comments in parser, but the regex here needs to be
+        // One idea is to strip off comments in parser, E.g. process
+        //
+        //    2+2 // example
+        // into
+        //    2+2
+        // so user does not have to type
+        //   2+2; // example
+        //
+        // but the regex here needs to be
         // quite clever to match ' and // within them (e.g. any url in a string fails at the command line).
         // Another option is to write a small parser in antlr for the command line...
 

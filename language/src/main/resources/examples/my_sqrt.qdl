@@ -15,7 +15,7 @@ x := to_number(script_args(0));
    » where 0 < x is a number.
    » The default is 10 iterations, which should give pretty good precision for most purposes.
    » This uses the Newton-Raphson method.
-       x0 := 1;
+     x0 := 1;
       m := 10;
       while[
           for_next(j,m)

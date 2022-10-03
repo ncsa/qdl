@@ -1602,7 +1602,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             throw new BadArgException(SCRIPT_ARGS_COMMAND + " requires a non-negative integer argument.", polyad.getArgAt(0));
         }
         if (state.getScriptArgs().length <= index) {
-            throw new BadArgException("index out of bounds for " + SCRIPT_ARGS_COMMAND, polyad.getArgAt(0));
+            throw new BadArgException("index " + index + " out of bounds for " + SCRIPT_ARGS_COMMAND + " with " + state.getScriptArgs().length + " arguments.", polyad.getArgAt(0));
         }
 
         polyad.setEvaluated(true);
@@ -1852,10 +1852,11 @@ public class SystemEvaluator extends AbstractEvaluator {
         }
         String resourceName = arg1.toString();
         QDLScript script;
+        state.getScriptStack().add(resourceName);
         try {
             script = resolveScript(resourceName, paths, state);
         } catch (Throwable t) {
-            state.warn("Could not find script:" + t.getMessage());
+            state.warn("Could not find script '" + resourceName + "': " + t.getMessage());
             if (t instanceof RuntimeException) {
                 throw (RuntimeException) t;
             }
@@ -1873,7 +1874,9 @@ public class SystemEvaluator extends AbstractEvaluator {
                 if (qe instanceof QDLExceptionWithTrace) {
                     QDLExceptionWithTrace qq = (QDLExceptionWithTrace) qe;
                     qq.setScriptName(resourceName);
+                    qq.getScriptStack().addAll(state.getScriptStack()); // clone the stack so the trace has it
                     qq.setScript(true);
+                    state.getScriptStack().clear(); // or all errors just accumulate
                     throw qq;
                 }
                 if (qe instanceof ReturnException) {
@@ -1891,6 +1894,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 throw qq;
             }
         }
+        state.getScriptStack().remove(state.getScriptStack().size() - 1);
         polyad.setEvaluated(true);
         polyad.setResultType(Constant.NULL_TYPE);
         polyad.setResult(QDLNull.getInstance());

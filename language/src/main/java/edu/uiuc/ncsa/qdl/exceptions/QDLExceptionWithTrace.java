@@ -2,6 +2,9 @@ package edu.uiuc.ncsa.qdl.exceptions;
 
 import edu.uiuc.ncsa.qdl.statements.Statement;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * An exception when evaluating a set of statements. This gives the statement number
  * (not the line number, which is close to impossible to determine given how Antlr
@@ -57,4 +60,42 @@ public class QDLExceptionWithTrace extends QDLException{
     public void setScriptName(String scriptName) {
         this.scriptName = scriptName;
     }
+
+    public List<String> getScriptStack() {
+        if(scriptStack == null){
+             scriptStack = new ArrayList<>();
+         }
+        return scriptStack;
+    }
+
+    public void setScriptStack(List<String> scriptStack) {
+
+        this.scriptStack = scriptStack;
+    }
+
+    public boolean hasScriptStack(){
+        return scriptStack != null;
+    }
+
+    /**
+     * Uses the {@link #scriptStack} to create a trace of scripts.
+     * @return
+     */
+    public String stackTrace() {
+        if (getScriptStack().isEmpty()) {
+            return "";
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        String indent = "";
+        for (String s : getScriptStack()) {
+            stringBuilder.append(indent + s);
+            indent = indent + "\n  ";
+        }
+        return stringBuilder.toString();
+    }
+
+    List<String> scriptStack;
+
+
+
 }

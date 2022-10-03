@@ -22,6 +22,18 @@ import java.util.*;
  * on 2/2/20 at  6:37 AM
  */
 public abstract class AbstractState implements StateInterface, Logable {
+    public List<String> getScriptStack() {
+        return scriptStack;
+    }
+
+    public void setScriptStack(List<String> scriptStack) {
+        this.scriptStack = scriptStack;
+    }
+
+    List<String> scriptStack = new ArrayList<>();
+
+
+
     public UUID getUuid() {
         return uuid;
     }
@@ -45,6 +57,7 @@ public abstract class AbstractState implements StateInterface, Logable {
      * <br/>
      * For instance, in an expression like a#b#f(x) the instance of b would have a superstate that
      * is the current state of a.
+     *
      * @return
      */
     public State getSuperState() {
@@ -95,10 +108,10 @@ public abstract class AbstractState implements StateInterface, Logable {
     private static final long serialVersionUID = 0xcafed00d3L;
 
     public AbstractState(
-                         VStack vStack,
-                         OpEvaluator opEvaluator,
-                         MetaEvaluator metaEvaluator,
-                         MyLoggingFacade myLoggingFacade) {
+            VStack vStack,
+            OpEvaluator opEvaluator,
+            MetaEvaluator metaEvaluator,
+            MyLoggingFacade myLoggingFacade) {
         this.vStack = vStack;
         this.metaEvaluator = metaEvaluator;
         this.opEvaluator = opEvaluator;
@@ -137,7 +150,6 @@ public abstract class AbstractState implements StateInterface, Logable {
     public int getOperatorType(String name) {
         return getOpEvaluator().getType(name);
     }
-
 
 
     @Override

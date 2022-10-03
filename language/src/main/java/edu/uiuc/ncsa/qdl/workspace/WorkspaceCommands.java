@@ -2882,6 +2882,8 @@ public class WorkspaceCommands implements Logable, Serializable {
         boolean doOnlineExample = inputLine.hasArg(ONLINE_HELP_EXAMPLE_FLAG);
         inputLine.removeSwitch(ONLINE_HELP_EXAMPLE_FLAG);
         String name = inputLine.getArg(ACTION_INDEX);
+        boolean isRegex = inputLine.hasArg(REGEX_SWITCH);
+
         if (name.equals("*")) {
             // so they entered )funcs help Print off first lines of help
             TreeSet<String> treeSet = new TreeSet<>();
@@ -2907,7 +2909,8 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("(no online help)");
                 return RC_CONTINUE;
             }
-            say("Help is available for the following (" + treeSet.size() + " topics):");
+            // if it's a regex, we have no idea what the display function will do, so don't have a count.
+            say("Help is available for the following " + (isRegex?"":treeSet.size()) + " topics:");
             return printList(inputLine, treeSet);
 
         }

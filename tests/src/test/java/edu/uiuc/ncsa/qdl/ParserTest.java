@@ -652,6 +652,7 @@ public class ParserTest extends AbstractQDLTester {
         addLine(script, "j := false ||  true || d.5 == 5;"); //true
         addLine(script, "k := true ||  false || d.5 == 5;"); //true
         // Making sure very important case of is_defined short circuits right.
+        // CIL-1498 regression tests
         addLine(script, "l := is_defined(d.) && d.3 ≤ 5 ;"); //false -- d. undefined
         addLine(script, "m := is_defined(zzz.'b') && 3 == zzz.'b' ;"); //false -- zzz.b
         addLine(script, "n := is_defined(yyy.'a') && 3 == zzz.'b' ;"); //false -- yyy. is undefined
