@@ -410,7 +410,7 @@ public class ListEvaluator extends AbstractEvaluator {
               /*  if (polyad.getArgCount() == 2) {
                     count = (long) stem.size() - startIndex;
                 } else {*/
-                if(polyad.getArgCount() == 3){
+                if (polyad.getArgCount() == 3) {
                     // must be 3
                     count = (Long) arg3;
                     if (count < 0) {
@@ -433,8 +433,8 @@ public class ListEvaluator extends AbstractEvaluator {
                 if (count < 0) {
                     count = -count; // no wrap around possible for sets
                 }
-                if(set.size() < count){
-                    count = (long)set.size();
+                if (set.size() < count) {
+                    count = (long) set.size();
                 }
                 break;
             default:
@@ -492,6 +492,7 @@ public class ListEvaluator extends AbstractEvaluator {
 {0:-4, 2:-2, 4:0, 6:2, 8:4}
 pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
      */
+
     /**
      * Pick elements based on a function that is supplied.
      *
@@ -501,28 +502,28 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
      */
     protected boolean doPickSubset(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-             polyad.setResult(new int[]{2});
-             polyad.setEvaluated(true);
-             return true;
-         }
-         if (polyad.getArgCount() < 2) {
-             throw new MissingArgException(PICK + " requires 2 arguments", polyad);
-         }
+            polyad.setResult(new int[]{2});
+            polyad.setEvaluated(true);
+            return true;
+        }
+        if (polyad.getArgCount() < 2) {
+            throw new MissingArgException(PICK + " requires 2 arguments", polyad);
+        }
 
-         if (2 < polyad.getArgCount()) {
-             throw new ExtraArgException(PICK + " requires 2 arguments", polyad.getArgAt(3));
-         }
+        if (2 < polyad.getArgCount()) {
+            throw new ExtraArgException(PICK + " requires 2 arguments", polyad.getArgAt(3));
+        }
         FunctionReferenceNode frn = getFunctionReferenceNode(state, polyad.getArgAt(0), true);
         Object arg1 = polyad.evalArg(1, state);
         ExpressionImpl f = null;
         int argCount = 1;
         try {
             List<FunctionRecord> functionRecordList = state.getFTStack().getByAllName(frn.getFunctionName());
-            if(functionRecordList.isEmpty()){
+            if (functionRecordList.isEmpty()) {
                 throw new NFWException("no functions found for pick function at all. Did state management change?");
             }
-            for(FunctionRecord fr: functionRecordList){
-                if(2 < fr.getArgCount()){
+            for (FunctionRecord fr : functionRecordList) {
+                if (2 < fr.getArgCount()) {
                     continue;
                 }
                 argCount = Math.max(argCount, fr.getArgCount());
@@ -534,7 +535,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
         }
         // 3 cases
         if (isSet(arg1)) {
-            if(argCount != 1){
+            if (argCount != 1) {
                 throw new BadArgException(PICK + " pick function for sets can only have a single argument", polyad.getArgAt(0));
             }
             QDLSet result = new QDLSet();
@@ -551,9 +552,9 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
                     }
                 }
             }
-            if(frn.isAnonymous()){
-                    state.getFTStack().remove(new FKey(frn.getFunctionName(), f.getArgCount()));
-                }
+            if (frn.isAnonymous()) {
+                state.getFTStack().remove(new FKey(frn.getFunctionName(), f.getArgCount()));
+            }
             polyad.setResult(result);
             polyad.setResultType(Constant.SET_TYPE);
             polyad.setEvaluated(true);
@@ -567,7 +568,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
             for (Object key : stemArg.keySet()) {
                 rawArgs.clear();
                 Object value = stemArg.get(key);
-                if(argCount == 2){
+                if (argCount == 2) {
                     rawArgs.add(key);
                 }
                 rawArgs.add(stemArg.get(key));
@@ -579,7 +580,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
                     }
                 }
             }
-            if(frn.isAnonymous()){
+            if (frn.isAnonymous()) {
                 state.getFTStack().remove(new FKey(frn.getFunctionName(), f.getArgCount()));
             }
             polyad.setResult(outStem);
@@ -660,18 +661,29 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
             }
         }
         QDLStem output = new QDLStem();
-        for (long i = 0; i < leftStem.size(); i++) {
+
+        // Fix https://github.com/ncsa/qdl/issues/1, with regression test StringFunctionTests#testIndexOfGaps
+        for (Object leftKey : leftStem.keySet()) {
             boolean gotOne = false;
-            for (long j = 0; j < rightStem.size(); j++) {
-                if (leftStem.get(i).toString().startsWith(rightStem.get(j).toString())) {
-                    output.put(i, j);
+            if (!(leftKey instanceof Long)) {
+                throw new IndexError(leftKey + " is not an integer index", polyad.getArgAt(0));
+            }
+            Long leftIndex = (Long) leftKey;
+            for (Object rightKey : rightStem.keySet()) {
+                if (!(rightKey instanceof Long)) {
+                    throw new IndexError(rightKey + " is not an integer index", polyad.getArgAt(1));
+                }
+                Long rightIndex = (Long) rightKey;
+                if (leftStem.getString(leftIndex).startsWith(rightStem.getString(rightIndex))) {
+                    output.put(leftIndex, rightIndex);
                     gotOne = true;
                     break;
                 }
             }
             if (!gotOne) {
-                output.put(i, -1L);
+                output.put(leftIndex, -1L);
             }
+
         }
         polyad.setResult(output);
         polyad.setResultType(Constant.STEM_TYPE);

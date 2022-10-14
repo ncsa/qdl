@@ -330,6 +330,25 @@ public class StringFunctionTests extends AbstractQDLTester {
 
     }
 
+    /**
+     * This tests index_of for lists where there are gaps. This is taken from a script where this
+     * was bombing
+     *
+     * @throws Throwable
+     */
+    public void testIndexOfGaps() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "tx_scopes.≔['org.cilogon.userinfo','openid','profile','email','wlcg.capabilityset:/duneetf','offline_access'];");
+        addLine(script, "CS_HEAD ≔'wlcg.capabilityset:/';");
+        addLine(script, "x. ≔ mask(tx_scopes., starts_with(tx_scopes., CS_HEAD)!= 0);"); // CS_HEAD removed, so gap in indices
+        addLine(script, "y. ≔ starts_with(x., 'wlcg.groups:');"); // all are -1, but there are gaps in the indices
+        addLine(script, "ok := reduce(@&&, y. == -1);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state);
+    }
+
     public void testIndexOfStemString_ignoreCase() throws Exception {
         State state = testUtils.getTestState();
         VStack vStack = state.getVStack();
