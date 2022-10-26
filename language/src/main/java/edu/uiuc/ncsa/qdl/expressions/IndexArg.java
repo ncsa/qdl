@@ -5,6 +5,7 @@ import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLSet;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 7/1/22 at  4:51 PM
  */
-public class IndexArg {
+public class IndexArg implements Serializable {
     public boolean interpretListArg = false;
 
     public IndexArg() {

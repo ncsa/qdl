@@ -229,10 +229,9 @@ public class AnotherJSONUtil implements ScriptingConstants {
     public static void main(String[] args) {
         try {
             JSONObject j = JSONObject.fromObject(test6);
-            System.out.println(j.toString(1));
             ScriptSet<QDLScript> scripts = createScripts((JSON) j.get("qdl"));
-            scripts.get(SRE_EXEC_PHASE, SRE_POST_AT);
-            System.out.println(scripts);
+            System.out.println(SRE_PRE_AUTH + " scripts = " + scripts.get(SRE_EXEC_PHASE, SRE_PRE_AUTH));
+            System.out.println(SRE_POST_AT + " scripts = " + scripts.get(SRE_EXEC_PHASE, SRE_POST_AT));
         } catch (Throwable t) {
             t.printStackTrace();
         }
