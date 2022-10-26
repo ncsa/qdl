@@ -38,6 +38,15 @@ Standard Extensions
 
     *{{{./pdf/qdldb-extension.pdf}The database extension.}}
 
+OA4MP Extensions
+
+    *{{{./docs/qdl_server_scripts.pdf}Introduction to writing server-side scripts with QDL}}
+
+    *{{{./docs/creating_claim_sources2.pdf}Creating claims in server scripting.}}
+
+    *{{{./docs/claim_source_examples.pdf}Examples for creating claim sources.}}
+
+    *{{{./docs/token_handler_configuration.pdf}Configuring token handlers.}}
 
 Javadoc for QDL
 
