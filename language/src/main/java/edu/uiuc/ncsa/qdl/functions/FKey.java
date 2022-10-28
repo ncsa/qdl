@@ -38,9 +38,6 @@ public class FKey extends XKey {
 
     public FKey(String fkey, int argCount) {
         super();
-        if(fkey == null){
-            System.out.println("FKEY null");
-        }
         this.fName = fkey;
         this.argCount = argCount;
         if (-1 < argCount) {

@@ -33,7 +33,6 @@ public class IndexList extends ArrayList {
             add(null);
         }
     }
-
     public IndexList() {
     }
 

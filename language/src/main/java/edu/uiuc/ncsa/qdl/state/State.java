@@ -48,6 +48,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
@@ -207,14 +208,23 @@ public class State extends FunctionState implements QDLConstants {
                 systemInfo.put(SYS_QDL_VERSION, versionInfo);
             }
         }
-        // get modules
+        // get modules to list in the "lib" entry
         QDLStem libStem = new QDLStem();
-        libStem.put("http", QDLHTTPLoader.class.getCanonicalName());
-        libStem.put("db", QDLDBLoader.class.getCanonicalName());
-        libStem.put("crypto", CryptoLoader.class.getCanonicalName());
-        systemInfo.put("lib",libStem);
+        Map<String, String> libMap = getLibMap();
+        for (String key : libMap.keySet()) {
+            libStem.put(key, libMap.get(key));
+        }
+        systemInfo.put("lib", libStem);
 
 
+    }
+
+    protected Map<String, String> getLibMap() {
+        Map<String, String> map = new HashMap<>();
+        map.put("http", QDLHTTPLoader.class.getCanonicalName());
+        map.put("db", QDLDBLoader.class.getCanonicalName());
+        map.put("crypto", CryptoLoader.class.getCanonicalName());
+        return map;
     }
 
     public void createSystemConstants() {
@@ -848,7 +858,7 @@ public class State extends FunctionState implements QDLConstants {
                             VStack vStack = new VStack();
                             vStack.fromJSON(st.toJSON(), null);
                             setvStack(vStack);*/
-                        //    break;
+                            //    break;
                         case FUNCTIONS_TAG:
                             XMLUtils.oldDeserializeFunctions(xer, xp, this);
                             break;
@@ -1069,13 +1079,13 @@ public class State extends FunctionState implements QDLConstants {
         }
 
     }
-    public  VStack getExtrinsicVars() {
-        if(extrinsicVars == null){
+
+    public VStack getExtrinsicVars() {
+        if (extrinsicVars == null) {
             extrinsicVars = new VStack();
         }
         return extrinsicVars;
     }
-
 
 
     public static VStack extrinsicVars;
