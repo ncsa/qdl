@@ -2531,11 +2531,11 @@ public class StemTest extends AbstractQDLTester {
         // next is checking that mining various attributes return the right value and shape
         addLine(script, "ok0:=(x.qdl.0.args.bind_dn) == (x\\qdl\\0\\args\\bind_dn);");
         addLine(script, "ok0a:=(x.qdl.0.args.bind_dn) == (x\\>['qdl',0,'args','bind_dn']);");
-        addLine(script, "ok1 :=(x.qdl.0.args.return_attributes.0) == (x\\qdl\\0\\args\\return_attributes\\0);" );
-        addLine(script, "ok1a :=(x.qdl.0.args.return_attributes.0) == (x\\>['qdl',0,'args','return_attributes',0]);" );
-        addLine(script, "ok2 := x\\qdl\\0\\args\\return_attributes << List;" );
-        addLine(script, "ok3 := x\\woof == null;" );
-        addLine(script, "ok4 := x\\['woof'] << Stem;" );
+        addLine(script, "ok1 :=(x.qdl.0.args.return_attributes.0) == (x\\qdl\\0\\args\\return_attributes\\0);");
+        addLine(script, "ok1a :=(x.qdl.0.args.return_attributes.0) == (x\\>['qdl',0,'args','return_attributes',0]);");
+        addLine(script, "ok2 := x\\qdl\\0\\args\\return_attributes << List;");
+        addLine(script, "ok3 := x\\woof == null;");
+        addLine(script, "ok4 := x\\['woof'] << Stem;");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("oky", state) : "size(x\\qdl\\*) == 2 failed";
@@ -2554,7 +2554,7 @@ public class StemTest extends AbstractQDLTester {
     public void testExtractionStemKey() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script,"           zeta.'Communities:LSCVirgoLIGOGroupMembers' := ['read:/DQSegDB' ,'read:/frames', 'read:/GraceDB'];\n" +
+        addLine(script, "           zeta.'Communities:LSCVirgoLIGOGroupMembers' := ['read:/DQSegDB' ,'read:/frames', 'read:/GraceDB'];\n" +
                 "      zeta.'Communities:LVC:SegDB:SegDBWriter' := 'write:/DQSegDB';\n" +
                 "        zeta.'gw-astronomy:KAGRA-LIGO:members' := ['read:/GraceDB', 'read:/frames'];\n" +
                 "  g. := [{'name': 'Services:MailingLists:Testing:eligible_factor'},{'name': 'Communities:LSCVirgoLIGOGroupMembers'},{'name':'Communities:LVC:SegDB:SegDBWriter'}];");
@@ -2587,6 +2587,7 @@ public class StemTest extends AbstractQDLTester {
 
     /**
      * Test mixed data extraction with some gaps.
+     *
      * @throws Throwable
      */
     public void testMixedExtraction3() throws Throwable {
@@ -2604,6 +2605,35 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok", state) : "testing ever element in an extraction failed failed";
     }
 
+    /**
+     * test contract for {@link StemEvaluator#DIFF} function.
+     * @throws Throwable
+     */
+    public void testDiff() throws Throwable {
+
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok0 := size(diff('a', 'a')) == 0;"); // trivial scalar check
+        addLine(script, "ok1 := reduce(@&&, diff('a', 'b').0 == ['a','b']);"); // scalar check, return [[a,b]]
+        addLine(script, "out0. := diff({'a':'p','b':'q'},{'a':'p','b':'r', 'c':'t'});");
+        addLine(script, "ok2 := size(out0.)==1 && reduce(@&&, out0.'b' == ['q','r']);"); // {b:[q,r]} is expected result
+        addLine(script, "out1. := diff({'a':'p','b':'q'},{'a':'p','b':'r', 'c':'t'}, false);"); // test subsetting off
+        addLine(script, "ok3 := size(out1.) == 2 && reduce(@&&,out1.'b'==['q','r']) && reduce(@&&,out1.'c'==[null,'t']);");
+        addLine(script, "out2. := diff({'a':'p','b':'q'},'p');"); // test diff with a scalar
+        addLine(script, "ok4 := size(out2.) == 1 && reduce(@&&,out2.'b'==['q','p']);");
+        addLine(script, "out3. := diff('p', {'a':'p','b':'q'});"); // test diff with a scalar
+        addLine(script, "ok5 := size(out3.) == 1 && reduce(@&&,out3.'b'==['p','q']);");
+
+
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : StemEvaluator.DIFF + " for equal scalars fails ";
+        assert getBooleanValue("ok1", state) : StemEvaluator.DIFF + " for different scalars fails";
+        assert getBooleanValue("ok2", state) : StemEvaluator.DIFF + " for basic stems with subsetting on fails";
+        assert getBooleanValue("ok3", state) : StemEvaluator.DIFF + " for basic stems with subsetting off fails";
+        assert getBooleanValue("ok4", state) : StemEvaluator.DIFF + " for stem vs scalar fails";
+        assert getBooleanValue("ok5", state) : StemEvaluator.DIFF + " for scalar vs stem fails";
+    }
 
 }
 /*

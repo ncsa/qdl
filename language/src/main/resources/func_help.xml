@@ -4337,6 +4337,53 @@ completely different physical systems.
 ]]>
               </body>
            </entry>
+    <entry id="diff">
+       <body>
+  <![CDATA[diff(x.,y.{,subsettingOn}) - find the differences between x. and y.
+element by element.
+x. - base stem
+y. - stem to compare with
+subsettingOn - (optional) a boolean that when true will
+   treat missing elements in x. or y. as null for comparison.
+   This is true by default.
+result - a stem of lists with an entry only in the case that equality fails.
+
+The zero-th entry is the value in x., the 1st entry is the value in y.
+This is quite a shallow function, since comparisons of complex data are
+quite difficult in general, but covers a very large number of practical
+cases. Generally this is used to give a starting point (like it's
+command line analog, the venerable diff) for more wide-ranging analyses.]]>
+       </body>
+       <example>
+   <![CDATA[  diff({'a':'p','b':'q'},{'a':'p','b':'r', 'c':'t'}, false)
+{b:[q,r], c:[null,t]}
+
+here passing a last argument of false means the mising key of 'c' in
+the first argument is treated as if it is a null
+
+  diff({'a':'p','b':'q'},{'a':'p','b':'r', 'c':'t'})
+{b:[q,r]}
+
+It also works on lists:
+  diff([-4,-1,0,1,4],[4,1,0,1,4])
+[[-4,4],[-1,1]]
+
+  diff([-4,-1,0,1,4],[4,1,0,1,3])
+{0:[-4,4], 1:[-1,1], 4:[4,3]}
+
+And remember it works on anything that can be turned into a stem, so
+for files, it works a bit like the command line utility diff:
+
+   diff(file_read(r.txt,1), file_read(s.txt,1), false)
+{0:[marizy doats, mairzey doats],3:[lambsie divey,lambsey divey]}
+
+Meaning that in the two files, there are differences at line 0 and 3
+and it tells you what those lines are. Note that since subsetting is
+turned off and there are no 'extra' elements, the files otherwise match
+line for line.]]>
+        </example>
+    </entry>
+
     <!--
     <entry id="">
        <body>

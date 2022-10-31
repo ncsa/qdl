@@ -131,6 +131,8 @@ public class StemEvaluator extends AbstractEvaluator {
     public static final String STAR = "star";
     public static final int STAR_TYPE = 209 + STEM_FUNCTION_BASE_VALUE;
 
+    public static final String DIFF = "diff";
+    public static final int DIFF_TYPE = 210 + STEM_FUNCTION_BASE_VALUE;
 
     // Conversions to/from JSON.
     public static final String TO_JSON = "to_json";
@@ -151,6 +153,7 @@ public class StemEvaluator extends AbstractEvaluator {
     public String[] getFunctionNames() {
         if (fNames == null) {
             fNames = new String[]{
+                    DIFF,
                     STAR,
                     DIMENSION, RANK,
                     TRANSPOSE, TRANSPOSE2,
@@ -187,6 +190,8 @@ public class StemEvaluator extends AbstractEvaluator {
     @Override
     public int getType(String name) {
         switch (name) {
+            case DIFF:
+                return DIFF_TYPE;
             case STAR:
                 return STAR_TYPE;
             case DIMENSION:
@@ -272,6 +277,9 @@ public class StemEvaluator extends AbstractEvaluator {
 
     public boolean evaluate2(Polyad polyad, State state) {
         switch (polyad.getName()) {
+            case DIFF:
+                doDiff(polyad, state);
+                return true;
             case STAR:
                 doStar(polyad, state);
                 return true;
@@ -373,6 +381,158 @@ public class StemEvaluator extends AbstractEvaluator {
         return false;
     }
 
+    /*
+     This should have a signature of
+     diff(x.,y.{,true|false})
+     returns a stem that compares each element of x. with y. (no depth!). Id
+     last arg is true (default) then missing elements are rendered as null
+     if false, then missing elements are ignored.
+     */
+    private void doDiff(Polyad polyad, State state) {
+        if (polyad.isSizeQuery()) {
+            polyad.setResult(new int[]{2, 3});
+            polyad.setEvaluated(true);
+            return;
+        }
+        if (polyad.getArgCount() < 2) {
+            throw new MissingArgException(DIFF + " takes at least two arguments", polyad.getArgCount() == 1 ? polyad.getArgAt(0) : polyad);
+        }
+        if (3 < polyad.getArgCount()) {
+            throw new ExtraArgException(DIFF + " takes at most three arguments", polyad.getArgAt(3));
+        }
+        boolean subsettingOn = true;
+        Object arg0 = polyad.evalArg(0, state);
+        QDLStem stem0;
+        boolean arg0Scalar = false;
+        if (arg0 instanceof QDLStem) {
+            stem0 = (QDLStem) arg0;
+        } else {
+            stem0 = new QDLStem();
+            stem0.setDefaultValue(arg0);
+            arg0Scalar = true;
+            //throw new BadArgException("first argument to " + DIFF + " must be a stem", polyad.getArgAt(0));
+        }
+
+        Object arg1 = polyad.evalArg(1, state);
+        QDLStem stem1;
+        boolean arg1Scalar = false;
+        if (arg1 instanceof QDLStem) {
+            stem1 = (QDLStem) arg1;
+        } else {
+            stem1 = new QDLStem();
+            stem1.setDefaultValue(arg1);
+            arg1Scalar = true;
+            //throw new BadArgException("second argument to " + DIFF + " must be a stem", polyad.getArgAt(1));
+        }
+        if (arg0Scalar && arg1Scalar) {
+            QDLStem out = new QDLStem();
+            if(!arg0.equals(arg1)){
+                QDLStem r = new QDLStem();
+                r.put(0L, arg0);
+                r.put(1L, arg1);
+                out.put(0L, r); // give it the right shape
+            }
+            polyad.setResult(out);
+            polyad.setEvaluated(true);
+            polyad.setResultType(STEM_TYPE);
+            return;
+        }
+        if (polyad.getArgCount() == 3) {
+            Object arg2 = polyad.evalArg(2, state);
+            if (arg2 instanceof Boolean) {
+                subsettingOn = (Boolean) arg2;
+            } else {
+                throw new BadArgException("last argument to " + DIFF + " must be a boolean", polyad.getArgAt(2));
+            }
+        }
+
+        StemKeys allkeys = stem1.keySet();
+        allkeys.addAll(stem0.keySet());
+        QDLStem out = new QDLStem();
+        for (Object key : allkeys) {
+            Object lArg = stem0.get(key);
+            Object rArg = stem1.get(key);
+            if (subsettingOn) {
+                // Java null means no such element.
+                if (lArg == null || rArg == null) {
+                    continue;
+                }
+            }
+            // at most one of these is null we pick our way through this and only
+            // create the list if needed so we don't end up with a bunch of unused
+            // objects for very large stems.
+            if (lArg == null) {
+                if (!subsettingOn) {
+                    QDLStem r = new QDLStem();
+                    r.putLongOrString(0L, QDLNull.getInstance());
+                    r.putLongOrString(1L, rArg);
+                    out.putLongOrString(key, r);
+                }
+            } else {
+                if (rArg == null) {
+                    if (!subsettingOn) {
+                        QDLStem r = new QDLStem();
+                        r.putLongOrString(0L, lArg);
+                        r.putLongOrString(1L, QDLNull.getInstance());
+                        out.putLongOrString(key, r);
+                    }
+
+                } else {
+                    // neither is a Java null, so NPE possible here
+                    if (!lArg.equals(rArg)) {
+                        QDLStem r = new QDLStem();
+                        r.putLongOrString(0L, lArg);
+                        r.putLongOrString(1L, rArg);
+                        out.putLongOrString(key, r);
+
+                    }
+                }
+            }
+
+        }
+
+
+/*
+        StemKeys stemKeys1 = stem1.keySet();
+        for (Object key : stem0.keySet()) {
+            Object lArg = stem0.get(key);
+            if (stem1.containsKey(key)) {
+                stemKeys1.remove(key);
+                Object rArg = stem1.get(key);
+                if (!lArg.equals(rArg)) {
+                    QDLStem x = new QDLStem();
+                    x.put(0L, lArg);
+                    x.put(1L, rArg);
+                    out.putLongOrString(key, x);
+                }
+            } else {
+                if (!subsettingOn) {
+                    QDLStem x = new QDLStem();
+                    x.put(0L, lArg);
+                    x.put(1L, QDLNull.getInstance());
+                    out.putLongOrString(key, x);
+                }
+            }
+        }
+*/
+        // So at this point we have everything in stem0 processed. It ispossible that there are
+        // elements in stem1 that are not in stem0 and if we are told to process them, stemKeys1
+        // contains a list of elements in stem1 not in stem0
+/*
+        if (!subsettingOn) {
+            for (Object key : stemKeys1) {
+                QDLStem x = new QDLStem();
+                x.put(0L, QDLNull.getInstance());
+                x.put(1L, stem1.get(key));
+                out.putLongOrString(key, x);
+            }
+        }
+*/
+        polyad.setResult(out);
+        polyad.setResultType(STEM_TYPE);
+        polyad.setEvaluated(true);
+    }
+
     private void doStar(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{0});
@@ -385,7 +545,6 @@ public class StemEvaluator extends AbstractEvaluator {
         polyad.setResult(new AllIndices());
         polyad.setResultType(NULL_TYPE);
         polyad.setEvaluated(true);
-        return;
     }
 
     private void doRemap(Polyad polyad, State state) {
@@ -1260,7 +1419,7 @@ public class StemEvaluator extends AbstractEvaluator {
             size = ((QDLSet) arg).size();
         }
         if (isStem(arg)) {
-            size =  ((QDLStem) arg).size();
+            size = ((QDLStem) arg).size();
         }
         if (arg instanceof String) {
             size = arg.toString().length();
