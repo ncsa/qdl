@@ -2,6 +2,7 @@ package edu.uiuc.ncsa.qdl.state;
 
 import edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.VStack;
 import edu.uiuc.ncsa.qdl.vfs.VFSPaths;
 import edu.uiuc.ncsa.security.core.Logable;
@@ -31,7 +32,6 @@ public abstract class AbstractState implements StateInterface, Logable {
     }
 
     List<String> scriptStack = new ArrayList<>();
-
 
 
     public UUID getUuid() {
@@ -219,6 +219,24 @@ public abstract class AbstractState implements StateInterface, Logable {
         return scriptArgs != null;
     }
 
+    public QDLStem getScriptArgStem() {
+        if (scriptArgStem == null) {
+            scriptArgStem = new QDLStem();
+            if (hasScriptArgs()) {
+                for (Object object : getScriptArgs()) {
+                    scriptArgStem.listAppend(object);
+                }
+            }
+        }
+        return scriptArgStem;
+    }
+
+    public void setScriptArgStem(QDLStem scriptArgStem) {
+        this.scriptArgStem = scriptArgStem;
+    }
+
+    QDLStem scriptArgStem = null;
+
     /**
      * Command line arguments if this is being run in script mode.  This is an array of objects.
      * If invoked from inside QDL then it may be any QDL variable. When coming from outside, these
@@ -232,6 +250,7 @@ public abstract class AbstractState implements StateInterface, Logable {
 
     public void setScriptArgs(Object[] scriptArgs) {
         this.scriptArgs = scriptArgs;
+        scriptArgStem = null; // zero it out or it never gets updated with changes.
     }
 
     public List<String> getScriptPaths() {

@@ -195,6 +195,9 @@ public class SystemEvaluator extends AbstractEvaluator {
     public static final String CLIPBOARD_PASTE = "cb_write";
     public static final int CLIPBOARD_PASTE_COMMAND_TYPE = 407 + SYSTEM_BASE_VALUE;
 
+    public static final String SCRIPT_ARGS2_COMMAND = "args";
+    public static final int SCRIPT_ARGS2_COMMAND_TYPE = 408 + SYSTEM_BASE_VALUE;
+
 
     @Override
     public String[] getFunctionNames() {
@@ -215,6 +218,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                     REDUCE, EXPAND,
                     SCRIPT_PATH_COMMAND,
                     SCRIPT_ARGS_COMMAND,
+                    SCRIPT_ARGS2_COMMAND,
                     SYS_INFO,
                     OS_ENV,
                     SYSTEM_LOG,
@@ -276,6 +280,8 @@ public class SystemEvaluator extends AbstractEvaluator {
             case SCRIPT_PATH_COMMAND:
                 return SCRIPT_PATH_COMMAND_TYPE;
             case SCRIPT_ARGS_COMMAND:
+                return SCRIPT_ARGS_COMMAND_TYPE;
+            case SCRIPT_ARGS2_COMMAND:
                 return SCRIPT_ARGS_COMMAND_TYPE;
             case OS_ENV:
                 return OS_ENV_TYPE;
@@ -406,6 +412,10 @@ public class SystemEvaluator extends AbstractEvaluator {
             case SCRIPT_ARGS_COMMAND:
                 doScriptArgs(polyad, state);
                 return true;
+            case SCRIPT_ARGS2_COMMAND:
+                doScriptArgs2(polyad, state);
+                return true;
+
             case BREAK:
                 if (polyad.isSizeQuery()) {
                     polyad.setResult(new int[]{0});
@@ -1580,19 +1590,16 @@ public class SystemEvaluator extends AbstractEvaluator {
             return;
         }
         Object obj = polyad.evalArg(0, state);
-        if (!state.hasScriptArgs()) {
+/*        if (!state.hasScriptArgs()) {
             throw new BadArgException("index out of bounds for " + SCRIPT_ARGS_COMMAND + "-- no arguments found.", polyad.getArgAt(0));
-        }
+        }*/
         checkNull(obj, polyad.getArgAt(0), state);
         if (!isLong(obj)) {
             throw new BadArgException(SCRIPT_ARGS_COMMAND + " requires an integer argument.", polyad.getArgAt(0));
         }
         int index = ((Long) obj).intValue();
         if (index == -1L) {
-            QDLStem args = new QDLStem();
-            for (Object object : state.getScriptArgs()) {
-                args.listAppend(object);
-            }
+            QDLStem args = state.getScriptArgStem();
             polyad.setEvaluated(true);
             polyad.setResultType(Constant.STEM_TYPE);
             polyad.setResult(args);
@@ -1609,6 +1616,52 @@ public class SystemEvaluator extends AbstractEvaluator {
         polyad.setResultType(Constant.STRING_TYPE);
         polyad.setResult(state.getScriptArgs()[index]);
         return;
+    }
+
+    /**
+     * New function for script arguments. Better contract.
+     * <p>
+     *     Fixes <a href="https://github.com/ncsa/qdl/issues/3">github issue 3.</a>
+     * </p>
+     * @param polyad
+     * @param state
+     */
+    protected void doScriptArgs2(Polyad polyad, State state) {
+        if (polyad.isSizeQuery()) {
+            polyad.setResult(new int[]{0, 1});
+            polyad.setEvaluated(true);
+            return;
+        }
+        boolean hasArg = polyad.getArgCount() == 1;
+        if (1 < polyad.getArgCount()) {
+            throw new ExtraArgException(SCRIPT_ARGS2_COMMAND + " requires at most 1 argument", polyad.getArgAt(1));
+        }
+
+        Long index = 0L;
+        if (hasArg) {
+            Object obj = polyad.evalArg(0, state);
+            checkNull(obj, polyad.getArgAt(0), state);
+            if (!isLong(obj)) {
+                throw new BadArgException(SCRIPT_ARGS2_COMMAND + " requires an integer argument.", polyad.getArgAt(0));
+            }
+            index = (Long) obj;
+        }
+        if (!state.hasScriptArgs()) {
+            polyad.setResult(new QDLStem());
+            polyad.setEvaluated(true);
+            polyad.setResultType(Constant.getType(polyad.getResult()));
+            return;
+        }
+        if (hasArg) {
+            Object result = state.getScriptArgStem().get(index);
+            polyad.setResultType(Constant.getType(result));
+            polyad.setResult(polyad);
+            polyad.setEvaluated(true);
+        } else {
+            polyad.setEvaluated(true);
+            polyad.setResultType(Constant.STEM_TYPE);
+            polyad.setResult(state.getScriptArgStem());
+        }
     }
 
 

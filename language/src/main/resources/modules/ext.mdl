@@ -108,7 +108,7 @@ module[
       laminate(x, y, axis)
    ][
      » laminate(x, y, axis) - paste two stems together along an axis
-     » At least one of x and y is a stem.
+     » At least one of x and y is a stem. This works best for rectangular arrays.
       types ≔ (var_type(x) ≡ 4?1:0) + (var_type(y) ≡ 4?2:0);
       // 0 - both scalars, 1 - x only stem, 2 - y only stem 3 - both stems
       if[types ≡ 0][return([x,y]);]; // trivial case
