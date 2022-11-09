@@ -892,7 +892,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
                 if (hasDefaultValue()) {
                     obj = getDefaultValue();
                 } else {
-                    throw new IndexError("the index " + i + " for " + indexList + "\" was not found in this stem", null);
+                    throw new IndexError("the index " + i + " in " + indexList + "\" was not found in this stem", null);
                 }
             }
 
