@@ -1181,7 +1181,12 @@ public class SystemEvaluator extends AbstractEvaluator {
         if (!isString(arg0)) {
             throw new BadArgException("argument to " + CHECK_SYNTAX + " must be a string.", polyad.getArgAt(0));
         }
-        StringReader r = new StringReader((String) arg0);
+        String rawString = ((String) arg0).trim();
+        if(rawString.startsWith("#!")){
+           // if it's a script, drop the very first line or the parser chokes.
+           rawString = rawString.substring(rawString.indexOf("\n"));
+        }
+        StringReader r = new StringReader(rawString);
         String message = "";
         QDLParserDriver driver = new QDLParserDriver(new XProperties(), state.newCleanState());
         try {
@@ -1957,7 +1962,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     protected void doRaiseError(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setResult(new int[]{1, 3});
             polyad.setEvaluated(true);
             return;
         }
@@ -1965,24 +1970,37 @@ public class SystemEvaluator extends AbstractEvaluator {
             throw new MissingArgException(RAISE_ERROR + " requires at least 1 argument", polyad);
         }
 
-        if (2 < polyad.getArgCount()) {
-            throw new ExtraArgException(RAISE_ERROR + " requires at most 2 arguments", polyad.getArgAt(2));
+        if (3 < polyad.getArgCount()) {
+            throw new ExtraArgException(RAISE_ERROR + " requires at most 2 arguments", polyad.getArgAt(3));
         }
         Object arg1 = polyad.evalArg(0, state);
         if (arg1 == null) {
             arg1 = "(no message)";
         }
         Object arg2 = null;
-        state.setValue("error_message", arg1.toString());
-        if (polyad.getArgCount() == 2) {
-            arg2 = polyad.evalArg(1, state);
-            checkNull(arg2, polyad.getArgAt(1), state);
-            if (isLong(arg2)) {
-                state.getVStack().put(new VThing(new XKey("error_code"), (Long) arg2));
-            }
-        } else {
-            state.getVStack().put(new VThing(new XKey("error_code"), TryCatch.RESERVED_USER_ERROR_CODE));
+        state.setValue(TryCatch.ERROR_MESSAGE_NAME, arg1.toString());
+        QDLStem stateStem = null;
+        switch (polyad.getArgCount()){
+            case 3:
+                arg2 = polyad.evalArg(2, state);
+                checkNull(arg2, polyad.getArgAt(2), state);
+                if (!isStem(arg2)) {
+                         throw new BadArgException(RAISE_ERROR + ": the final argument must be a stem", polyad);
+                     }
+                stateStem = (QDLStem)arg2 ;
+            case 2:
+                arg2 = polyad.evalArg(1, state);
+                checkNull(arg2, polyad.getArgAt(1), state);
+                if (!isLong(arg2)) {
+                         throw new BadArgException(RAISE_ERROR + ": the second argument must be an integer", polyad);
+                     }
+                state.getVStack().put(new VThing(new XKey(TryCatch.ERROR_STATE_NAME),  stateStem == null?new QDLStem():stateStem));
+                state.getVStack().put(new VThing(new XKey(TryCatch.ERROR_CODE_NAME),  arg2));
+                break;
+            case 1:
+                state.getVStack().put(new VThing(new XKey(TryCatch.ERROR_CODE_NAME), TryCatch.RESERVED_USER_ERROR_CODE));
         }
+
         polyad.setResult(Boolean.TRUE);
         polyad.setResultType(Constant.BOOLEAN_TYPE);
         polyad.setEvaluated(true);

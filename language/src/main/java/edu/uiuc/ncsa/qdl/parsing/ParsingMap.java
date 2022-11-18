@@ -3,6 +3,7 @@ package edu.uiuc.ncsa.qdl.parsing;
 import edu.uiuc.ncsa.qdl.exceptions.ParsingException;
 import edu.uiuc.ncsa.qdl.statements.Element;
 import edu.uiuc.ncsa.qdl.statements.Statement;
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.util.ArrayList;
@@ -206,7 +207,8 @@ public class ParsingMap extends HashMap<String, ParseRecord> {
         if(returnNullOK){
             return null;
         }
-        throw new ParsingException("possible decimal without leading digit or missing/extra: parenthesis | bracket | terminal ';' | embedded ',' | embedded ':'");
+        Interval interval = parseTree.getSourceInterval();
+        throw new ParsingException("error at character " + interval.a + " possible decimal without leading digit or missing/extra: parenthesis | bracket | terminal ';' | embedded ',' | embedded ':'");
 
     }
 

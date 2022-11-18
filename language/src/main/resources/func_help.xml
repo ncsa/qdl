@@ -1474,14 +1474,16 @@ See also:module_import]]>
     </entry>
     <entry id="raise_error">
         <body>
- <![CDATA[raise_error(message) - raises an error and propagates the message in to the
+ <![CDATA[raise_error(message{,code{,state.}}) - raises an error and propagates the message in to the
                        catch block
-raise_error(message, code) - add and option numeric code
+   code - (optional) add and optional numeric code
+ state. - (optional) add and optional stem containing state.
 Note: This ONLY works inside a try[ ... ]catch[] block
 
 Inside the catch block the message and code arguments are accsesible as
 error_message
 error_code
+error_state.
 
 The error_code of -1 is reserved by the system. If an assertion fails then
 that is treated like a system error with reserved value of -2.
@@ -1509,6 +1511,22 @@ try[
  ]; // end catch block
 41 not divisible by 3, R==2
 
+E.g.
+indices. := [;4]
+try[
+  if[size(indices.) < 10][raise_error('too few indices', 3, indices.);];
+  while[j ∈ indices.][...];
+]catch[
+   if[error_code == 2][say('missing indices, got' + error_state.);];
+   // .. other stuff
+];
+
+In this case, a set of at least 10 indices is expected. If there are fewer, an
+error is raised and the set of indices (it could have been any stem you wanted)
+was passed back, along with the error code that tells what the issue was.
+
+In this way, complex state can be included in the error handling. Again, the
+error_state. can be set to any stem you want.
 ]]>
 </example>
 
@@ -4443,6 +4461,13 @@ and it tells you what those lines are. Note that since subsetting is
 turned off and there are no 'extra' elements, the files otherwise match
 line for line.]]>
         </example>
+    </entry>
+    <entry id="extraction">
+       <body>
+  <![CDATA[General term for getting part of a stem.
+See: \
+  ]]>
+       </body>
     </entry>
 
     <!--

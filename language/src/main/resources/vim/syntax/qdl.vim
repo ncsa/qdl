@@ -65,6 +65,7 @@ syntax keyword qdlKeyword acosh
 syntax keyword qdlKeyword append
 syntax keyword qdlKeyword asin
 syntax keyword qdlKeyword asinh
+syntax keyword qdlKeyword args
 syntax keyword qdlKeyword axis
 syntax keyword qdlKeyword atan
 syntax keyword qdlKeyword atanh
@@ -88,6 +89,7 @@ syntax keyword qdlKeyword debug
 syntax keyword qdlKeyword decode_b64
 syntax keyword qdlKeyword detokenize
 syntax keyword qdlKeyword differ_at
+syntax keyword qdlKeyword diff
 syntax keyword qdlKeyword dim
 syntax keyword qdlKeyword dir
 syntax keyword qdlKeyword encode_b64
