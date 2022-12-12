@@ -4,6 +4,7 @@ import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
 import edu.uiuc.ncsa.qdl.extensions.QDLModuleMetaClass;
 import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.qdl.variables.QDLNull;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
@@ -38,9 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
 
 /**
  * Class that is the workhorse for {@link QDLHTTPModule}. See the blurb <br/>
@@ -98,9 +97,22 @@ public class HTTPClient implements QDLModuleMetaClass {
     public String OPEN_METHOD = "open";
     public String IS_OPEN_METHOD = "is_open";
     public static final String CONTENT_FORM = "application/x-www-form-urlencoded";
+    public static final int CONTENT_FORM_VALUE = 0;
     public static final String CONTENT_JSON = "application/json";
+    public static final int CONTENT_JSON_VALUE = 1;
     public static final String CONTENT_HTML = "text/html";
+    public static final int CONTENT_HTML_VALUE = 2;
     public static final String CONTENT_TEXT = "text/plain; charset=UTF-8";
+    public static final int CONTENT_TEXT_VALUE = 3;
+    public static final int CONTENT_TYPE_MISSING_VALUE = -1;
+
+    protected int getContentType(Set<String> contentType) {
+        if (contentType.contains(CONTENT_FORM)) return CONTENT_FORM_VALUE;
+        if (contentType.contains(CONTENT_JSON)) return CONTENT_JSON_VALUE;
+        if (contentType.contains(CONTENT_HTML)) return CONTENT_HTML_VALUE;
+        if (contentType.contains(CONTENT_TEXT)) return CONTENT_TEXT_VALUE;
+        return CONTENT_TYPE_MISSING_VALUE;
+    }
 
     protected void checkInit() {
         if (StringUtils.isTrivial(host)) {
@@ -264,22 +276,26 @@ public class HTTPClient implements QDLModuleMetaClass {
         QDLStem s = new QDLStem();
         QDLStem responseStem = new QDLStem();
         responseStem.put("code", (long) response.getStatusLine().getStatusCode());
-        responseStem.put("message", response.getStatusLine().getReasonPhrase());
+        if(!StringUtils.isTrivial(response.getStatusLine().getReasonPhrase())) {
+            responseStem.put("message", response.getStatusLine().getReasonPhrase());
+        }
         s.put("status", responseStem);
         HttpEntity entity = response.getEntity();
         QDLStem stemResponse = null;
-        String rawResult = EntityUtils.toString(entity);
-        if ((entity.getContentType() != null) && entity.getContentType().getValue().contains("application/json")) {
-            stemResponse = jsonToStemJSON(rawResult);
-        } else {
-            // alternately, try to chunk it up
-            stemResponse = new QDLStem();
-            if (!StringUtils.isTrivial(rawResult)) {
-                stemResponse.addList(StringUtils.stringToList(rawResult));
+        if (entity != null) {
+            String rawResult = EntityUtils.toString(entity);
+            if ((entity.getContentType() != null) && entity.getContentType().getValue().contains("application/json")) {
+                stemResponse = jsonToStemJSON(rawResult);
+            } else {
+                // alternately, try to chunk it up
+                stemResponse = new QDLStem();
+                if (!StringUtils.isTrivial(rawResult)) {
+                    stemResponse.addList(StringUtils.stringToList(rawResult));
+                }
             }
         }
 
-        s.put("content", stemResponse);
+        s.put("content", stemResponse==null? QDLNull.getInstance():stemResponse);
         Header[] headers = response.getAllHeaders();
         QDLStem h = new QDLStem();
         for (int i = 0; i < headers.length; i++) {
@@ -624,7 +640,55 @@ public class HTTPClient implements QDLModuleMetaClass {
         HttpEntity httpEntity = null;
 
         if (headers.containsKey(contentType)) {
-            switch (headers.getString(contentType)) {
+            /*
+             Typical content types look like
+              text/html; charset=utf-8
+              application/json; charset=utf-8
+              multipart/form-data; boundary=something
+              So we have to pick them apart to see if there is anything useful.
+             */
+            StringTokenizer st = new StringTokenizer(headers.getString(contentType), ";");
+            Set<String> contents = new HashSet<>();
+            while (st.hasMoreTokens()) {
+                contents.add(st.nextToken().trim());
+            }
+            switch (getContentType(contents)) {
+                case CONTENT_FORM_VALUE:
+                    if (isStringArg) {
+                        throw new IllegalArgumentException("Cannot have " + contentType + " of " + CONTENT_FORM + " with a string. You must use a stem.");
+                    }
+                    boolean isFirst = true;
+                    for (Object key : payload.keySet()) {
+                        body = body + (isFirst ? "" : "&") + key + "=" + payload.get(key);
+                        if (isFirst) isFirst = false;
+                    }
+                    break;
+                case CONTENT_JSON_VALUE:
+                    if (isStringArg) {
+                        body = stringPayload;
+                    } else {
+                        body = payload.toJSON().toString();
+                    }
+                    break;
+                case CONTENT_TEXT_VALUE:
+                case CONTENT_HTML_VALUE:
+                    if (!isStringArg) {
+                        throw new IllegalArgumentException("Cannot have a stem argument for this content type.");
+                    }
+                    body = stringPayload;
+                    break;
+                case CONTENT_TYPE_MISSING_VALUE:
+                    // There is a content-type header, but it does not have the text type in it
+                    // (e.g. it's a mime type for mail).
+                    // try to process as text.
+                    if (StringUtils.isTrivial(stringPayload)) {
+                        throw new IllegalArgumentException("Must specify " + contentType + " for payload stem.");
+                    } else {
+                        request.addHeader(contentType, CONTENT_TEXT);
+                        body = stringPayload;
+                    }
+            }
+           /* switch (headers.getString(contentType)) {
                 case CONTENT_JSON:
                     if (isStringArg) {
                         body = stringPayload;
@@ -650,7 +714,7 @@ public class HTTPClient implements QDLModuleMetaClass {
                     }
                     body = stringPayload;
                     break;
-            }
+            }*/
         } else {
             if (StringUtils.isTrivial(stringPayload)) {
                 throw new IllegalArgumentException("Must specify " + contentType + " for payload stem.");
