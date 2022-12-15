@@ -1835,7 +1835,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             String caput = name.substring(0, name.indexOf(SCHEME_DELIMITER));
             for (String p : paths) {
                 if (p.startsWith(caput)) {
-                    DebugUtil.trace(SystemEvaluator.class, " trying path = " + p + tempName);
+           //         DebugUtil.trace(SystemEvaluator.class, " trying path = " + p + tempName);
                     try {
                         List<String> lines = QDLFileUtil.readTextFileAsLines(state, p + tempName);
                         return new QDLScript(lines, null);
@@ -1857,7 +1857,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             }
             for (String p : paths) {
                 String resourceName = p + name;
-                DebugUtil.trace(SystemEvaluator.class, " path = " + resourceName);
+            //    DebugUtil.trace(SystemEvaluator.class, " path = " + resourceName);
                 if (QDLFileUtil.isVFSPath(resourceName)) {
                     try {
                         return new QDLScript(QDLFileUtil.readTextFileAsLines(state, resourceName), null);

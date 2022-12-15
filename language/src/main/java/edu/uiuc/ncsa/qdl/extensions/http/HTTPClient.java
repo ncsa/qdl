@@ -212,7 +212,6 @@ public class HTTPClient implements QDLModuleMetaClass {
             } catch (UnsupportedEncodingException e) {
                 throw new QDLException("could not do " + getName() + " because of 'unsupported encoding exception': '" + e.getMessage() + "'");
             }
-            DebugUtil.trace(this, "getting from address " + r);
             HttpGet request = new HttpGet(r);
             if ((headers != null) && !headers.isEmpty()) {
                 for (Object key : headers.keySet()) {
@@ -768,7 +767,6 @@ public class HTTPClient implements QDLModuleMetaClass {
             } catch (UnsupportedEncodingException e) {
                 throw new QDLException("could not do " + getName() + " because of 'unsupported encoding exception': '" + e.getMessage() + "'");
             }
-            DebugUtil.trace(this, "delete from address " + r);
             HttpDelete request = new HttpDelete(r);
             if ((headers != null) && !headers.isEmpty()) {
                 for (Object key : headers.keySet()) {
