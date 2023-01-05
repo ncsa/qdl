@@ -9,10 +9,7 @@ import edu.uiuc.ncsa.qdl.exceptions.UnknownSymbolException;
 import edu.uiuc.ncsa.qdl.module.MIStack;
 import edu.uiuc.ncsa.qdl.module.MTStack;
 import edu.uiuc.ncsa.qdl.module.Module;
-import edu.uiuc.ncsa.qdl.variables.QDLNull;
-import edu.uiuc.ncsa.qdl.variables.QDLStem;
-import edu.uiuc.ncsa.qdl.variables.VStack;
-import edu.uiuc.ncsa.qdl.variables.VThing;
+import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
 
@@ -97,6 +94,16 @@ public abstract class VariableState extends NamespaceAwareState {
             StemMultiIndex w = new StemMultiIndex(variableName);
             // Don't allow assignments of wrong type, but do let them set a stem to null.
             if (w.isStem()) {
+                if(value instanceof QDLSet){
+                    if(((QDLSet)value).isEmpty()){
+                        // Fix for https://github.com/ncsa/qdl/issues/5
+                        // Issue is that input_form would wrongly serialize an empty stem as {},
+                        // then deserialization would bomb since that is the empty set.
+                        // If the value is the empty set, allow trivial case of setting empty set to empty stem
+                        // or saved workspaces will not deserialize.
+                        value = new QDLStem();
+                    }
+                }
                 if (!(value instanceof QDLStem) && !(value instanceof QDLNull)) {
                     throw new IndexError("Error: You cannot set a scalar value '" + value + "' to the stem variable '" + variableName + "'", null);
                 }

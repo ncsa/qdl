@@ -728,7 +728,6 @@ public class QDLStem implements Map<String, Object>, Serializable {
             Boolean b = (Boolean) rawBit;
             if (b) {
                 result.putLongOrString(key, get(key));
-                ;
             }
         }
         return result;
@@ -1496,7 +1495,13 @@ public class QDLStem implements Map<String, Object>, Serializable {
         } catch (QDLList.seGapException x) {
             //rock on. Just means the list is sparse so use full notation.
         }
-
+        if(isEmpty()){
+            if(hasDefaultValue()){
+                return "{*:" + InputFormUtil.inputForm(getDefaultValue()) + "}";
+            }
+            // Make SURE nothing else evaluates since this would return {}
+            return "[]";
+        }
         String output = "{";
         boolean isFirst = true;
 

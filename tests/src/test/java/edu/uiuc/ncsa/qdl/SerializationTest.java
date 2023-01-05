@@ -21,6 +21,9 @@ public class SerializationTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "a:=3;");
+        addLine(script, "empty. := [];");  // test for https://github.com/ncsa/qdl/issues/5
+
+        addLine(script, "s.:={*:2};"); // test serialization of default values too.
         addLine(script, "c:=pi()^2567;");
         addLine(script, "b.:=[;5];");
         addLine(script, "d.:=n(2,3,4,n(24));");
@@ -35,12 +38,16 @@ public class SerializationTest extends AbstractQDLTester {
         addLine(script, "oka := a == 3;");
         addLine(script, "okb := reduce(@&&, b.==[;5]);");
         addLine(script, "okf2 := f(2)==4;");
+        addLine(script, "ok_empty := size(empty.)==0;"); // if issue #5 not fixed, this won't deserialize right.
+        addLine(script, "ok_default := s.0 ==2;");  // checks default value
         interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);
         assert getBooleanValue("oka", state);
         assert getBooleanValue("okb", state);
         assert getBooleanValue("okf2", state);
+        assert getBooleanValue("ok_empty", state);
+        assert getBooleanValue("ok_default", state);
     }
 
     /**

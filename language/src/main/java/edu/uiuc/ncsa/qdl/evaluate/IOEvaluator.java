@@ -784,7 +784,8 @@ public class IOEvaluator extends AbstractEvaluator {
             }
             hasVF = true;
         } else {
-            // Only allow for virtual file reads in server mode.
+            // https://localhost:9443/oauth2/authorize?scope=org.cilogon.userinfo+openid+profile+email+read%3A+x.y%3A+x.z+write%3A&response_type=code&redirect_uri=https%3A%2F%2Flocalhost%3A9443%2Fclient42%2Fready&state=BvOuWCHp4uiUP9X3LNNUIq06hCNV1T_sXPfapRhCXJw&nonce=sfXKMepNO3OWNyDfBGsiacXQ1euR67fdtqYXJSybjLI&prompt=login&client_id=localhost%3Atest%2Fno_qdl
+            // https://localhost:9443/oauth2/authorize?scope=org.cilogon.userinfo+openid+profile+email+read%3A+x.y%3A+x.z+write%3A&response_type=code&redirect_uri=https%3A%2F%2Flocalhost%3A9443%2Fclient42%2Fready&state=zGI8jV81kmiAGhMnVcr2yUDfcAbhp3y2Xbu3e5J7Dzs&nonce=Pf5ziEOsms3VjIlas9uBf3wrJp2If-ZT1h8STwmRM64&prompt=login&client_id=localhost%3Atest%2Fno_qdlvirtual file reads in server mode.
             // If the file does not live in a VFS throw an exception.
             if (state.isServerMode()) {
                 throw new QDLServerModeException("File system operations not permitted in server mode.");
