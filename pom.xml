@@ -9,7 +9,7 @@
     </parent>
     <groupId>edu.uiuc.ncsa.qdl</groupId>
     <artifactId>qdl</artifactId>
-    <version>1.4-QDL-SNAPSHOT</version>
+    <version>1.4.8.3</version>
     <name>QDL root module</name>
     <packaging>pom</packaging>
     <description>The QDL programming Language.</description>
