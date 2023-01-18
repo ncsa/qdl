@@ -305,7 +305,6 @@ public class WorkspaceCommands implements Logable, Serializable {
                     inputLine.getIntArg(1);
                     return _doBufferEdit(inputLine);
                 } catch (ArgumentNotFoundException t) {
-                    say("that didn't work:" + t.getMessage());
                     if (isDebugOn()) {
                         t.printStackTrace();
                     }
@@ -1353,12 +1352,13 @@ public class WorkspaceCommands implements Logable, Serializable {
         // so no buffer. There are a couple ways to get it.
         List<String> result = new ArrayList<>();
         Object rc = invokeEditor(br, result);
-        if (rc instanceof Response) {
-            return rc;
+/*        if (rc instanceof Response) {
+            return rc;  // Swing editor
         }
         if (rc.equals(RC_CONTINUE)) {
             return RC_CONTINUE;
         }
+        */
         if (result.isEmpty()) {
             return RC_NO_OP;
         }
@@ -1369,16 +1369,16 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     protected Object invokeEditor(BufferManager.BufferRecord br, List<String> result) {
         if (useExternalEditor()) {
-            result = _doExternalEdit(br.getContent());
+            result.addAll(_doExternalEdit(br.getContent()));
+            return RC_CONTINUE;
         } else {
             if (isSwingGUI()) {
                 _doGUIEditor(br);
-                return RC_CONTINUE;
             } else {
-                result = _doLineEditor(br.getContent());
+                result.addAll(_doLineEditor(br.getContent()));
             }
+            return RC_CONTINUE;
         }
-        return RC_NO_OP;
     }
 
     private List<String> _doLineEditor(List<String> content) {
@@ -1831,7 +1831,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             say("sorry but a buffer for " + alias + " already exists.");
             return RC_NO_OP;
         }
-        if(!hasSource){
+        if (!hasSource) {
             source = alias;
         }
 /*
@@ -1843,7 +1843,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             sourceFile = aliasFile;
         }
 */
-        if((!isVFSPath(source)) && getState().isServerMode()){
+        if ((!isVFSPath(source)) && getState().isServerMode()) {
             say("warning:" + source + " is not VFS file, so operations may fail");
         }
         if (!isAbsolute(source)) {
@@ -2910,7 +2910,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 return RC_CONTINUE;
             }
             // if it's a regex, we have no idea what the display function will do, so don't have a count.
-            say("Help is available for the following " + (isRegex?"":treeSet.size()) + " topics:");
+            say("Help is available for the following " + (isRegex ? "" : treeSet.size()) + " topics:");
             return printList(inputLine, treeSet);
 
         }
@@ -5243,15 +5243,16 @@ public class WorkspaceCommands implements Logable, Serializable {
      */
     public static final String CLA_EXTENSIONS = "-ext"; // multiple classes comma separated allowed
     public static final String CLA_ENVIRONMENT = "-env";
-    public static final String CLA_HOME_DIR = "-qdlroot";
+    public static final String CLA_HOME_DIR = "-qdl_root";
     public static final String CLA_LOG_DIR = "-log";
     public static final String CLA_BOOT_SCRIPT = "-boot_script";
     public static final String CLA_VERBOSE_ON = "-v";
     public static final String CLA_LONG_FORMAT_ON = "-l";
-    public static final String CLA_NO_BANNER = "-noBanner";
+    public static final String CLA_NO_BANNER = "-no_banner";
     public static final String CLA_DEBUG_ON = "-debug";
     public static final String CLA_RUN_SCRIPT_ON = "-run";
     public static final String CLA_SCRIPT_PATH = "-script_path";
+    public static final String CLA_MODULE_PATH = "-module_path";
     public static final String CLA_LIB_PATH = "-lib_path";
 
     protected File resolveAgainstRoot(String file) {
@@ -5298,9 +5299,9 @@ public class WorkspaceCommands implements Logable, Serializable {
         ConfigurationNode node = ConfigUtil.findConfiguration(
                 inputLine.getNextArgFor(CONFIG_FILE_FLAG),
                 cfgname, CONFIG_TAG_NAME);
-         fromConfigFile(inputLine, node);
+        fromConfigFile(inputLine, node);
     }
-    
+
     public void fromConfigFile(InputLine inputLine, ConfigurationNode node) throws Throwable {
 
         // New style -- multi-inheritance.
@@ -5592,21 +5593,46 @@ public class WorkspaceCommands implements Logable, Serializable {
         if (isVerbose) {
             say("Verbose mode enabled.");
         }
+        inputLine.removeSwitch(CLA_VERBOSE_ON);
         boolean isDebug = inputLine.hasArg(CLA_DEBUG_ON);
+        inputLine.removeSwitch(CLA_DEBUG_ON);
         if (isDebug) {
             say("Debug mode enabled.");
         }
         isRunScript = inputLine.hasArg(CLA_RUN_SCRIPT_ON);
         if (isRunScript) {
             runScriptPath = inputLine.getNextArgFor(CLA_RUN_SCRIPT_ON);
+            inputLine.removeSwitchAndValue(CLA_RUN_SCRIPT_ON);
         }
         showBanner = !inputLine.hasArg(CLA_NO_BANNER);
+        inputLine.removeSwitch(CLA_NO_BANNER);
         // Make sure logging is in place before actually setting up the state,
         // so the state has logging.
         LoggerProvider loggerProvider = null;
+        if (inputLine.hasArg(CLA_HOME_DIR)) {
+            File f = new File(inputLine.getNextArgFor(CLA_HOME_DIR));
+
+            if(f.isAbsolute()){
+                rootDir = inputLine.getNextArgFor(CLA_HOME_DIR);
+            }else{
+                rootDir = System.getProperty("user.dir");
+            }
+            inputLine.removeSwitchAndValue(CLA_HOME_DIR);
+        } else {
+            rootDir = System.getProperty("user.dir");
+        }
+
         if (inputLine.hasArg(CLA_LOG_DIR)) {
             // create the logger for this
-            File f = resolveAgainstRoot(inputLine.getNextArgFor(CLA_LOG_DIR));
+            String rawLog = inputLine.getNextArgFor(CLA_LOG_DIR);
+            File log = new File(rawLog);
+            File f;
+            if (log.isAbsolute()) {
+                f = log;
+            } else {
+                f = resolveAgainstRoot(inputLine.getNextArgFor(CLA_LOG_DIR));
+            }
+            inputLine.removeSwitchAndValue(CLA_LOG_DIR);
             loggerProvider = new LoggerProvider(f.getAbsolutePath(),
                     "qdl logger",
                     1,
@@ -5630,18 +5656,12 @@ public class WorkspaceCommands implements Logable, Serializable {
         state.createSystemInfo(null);
         bufferManager.state = getState();  // make any file operations later will succeed.
 
-        if (inputLine.hasArg(CLA_HOME_DIR)) {
-            rootDir = inputLine.getNextArgFor(CLA_HOME_DIR);
-        } else {
-            String currentDirectory = System.getProperty("user.dir");
-            //rootDir = new File(inputLine.getNextArgFor(currentDirectory));
-            rootDir = currentDirectory;
-        }
+        env = new XProperties();
 
         if (inputLine.hasArg(CLA_ENVIRONMENT)) {
             // try and see if the file resolves first.
             envFile = resolveAgainstRoot(inputLine.getNextArgFor(CLA_ENVIRONMENT));
-            env = new XProperties();
+            inputLine.removeSwitchAndValue(CLA_ENVIRONMENT);
 
             if (envFile.exists()) {
                 env.load(envFile);
@@ -5656,52 +5676,64 @@ public class WorkspaceCommands implements Logable, Serializable {
             // But no screen of any sort if running a single script.
             splashScreen();
         }
-
+        // Get environment and set up the interpreter.
+        if (inputLine.hasArg(TRACE_ARG)) {
+            say("trace enabled");
+            setDebugOn(true);
+            DebugUtil.setIsEnabled(true);
+            DebugUtil.setDebugLevel(DebugConstants.DEBUG_LEVEL_TRACE);
+                                                    inputLine.removeSwitch(TRACE_ARG);
+        }
+        interpreter = new QDLInterpreter(env, getState());
         if (inputLine.hasArg(CLA_EXTENSIONS)) {
             // -ext "edu.uiuc.ncsa.qdl.extensions.QDLLoaderImpl"
-            String loaderClasses = inputLine.getNextArgFor("-ext");
+            String loaderClasses = inputLine.getNextArgFor(CLA_EXTENSIONS);
+            inputLine.removeSwitchAndValue(CLA_EXTENSIONS);
             StringTokenizer st = new StringTokenizer(loaderClasses, ",");
-            String loaderClass;
+            String targetModule;
             String foundClasses = "";
             boolean isFirst = true;
             while (st.hasMoreTokens()) {
-                loaderClass = st.nextToken();
+                targetModule = st.nextToken();
                 try {
-                    Class klasse = state.getClass().forName(loaderClass);
+                    Class klasse = state.getClass().forName(targetModule);
                     QDLLoader loader = (QDLLoader) klasse.newInstance();
                     // Do not import everything on start as default so user can set up aliases.
                     setupJavaModule(state, loader, false);
+
+                    //setupJavaModule(state, loader, false);
                     if (isVerbose) {
                         say("loaded module:" + klasse.getSimpleName());
                     }
                     if (isFirst) {
                         isFirst = false;
-                        foundClasses = loaderClass;
+                        foundClasses = targetModule;
                     } else {
-                        foundClasses = foundClasses + "," + loaderClass;
+                        foundClasses = foundClasses + "," + targetModule;
                     }
                 } catch (Throwable t) {
-                    if (isDebug) {
-                        t.printStackTrace();
+                     // try it as a module
+                    try {
+                        interpreter.execute(SystemEvaluator.MODULE_LOAD + "('" + targetModule + "');");
+                    }catch(Throwable tt){
+                        if (isDebug) {
+                            tt.printStackTrace();
+                        }
+
+                        say("WARNING: module \"" + targetModule + "\" could not be loaded:" + tt.getMessage());
                     }
-                    say("WARNING: module \"" + loaderClass + "\" could not be loaded:" + t.getMessage());
                 }
             }
             if (!foundClasses.isEmpty()) {
                 env.put("externalModules", foundClasses);
             }
         }
-        if (inputLine.hasArg(TRACE_ARG)) {
-            say("trace enabled");
-            setDebugOn(true);
-            DebugUtil.setIsEnabled(true);
-            DebugUtil.setDebugLevel(DebugConstants.DEBUG_LEVEL_TRACE);
 
-        }
-        interpreter = new QDLInterpreter(env, getState());
         interpreter.setEchoModeOn(true);
         if (inputLine.hasArg(CLA_BOOT_SCRIPT)) {
             String bootFile = inputLine.getNextArgFor(CLA_BOOT_SCRIPT);
+            inputLine.removeSwitchAndValue(CLA_BOOT_SCRIPT);
+
             try {
                 String bootScript = readFileAsString(bootFile);
                 interpreter.execute(bootScript);
@@ -5718,13 +5750,33 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         if (inputLine.hasArg(CLA_SCRIPT_PATH)) {
             getState().setScriptPaths(inputLine.getNextArgFor(CLA_SCRIPT_PATH));
+            inputLine.removeSwitchAndValue(CLA_SCRIPT_PATH);
         }
         if (inputLine.hasArg(CLA_LIB_PATH)) {
             getState().setLibPath(inputLine.getNextArgFor(CLA_LIB_PATH));
-
+            inputLine.removeSwitchAndValue(CLA_LIB_PATH);
         }
+        if (inputLine.hasArg(CLA_MODULE_PATH)) {
+            getState().setModulePaths(inputLine.getNextArgFor(CLA_MODULE_PATH));
+            inputLine.removeSwitchAndValue(CLA_MODULE_PATH);
+        }
+
+        // Support for WS attributes
+        // Format is -WS:key value, where key is a standard attribute like pp, debug, etc
+
+        for (String x : inputLine.argsToStringArray()) {
+            if (x.toUpperCase().startsWith(WS_ARG_CAPUT)) {
+                String key = x.substring(WS_ARG_CAPUT.length());
+                String value = inputLine.getNextArgFor(x);
+                _wsSet(new InputLine(")ws", "set", key, value)); // construct set command
+                inputLine.removeSwitchAndValue(x);
+            }
+        }
+
         runScript(inputLine); // If there is a script, run it.
     }
+
+    public static final String WS_ARG_CAPUT = "-WS:";
 
     /**
      * Runs the script from the command line if the -run argument is passed.

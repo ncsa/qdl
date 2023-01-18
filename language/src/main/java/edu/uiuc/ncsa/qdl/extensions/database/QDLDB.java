@@ -149,7 +149,6 @@ public class QDLDB implements QDLModuleMetaClass {
             // This provides
             // #1 a statement. If prepared, then
             // #1 List of values
-            QDLStem outStem = new QDLStem();
             String rawStatement = (String) objects[0];
             List args = null;
             if (objects.length == 2) {
@@ -176,6 +175,7 @@ public class QDLDB implements QDLModuleMetaClass {
                 would assert the first is a string, convert the second into a date and the 3rd is assumed
                 to be base 64 encoded and would be decoded and asserted as a byte[]
              */
+            QDLStem outStem = new QDLStem();
 
             ConnectionRecord connectionRecord = connectionPool.pop();
             Connection c = connectionRecord.connection;
@@ -190,20 +190,26 @@ public class QDLDB implements QDLModuleMetaClass {
                 stmt.executeQuery();
                 ResultSet rs = stmt.getResultSet();
                 // Now we have to pull in all the values.
+/*
                 if (!rs.next()) {
+                    // If there are no values, return empty stem.
                     rs.close();
                     stmt.close();
                     releaseConnection(connectionRecord);
-                    return null;   // returning a null fulfills contract for this being a map.
+                    return outStem;
                 }
-
-                ColumnMap map = rsToMap(rs);
-                // Have to convert this map since it is col name + Java object.
-                for (String key : map.keySet()) {
-                    if (map.get(key) != null) {
-                        outStem.put(key, sqlConvert(map.get(key)));
+*/
+                while (rs.next()) {
+                    ColumnMap map = rsToMap(rs);
+                    QDLStem currentEntry = new QDLStem();
+                    for (String key : map.keySet()) {
+                        if (map.get(key) != null) {
+                            currentEntry.put(key, sqlConvert(map.get(key)));
+                        }
                     }
+                    outStem.getQDLList().add(currentEntry);
                 }
+                // Have to convert this map since it is col name + Java object.
                 rs.close();
                 stmt.close();
                 releaseConnection(connectionRecord);
