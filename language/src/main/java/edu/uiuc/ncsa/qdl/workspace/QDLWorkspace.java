@@ -542,7 +542,8 @@ public class QDLWorkspace implements Serializable {
                 workspaceCommands = new WorkspaceCommands(new BasicIO());
             }
         }
-
+        QDLWorkspace qc = new QDLWorkspace(workspaceCommands);
+        workspaceCommands.setWorkspace(qc);
         workspaceCommands.init(argLine);
         if (workspaceCommands.isRunScript()) {
             return;
@@ -551,8 +552,7 @@ public class QDLWorkspace implements Serializable {
             //System.out.println("ISO 6429 terminal" + iso6429IO.getTerminal().getName());
             System.out.println("ISO 6429 terminal");
         }
-        QDLWorkspace qc = new QDLWorkspace(workspaceCommands);
-        workspaceCommands.setWorkspace(qc);
+
 
         ArrayList<String> functions = new ArrayList<>();
         functions.addAll(qc.workspaceCommands.getState().getMetaEvaluator().listFunctions(false));

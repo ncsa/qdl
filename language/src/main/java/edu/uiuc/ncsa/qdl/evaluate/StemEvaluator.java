@@ -11,6 +11,7 @@ import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.Statement;
 import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
 import edu.uiuc.ncsa.qdl.variables.*;
+import edu.uiuc.ncsa.security.core.util.StringUtils;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
@@ -144,6 +145,9 @@ public class StemEvaluator extends AbstractEvaluator {
     public static final String JSON_PATH_QUERY = "query";
     public static final int JSON_PATH_QUERY_TYPE = 302 + STEM_FUNCTION_BASE_VALUE;
 
+    public static final String DISPLAY = "display";
+    public static final int DISPLAY_TYPE = 303 + STEM_FUNCTION_BASE_VALUE;
+
     /**
      * A list of the names that this Evaluator knows about. NOTE that this must be kept in sync
      * by the developer since it is used to determine if a function is built in or a user-defined function.
@@ -153,6 +157,7 @@ public class StemEvaluator extends AbstractEvaluator {
     public String[] getFunctionNames() {
         if (fNames == null) {
             fNames = new String[]{
+                    DISPLAY,
                     DIFF,
                     STAR,
                     DIMENSION, RANK,
@@ -190,6 +195,8 @@ public class StemEvaluator extends AbstractEvaluator {
     @Override
     public int getType(String name) {
         switch (name) {
+            case DISPLAY:
+                return DISPLAY_TYPE;
             case DIFF:
                 return DIFF_TYPE;
             case STAR:
@@ -277,6 +284,9 @@ public class StemEvaluator extends AbstractEvaluator {
 
     public boolean evaluate2(Polyad polyad, State state) {
         switch (polyad.getName()) {
+            case DISPLAY:
+                doDisplay(polyad, state);
+                return true;
             case DIFF:
                 doDiff(polyad, state);
                 return true;
@@ -381,6 +391,178 @@ public class StemEvaluator extends AbstractEvaluator {
         return false;
     }
 
+    public static String DISPLAY_WIDTH = "width";
+    public static int DISPLAY_WIDTH_DEFAULT = -1;
+    public static String DISPLAY_KEYS = "keys";
+    public static String DISPLAY_SORT = "sort";
+    public static boolean DISPLAY_SORT_DEFAULT = true;
+    public static String DISPLAY_SHORT_FORM = "short";
+    public static boolean DISPLAY_SHORT_FORM_DEFAULT = false; // display first line of value one
+    public static String DISPLAY_STRING_OUTPUT = "string_output";
+    public static boolean DISPLAY_STRING_OUTPUT_DEFAULT = true;
+    public static String DISPLAY_INDENT = "indent";
+    public static int DISPLAY_INDENT_DEFAULT = 0;
+
+     /*
+     q. :=     {'at_lifetime':900000, 'callback_uri':'["http://localhost/callback","http://localhost/callback2","http://localhost/callback3"]', 'client_id':'cilogon:/client_id/26e0aef76c6685473909b08c179cbc85', 'creation_ts':'2021-10-13T17:47:46.000Z', 'debug_on':false, 'df_interval':-1, 'df_lifetime':-1, 'email':'your.email@here.org', 'extended_attributes':'{"xoauth_attributes":{"grant_type":["refresh_token","urn:ietf:params:oauth:grant-type:device_code"]},"oidc-cm_attributes":{"comment":["This is a basic example from the specification to test if a public client has been created correctly","Note that this also includes a refresh token lifetime parameter (rt_lifetime). Omitting this disables refresh tokens.","The lifetime is in seconds.","To create a public client, the scope must be \'openid\' and the auth method must be \'none\'."]}}', 'home_url':'', 'last_modified_ts':'2021-10-13T17:47:46.000Z', 'name':'Another test client', 'proxy_limited':false, 'public_client':true, 'public_key':'', 'rt_lifetime':2592000000, 'scopes':'["openid"]', 'sign_tokens':true, 'strict_scopes':true}
+       format. := {'width':100, 'sort':true, 'short':false, 'string_output':true}
+       display(q., format.)
+      */
+
+    /**
+     * Format a stem or list
+     * <br/>If a stem only, then format it with simple format.
+     *
+     * @param polyad
+     * @param state
+     */
+    private void doDisplay(Polyad polyad, State state) {
+
+        if (polyad.isSizeQuery()) {
+            polyad.setResult(new int[]{1, 2});
+            polyad.setEvaluated(true);
+            return;
+        }
+        if (polyad.getArgCount() == 0) {
+            throw new MissingArgException(DISPLAY + " takes at least one arguments", polyad);
+        }
+        if (2 < polyad.getArgCount()) {
+            throw new ExtraArgException(DISPLAY + " takes at most two arguments", polyad.getArgAt(2));
+        }
+        Object arg0 = polyad.evalArg(0, state);
+        // defaults
+        List<String> keySubset = null;
+        boolean sortKeys = DISPLAY_SORT_DEFAULT;
+        boolean multilineMode = !DISPLAY_SHORT_FORM_DEFAULT;
+        int indent = DISPLAY_INDENT_DEFAULT;
+        int width = DISPLAY_WIDTH_DEFAULT;
+        boolean returnAsString = DISPLAY_STRING_OUTPUT_DEFAULT;
+
+        if (polyad.getArgCount() == 2) {
+            Object arg1 = polyad.evalArg(1, state);
+            if (isLong(arg1)) {
+                width = ((Long) arg1).intValue();
+            } else {
+                if (isStem(arg1)) {
+                    QDLStem c = (QDLStem) arg1;
+                    if (c.containsKey(DISPLAY_WIDTH)) {
+                        width = c.getLong(DISPLAY_WIDTH).intValue();
+                    }
+                    if (c.containsKey(DISPLAY_KEYS)) {
+                        if (!(c.get(DISPLAY_KEYS) instanceof QDLStem)) {
+                            throw new BadArgException(DISPLAY_KEYS + " in second argument to " + DISPLAY + " must be a list", polyad.getArgAt(1));
+                        }
+                        QDLStem zzz = (QDLStem) c.get(DISPLAY_KEYS);
+                        if (!zzz.isList()) {
+                            throw new BadArgException(DISPLAY_KEYS + " in second argument to " + DISPLAY + " must be a list", polyad.getArgAt(1));
+                        }
+                        keySubset = zzz.getQDLList().values();
+                        // Must be a list of keys.
+                    }
+                    if (c.containsKey(DISPLAY_INDENT)) {
+                        indent = c.getLong(DISPLAY_INDENT).intValue();
+                    }
+                    if (c.containsKey(DISPLAY_SORT)) {
+                        sortKeys = c.getBoolean(DISPLAY_SORT);
+                    }
+                    if (c.containsKey(DISPLAY_SHORT_FORM)) {
+                        multilineMode = !c.getBoolean(DISPLAY_SHORT_FORM);
+                    }
+                    if (c.containsKey(DISPLAY_STRING_OUTPUT)) {
+                        returnAsString = c.getBoolean(DISPLAY_STRING_OUTPUT);
+                    }
+                } else {
+                    throw new BadArgException("second argument to " + DISPLAY + " must be a stem", polyad.getArgAt(1));
+                }
+            }
+        }
+
+        QDLStem stem = (QDLStem) arg0;
+/*        if(returnAsString){
+            polyad.setEvaluated(true);
+            polyad.setResult(rFormatStem(stem,keySubset,sortKeys,multilineMode,indent,width));
+            polyad.setResultType(STRING_TYPE);
+          return;
+        }*/
+        Map map = new HashMap<>();
+            for (Object key : stem.keySet()) {
+                map.put(key, stem.get(key));
+            }
+
+        List<String> list = StringUtils.formatMap(map,
+                keySubset,
+                sortKeys,
+                multilineMode,
+                indent,
+                width);
+        if (returnAsString) {
+            String x = "";
+            boolean firstPass = true;
+            for (String y : list) {
+                if (firstPass) {
+                    x = y;
+                    firstPass = false;
+                } else {
+                    x = x + "\n" + y;
+                }
+            }
+            polyad.setEvaluated(true);
+            polyad.setResult(x);
+            polyad.setResultType(STRING_TYPE);
+            return;
+        }
+
+
+        QDLStem out = new QDLStem();
+        out.addList(list);
+        polyad.setEvaluated(true);
+        polyad.setResult(out);
+        polyad.setResultType(STEM_TYPE);
+
+    }
+    /*
+    Make a recursive version of this to format stems?  Problem is that truncate in StringUtils is designed to strip
+    out embedded linefeeds, hence the formatting gets munged. Probably need another case for this.
+     */
+       protected String rFormatStem(QDLStem stem,
+                                  List<String> keySubset,
+                                  boolean sortKeys,
+                                  boolean multilineMode,
+                                  int indent,
+                                  int width){
+            Map map = new HashMap<>();
+                for (Object key : stem.keySet()) {
+                    Object vvv = stem.get(key);
+                    if(vvv instanceof QDLStem){
+                        map.put(key, rFormatStem((QDLStem) vvv, keySubset, sortKeys, multilineMode, indent, width));
+                    }else{
+                        map.put(key, vvv);
+                    }
+                }
+
+            List<String> list = StringUtils.formatMap(map,
+                    keySubset,
+                    sortKeys,
+                    multilineMode,
+                    indent,
+                    width);
+           String x = "";
+                      boolean firstPass = true;
+                      for (String y : list) {
+                          if (firstPass) {
+                              x = y;
+                              firstPass = false;
+                          } else {
+                              x = x + "\n" + y;
+                          }
+                      }
+                return x;
+
+       }
+
+    /*
+
+     */
     /*
      This should have a signature of
      diff(x.,y.{,true|false})
@@ -426,7 +608,7 @@ public class StemEvaluator extends AbstractEvaluator {
         }
         if (arg0Scalar && arg1Scalar) {
             QDLStem out = new QDLStem();
-            if(!arg0.equals(arg1)){
+            if (!arg0.equals(arg1)) {
                 QDLStem r = new QDLStem();
                 r.put(0L, arg0);
                 r.put(1L, arg1);

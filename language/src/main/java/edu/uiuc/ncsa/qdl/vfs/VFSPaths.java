@@ -31,7 +31,8 @@ import java.util.jar.JarFile;
 public class VFSPaths {
     public static boolean isVFSPath(String path){
         if(path == null || path.isEmpty()){
-            return true;
+            //return true;
+            return false;
         }
         return path.indexOf(SCHEME_DELIMITER) != -1;
     }

@@ -1,8 +1,5 @@
 package edu.uiuc.ncsa.qdl.state;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * <p>Created by Jeff Gaynor<br>
  * on 4/20/20 at  12:53 PM
@@ -89,12 +86,14 @@ public interface QDLConstants {
     String SYS_INFO_OS_NAME = "name";
     String SYS_INFO_OS_VERSION = "version";
 
-    String SYS_QDL_VERSION = "qdl_version.";
-    String SYS_QDL_VERSION_VERSION = "version";
-    String SYS_QDL_VERSION_BUILD_JDK = "build_jdk";
-    String SYS_QDL_VERSION_BUILD_TIME = "build_time";
+    String SYS_QDL_BUILD = "build.";
+    String SYS_QDL_VERSION = "qdl";
+
+    String SYS_QDL_BUILD_VERSION = "version";
+    String SYS_QDL_VERSION_BUILD_JDK = "jdk";
+    String SYS_QDL_VERSION_BUILD_TIME = "time";
     String SYS_QDL_VERSION_CREATED_BY = "created_by";
-    String SYS_QDL_VERSION_BUILD_NUMBER = "build_nr";
+    String SYS_QDL_VERSION_BUILD_NUMBER = "number";
 
     String SYS_BOOT = "boot.";
     String SYS_BOOT_QDL_HOME = "qdl_home";

@@ -4469,7 +4469,85 @@ See: \
   ]]>
        </body>
     </entry>
+    <entry id="display">
+         <body>
+<![CDATA[display(arg.{,format. | width}) - format a stem for display.
+This will take the stem (or list) and format it in columns according to
+various parameters which may be specified in the format. argument.
+arg. - stem to be formatted
+format. - stem of formatting parameters
+width - the total width of the display
 
+Table of values for format.
+Name          Default   Description
+-------------+---------+----------------------------------------------
+width        | -11     | The total width the output should fit in. The
+             |         | values may be wrapped as needed. A value of
+             |         | -1 means the line length is infinite.
+-------------+---------+----------------------------------------------
+keys         |  --     | list of keys that are a subset to be printed
+-------------+---------+----------------------------------------------
+sort         |  true   | If the elements should be sorted
+-------------+---------+----------------------------------------------
+short        |  false  | Restrict the value displayed to a single line
+             |         | within the given width.
+             |         | This is useful for large values to get a quick
+             |         | overview
+-------------+---------+----------------------------------------------
+string_output|  true   | If true, then the output is a string. If false
+             |         | The output will be a list of lines.
+-------------+---------+----------------------------------------------
+indent       |  0      | How much the entire output should be indented
+             |         | from the left
+-------------+---------+----------------------------------------------
+
+Output is columnar and of the form
+   key0 : value0
+   key1 : value1...
+
+Where the values may span multiple lines.
+
+Caveat: This is intended for displaying information in tabular format for reports, e.g.
+        and is not a general purpose stem formatting function.
+]]>
+         </body>
+         <example>
+<![CDATA[  display({'a':'woof', 'fnord':'warf'})
+    a : woof
+fnord : warf
+
+  display(pi()^[;7])
+0 : 1
+1 : 3.14159265358979
+2 : 9.86960440108934
+3 : 31.0062766802997
+4 : 97.4090910340020
+5 : 306.019684785280
+6 : 961.389193575298
+
+   display({'first':random_string(64), 'second':random_string(64)}, {'width':50})
+ first : WIzEQR3-Og0i9c-3mh-LuQAfx2docUkTF3MOHVwXi
+         v-QcASqN-YOrRAdEbpEErAfFy9rPEeruPEPK1zIW0
+         F4vA
+second : zLO5uMm2Vqt9vXIekmEw-_3BzSxDFz5Tbh8dPrBx2
+         5I55ncS8rcvfSzYObymSB-tiAJ9gLjHCN6QRCJVdn
+         OSBg
+
+Here long strings are formatted with a total display width of 50 characters. To show a
+short version (restricting the value to a single line and truncating it if needed),
+set the short flag to true:
+
+  display({'first':random_string(64), 'second':random_string(64)}, {'short':true, 'width':50})
+    first : FLYj-L8HA2PUfuyw9Z09qdQOaE7x7w3BjzSPQTFiilF2...
+   second : ydViwpcAO2mNCkAjvepnOlYAzvavAtVn2LVp3ofDAs4t...
+
+// Note that this only works at the top level and embedded stems are
+// displayed in their to_string format.
+  display({'p':{'a':'x','b':'y'},'q':{'c':'z','d':'w'}})
+p : {a:x, b:y}
+q : {c:z, d:w}]]>
+          </example>
+      </entry>
     <!--
     <entry id="">
        <body>

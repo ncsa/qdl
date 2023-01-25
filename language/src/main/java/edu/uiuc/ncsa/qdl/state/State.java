@@ -16,6 +16,7 @@ import edu.uiuc.ncsa.qdl.scripting.QDLScript;
 import edu.uiuc.ncsa.qdl.scripting.Scripts;
 import edu.uiuc.ncsa.qdl.statements.TryCatch;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
+import edu.uiuc.ncsa.qdl.util.QDLVersion;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.VStack;
@@ -189,8 +190,10 @@ public class State extends FunctionState implements QDLConstants {
         }
 
 
+        QDLStem qdl_props = new QDLStem();
+        QDLStem buildInfo;
         if (qe != null && qe.isEnabled()) {
-            QDLStem qdl_props = new QDLStem();
+            // means this was started from a config file, not the command line
             qdl_props.put(SYS_BOOT_QDL_HOME, qe.getWSHomeDir());
             if (!qe.getBootScript().isEmpty()) {
                 qdl_props.put(SYS_BOOT_BOOT_SCRIPT, qe.getBootScript());
@@ -203,10 +206,27 @@ public class State extends FunctionState implements QDLConstants {
             qdl_props.put(SYS_BOOT_RESTRICTED_IO_MODE, isRestrictedIO());
             qdl_props.put(SYS_SCRIPTS_PATH, qe.getScriptPath());
             systemInfo.put(SYS_BOOT, qdl_props);
-            QDLStem versionInfo = addManifestConstants(qe.getWSHomeDir());
-            if (versionInfo != null) {
-                systemInfo.put(SYS_QDL_VERSION, versionInfo);
+            buildInfo = addManifestConstants(qe.getWSHomeDir());
+           if (buildInfo != null) {
+               systemInfo.put(SYS_QDL_BUILD, buildInfo);
+           }
+
+        }else{
+            // started from the command line.
+            if(getLogger() != null) {
+                qdl_props.put(SYS_BOOT_LOG_FILE, getLogger().getFileName());
+                qdl_props.put(SYS_BOOT_LOG_NAME, getLogger().getClassName());
             }
+            qdl_props.put(SYS_BOOT_SERVER_MODE, isServerMode());
+            qdl_props.put(SYS_BOOT_RESTRICTED_IO_MODE, isRestrictedIO());
+            QDLStem scriptPath = new QDLStem();
+            scriptPath.addList(getScriptPaths());
+            qdl_props.put(SYS_SCRIPTS_PATH, scriptPath);
+            systemInfo.put(SYS_BOOT, qdl_props);
+            buildInfo = addManifestConstants(null);
+           if (buildInfo != null) {
+               systemInfo.put(SYS_QDL_BUILD, buildInfo);
+           }
         }
         // get modules to list in the "lib" entry
         QDLStem libStem = new QDLStem();
@@ -342,6 +362,10 @@ public class State extends FunctionState implements QDLConstants {
      */
     protected QDLStem addManifestConstants(String path) {
         QDLStem versionInfo = new QDLStem();
+        versionInfo.put(SYS_QDL_VERSION, QDLVersion.VERSION);
+        if(path == null){
+            return versionInfo;
+        }
         List<String> manifest = null;
         try {
             manifest = QDLFileUtil.readFileAsLines(path + (path.endsWith("/") ? "" : "/") + "lib/build-info.txt");
@@ -349,13 +373,14 @@ public class State extends FunctionState implements QDLConstants {
             if (getLogger() != null) {
                 getLogger().info("Could not find the build info file. Looked in " + path + (path.endsWith("/") ? "" : "/") + "lib/build-info.txt");
             }
+            // At the least return the current version
             return versionInfo;
         }
 
         for (String linein : manifest) {
             if (linein.startsWith("application-version:")) {
                 // e.g.  application-version: 1.0.1
-                versionInfo.put(SYS_QDL_VERSION_VERSION, truncateLine("application-version:", linein));
+                versionInfo.put(SYS_QDL_BUILD_VERSION, truncateLine("application-version:", linein));
             }
             if (linein.startsWith("Build-Jdk:")) {
                 // e.g. Build-Jdk: 1.8.0_231

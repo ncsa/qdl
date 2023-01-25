@@ -4396,8 +4396,8 @@ public class WorkspaceCommands implements Logable, Serializable {
         String fName = null;
         if (showFile) {
             try {
-                long uncompressedXMLSize = _xmlSave(null, compressionOn, showFile);
-                say("size: " + uncompressedXMLSize + "\n  elapsed time:" + ((System.currentTimeMillis() - startTime) / 1000.0D) + " sec.");
+                long[] sizes = _xmlSave(null, compressionOn, showFile);
+                say("size: " + sizes[UNCOMPRESSED_INDEX] + "\n  elapsed time:" + ((System.currentTimeMillis() - startTime) / 1000.0D) + " sec.");
                 return RC_CONTINUE;
             } catch (Throwable throwable) {
                 say("warning. could not show file \"" + throwable.getMessage() + "\"");
@@ -4444,6 +4444,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                     return RC_NO_OP;
                 } else {
                     fullPath = currentWorkspace;
+                    fName = currentWorkspace;
                 }
             }
 
@@ -4493,20 +4494,24 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("saved '" + fName + "'\n  bytes: " + length + "\n  elapsed time:" + ((System.currentTimeMillis() - startTime) / 1000.0D) + " sec.");
                 return RC_CONTINUE;
             }
-            long uncompressedXMLSize = -1L;
+            long[] sizes = new long[]{-1L, -1L};
             if (doJava) {
-                _xmlWSJavaSave(fullPath);
+                sizes = _xmlWSJavaSave(fullPath);
             } else {
-                uncompressedXMLSize = _xmlSave(fullPath, compressionOn, showFile);
+                sizes = _xmlSave(fullPath, compressionOn, showFile);
             }
-            //String head = 0 <= uncompressedXMLSize ? (", uncompressed size: " + uncompressedXMLSize + " ") : "";
-            String head = 0 <= uncompressedXMLSize ? ("uncompressed size: " + uncompressedXMLSize + " ") : "";
             if (!silentMode) {
-                say("saved: '" + fullPath + "'" +
-                        "\n  on: " + new Date() +
-                        (0 < head.length() ? "\n  " : "") + head + // trick to get no characters printed if head is empty (e.g. after java save)
-                        "\n  bytes written: " + uncompressedXMLSize +
-                        "\n  elapsed time: " + ((System.currentTimeMillis() - startTime) / 1000.0D) + " sec.");
+                String out = "saved: '" + fullPath + "'" +
+                        "\n  on: " + new Date();
+                if (0 < sizes[UNCOMPRESSED_INDEX]) {
+                    out = out + "\n uncompressed size: " + sizes[UNCOMPRESSED_INDEX];
+                }
+                if (0 < sizes[COMPRESSED_INDEX]) {
+                    out = out + "\n compressed size: " + sizes[COMPRESSED_INDEX];
+                }
+                out = out + "\n  elapsed time: " + ((System.currentTimeMillis() - startTime) / 1000.0D) + " sec.";
+
+                say(out);
                 //say("Saved " + target.length() + " bytes to " + target.getCanonicalPath() + " on " + (new Date()) + head + ". Elapsed time " + ((System.currentTimeMillis() - startTime)/1000.0D) + " sec."  );
             }
             if (!keepCurrentWS) {
@@ -4640,7 +4645,11 @@ public class WorkspaceCommands implements Logable, Serializable {
         _xmlWSQDLSave(fileWriter);
     }
 
-    private long _xmlSave(String fullPath, boolean compressSerialization, boolean showIt) throws Throwable {
+    public static int UNCOMPRESSED_INDEX = 0;
+    public static int COMPRESSED_INDEX = 1;
+
+    private long[] _xmlSave(String fullPath, boolean compressSerialization, boolean showIt) throws Throwable {
+        long[] sizes = new long[]{-1L, -1L};
 
         Writer w = new StringWriter();
 
@@ -4653,15 +4662,16 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         toXML(xsw);
         String payload = XMLUtils.prettyPrint(w.toString());
+        sizes[UNCOMPRESSED_INDEX] = payload.length();
         w.flush();
         w.close();
-        uncompressedSize = payload.length();
         if (showIt) {
             say(payload);
-            return uncompressedSize;
+            return sizes;
         } else {
-            return writeFile(fullPath, payload, compressSerialization || isCompressXML());
+            sizes[COMPRESSED_INDEX] = writeFile(fullPath, payload, compressSerialization || isCompressXML());
         }
+        return sizes;
     }
 
     /**
@@ -4673,7 +4683,7 @@ public class WorkspaceCommands implements Logable, Serializable {
      * @return
      */
     protected long writeFile(String fullPath, String payload, boolean compress) throws Throwable {
-        long uncompressedSize = -1L;
+        long writtenSize = payload.length();
         boolean isTargetVFS = isVFSPath(fullPath);
         if (getState().isServerMode() && !isTargetVFS) {
             throw new QDLServerModeException("Only to VFS supported in server mode");
@@ -4692,7 +4702,6 @@ public class WorkspaceCommands implements Logable, Serializable {
                 fos.flush();
                 fos.close();
             }
-
         } else {
             if (isTargetVFS) {
                 writeTextVFS(getState(), fullPath, payload);
@@ -4703,11 +4712,13 @@ public class WorkspaceCommands implements Logable, Serializable {
                 fw.close();
             }
         }
-        return uncompressedSize;
+
+        return QDLFileUtil.length(getState(), fullPath);
     }
 
-    public void _xmlWSJavaSave(String path) throws Throwable {
+    public long[] _xmlWSJavaSave(String path) throws Throwable {
         logger.info("saving workspace '" + path + "'");
+        long[] sizes = new long[]{-1L, -1L};
         OutputStream outputStream = null;
         boolean isVFS = VFSPaths.isVFSPath(path);
         if (isVFS) {
@@ -4719,10 +4730,13 @@ public class WorkspaceCommands implements Logable, Serializable {
             outputStream = new FileOutputStream(path);
         }
         _xmlWSJavaSave(outputStream);
+        sizes[UNCOMPRESSED_INDEX] = QDLFileUtil.length(getState(), path);
         if (isVFS) {
             ByteArrayOutputStream baos = (ByteArrayOutputStream) outputStream;
+            sizes[UNCOMPRESSED_INDEX] = baos.size();
             writeBinaryVFS(getState(), path, baos.toByteArray());
         }
+        return sizes;
     }
 
 
@@ -5093,13 +5107,14 @@ public class WorkspaceCommands implements Logable, Serializable {
             }
         }
         if (loadOK) {
-            say(fullPath + " loaded " + fullPath + " bytes.");
             if (!isVFSPath(fullPath)) {
                 say("Last saved on " + Iso8601.date2String((new File(fullPath)).lastModified()));
             }
 
             if (!isTrivial(getWSID())) {
-                say(getWSID() + " loaded.");
+                say(getWSID() + " loaded," + QDLFileUtil.length(getState(), fullPath) + " bytes read.");
+            } else {
+                say(fullPath + " loaded, " + QDLFileUtil.length(getState(), fullPath) + " bytes read.");
             }
             if (!isTrivial(getDescription())) {
                 say(getDescription());
@@ -5229,10 +5244,11 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     protected void setupJavaModule(State state, QDLLoader loader, boolean importASAP) {
         for (Module m : loader.load()) {
+            m.setTemplate(true);
             state.addModule(m); // done!  Add it to the templates
             if (importASAP) {
                 // Add it to the imported modules, i.e., create an instance.
-                state.getMInstances().put(m);
+                state.getMInstances().put(m.newInstance(state));
             }
         }
     }
@@ -5241,7 +5257,8 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     CLA = Command Line Args. These are the switches used on the command line
      */
-    public static final String CLA_EXTENSIONS = "-ext"; // multiple classes comma separated allowed
+    public static final String CLA_MODULES = "-module"; // multiple classes comma separated allowed
+    public static final String CLA_MACRO = "-macro"; // Marcos. New line separated
     public static final String CLA_ENVIRONMENT = "-env";
     public static final String CLA_HOME_DIR = "-qdl_root";
     public static final String CLA_LOG_DIR = "-log";
@@ -5612,9 +5629,9 @@ public class WorkspaceCommands implements Logable, Serializable {
         if (inputLine.hasArg(CLA_HOME_DIR)) {
             File f = new File(inputLine.getNextArgFor(CLA_HOME_DIR));
 
-            if(f.isAbsolute()){
+            if (f.isAbsolute()) {
                 rootDir = inputLine.getNextArgFor(CLA_HOME_DIR);
-            }else{
+            } else {
                 rootDir = System.getProperty("user.dir");
             }
             inputLine.removeSwitchAndValue(CLA_HOME_DIR);
@@ -5682,13 +5699,13 @@ public class WorkspaceCommands implements Logable, Serializable {
             setDebugOn(true);
             DebugUtil.setIsEnabled(true);
             DebugUtil.setDebugLevel(DebugConstants.DEBUG_LEVEL_TRACE);
-                                                    inputLine.removeSwitch(TRACE_ARG);
+            inputLine.removeSwitch(TRACE_ARG);
         }
         interpreter = new QDLInterpreter(env, getState());
-        if (inputLine.hasArg(CLA_EXTENSIONS)) {
+        if (inputLine.hasArg(CLA_MODULES)) {
             // -ext "edu.uiuc.ncsa.qdl.extensions.QDLLoaderImpl"
-            String loaderClasses = inputLine.getNextArgFor(CLA_EXTENSIONS);
-            inputLine.removeSwitchAndValue(CLA_EXTENSIONS);
+            String loaderClasses = inputLine.getNextArgFor(CLA_MODULES);
+            inputLine.removeSwitchAndValue(CLA_MODULES);
             StringTokenizer st = new StringTokenizer(loaderClasses, ",");
             String targetModule;
             String foundClasses = "";
@@ -5712,10 +5729,10 @@ public class WorkspaceCommands implements Logable, Serializable {
                         foundClasses = foundClasses + "," + targetModule;
                     }
                 } catch (Throwable t) {
-                     // try it as a module
+                    // try it as a module
                     try {
                         interpreter.execute(SystemEvaluator.MODULE_LOAD + "('" + targetModule + "');");
-                    }catch(Throwable tt){
+                    } catch (Throwable tt) {
                         if (isDebug) {
                             tt.printStackTrace();
                         }
@@ -5772,7 +5789,24 @@ public class WorkspaceCommands implements Logable, Serializable {
                 inputLine.removeSwitchAndValue(x);
             }
         }
+        if(inputLine.hasArg(CLA_MACRO)){
+              String macro= inputLine.getNextArgFor(CLA_MACRO);
+            macro = macro.replace("\\n", "\n");
 
+            inputLine.removeSwitchAndValue(CLA_MACRO);
+            Polyad polyad = new Polyad(SystemEvaluator.WS_MACRO);
+            polyad.addArgument(new ConstantNode(macro));
+              try {
+                  //getInterpreter().execute(SystemEvaluator.WS_MACRO + "(" + macro + ");");
+                  polyad.evaluate(getState());
+              }catch(Throwable t){
+                  if(isDebug){
+                      t.printStackTrace();
+                  }
+                  say("There was a problem executing the macro '" + macro + "' at startup.");
+              }
+
+        }
         runScript(inputLine); // If there is a script, run it.
     }
 
