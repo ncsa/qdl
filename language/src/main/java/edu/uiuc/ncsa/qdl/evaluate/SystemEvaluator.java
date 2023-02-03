@@ -1182,9 +1182,9 @@ public class SystemEvaluator extends AbstractEvaluator {
             throw new BadArgException("argument to " + CHECK_SYNTAX + " must be a string.", polyad.getArgAt(0));
         }
         String rawString = ((String) arg0).trim();
-        if(rawString.startsWith("#!")){
-           // if it's a script, drop the very first line or the parser chokes.
-           rawString = rawString.substring(rawString.indexOf("\n"));
+        if (rawString.startsWith("#!")) {
+            // if it's a script, drop the very first line or the parser chokes.
+            rawString = rawString.substring(rawString.indexOf("\n"));
         }
         StringReader r = new StringReader(rawString);
         String message = "";
@@ -1626,8 +1626,9 @@ public class SystemEvaluator extends AbstractEvaluator {
     /**
      * New function for script arguments. Better contract.
      * <p>
-     *     Fixes <a href="https://github.com/ncsa/qdl/issues/3">github issue 3.</a>
+     * Fixes <a href="https://github.com/ncsa/qdl/issues/3">github issue 3.</a>
      * </p>
+     *
      * @param polyad
      * @param state
      */
@@ -1835,7 +1836,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             String caput = name.substring(0, name.indexOf(SCHEME_DELIMITER));
             for (String p : paths) {
                 if (p.startsWith(caput)) {
-           //         DebugUtil.trace(SystemEvaluator.class, " trying path = " + p + tempName);
+                    //         DebugUtil.trace(SystemEvaluator.class, " trying path = " + p + tempName);
                     try {
                         List<String> lines = QDLFileUtil.readTextFileAsLines(state, p + tempName);
                         return new QDLScript(lines, null);
@@ -1857,7 +1858,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             }
             for (String p : paths) {
                 String resourceName = p + name;
-            //    DebugUtil.trace(SystemEvaluator.class, " path = " + resourceName);
+                //    DebugUtil.trace(SystemEvaluator.class, " path = " + resourceName);
                 if (QDLFileUtil.isVFSPath(resourceName)) {
                     try {
                         return new QDLScript(QDLFileUtil.readTextFileAsLines(state, resourceName), null);
@@ -1978,35 +1979,38 @@ public class SystemEvaluator extends AbstractEvaluator {
             arg1 = "(no message)";
         }
         Object arg2 = null;
-        state.setValue(TryCatch.ERROR_MESSAGE_NAME, arg1.toString());
-        QDLStem stateStem = null;
-        switch (polyad.getArgCount()){
+        String message = arg1.toString();
+        state.setValue(TryCatch.ERROR_MESSAGE_NAME, message);
+        QDLStem stateStem = new QDLStem(); // default is empty stem
+        Long stateCode = TryCatch.RESERVED_USER_ERROR_CODE; // default
+        switch (polyad.getArgCount()) {
             case 3:
                 arg2 = polyad.evalArg(2, state);
                 checkNull(arg2, polyad.getArgAt(2), state);
                 if (!isStem(arg2)) {
-                         throw new BadArgException(RAISE_ERROR + ": the final argument must be a stem", polyad);
-                     }
-                stateStem = (QDLStem)arg2 ;
+                    throw new BadArgException(RAISE_ERROR + ": the final argument must be a stem", polyad);
+                }
+                stateStem = (QDLStem) arg2;
             case 2:
                 arg2 = polyad.evalArg(1, state);
                 checkNull(arg2, polyad.getArgAt(1), state);
                 if (!isLong(arg2)) {
-                         throw new BadArgException(RAISE_ERROR + ": the second argument must be an integer", polyad);
-                     }
-                state.getVStack().put(new VThing(new XKey(TryCatch.ERROR_STATE_NAME),  stateStem == null?new QDLStem():stateStem));
-                state.getVStack().put(new VThing(new XKey(TryCatch.ERROR_CODE_NAME),  arg2));
+                    throw new BadArgException(RAISE_ERROR + ": the second argument must be an integer", polyad);
+                }
+                stateCode = (Long) arg2;
                 break;
             case 1:
-                state.getVStack().put(new VThing(new XKey(TryCatch.ERROR_CODE_NAME), TryCatch.RESERVED_USER_ERROR_CODE));
+                //state.getVStack().put(new VThing(new XKey(TryCatch.ERROR_CODE_NAME), stateCode));
         }
+        state.getVStack().put(new VThing(new XKey(TryCatch.ERROR_STATE_NAME), stateStem == null ? new QDLStem() : stateStem));
+        state.getVStack().put(new VThing(new XKey(TryCatch.ERROR_CODE_NAME), stateCode));
 
         polyad.setResult(Boolean.TRUE);
         polyad.setResultType(Constant.BOOLEAN_TYPE);
         polyad.setEvaluated(true);
         // set the message in the exception to the message from the error, so if it happens in the course of execution
         // they get a message
-        throw new RaiseErrorException(polyad, arg1.toString());
+        throw new RaiseErrorException(polyad, message, stateCode, stateStem);
     }
 
     protected void doReturn(Polyad polyad, State state) {

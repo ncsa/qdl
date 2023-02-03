@@ -48,21 +48,34 @@ public class TryCatch implements Statement {
             }
         } catch (RaiseErrorException t) {
             // custom error handling
-            localState.getVStack().localPut(new VThing(new XKey(ERROR_MESSAGE_NAME), t.getPolyad().getArguments().get(0).getResult().toString()));
+            Long errorCode = RESERVED_USER_ERROR_CODE;
+            // https://github.com/ncsa/qdl/issues/7
+            QDLStem errorState = new QDLStem();
+            //QDLStem errorState = t.getState();
+            String message = t.getPolyad().getArguments().get(0).getResult().toString();
             switch (t.getPolyad().getArgCount()) {
                 case 3:
                     Object sss = t.getPolyad().getArguments().get(2).getResult();
                     if (!(sss instanceof QDLStem)) {
                         throw new IllegalArgumentException("the last argument must be a stem");
                     }
-                    localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), t.getPolyad().getArguments().get(2).getResult()));
+                    //localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), t.getPolyad().getArguments().get(2).getResult()));
+                    errorState = (QDLStem) t.getPolyad().getArguments().get(2).getResult();
                 case 2:
-                    localState.getVStack().localPut(new VThing(new XKey(ERROR_CODE_NAME),  t.getPolyad().getArguments().get(1).getResult()));
+                    if(t.getPolyad().getArguments().get(1).getResult() instanceof Long){
+                        throw new IllegalArgumentException("second argument must be an integer");
+                    }
+                    errorCode = (Long) t.getPolyad().getArguments().get(1).getResult();
+                    //localState.getVStack().localPut(new VThing(new XKey(ERROR_CODE_NAME),  t.getPolyad().getArguments().get(1).getResult()));
                     break;
                 case 1:
-                    localState.getVStack().localPut(new VThing(new XKey(ERROR_CODE_NAME), RESERVED_USER_ERROR_CODE));
+                    message =  t.getPolyad().getArguments().get(0).getResult().toString();
+                    //localState.getVStack().localPut(new VThing(new XKey(ERROR_CODE_NAME), RESERVED_USER_ERROR_CODE));
                     break;
             }
+            localState.getVStack().localPut(new VThing(new XKey(ERROR_MESSAGE_NAME), message));
+            localState.getVStack().localPut(new VThing(new XKey(ERROR_CODE_NAME),  errorCode));
+            localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), errorState));
 
             for (Statement c : catchStatements) {
                 c.evaluate(localState);
@@ -70,6 +83,7 @@ public class TryCatch implements Statement {
         } catch (Throwable otherT) {
             // everything else.
             localState.getVStack().localPut(new VThing(new XKey(ERROR_MESSAGE_NAME), otherT.getMessage()));
+            localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), new QDLStem())); 
             if (otherT instanceof AssertionException) {
                 localState.getVStack().localPut(new VThing(new XKey(ERROR_CODE_NAME), RESERVED_ASSERTION_CODE));
             } else {
