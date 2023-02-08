@@ -17,10 +17,7 @@ import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.parsing.QDLParserDriver;
 import edu.uiuc.ncsa.qdl.parsing.QDLRunner;
 import edu.uiuc.ncsa.qdl.scripting.QDLScript;
-import edu.uiuc.ncsa.qdl.state.SIEntry;
-import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.state.StemMultiIndex;
-import edu.uiuc.ncsa.qdl.state.XKey;
+import edu.uiuc.ncsa.qdl.state.*;
 import edu.uiuc.ncsa.qdl.statements.Element;
 import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
 import edu.uiuc.ncsa.qdl.statements.TryCatch;
@@ -126,7 +123,8 @@ public class SystemEvaluator extends AbstractEvaluator {
     // function stuff
     public static final String RETURN = "return";
     public static final int RETURN_TYPE = 100 + SYSTEM_BASE_VALUE;
-
+    public static final String SLEEP = "sleep";
+    public static final int SLEEP_TYPE = 101 + SYSTEM_BASE_VALUE;
 
     public static final String MODULE_IMPORT = "module_import";
     public static final int IMPORT_TYPE = 203 + SYSTEM_BASE_VALUE;
@@ -181,6 +179,9 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     public static final String SCRIPT_PATH_COMMAND = "script_path";
     public static final int SCRIPT_PATH_COMMAND_TYPE = 403 + SYSTEM_BASE_VALUE;
+    public static final String FORK = "fork";
+    public static final int FORK_TYPE = 404 + SYSTEM_BASE_VALUE;
+
 
     // WS macro
     public static final String WS_MACRO = "ws_macro";
@@ -203,6 +204,8 @@ public class SystemEvaluator extends AbstractEvaluator {
     public String[] getFunctionNames() {
         if (fNames == null) {
             fNames = new String[]{
+                    FORK,
+                    SLEEP,
                     HAS_CLIPBOARD,
                     CLIPBOARD_COPY,
                     CLIPBOARD_PASTE,
@@ -250,6 +253,10 @@ public class SystemEvaluator extends AbstractEvaluator {
     @Override
     public int getType(String name) {
         switch (name) {
+            case FORK:
+                return FORK_TYPE;
+            case SLEEP:
+                return SLEEP_TYPE;
             case IS_NULL:
                 return IS_NULL_TYPE;
             case HAS_CLIPBOARD:
@@ -354,6 +361,12 @@ public class SystemEvaluator extends AbstractEvaluator {
         boolean printIt = false;
 
         switch (polyad.getName()) {
+            case FORK:
+              doFork(polyad, state);
+              return true;
+            case SLEEP:
+                doSleep(polyad, state);
+                return true;
             case IS_NULL:
                 doIsNull(polyad, state);
                 return true;
@@ -495,6 +508,42 @@ public class SystemEvaluator extends AbstractEvaluator {
                 return true;
         }
         return false;
+    }
+
+    private void doSleep(Polyad polyad, State state) {
+        if (polyad.isSizeQuery()) {
+            polyad.setResult(new int[]{1});
+            polyad.setEvaluated(true);
+            return;
+        }
+        Object out = polyad.evalArg(0,state);
+        if(!isLong(out)){
+            throw new BadArgException(SLEEP + " requires an integer argument", polyad);
+        }
+        long start = System.currentTimeMillis();
+        try {
+            Thread.currentThread().sleep((Long)out);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        polyad.setEvaluated(true);
+        polyad.setResult((Long)(System.currentTimeMillis() - start));
+        polyad.setResultType(Constant.LONG_TYPE);
+    }
+
+
+    /**
+     * Run a script in its own thread. Passed variables are shared.
+     * @param polyad
+     * @param state
+     */
+    protected void doFork(Polyad polyad, State state){
+        if (polyad.isSizeQuery()) {
+            polyad.setResult(AbstractEvaluator.getBigArgList());
+            polyad.setEvaluated(true);
+            return;
+        }
+        runnit(polyad, state, state.getScriptPaths(), true, true);
     }
 
     private void doIsNull(Polyad polyad, State state) {
@@ -1591,7 +1640,7 @@ public class SystemEvaluator extends AbstractEvaluator {
         if (polyad.getArgCount() == 0) {
             polyad.setEvaluated(true);
             polyad.setResultType(Constant.LONG_TYPE);
-            polyad.setResult(state.hasScriptArgs() ? new Long(state.getScriptArgs().length) : 0L);
+            polyad.setResult(state.hasScriptArgs() ? (long) state.getScriptArgs().length : 0L);
             return;
         }
         Object obj = polyad.evalArg(0, state);
@@ -1661,7 +1710,7 @@ public class SystemEvaluator extends AbstractEvaluator {
         if (hasArg) {
             Object result = state.getScriptArgStem().get(index);
             polyad.setResultType(Constant.getType(result));
-            polyad.setResult(polyad);
+            polyad.setResult(result);
             polyad.setEvaluated(true);
         } else {
             polyad.setEvaluated(true);
@@ -1792,11 +1841,11 @@ public class SystemEvaluator extends AbstractEvaluator {
      * @param state
      */
     protected void runScript(Polyad polyad, State state) {
-        runnit(polyad, state, RUN_COMMAND, true);
+        runnit(polyad, state, true);
     }
 
     protected void loadScript(Polyad polyad, State state) {
-        runnit(polyad, state, LOAD_COMMAND, false);
+        runnit(polyad, state, false);
 
     }
 
@@ -1876,16 +1925,16 @@ public class SystemEvaluator extends AbstractEvaluator {
         return null;
     }
 
-    public static void runnit(Polyad polyad, State state, String commandName, boolean hasNewState) {
+    public static void runnit(Polyad polyad, State state, boolean hasNewState) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(AbstractEvaluator.getBigArgList());
             polyad.setEvaluated(true);
             return;
         }
-        runnit(polyad, state, commandName, state.getScriptPaths(), hasNewState);
+        runnit(polyad, state, state.getScriptPaths(), hasNewState, false);
     }
 
-    public static void runnit(Polyad polyad, State state, String commandName, List<String> paths, boolean hasNewState) {
+    public static void runnit(Polyad polyad, State state, List<String> paths, boolean hasNewState, boolean newThread) {
 
         if (polyad.getArgCount() == 0) {
             throw new MissingArgException((hasNewState ? RUN_COMMAND : LOAD_COMMAND) + " requires at least 1 argument", polyad);
@@ -1927,8 +1976,13 @@ public class SystemEvaluator extends AbstractEvaluator {
             try {
                 Object[] oldArgs = localState.getScriptArgs();
                 localState.setScriptArgs(argList);
-                script.execute(localState);
-                localState.setScriptArgs(oldArgs);
+                if(newThread){
+                    QDLThread qdlThread = new QDLThread(localState, script);
+                    qdlThread.start();
+                }else{
+                    script.execute(localState);
+                    localState.setScriptArgs(oldArgs);
+                }
             } catch (QDLException qe) {
                 if (qe instanceof QDLExceptionWithTrace) {
                     QDLExceptionWithTrace qq = (QDLExceptionWithTrace) qe;
@@ -1957,8 +2011,6 @@ public class SystemEvaluator extends AbstractEvaluator {
         polyad.setEvaluated(true);
         polyad.setResultType(Constant.NULL_TYPE);
         polyad.setResult(QDLNull.getInstance());
-
-
     }
 
     protected void doRaiseError(Polyad polyad, State state) {

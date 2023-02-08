@@ -4548,6 +4548,33 @@ p : {a:x, b:y}
 q : {c:z, d:w}]]>
           </example>
       </entry>
+    <entry id="sleep">
+       <body>
+  <![CDATA[sleep(ms) - sleep for the indicated number of milliseconds.
+This pauses execution of the system for the specified amount of time.
+This returns the actual number of milliseconds that the system slept.
+  ]]>
+       </body>
+       <example>
+   <![CDATA[    sleep(1234)
+1234
+This indicates that the system was requested to sleep for 12234 milliseconds and
+that it did indeed sleep that long.]]>
+        </example>
+    </entry>
+    <entry id="fork">
+       <body>
+  <![CDATA[fork(file, arg0, arg1,...)
+Equivalent to script_run but a separate thread is started. Note that this cannot
+return values since that makes no sense.
+  ]]>
+       </body>
+       <example>
+   <![CDATA[   fork('vsf#/scripts/my.qdl',4,[;5])
+// This would start a separate process running the given script with the two arguments.
+   ]]>
+        </example>
+    </entry>
     <!--
     <entry id="">
        <body>

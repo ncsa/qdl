@@ -1,0 +1,5 @@
+#! /usr/bin/env -S qdl-run
+/*
+   Runs the sleep script. For testing.
+*/
+ script_run('/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/script-test/sleep-test.qdl', 5);

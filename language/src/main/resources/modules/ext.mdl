@@ -33,16 +33,16 @@ module[
    ];
 
 
-   define[ fork(⊗monad1,⊗dyad,⊗monad2,x.)][
-     » fork(⊗monad1,⊗dyad,⊗monad2,x.) - apply a fork to a stem.
-     » A fork is defined as a taking a dyad and two monads and applying them to an argument
+   define[ jfork(⊗monad1,⊗dyad,⊗monad2,x.)][
+     » jfork(⊗monad1,⊗dyad,⊗monad2,x.) - apply a fork to a stem.
+     » A fork (in J) is defined as a taking a dyad and two monads and applying them to an argument
      »    dyad(monad1(x.), monad2(x.)
      » A surprisingly large number of problems are addressed by this: transform the argument
      » then use both results for something else. For instance
      » to compute the average of a set of numbers, define
      »    sum(x.)->reduce(@+, x.);
      » then the average of the first 10 odd numbers is
-     »    fork(@sum(), @/, @size(), 1+2*n(10));
+     »    jfork(@sum(), @/, @size(), 1+2*n(10));
      » So "sum divided by size" is how to read this.
      » Note the dyad (any algebraic operation like addition is a dyad) is put
      » in the middle of the argument list so it looks any other operator.

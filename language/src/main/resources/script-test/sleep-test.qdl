@@ -1,0 +1,12 @@
+#! /usr/bin/env -S qdl-run
+/*
+   sleep-test iterations
+   tests the sleep function at 1000 ms intervals for the number of iterations, e.g.
+
+   sleep-test 5
+*/
+
+while[x ∈ [;to_number(args(0))]
+  ][
+   say('slept for ' + sleep(1000));
+];

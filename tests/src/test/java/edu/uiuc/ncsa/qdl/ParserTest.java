@@ -2060,8 +2060,8 @@ public class ParserTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "sum(x.)->reduce(@+,x.);");
-        addLine(script, "fork(@a(),@b(),@c(),x.)->b(a(x.),c(x.));");
-        addLine(script, "y := fork(@sum(), @/, @size(), 1+2*n(5));");
+        addLine(script, "jfork(@a(),@b(),@c(),x.)->b(a(x.),c(x.));");
+        addLine(script, "y := jfork(@sum(), @/, @size(), 1+2*n(5));");
         addLine(script, "ok := y == 5;");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());

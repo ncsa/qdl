@@ -25,7 +25,7 @@ public class QDLScript extends FileEntry implements ScriptInterface {
     Collision of names!!! The things that are run one the server are called "scripts" because that is what they
     are called in the delegation framework. Inside QDL a script is something run with a script_run/script_load command
     and has arguments. The scriptArgList here are the args for that and the isRunScript refers to whether
-    this is to be run in QDL as a QDL script. Too darn many few words for the concepts...
+    this is to be run in QDL as a QDL script. Too darn few words for the concepts...
      */
     public QDLScript(List<String> lines, XProperties xp) {
         super(lines, xp);

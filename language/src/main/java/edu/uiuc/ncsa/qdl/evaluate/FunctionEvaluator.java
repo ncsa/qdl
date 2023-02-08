@@ -203,7 +203,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
             tryScript.getArguments().add(polyad.getArguments().get(i));
         }
         try {
-            SystemEvaluator.runnit(tryScript, state, SystemEvaluator.RUN_COMMAND, state.getLibPath(), true);
+            SystemEvaluator.runnit(tryScript, state, state.getLibPath(), true, false);
             tryScript.evaluate(state);
             polyad.setResult(tryScript.getResult());
             polyad.setResultType(tryScript.getResultType());
