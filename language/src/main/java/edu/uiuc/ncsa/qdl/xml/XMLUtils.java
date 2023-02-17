@@ -114,7 +114,7 @@ public class XMLUtils implements XMLConstants {
             QDLStem s = new QDLStem();
             for (Object obj : list) {
                 if (obj != null) {
-                    s.listAppend(obj.toString());
+                    s.listAdd(obj.toString());
                 }
             }
             write(xsw, s);
@@ -668,6 +668,7 @@ public class XMLUtils implements XMLConstants {
         }
         return null;
     }
+
 
     public static XMLEventReader getZippedReader(byte[] byteArray) {
         try {

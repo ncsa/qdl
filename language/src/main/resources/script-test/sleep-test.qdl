@@ -8,5 +8,6 @@
 
 while[x ∈ [;to_number(args(0))]
   ][
-   say('slept for ' + sleep(1000));
+   //say('slept for ' + sleep(1000));
+   sleep(1000);
 ];

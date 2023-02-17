@@ -224,7 +224,7 @@ public abstract class AbstractState implements StateInterface, Logable {
             scriptArgStem = new QDLStem();
             if (hasScriptArgs()) {
                 for (Object object : getScriptArgs()) {
-                    scriptArgStem.listAppend(object);
+                    scriptArgStem.listAdd(object);
                 }
             }
         }

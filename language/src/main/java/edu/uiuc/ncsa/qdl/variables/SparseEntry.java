@@ -3,6 +3,8 @@ package edu.uiuc.ncsa.qdl.variables;
 import java.io.Serializable;
 
 /**
+ * Comparable entries for sparse entries. This contains the index and the actual entry itself.
+ * You can get this using {@link QDLList#first()} and {@link QDLList#last()}.
  * <p>Created by Jeff Gaynor<br>
  * on 2/20/20 at  8:35 AM
  */

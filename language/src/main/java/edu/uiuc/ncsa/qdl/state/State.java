@@ -6,6 +6,7 @@ import edu.uiuc.ncsa.qdl.extensions.JavaModule;
 import edu.uiuc.ncsa.qdl.extensions.crypto.CryptoLoader;
 import edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader;
 import edu.uiuc.ncsa.qdl.extensions.http.QDLHTTPLoader;
+import edu.uiuc.ncsa.qdl.extensions.xml.QDLXMLLoader;
 import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.functions.FTable;
@@ -63,6 +64,11 @@ import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
 public class State extends FunctionState implements QDLConstants {
     private static final long serialVersionUID = 0xcafed00d1L;
 
+    /**
+     * The internal id of the state object is needed in serialization and other operations.
+     * Every instance of a state object has a unique id.
+     * @return
+     */
     public String getInternalID() {
         if (internalID == null) {
             internalID = getUuid().toString(); // basically just cache it.
@@ -72,16 +78,30 @@ public class State extends FunctionState implements QDLConstants {
 
     String internalID = null;
 
-    public int getPID() {
-        return pid;
+    /**
+     * This is used in the debugger and refers to paused vs running processes. It does
+     * not refer to process ids or the internal id of the state object.
+     * @return
+     */
+    public int getStateID() {
+        return stateID;
     }
 
-    public void setPID(int pid) {
-        this.pid = pid;
+    public void setStateID(int pid) {
+        this.stateID = pid;
     }
 
-    int pid = 0;
+    int stateID = 0;
 
+    public Map<Integer, QDLThreadRecord> getThreadTable() {
+        return threadTable;
+    }
+
+    public void setThreadTable(Map<Integer, QDLThreadRecord> threadTable) {
+        this.threadTable = threadTable;
+    }
+
+    Map<Integer, QDLThreadRecord> threadTable = new HashMap<>();
     /**
      * If you extend this class, you must override this method to return a new instance
      * of your state with everything in it you want or need.
@@ -244,6 +264,7 @@ public class State extends FunctionState implements QDLConstants {
         map.put("http", QDLHTTPLoader.class.getCanonicalName());
         map.put("db", QDLDBLoader.class.getCanonicalName());
         map.put("crypto", CryptoLoader.class.getCanonicalName());
+        map.put("xml", QDLXMLLoader.class.getCanonicalName());
         return map;
     }
 
@@ -764,7 +785,7 @@ public class State extends FunctionState implements QDLConstants {
 
     public void toXML(XMLStreamWriter xsw) throws XMLStreamException {
         xsw.writeStartElement(STATE_TAG);
-        xsw.writeAttribute(STATE_ID_TAG, getInternalID());
+        xsw.writeAttribute(STATE_INTERNAL_ID_TAG, getInternalID());
         writeExtraXMLAttributes(xsw);
         // The list of aliases and their corresponding modules
         // NEXT BIT IS DONE IN NEW MODULE STACK, SEE BELOW
@@ -868,7 +889,7 @@ public class State extends FunctionState implements QDLConstants {
 
         XMLEvent xe = xer.nextEvent(); // start iteration it should be at the state tag
         if (xe.isStartElement() && xe.asStartElement().getName().getLocalPart().equals(STATE_TAG)) {
-            internalID = xe.asStartElement().getAttributeByName(new QName(STATE_ID_TAG)).getValue();
+            internalID = xe.asStartElement().getAttributeByName(new QName(STATE_INTERNAL_ID_TAG)).getValue();
             readExtraXMLAttributes(xe.asStartElement());
         }
         while (xer.hasNext()) {
@@ -972,7 +993,7 @@ public class State extends FunctionState implements QDLConstants {
         xsr.writeStartElement(STATE_CONSTANTS_TAG);
         JSONObject json = new JSONObject();
         json.put(STATE_ASSERTIONS_ENABLED_TAG, isAssertionsOn());
-        json.put(STATE_PID_TAG, getPID());
+        json.put(STATE_ID_TAG, getStateID());
         json.put(STATE_RESTRICTED_IO_TAG, isRestrictedIO());
         json.put(STATE_SERVER_MODE_TAG, isServerMode());
         // Saving the numeric digits this way is unsatisfactory since it is also done in all
@@ -1011,7 +1032,11 @@ public class State extends FunctionState implements QDLConstants {
             text = new String(Base64.decodeBase64(text));
             JSONObject json = JSONObject.fromObject(text);
             setAssertionsOn(json.getBoolean(STATE_ASSERTIONS_ENABLED_TAG));
-            setPID(json.getInt(STATE_PID_TAG));
+            if(json.containsKey(STATE_ID_TAG)) {
+                setStateID(json.getInt(STATE_ID_TAG));
+            }else{
+                setStateID(0);
+            }
             setServerMode(json.getBoolean(STATE_SERVER_MODE_TAG));
             setRestrictedIO(json.getBoolean(STATE_RESTRICTED_IO_TAG));
             OpEvaluator.setNumericDigits(json.getInt(STATE_NUMERIC_DIGITS_TAG));

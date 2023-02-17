@@ -4565,16 +4565,39 @@ that it did indeed sleep that long.]]>
     <entry id="fork">
        <body>
   <![CDATA[fork(file, arg0, arg1,...)
-Equivalent to script_run but a separate thread is started. Note that this cannot
-return values since that makes no sense.
+Equivalent to script_load -- so state is inherited -- but a separate thread
+is started. Note that this cannot return values since that makes no sense.
+This returns the process id (pid) for this thread.
+
+Note to view current threads in the workspace, issue
+   )si threads
+
+See also: kill
   ]]>
        </body>
        <example>
-   <![CDATA[   fork('vsf#/scripts/my.qdl',4,[;5])
+   <![CDATA[   pid := fork('vsf#/scripts/my.qdl',4,[;5])
+   pid
+3641
 // This would start a separate process running the given script with the two arguments.
-   ]]>
+// and the process has id 3641. You cann kill this process with
+   kill(pid)
+0]]>
         </example>
     </entry>
+    <entry id="">
+        <body>
+   <![CDATA[kill(pid) - kill a process given its process identifier.
+This returns 1 if success and 0 otherwise.
+
+Note to view current threads in the workspace, issue
+   )si threads
+
+See also: fork]]>
+        </body>
+
+     </entry>
+
     <!--
     <entry id="">
        <body>

@@ -738,7 +738,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
             QDLStem output = new QDLStem();
             Iterator iterator = inStem.getQDLList().descendingIterator(true);
             while (iterator.hasNext()) {
-                output.listAppend(iterator.next());
+                output.listAdd(iterator.next());
             }
             return output;
         }

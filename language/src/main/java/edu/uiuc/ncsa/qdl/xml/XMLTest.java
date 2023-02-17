@@ -114,9 +114,9 @@ public class XMLTest {
         write(xsw, Boolean.TRUE);
         QDLStem stem = new QDLStem();
         QDLStem stem1 = new QDLStem();
-        stem.listAppend("a");
-        stem.listAppend("b");
-        stem1.listAppend("p");
+        stem.listAdd("a");
+        stem.listAdd("b");
+        stem1.listAdd("p");
         stem.put(2L, stem1);
         stem.put(42L, "c");
         stem.put("foo", "bar");

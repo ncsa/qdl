@@ -1,0 +1,22 @@
+zz.b :=
+q.a.0:='Z';
+q.a.
+
+qq.a.0.0 := 'Z';
+qq.a.0.q := 'T';
+qq.a.0.b.0 := ['W']~{'p':'S'}
+qq.a.0.b.1 := ['X']~{'p':'U'}
+qq.a.0.b.2 := ['Y']~{'p':'V'}
+
+
+{'@declaration':'<?xml version="null" encoding=\'null\' standalone=\'no\'?>',
+        'a':[
+          ['\n    Z\n']~{'q':'T'}]~{'b':[['W']~{'p':'S'},['X']~{'p':'U'},['Y']~{'p':'V'}
+        ]}
+        }
+
+
+{
+  '@declaration':'<?xml version="null" encoding=\'null\' standalone=\'no\'?>',
+        {'a':[['Z']~{'q':'T', 'b':[['W']~{'p':'S'},['X']~{'p':'U'},['Y']~{'p':'V'}]}]}
+  }

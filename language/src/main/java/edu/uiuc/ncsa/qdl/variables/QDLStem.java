@@ -69,6 +69,16 @@ public class QDLStem implements Map<String, Object>, Serializable {
         return (Long) getQDLMap().get(key);
     }
 
+    public QDLStem getStem(String key){
+        if (isLongIndex(key)) {
+            return getStem(Long.parseLong(key));
+        }
+        return (QDLStem) getQDLMap().get(key);
+
+    }
+    public QDLStem getStem(Long key){
+        return (QDLStem) getQDLList().get(key);
+    }
     public Long getLong(Long key) {
         return (Long) getQDLList().get(key);
     }
@@ -217,7 +227,8 @@ public class QDLStem implements Map<String, Object>, Serializable {
     }
 
     /**
-     * Append the list elements of the stem to this list.
+     * Append the list elements of the stem to this list. This integrates the lists but does not affect
+     * the maps.
      *
      * @param stem
      */
@@ -225,7 +236,13 @@ public class QDLStem implements Map<String, Object>, Serializable {
         getQDLList().appendAll(stem.getQDLList().values());
     }
 
-    public void listAppend(Object value) {
+    /**
+     * Add the single object to the list in this stem. This allows you to add a stem as a list
+     * value, unlike {@link #listAppend(QDLStem)} which appends the elements of the argument's
+     * list to the current object's list.
+     * @param value
+     */
+    public void listAdd(Object value) {
         getQDLList().append(value);
     }
 
@@ -1265,6 +1282,15 @@ public class QDLStem implements Map<String, Object>, Serializable {
     }
 
 
+    public QDLStem fromJSON(JSON json) {
+      if(json instanceof JSONObject)  {
+          return fromJSON((JSONObject) json);
+      }
+      if(json instanceof JSONArray){
+          return fromJSON((JSONArray)json);
+      }
+      throw new IllegalArgumentException("argument is neither a JSON object nor JSON array");
+    }
     public QDLStem fromJSON(JSONObject jsonObject) {
         return fromJSON(jsonObject, false);
     }

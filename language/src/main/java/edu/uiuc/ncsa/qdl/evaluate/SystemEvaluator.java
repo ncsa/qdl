@@ -181,7 +181,8 @@ public class SystemEvaluator extends AbstractEvaluator {
     public static final int SCRIPT_PATH_COMMAND_TYPE = 403 + SYSTEM_BASE_VALUE;
     public static final String FORK = "fork";
     public static final int FORK_TYPE = 404 + SYSTEM_BASE_VALUE;
-
+    public static final String KILL_PROCESS = "kill";
+    public static final int KILL_PROCESS_TYPE = 405 + SYSTEM_BASE_VALUE;
 
     // WS macro
     public static final String WS_MACRO = "ws_macro";
@@ -204,6 +205,7 @@ public class SystemEvaluator extends AbstractEvaluator {
     public String[] getFunctionNames() {
         if (fNames == null) {
             fNames = new String[]{
+                    KILL_PROCESS,
                     FORK,
                     SLEEP,
                     HAS_CLIPBOARD,
@@ -253,6 +255,8 @@ public class SystemEvaluator extends AbstractEvaluator {
     @Override
     public int getType(String name) {
         switch (name) {
+            case KILL_PROCESS:
+                return KILL_PROCESS_TYPE;
             case FORK:
                 return FORK_TYPE;
             case SLEEP:
@@ -357,13 +361,16 @@ public class SystemEvaluator extends AbstractEvaluator {
         // NOTE NOTE NOTE!!! The for_next, has_keys, check_after functions are NOT evaluated here. In
         // the WhileLoop class they are picked apart for their contents and the correct looping strategy is
         // done. Look at the WhileLoop's evaluate method. All this evaluator
-        // does is mark them as built in functions.
+        // does is mark them as built-in functions.
         boolean printIt = false;
 
         switch (polyad.getName()) {
+            case KILL_PROCESS:
+                doKillProcess(polyad, state);
+                return true;
             case FORK:
-              doFork(polyad, state);
-              return true;
+                doFork(polyad, state);
+                return true;
             case SLEEP:
                 doSleep(polyad, state);
                 return true;
@@ -510,40 +517,75 @@ public class SystemEvaluator extends AbstractEvaluator {
         return false;
     }
 
+    protected void doKillProcess(Polyad polyad, State state) {
+        if (polyad.isSizeQuery()) {
+            polyad.setResult(new int[]{1});
+            polyad.setEvaluated(true);
+            return;
+        }
+        Object out = polyad.evalArg(0, state);
+        if (!isLong(out)) {
+            throw new BadArgException(KILL_PROCESS + " requires an integer argument", polyad);
+        }
+        Long pid = (Long) out;
+        if (state.getThreadTable().containsKey(pid.intValue())) {
+            try {
+                state.getThreadTable().get(pid.intValue()).qdlThread.interrupt();
+                state.getThreadTable().remove(pid.intValue());
+                polyad.setResult(1L);
+                polyad.setEvaluated(true);
+                polyad.setResultType(Constant.LONG_TYPE);
+                return;
+            } catch (Throwable t) {
+
+               // t.printStackTrace();
+            }
+        }
+        polyad.setResult(0L);
+        polyad.setEvaluated(true);
+        polyad.setResultType(Constant.LONG_TYPE);
+    }
+
     private void doSleep(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
-        Object out = polyad.evalArg(0,state);
-        if(!isLong(out)){
+        Object out = polyad.evalArg(0, state);
+        if (!isLong(out)) {
             throw new BadArgException(SLEEP + " requires an integer argument", polyad);
         }
         long start = System.currentTimeMillis();
         try {
-            Thread.currentThread().sleep((Long)out);
+            Thread.currentThread().sleep((Long) out);
+            polyad.setEvaluated(true);
+            polyad.setResult((Long) (System.currentTimeMillis() - start));
+            polyad.setResultType(Constant.LONG_TYPE);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            //  e.printStackTrace();
+            // Do nothing. (???))
         }
-        polyad.setEvaluated(true);
-        polyad.setResult((Long)(System.currentTimeMillis() - start));
-        polyad.setResultType(Constant.LONG_TYPE);
+
     }
 
 
     /**
      * Run a script in its own thread. Passed variables are shared.
+     *
      * @param polyad
      * @param state
      */
-    protected void doFork(Polyad polyad, State state){
+    protected void doFork(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(AbstractEvaluator.getBigArgList());
             polyad.setEvaluated(true);
             return;
         }
-        runnit(polyad, state, state.getScriptPaths(), true, true);
+        int pid = runnit(polyad, state, state.getScriptPaths(), false, true);
+        polyad.setEvaluated(true);
+        polyad.setResult((long) pid);
+        polyad.setResultType(Constant.LONG_TYPE);
     }
 
     private void doIsNull(Polyad polyad, State state) {
@@ -966,7 +1008,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
             } else {
                 QDLStem output = new QDLStem();
-                output.listAppend(sparseEntry.entry);
+                output.listAdd(sparseEntry.entry);
                 polyad.setResult(output);
                 polyad.setResultType(Constant.STEM_TYPE);
             }
@@ -1041,7 +1083,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             Iterator iterator = inStem.keySet().iterator();
 
             Object lastValue = inStem.get(iterator.next()); // grab one before loop starts
-            output.listAppend(lastValue);
+            output.listAdd(lastValue);
 
             while (iterator.hasNext()) {
                 Object key = iterator.next();
@@ -1925,16 +1967,17 @@ public class SystemEvaluator extends AbstractEvaluator {
         return null;
     }
 
-    public static void runnit(Polyad polyad, State state, boolean hasNewState) {
+    public static int runnit(Polyad polyad, State state, boolean hasNewState) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(AbstractEvaluator.getBigArgList());
             polyad.setEvaluated(true);
-            return;
+            return 0;
         }
-        runnit(polyad, state, state.getScriptPaths(), hasNewState, false);
+        return runnit(polyad, state, state.getScriptPaths(), hasNewState, false);
+
     }
 
-    public static void runnit(Polyad polyad, State state, List<String> paths, boolean hasNewState, boolean newThread) {
+    public static int runnit(Polyad polyad, State state, List<String> paths, boolean hasNewState, boolean newThread) {
 
         if (polyad.getArgCount() == 0) {
             throw new MissingArgException((hasNewState ? RUN_COMMAND : LOAD_COMMAND) + " requires at least 1 argument", polyad);
@@ -1976,10 +2019,27 @@ public class SystemEvaluator extends AbstractEvaluator {
             try {
                 Object[] oldArgs = localState.getScriptArgs();
                 localState.setScriptArgs(argList);
-                if(newThread){
-                    QDLThread qdlThread = new QDLThread(localState, script);
+                if (newThread) {
+                    int pid = (int) (System.currentTimeMillis() % 999983); // largest 6 digit prime number.
+                    if (state.getThreadTable().containsKey(pid)) {
+                        for (int i = 0; i < 10; i++) {
+                            pid = (int) (System.currentTimeMillis() % 999983); // largest 6 digit prime number.
+                            if (!state.getThreadTable().containsKey(pid)) {
+                                break;
+                            }
+                        }
+                    }
+                    if (state.getThreadTable().containsKey(pid)) {
+                        throw new QDLExceptionWithTrace("could not set pid for " + FORK, polyad);
+                    }
+                    QDLThread qdlThread = new QDLThread(localState, script, pid);
+                    QDLThreadRecord record = new QDLThreadRecord();
+                    record.qdlThread = qdlThread;
+                    record.name = resourceName;
+                    state.getThreadTable().put(pid, record);
                     qdlThread.start();
-                }else{
+                    return pid;
+                } else {
                     script.execute(localState);
                     localState.setScriptArgs(oldArgs);
                 }
@@ -1997,7 +2057,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                     polyad.setResult(rx.result);
                     polyad.setResultType(rx.resultType);
                     polyad.setEvaluated(true);
-                    return;
+                    return 0;
                 }
                 throw qe;
             } catch (Throwable t) {
@@ -2011,6 +2071,7 @@ public class SystemEvaluator extends AbstractEvaluator {
         polyad.setEvaluated(true);
         polyad.setResultType(Constant.NULL_TYPE);
         polyad.setResult(QDLNull.getInstance());
+        return 0;
     }
 
     protected void doRaiseError(Polyad polyad, State state) {
@@ -2441,7 +2502,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 // single string arguments
                 if (isString(arg)) {
                     argStem = new QDLStem();
-                    argStem.listAppend(arg);
+                    argStem.listAdd(arg);
                     gotOne = true;
                 }
                 if (isStem(arg)) {
@@ -2461,8 +2522,8 @@ public class SystemEvaluator extends AbstractEvaluator {
 
                 argStem = new QDLStem();
                 QDLStem innerStem = new QDLStem();
-                innerStem.listAppend(arg);
-                innerStem.listAppend(arg2);
+                innerStem.listAdd(arg);
+                innerStem.listAdd(arg2);
                 argStem.put(0L, innerStem);
                 gotOne = true;
                 break;

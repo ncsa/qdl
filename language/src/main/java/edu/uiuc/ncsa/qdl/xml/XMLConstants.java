@@ -72,7 +72,7 @@ public interface XMLConstants {
 
 
     String STATE_TAG = "state";
-    String STATE_ID_TAG = "internal_id";
+    String STATE_INTERNAL_ID_TAG = "internal_id";
     String OLD_IMPORTED_MODULES_TAG = "imports";
     String OLD_MODULE_TEMPLATE_TAG = "templates";
 
@@ -95,24 +95,24 @@ public interface XMLConstants {
     String BR_CONTENT = "content";
 
     // Version 2 tags
-    String SERIALIZATION_VERSION_TAG = "serialization_version";
-    String VERSION_2_0_TAG = "2.0";
-    String TEMPLATE_REFERENCE_TAG = "template_reference";
     String INSTANCE_REFERENCE_TAG = "instance_reference";
-    String STATE_REFERENCE_TAG = "state_reference";
-    String UUID_TAG = "uuid";
-    String STATE_CONSTANTS_TAG = "constants";
-    String STATE_RESTRICTED_IO_TAG = "restricted_io";
-    String STATE_SERVER_MODE_TAG = "server_mode";
-    String STATE_PID_TAG = "pid";
-    String STATE_ASSERTIONS_ENABLED_TAG = "assertions_on";
-    String STATE_NUMERIC_DIGITS_TAG = "numeric_digits";
-    String STATES_TAG = "states";
-    String MODULE_INSTANCES_TAG = "module_instances";
-    String TEMPLATE_STACK = "template_stack";
     String INSTANCE_STACK = "instance_stack";
     String MODULES_TAG = "modules";
-    String VARIABLE_STACK = "variable_stack";
+    String MODULE_INSTANCES_TAG = "module_instances";
+    String SERIALIZATION_VERSION_TAG = "serialization_version";
+    String STATES_TAG = "states";
+    String STATE_ASSERTIONS_ENABLED_TAG = "assertions_on";
+    String STATE_CONSTANTS_TAG = "constants";
+    String STATE_NUMERIC_DIGITS_TAG = "numeric_digits";
+    String STATE_ID_TAG = "state_id";
+    String STATE_REFERENCE_TAG = "state_reference";
+    String STATE_RESTRICTED_IO_TAG = "restricted_io";
+    String STATE_SERVER_MODE_TAG = "server_mode";
+    String TEMPLATE_REFERENCE_TAG = "template_reference";
+    String TEMPLATE_STACK = "template_stack";
+    String UUID_TAG = "uuid";
     String VARIABLES_TAG = "variables";
+    String VARIABLE_STACK = "variable_stack";
+    String VERSION_2_0_TAG = "2.0";
 
 }

@@ -488,6 +488,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 sayi("      rm pid - remove the given state from the system, losing all of it. If it is the");
                 sayi("               current state, the system default will replace it.");
                 sayi("   set [pid] - set the current process id. No argument means to display the current pid.");
+                sayi("     threads - List threads by process id and name.");
                 return RC_NO_OP;
             case "list":
                 // list all current pids.
@@ -506,6 +507,11 @@ public class WorkspaceCommands implements Logable, Serializable {
                 return _doSIRemove(inputLine);
             case "set":
                 return _doSISet(inputLine);
+            case "threads":
+                for(Integer key : getState().getThreadTable().keySet()){
+                    say(key + " : " + state.getThreadTable().get(key).name);
+                }
+                return RC_CONTINUE;
             default:
                 say("sorry, unknown command.");
         }
@@ -1087,7 +1093,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
             case 2:
                 State newState = state.newCleanState();
-                newState.setPID(state.getPID() + 1); // anything other than zero
+                newState.setStateID(state.getStateID() + 1); // anything other than zero
                 newState.setIoInterface(getIoInterface()); // Or IO fails
                 interpreter = new QDLInterpreter(newState);
                 interpreter.setPrettyPrint(isPrettyPrint());
@@ -5227,7 +5233,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                     false,
                     isAssertionsOn()
             );// workspace is never in server mode, nor restricted IO
-            state.setPID(0);
+            state.setStateID(0);
             state.setWorkspaceCommands(this);
         }
         return state;

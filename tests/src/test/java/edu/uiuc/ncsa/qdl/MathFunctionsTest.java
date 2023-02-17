@@ -275,12 +275,12 @@ public class MathFunctionsTest extends AbstractQDLTester {
         assert areEqual(getStemValue("f.", state), arrayToStem(new int[]{9, 6, 3, 0, -3, -6}));
         QDLStem gStem = new QDLStem();
         // Caveat: Bigdecimal from double always induces rounding, so use string constructor for exact tests.
-        gStem.listAppend(new BigDecimal(".9"));
-        gStem.listAppend(new BigDecimal(".6"));
-        gStem.listAppend(new BigDecimal(".3"));
-        gStem.listAppend(new Long(0L));
-        gStem.listAppend(new BigDecimal("-0.3"));
-        gStem.listAppend(new BigDecimal("-0.6"));
+        gStem.listAdd(new BigDecimal(".9"));
+        gStem.listAdd(new BigDecimal(".6"));
+        gStem.listAdd(new BigDecimal(".3"));
+        gStem.listAdd(new Long(0L));
+        gStem.listAdd(new BigDecimal("-0.3"));
+        gStem.listAdd(new BigDecimal("-0.6"));
         assert areEqual(getStemValue("g.", state), gStem);
         //assert areEqual(getStemValue("g.",state), arrayToStem(new double[] {.9, .6, .3, 0, -.3, -.6}));
         assert areEqual(getStemValue("h.", state), arrayToStem(new double[]{-3.3, -2.3, -1.3, -0.3, .7, 1.7}));

@@ -1066,7 +1066,7 @@ public class StemEvaluator extends AbstractEvaluator {
                 if (nextOne.endsWith("'")) {
                     nextOne = nextOne.substring(0, nextOne.length() - 1);
                 }
-                r.listAppend(nextOne);
+                r.listAdd(nextOne);
             }
             arrayOut.put(i, r);
 
@@ -2876,12 +2876,12 @@ z. :=  join3(q.,w.)
                     if (newArg < 0) {
                         throw new IndexError("the requested axis of " + longArg + " is not valid for a stem of rank " + rank, polyad.getArgAt(1));
                     }
-                    stem1.listAppend(newArg);
+                    stem1.listAdd(newArg);
                 } else {
                     if (rank <= longArg) {
                         throw new IndexError("the requested axis of " + longArg + " is not valid for a stem of rank " + rank, polyad.getArgAt(1));
                     }
-                    stem1.listAppend(arg1);
+                    stem1.listAdd(arg1);
                 }
                 arg2ok = true;
             }

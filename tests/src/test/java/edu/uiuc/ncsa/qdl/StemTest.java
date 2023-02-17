@@ -1221,7 +1221,7 @@ public class StemTest extends AbstractQDLTester {
 
     public void testobjectAppend() throws Throwable {
         QDLStem stemVariable = new QDLStem();
-        stemVariable.listAppend("foo");
+        stemVariable.listAdd("foo");
         assert stemVariable.size() == 1;
         assert stemVariable.get(0L).equals("foo");
     }
