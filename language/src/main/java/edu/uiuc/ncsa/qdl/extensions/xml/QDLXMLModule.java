@@ -24,6 +24,11 @@ public class QDLXMLModule extends JavaModule {
         QDLXML xml = new QDLXML();
         funcs.add(xml.new XMLImport());
         funcs.add(xml.new GetAttributes());
+        funcs.add(xml.new Snarf());
+        funcs.add(xml.new YAMLExport());
+        funcs.add(xml.new YAMLImport());
+        funcs.add(xml.new HOCONExport());
+        funcs.add(xml.new HOCONImport());
         qdlxml.addFunctions(funcs);
         if(state != null){
             qdlxml.init(state);

@@ -605,6 +605,10 @@ subset(b., 3, 6)
         return (long) dim().size();
     }
 
+    /**
+     * Return all values for this list, including sparse values
+     * @return
+     */
     public ArrayList values() {
         ArrayList list = new ArrayList();
         Iterator iterator = iterator(true);

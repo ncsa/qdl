@@ -1,0 +1,20 @@
+ tokens{
+  identity{
+     type=identity
+     qdl{
+         load="fnal/fnal-idtoken.qdl"
+         xmd={exec_phase="post_token"}
+       }// end qdl
+     } //end identity token
+     access{
+        type=wlcg
+        issuer="https:cilogon.org"
+        audience="https://wlcg.cern.ch/jwt/v1/any"
+        lifetime=3600000
+        qdl{
+           load="fnal/fnal-at.qdl"
+           xmd={exec_phase=["post_token","post_refresh","post_exchange"]}
+           args=["USER_ID", "PASSWORD"]
+        } //end QDL
+     } // end access token
+   } //end tokens

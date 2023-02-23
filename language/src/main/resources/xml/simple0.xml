@@ -1,6 +1,9 @@
+<?xml version="1.0"?>
+<!-- top level comment -->
 <a q="T">
     <b p="S">W</b>
     <b p="U">X</b>
+    <!-- Here is a comment -->
     <b p="V"><![CDATA[ Y ]]></b>
     Z
 </a>

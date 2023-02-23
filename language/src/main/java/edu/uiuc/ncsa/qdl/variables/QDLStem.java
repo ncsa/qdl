@@ -472,6 +472,11 @@ public class QDLStem implements Map<String, Object>, Serializable {
         qdlList = null;
     }
 
+    /**
+     * return an enumeration (set) of <b>ALL</b> keys in order, starting with the list indices
+     * then the keys.
+     * @return
+     */
     @Override
     public StemKeys keySet() {
         return orderedkeySet();
