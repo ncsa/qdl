@@ -582,6 +582,9 @@ public class SystemEvaluator extends AbstractEvaluator {
             polyad.setEvaluated(true);
             return;
         }
+        if(state.isServerMode()){
+            throw new QDLExceptionWithTrace(FORK + " not supported in server mode.", polyad);
+        }
         int pid = runnit(polyad, state, state.getScriptPaths(), false, true);
         polyad.setEvaluated(true);
         polyad.setResult((long) pid);

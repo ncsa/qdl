@@ -9,8 +9,10 @@ import edu.uiuc.ncsa.qdl.expressions.ConstantNode;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
 import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
+import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.FileUtil;
 import net.sf.json.JSON;
 import net.sf.json.JSONObject;
@@ -18,10 +20,13 @@ import net.sf.json.xml.XMLSerializer;
 import org.yaml.snakeyaml.Yaml;
 
 import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.*;
-import java.io.File;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -29,8 +34,9 @@ import java.util.regex.Pattern;
  * <p>Created by Jeff Gaynor<br>
  * on 2/13/23 at  7:33 AM
  */
-public class QDLXML {
-    public static final String QDL_IMPORT_NAME = "import";
+public class QDLConvert {
+    public static final String XML_IMPORT_NAME = "xml_in";
+    public static final String XML_EXPORT_NAME = "xml_out";
     public static final int XML_IMPORT_LEVEL_FLATTEN = 0; // no @'s, ignore most structures, attributes flattened to properties
     public static final int XML_IMPORT_LEVEL_ATTR = 1; // @attributes, @text
     public static final int XML_IMPORT_LEVEL_COMMENTS = 2; // @attributes, @text, @comment
@@ -38,15 +44,16 @@ public class QDLXML {
 
     // These are prefixed with @ signs since those are not valid XML tagnames, hence there can be
     // no collision ambiguity on import/export
-    public static final String ATTRIBUTE_KEY = ">attributes";
-    public static final String CDATA_KEY = ">cdata";
-    public static final String TEXT_KEY = ">text";
+    public static final String DOC_CAPUT = ">";
+    public static final String ATTRIBUTE_KEY = DOC_CAPUT + "attributes";
+    public static final String CDATA_KEY = DOC_CAPUT + "cdata";
+    public static final String TEXT_KEY = DOC_CAPUT + "text";
     public static final String ATTRIBUTE_CAPUT = "@";
-    public static final String DECLARATION_KEY = ">declaration";
-    public static final String DTD_TYPE_KEY = ">doc_type";
-    public static final String PROCESSING_INSTRUCTION_KEY = ">processing_instruction";
-    public static final String COMMENT_KEY = ">comment";
-    public static final String ENTITY_KEY = ">entity";
+    public static final String DECLARATION_KEY = DOC_CAPUT + "declaration";
+    public static final String DTD_TYPE_KEY = DOC_CAPUT + "doc_type";
+    public static final String PROCESSING_INSTRUCTION_KEY = DOC_CAPUT + "processing_instruction";
+    public static final String COMMENT_KEY = DOC_CAPUT + "comment";
+    public static final String ENTITY_KEY = DOC_CAPUT + "entity";
      /*
      Node types from the Node class:
     short ELEMENT_NODE = 1;
@@ -73,7 +80,7 @@ public class QDLXML {
     public class XMLImport implements QDLFunction {
         @Override
         public String getName() {
-            return QDL_IMPORT_NAME;
+            return XML_IMPORT_NAME;
         }
 
         @Override
@@ -102,6 +109,7 @@ public class QDLXML {
          * @throws Throwable
          */
         protected Object newEvaluate2(Object[] objects, State state) throws Throwable {
+            // To get this to work, uncomment the xom utility in the pom.
             String xml = FileUtil.readFileAsString(objects[0].toString());
 
             XMLSerializer xmlSerializer = new XMLSerializer();
@@ -119,8 +127,6 @@ public class QDLXML {
             boolean validate = true;
             int level = XML_IMPORT_LEVEL_EXACT;
             boolean ignoreComments = XML_IMPORT_LEVEL_COMMENTS <= level;
-            boolean fileImport = true;
-            String fileName = null;
             String raw = null;
             QDLStem inStem = null;
             Object configObject = null;
@@ -129,8 +135,6 @@ public class QDLXML {
                     configObject = objects[0];
                 }
                 if (objects[0] instanceof String) {
-                    raw = (String) objects[0];
-                    fileImport = false;
                     configObject = new QDLStem(); // make it empty.
                 }
             } else {
@@ -144,10 +148,7 @@ public class QDLXML {
                 throw new IllegalArgumentException(getName() + " requires that that the configuration argument is  a stem");
             }
             inStem = (QDLStem) configObject;
-            if (inStem.containsKey(ARG_FILE)) {
-                fileImport = true;
-                fileName = inStem.getString(ARG_FILE);
-            }
+            String inString = getFileArg(objects[0], state, getName());
             if (inStem.containsKey(ARG_VALIDATE)) {
                 validate = inStem.getBoolean(ARG_VALIDATE);
             }
@@ -160,12 +161,7 @@ public class QDLXML {
             if (inStem.containsKey(ARG_IMPORT_LEVEL)) {
                 level = inStem.getLong(ARG_IMPORT_LEVEL).intValue();
             }
-            if (fileImport) {
-                xer = XMLUtils.getReader(new File(fileName));
-            } else {
-                StringReader reader = new StringReader(raw);
-                xer = XMLUtils.getXMLEventReader(reader);
-            }
+            xer = XMLUtils.getXMLEventReader(new StringReader(inString));
             if (!xer.hasNext()) {
                 throw new QDLException("Error! no XML found to deserialize");
             }
@@ -352,14 +348,216 @@ public class QDLXML {
         Pattern wsPattern = Pattern.compile(wsRegex);
     }
 
+    // NOTE this is nowhere near ready for release. It is actually really hard to get this
+    // to work in all but super simple cases.
+    public class XMLExport implements QDLFunction {
+        @Override
+        public String getName() {
+            return XML_EXPORT_NAME;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1, 2};
+        }
+
+        @Override
+        public Object evaluate(Object[] objects, State state) {
+            if (!(objects[0] instanceof QDLStem)) {
+                throw new IllegalArgumentException(getName() + " requires a stem as its argument");
+            }
+            QDLStem arg = (QDLStem) objects[0];
+            /*if (arg.size() != 1) {
+                throw new QDLException(getName() + " the stem is an invalid XML document. It must have a single root element.");
+            }*/
+            boolean exportToFile = objects.length == 2;
+            String fileName = null;
+            if (exportToFile) {
+                if (!(objects[1] instanceof String)) {
+                    throw new QDLException(getName() + " requires a string as its second argument if present.");
+                }
+                fileName = (String) objects[1];
+            }
+            Writer w = new StringWriter();
+
+            XMLOutputFactory xof = XMLOutputFactory.newInstance();
+
+            try {
+                XMLStreamWriter xsw = xof.createXMLStreamWriter(w);
+                if(arg.containsKey(DECLARATION_KEY)){
+                    QDLStem declarations = arg.getStem(DECLARATION_KEY);
+                    String version = declarations.containsKey("@version")?declarations.getString("@version"):"1.0";
+                    String charSet = declarations.containsKey("@encoding")?declarations.getString("@encoding"):"UTF-8";
+                    xsw.writeStartDocument(charSet,version);
+                }else {
+                    xsw.writeStartDocument();
+                }
+                String rootTag = null;
+                for (Object key : arg.keySet()) {
+                    if (!key.toString().startsWith(DOC_CAPUT)) {
+                        rootTag = key.toString();
+                    }
+                }
+
+                if (arg.containsKey(COMMENT_KEY)) {
+                    xsw.writeComment(arg.getString(COMMENT_KEY));
+                }
+                writeElement(xsw, arg.getStem(rootTag), rootTag);
+                xsw.writeEndDocument();
+            } catch (XMLStreamException e) {
+                if (DebugUtil.isEnabled()) {
+                    e.printStackTrace();
+                }
+                throw new QDLException(getName() + " could not serialize stem to XML:" + e.getMessage());
+            }
+            if (exportToFile) {
+                try {
+                    QDLFileUtil.writeTextFile(state, fileName, w.toString());
+                } catch (Throwable e) {
+                    if (DebugUtil.isEnabled()) {
+                        e.printStackTrace();
+                    }
+                    throw new QDLException(getName() + " could not write file '" + fileName + "':" + e.getMessage());
+                }
+                return Boolean.TRUE;
+            }
+            return w.toString();
+        }
+
+
+        protected void writeContent(XMLStreamWriter xsw, Object object) throws XMLStreamException {
+            if (object instanceof QDLStem) {
+                // Object is of form [x0,x1,...]~{@p0,@p1,...n0,n1.,,,}
+                // where xi are lines of text
+                // @pi are attributes
+                // @ni are nodes to recurse over
+                // Write the text
+                QDLList qdlList = ((QDLStem) object).getQDLList();
+                QDLMap qdlMap = ((QDLStem) object).getQDLMap();
+                boolean isCDATA = qdlMap.containsKey(CDATA_KEY) && (Boolean) qdlMap.get(CDATA_KEY);
+                // Write attributes immediately after tag or you get an exception.
+                for (String key : qdlMap.keySet()) {
+                    if (isProperty(key)) {
+                        xsw.writeAttribute(key.substring(ATTRIBUTE_CAPUT.length()), qdlMap.get(key).toString());
+                    }
+                }
+                for (Object key : qdlList.orderedKeys()) {
+                    if (isCDATA) {
+                        xsw.writeCData(qdlList.get((Long)key).toString());
+                    } else {
+                        xsw.writeCharacters(xmlEscape(qdlList.get((Long)key).toString()));
+                    }
+                }
+                for (String key : qdlMap.keySet()) {
+                    if (!isProperty(key)) {
+                        Object value = qdlMap.get(key);
+                        if(key.equals(COMMENT_KEY)){
+                              xsw.writeComment(value.toString());
+                              continue;
+                        }
+
+                        if(Constant.isStem(value)){
+                            writeElement(xsw, (QDLStem) value, key);
+                        }else{
+                            if(Constant.isSet(value)){
+                                xsw.writeStartElement(key);
+                                xsw.writeCData(((QDLList)value).toJSON().toString());
+                                xsw.writeEndElement();
+                            }else{
+
+                                xsw.writeStartElement(key);
+                                if(isCDATA){
+                                    xsw.writeCData(((QDLList)value).toJSON().toString());
+                                } else{
+                                    xsw.writeCharacters(xmlEscape(value.toString()));
+                                }
+                                xsw.writeEndElement();
+                            }
+
+                        }
+                    }
+                }
+
+            } else {
+                throw new QDLException("unknown content");
+            }
+        }
+
+        protected void writeElement(XMLStreamWriter xsw, QDLStem stem, String tagname) throws XMLStreamException {
+            if (stem.isList()) {
+                // have to process each element
+                QDLList qdlList = stem.getQDLList();
+                for (Object v : qdlList.values()) {
+                    xsw.writeStartElement(tagname);
+                    if(Constant.isStem(v)){
+                        writeContent(xsw, v);
+
+                    }else{
+
+                        writeContent(xsw, v);
+                    }
+                    xsw.writeEndElement();
+                }
+            }
+/*
+            for (Object key : stem.keySet()) {
+                if (isProperty(key)) {
+                    String k = (String) key;
+                    xsw.writeAttribute(k.substring(ATTRIBUTE_CAPUT.length()), stem.getString(k));
+                    continue;
+                }
+
+
+                if (value instanceof QDLStem) {
+                    // This is just a stem
+                    QDLStem qdlStem = (QDLStem) value;
+                    xsw.writeStartElement(key.toString());
+                    boolean writeCDATA = false;
+                    if (qdlStem.containsKey(CDATA_KEY)) {
+                        writeCDATA = qdlStem.getBoolean(CDATA_KEY);
+                    }
+                    for (Object text : qdlStem.getQDLList().values()) {
+
+                    }
+                    xsw.writeEndElement();
+                }
+
+            }
+*/
+        }
+
+        List<String> doxx = new ArrayList<>();
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            if (doxx.isEmpty()) {
+                doxx.add(getName() + "(arg.{,file_path}) - export the arg. to XML, writing to file_path if present.");
+                doxx.add("If no file is given, the result is returned as a string.");
+                doxx.add("Note that writing a generic stem to XML is close to a Black Art. If the argument is well-structured, you");
+                doxx.add("should get very serviceable XML. A generic stem does not really fit");
+                doxx.add("with how XML is intended. For instance, there is no concept of a set, but the result is valid XML. ");
+                doxx.add("");
+            }
+            return doxx;
+        }
+    }
+
     public static void main(String[] args) {
-        QDLXML qdlxml = new QDLXML();
-        XMLImport xmlImport = qdlxml.new XMLImport();
+        QDLConvert QDLConvert = new QDLConvert();
+        XMLImport xmlImport = QDLConvert.new XMLImport();
         // Test XML as configuration language
         //       xmlImport.evaluate(new Object[]{"/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/xml/simple0.xml"}, null);
-        QDLStem stem = (QDLStem) xmlImport.evaluate(new Object[]{"/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/xml/planes.xml"}, null);
-        HOCONExport hoconExport = qdlxml.new HOCONExport();
-        System.out.println(hoconExport.evaluate(new Object[]{stem}, null));
+        QDLStem cfg = new QDLStem();
+        State state = new State();
+        state.setServerMode(false);
+        //cfg.put("file", "/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/xml/planes.xml");
+        cfg.put("file", "/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/xml/simple0.xml");
+        QDLStem stem = (QDLStem) xmlImport.evaluate(new Object[]{cfg}, state);
+        XMLExport xmlExport = QDLConvert.new XMLExport();
+        Object x = xmlExport.evaluate(new Object[]{stem}, state);
+        System.out.println(x);
+        HOCONExport hoconExport = QDLConvert.new HOCONExport();
+//        System.out.println(hoconExport.evaluate(new Object[]{stem}, null));
         // Next are for testing XML as a text markup language
         //xmlImport.evaluate(new Object[]{"/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/func_help.xml"}, null);
         //xmlImport.evaluate(new Object[]{"/home/ncsa/dev/ncsa-git/oa4mp/oa4mp-website/src/site/xhtml/server/manuals/authorized.xhtml"}, null);
@@ -492,7 +690,7 @@ public class QDLXML {
                 doxx.add("a minimally usable stem. This is not really intended for roundtripping XML");
                 doxx.add("but to simply an XML document for processing.");
                 doxx.add("E.g.");
-                doxx.add("  x. := " + QDL_IMPORT_NAME + "({" + ARG_FILE + ":'/path/to/config.xml'})");
+                doxx.add("  x. := " + XML_IMPORT_NAME + "({" + ARG_FILE + ":'/path/to/config.xml'})");
                 doxx.add("  cfg. := " + SNARF_NAME + "(x.'server'.0)");
                 doxx.add("  cfg.'client'.'@host'");
                 doxx.add("localhost:9443");
@@ -612,7 +810,7 @@ public class QDLXML {
 
      */
 
-    public static String YAML_IMPORT_NAME = "from_yaml";
+    public static String YAML_IMPORT_NAME = "yaml_in";
 
     public class YAMLImport implements QDLFunction {
         @Override
@@ -627,8 +825,9 @@ public class QDLXML {
 
         @Override
         public Object evaluate(Object[] objects, State state) {
+            String inString = getFileArg(objects[0], state, getName());
             Yaml yaml = new Yaml();
-            Object map = yaml.load((String) objects[0]);
+            Object map = yaml.load(inString);
             QDLStem stem = null;
             if (map instanceof Map) {
                 stem = StemUtility.mapToStem((Map) map);
@@ -650,7 +849,7 @@ public class QDLXML {
         }
     }
 
-    public static String YAML_EXPORT_NAME = "to_yaml";
+    public static String YAML_EXPORT_NAME = "yaml_out";
 
     public class YAMLExport implements QDLFunction {
         @Override
@@ -660,15 +859,39 @@ public class QDLXML {
 
         @Override
         public int[] getArgCount() {
-            return new int[]{1};
+            return new int[]{1, 2};
         }
 
         @Override
         public Object evaluate(Object[] objects, State state) {
+            if (!(objects[0] instanceof QDLStem)) {
+                throw new IllegalArgumentException(getName() + " requires a stem as its first argument");
+            }
             QDLStem stem = (QDLStem) objects[0];
+            boolean exportToFile = false;
+            String fileName = null;
+            if (objects.length == 2) {
+                if (!(objects[1] instanceof String)) {
+                    throw new IllegalArgumentException(getName() + " requires a string as its second argument if present");
+                }
+                exportToFile = true;
+                fileName = (String) objects[1];
+            }
             Yaml yaml = new Yaml();
             JSON json = stem.toJSON();
-            return yaml.dump(json);
+            String out = yaml.dump(json);
+            if (!exportToFile) {
+                return out;
+            }
+            try {
+                QDLFileUtil.writeTextFile(state, fileName, out);
+            } catch (Throwable e) {
+                if (DebugUtil.isEnabled()) {
+                    e.printStackTrace();
+                }
+                throw new QDLException(getName() + " could not write file '" + fileName + "':" + e.getMessage());
+            }
+            return Boolean.TRUE;
         }
 
         List<String> doxx = new ArrayList<>();
@@ -676,14 +899,16 @@ public class QDLXML {
         @Override
         public List<String> getDocumentation(int argCount) {
             if (doxx.isEmpty()) {
-                doxx.add(getName() + "(arg.) - convert a stem to YAML");
-                doxx.add("");
+                doxx.add(getName() + "(arg.{,file_path}) - convert a stem to YAML, writing to file_path if present");
+                doxx.add("If there is no file specified, return the converted YAML as a string.");
             }
             return doxx;
         }
     }
-    public static String HOCON_IMPORT_NAME = "from_hocon";
-    public class HOCONImport implements QDLFunction{
+
+    public static String HOCON_IMPORT_NAME = "hocon_in";
+
+    public class HOCONImport implements QDLFunction {
         @Override
         public String getName() {
             return HOCON_IMPORT_NAME;
@@ -696,26 +921,30 @@ public class QDLXML {
 
         @Override
         public Object evaluate(Object[] objects, State state) {
-            StringReader stringReader = new StringReader((String)objects[0]);
+            String inString = getFileArg(objects[0], state, getName());
+            StringReader stringReader = new StringReader(inString);
             Config conf = ConfigFactory.parseReader(stringReader);
             String rawJSON = conf.root().render(ConfigRenderOptions.concise());
-           // String rawJSON = conf.root().render(ConfigRenderOptions.defaults().setJson(false).setComments(true).setOriginComments(true));
+            // String rawJSON = conf.root().render(ConfigRenderOptions.defaults().setJson(false).setComments(true).setOriginComments(true));
             QDLStem out = new QDLStem();
             out.fromJSON(JSONObject.fromObject(rawJSON));
             return out;
         }
 
         List<String> doxx = new ArrayList<>();
+
         @Override
         public List<String> getDocumentation(int argCount) {
-            if(doxx.isEmpty()){
-                     doxx.add(getName() + "(arg) - convert a HOCON string to a stem");
+            if (doxx.isEmpty()) {
+                doxx.add(getName() + "(arg) - convert a HOCON string to a stem");
             }
             return doxx;
         }
     }
-    public static String HOCON_EXPORT_NAME = "to_hocon";
-    public class HOCONExport implements QDLFunction{
+
+    public static String HOCON_EXPORT_NAME = "hocon_out";
+
+    public class HOCONExport implements QDLFunction {
         @Override
         public String getName() {
             return HOCON_EXPORT_NAME;
@@ -723,23 +952,120 @@ public class QDLXML {
 
         @Override
         public int[] getArgCount() {
-            return new int[]{1};
+            return new int[]{1, 2};
         }
 
         @Override
         public Object evaluate(Object[] objects, State state) {
+            if (!(objects[0] instanceof QDLStem)) {
+                throw new IllegalArgumentException(getName() + " requires a stem as its first argument");
+            }
             QDLStem stem = (QDLStem) objects[0];
+            boolean exportToFile = false;
+            String fileName = null;
+            if (objects.length == 2) {
+                if (!(objects[1] instanceof String)) {
+                    throw new IllegalArgumentException(getName() + " requires a string as its second argument if present");
+                }
+                exportToFile = true;
+                fileName = (String) objects[1];
+            }
             StringReader stringReader = new StringReader(stem.toJSON().toString());
             Config conf = ConfigFactory.parseReader(stringReader);
             //String rawJSON = conf.root().render(ConfigRenderOptions.concise());
-            String rawJSON = conf.root().render(ConfigRenderOptions.defaults().setJson(false).setFormatted(true));
-            return rawJSON;
+            String rawJSON = conf.root().render(ConfigRenderOptions.defaults().setJson(false).setOriginComments(false).setFormatted(true));
+            if (!exportToFile) {
+                return rawJSON;
+            }
+            try {
+                QDLFileUtil.writeTextFile(state, fileName, rawJSON);
+            } catch (Throwable e) {
+                if (DebugUtil.isEnabled()) {
+                    e.printStackTrace();
+                }
+                throw new QDLException(getName() + " could not write file '" + fileName + "':" + e.getMessage());
+            }
+            return Boolean.TRUE;
         }
+
+        List<String> doxx = new ArrayList<>();
 
         @Override
         public List<String> getDocumentation(int argCount) {
-            return null;
+            if (doxx.isEmpty()) {
+                doxx.add(getName() + "(arg.{,file_path} - convert the stem to HOCON. If file_path is present, write to the file.");
+                doxx.add("Otherwise, return the result as a string.");
+            }
+            return doxx;
         }
+    }
+
+    /**
+     * This will look into the object if it is a stem or string and determine if
+     * there is a file to import. This is used by all of the imports. The resulting string
+     * will be the content to import.
+     *
+     * @param object
+     * @param state
+     * @param name
+     * @return
+     */
+    protected String getFileArg(Object object, State state, String name) {
+        String inString;
+        if (object instanceof QDLStem) {
+            QDLStem cfg = (QDLStem) object;
+            if (cfg.containsKey(ARG_FILE)) {
+                String fileName = cfg.getString(ARG_FILE);
+                try {
+                    inString = QDLFileUtil.readTextFile(state, fileName);
+                } catch (Throwable e) {
+                    throw new QDLException(name + " could not read file:" + e.getMessage());
+                }
+            } else {
+                throw new IllegalArgumentException(name + " requires the stem specify a file to import.");
+            }
+        } else {
+            if (!(object instanceof String)) {
+                throw new IllegalArgumentException(name + " requires a string or stem as its argument");
+            }
+            inString = (String) object;
+        }
+        return inString;
+    }
+
+    /**
+     * Replace characters in a string by their XML analogs. result is a legal string for the XML document.
+     *
+     * @param s
+     * @return
+     */
+    protected String xmlEscape(String s) {
+        StringBuffer sb = new StringBuffer();
+        int len = s.length();
+        for (int i = 0; i < len; i++) {
+            char c = s.charAt(i);
+            switch (c) {
+                default:
+                    sb.append(c);
+                    break;
+                case '<':
+                    sb.append("&lt;");
+                    break;
+                case '>':
+                    sb.append("&gt;");
+                    break;
+                case '&':
+                    sb.append("&amp;");
+                    break;
+                case '"':
+                    sb.append("&quot;");
+                    break;
+                case '\'':
+                    sb.append("&apos;");
+                    break;
+            }
+        }
+        return sb.toString();
     }
 }
 /*

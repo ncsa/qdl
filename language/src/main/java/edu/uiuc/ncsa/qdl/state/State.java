@@ -6,7 +6,7 @@ import edu.uiuc.ncsa.qdl.extensions.JavaModule;
 import edu.uiuc.ncsa.qdl.extensions.crypto.CryptoLoader;
 import edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader;
 import edu.uiuc.ncsa.qdl.extensions.http.QDLHTTPLoader;
-import edu.uiuc.ncsa.qdl.extensions.xml.QDLXMLLoader;
+import edu.uiuc.ncsa.qdl.extensions.xml.QDLConvertLoader;
 import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.functions.FTable;
@@ -264,7 +264,7 @@ public class State extends FunctionState implements QDLConstants {
         map.put("http", QDLHTTPLoader.class.getCanonicalName());
         map.put("db", QDLDBLoader.class.getCanonicalName());
         map.put("crypto", CryptoLoader.class.getCanonicalName());
-        map.put("xml", QDLXMLLoader.class.getCanonicalName());
+        map.put("convert", QDLConvertLoader.class.getCanonicalName());
         return map;
     }
 
