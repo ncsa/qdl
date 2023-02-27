@@ -499,31 +499,6 @@ public class QDLConvert {
                     xsw.writeEndElement();
                 }
             }
-/*
-            for (Object key : stem.keySet()) {
-                if (isProperty(key)) {
-                    String k = (String) key;
-                    xsw.writeAttribute(k.substring(ATTRIBUTE_CAPUT.length()), stem.getString(k));
-                    continue;
-                }
-
-
-                if (value instanceof QDLStem) {
-                    // This is just a stem
-                    QDLStem qdlStem = (QDLStem) value;
-                    xsw.writeStartElement(key.toString());
-                    boolean writeCDATA = false;
-                    if (qdlStem.containsKey(CDATA_KEY)) {
-                        writeCDATA = qdlStem.getBoolean(CDATA_KEY);
-                    }
-                    for (Object text : qdlStem.getQDLList().values()) {
-
-                    }
-                    xsw.writeEndElement();
-                }
-
-            }
-*/
         }
 
         List<String> doxx = new ArrayList<>();
