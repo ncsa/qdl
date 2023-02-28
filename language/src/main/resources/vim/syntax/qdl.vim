@@ -92,6 +92,7 @@ syntax keyword qdlKeyword differ_at
 syntax keyword qdlKeyword diff
 syntax keyword qdlKeyword dim
 syntax keyword qdlKeyword dir
+syntax keyword qdlKeyword display
 syntax keyword qdlKeyword encode_b64
 syntax keyword qdlKeyword exclude_keys
 syntax keyword qdlKeyword execute
@@ -100,6 +101,7 @@ syntax keyword qdlKeyword expand
 syntax keyword qdlKeyword file_read
 syntax keyword qdlKeyword file_write
 syntax keyword qdlKeyword floor
+syntax keyword qdlKeyword fork
 syntax keyword qdlKeyword for_each
 syntax keyword qdlKeyword for_keys
 syntax keyword qdlKeyword for_next
@@ -107,7 +109,7 @@ syntax keyword qdlKeyword from_hex
 syntax keyword qdlKeyword from_json
 syntax keyword qdlKeyword from_uri
 syntax keyword qdlKeyword halt
-syntax keyword qdlKeyword has_keys
+syntax keyword qdlKeyword has_key
 syntax keyword qdlKeyword has_value
 syntax keyword qdlKeyword hash
 syntax keyword qdlKeyword head
