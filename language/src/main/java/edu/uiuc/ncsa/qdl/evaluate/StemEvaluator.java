@@ -85,8 +85,8 @@ public class StemEvaluator extends AbstractEvaluator {
     public static final String LIST_KEYS = "list_keys";
     public static final int LIST_KEYS_TYPE = 102 + STEM_FUNCTION_BASE_VALUE;
 
-    public static final String HAS_KEYS = "has_keys";
-    public static final int HAS_KEYS_TYPE = 103 + STEM_FUNCTION_BASE_VALUE;
+    public static final String HAS_KEY = "has_key";
+    public static final int HAS_KEY_TYPE = 103 + STEM_FUNCTION_BASE_VALUE;
 
 
     public static final String INCLUDE_KEYS = "include_keys";
@@ -121,6 +121,10 @@ public class StemEvaluator extends AbstractEvaluator {
 
     public static final String REMAP = "remap";
     public static final int REMAP_TYPE = 114 + STEM_FUNCTION_BASE_VALUE;
+
+     // Note that there are deprecated in favor of has_key.
+    public static final String HAS_KEYS = "has_keys";
+    public static final int HAS_KEYS_TYPE = 115 + STEM_FUNCTION_BASE_VALUE;
 
     public static final String IS_LIST = "is_list";
     public static final int IS_LIST_TYPE = 204 + STEM_FUNCTION_BASE_VALUE;
@@ -157,6 +161,7 @@ public class StemEvaluator extends AbstractEvaluator {
     public String[] getFunctionNames() {
         if (fNames == null) {
             fNames = new String[]{
+                    HAS_KEYS,
                     DISPLAY,
                     DIFF,
                     STAR,
@@ -177,7 +182,7 @@ public class StemEvaluator extends AbstractEvaluator {
                     EXCLUDE_KEYS,
                     LIST_KEYS,
                     ALL_KEYS,
-                    HAS_KEYS,
+                    HAS_KEY,
                     INCLUDE_KEYS,
                     RENAME_KEYS,
                     SHUFFLE,
@@ -195,6 +200,8 @@ public class StemEvaluator extends AbstractEvaluator {
     @Override
     public int getType(String name) {
         switch (name) {
+            case HAS_KEYS:
+                return HAS_KEYS_TYPE;
             case DISPLAY:
                 return DISPLAY_TYPE;
             case DIFF:
@@ -227,8 +234,8 @@ public class StemEvaluator extends AbstractEvaluator {
                 return LIST_KEYS_TYPE;
             case ALL_KEYS:
                 return ALL_KEYS_TYPE;
-            case HAS_KEYS:
-                return HAS_KEYS_TYPE;
+            case HAS_KEY:
+                return HAS_KEY_TYPE;
             case INCLUDE_KEYS:
                 return INCLUDE_KEYS_TYPE;
             case EXCLUDE_KEYS:
@@ -284,6 +291,9 @@ public class StemEvaluator extends AbstractEvaluator {
 
     public boolean evaluate2(Polyad polyad, State state) {
         switch (polyad.getName()) {
+            case HAS_KEYS:
+                doHasKeys(polyad,state);
+                return true;
             case DISPLAY:
                 doDisplay(polyad, state);
                 return true;
@@ -330,8 +340,8 @@ public class StemEvaluator extends AbstractEvaluator {
             case ALL_KEYS:
                 doIndices(polyad, state);
                 return true;
-            case HAS_KEYS:
-                doHasKeys(polyad, state);
+            case HAS_KEY:
+                doHasKey(polyad, state);
                 return true;
             case INCLUDE_KEYS:
                 doIncludeKeys(polyad, state);
@@ -485,9 +495,9 @@ public class StemEvaluator extends AbstractEvaluator {
           return;
         }*/
         Map map = new HashMap<>();
-            for (Object key : stem.keySet()) {
-                map.put(key, stem.get(key));
-            }
+        for (Object key : stem.keySet()) {
+            map.put(key, stem.get(key));
+        }
 
         List<String> list = StringUtils.formatMap(map,
                 keySubset,
@@ -520,45 +530,46 @@ public class StemEvaluator extends AbstractEvaluator {
         polyad.setResultType(STEM_TYPE);
 
     }
+
     /*
     Make a recursive version of this to format stems?  Problem is that truncate in StringUtils is designed to strip
     out embedded linefeeds, hence the formatting gets munged. Probably need another case for this.
      */
-       protected String rFormatStem(QDLStem stem,
-                                  List<String> keySubset,
-                                  boolean sortKeys,
-                                  boolean multilineMode,
-                                  int indent,
-                                  int width){
-            Map map = new HashMap<>();
-                for (Object key : stem.keySet()) {
-                    Object vvv = stem.get(key);
-                    if(vvv instanceof QDLStem){
-                        map.put(key, rFormatStem((QDLStem) vvv, keySubset, sortKeys, multilineMode, indent, width));
-                    }else{
-                        map.put(key, vvv);
-                    }
-                }
+    protected String rFormatStem(QDLStem stem,
+                                 List<String> keySubset,
+                                 boolean sortKeys,
+                                 boolean multilineMode,
+                                 int indent,
+                                 int width) {
+        Map map = new HashMap<>();
+        for (Object key : stem.keySet()) {
+            Object vvv = stem.get(key);
+            if (vvv instanceof QDLStem) {
+                map.put(key, rFormatStem((QDLStem) vvv, keySubset, sortKeys, multilineMode, indent, width));
+            } else {
+                map.put(key, vvv);
+            }
+        }
 
-            List<String> list = StringUtils.formatMap(map,
-                    keySubset,
-                    sortKeys,
-                    multilineMode,
-                    indent,
-                    width);
-           String x = "";
-                      boolean firstPass = true;
-                      for (String y : list) {
-                          if (firstPass) {
-                              x = y;
-                              firstPass = false;
-                          } else {
-                              x = x + "\n" + y;
-                          }
-                      }
-                return x;
+        List<String> list = StringUtils.formatMap(map,
+                keySubset,
+                sortKeys,
+                multilineMode,
+                indent,
+                width);
+        String x = "";
+        boolean firstPass = true;
+        for (String y : list) {
+            if (firstPass) {
+                x = y;
+                firstPass = false;
+            } else {
+                x = x + "\n" + y;
+            }
+        }
+        return x;
 
-       }
+    }
 
     /*
 
@@ -1813,40 +1824,93 @@ public class StemEvaluator extends AbstractEvaluator {
     }
 
     /**
-     * has_keys(stem. var | keysList.) returns a var or  boolean stem if the key in the list is a key in the stem
-     *
+     * This is not left conformable and any uses should be removed in favor of {@link #doHasKey(Polyad, State)}
+     * @deprecated
      * @param polyad
      * @param state
      */
     protected void doHasKeys(Polyad polyad, State state) {
+          if (polyad.isSizeQuery()) {
+              polyad.setResult(new int[]{2});
+              polyad.setEvaluated(true);
+              return;
+          }
+          if (polyad.getArgCount() < 2) {
+              throw new MissingArgException(HAS_KEYS + " requires 2 arguments", polyad.getArgCount() == 1 ? polyad.getArgAt(0) : polyad);
+          }
+          if (2 < polyad.getArgCount()) {
+              throw new ExtraArgException(HAS_KEYS + " requires 2 arguments", polyad.getArgAt(2));
+          }
+          Object arg = polyad.evalArg(0, state);
+          checkNull(arg, polyad.getArgAt(0));
+          if (!isStem(arg)) {
+              throw new BadArgException(HAS_KEYS + " command requires a stem as its first argument.", polyad.getArgAt(0));
+          }
+          QDLStem target = (QDLStem) arg;
+          polyad.evalArg(1, state);
+          Object arg2 = polyad.getArgAt(1).getResult();
+          checkNull(arg2, polyad.getArgAt(1));
+
+          if (!isStem(arg2)) {
+              polyad.setResult(target.containsKey(arg2.toString()));
+              polyad.setResultType(BOOLEAN_TYPE);
+              polyad.setEvaluated(true);
+              return;
+          }
+          QDLStem result = target.hasKeys((QDLStem) arg2);
+          polyad.setResult(result);
+          polyad.setResultType(STEM_TYPE);
+          polyad.setEvaluated(true);
+      }
+    /**
+     * has_keys(key | keysList., arg.) returns left conformable result if the key or keylist. are keys in the arg.
+     *
+     * @param polyad
+     * @param state
+     */
+    protected void doHasKey(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
         if (polyad.getArgCount() < 2) {
-            throw new MissingArgException(HAS_KEYS + " requires 2 arguments", polyad.getArgCount() == 1 ? polyad.getArgAt(0) : polyad);
+            throw new MissingArgException(HAS_KEY + " requires 2 arguments", polyad.getArgCount() == 1 ? polyad.getArgAt(0) : polyad);
         }
         if (2 < polyad.getArgCount()) {
-            throw new ExtraArgException(HAS_KEYS + " requires 2 arguments", polyad.getArgAt(2));
+            throw new ExtraArgException(HAS_KEY + " requires 2 arguments", polyad.getArgAt(2));
         }
-        Object arg = polyad.evalArg(0, state);
-        checkNull(arg, polyad.getArgAt(0));
-        if (!isStem(arg)) {
-            throw new BadArgException(HAS_KEYS + " command requires a stem as its first argument.", polyad.getArgAt(0));
+        Object arg0 = polyad.evalArg(0, state);
+        checkNull(arg0, polyad.getArgAt(0));
+        boolean isScalar = false;
+        QDLStem keyList = null;
+        if (isStem(arg0)) {
+            keyList = (QDLStem) arg0;
+        } else {
+            isScalar = true;
         }
-        QDLStem target = (QDLStem) arg;
-        polyad.evalArg(1, state);
-        Object arg2 = polyad.getArgAt(1).getResult();
+        QDLStem argStem = null;
+        Object arg2 = polyad.evalArg(1, state);
         checkNull(arg2, polyad.getArgAt(1));
+        if (arg2 instanceof QDLStem) {
+            argStem = (QDLStem) arg2;
+        }else{
+            throw new QDLExceptionWithTrace(HAS_KEY + " requires a stem as its second argument", polyad.getArgAt(1));
+        }
 
-        if (!isStem(arg2)) {
+ /*       if (!isStem(arg2)) {
             polyad.setResult(target.containsKey(arg2.toString()));
             polyad.setResultType(BOOLEAN_TYPE);
             polyad.setEvaluated(true);
             return;
+        }*/
+        if (isScalar) {
+            polyad.setResult(argStem.containsKey(arg0));
+            polyad.setResultType(BOOLEAN_TYPE);
+            polyad.setEvaluated(true);
+            return;
         }
-        QDLStem result = target.hasKeys((QDLStem) arg2);
+        QDLStem result = argStem.hasKeys(keyList);
         polyad.setResult(result);
         polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);

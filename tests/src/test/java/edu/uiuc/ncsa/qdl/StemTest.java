@@ -564,11 +564,11 @@ public class StemTest extends AbstractQDLTester {
         }
         vStack.put(new VThing(new XKey("sourceStem."), sourceStem));
         vStack.put(new VThing(new XKey("keys."), keys));
-        Polyad polyad = new Polyad(StemEvaluator.HAS_KEYS);
+        Polyad polyad = new Polyad(StemEvaluator.HAS_KEY);
         VariableNode arg = new VariableNode("sourceStem.");
         VariableNode arg2 = new VariableNode("keys.");
-        polyad.addArgument(arg);
         polyad.addArgument(arg2);
+        polyad.addArgument(arg);
         polyad.evaluate(state);
         QDLStem result = (QDLStem) polyad.getResult();
         assert result.size() == count * 2;
@@ -606,11 +606,11 @@ public class StemTest extends AbstractQDLTester {
         }
         vStack.put(new VThing(new XKey("sourceStem."), sourceStem));
         vStack.put(new VThing(new XKey("keys."), keys));
-        Polyad polyad = new Polyad(StemEvaluator.HAS_KEYS);
+        Polyad polyad = new Polyad(StemEvaluator.HAS_KEY);
         VariableNode arg = new VariableNode("sourceStem.");
         ConstantNode arg2 = new ConstantNode(targetKey, Constant.STRING_TYPE);
-        polyad.addArgument(arg);
         polyad.addArgument(arg2);
+        polyad.addArgument(arg);
         polyad.evaluate(state);
         assert (Boolean) polyad.getResult();
     }

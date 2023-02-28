@@ -290,12 +290,11 @@ Remember that strings are scalars.
 See also: keys(), var_type(), constants('var_type')]]>
         </body>
     </entry>
-    <entry id="has_keys">
+    <entry id="has_key">
         <body>
- <![CDATA[has_keys(target., key_list.) - returns a boolean list that is the same size as
-                               key_list. and has a true or false if that entry
-                               is a key in target.
-See also: list_keys]]>
+ <![CDATA[has_key(key | key_list., arg. ) - returns a left conformable result if the key or list
+      of keys are in the arg.
+See also: has_value, list_keys]]>
         </body>
     </entry>
     <entry id="include_keys">

@@ -1120,13 +1120,37 @@ public class ParserTest extends AbstractQDLTester {
      * @throws Throwable
      */
 
-    public void testHasKeys() throws Throwable {
+    public void testHasKey() throws Throwable {
 
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "var. := random(5);");
         addLine(script, "w. := n(10);");
-        addLine(script, "z. := has_keys(var., w.);");
+        addLine(script, "z. := has_key(w., var.);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        // so the first 5 entries are true, the next 5 are false.
+        for (int i = 0; i < 5; i++) {
+            assert getBooleanValue("z." + i, state);
+        }
+
+        for (int i = 5; i < 10; i++) {
+            assert !getBooleanValue("z." + i, state);
+        }
+
+    }
+
+    /**
+     * This tests the old has_keys function which is not left conformable. There might
+     * be scripts that use it, so it is retained here as a regression check.
+     * @throws Throwable
+     */
+    public void testHasKeys() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "var. := random(5);");
+        addLine(script, "w. := n(10);");
+        addLine(script, "z. := has_keys(var.,w.);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         // so the first 5 entries are true, the next 5 are false.
