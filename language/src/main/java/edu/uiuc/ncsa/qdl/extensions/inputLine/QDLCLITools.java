@@ -27,8 +27,9 @@ public class QDLCLITools {
         }
 
         /*
-              module_import(module_load(info().lib.line_in, 'java'))
-          r. := input#init(['-foo','bar','-woof','arf',3,5])
+              module_import(module_load(info().lib.cli, 'java'))
+            cli#to_stem(['-foo','bar','-woof','arf',3,5])
+
               has_keys('-woof', r.)
                 has_keys('-foo', r.)
 
@@ -50,12 +51,14 @@ public class QDLCLITools {
                 // two cases, arguyment is a stem or argument is a switch marker
                 if (objects[0] instanceof String) {
                     marker = (String) objects[0];
+                    aa = state.getScriptArgs();
                 } else {
                     if (objects[0] instanceof QDLStem) {
                         inStem = (QDLStem) objects[0];
                     } else {
                         throw new IllegalArgumentException(getName() + ": requires a stem or string as its argument");
                     }
+                    aa = getObjects(inStem);
                 }
             }
             if (objects.length == 2) {
@@ -74,17 +77,9 @@ public class QDLCLITools {
                 } else {
                     throw new IllegalArgumentException(getName() + " requires a string as its second argument");
                 }
+                aa = getObjects(inStem);
             }
-            if (inStem != null) {
-                aa = new Object[inStem.size()];
-                // fill up aa;
-                int index = 0;
-                for (Object ooo : inStem.getQDLList().orderedKeys()) {
-                    aa[index] = inStem.getQDLList().get(index);
-                    index++;
-                }
-            }
-            for (int i = 0; i < aa.length; i++) {
+             for (int i = 0; i < aa.length; i++) {
                 Object next = aa[i];
                 if (next instanceof String && next.toString().startsWith(marker)) {
                     String nextArg = (String) next;
@@ -106,7 +101,19 @@ public class QDLCLITools {
 
             return out;
         }
-       List<String> doxx = new ArrayList<>();
+
+        private Object[] getObjects(QDLStem inStem) {
+            Object[] aa;
+            aa = new Object[inStem.size()];
+            // fill up aa;
+            int index = 0;
+            for (Object ooo : inStem.getQDLList().orderedKeys()) {
+                aa[index++] = inStem.getQDLList().get((Long)ooo);
+            }
+            return aa;
+        }
+
+        List<String> doxx = new ArrayList<>();
         @Override
         public List<String> getDocumentation(int argCount) {
             if(doxx.isEmpty()){
@@ -130,10 +137,9 @@ public class QDLCLITools {
                 doxx.add("3.141592658979");
                 doxx.add("Notes: * switches without arguments are given a default value of true, e.g. -v above.");
                 doxx.add("       * switches with no arguments should be grouped at the end of the line so they are not");
-                doxx.add("           given the next argument as their value, or followed immediately by other switches.");
+                doxx.add("         given the next argument as their value, or followed immediately by other switches.");
             }
             return doxx;
         }
     }
-
 }

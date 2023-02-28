@@ -266,7 +266,7 @@ public class State extends FunctionState implements QDLConstants {
         map.put("db", QDLDBLoader.class.getCanonicalName());
         map.put("crypto", CryptoLoader.class.getCanonicalName());
         map.put("convert", QDLConvertLoader.class.getCanonicalName());
-        map.put("line_in", QDLCLIToolsLoader.class.getCanonicalName());
+        map.put("cli", QDLCLIToolsLoader.class.getCanonicalName());
         return map;
     }
 
