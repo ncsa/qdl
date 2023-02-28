@@ -7,11 +7,11 @@
     <parent>
         <groupId>edu.uiuc.ncsa.qdl</groupId>
         <artifactId>qdl</artifactId>
-        <version>1.4-QDL-SNAPSHOT</version>
+        <version>1.4.9.0</version>
     </parent>
     
     <artifactId>website</artifactId>
-    <version>1.4-QDL-SNAPSHOT</version>
+    <version>1.4.9.0</version>
 
     <name>NCSA QDL Website</name>
     <url>http://qdl.github.io/</url>
