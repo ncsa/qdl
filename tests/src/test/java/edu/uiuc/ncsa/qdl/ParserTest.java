@@ -469,7 +469,7 @@ public class ParserTest extends AbstractQDLTester {
         interpreter.execute(script.toString());
         script = new StringBuffer();
         addLine(script, "z. := mm(a.,b.);");
-        addLine(script, "q := is_defined(c.);"); // double check internal state stays there
+        addLine(script, "q := ∃c.;"); // double check internal state stays there
         interpreter.execute(script.toString());
 
 
@@ -1024,7 +1024,7 @@ public class ParserTest extends AbstractQDLTester {
         String slash = "\\";
         addLine(script, "a:='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\\n" + //alphanumeric
                 "  ~`!@#$%^&*()[]{}<>\\\\/\\'\"-_=+|;:,.?\\n" + // other ASCII symbols
-                "  ¬¯·×÷⁺→∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧≁⊗⊢∈∉∩∪∆\\n" + // unicode
+                "  ¬¯·×÷⁺→∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧≁⊗⊢∈∉∑2a0b∃∃∩∪∆\\n" + // unicode
                 "  ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω';" // Greek
         );
         addLine(script, "say('\\nprinting all base characters with say:');");
@@ -1121,7 +1121,6 @@ public class ParserTest extends AbstractQDLTester {
      */
 
     public void testHasKey() throws Throwable {
-
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "var. := random(5);");
@@ -1133,13 +1132,31 @@ public class ParserTest extends AbstractQDLTester {
         for (int i = 0; i < 5; i++) {
             assert getBooleanValue("z." + i, state);
         }
-
         for (int i = 5; i < 10; i++) {
             assert !getBooleanValue("z." + i, state);
         }
-
     }
 
+    /**
+     * Same as {@link #testHasKey} but using unicode character for it.
+     * @throws Throwable
+     */
+    public void testHasKey2() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "var. := random(5);");
+        addLine(script, "w. := n(10);");
+        addLine(script, "z. := w. ∑ var.;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        // so the first 5 entries are true, the next 5 are false.
+        for (int i = 0; i < 5; i++) {
+            assert getBooleanValue("z." + i, state);
+        }
+        for (int i = 5; i < 10; i++) {
+            assert !getBooleanValue("z." + i, state);
+        }
+    }
     /**
      * This tests the old has_keys function which is not left conformable. There might
      * be scripts that use it, so it is retained here as a regression check.

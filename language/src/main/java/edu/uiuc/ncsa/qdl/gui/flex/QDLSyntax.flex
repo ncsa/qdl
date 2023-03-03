@@ -1,5 +1,5 @@
 /*
- * Generated on 8/11/22, 8:01 AM
+ * Generated on 3/3/23, 10:01 AM
  */
 package edu.uiuc.ncsa.qdl.gui.flex;
 
@@ -243,13 +243,16 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 
 	/* Keywords */
 	"assert" |
+"block" |
 "body" |
 "catch" |
 "define" |
 "do" |
 "else" |
 "if" |
+"local" |
 "module" |
+"switch" |
 "then" |
 "try" |
 "while"		{ addToken(Token.RESERVED_WORD); }
@@ -272,12 +275,11 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 	"abs" |
 "acos" |
 "acosh" |
-"append" |
+"args" |
 "asin" |
 "asinh" |
 "atan" |
 "atanh" |
-"axis" |
 "box" |
 "break" |
 "cb_exists" |
@@ -295,12 +297,14 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "date_iso" |
 "date_ms" |
 "debug" |
-"decode_b64" |
+"decode" |
 "detokenize" |
+"diff" |
 "differ_at" |
 "dim" |
 "dir" |
-"encode_b64" |
+"display" |
+"encode" |
 "exclude_keys" |
 "execute" |
 "exp" |
@@ -310,15 +314,19 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "floor" |
 "for_each" |
 "for_keys" |
+"for_lines" |
 "for_next" |
-"from_hex" |
+"fork" |
 "from_json" |
 "from_uri" |
+"gcd" |
 "halt" |
+"has_key" |
 "has_keys" |
 "has_value" |
 "hash" |
 "head" |
+"i" |
 "identity" |
 "include_keys" |
 "index_of" |
@@ -330,25 +338,31 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "is_defined" |
 "is_function" |
 "is_list" |
+"is_null" |
+"jload" |
 "join" |
 "keys" |
+"kill" |
+"lcm" |
 "list_copy" |
 "list_keys" |
-"list_starts_with" |
-"list_subset" |
 "ln" |
 "log" |
 "log_entry" |
 "mask" |
+"max" |
+"min" |
 "mod" |
 "module_import" |
 "module_load" |
 "module_path" |
+"module_remove" |
 "n" |
 "nroot" |
 "numeric_digits" |
 "os_env" |
 "pi" |
+"pick" |
 "print" |
 "query" |
 "raise_error" |
@@ -373,19 +387,19 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "sin" |
 "sinh" |
 "size" |
+"sleep" |
+"sort" |
+"star" |
 "starts_with" |
-"subset" |
+"sublist" |
 "substring" |
 "tail" |
 "tan" |
 "tanh" |
 "to_boolean" |
-"to_hex" |
 "to_json" |
-"to_list" |
 "to_lower" |
 "to_number" |
-"to_set" |
 "to_string" |
 "to_upper" |
 "to_uri" |
@@ -395,12 +409,13 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "unbox" |
 "union" |
 "unique" |
+"values" |
 "var_type" |
-"vdecode" |
-"vencode" |
 "vfs_mount" |
 "vfs_unmount" |
-"ws_macro"		{ addToken(Token.FUNCTION); }
+"ws_macro" |
+"π" |
+"τ"		{ addToken(Token.FUNCTION); }
 
 	{BooleanLiteral}			{ addToken(Token.LITERAL_BOOLEAN); }
 
@@ -456,9 +471,12 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "÷" |
 "⁺" |
 "→" |
+"∃" |
+"∄" |
 "∆" |
 "∈" |
 "∉" |
+"∑" |
 "∧" |
 "∨" |
 "∩" |
@@ -476,7 +494,8 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "⌈" |
 "⌊" |
 "⟦" |
-"⟧"		{ addToken(Token.OPERATOR); }
+"⟧" |
+"⨋"		{ addToken(Token.OPERATOR); }
 
 	/* Numbers */
 	{IntegerLiteral}				{ addToken(Token.LITERAL_NUMBER_DECIMAL_INT); }

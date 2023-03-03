@@ -132,6 +132,9 @@ public class SystemEvaluator extends AbstractEvaluator {
     public static final String MODULE_LOAD = "module_load";
     public static final int LOAD_MODULE_TYPE = 205 + SYSTEM_BASE_VALUE;
 
+    public static final String JAVA_MODULE_LOAD = "jload";
+    public static final int JAVA_MODULE_LOAD_TYPE = 214 + SYSTEM_BASE_VALUE;
+
     public static final String MODULE_PATH = "module_path";
     public static final int MODULE_PATH_TYPE = 211 + SYSTEM_BASE_VALUE;
 
@@ -205,6 +208,7 @@ public class SystemEvaluator extends AbstractEvaluator {
     public String[] getFunctionNames() {
         if (fNames == null) {
             fNames = new String[]{
+                    JAVA_MODULE_LOAD,
                     KILL_PROCESS,
                     FORK,
                     SLEEP,
@@ -255,6 +259,8 @@ public class SystemEvaluator extends AbstractEvaluator {
     @Override
     public int getType(String name) {
         switch (name) {
+            case JAVA_MODULE_LOAD:
+                return JAVA_MODULE_LOAD_TYPE;
             case KILL_PROCESS:
                 return KILL_PROCESS_TYPE;
             case FORK:
@@ -365,6 +371,9 @@ public class SystemEvaluator extends AbstractEvaluator {
         boolean printIt = false;
 
         switch (polyad.getName()) {
+            case JAVA_MODULE_LOAD:
+                doJLoad(polyad, state);
+                return true;
             case KILL_PROCESS:
                 doKillProcess(polyad, state);
                 return true;
@@ -515,6 +524,32 @@ public class SystemEvaluator extends AbstractEvaluator {
                 return true;
         }
         return false;
+    }
+
+    /**
+     * This is just module_import(module_load(x, 'java')). It happens so much we need an idiom.
+     * @param polyad
+     * @param state
+     */
+    private void doJLoad(Polyad polyad, State state) {
+        if (polyad.isSizeQuery()) {
+               polyad.setResult(new int[]{1});
+               polyad.setEvaluated(true);
+               return;
+           }
+       Object arg = polyad.evalArg(0, state);
+        Polyad module_load = new Polyad(MODULE_LOAD);
+        module_load.addArgument(new ConstantNode(arg));
+        module_load.addArgument(new ConstantNode(MODULE_TYPE_JAVA));
+        module_load.evaluate(state);
+        Polyad module_import = new Polyad(MODULE_IMPORT);
+        module_import.addArgument(new ConstantNode(module_load.getResult()));
+        module_import.evaluate(state);
+        polyad.setEvaluated(true);
+        polyad.setResult(module_import.getResult());
+        polyad.setResultType(module_import.getResultType());
+        return;
+
     }
 
     protected void doKillProcess(Polyad polyad, State state) {

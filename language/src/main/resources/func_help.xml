@@ -290,7 +290,7 @@ Remember that strings are scalars.
 See also: keys(), var_type(), constants('var_type')]]>
         </body>
     </entry>
-    <entry id="has_key">
+    <entry id="has_key" alt="∑">
         <body>
  <![CDATA[has_key(key | key_list., arg. ) - returns a left conformable result if the key or list
       of keys are in the arg.
@@ -1215,14 +1215,14 @@ returns the integer that can be used in the file_read function.
 See also: info()]]>
         </body>
     </entry>
-    <entry id="is_defined">
+    <entry id="is_defined" alt="∃">
         <body>
  <![CDATA[is_defined(var) - a boolean-valued function that tells you if a given variable
                   has been named.
 Note: the argument is not a string, it is the actual variable.]]>
         </body>
     </entry>
-    <entry id="is_function">
+    <entry id="is_function" alt="∃">
         <body>
  <![CDATA[is_function(name) - checks if the value of name (it is a string) is defined.
 is_function(name, arg_count) checks if a function given in name with the number
@@ -2403,10 +2403,14 @@ Standard    Unicode   ALT   escape code    What is it
 +              ⁺       +    \u207a         unary plus
 assert[][]     ⊨       a    \u22a8         assert
 ->             →       d    \u2192         lambda function
+i              ∃            \u2203         is_defined, is_function
+I              ∄            \u2204         ¬is_defined, ¬is_function
+h              ∑            \u2211         has_key
+H              ⨋            \u2a0b         ¬has_key
 %              ∆       D    \u2206         symmetric difference operator
-               ∈       e    \u2208         is member of
-               ∉       E    \u2209         is *not* member of
-/\             ∩       i    \u2229         set intersection
+e              ∈       e    \u2208         is member of
+E              ∉       E    \u2209         is *not* member of
+/\             ∩       U    \u2229         set intersection
 {}             ∅       n    \u2205         null set
 \/             ∪       u    \u222a         set union
 &&             ∧       &    \u2227         logical and
@@ -4008,14 +4012,14 @@ And each key is separated by |'s
     |    |    |    |    |    |    |    |    |    |    |¯   |≡   |
 
   Q |  W |  E  |  R |  T |  Y |  U |  I |  O |  P |  { |  } |  | |
-    |    |  ∉  |    |    |    |    |    |    |    |  ⟦ |  ⟧ |  ∨ |
+    |    |  ∉  |    |    |    |  ∩ |  ∄ |    |    |  ⟦ |  ⟧ |  ∨ |
 q   |w   |e    |r   |t   |y   |u   |i   |o   |p   |[   |]   |\   |
-    |    |∈    |    |τ   |    |∪   |∩   |    |π   |    |   | ≠  |
+    |    |∈    |    |τ   |    |∪   |∃   |    |π   |    |   | ≠  |
 
   A |  S |  D |  F |  G |  H |  J |  K |  L |  : |  " |
-    |    |  ∆ |    |    |    |    |    |    |  ≔ |  ≕ |
+    |    |  ∆ |    |    |  ⨋ |    |    |    |  ≔ |  ≕ |
 a   |s   |d   |f   |g   |h   |j   |k   |l   |;   |'   |
-⊨   |⊢   |→   |    |    |    |    |⌈   |⌊   |    |    |
+⊨   |⊢   |→   |    |    |∑   |    |⌈   |⌊   |    |    |
 
   Z |  X |  C |  V |  B |  N |  M |  < |  > |  ? |
     |    |    |    |    |    |    |  ≤ |  ≥ |  ≈ |
@@ -4598,6 +4602,95 @@ See also: fork]]>
 
      </entry>
 
+    <entry id="jload">
+       <body>
+  <![CDATA[jload(class_name) - this is a convenience method to load a single
+class with the default alias. The result is the name of the alias. It
+is equivalent to
+  module_import(module_load(class_name,'java'))]]>
+       </body>
+       <example>
+   <![CDATA[E.g. to load the http module
+   jload(info().lib.http)
+http]]>
+        </example>
+    </entry>
+    <entry id="kill">
+       <body>
+  <![CDATA[kill(pid) - kill a thread that was created with the fork function.]]>
+       </body>
+       <example>
+   <![CDATA[When forking a script, you will get a process id back, so
+
+   fork('/path/to/script')
+42
+
+If you need to stop this thread for any reason, issue
+   kill(42)
+true]]>
+        </example>
+    </entry>
+    <entry id="∃">
+         <body>
+    <![CDATA[Alias  for is_defined (if monadic) or is_function (if dyadic).
+
+See also: is_defined, is_function, ∄]]>
+         </body>
+         <example>
+     <![CDATA[Assuming nothing is defined in the workspace
+   ∃a ; // is the variable a defined?
+false
+   ∄a; //  is the variable a undefined?
+true
+   f∃2; // is the function f with 2 arguments defined?
+false
+   f∃null; // equivalent to is_function(f), checks if there are *any* functions named f
+false
+Assuming you defined a := 2, f(x)->x^2, you could issue
+  f∃1 ∧ 0<a ? f(a) : 0
+4
+i.e., if f exists with one argument and a is positive, return f(a), otherwise return 0.
+Writing this without special characters would be
+  is_function(f,q) && 0 < a?f(a):0]]>
+          </example>
+      </entry>
+    <entry id="∄">
+       <body>
+  <![CDATA[Alias for !is_defined (monadic case) or !is_function (dyadic case).
+
+ See also: is_defined, is_function, ∃ ]]>
+       </body>
+    </entry>
+    <entry id="∑">
+       <body>
+  <![CDATA[Alias for has_key. This is the analog of ∈ (has value) for keys.
+For comparison, checking values:
+   [1,2]∈ [-3;3]*2+1
+[true,false]
+I.e., the stem on the right contains the value of, but not 2.
+Cf. checking keys:
+   [1,2] ∑ [-3;3]*2+1
+[true,true]
+I.e., the stem on the right has keys (indices) 1 and 2.
+See also: has_key, ⨋  ]]>
+       </body>
+       <example>
+   <![CDATA[
+   2∑[;5] ; // check is the list has an element whose index is 2
+ true
+    'a' ∑ [;5]
+false
+    'a' ⨋ [;5]; // 'a' is not a key in this stem
+true]]>
+        </example>
+    </entry>
+    <entry id="⨋">
+         <body>
+    <![CDATA[Alias for !has_key(keys., arg.)
+See also: has_key, ∑.
+    ]]>
+         </body>
+      </entry>
     <!--
     <entry id="">
        <body>

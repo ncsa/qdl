@@ -328,6 +328,18 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitF_ref(QDLParserParser.F_refContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code isDefinedDyadicExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterIsDefinedDyadicExpression(QDLParserParser.IsDefinedDyadicExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code isDefinedDyadicExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitIsDefinedDyadicExpression(QDLParserParser.IsDefinedDyadicExpressionContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code functions}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
@@ -604,6 +616,18 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitVariables(QDLParserParser.VariablesContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code containsKey}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterContainsKey(QDLParserParser.ContainsKeyContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code containsKey}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitContainsKey(QDLParserParser.ContainsKeyContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code assignment}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
@@ -771,6 +795,18 @@ public interface QDLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitAddExpression(QDLParserParser.AddExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code isDefinedExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterIsDefinedExpression(QDLParserParser.IsDefinedExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code isDefinedExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitIsDefinedExpression(QDLParserParser.IsDefinedExpressionContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code extract2}
 	 * labeled alternative in {@link QDLParserParser#expression}.

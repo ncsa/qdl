@@ -77,7 +77,10 @@ public class OpEvaluator extends AbstractEvaluator {
     public static final String EPSILON = "∈";
     public static final String EPSILON_NOT = "∉";
     public static final String IS_A = "<<";
-
+    public static final String IS_DEFINED = "∃";
+    public static final String IS_NOT_DEFINED = "∄";
+    public static final String CONTAINS_KEY = "∑"; //2203
+    public static final String NOT_CONTAINS_KEY = "⨋"; //220c
 
     public static final int ASSIGNMENT_VALUE = 10;
     public static final int PLUS_VALUE = 100;
@@ -109,11 +112,17 @@ public class OpEvaluator extends AbstractEvaluator {
     public static final int EPSILON_VALUE = 222;
     public static final int EPSILON_NOT_VALUE = 223;
     public static final int IS_A_VALUE = 224;
+    public static final int IS_DEFINED_VALUE = 225;
+    public static final int IS_NOT_DEFINED_VALUE = 226;
+    public static final int CONTAINS_KEY_VALUE = 227;
+    public static final int NOT_CONTAINS_KEY_VALUE = 228;
 
     /**
      * All Math operators. These are used in function references.
      */
     public static String[] ALL_MATH_OPS = new String[]{
+            CONTAINS_KEY, NOT_CONTAINS_KEY,
+            IS_DEFINED, IS_NOT_DEFINED,
             EPSILON, EPSILON_NOT, IS_A,
             TO_SET, TO_SET2,
             FLOOR, CEILING,
@@ -145,10 +154,10 @@ public class OpEvaluator extends AbstractEvaluator {
             REGEX_MATCH, REGEX_MATCH2};
 
     public static ArrayList<String> ALL_MONADS = new ArrayList<>(Arrays.asList(new String[]{
-            NOT, NOT2, MINUS, MINUS2, PLUS, PLUS2, TILDE, PLUS_PLUS, MINUS_MINUS
+            NOT, NOT2, MINUS, MINUS2, PLUS, PLUS2, TILDE, PLUS_PLUS, MINUS_MINUS, IS_DEFINED, IS_NOT_DEFINED
     }));
     public static ArrayList<String> ONLY_MONADS = new ArrayList<>(Arrays.asList(new String[]{
-            NOT, NOT2, PLUS_PLUS, MINUS_MINUS, FLOOR, CEILING, TO_SET, TO_SET2
+            NOT, NOT2, PLUS_PLUS, MINUS_MINUS, FLOOR, CEILING, TO_SET, TO_SET2, IS_DEFINED, IS_NOT_DEFINED
     }));
     int[] monadOnlyArg = new int[]{1};
     int[] dyadOnlyArg = new int[]{2};
@@ -232,6 +241,14 @@ public class OpEvaluator extends AbstractEvaluator {
      */
     public int getType(String oo) {
         switch (oo) {
+            case CONTAINS_KEY:
+                return CONTAINS_KEY_VALUE;
+            case NOT_CONTAINS_KEY:
+                return NOT_CONTAINS_KEY_VALUE;
+            case IS_DEFINED:
+                return IS_NOT_DEFINED_VALUE;
+            case IS_NOT_DEFINED:
+                return IS_NOT_DEFINED_VALUE;
             case IS_A:
                 return IS_A_VALUE;
             case EPSILON:
@@ -327,6 +344,18 @@ public class OpEvaluator extends AbstractEvaluator {
 
     public void evaluate2(Dyad dyad, State state) {
         switch (dyad.getOperatorType()) {
+            case CONTAINS_KEY_VALUE:
+                doContainsKey(dyad, state, true);
+                return;
+            case NOT_CONTAINS_KEY_VALUE:
+                doContainsKey(dyad, state, false);
+                return;
+            case IS_DEFINED_VALUE:
+                doIsDefinedDyad(dyad, state, true);
+                return;
+            case IS_NOT_DEFINED_VALUE:
+                doIsDefinedDyad(dyad, state, false);
+                return;
             case IS_A_VALUE:
                 doIsA(dyad, state);
                 return;
@@ -386,27 +415,77 @@ public class OpEvaluator extends AbstractEvaluator {
         }
     }
 
-    private void doIsA(Dyad dyad, State state) {
-      doIsA1(dyad, state);
+    protected void doContainsKey(Dyad dyad, State state, boolean containsKey) {
+        Polyad polyad = new Polyad(StemEvaluator.HAS_KEY);
+        polyad.setTokenPosition(dyad.getTokenPosition());
+        polyad.setSourceCode(dyad.getSourceCode());
+        polyad.addArgument(dyad.getLeftArgument());
+        polyad.addArgument(dyad.getRightArgument());
+        if (!containsKey) {
+            Monad monad = new Monad(OpEvaluator.NOT_VALUE, false);
+            monad.setArgument(polyad);
+            monad.setTokenPosition(polyad.getTokenPosition());
+            monad.setSourceCode(polyad.getSourceCode());
+            state.getOpEvaluator().evaluate(monad, state);
+            dyad.setResult(monad.getResult());
+            dyad.setResultType(monad.getResultType());
+            dyad.setEvaluated(monad.isEvaluated());
+            return;
+        }
+        state.getMetaEvaluator().evaluate(polyad, state);
+        dyad.setResult(polyad.getResult());
+        dyad.setResultType(polyad.getResultType());
+        dyad.setEvaluated(polyad.isEvaluated());
+
     }
+
+    protected void doIsDefinedDyad(Dyad dyad, State state, boolean isDefined) {
+        Polyad polyad = new Polyad(FunctionEvaluator.IS_FUNCTION);
+        polyad.setTokenPosition(dyad.getTokenPosition());
+        polyad.setSourceCode(dyad.getSourceCode());
+        polyad.addArgument(dyad.getLeftArgument());
+        if(dyad.getRightArgument() instanceof ConstantNode && dyad.getRightArgument().getResult() != QDLNull.getInstance()) {
+            polyad.addArgument(dyad.getRightArgument());
+        }
+        if (!isDefined) {
+            Monad monad = new Monad(OpEvaluator.NOT_VALUE, false);
+            monad.setArgument(polyad);
+            monad.setTokenPosition(polyad.getTokenPosition());
+            monad.setSourceCode(polyad.getSourceCode());
+            state.getOpEvaluator().evaluate(monad, state);
+            dyad.setResult(monad.getResult());
+            dyad.setResultType(monad.getResultType());
+            dyad.setEvaluated(monad.isEvaluated());
+            return;
+        }
+        state.getMetaEvaluator().evaluate(polyad, state);
+        dyad.setResult(polyad.getResult());
+        dyad.setResultType(polyad.getResultType());
+        dyad.setEvaluated(polyad.isEvaluated());
+    }
+
+    private void doIsA(Dyad dyad, State state) {
+        doIsA1(dyad, state);
+    }
+
     private void doIsA1(Dyad dyad, State state) {
-         Object lhs = dyad.evalArg(0, state);
+        Object lhs = dyad.evalArg(0, state);
 
         if (!(dyad.getRightArgument() instanceof VariableNode)) {
-            List<String> source =dyad.getRightArgument().getSourceCode();
+            List<String> source = dyad.getRightArgument().getSourceCode();
             String text;
-            if(source.size()==1){
+            if (source.size() == 1) {
                 text = source.get(0);
-            }else{
+            } else {
                 text = source.toString();
             }
             throw new BadArgException("unknown type '" + text + "'", dyad.getRightArgument());
         }
-        Object obj2 = dyad.evalArg(1,state); // If the variable resolves to something, blow up
-        if(obj2 != null){
+        Object obj2 = dyad.evalArg(1, state); // If the variable resolves to something, blow up
+        if (obj2 != null) {
             throw new BadArgException("you must supply a type, not a value ", dyad.getRightArgument());
         }
-        String typeName = ((VariableNode)dyad.getRightArgument()).getVariableReference();
+        String typeName = ((VariableNode) dyad.getRightArgument()).getVariableReference();
         boolean x = false;
         switch (typeName) {
             case NULL:
@@ -439,7 +518,7 @@ public class OpEvaluator extends AbstractEvaluator {
             default:
                 throw new BadArgException("unkown type", dyad.getRightArgument());
         }
-        dyad.setResult( x ? Boolean.TRUE : Boolean.FALSE);
+        dyad.setResult(x ? Boolean.TRUE : Boolean.FALSE);
         dyad.setResultType(BOOLEAN_TYPE);
         dyad.setEvaluated(true);
 
@@ -566,7 +645,7 @@ public class OpEvaluator extends AbstractEvaluator {
         if ((obj0 instanceof QDLNull)) {
             stem0 = new QDLStem();
             stem0.put(0L, QDLNull.getInstance());
-        }else{
+        } else {
             if (obj0 instanceof QDLStem) {
                 stem0 = (QDLStem) obj0;
             } else {
@@ -574,7 +653,6 @@ public class OpEvaluator extends AbstractEvaluator {
                 stem0.put(0L, obj0);
             }
         }
-
 
 
         if (obj1 instanceof QDLStem) {
@@ -1181,6 +1259,13 @@ public class OpEvaluator extends AbstractEvaluator {
     public void evaluate2(Monad monad, State state) {
 
         switch (monad.getOperatorType()) {
+            case IS_DEFINED_VALUE:
+                doIsDefined(monad, state, true);
+                return;
+            case IS_NOT_DEFINED_VALUE:
+                doIsDefined(monad, state, false);
+                return;
+
             case TO_SET_VALUE:
                 doToSet(monad, state);
                 return;
@@ -1212,6 +1297,29 @@ public class OpEvaluator extends AbstractEvaluator {
                 throw new NotImplementedException("Unknown monadic operator");
         }
 
+    }
+
+    private void doIsDefined(Monad monad, State state, boolean isDefined) {
+        Polyad polyad;
+        polyad = new Polyad(SystemEvaluator.IS_DEFINED);
+        polyad.setTokenPosition(monad.getTokenPosition());
+        polyad.setSourceCode(monad.getSourceCode());
+        polyad.addArgument(monad.getArgument());
+        if (!isDefined) {
+            Monad notMonad = new Monad(OpEvaluator.NOT_VALUE, false);
+            notMonad.setArgument(polyad);
+            notMonad.setTokenPosition(polyad.getTokenPosition());
+            notMonad.setSourceCode(polyad.getSourceCode());
+            state.getOpEvaluator().evaluate(notMonad, state);
+            monad.setResult(notMonad.getResult());
+            monad.setResultType(notMonad.getResultType());
+            monad.setEvaluated(notMonad.isEvaluated());
+            return;
+        }
+        state.getMetaEvaluator().evaluate(polyad, state);
+        monad.setResult(polyad.getResult());
+        monad.setResultType(polyad.getResultType());
+        monad.setEvaluated(polyad.isEvaluated());
     }
 
     private void doToSet(Monad monad, State state) {

@@ -1,17 +1,19 @@
-package edu.uiuc.ncsa.qdl.extensions.xml;
+package edu.uiuc.ncsa.qdl.extensions.convert;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigRenderOptions;
 import edu.uiuc.ncsa.qdl.evaluate.StemEvaluator;
-import edu.uiuc.ncsa.qdl.exceptions.QDLException;
+import edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator;
 import edu.uiuc.ncsa.qdl.expressions.ConstantNode;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
 import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.qdl.util.InputFormUtil;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
+import edu.uiuc.ncsa.security.core.exceptions.GeneralException;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.FileUtil;
 import net.sf.json.JSON;
@@ -89,14 +91,9 @@ public class QDLConvert {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            try {
-                return newEvaluate(objects, state);
-            } catch (Throwable xmlStreamException) {
-                xmlStreamException.printStackTrace();
-            }
+        public Object evaluate(Object[] objects, State state) throws Throwable {
+            return newEvaluate(objects, state);
             // return oldEvaluate(object, state);
-            return null;
         }
 
         /**
@@ -163,12 +160,12 @@ public class QDLConvert {
             }
             xer = XMLUtils.getXMLEventReader(new StringReader(inString));
             if (!xer.hasNext()) {
-                throw new QDLException("Error! no XML found to deserialize");
+                throw new IllegalStateException("Error! no XML found to deserialize");
             }
 
             XMLEvent xe = xer.nextEvent();
             if (!xe.isStartDocument()) {
-                throw new QDLException("Error! no XML start of document to deserialize");
+                throw new IllegalStateException("Error! no XML start of document to deserialize");
             }
             QDLStem out = new QDLStem();
             if (level == XML_IMPORT_LEVEL_EXACT) {
@@ -367,14 +364,12 @@ public class QDLConvert {
                 throw new IllegalArgumentException(getName() + " requires a stem as its argument");
             }
             QDLStem arg = (QDLStem) objects[0];
-            /*if (arg.size() != 1) {
-                throw new QDLException(getName() + " the stem is an invalid XML document. It must have a single root element.");
-            }*/
+
             boolean exportToFile = objects.length == 2;
             String fileName = null;
             if (exportToFile) {
                 if (!(objects[1] instanceof String)) {
-                    throw new QDLException(getName() + " requires a string as its second argument if present.");
+                    throw new IllegalArgumentException(getName() + " requires a string as its second argument if present.");
                 }
                 fileName = (String) objects[1];
             }
@@ -384,12 +379,12 @@ public class QDLConvert {
 
             try {
                 XMLStreamWriter xsw = xof.createXMLStreamWriter(w);
-                if(arg.containsKey(DECLARATION_KEY)){
+                if (arg.containsKey(DECLARATION_KEY)) {
                     QDLStem declarations = arg.getStem(DECLARATION_KEY);
-                    String version = declarations.containsKey("@version")?declarations.getString("@version"):"1.0";
-                    String charSet = declarations.containsKey("@encoding")?declarations.getString("@encoding"):"UTF-8";
-                    xsw.writeStartDocument(charSet,version);
-                }else {
+                    String version = declarations.containsKey("@version") ? declarations.getString("@version") : "1.0";
+                    String charSet = declarations.containsKey("@encoding") ? declarations.getString("@encoding") : "UTF-8";
+                    xsw.writeStartDocument(charSet, version);
+                } else {
                     xsw.writeStartDocument();
                 }
                 String rootTag = null;
@@ -408,7 +403,7 @@ public class QDLConvert {
                 if (DebugUtil.isEnabled()) {
                     e.printStackTrace();
                 }
-                throw new QDLException(getName() + " could not serialize stem to XML:" + e.getMessage());
+                throw new IllegalStateException(getName() + " could not serialize stem to XML:" + e.getMessage());
             }
             if (exportToFile) {
                 try {
@@ -417,7 +412,7 @@ public class QDLConvert {
                     if (DebugUtil.isEnabled()) {
                         e.printStackTrace();
                     }
-                    throw new QDLException(getName() + " could not write file '" + fileName + "':" + e.getMessage());
+                    throw new IllegalStateException(getName() + " could not write file '" + fileName + "':" + e.getMessage());
                 }
                 return Boolean.TRUE;
             }
@@ -443,32 +438,32 @@ public class QDLConvert {
                 }
                 for (Object key : qdlList.orderedKeys()) {
                     if (isCDATA) {
-                        xsw.writeCData(qdlList.get((Long)key).toString());
+                        xsw.writeCData(qdlList.get((Long) key).toString());
                     } else {
-                        xsw.writeCharacters(xmlEscape(qdlList.get((Long)key).toString()));
+                        xsw.writeCharacters(xmlEscape(qdlList.get((Long) key).toString()));
                     }
                 }
                 for (String key : qdlMap.keySet()) {
                     if (!isProperty(key)) {
                         Object value = qdlMap.get(key);
-                        if(key.equals(COMMENT_KEY)){
-                              xsw.writeComment(value.toString());
-                              continue;
+                        if (key.equals(COMMENT_KEY)) {
+                            xsw.writeComment(value.toString());
+                            continue;
                         }
 
-                        if(Constant.isStem(value)){
+                        if (Constant.isStem(value)) {
                             writeElement(xsw, (QDLStem) value, key);
-                        }else{
-                            if(Constant.isSet(value)){
+                        } else {
+                            if (Constant.isSet(value)) {
                                 xsw.writeStartElement(key);
-                                xsw.writeCData(((QDLList)value).toJSON().toString());
+                                xsw.writeCData(((QDLList) value).toJSON().toString());
                                 xsw.writeEndElement();
-                            }else{
+                            } else {
 
                                 xsw.writeStartElement(key);
-                                if(isCDATA){
-                                    xsw.writeCData(((QDLList)value).toJSON().toString());
-                                } else{
+                                if (isCDATA) {
+                                    xsw.writeCData(((QDLList) value).toJSON().toString());
+                                } else {
                                     xsw.writeCharacters(xmlEscape(value.toString()));
                                 }
                                 xsw.writeEndElement();
@@ -479,7 +474,7 @@ public class QDLConvert {
                 }
 
             } else {
-                throw new QDLException("unknown content");
+                throw new IllegalStateException("unknown content");
             }
         }
 
@@ -489,10 +484,10 @@ public class QDLConvert {
                 QDLList qdlList = stem.getQDLList();
                 for (Object v : qdlList.values()) {
                     xsw.writeStartElement(tagname);
-                    if(Constant.isStem(v)){
+                    if (Constant.isStem(v)) {
                         writeContent(xsw, v);
 
-                    }else{
+                    } else {
 
                         writeContent(xsw, v);
                     }
@@ -517,7 +512,7 @@ public class QDLConvert {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Throwable{
         QDLConvert QDLConvert = new QDLConvert();
         XMLImport xmlImport = QDLConvert.new XMLImport();
         // Test XML as configuration language
@@ -864,7 +859,7 @@ public class QDLConvert {
                 if (DebugUtil.isEnabled()) {
                     e.printStackTrace();
                 }
-                throw new QDLException(getName() + " could not write file '" + fileName + "':" + e.getMessage());
+                throw new IllegalStateException(getName() + " could not write file '" + fileName + "':" + e.getMessage());
             }
             return Boolean.TRUE;
         }
@@ -958,7 +953,7 @@ public class QDLConvert {
                 if (DebugUtil.isEnabled()) {
                     e.printStackTrace();
                 }
-                throw new QDLException(getName() + " could not write file '" + fileName + "':" + e.getMessage());
+                throw new IllegalStateException(getName() + " could not write file '" + fileName + "':" + e.getMessage());
             }
             return Boolean.TRUE;
         }
@@ -994,7 +989,7 @@ public class QDLConvert {
                 try {
                     inString = QDLFileUtil.readTextFile(state, fileName);
                 } catch (Throwable e) {
-                    throw new QDLException(name + " could not read file:" + e.getMessage());
+                    throw new GeneralException(name + " could not read file:" + e.getMessage());
                 }
             } else {
                 throw new IllegalArgumentException(name + " requires the stem specify a file to import.");
@@ -1041,6 +1036,96 @@ public class QDLConvert {
             }
         }
         return sb.toString();
+    }
+
+    public static String QDL_IMPORT_NAME = "qdl_in";
+
+    public class QDLImport implements QDLFunction {
+        @Override
+        public String getName() {
+            return QDL_IMPORT_NAME;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1};
+        }
+
+        @Override
+        public Object evaluate(Object[] objects, State state) {
+            String inString = getFileArg(objects[0], state, getName());
+            Polyad polyad = new Polyad(SystemEvaluator.EXECUTE);
+            polyad.addArgument(new ConstantNode(inString));
+            try {
+                polyad.evaluate(state);
+                return polyad.getResult();
+            } catch (Throwable e) {
+                if (DebugUtil.isEnabled()) {
+                    e.printStackTrace();
+                }
+                throw new IllegalArgumentException(getName() + " unable to evaluate argument:" + e.getMessage());
+            }
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            return null;
+        }
+    }
+
+    public static String QDL_EXPORT_NAME = "qdl_out";
+
+    public class QDLExport implements QDLFunction {
+        @Override
+        public String getName() {
+            return QDL_EXPORT_NAME;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1, 2};
+        }
+
+        /*
+            module_import(module_load(info().lib.convert, 'java'));
+              r. := rename_keys(random_string(5,5), random_string(5,5))
+               qdl_out(r., {'file':'/tmp/out.qdl'})
+
+         */
+        @Override
+        public Object evaluate(Object[] objects, State state) {
+            if (!(objects[0] instanceof QDLStem)) {
+                throw new IllegalArgumentException(getName() + " requires a stem as its first argument");
+            }
+            QDLStem stem = (QDLStem) objects[0];
+            boolean exportToFile = false;
+            String fileName = null;
+            if (objects.length == 2) {
+                if (!(objects[1] instanceof String)) {
+                    throw new IllegalArgumentException(getName() + " requires a string as its second argument if present");
+                }
+                exportToFile = true;
+                fileName = (String) objects[1];
+            }
+            String out = InputFormUtil.inputForm(stem);
+            if (exportToFile) {
+                try {
+                    QDLFileUtil.writeTextFile(state, fileName, out);
+                } catch (Throwable e) {
+                    if (DebugUtil.isEnabled()) {
+                        e.printStackTrace();
+                    }
+                    throw new IllegalArgumentException("unable to save file '" + fileName + "':" + e.getMessage());
+                }
+                return Boolean.TRUE;
+            }
+            return out;
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            return null;
+        }
     }
 }
 /*

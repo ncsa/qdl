@@ -11,7 +11,7 @@ public class QDLException extends GeneralException {
     }
 
     public QDLException(Throwable cause) {
-        super(cause);
+        super(cause.getMessage(), cause);
     }
 
     public QDLException(String message) {

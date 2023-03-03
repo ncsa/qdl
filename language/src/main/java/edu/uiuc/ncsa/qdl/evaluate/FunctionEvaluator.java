@@ -166,7 +166,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
         return (statement instanceof LambdaDefinitionNode) || (statement instanceof FunctionDefinitionStatement) || (statement instanceof FunctionReferenceNode);
     }
 
-    protected void doJavaFunction(Polyad polyad, State state, FR_WithState frs) {
+    protected void doJavaFunction(Polyad polyad, State state, FR_WithState frs) throws Throwable {
         // Contains a java function that is wrapped in a QDLFunction. The polyad here contains the
         // arguments that are needed to unpack this.
         Object[] argList = new Object[polyad.getArgCount()];

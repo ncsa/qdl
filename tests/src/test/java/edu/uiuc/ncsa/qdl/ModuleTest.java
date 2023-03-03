@@ -139,8 +139,10 @@ public class ModuleTest extends AbstractQDLTester {
             default:
                 // Do no serialization.
         }
-        addLine(script, "ok := !is_function(g,1);");// imported into f means not in session
-        addLine(script, "ok2 := !is_function(h,1);");// imported into f means not in session
+        //addLine(script, "ok := !is_function(g,1);");// imported into f means not in session
+        addLine(script, "ok := g∄1;");// imported into f means not in session
+        //addLine(script, "ok2 := !is_function(h,1);");// imported into f means not in session
+        addLine(script, "ok2 := h∄1;");// imported into f means not in session
         // It will ingest the function fine. It is attempting to use it later that will cause the error
         interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());

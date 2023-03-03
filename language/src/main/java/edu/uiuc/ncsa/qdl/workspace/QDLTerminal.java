@@ -46,7 +46,11 @@ public class QDLTerminal extends ISO6429Terminal {
             charMap['D'] = '∆';
             charMap['e'] = '∈';
             charMap['E'] = '∉';
-            charMap['i'] = '∩';
+            charMap['i'] = '∃';
+            charMap['I'] = '∄';
+            charMap['h'] = '∑';
+            charMap['H'] = '⨋';
+            charMap['U'] = '∩';
             charMap['l'] = '⌊';
             charMap['k'] = '⌈';
             charMap['n'] = '∅';

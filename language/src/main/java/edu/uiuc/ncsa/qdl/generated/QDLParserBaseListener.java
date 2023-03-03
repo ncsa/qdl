@@ -400,6 +400,18 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterIsDefinedDyadicExpression(QDLParserParser.IsDefinedDyadicExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIsDefinedDyadicExpression(QDLParserParser.IsDefinedDyadicExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterFunctions(QDLParserParser.FunctionsContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -676,6 +688,18 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterContainsKey(QDLParserParser.ContainsKeyContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitContainsKey(QDLParserParser.ContainsKeyContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterAssignment(QDLParserParser.AssignmentContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -839,6 +863,18 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitAddExpression(QDLParserParser.AddExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterIsDefinedExpression(QDLParserParser.IsDefinedExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIsDefinedExpression(QDLParserParser.IsDefinedExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -7,7 +7,7 @@ import edu.uiuc.ncsa.qdl.extensions.crypto.CryptoLoader;
 import edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader;
 import edu.uiuc.ncsa.qdl.extensions.http.QDLHTTPLoader;
 import edu.uiuc.ncsa.qdl.extensions.inputLine.QDLCLIToolsLoader;
-import edu.uiuc.ncsa.qdl.extensions.xml.QDLConvertLoader;
+import edu.uiuc.ncsa.qdl.extensions.convert.QDLConvertLoader;
 import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.functions.FTable;
@@ -309,6 +309,10 @@ public class State extends FunctionState implements QDLConstants {
         characters.put("222a", "∪");
         characters.put("2208", "∈");
         characters.put("2209", "∉");
+        characters.put("2203", "∃");
+        characters.put("2204", "∄");
+        characters.put("220b", "∑");
+        characters.put("220c", "⨋");
 
 
         systemConstants.put(SYS_VAR_TYPE_CHARACTERS, characters);

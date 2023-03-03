@@ -158,10 +158,10 @@ public class QDLVariableTest extends AbstractQDLTester {
             state= roundTripXMLSerialization(state,script);
             script = new StringBuffer();
         }
-        addLine(script, "ok0 := is_defined(a.epe) && is_defined(a.epe.);"); // should handle both cases of trailing . or not
+        addLine(script, "ok0 := ∃a.epe ∧ ∃a.epe.;"); // should handle both cases of trailing . or not
         addLine(script, "ok1 := is_defined(b);"); // most basic test
         addLine(script, "ok2 := !is_defined(a.ZZZ);"); // check that missing elements in stems
-        addLine(script, "ok3 := !is_defined(aaa.ZZZ);"); // check that no stem is caught right
+        addLine(script, "ok3 := ∄aaa.ZZZ;"); // check that no stem is caught right
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok0", state) : "is_defined failed for a stem";

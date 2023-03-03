@@ -1,4 +1,4 @@
-package edu.uiuc.ncsa.qdl.extensions.xml;
+package edu.uiuc.ncsa.qdl.extensions.convert;
 
 import edu.uiuc.ncsa.qdl.extensions.JavaModule;
 import edu.uiuc.ncsa.qdl.module.Module;
@@ -32,6 +32,8 @@ public class QDLConvertModule extends JavaModule {
         funcs.add(xml.new YAMLImport());
         funcs.add(xml.new HOCONExport());
         funcs.add(xml.new HOCONImport());
+        funcs.add(xml.new QDLExport());
+        funcs.add(xml.new QDLImport());
         qdlxml.addFunctions(funcs);
         if (state != null) {
             qdlxml.init(state);

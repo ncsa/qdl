@@ -2233,7 +2233,64 @@ illegal argument:no module named "b" was  imported at (1, 67)
         finish(dyad, ctx);
     }
 
+    @Override
+    public void enterIsDefinedExpression(QDLParserParser.IsDefinedExpressionContext ctx) {
 
+    }
+
+    @Override
+    public void exitIsDefinedExpression(QDLParserParser.IsDefinedExpressionContext ctx) {
+        String x = ctx.getChild(0).getText();
+        Monad monad = null;
+        if (x.equals(OpEvaluator.IS_DEFINED)) {
+            monad = new Monad(OpEvaluator.IS_DEFINED_VALUE, false);
+        } else {
+            monad = new Monad(OpEvaluator.IS_NOT_DEFINED_VALUE, false);
+        }
+        monad.setTokenPosition(tp(ctx));
+        stash(ctx, monad);
+        finish(monad, ctx);
+    }
+
+    @Override
+    public void enterIsDefinedDyadicExpression(QDLParserParser.IsDefinedDyadicExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void exitIsDefinedDyadicExpression(QDLParserParser.IsDefinedDyadicExpressionContext ctx) {
+        String x = ctx.getChild(1).getText();
+
+        Dyad dyad;
+        if (x.equals(OpEvaluator.IS_DEFINED)) {
+            dyad = new Dyad(OpEvaluator.IS_DEFINED_VALUE);
+        } else {
+            dyad = new Dyad(OpEvaluator.IS_NOT_DEFINED_VALUE);
+        }
+
+        dyad.setTokenPosition(tp(ctx));
+        stash(ctx, dyad);
+        finish(dyad, ctx);
+    }
+
+    @Override
+    public void enterContainsKey(QDLParserParser.ContainsKeyContext ctx) {
+
+    }
+
+    @Override
+    public void exitContainsKey(QDLParserParser.ContainsKeyContext ctx) {
+        String x = ctx.getChild(1).getText();
+         Dyad dyad;
+         if (x.equals(OpEvaluator.CONTAINS_KEY)) {
+             dyad = new Dyad(OpEvaluator.CONTAINS_KEY_VALUE);
+         } else {
+             dyad = new Dyad(OpEvaluator.NOT_CONTAINS_KEY_VALUE);
+         }
+         dyad.setTokenPosition(tp(ctx));
+         stash(ctx, dyad);
+         finish(dyad, ctx);
+    }
 }
 
 

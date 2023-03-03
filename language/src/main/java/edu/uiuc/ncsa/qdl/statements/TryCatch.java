@@ -1,7 +1,6 @@
 package edu.uiuc.ncsa.qdl.statements;
 
-import edu.uiuc.ncsa.qdl.exceptions.AssertionException;
-import edu.uiuc.ncsa.qdl.exceptions.RaiseErrorException;
+import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
@@ -38,7 +37,21 @@ public class TryCatch implements Statement {
     public static final String ERROR_CODE_NAME = "error_code";
     public static final String ERROR_MESSAGE_NAME = "error_message";
     public static final String ERROR_STATE_NAME = "error_state.";
+     /*
+       while[true][try[s:=scan('x');3/0;]catch[say('bar');];];
 
+              while[
+               true
+               ][
+                 try[
+                    s:=scan('x');
+                    3/0;
+                   ]catch[
+                     say('bar);
+                   ];
+                ];
+
+      */
     @Override
     public Object evaluate(State state) {
         State localState = state.newLocalState();
@@ -80,7 +93,9 @@ public class TryCatch implements Statement {
             for (Statement c : catchStatements) {
                 c.evaluate(localState);
             }
-        } catch (Throwable otherT) {
+        }catch(ReturnException | ContinueException | BreakException returnException){
+            throw returnException;
+        }catch (Throwable otherT) {
             // everything else.
             localState.getVStack().localPut(new VThing(new XKey(ERROR_MESSAGE_NAME), otherT.getMessage()));
             localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), new QDLStem())); 

@@ -17,13 +17,16 @@ By Jeff Gaynor</classComment>
   </comments>
   <keywords>
     <keyword>assert</keyword>
+    <keyword>block</keyword>
     <keyword>body</keyword>
     <keyword>catch</keyword>
     <keyword>define</keyword>
     <keyword>do</keyword>
     <keyword>else</keyword>
     <keyword>if</keyword>
+    <keyword>local</keyword>
     <keyword>module</keyword>
+    <keyword>switch</keyword>
     <keyword>then</keyword>
     <keyword>try</keyword>
     <keyword>while</keyword>
@@ -44,12 +47,11 @@ By Jeff Gaynor</classComment>
     <function>abs</function>
     <function>acos</function>
     <function>acosh</function>
-    <function>append</function>
+    <function>args</function>
     <function>asin</function>
     <function>asinh</function>
     <function>atan</function>
     <function>atanh</function>
-    <function>axis</function>
     <function>box</function>
     <function>break</function>
     <function>cb_exists</function>
@@ -67,12 +69,14 @@ By Jeff Gaynor</classComment>
     <function>date_iso</function>
     <function>date_ms</function>
     <function>debug</function>
-    <function>decode_b64</function>
+    <function>decode</function>
     <function>detokenize</function>
+    <function>diff</function>
     <function>differ_at</function>
     <function>dim</function>
     <function>dir</function>
-    <function>encode_b64</function>
+    <function>display</function>
+    <function>encode</function>
     <function>exclude_keys</function>
     <function>execute</function>
     <function>exp</function>
@@ -82,15 +86,19 @@ By Jeff Gaynor</classComment>
     <function>floor</function>
     <function>for_each</function>
     <function>for_keys</function>
+    <function>for_lines</function>
     <function>for_next</function>
-    <function>from_hex</function>
+    <function>fork</function>
     <function>from_json</function>
     <function>from_uri</function>
+    <function>gcd</function>
     <function>halt</function>
+    <function>has_key</function>
     <function>has_keys</function>
     <function>has_value</function>
     <function>hash</function>
     <function>head</function>
+    <function>i</function>
     <function>identity</function>
     <function>include_keys</function>
     <function>index_of</function>
@@ -102,25 +110,31 @@ By Jeff Gaynor</classComment>
     <function>is_defined</function>
     <function>is_function</function>
     <function>is_list</function>
+    <function>is_null</function>
+    <function>jload</function>
     <function>join</function>
     <function>keys</function>
+    <function>kill</function>
+    <function>lcm</function>
     <function>list_copy</function>
     <function>list_keys</function>
-    <function>list_starts_with</function>
-    <function>list_subset</function>
     <function>ln</function>
     <function>log</function>
     <function>log_entry</function>
     <function>mask</function>
+    <function>max</function>
+    <function>min</function>
     <function>mod</function>
     <function>module_import</function>
     <function>module_load</function>
     <function>module_path</function>
+    <function>module_remove</function>
     <function>n</function>
     <function>nroot</function>
     <function>numeric_digits</function>
     <function>os_env</function>
     <function>pi</function>
+    <function>pick</function>
     <function>print</function>
     <function>query</function>
     <function>raise_error</function>
@@ -145,19 +159,19 @@ By Jeff Gaynor</classComment>
     <function>sin</function>
     <function>sinh</function>
     <function>size</function>
+    <function>sleep</function>
+    <function>sort</function>
+    <function>star</function>
     <function>starts_with</function>
-    <function>subset</function>
+    <function>sublist</function>
     <function>substring</function>
     <function>tail</function>
     <function>tan</function>
     <function>tanh</function>
     <function>to_boolean</function>
-    <function>to_hex</function>
     <function>to_json</function>
-    <function>to_list</function>
     <function>to_lower</function>
     <function>to_number</function>
-    <function>to_set</function>
     <function>to_string</function>
     <function>to_upper</function>
     <function>to_uri</function>
@@ -167,12 +181,13 @@ By Jeff Gaynor</classComment>
     <function>unbox</function>
     <function>union</function>
     <function>unique</function>
+    <function>values</function>
     <function>var_type</function>
-    <function>vdecode</function>
-    <function>vencode</function>
     <function>vfs_mount</function>
     <function>vfs_unmount</function>
     <function>ws_macro</function>
+    <function>π</function>
+    <function>τ</function>
   </functions>
   <numbers>
     <hexLiteral/>
@@ -211,9 +226,12 @@ By Jeff Gaynor</classComment>
     <operator>÷</operator>
     <operator>⁺</operator>
     <operator>→</operator>
+    <operator>∃</operator>
+    <operator>∄</operator>
     <operator>∆</operator>
     <operator>∈</operator>
     <operator>∉</operator>
+    <operator>∑</operator>
     <operator>∧</operator>
     <operator>∨</operator>
     <operator>∩</operator>
@@ -232,5 +250,6 @@ By Jeff Gaynor</classComment>
     <operator>⌊</operator>
     <operator>⟦</operator>
     <operator>⟧</operator>
+    <operator>⨋</operator>
   </operators>
 </TokenMakerDefinition>

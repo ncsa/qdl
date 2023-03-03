@@ -66,6 +66,55 @@ public class StatementTest extends AbstractQDLTester {
         interpreter.execute(script.toString());
         assert getLongValue("j", state).equals(65585696L) : "Loop did not execute properly.";
     }
+    /*
+        while[x∈[;5]][try[break();]catch[];]
+        i := 0;
+        while[
+          x∈[;5]
+        ][
+         try[
+           if[i++ == 3][break();];
+         ]catch[
+         ];
+        ];
+     */
+
+    public void testLoopWithTryAndBreak() throws Throwable {
+        StringBuffer script = new StringBuffer();
+         addLine(script, "        i := 0;\n" +
+                 "        while[\n" +
+                 "          x∈[;5]\n" +
+                 "        ][\n" +
+                 "         try[\n" +
+                 "           if[i == 3][break();]else[i++;];\n" +
+                 "         ]catch[\n" +
+                 "         ];\n" +
+                 "        ];");
+        State state = testUtils.getNewState();
+
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getLongValue("i", state).equals(3L) : "break() inside try..catch inside loop did not execute properly.";
+    }
+
+    public void testLoopWithTryAndContinue() throws Throwable {
+        StringBuffer script = new StringBuffer();
+         addLine(script, "        i := 0;\n" +
+                 "        while[\n" +
+                 "          x∈[;5]\n" +
+                 "        ][\n" +
+                 "         try[\n" +
+                 "           if[i == 3][continue();]else[i++;];\n" +
+                 "         ]catch[\n" +
+                 "         ];\n" +
+                 "        ];");
+        State state = testUtils.getNewState();
+
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getLongValue("i", state).equals(3L) : "continue() inside try..catch inside loop did not execute properly.";
+    }
+
 
     /**
      * Test that assigning a value to a keyword, e.g. false := true fails.
@@ -171,7 +220,7 @@ public class StatementTest extends AbstractQDLTester {
         StringBuffer script = new StringBuffer();
         addLine(script, "ok := false;");
         addLine(script, "block[a:=2;ok:=a==2;];");// set local variable, a, reset ok
-        addLine(script, "oka := !is_defined(a);"); // check that a does not exist outside of block
+        addLine(script, "oka := ∄a;"); // check that a does not exist outside of block
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);

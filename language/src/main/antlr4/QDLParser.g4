@@ -141,6 +141,8 @@ expression
  | (Floor | Ceiling) expression                                                #floorOrCeilingExpression
  | (Plus | UnaryPlus | Minus | UnaryMinus) expression                          #unaryMinusExpression
  | Tilde expression                                                            #unaryTildeExpression
+ | IsDefined expression                                                        #isDefinedExpression
+ | expression op=IsDefined expression                                          #isDefinedDyadicExpression
  | expression op=(Plus | Minus ) expression                                    #addExpression
  | expression op=(LessThan | GreaterThan | LessEquals | MoreEquals) expression #compExpression
  | expression op=(Equals | NotEquals) expression                               #eqExpression
@@ -159,6 +161,7 @@ expression
 // | prefix=',' expression                                                       #unravel
 // | expression ((Stile + expression ) | (Stile '*'))                            #restriction
  | expression op=Membership expression                                         #epsilon  // unicode 2208, 2209
+ | expression op=ContainsKey expression                                        #containsKey  // unicode 220b, 220c
  | STRING                                                                      #strings
  | integer                                                                     #integers
  | number                                                                      #numbers

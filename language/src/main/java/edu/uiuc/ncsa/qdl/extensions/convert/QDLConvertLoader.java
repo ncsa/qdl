@@ -1,4 +1,4 @@
-package edu.uiuc.ncsa.qdl.extensions.xml;
+package edu.uiuc.ncsa.qdl.extensions.convert;
 
 import edu.uiuc.ncsa.qdl.extensions.QDLLoader;
 import edu.uiuc.ncsa.qdl.module.Module;

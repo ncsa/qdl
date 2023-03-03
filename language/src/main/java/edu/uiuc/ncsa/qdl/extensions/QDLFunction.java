@@ -39,7 +39,7 @@ public interface QDLFunction extends Serializable {
      * @param state 
      * @return
      */
-    public Object evaluate(Object[] objects, State state);
+    public Object evaluate(Object[] objects, State state) throws Throwable;
 
 
     /**

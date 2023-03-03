@@ -94,7 +94,6 @@ public class QDLDB implements QDLModuleMetaClass {
                 case POSTGRES_TYPE:
                     connection = new PostgresConnectionParameters(json);
                     connectionPool = new ConnectionPool(connection, ConnectionPool.CONNECTION_TYPE_POSTGRES);
-
                     break;
                 default:
                     throw new IllegalArgumentException("unknown database type");
@@ -142,7 +141,7 @@ public class QDLDB implements QDLModuleMetaClass {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
+        public Object evaluate(Object[] objects, State state) throws Throwable{
             if (!isConnected) {
                 throw new IllegalStateException("No databasse connection. Please run " + CONNECT_COMMAND + " first.");
             }
@@ -190,15 +189,6 @@ public class QDLDB implements QDLModuleMetaClass {
                 stmt.executeQuery();
                 ResultSet rs = stmt.getResultSet();
                 // Now we have to pull in all the values.
-/*
-                if (!rs.next()) {
-                    // If there are no values, return empty stem.
-                    rs.close();
-                    stmt.close();
-                    releaseConnection(connectionRecord);
-                    return outStem;
-                }
-*/
                 while (rs.next()) {
                     ColumnMap map = rsToMap(rs);
                     QDLStem currentEntry = new QDLStem();
@@ -215,7 +205,7 @@ public class QDLDB implements QDLModuleMetaClass {
                 releaseConnection(connectionRecord);
             } catch (SQLException e) {
                 destroyConnection(connectionRecord);
-                throw new GeneralException("Error executing SQL: " + e.getMessage(), e);
+                throw e;
             }
             return outStem;
         }
@@ -521,6 +511,8 @@ public class QDLDB implements QDLModuleMetaClass {
         }
         return Boolean.TRUE;
     }
+
+
     /* Handy dandy table of SQL types and calls.
     SQL 	        JDBC/Java 	            setXXX 	        updateXXX
     VARCHAR 	    java.lang.String 	    setString 	    updateString

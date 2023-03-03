@@ -172,16 +172,9 @@ public class IOEvaluator extends AbstractEvaluator {
         if (1 < polyad.getArgCount()) {
             throw new ExtraArgException(SCAN_FUNCTION + " requires at most 1 argument", polyad.getArgAt(1));
         }
-
-        if (polyad.isEvaluated()) {
-            // If this has already been run, then do not prompt the user repeatedly.
-            // If scan is used as an argument to a function, e.g.
-            // to_number(scan('>'))
-            // then it would be called twice, once, for itself, and the second time when
-            // to_number tries to re-evaluate it to get the most current state.
-            // scanned input is a one-time read operation, in other words. 
-            return;
-        }
+        /*
+        while[true][if[scan('ok?') == 'yes'][return();];]
+         */
         if (polyad.getArgCount() != 0) {
             // This is the prompt.
             state.getIoInterface().print(polyad.evalArg(0, state));
@@ -191,7 +184,7 @@ public class IOEvaluator extends AbstractEvaluator {
         String result = "";
         try {
             result = state.getIoInterface().readline();
-            //result = bufferedReader.readLine().trim();
+            state.getIoInterface().flush(); // Fixes Github issue #12.
         } catch (IOException e) {
             result = "(error)";
         }

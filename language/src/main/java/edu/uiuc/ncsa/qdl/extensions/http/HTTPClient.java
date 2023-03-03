@@ -1,6 +1,5 @@
 package edu.uiuc.ncsa.qdl.extensions.http;
 
-import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
 import edu.uiuc.ncsa.qdl.extensions.QDLModuleMetaClass;
 import edu.uiuc.ncsa.qdl.state.State;
@@ -203,28 +202,18 @@ public class HTTPClient implements QDLModuleMetaClass {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
+        public Object evaluate(Object[] objects, State state) throws Throwable {
             checkInit();
             String r = null;
-            try {
-                r = paramsToRequest(objects);
-            } catch (UnsupportedEncodingException e) {
-                throw new QDLException("could not do " + getName() + " because of 'unsupported encoding exception': '" + e.getMessage() + "'");
-            }
+            r = paramsToRequest(objects);
             HttpGet request = new HttpGet(r);
             if ((headers != null) && !headers.isEmpty()) {
                 for (Object key : headers.keySet()) {
                     request.addHeader(key.toString(), headers.getString(key.toString()));
                 }
             }
-            try {
-                CloseableHttpResponse response = httpClient.execute(request);
-                return getResponseStem(response);
-            } catch (ClientProtocolException e) {
-                throw new QDLException("could not do " + getName() + " because of protocol error:'" + e.getMessage() + "'");
-            } catch (IOException e) {
-                throw new QDLException("could not do " + getName() + " because of I/O error:'" + e.getMessage() + "'");
-            }
+            CloseableHttpResponse response = httpClient.execute(request);
+            return getResponseStem(response);
         }
 
 
@@ -274,7 +263,7 @@ public class HTTPClient implements QDLModuleMetaClass {
         QDLStem s = new QDLStem();
         QDLStem responseStem = new QDLStem();
         responseStem.put("code", (long) response.getStatusLine().getStatusCode());
-        if(!StringUtils.isTrivial(response.getStatusLine().getReasonPhrase())) {
+        if (!StringUtils.isTrivial(response.getStatusLine().getReasonPhrase())) {
             responseStem.put("message", response.getStatusLine().getReasonPhrase());
         }
         s.put("status", responseStem);
@@ -293,7 +282,7 @@ public class HTTPClient implements QDLModuleMetaClass {
             }
         }
 
-        s.put("content", stemResponse==null? QDLNull.getInstance():stemResponse);
+        s.put("content", stemResponse == null ? QDLNull.getInstance() : stemResponse);
         Header[] headers = response.getAllHeaders();
         QDLStem h = new QDLStem();
         for (int i = 0; i < headers.length; i++) {
@@ -370,7 +359,7 @@ public class HTTPClient implements QDLModuleMetaClass {
         } catch (Throwable t) {
 
         }
-        throw new QDLException("could not convert '" + rawJSON + "' to stem");
+        throw new IllegalArgumentException("could not convert '" + rawJSON + "' to stem");
     }
 
     public class Close implements QDLFunction {
@@ -391,7 +380,7 @@ public class HTTPClient implements QDLModuleMetaClass {
                     httpClient.close();
                 }
             } catch (IOException e) {
-                throw new QDLException("could not close connection: '" + e.getMessage() + "'");
+                throw new IllegalStateException("could not close connection: '" + e.getMessage() + "'");
             }
             httpClient = null;
             return true;
@@ -433,7 +422,7 @@ public class HTTPClient implements QDLModuleMetaClass {
                 try {
                     httpClient = createUnverified();
                 } catch (Exception ex) {
-                    throw new QDLException("unable to create insecure http client: '" + ex.getMessage() + "'", ex);
+                    throw new IllegalStateException("unable to create insecure http client: '" + ex.getMessage() + "'", ex);
                 }
             } else {
                 httpClient = HttpClients.createDefault();
@@ -739,10 +728,10 @@ public class HTTPClient implements QDLModuleMetaClass {
             return getResponseStem(response);
         } catch (
                 ClientProtocolException e) {
-            throw new QDLException("could not do " + (isPost ? POST_METHOD : PUT_METHOD) + " because of protocol error:'" + e.getMessage() + "'");
+            throw new IllegalStateException((isPost ? POST_METHOD : PUT_METHOD) + " protocol error:'" + e.getMessage() + "'");
         } catch (
                 IOException e) {
-            throw new QDLException("could not do " + (isPost ? POST_METHOD : PUT_METHOD) + " because of I/O error:'" + e.getMessage() + "'");
+            throw new IllegalStateException((isPost ? POST_METHOD : PUT_METHOD) + " I/O error:'" + e.getMessage() + "'");
         }
     }
 
@@ -758,28 +747,17 @@ public class HTTPClient implements QDLModuleMetaClass {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
+        public Object evaluate(Object[] objects, State state) throws Throwable {
             checkInit();
-            String r = null;
-            try {
-                r = paramsToRequest(objects);
-            } catch (UnsupportedEncodingException e) {
-                throw new QDLException("could not do " + getName() + " because of 'unsupported encoding exception': '" + e.getMessage() + "'");
-            }
+            String r = paramsToRequest(objects);
             HttpDelete request = new HttpDelete(r);
             if ((headers != null) && !headers.isEmpty()) {
                 for (Object key : headers.keySet()) {
                     request.addHeader(key.toString(), headers.getString(key.toString()));
                 }
             }
-            try {
-                CloseableHttpResponse response = httpClient.execute(request);
-                return getResponseStem(response);
-            } catch (ClientProtocolException e) {
-                throw new QDLException("could not do " + getName() + " because of protocol error:'" + e.getMessage() + "'");
-            } catch (IOException e) {
-                throw new QDLException("could not do " + getName() + " because of I/O error:'" + e.getMessage() + "'");
-            }
+            CloseableHttpResponse response = httpClient.execute(request);
+            return getResponseStem(response);
         }
 
         @Override
@@ -817,15 +795,11 @@ public class HTTPClient implements QDLModuleMetaClass {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            try {
-                String username = URLEncoder.encode(objects[0].toString(), "UTF-8");
-                String password = URLEncoder.encode(objects[1].toString(), "UTF-8");
-                String raw = username + ":" + password;
-                return Base64.getEncoder().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
-            } catch (UnsupportedEncodingException unsupportedEncodingException) {
-                throw new NFWException("Encoding failed:'" + unsupportedEncodingException.getMessage() + "'");
-            }
+        public Object evaluate(Object[] objects, State state) throws Throwable {
+            String username = URLEncoder.encode(objects[0].toString(), "UTF-8");
+            String password = URLEncoder.encode(objects[1].toString(), "UTF-8");
+            String raw = username + ":" + password;
+            return Base64.getEncoder().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
         }
 
         @Override

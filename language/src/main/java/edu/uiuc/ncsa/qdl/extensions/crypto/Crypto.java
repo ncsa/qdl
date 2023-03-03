@@ -1,12 +1,12 @@
 package edu.uiuc.ncsa.qdl.extensions.crypto;
 
 import edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator;
-import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
 import edu.uiuc.ncsa.qdl.extensions.QDLModuleMetaClass;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.vfs.VFSEntry;
+import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.FileUtil;
 import edu.uiuc.ncsa.security.util.crypto.DecryptUtils;
 import edu.uiuc.ncsa.security.util.jwk.JSONWebKey;
@@ -42,19 +42,18 @@ public class Crypto implements QDLModuleMetaClass {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
+        public Object evaluate(Object[] objects, State state) throws Throwable {
             int keySize = -1;
             if (objects.length == 1) {
                 if (!(objects[0] instanceof Long)) {
-                    throw new QDLException("first argument of " + getName() + " must be an integer if present. Got '" + objects[0] + "'");
+                    throw new IllegalArgumentException("first argument of " + getName() + " must be an integer if present. Got '" + objects[0] + "'");
                 }
                 Long arg0 = (Long) objects[0];
                 keySize = arg0.intValue();
                 if (keySize % 256 != 0) {
-                    throw new QDLException("the key size of " + keySize + " must be a multiple of 256");
+                    throw new IllegalArgumentException("the key size of " + keySize + " must be a multiple of 256");
                 }
             }
-            try {
                 KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
                 if (0 < keySize) {
                     kpg.initialize(keySize);
@@ -65,10 +64,6 @@ public class Crypto implements QDLModuleMetaClass {
                 QDLStem stem = new QDLStem();
                 stem.fromJSON(wk2);
                 return stem;
-            } catch (GeneralSecurityException e) {
-                e.printStackTrace();
-                throw new QDLException("error creating key pair: " + e.getMessage());
-            }
         }
 
         @Override
@@ -105,12 +100,12 @@ public class Crypto implements QDLModuleMetaClass {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
+        public Object evaluate(Object[] objects, State state) throws Throwable{
             if (!(objects[0] instanceof String)) {
                 throw new IllegalArgumentException(getName() + " requires a file name as its first argument");
             }
             VFSEntry vfsEntry = null;
-            try {
+     //       try {
                 vfsEntry = state.getFileFromVFS((String) objects[0], AbstractEvaluator.FILE_OP_AUTO);
                 String out = null;
                 if (vfsEntry == null) {
@@ -130,11 +125,11 @@ public class Crypto implements QDLModuleMetaClass {
                 }
 
                 return keys;
-            } catch (Throwable e) {
+      /*      } catch (Throwable e) {
                 e.printStackTrace();
             }
 
-            return null;
+            return null;*/
         }
 
         @Override
@@ -216,7 +211,7 @@ public class Crypto implements QDLModuleMetaClass {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
+        public Object evaluate(Object[] objects, State state) throws Throwable{
             if (!(objects[0] instanceof QDLStem)) {
                 throw new IllegalArgumentException("The first argument of " + getName() + " must be a stem");
             }
@@ -262,7 +257,8 @@ public class Crypto implements QDLModuleMetaClass {
                     }
                     out.putLongOrString(key, result);
                 } catch (GeneralSecurityException gsx) {
-                    throw new IllegalArgumentException("could not encrypt argument for key='" + key + "' with value ='" + obj + "'");
+                    // Clean up exception with a better message
+                    throw new IllegalArgumentException(getName() + " could not encrypt argument for key='" + key + "' with value ='" + obj + "'");
                 }
             }
             if (stringArg) {
@@ -349,7 +345,7 @@ public class Crypto implements QDLModuleMetaClass {
                     }
                     out.putLongOrString(key, result);
                 } catch (GeneralSecurityException | UnsupportedEncodingException gsx) {
-                    throw new IllegalArgumentException("could not encrypt argument for key='" + key + "' with value ='" + obj + "'");
+                    throw new IllegalArgumentException(getName() + " could not encrypt argument for key='" + key + "' with value ='" + obj + "'");
                 }
             }
             if (stringArg) {
@@ -368,8 +364,10 @@ public class Crypto implements QDLModuleMetaClass {
         try {
             return JSONWebKeyUtil.getJsonWebKey(keys.toJSON().toString());
         } catch (GeneralSecurityException e) {
-            e.printStackTrace();
-            throw new QDLException("error creating keys:" + e.getMessage(), e);
+            if(DebugUtil.isEnabled()) {
+                e.printStackTrace();
+            }
+            throw new IllegalArgumentException("error creating keys:" + e.getMessage(), e);
         }
     }
 
