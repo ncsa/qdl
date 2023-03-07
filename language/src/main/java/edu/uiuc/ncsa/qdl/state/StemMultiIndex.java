@@ -37,7 +37,7 @@ public class StemMultiIndex {
       }
 
     /**
-     * Creates a new instants. Note that the name is the entire stem name, so
+     * Creates a new instance from the variable. Note that the name is the entire stem name, so
      * a.i.j... and this parses it into components.  The very first component is
      * always the name of the stem.
      * @param variable

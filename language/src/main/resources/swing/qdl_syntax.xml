@@ -228,10 +228,11 @@ By Jeff Gaynor</classComment>
     <operator>→</operator>
     <operator>∃</operator>
     <operator>∄</operator>
+    <operator>∀</operator>
     <operator>∆</operator>
     <operator>∈</operator>
     <operator>∉</operator>
-    <operator>∑</operator>
+    <operator>∋</operator>
     <operator>∧</operator>
     <operator>∨</operator>
     <operator>∩</operator>
@@ -250,6 +251,6 @@ By Jeff Gaynor</classComment>
     <operator>⌊</operator>
     <operator>⟦</operator>
     <operator>⟧</operator>
-    <operator>⨋</operator>
+    <operator>∌</operator>
   </operators>
 </TokenMakerDefinition>

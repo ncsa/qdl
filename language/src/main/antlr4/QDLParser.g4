@@ -162,6 +162,9 @@ expression
 // | expression ((Stile + expression ) | (Stile '*'))                            #restriction
  | expression op=Membership expression                                         #epsilon  // unicode 2208, 2209
  | expression op=ContainsKey expression                                        #containsKey  // unicode 220b, 220c
+ // Note that we cannot have something like a lambda on the lhs of ∀
+ // because the parser won't quite flag it right.
+ | f_ref op=ForAll expression                                                  #forAll  // unicode 2200
  | STRING                                                                      #strings
  | integer                                                                     #integers
  | number                                                                      #numbers

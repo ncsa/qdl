@@ -220,7 +220,6 @@ subset(b., 3, 6)
     }
 
 
-
     public QDLList() {
         super();
     }
@@ -607,6 +606,7 @@ subset(b., 3, 6)
 
     /**
      * Return all values for this list, including sparse values
+     *
      * @return
      */
     public ArrayList values() {
@@ -735,9 +735,9 @@ subset(b., 3, 6)
             return;
         }
         if (index < getArrayList().size()) {
-            if(index < 0){
-                getArrayList().set((int) (getArrayList().size()+(index%getArrayList().size())), element);
-            }else {
+            if (index < 0) {
+                getArrayList().set((int) (getArrayList().size() + (index % getArrayList().size())), element);
+            } else {
                 getArrayList().set((int) index, element);
             }
             return;
@@ -943,8 +943,8 @@ subset(b., 3, 6)
         public Object next() {
             if (arrayIterator.hasNext()) {
                 Object obj = arrayIterator.next();
-                if(obj instanceof SparseEntry){
-                    return ((SparseEntry)obj).entry;
+                if (obj instanceof SparseEntry) {
+                    return ((SparseEntry) obj).entry;
                 }
                 return obj;
             }
@@ -1109,9 +1109,18 @@ subset(b., 3, 6)
         return get((long) index);
     }
 
+    /**
+     * This is mostly used when hot-rodding performance. It <i>only</i> updates
+     * the array list backing this object, not any sparse entries. Generally
+     * only call it if you have a well-articulated need to do so.
+     * @param index
+     * @param element
+     * @return
+     */
     @Override
     public Object set(int index, Object element) {
-        throw new NotImplementedException("set(int, Object)");
+       return  getArrayList().set(index, element);
+        //throw new NotImplementedException("set(int, Object)");
 
     }
 
@@ -1247,5 +1256,42 @@ subset(b., 3, 6)
         x = x + "}";
 
         return x;
+    }
+
+    /**
+     * A <b><i>very</i></b> specific utility, used in the transpose function. The assumptions are
+     * <ul>
+     *     <li>This list consists entirely indices to a stem, so all entries are longs</li>
+     *     <li>All the indices are the same length</li>
+     *     <li>The permutation will be applied to every entry</li>
+     *     <li>No sparse entries</li>
+     * </ul>
+     * This is the case where a {@link QDLStem} has the indices in it and we need
+     * to permute all of them for a transpose or other operation. This can be very slow
+     * and clunky using QDL standard calls, so this is a backdoor for speed to grab the entries
+     * directly and remap them. It is not a generally applicable function.
+     *
+     * @param permutation
+     * @return
+     */
+    public QDLStem permuteEntries(List<Long> permutation) {
+        /*
+        This uses the internal structure of the stem and lists, so this is seriously hot-rodding it.
+         */
+        QDLList out = new QDLList();
+        int size = permutation.size();
+        for (Object ooo : getArrayList()) {
+            QDLList qdlList = ((QDLStem) ooo).getQDLList(); // each stem has a list of n entries.
+            QDLList outList = new QDLList(size);
+
+            for (int index = 0; index < size; index++) {
+                //outList.set(permutation.get(index), qdlList.get(index));
+                outList.set(index, qdlList.get(permutation.get(index)));
+            }
+            QDLStem outStem = new QDLStem(outList);
+            out.append(outStem);
+        }
+        QDLStem r = new QDLStem(out);
+        return r;
     }
 }

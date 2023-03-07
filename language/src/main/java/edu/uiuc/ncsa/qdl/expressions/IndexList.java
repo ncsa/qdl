@@ -45,6 +45,11 @@ public class IndexList extends ArrayList {
         }
     }
 
+    /**
+     * return the last n elements of this index list
+     * @param n
+     * @return
+     */
     public IndexList tail(int n) {
         IndexList indexList = new IndexList();
         indexList.addAll(subList(n, size()));
@@ -72,7 +77,7 @@ public class IndexList extends ArrayList {
     }
 
     /**
-     * Return n clones of this object
+     * Return n clones of this object, so if this object has m elements, this returns n*m elements.
      * @param n
      * @return
      */

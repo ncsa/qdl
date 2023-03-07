@@ -201,7 +201,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     protected void showHelp4Help() {
         say(HELP_COMMAND + " syntax:");
         say(HELP_COMMAND + " - (no arg) print generic help for the workspace.");
-        say(HELP_COMMAND + " * - print a short summary of help for every user defined function.");
+        say(HELP_COMMAND + " -all - print a short summary of help for every user defined function.");
         say(HELP_COMMAND + " " + ONLINE_HELP_COMMAND + " - print a list of all online help topics.");
         say(HELP_COMMAND + " name [" + ONLINE_HELP_EXAMPLE_FLAG + "] - print short help for name. System functions will have a");
         say("        summary printed (read the manual for more). The optional " + ONLINE_HELP_EXAMPLE_FLAG + " flag will print out examples if any");
@@ -2890,7 +2890,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         String name = inputLine.getArg(ACTION_INDEX);
         boolean isRegex = inputLine.hasArg(REGEX_SWITCH);
 
-        if (name.equals("*")) {
+        if (name.equals("-all")) {
             // so they entered )funcs help Print off first lines of help
             TreeSet<String> treeSet = new TreeSet<>();
             treeSet.addAll(getState().listAllDocumentation());

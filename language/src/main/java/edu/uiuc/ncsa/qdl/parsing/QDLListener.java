@@ -2281,16 +2281,30 @@ illegal argument:no module named "b" was  imported at (1, 67)
     @Override
     public void exitContainsKey(QDLParserParser.ContainsKeyContext ctx) {
         String x = ctx.getChild(1).getText();
-         Dyad dyad;
-         if (x.equals(OpEvaluator.CONTAINS_KEY)) {
-             dyad = new Dyad(OpEvaluator.CONTAINS_KEY_VALUE);
-         } else {
-             dyad = new Dyad(OpEvaluator.NOT_CONTAINS_KEY_VALUE);
-         }
-         dyad.setTokenPosition(tp(ctx));
-         stash(ctx, dyad);
-         finish(dyad, ctx);
+        Dyad dyad;
+        if (x.equals(OpEvaluator.CONTAINS_KEY)) {
+            dyad = new Dyad(OpEvaluator.CONTAINS_KEY_VALUE);
+        } else {
+            dyad = new Dyad(OpEvaluator.NOT_CONTAINS_KEY_VALUE);
+        }
+        dyad.setTokenPosition(tp(ctx));
+        stash(ctx, dyad);
+        finish(dyad, ctx);
     }
+
+    @Override
+    public void enterForAll(QDLParserParser.ForAllContext ctx) {
+
+    }
+
+    @Override
+    public void exitForAll(QDLParserParser.ForAllContext ctx) {
+        Dyad dyad = new Dyad(OpEvaluator.FOR_ALL_KEY_VALUE);
+        dyad.setTokenPosition(tp(ctx));
+        stash(ctx, dyad);
+        finish(dyad, ctx);
+    }
+
 }
 
 

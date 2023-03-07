@@ -9,6 +9,7 @@ import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.types.Types;
 import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -79,8 +80,9 @@ public class OpEvaluator extends AbstractEvaluator {
     public static final String IS_A = "<<";
     public static final String IS_DEFINED = "∃";
     public static final String IS_NOT_DEFINED = "∄";
-    public static final String CONTAINS_KEY = "∑"; //2203
-    public static final String NOT_CONTAINS_KEY = "⨋"; //220c
+    public static final String CONTAINS_KEY = "∋"; //2203
+    public static final String NOT_CONTAINS_KEY = "∌"; //220c
+    public static final String FOR_ALL_KEY = "∀"; //220o
 
     public static final int ASSIGNMENT_VALUE = 10;
     public static final int PLUS_VALUE = 100;
@@ -116,12 +118,13 @@ public class OpEvaluator extends AbstractEvaluator {
     public static final int IS_NOT_DEFINED_VALUE = 226;
     public static final int CONTAINS_KEY_VALUE = 227;
     public static final int NOT_CONTAINS_KEY_VALUE = 228;
+    public static final int FOR_ALL_KEY_VALUE = 229;
 
     /**
      * All Math operators. These are used in function references.
      */
     public static String[] ALL_MATH_OPS = new String[]{
-            CONTAINS_KEY, NOT_CONTAINS_KEY,
+            CONTAINS_KEY, NOT_CONTAINS_KEY, FOR_ALL_KEY,
             IS_DEFINED, IS_NOT_DEFINED,
             EPSILON, EPSILON_NOT, IS_A,
             TO_SET, TO_SET2,
@@ -241,6 +244,8 @@ public class OpEvaluator extends AbstractEvaluator {
      */
     public int getType(String oo) {
         switch (oo) {
+            case FOR_ALL_KEY:
+                return FOR_ALL_KEY_VALUE;
             case CONTAINS_KEY:
                 return CONTAINS_KEY_VALUE;
             case NOT_CONTAINS_KEY:
@@ -344,6 +349,9 @@ public class OpEvaluator extends AbstractEvaluator {
 
     public void evaluate2(Dyad dyad, State state) {
         switch (dyad.getOperatorType()) {
+            case FOR_ALL_KEY_VALUE:
+                doForAll(dyad, state);
+                return;
             case CONTAINS_KEY_VALUE:
                 doContainsKey(dyad, state, true);
                 return;
@@ -415,6 +423,30 @@ public class OpEvaluator extends AbstractEvaluator {
         }
     }
 
+    private void doForAll(Dyad dyad, State state) {
+        Polyad polyad = new Polyad(StemEvaluator.FOR_EACH);
+        polyad.setTokenPosition(dyad.getTokenPosition());
+        polyad.setSourceCode(dyad.getSourceCode());
+        polyad.addArgument(dyad.getLeftArgument()); // should be a function reference
+        Object obj = dyad.getRightArgument().evaluate(state);
+        if (!(obj instanceof QDLStem)) {
+            throw new QDLExceptionWithTrace("right argument of " + FOR_ALL_KEY + " must be a list", dyad.getRightArgument());
+        }
+        QDLStem stem = (QDLStem) obj;
+        if (!stem.isList()) {
+            throw new QDLExceptionWithTrace("right argument of " + FOR_ALL_KEY + " must be a list", dyad.getRightArgument());
+        }
+        for(Object key : stem.getQDLList().orderedKeys()){
+            // key is a long, convert to int
+            polyad.addArgument(new ConstantNode(stem.getQDLList().get((Long)key)));
+        }
+        //polyad.addArgument(dyad.getRightArgument());
+        state.getMetaEvaluator().evaluate(polyad, state);
+        dyad.setResult(polyad.getResult());
+        dyad.setResultType(polyad.getResultType());
+        dyad.setEvaluated(polyad.isEvaluated());
+    }
+
     protected void doContainsKey(Dyad dyad, State state, boolean containsKey) {
         Polyad polyad = new Polyad(StemEvaluator.HAS_KEY);
         polyad.setTokenPosition(dyad.getTokenPosition());
@@ -444,7 +476,7 @@ public class OpEvaluator extends AbstractEvaluator {
         polyad.setTokenPosition(dyad.getTokenPosition());
         polyad.setSourceCode(dyad.getSourceCode());
         polyad.addArgument(dyad.getLeftArgument());
-        if(dyad.getRightArgument() instanceof ConstantNode && dyad.getRightArgument().getResult() != QDLNull.getInstance()) {
+        if (dyad.getRightArgument() instanceof ConstantNode && dyad.getRightArgument().getResult() != QDLNull.getInstance()) {
             polyad.addArgument(dyad.getRightArgument());
         }
         if (!isDefined) {
@@ -1152,6 +1184,14 @@ public class OpEvaluator extends AbstractEvaluator {
                     String arg = "";
                     String tempOutput = "";
                     boolean gotOne = false;
+                    if (!doTimes && isString(objects[0]) && isString(objects[1])) {
+                        String left = (String) objects[0];
+                        String right = (String) objects[1];
+                        long x = StringUtils.countMatches(left, right);
+                        r.resultType = LONG_TYPE;
+                        r.result = x;
+                        return r;
+                    }
                     if (doTimes && isLong(objects[0]) && isString(objects[1])) {
                         count = (Long) objects[0];
                         arg = (String) objects[1];

@@ -31,6 +31,14 @@ public class QDLStem implements Map<String, Object>, Serializable {
     public QDLStem() {
     }
 
+    /**
+     * Initialize a QDL stem with a list
+     * @param list
+     */
+    public QDLStem(QDLList list){
+        setQDLList(list);
+    }
+
     public QDLStem(Long count, Object[] fillList) {
         QDLList s = new QDLList(count, fillList);
         setQDLList(s);

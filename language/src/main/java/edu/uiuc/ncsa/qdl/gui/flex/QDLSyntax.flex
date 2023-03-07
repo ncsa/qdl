@@ -476,7 +476,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "∆" |
 "∈" |
 "∉" |
-"∑" |
+"∋" |
 "∧" |
 "∨" |
 "∩" |
@@ -495,7 +495,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "⌊" |
 "⟦" |
 "⟧" |
-"⨋"		{ addToken(Token.OPERATOR); }
+"∌"		{ addToken(Token.OPERATOR); }
 
 	/* Numbers */
 	{IntegerLiteral}				{ addToken(Token.LITERAL_NUMBER_DECIMAL_INT); }

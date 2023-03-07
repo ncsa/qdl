@@ -448,6 +448,18 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterForAll(QDLParserParser.ForAllContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitForAll(QDLParserParser.ForAllContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterTildeExpression(QDLParserParser.TildeExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}

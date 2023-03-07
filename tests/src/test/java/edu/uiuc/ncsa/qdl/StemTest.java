@@ -1,6 +1,7 @@
 package edu.uiuc.ncsa.qdl;
 
 import edu.uiuc.ncsa.qdl.evaluate.ListEvaluator;
+import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.StemEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.IndexError;
 import edu.uiuc.ncsa.qdl.exceptions.QDLException;
@@ -1741,7 +1742,7 @@ public class StemTest extends AbstractQDLTester {
         StringBuffer script = new StringBuffer();
         addLine(script, "w(x,y,z)->x^2+y^2 + z^3;");
         addLine(script, "a. := for_each(@w, n(5),n(7),n(9));");
-        // The test is that a.i.j == w(i,j) testing all of them is a pain, so we test some
+        // The test is that a.i.j.k == w(i,j,ka) testing all of them is a pain, so we test some
         addLine(script, "b.0 := a.0.0.0 == w(0,0,0);");
         addLine(script, "b.1 := a.1.1.1 == w(1,1,1);");
         addLine(script, "b.2 := a.2.2.2 == w(2,2,2);");
@@ -2013,7 +2014,69 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok2", state) : StemEvaluator.TRANSPOSE2 + " operator failed for axis = 2.";
     }
 
+    /**
+     * Test that a scalar as an argument to for_each does not change the shape of the result.
+     * @throws Throwable
+     */
+    public void testForEachScalar() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, " ss(x,y,z)->x*y-z; ");
+        addLine(script, "y. := @ss" + OpEvaluator.FOR_ALL_KEY + " [[1;6], 4, [;5]];");
+        addLine(script, "check. := [[4,3,2,1,0],[8,7,6,5,4],[12,11,10,9,8],[16,15,14,13,12],[20,19,18,17,16]];"); // matrix
+        addLine(script, "ok := reduce(@∧, reduce(@∧, check. ≡ y.));");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : OpEvaluator.FOR_ALL_KEY + " failed to process scalar in argument list.";
+    }
+
+    /**
+     * Shows that the trivial case of a single scalar argument.
+     * @throws Throwable
+     */
+    public void testForEachScalar2() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, " ok := 3 == @size" + OpEvaluator.FOR_ALL_KEY + "['asd']; ");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : OpEvaluator.FOR_ALL_KEY + " failed to process single scalar case.";
+    }
+
+    /**
+     * Test case that a scalar is at the end of the argument list in for_each.
+     * @throws Throwable
+     */
+    public void testForEachTrailingScalar() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "a. := for_each(@*, [1;5], 3); ");
+        addLine(script, "check. := 3*[1;5];");
+        addLine(script, "ok :=  reduce(@∧, check. ≡ a.);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : StemEvaluator.FOR_EACH + " failed to handle trailing scalar in argument list.";
+    }
+
+    public void testBigForEach() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "a. := for_each(@*, n(2,3, [;6]), n(3,4,[;12]+100)); ");
+        addLine(script, "check. := [[[[0,0,0,0],[0,0,0,0],[0,0,0,0]],[[100,101,102,103],[104,105,106,107],[108,109,110,111]],[[200,202,204,206],[208,210,212,214],[216,218,220,222]]],[[[300,303,306,309],[312,315,318,321],[324,327,330,333]],[[400,404,408,412],[416,420,424,428],[432,436,440,444]],[[500,505,510,515],[520,525,530,535],[540,545,550,555]]]];");
+        addLine(script, "ok :=  reduce(@∧,reduce(@∧,reduce(@∧,reduce(@∧, check. ≡ a.))));"); // 4 axes
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : StemEvaluator.FOR_EACH + " failed large multi-dimensional lists";
+    }
+
 /*
+                     for_each(@*, [1;5], 3)
+  input_form(for_each(@*, n(2,3, [;6]), n(3,4,[;12]+100)))
+[[[[0,0,0,0],[0,0,0,0],[0,0,0,0]],[[100,101,102,103],[104,105,106,107],[108,109,110,111]],[[200,202,204,206],[208,210,212,214],[216,218,220,222]]],[[[300,303,306,309],[312,315,318,321],[324,327,330,333]],[[400,404,408,412],[416,420,424,428],[432,436,440,444]],[[500,505,510,515],[520,525,530,535],[540,545,550,555]]]]
+
      unique(['a','b',0,3,true]~[['a','b',0,3,true]]~[[['a','b',0,3,true]]])
      [0,a,b,c,3,true]
  */
