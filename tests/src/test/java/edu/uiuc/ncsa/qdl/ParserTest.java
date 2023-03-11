@@ -3,6 +3,8 @@ package edu.uiuc.ncsa.qdl;
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.IndexError;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
+import edu.uiuc.ncsa.qdl.functions.FKey;
+import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
@@ -2550,7 +2552,25 @@ public class ParserTest extends AbstractQDLTester {
 
     }
 
+    public void testLambdaDocumentStatements() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)\n" +
+                "->\n" +
+                "» This is a comment\n" +
+                "» This is another comment\n" +
+                "x\n" +
+                "  ^\n" +
+                "     2\n" +
+                ";"); //
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        FunctionRecord fRec = (FunctionRecord) state.getFTStack().get(new FKey("f", 1));
+        assert fRec.documentation.size()==2;
+        assert fRec.documentation.get(0).trim().equals("This is a comment");
+        assert fRec.documentation.get(1).trim().equals("This is another comment");
 
+    }
     /**
      * tests that supplying a loop with a list in the for_next function works.
      *

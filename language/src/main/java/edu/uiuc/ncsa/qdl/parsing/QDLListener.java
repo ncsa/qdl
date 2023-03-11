@@ -739,8 +739,13 @@ public class QDLListener implements QDLParserListener {
             String doc = fd.getText();
             // strip off function comment marker
             //if (doc.startsWith(">>")) {
-            if (doc.startsWith(FDOC_MARKER)) {
-                doc = doc.substring(FDOC_MARKER.length()).trim();
+            int pos = doc.indexOf(FDOC_MARKER);
+            if (pos != -1) {
+                if (pos + 1 < doc.length()) {
+                    doc = doc.substring(pos + 1);
+                } else {
+                    doc = "";// blank line
+                }
             }
             functionRecord.documentation.add(doc);
         }
@@ -810,6 +815,22 @@ public class QDLListener implements QDLParserListener {
             name = name.substring(0, name.length() - 1);
         }
         functionRecord.name = name;
+
+        for (QDLParserParser.FdocContext fd : lambdaContext.fdoc()) {
+            String doc = fd.getText();
+            // strip off function comment marker
+            //if (doc.startsWith(">>")) {
+            int pos = doc.indexOf(FDOC_MARKER);
+
+            if (pos != -1) {
+                if (pos + 1 < doc.length()) {
+                    doc = doc.substring(pos + 1);
+                } else {
+                    doc = "";// blank line
+                }
+            }
+            functionRecord.documentation.add(doc);
+        }
         //for (QDLParserParser.ArgListContext argListContext : nameAndArgsNode.argList()) {
         for (QDLParserParser.F_argsContext argListContext : nameAndArgsNode.f_args()) {
             // this is a comma delimited list of arguments.
@@ -820,14 +841,15 @@ public class QDLListener implements QDLParserListener {
                 functionRecord.argNames.add(st.nextToken());
             }
         }
-
+        functionRecord.setArgCount(functionRecord.argNames.size()); // Just set it here and be done with it.
         boolean hasSingleArg = true;
         ParseTree p;
-        if (lambdaContext.getChild(2).getChild(0) instanceof QDLParserParser.LambdaStatementContext) {
-            p = lambdaContext.getChild(2).getChild(0).getChild(0);
+        int lastChildIndex = lambdaContext.getChildCount() - 1;
+        if (lambdaContext.getChild(lastChildIndex).getChild(0) instanceof QDLParserParser.LambdaStatementContext) {
+            p = lambdaContext.getChild(lastChildIndex).getChild(0).getChild(0);
             hasSingleArg = false;
         } else {
-            p = lambdaContext.getChild(2).getChild(0);
+            p = lambdaContext.getChild(lastChildIndex).getChild(0);
         }
         String x = p.getChild(0).getText();
 
@@ -844,7 +866,7 @@ public class QDLListener implements QDLParserListener {
             }
 
         } else {
-            // its a single expression most likely. Check to see if it needs wrapped in
+            // it's a single expression most likely. Check to see if it needs wrapped in
             // a return
             Statement stmt = resolveChild(p);
             // Contract: Wrap simple expressions in a return.
@@ -1021,8 +1043,14 @@ illegal argument:no module named "b" was  imported at (1, 67)
             // strip off function comment marker
 
             //if (doc.startsWith(">>")) {
-            if (doc.startsWith(FDOC_MARKER)) {
-                doc = doc.substring(FDOC_MARKER.length()).trim();
+            int pos = doc.indexOf(FDOC_MARKER);
+
+            if (pos != -1) {
+                if (pos + 1 < doc.length()) {
+                    doc = doc.substring(pos + 1);
+                } else {
+                    doc = "";// blank line
+                }
             }
             moduleStatement.getDocumentation().add(doc);
         }

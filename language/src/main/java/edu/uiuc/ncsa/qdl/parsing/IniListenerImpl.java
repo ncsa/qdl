@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.math.BigDecimal;
+import java.util.StringTokenizer;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -61,7 +62,25 @@ public class IniListenerImpl implements iniListener {
     @Override
     public void exitSectionheader(iniParser.SectionheaderContext ctx) {
         currentSectionHeader = ctx.Identifier().getText();
-        output.put(currentSectionHeader, currentStem);
+        if (currentSectionHeader.contains(".")) {
+            StringTokenizer tokenizer = new StringTokenizer(currentSectionHeader, ".");
+            QDLStem currentStem1 = output;
+            while (tokenizer.hasMoreTokens()) {
+                String nextToken = tokenizer.nextToken();
+                if(!currentStem1.containsKey(nextToken)){
+                    QDLStem nextStem = new QDLStem();
+                    currentStem1.put(nextToken, nextStem);
+                    currentStem1 = nextStem;
+                }else{
+                    currentStem1 = currentStem1.getStem(nextToken);
+                }
+            }
+            //output = currentStem1;
+            currentStem = currentStem1;
+        }else {
+            output.put(currentSectionHeader, currentStem);
+        }
+
     }
 
     String currentLineID = null;
@@ -72,7 +91,7 @@ public class IniListenerImpl implements iniListener {
 
     @Override
     public void exitLine(iniParser.LineContext ctx) {
-        if(ctx.Identifier() == null){
+        if (ctx.Identifier() == null) {
             return; // means there was a blank line
         }
         currentLineID = ctx.Identifier().getText(); // don't know if this is scalar or stem at this point
@@ -82,17 +101,19 @@ public class IniListenerImpl implements iniListener {
     @Override
     public void enterEntries(iniParser.EntriesContext ctx) {
     }
+
     Object currentLineValue;
+
     @Override
     public void exitEntries(iniParser.EntriesContext ctx) {
         int entryCount = ctx.children.size();
-        if(entryCount == 1){
+        if (entryCount == 1) {
             currentLineValue = convertEntryToValue(ctx.entry(0));
             return;
         }
         QDLStem stemList = new QDLStem();
         for (int i = 0; i < entryCount; i++) {
-            if(ctx.entry(i)==null){
+            if (ctx.entry(i) == null) {
                 continue;
             }
             Object obj = convertEntryToValue(ctx.entry(i));
@@ -106,8 +127,8 @@ public class IniListenerImpl implements iniListener {
         if (entryContext.String() != null) {
             String outString = entryContext.String().getText().trim();
             // returned text will have the '' included, so string them off
-            if(outString.startsWith("'") && outString.endsWith("'")){
-                outString = outString.substring(1, outString.length()-1);
+            if (outString.startsWith("'") && outString.endsWith("'")) {
+                outString = outString.substring(1, outString.length() - 1);
             }
             return outString;
         }
@@ -121,7 +142,7 @@ public class IniListenerImpl implements iniListener {
         }
         if (entryContext.Number() != null) {
             try {
-             return   new BigDecimal(entryContext.Number().getText());
+                return new BigDecimal(entryContext.Number().getText());
             } catch (Throwable t) {
 
             }

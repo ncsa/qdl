@@ -2016,6 +2016,7 @@ public class StemTest extends AbstractQDLTester {
 
     /**
      * Test that a scalar as an argument to for_each does not change the shape of the result.
+     *
      * @throws Throwable
      */
     public void testForEachScalar() throws Throwable {
@@ -2033,6 +2034,7 @@ public class StemTest extends AbstractQDLTester {
 
     /**
      * Shows that the trivial case of a single scalar argument.
+     *
      * @throws Throwable
      */
     public void testForEachScalar2() throws Throwable {
@@ -2045,7 +2047,49 @@ public class StemTest extends AbstractQDLTester {
     }
 
     /**
+     * test ∀ for only scalar arguments edge case
+     *
+     * @throws Throwable
+     */
+    public void testForEachAllScalars() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "g(x,y,n)->x^n+y^n;");
+        addLine(script, " ok := 5 == @g" + OpEvaluator.FOR_ALL_KEY + "[3,2,1]; ");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : OpEvaluator.FOR_ALL_KEY + " failed to process single scalar case.";
+    }
+
+    /**
+     * Test that this works if the very first argument is a scalar (this is what kicks off
+     * recursion generally in the code.)
+     *
+     * @throws Throwable
+     */
+    public void testForEachInitialScalar() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "g(x,y,n)->x^n+y^n;");
+        addLine(script, " ok := reduce(@&&, [4,5,6,7,8] == @g" + OpEvaluator.FOR_ALL_KEY + "[4,[;5],1]); ");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : OpEvaluator.FOR_ALL_KEY + " failed to process initial scalar case.";
+    }
+
+    public void testForEachMultipleScalar() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "g(x,y,n)->x^n+y^n;");
+        addLine(script, " ok := reduce(@&&, [16,17,20,25,32] == @g" + OpEvaluator.FOR_ALL_KEY + "[[;5],4,2]); ");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : OpEvaluator.FOR_ALL_KEY + " failed to process multiple trailing scalar case.";
+    }
+
+    /**
      * Test case that a scalar is at the end of the argument list in for_each.
+     *
      * @throws Throwable
      */
     public void testForEachTrailingScalar() throws Throwable {
@@ -2060,7 +2104,11 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok", state) : StemEvaluator.FOR_EACH + " failed to handle trailing scalar in argument list.";
     }
 
-    public void testBigForEach() throws Throwable {
+    /**
+     * In this case, there are two 2-rank stems. Ensure for each is applied to all of them
+     * @throws Throwable
+     */
+    public void testForEach4Axes() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "a. := for_each(@*, n(2,3, [;6]), n(3,4,[;12]+100)); ");
@@ -2069,7 +2117,24 @@ public class StemTest extends AbstractQDLTester {
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
 
         interpreter.execute(script.toString());
-        assert getBooleanValue("ok", state) : StemEvaluator.FOR_EACH + " failed large multi-dimensional lists";
+        assert getBooleanValue("ok", state) : StemEvaluator.FOR_EACH + " failed for 4 axes ";
+    }
+
+    /**
+     * Here three 1 rank stems are passed in and create a 3 rank stem
+     * @throws Throwable
+     */
+    public void testForEach3Axes() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x,y,z)->x+'_' + y + '_' + z;");
+        addLine(script, "a.:=@f∀[[;5],[5;9],[9;12]];");
+        addLine(script, "check. := [[['0_5_9','0_5_10','0_5_11'],['0_6_9','0_6_10','0_6_11'],['0_7_9','0_7_10','0_7_11'],['0_8_9','0_8_10','0_8_11']],[['1_5_9','1_5_10','1_5_11'],['1_6_9','1_6_10','1_6_11'],['1_7_9','1_7_10','1_7_11'],['1_8_9','1_8_10','1_8_11']],[['2_5_9','2_5_10','2_5_11'],['2_6_9','2_6_10','2_6_11'],['2_7_9','2_7_10','2_7_11'],['2_8_9','2_8_10','2_8_11']],[['3_5_9','3_5_10','3_5_11'],['3_6_9','3_6_10','3_6_11'],['3_7_9','3_7_10','3_7_11'],['3_8_9','3_8_10','3_8_11']],[['4_5_9','4_5_10','4_5_11'],['4_6_9','4_6_10','4_6_11'],['4_7_9','4_7_10','4_7_11'],['4_8_9','4_8_10','4_8_11']]];");
+        addLine(script, "ok :=  reduce(@∧,reduce(@∧,reduce(@∧, check. ≡ a.)));"); // 3 axes
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : StemEvaluator.FOR_EACH + " failed for 3 axes ";
     }
 
 /*
@@ -2670,6 +2735,7 @@ public class StemTest extends AbstractQDLTester {
 
     /**
      * test contract for {@link StemEvaluator#DIFF} function.
+     *
      * @throws Throwable
      */
     public void testDiff() throws Throwable {

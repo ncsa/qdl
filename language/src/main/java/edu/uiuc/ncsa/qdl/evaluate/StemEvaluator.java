@@ -856,7 +856,6 @@ public class StemEvaluator extends AbstractEvaluator {
      * Apply n-ary function to outer product of stems. There n stems passed in. The function is applied to each of them
      * as an outer product. So every element of every argument is evaluated.
      *
-     *
      * @param polyad
      * @param state
      */
@@ -873,12 +872,13 @@ public class StemEvaluator extends AbstractEvaluator {
         if (polyad.getArgCount() == 1) {
             throw new MissingArgException(FOR_EACH + " requires at least 2 arguments", polyad.getArgAt(0));
         }
-
         Object[] stems = new Object[polyad.getArgCount() - 1];
+        boolean allScalars = true;
         for (int i = 1; i < polyad.getArgCount(); i++) {
             Object arg = polyad.evalArg(i, state);
             checkNull(arg, polyad.getArgAt(i));
             stems[i - 1] = arg;
+            allScalars = allScalars && (!(arg instanceof QDLStem));
         }
         ExpressionImpl f;
         try {
@@ -887,73 +887,41 @@ public class StemEvaluator extends AbstractEvaluator {
             ufx.setStatement(polyad.getArgAt(0));
             throw ufx;
         }
-
+        if (allScalars) {
+            // Just skip the machinery below and evaluate it.
+            Object y = forEachEval(f, state, Arrays.asList(stems));
+            polyad.setResult(y);
+            polyad.setResultType(Constant.getType(y));
+            polyad.setEvaluated(true);
+            return;
+        }
         QDLStem output = new QDLStem();
         // special case single args. Otherwise, have to special case a bunch of stuff in forEachRecursion
 
         if (stems.length == 1) {
-            if (stems[0] instanceof QDLStem) {
-                QDLStem inStem = (QDLStem) stems[0];
-                for (Object key0 : inStem.keySet()) {
-                    Object obj = inStem.get(key0);
-                    ArrayList<Object> rawArgs = new ArrayList<>();
-                    rawArgs.add(obj);
-                    f.setArguments(toConstants(rawArgs));
-                    f.evaluate(state);
-                    output.putLongOrString(key0, f.getResult());
-                }
-                polyad.setResult(output);
-                polyad.setResultType(STEM_TYPE);
-                polyad.setEvaluated(true);
-                return;
-            } else {
-                // It's a scalar
-                ArgList argList = new ArgList();
-                argList.add(new ConstantNode(stems[0]));
-                f.setArguments(argList);
+            // Must be a stem since we tested for scalars above.
+            QDLStem inStem = (QDLStem) stems[0];
+            for (Object key0 : inStem.keySet()) {
+                Object obj = inStem.get(key0);
+                ArrayList<Object> rawArgs = new ArrayList<>();
+                rawArgs.add(obj);
+                f.setArguments(toConstants(rawArgs));
                 f.evaluate(state);
-                polyad.setResult(f.getResult());
-                polyad.setResultType(f.getResultType());
-                polyad.setEvaluated(true);
-                return;
+                output.putLongOrString(key0, f.getResult());
             }
+            polyad.setResult(output);
+            polyad.setResultType(STEM_TYPE);
+            polyad.setEvaluated(true);
+            return;
+
         }
-        forEachRecursionNEW(output, f, state, stems);
+        // Fixes https://github.com/ncsa/qdl/issues/17
+        forEachRecursion(output, f, state, stems, new IndexList(), new ArrayList(), 0);
         polyad.setResult(output);
         polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
-
     }
 
-    /**
-     * Improved version that uses much newer and better machinery, and allows scalars.
-     * @param output
-     * @param f
-     * @param state
-     * @param rawArgs
-     */
-    // Fixes https://github.com/ncsa/qdl/issues/17
-    protected void forEachRecursionNEW(QDLStem output, ExpressionImpl f, State state, Object[] rawArgs) {
-        int currentIndex = 0;
-        ArrayList<Object> valuesList = new ArrayList<>();
-        for (Object ooo : rawArgs) {
-            if (ooo instanceof QDLStem) {
-                QDLStem currentStem = (QDLStem) ooo;
-                ArrayList allIndices = currentStem.indices().getQDLList().getArrayList();
-                for (Object index : allIndices) {
-                    IndexList indexList = new IndexList((QDLStem) index); // index looks like [0,0,1]
-                    ArrayList valuesList1 = new ArrayList();
-                    valuesList1.add(currentStem.get(indexList, true).get(0));
-                    forEachRecursionNEW(output, f, state, rawArgs, indexList, valuesList1, 1); // This is zero, so n
-                }
-                break;
-            } else {
-                currentIndex++;
-                valuesList.add(ooo);
-            }
-        }
-
-    }
 
     /*
     for_each(@*, n(2,3, [;6]), n(3,4,[;12]+100))
@@ -963,47 +931,52 @@ public class StemEvaluator extends AbstractEvaluator {
                      @size∀['asd']
         ss(x,y,z)->x*y-z;
         for_each(@ss, [1;6], 4, [;5])
+           g(x,y,n)->x^n+y^n
+           @g∀[4,[;5],1]
+           *Really good test function -- spits out the formatted indices:
+        f(x,y,z)->x+'_' + y + '_' + z
+        @f∀[[1,2],[3,4],[5,6]]
+
      */
-    protected void forEachRecursionNEW(QDLStem output,
-                                       ExpressionImpl f,
-                                       State state,
-                                       Object[] args,
-                                       IndexList indexList,
-                                       ArrayList values,
-                                       int currentIndex) {
+    protected void forEachRecursion(QDLStem output,
+                                    ExpressionImpl f,
+                                    State state,
+                                    Object[] args,
+                                    IndexList indexList,
+                                    ArrayList values,
+                                    int currentIndex) {
 
-
-        for (int i = currentIndex; i < args.length; i++) {
-            if (args[i] instanceof QDLStem) {
-                QDLStem currentStem = (QDLStem) args[i];
-                ArrayList allIndices = currentStem.indices().getQDLList().getArrayList();
-                for (Object index : allIndices) {
-                    IndexList currentIndexList = new IndexList((QDLStem) index); // index looks like [0,0,1]
-                    IndexList nextIndexList = new IndexList(); // index looks like [0,0,1]
-                    nextIndexList.addAll(indexList);
-                    nextIndexList.addAll(currentIndexList);
-                    ArrayList valuesList1 = new ArrayList();
-                    valuesList1.addAll(values);
-                    valuesList1.add(currentStem.get(currentIndexList, true).get(0));
-                    if (currentIndex == args.length - 1) {
-                        // end of the line for recursion. Evaluate
-                        output.set(nextIndexList, forEachEval(f, state, valuesList1));
-                    } else {
-                        forEachRecursionNEW(output, f, state, args, nextIndexList, valuesList1, currentIndex + 1);
-                    }
-                }
+        while (!(args[currentIndex] instanceof QDLStem)) {
+            values.add(args[currentIndex]); // we can add scalars to the end of this, but it will recurse on the next stem
+            currentIndex++;
+            if (currentIndex == args.length) {
+                // end of the line for recursion. Evaluate
+                output.set(indexList, forEachEval(f, state, values));
+                return;
+            }
+        }
+        QDLStem currentStem = (QDLStem) args[currentIndex++];
+        ArrayList allIndices = currentStem.indices().getQDLList().getArrayList();
+        for (Object index : allIndices) {
+            IndexList currentIndexList = new IndexList((QDLStem) index); // index looks like [0,0,1]
+            IndexList nextIndexList = new IndexList(); // index looks like [0,0,1]
+            nextIndexList.addAll(indexList);
+            nextIndexList.addAll(currentIndexList);
+            ArrayList valuesList1 = new ArrayList();
+            valuesList1.addAll(values);
+            //     valuesList1.add(currentStem.get(currentIndexList, true).get(0));
+            valuesList1.add(currentStem.get(index));
+            if (currentIndex == args.length) {
+                // end of the line for recursion. Evaluate
+                output.set(nextIndexList, forEachEval(f, state, valuesList1));
             } else {
-                values.add(args[i]); // we can add scalars to the end of this, but it will recurse on the next stem
-                if (currentIndex == args.length - 1) {
-                    // end of the line for recursion. Evaluate
-                    output.set(indexList, forEachEval(f, state, values));
-                }
-                currentIndex++;
+                forEachRecursion(output, f, state, args, nextIndexList, valuesList1, currentIndex);
             }
         }
     }
 
-    protected Object forEachEval(ExpressionImpl f, State state, ArrayList args) {
+
+    protected Object forEachEval(ExpressionImpl f, State state, List args) {
         ArgList argList1 = new ArgList();
         for (Object arg : args) {
             argList1.add(new ConstantNode(arg));
@@ -1013,48 +986,6 @@ public class StemEvaluator extends AbstractEvaluator {
 
     }
 
-  /*  protected void forEachRecursion(QDLStem output, ExpressionImpl f, State state, QDLStem[] stems) {
-        int argCount = stems.length - 1;
-        for (Object key : stems[0].keySet()) {
-            ArrayList<Object> rawArgs = new ArrayList<>();
-            rawArgs.add(stems[0].get(key));
-            QDLStem output1 = new QDLStem();
-            forEachRecursion(output1, f, state, stems, rawArgs, argCount - 1);
-            output.putLongOrString(key, output1);
-        }
-    }*/
-
-   /* protected void forEachRecursion(QDLStem output,
-                                    ExpressionImpl f,
-                                    State state,
-                                    QDLStem[] stems,
-                                    ArrayList<Object> rawArgs,
-                                    int depth) {
-        ArrayList<StatementWithResultInterface> args = null;
-        int currentIndex = stems.length - depth - 1;
-        if (depth == 0) {
-            args = toConstants(rawArgs); // convert 0,...n-1 args
-            args.add(null);
-        } else {
-            rawArgs.add(null);
-        }
-        for (Object key : stems[currentIndex].keySet()) {
-            if (depth == 0) {
-                Object o = stems[currentIndex].get(key);
-                args.set(currentIndex, new ConstantNode(o, Constant.getType(o)));
-                f.setArguments(args);
-                f.evaluate(state);
-                output.putLongOrString(key, f.getResult());
-            } else {
-                rawArgs.set(currentIndex, stems[currentIndex].get(key));
-                QDLStem output1 = new QDLStem();
-                forEachRecursion(output1, f, state, stems, rawArgs, depth - 1);
-                output.putLongOrString(key, output1);
-            }
-        }
-    }
-
-*/
     protected void doJPathQuery(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{2, 3});
@@ -2513,7 +2444,7 @@ public class StemEvaluator extends AbstractEvaluator {
      */
     protected void doShuffle(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1,2});
+            polyad.setResult(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -3068,8 +2999,8 @@ z. :=  join3(q.,w.)
 
         // Now we need to create QDL for
         // newIndices. := shuffle(oldIndices., pStem0.)
-      //  QDLStem pStem = new QDLStem();
-       // pStem.put(0L, pStem0); // makes [pstem.]
+        //  QDLStem pStem = new QDLStem();
+        // pStem.put(0L, pStem0); // makes [pstem.]
 /*        ArrayList arrayList = oldIndices.getQDLList().getArrayList();
         for(Object ooo : oldIndices.getQDLList().orderedKeys()){
             QDLStem sss = (QDLStem) oldIndices.getQDLList().get((Long)ooo);

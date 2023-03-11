@@ -2495,17 +2495,27 @@ assert[script_arg() ≡  2 ][ 'you must supply both a username and password'];]]
     <entry id="for_each" alias="∀">
         <body>
  <![CDATA[for_each(@f, arg_1., arg_2., ..., arg_n.) - Apply the n-adic function, f, to
-           each element of the outer product of the arg_k.
+           each element of the outer product of the arg_k. The contract is
+
+a. := for_each(@f, arg0, arg1, ..., argn)
+
+   a.i0.i1,...in == f(arg0.i0, arg1.i1,...,argn.in)
+
+So this function visits each element of the Cartesian product of the arguments and
+sets the value in the result to be the value of the function there.
+
 Note the syntax for the ∀ (unicode 2200) operator is
 
 @func ∀ [list of arguments]
 
 where @func is a function reference and a list of arguments. Only function references
-are supported as the first argument. If any of the arg are scalars, they will be passed
+are supported as the first argument of ∀. If any of the arg are scalars, they will be passed
 to the function, but do not determine the shape of the result.
 
 Simple example, making a multiplication table.
-   a. := for_each(@*, 1+n(5), 1+n(6))
+   x. := 1+[;5];
+   y. := 1+[;6];
+   a. := for_each(@*, x., y.)
    a.
 [
    [1,2,3,4,5,6],
@@ -2516,17 +2526,30 @@ Simple example, making a multiplication table.
 ]
 
 cf.
-   a. := @*∀[1+n(5), 1+n(6)]
+   a. := @*∀[x.,y.]
 
 Things to note. The result is the product of the stems, so here there is
-a 5 x 6 array that results. a.i.j is the product of the i-th and j-th elements.
+a 5 x 6 array that results. a.i.j = x.i * y.j.
+
++-------------------------------------------------+
+|Final tip: The output shape is dictated by the   |
+|           arguments to the function, so using   |
+|           transpose to restructure the shape to |
+|           your liking can be a good thing.      |
++-------------------------------------------------+
 ]]>
 
         </body>
         <example>
 
 <![CDATA[
-Example. Scalars. Let's say we had
+Example. Turning an stem of numbers in to an array of strings.
+If our stem of numbers is x., then
+   for_each(@to_string, x.) or @to_string∀[x.]
+returns a stem each of whose elements is a string. Note that to_string(x.)
+would turn the entire stem into a formatted string.
+
+Example. Scalars and the shape of the result. Let's say we had
   f(x,n,y) -> x^n + y^n
   @f∀[[1;5],2,[-3;2]]
 [
@@ -2541,6 +2564,7 @@ In other words,
    @f∀[a.,2,b.] =: z.
 means
    z.i.j == f(a.i, 2, b.j)
+If we had evaluated @f∀[[1;5],[2],[-3;2]] then the reuslt would have been a 3 rank stem.
 
 Another example. Create the grid points for a quadric (polynomial) surface over
 a a region.
@@ -2553,7 +2577,8 @@ and 0 <= y < 3. There are 15 total points in the x direction and
 the y direction is done in increments of 0.25, resulting in 12 values,
 so the result is a 15 x 12 array, with z evaluated at each point.
 
-To get the xy grid, use ~ to stick the x and y coordinates together:
+To get the xy grid (such as for passing to a plotting program that needs pairs of coordinates),
+use ~ to stick the x and y coordinates together:
 
    xy. := for_each(@~, [|-1;1;15|],[0;3;0.25])
    dim(xy.)
@@ -4734,6 +4759,22 @@ See also: has_key, ∋.
     ]]>
          </body>
       </entry>
+    <entry id="∀">
+       <body>
+  <![CDATA[Alias of for_each. Note that this
+requires that the right hand side be a list of arguments and the
+left hand side is function reference, so the format is
+
+   @f∀[arg0,arg1,...] == for_each(@f, arg0, arg1, ...)
+
+E.g.
+   @size∀['asd']
+3
+   @*∀[[1;11],[1;11]]
+returns a 10x10 multiplication table.
+See also: for_each]]>
+       </body>
+    </entry>
     <!--
     <entry id="">
        <body>

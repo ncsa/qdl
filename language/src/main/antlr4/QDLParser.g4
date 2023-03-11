@@ -44,7 +44,7 @@ defineStatement:
      DEFINE '[' function ']' BODY? docStatementBlock;
 
 lambdaStatement:
-      function LambdaConnector  (statement) | statementBlock;
+      function LambdaConnector fdoc* (statement) | statementBlock;
   //  function LambdaConnector  (statement) |  docStatementBlock;
 
 moduleStatement:
