@@ -314,6 +314,7 @@ public class State extends FunctionState implements QDLConstants {
         characters.put("220b", "∋");
         characters.put("220c", "∌");
         characters.put("2200", "∀");
+        characters.put("21d2", "⇒");
 
 
         systemConstants.put(SYS_VAR_TYPE_CHARACTERS, characters);

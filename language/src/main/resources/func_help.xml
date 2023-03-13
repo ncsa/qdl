@@ -2492,7 +2492,7 @@ assert[script_arg() ≡  2 ][ 'you must supply both a username and password'];]]
         </example>
     </entry>
 
-    <entry id="for_each" alias="∀">
+    <entry id="for_each" alt="∀">
         <body>
  <![CDATA[for_each(@f, arg_1., arg_2., ..., arg_n.) - Apply the n-adic function, f, to
            each element of the outer product of the arg_k. The contract is
@@ -2531,13 +2531,14 @@ cf.
 Things to note. The result is the product of the stems, so here there is
 a 5 x 6 array that results. a.i.j = x.i * y.j.
 
-+-------------------------------------------------+
-|Final tip: The output shape is dictated by the   |
-|           arguments to the function, so using   |
-|           transpose to restructure the shape to |
-|           your liking can be a good thing.      |
-+-------------------------------------------------+
-]]>
++-----------------------------------------------+
+| tip: The output shape is dictated by the      |
+|           arguments to the function, so you   |
+|           may have to restructure the data to |
+|           your liking.                        |
++-----------------------------------------------+
+
+See also: transpose, \ (extraction), remap]]>
 
         </body>
         <example>
@@ -2566,26 +2567,53 @@ means
    z.i.j == f(a.i, 2, b.j)
 If we had evaluated @f∀[[1;5],[2],[-3;2]] then the reuslt would have been a 3 rank stem.
 
+Example. Restructuring the result
+Let us say we had a function
+   f(x,y,n)->x^n+y^n
+and we wanted to apply this to a grid and mutliple exponents, n:
+   r. := @f∀[[-5;5],[-5;5],[2,3,4]]
+ which wields a 10x10x3 result. The arguments of the function determine
+ the shape of the result, so it would be a lot more natural if the 0th axis
+ of the stem corresponded to the exponents, so we'd like to transform r.
+ into the stem q. that has the right structure and
+   q.0
+is the 10x10 grid for exponent  2. There are three ways to do this.
+
+(1) Redefine the function to be what you want:
+   my_f(n,x,y)->f(x,y,n)
+   q. := @my_f∀[[2,3,4],[-5;5],[-5;5]]
+
+(2) Use the transpose function. Just specify which index you want first,
+here 2:
+   q. := transpose(r., 2);
+
+(3) Use the extraction operator top grab each as needed:
+   r\*\*\0
+
+The cases of transpose and \ are heavyweight operations in
+the sense that they touch all of the data. You want to run
+these once and access the results vs., say, having
+them get repeatedly called inside a while loop.
+
 Another example. Create the grid points for a quadric (polynomial) surface over
 a a region.
    z(x,y) -> x*y;
-   z. := for_each(@z, [|-1;1;15|],[0;3;0.25])
+   z. := for_each(@z, [|-1;1;15|],[0;3;1/4])
    dim(z.)
 [15,12]
 This creates a table over the region of the plane for -1 <= x <= 1
 and 0 <= y < 3. There are 15 total points in the x direction and
-the y direction is done in increments of 0.25, resulting in 12 values,
+the y direction is done in increments of 1/4, resulting in 12 values,
 so the result is a 15 x 12 array, with z evaluated at each point.
 
 To get the xy grid (such as for passing to a plotting program that needs pairs of coordinates),
 use ~ to stick the x and y coordinates together:
 
-   xy. := for_each(@~, [|-1;1;15|],[0;3;0.25])
+   xy. := for_each(@~, [|-1;1;15|],[0;3;1/4])
    dim(xy.)
 [15,12,2]
 
 and z.i.j is the value of z() at xy.i.j, i.e. z.i.j == z(xy.i.j.0, xy.i.j.1)]]>
-
         </example>
     </entry>
     <entry id="block">
@@ -2698,11 +2726,11 @@ Note there is no semi-colon after the conditional.
 See also: then, else, ?]]>
         </body>
     </entry>
-    <entry id="?">
+    <entry id="?" alt="⇒">
         <body>
 <![CDATA[Used in the ternary operator
-   boolean ? expression0 : expression1
-   boolean. ? expression0 : expression1
+   boolean ?|⇒ expression0 : expression1
+   boolean. ?|⇒ expression0 : expression1
 If boolean is true, then expression0 is evaluated and returned. Otherwise
 expression1 is used.
 
@@ -2727,8 +2755,21 @@ See also: if, then, else]]>
 <![CDATA[For a list of strings, add a trailing slash if one is missing.
    p. := ['a:/x/y','a:/x/z/','b:/p/q']
    p.+('.*/' =~ p.?'':'/');// regex to test if an element ends with a slash
-[a:/x/y/,a:/x/z/,b:/p/q/]]]>
+[a:/x/y/,a:/x/z/,b:/p/q/]
+
+E.g. Checking existence of a function and value using nifty notation
+   f∃1 ∧ 0 < a ⇒ f(a) : 0
+So if the function, f, with one argument exists and the value of a is positive,
+return f(a), otherwise, return 0.]]>
         </example>
+    </entry>
+    <entry id="⇒">
+          <body>Alternative character for the ternary operator.
+These are equivalent
+ 2&lt;3 ? 'foo' : 'bar'
+ 2&lt;3 ⇒ 'foo' : 'bar'
+Saa also: ?
+          </body>
     </entry>
     <entry id="then">
         <body>
@@ -3319,31 +3360,42 @@ abfoocd
 ab....cd]]>
         </body>
     </entry>
-    <entry id="extrinsic">
+    <entry id="extrinsic" alt="$$">
         <body>
  <![CDATA["Not part of the essential nature of someone or something; coming
  or operating from outside"
 
 This refers to what are also called global variables in some languages.
-These are simply variables prefixed with a single ampersand, &, and are
+These are simply variables prefixed with a double dolalr sign, $$, and are
 always available regardless of scope to every module or function.
 To list them in the workspace use the -extrinsic command. So in
 some worksapce you might be able to do this:
 
 )vars -extrinsic
-   &Avogadro  &Planck
+   $$Avogadro  $$Planck
 
-   &Planck
+   $$Planck
 6.62607015E-34
 
 None are pre-defined in QDL. You may access extrinsic variables
 by simply using them like any other variables (including removing them).
-In the final analysis, they are just variables. You should
+In the final analysis, they are just variables and this is special
+handling based on a cenventioin (like intrinsic variables). You should
 use them for values that should be global. A variable
-like &temp would be a ghastly thing!]]>
-            <entry id="&amp;">
+like $$temp used by everything would be a ghastly thing!]]>
+            <entry id="$$">
                 <body>
     <![CDATA[This is the marker for extrinsic variables.
+E.g. Let us say you needed to access the speed of light in
+a vacuum and the universal gravitational constants repeatedly
+in your various modules. It would be a good
+idea to define
+  $$c := 299792458
+(in meters per second).
+  $$G := 6.67430E-11
+(in m^3/kg/s^2)
+
+You may then access these any place in the workspace.
 
 See also: extrinsic]]>
                 </body>

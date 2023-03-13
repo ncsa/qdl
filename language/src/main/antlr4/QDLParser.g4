@@ -154,7 +154,7 @@ expression
  | ('!'  | '¬') expression                                                       #notExpression
 // | expression '<<' typeList                                                    #is_a
  | '(' expression ')'                                                          #association
- | expression '?' expression ':' expression                                    #altIFExpression
+ | expression AltIfMarker expression ':' expression                            #altIFExpression
 //| expression '&'+ expression                                                  #typeCheck
 // | expression '`'+ expression                                                  #index
 // | expression '|'+ expression                                                  #stile

@@ -1026,7 +1026,7 @@ public class ParserTest extends AbstractQDLTester {
         String slash = "\\";
         addLine(script, "a:='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\\n" + //alphanumeric
                 "  ~`!@#$%^&*()[]{}<>\\\\/\\'\"-_=+|;:,.?\\n" + // other ASCII symbols
-                "  ¬¯·×÷⁺→∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧≁⊗⊢∈∉∀∋∌∃∄∩∪∆\\n" + // unicode
+                "  ¬¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧≁⊗⊢∈∉∀∋∌∃∄∩∪∆\\n" + // unicode
                 "  ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω';" // Greek
         );
         addLine(script, "say('\\nprinting all base characters with say:');");
@@ -2797,7 +2797,7 @@ public class ParserTest extends AbstractQDLTester {
     public void testLambdaRecursion() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "sum(n)->(n!=0)?sum(n-1)+n:0;");
+        addLine(script, "sum(n)->(n!=0)⇒sum(n-1)+n:0;");
         addLine(script, "ok := sum(7)==28;");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());

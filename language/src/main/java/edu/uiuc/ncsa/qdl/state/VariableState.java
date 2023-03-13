@@ -513,7 +513,8 @@ public abstract class VariableState extends NamespaceAwareState {
         return var.contains(STEM_INDEX_MARKER); // if there is an embedded period, needs to be resolved
     }
 
-    public static final String EXTRINSIC_MARKER = "&";
+    //public static final String EXTRINSIC_MARKER = "&";
+    public static final String EXTRINSIC_MARKER = "$$";
 
     public boolean isExtrinsic(String x) {
         return x.startsWith(EXTRINSIC_MARKER);

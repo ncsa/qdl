@@ -386,4 +386,13 @@ public class StatementTest extends AbstractQDLTester {
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);
     }
+    public void testTernaryArrow() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok := 1 ==  (2<1⇒-1:1);");// use the arrow, not the ?
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state);
+    }
+
 }

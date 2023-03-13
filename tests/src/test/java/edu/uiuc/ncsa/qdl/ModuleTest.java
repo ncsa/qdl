@@ -3,6 +3,7 @@ package edu.uiuc.ncsa.qdl;
 import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.qdl.state.VariableState;
 
 import java.math.BigDecimal;
 
@@ -1474,8 +1475,8 @@ cannot access '__a'
     protected void testExtrinsic(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "&j := 5;");
-        addLine(script, "module['a:a','A'][define[f(s)][return(s*&j);];];");
+        addLine(script, VariableState.EXTRINSIC_MARKER + "j := 5;");
+        addLine(script, "module['a:a','A'][define[f(s)][return(s*"+VariableState.EXTRINSIC_MARKER + "j);];];");
         QDLInterpreter interpreter;
         switch (testCase) {
             case 1:

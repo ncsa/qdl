@@ -508,7 +508,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             case "set":
                 return _doSISet(inputLine);
             case "threads":
-                for(Integer key : getState().getThreadTable().keySet()){
+                for (Integer key : getState().getThreadTable().keySet()) {
                     say(key + " : " + state.getThreadTable().get(key).name);
                 }
                 return RC_CONTINUE;
@@ -2921,7 +2921,10 @@ public class WorkspaceCommands implements Logable, Serializable {
 
         }
         String[] names = resolveRealHelpName(name);
-
+        String altName = null;
+        if (names.length == 2) {
+            altName = names[1];
+        }
 
         if (names != null) {
             String realName = names[0];
@@ -2939,9 +2942,15 @@ public class WorkspaceCommands implements Logable, Serializable {
                     say("no help for " + name);
                 } else {
                     say(onlineHelp.get(realName));
+                    if (altName != null) {
+                        String altKey = QDLTerminal.getReverseCharLookupMap().get(altName);
+                        say("alt: " + altName + " (" + StringUtils.toUnicode(altName) + ")" + (altKey == null ? "" : ", alt + " + altKey));
+                    }
                     if (onlineExamples.containsKey(realName)) {
                         say("use -ex to see examples for this topic.");
                     }
+
+
                 }
             }
             return RC_CONTINUE;
@@ -5795,22 +5804,22 @@ public class WorkspaceCommands implements Logable, Serializable {
                 inputLine.removeSwitchAndValue(x);
             }
         }
-        if(inputLine.hasArg(CLA_MACRO)){
-              String macro= inputLine.getNextArgFor(CLA_MACRO);
+        if (inputLine.hasArg(CLA_MACRO)) {
+            String macro = inputLine.getNextArgFor(CLA_MACRO);
             macro = macro.replace("\\n", "\n");
 
             inputLine.removeSwitchAndValue(CLA_MACRO);
             Polyad polyad = new Polyad(SystemEvaluator.WS_MACRO);
             polyad.addArgument(new ConstantNode(macro));
-              try {
-                  //getInterpreter().execute(SystemEvaluator.WS_MACRO + "(" + macro + ");");
-                  polyad.evaluate(getState());
-              }catch(Throwable t){
-                  if(isDebug){
-                      t.printStackTrace();
-                  }
-                  say("There was a problem executing the macro '" + macro + "' at startup.");
-              }
+            try {
+                //getInterpreter().execute(SystemEvaluator.WS_MACRO + "(" + macro + ");");
+                polyad.evaluate(getState());
+            } catch (Throwable t) {
+                if (isDebug) {
+                    t.printStackTrace();
+                }
+                say("There was a problem executing the macro '" + macro + "' at startup.");
+            }
 
         }
         runScript(inputLine); // If there is a script, run it.
