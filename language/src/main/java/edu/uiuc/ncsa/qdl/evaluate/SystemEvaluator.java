@@ -528,16 +528,17 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     /**
      * This is just module_import(module_load(x, 'java')). It happens so much we need an idiom.
+     *
      * @param polyad
      * @param state
      */
     private void doJLoad(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-               polyad.setResult(new int[]{1});
-               polyad.setEvaluated(true);
-               return;
-           }
-       Object arg = polyad.evalArg(0, state);
+            polyad.setResult(new int[]{1});
+            polyad.setEvaluated(true);
+            return;
+        }
+        Object arg = polyad.evalArg(0, state);
         Polyad module_load = new Polyad(MODULE_LOAD);
         module_load.addArgument(new ConstantNode(arg));
         module_load.addArgument(new ConstantNode(MODULE_TYPE_JAVA));
@@ -573,7 +574,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 return;
             } catch (Throwable t) {
 
-               // t.printStackTrace();
+                // t.printStackTrace();
             }
         }
         polyad.setResult(0L);
@@ -617,7 +618,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             polyad.setEvaluated(true);
             return;
         }
-        if(state.isServerMode()){
+        if (state.isServerMode()) {
             throw new QDLExceptionWithTrace(FORK + " not supported in server mode.", polyad);
         }
         int pid = runnit(polyad, state, state.getScriptPaths(), false, true);
@@ -2776,7 +2777,7 @@ public class SystemEvaluator extends AbstractEvaluator {
      */
     protected void doPrint(Polyad polyad, State state, boolean printIt) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setResult(new int[]{0, 1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -2787,14 +2788,19 @@ public class SystemEvaluator extends AbstractEvaluator {
             return;
         }
 
-        if (polyad.getArgCount() < 1) {
-            throw new MissingArgException(SAY_FUNCTION + " requires at least 1 argument", polyad);
-        }
-
         if (2 < polyad.getArgCount()) {
             throw new ExtraArgException(SAY_FUNCTION + " requires at most 2 arguments", polyad.getArgAt(2));
         }
-
+        if (polyad.getArgCount() == 0) {
+            // print a blank line
+            if (printIt) {
+                state.getIoInterface().println("");
+            }
+            polyad.setResult("");
+            polyad.setResultType(Constant.STRING_TYPE);
+            polyad.setEvaluated(true);
+            return;
+        }
         String result = "";
         boolean prettyPrintForStems = false;
         if (polyad.getArgCount() != 0) {
@@ -2834,22 +2840,17 @@ public class SystemEvaluator extends AbstractEvaluator {
             }
         }
 
+
         if (printIt) {
             state.getIoInterface().println(result);
-        }
-        if (polyad.getArgCount() == 0) {
-            polyad.setResult(QDLNull.getInstance());
-            polyad.setResultType(Constant.NULL_TYPE);
-        } else {
-            if (printIt) {
-                polyad.setResult(polyad.getArgAt(0).getResult());
-                polyad.setResultType(polyad.getArgAt(0).getResultType());
+            polyad.setResult(polyad.getArgAt(0).getResult());
+            polyad.setResultType(polyad.getArgAt(0).getResultType());
 
-            } else {
-                polyad.setResult(result);
-                polyad.setResultType(Constant.STRING_TYPE);
-            }
+        } else {
+            polyad.setResult(result);
+            polyad.setResultType(Constant.STRING_TYPE);
         }
+
         polyad.setEvaluated(true);
     }
 

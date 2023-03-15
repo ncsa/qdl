@@ -1857,7 +1857,7 @@ public class ParserTest extends AbstractQDLTester {
         try {
             QDLInterpreter interpreter = new QDLInterpreter(null, state);
             interpreter.execute(script.toString());
-        } catch (IllegalStateException t) {
+        } catch (IndexError t) {
             bad = false;
         }
         if (bad) {

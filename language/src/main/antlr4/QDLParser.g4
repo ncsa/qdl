@@ -140,7 +140,7 @@ expression
  | expression op=(Times | Divide | Percent ) expression                        #multiplyExpression
  | (Floor | Ceiling) expression                                                #floorOrCeilingExpression
  | (Plus | UnaryPlus | Minus | UnaryMinus) expression                          #unaryMinusExpression
- | Tilde expression                                                            #unaryTildeExpression
+ | (Tilde | TildeRight) expression                                             #unaryTildeExpression
  | IsDefined expression                                                        #isDefinedExpression
  | expression op=IsDefined expression                                          #isDefinedDyadicExpression
  | expression op=(Plus | Minus ) expression                                    #addExpression

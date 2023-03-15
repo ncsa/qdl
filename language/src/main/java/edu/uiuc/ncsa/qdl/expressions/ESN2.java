@@ -4,9 +4,9 @@ import edu.uiuc.ncsa.qdl.exceptions.IndexError;
 import edu.uiuc.ncsa.qdl.exceptions.UnknownSymbolException;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
-import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 
 import java.util.ArrayList;
@@ -69,7 +69,7 @@ public class ESN2 extends ExpressionImpl {
             // just wants whole stem, no indices
             Object r0 = leftArgs.get(leftArgs.size() - 1).evaluate(state);
             if (!(r0 instanceof QDLStem)) {
-                throw new IllegalStateException("error: left argument must evaluate to be a stem ");
+                throw new UnknownSymbolException("error: left argument must evaluate to a stem ",this);
             }
             QDLStem stemVariable = (QDLStem) r0;
             setResult(stemVariable);
@@ -95,7 +95,7 @@ public class ESN2 extends ExpressionImpl {
             throw new IndexError("left argument is undefined", lll);
         }
         if (!(r0 instanceof QDLStem)) {
-            throw new IllegalStateException("error: left argument must evaluate to be a stem ");
+            throw new IndexError("error: left argument must evaluate to be a stem ", this);
         }
         QDLStem stemVariable = (QDLStem) r0;
         IndexList r;

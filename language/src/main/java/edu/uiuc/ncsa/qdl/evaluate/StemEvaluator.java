@@ -2829,11 +2829,20 @@ z. :=  join3(q.,w.)
             rightStem = new QDLStem();
             rightStem.put(0L, args[1]);
         }
+        if (leftStem.isEmpty() && rightStem.isEmpty()) {
+            // edge case -- they sent  empty arguments, so don't blow up, just return nothing
+            polyad.setResult(new QDLStem());
+            polyad.setResultType(STEM_TYPE);
+            polyad.setEvaluated(true);
+            return;
+        }
+
         boolean doJoinOnLastAxis = false;
         if (axis == LAST_AXIS_ARGUMENT_VALUE) {
             doJoinOnLastAxis = true;
         }
-        if (axis == 0) {
+        if (axis == 0 || (leftStem.isEmpty() && rightStem.dim().size() == 1)) {
+            // Cases are axis 0 join or monadic -1 axis join
             QDLStem outStem = leftStem.union(rightStem);
             polyad.setEvaluated(true);
             polyad.setResultType(STEM_TYPE);
@@ -2852,13 +2861,6 @@ z. :=  join3(q.,w.)
         }
         QDLStem outStem = new QDLStem();
 
-        if (leftStem.isEmpty() || rightStem.isEmpty()) {
-            // edge case -- they sent an empty argument, so don't blow up, just return nothing
-            polyad.setResult(outStem);
-            polyad.setResultType(STEM_TYPE);
-            polyad.setEvaluated(true);
-            return;
-        }
         StemUtility.DyadAxisAction joinAction = new StemUtility.DyadAxisAction() {
             @Override
             public void action(QDLStem out, Object key, QDLStem leftStem, QDLStem rightStem) {

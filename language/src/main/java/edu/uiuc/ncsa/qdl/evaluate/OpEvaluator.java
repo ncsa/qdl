@@ -436,9 +436,9 @@ public class OpEvaluator extends AbstractEvaluator {
         if (!stem.isList()) {
             throw new QDLExceptionWithTrace("right argument of " + FOR_ALL_KEY + " must be a list", dyad.getRightArgument());
         }
-        for(Object key : stem.getQDLList().orderedKeys()){
+        for (Object key : stem.getQDLList().orderedKeys()) {
             // key is a long, convert to int
-            polyad.addArgument(new ConstantNode(stem.getQDLList().get((Long)key)));
+            polyad.addArgument(new ConstantNode(stem.getQDLList().get((Long) key)));
         }
         //polyad.addArgument(dyad.getRightArgument());
         state.getMetaEvaluator().evaluate(polyad, state);
@@ -1332,10 +1332,29 @@ public class OpEvaluator extends AbstractEvaluator {
             case PLUS_VALUE:
                 doMonadPlus(monad, state);
                 return;
-
+            case TILDE_VALUE:
+                doMonadicTilde(monad, state, false);
+                return;
+            case TILDE_STILE_VALUE:
+                doMonadicTilde(monad, state, true);
+                return;
             default:
                 throw new NotImplementedException("Unknown monadic operator");
         }
+
+    }
+
+    protected void doMonadicTilde(Monad monad, State state, boolean isStile) {
+        Dyad dyad = new Dyad(isStile ? TILDE_STILE_VALUE : TILDE_VALUE);
+        dyad.setUnary(true);
+        dyad.setTokenPosition(monad.getTokenPosition());
+        dyad.setSourceCode(monad.getSourceCode());
+        dyad.setLeftArgument(new ConstantNode(new QDLStem(), Constant.STEM_TYPE));
+        dyad.setRightArgument(monad.getArgument());
+        dyad.evaluate(state);
+        monad.setResult(dyad.getResult());
+        monad.setResultType(dyad.getResultType());
+        monad.setEvaluated(true);
 
     }
 

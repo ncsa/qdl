@@ -912,9 +912,10 @@ See also: rm - remove a single file]]>
 
     <entry id="say">
         <body>
- <![CDATA[say(arg) - print anything.
-say(arg, pretty_print) - print anything, but make the format more vertical if
-                         its a stem.
+ <![CDATA[say() - print a blank line
+say(arg) - print anything, invoking arg's to_string.
+say(arg, pretty_print) - print anything, but make the format more vertical (if
+                         it's a stem.)
 Note: say returns the value of its argument so this can be used in statements
 for debugging too.
 
@@ -923,7 +924,9 @@ See also: print]]>
     </entry>
     <entry id="print">
         <body>
- <![CDATA[print - this is a synonym for the say function, so read the help for that.]]>
+ <![CDATA[print - this is a synonym for the say function, so read the help for that.
+
+See also: say]]>
         </body>
     </entry>
     <entry id="file_read">
@@ -2246,7 +2249,15 @@ See also: tokenize, replace.]]>
         <example>
            <![CDATA[   '[a-zA-Z]{3}' =~ 'aBc'; // Checks if the argument has 3 letters
 true
-           ]]>
+   '\\d{5}(-\\d{4})?'=~['54321','34332-3241','4334']; // Checks for US postal codes
+[true,true,false]
+    '[mM]i.....ft'≈['mifft', 'minecraft','Microsoft'];// Check for 9 char sequence
+[false,true,true]
+   // Check for common spammer spellings in emails, to flag:
+  'v[i!1][a@]gr[a@]'≈['vi@gra','v1agra','v1@gra','v!@gr@'];
+[true,true,true,true]
+   // possible use for spam filter, with a function that rejects the message
+   if['.*v[i!1][a@]gr[a@].*'≈message][reject(message);];]]>
                 </example>
 
     </entry>

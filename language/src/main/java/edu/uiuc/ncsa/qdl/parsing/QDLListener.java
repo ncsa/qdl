@@ -136,7 +136,14 @@ public class QDLListener implements QDLParserListener {
 
 
     protected Statement resolveChild(ParseTree currentChild) {
-        return resolveChild(currentChild, false);
+        try {
+            return resolveChild(currentChild, false);
+        }catch(NullPointerException npe){
+            // This happens when it cannot actually resolve children so indicates a
+            // parsing error
+
+        }
+        throw new ParsingException("could not parse the expression");
     }
 
 
