@@ -2921,12 +2921,9 @@ public class WorkspaceCommands implements Logable, Serializable {
 
         }
         String[] names = resolveRealHelpName(name);
-        if(names == null){
-            say("no help for '" + name + "'");
-            return RC_NO_OP;
-        }
+   
         String altName = null;
-        if (names.length == 2) {
+        if (names != null && names.length == 2) {
             altName = names[1];
         }
 

@@ -3371,13 +3371,13 @@ abfoocd
 ab....cd]]>
         </body>
     </entry>
-    <entry id="extrinsic" alt="$$">
+    <entry id="extrinsic">
         <body>
  <![CDATA["Not part of the essential nature of someone or something; coming
  or operating from outside"
 
 This refers to what are also called global variables in some languages.
-These are simply variables prefixed with a double dolalr sign, $$, and are
+These are simply variables prefixed with a double dollar sign, $$, and are
 always available regardless of scope to every module or function.
 To list them in the workspace use the -extrinsic command. So in
 some worksapce you might be able to do this:
@@ -3401,12 +3401,14 @@ E.g. Let us say you needed to access the speed of light in
 a vacuum and the universal gravitational constants repeatedly
 in your various modules. It would be a good
 idea to define
-  $$c := 299792458
-(in meters per second).
-  $$G := 6.67430E-11
-(in m^3/kg/s^2)
+  $$c := 299792458; // in meters per second
+  $$G := 6.67430E-11; // in m^3/kg/s^2
 
 You may then access these any place in the workspace.
+
+You may view them all with the -extrinsic flag:
+   )vars -extrinsic
+$$c  $$G
 
 See also: extrinsic]]>
                 </body>
