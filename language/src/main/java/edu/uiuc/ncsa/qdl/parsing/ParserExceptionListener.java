@@ -1,9 +1,9 @@
 package edu.uiuc.ncsa.qdl.parsing;
 
+import edu.uiuc.ncsa.qdl.exceptions.ParsingException;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -18,9 +18,10 @@ public class ParserExceptionListener extends BaseErrorListener {
                             int charPositionInLine,
                             String msg,
                             RecognitionException e)
-            throws ParseCancellationException {
-        throw new ParseCancellationException("line " + line + ":" + charPositionInLine + " " + msg);
+            throws ParsingException {
+        throw new ParsingException(msg, line, charPositionInLine, ParsingException.SYNTAX_TYPE);
     }
+
 }
 
 

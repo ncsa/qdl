@@ -2,6 +2,7 @@ package edu.uiuc.ncsa.qdl;
 
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.IndexError;
+import edu.uiuc.ncsa.qdl.exceptions.ParsingException;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
@@ -701,7 +702,20 @@ public class ParserTest extends AbstractQDLTester {
         try {
             interpreter.execute(script.toString());
             assert false : "Was able to interpret single equals without parser error";
-        } catch (IllegalStateException pcx) {
+        } catch (ParsingException pcx) {
+            assert true;
+        }
+    }
+    public void testSingleDoubleQuote() throws Throwable {
+        StringBuffer script = new StringBuffer();
+        addLine(script, "a:= 'woof\";");
+        State state = testUtils.getNewState();
+
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        try {
+            interpreter.execute(script.toString());
+            assert false : "Was able to interpret single '\"' without parser error";
+        } catch (ParsingException pcx) {
             assert true;
         }
     }
@@ -1199,7 +1213,7 @@ public class ParserTest extends AbstractQDLTester {
         boolean bad = true;
         try {
             interpreter.execute(script.toString());
-        } catch (IllegalStateException t) {
+        } catch (ParsingException t) {
             bad = false;
         }
         if (bad) {

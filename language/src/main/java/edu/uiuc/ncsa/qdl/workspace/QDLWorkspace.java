@@ -86,8 +86,22 @@ public class QDLWorkspace implements Serializable {
             workspaceCommands.say("sorry, cannot interrupt main workspace process.");
             return;
         }
-        if ((t instanceof ParseCancellationException) | (t instanceof ParsingException)) {
-            if (t.getMessage().contains("extraneous input")) {
+        if (t instanceof ParsingException) {
+            ParsingException parsingException = (ParsingException) t;
+            if (parsingException.getLineNumber() == -1) {
+                workspaceCommands.say(parsingException.getType() +
+                        " error: "
+                        + (workspaceCommands.isDebugOn() ? t.getMessage() : " could not parse input"));
+                return;
+
+            }
+            workspaceCommands.say(parsingException.getType() +
+                    " error at (" + parsingException.getLineNumber() + "," + parsingException.getCharacterPosition() + ")"
+                    + (workspaceCommands.isDebugOn() ? t.getMessage() : " could not parse input"));
+            return;
+        }
+        if ((t instanceof ParseCancellationException)) {
+            if (t.getMessage().contains("extraneous") || t.getMessage().contains("mismatched")) {
                 workspaceCommands.say("syntax error: Unexpected or illegal character.");
             } else {
                 workspaceCommands.say("syntax error:" + (workspaceCommands.isDebugOn() ? t.getMessage() : "could not parse input"));
@@ -198,7 +212,7 @@ public class QDLWorkspace implements Serializable {
 
         if (input.startsWith(")")) {
             Object rc = workspaceCommands.execute(input);
-            if(rc instanceof Response){
+            if (rc instanceof Response) {
                 return rc;
             }
             if (rc instanceof Integer) {
@@ -253,7 +267,7 @@ public class QDLWorkspace implements Serializable {
             String input;
             input = workspaceCommands.readline(INDENT);
             //  System.out.println("  got fom readline:" + input);
-            keepLooping = (Boolean)execute(input);
+            keepLooping = (Boolean) execute(input);
         }
     }
 
@@ -309,7 +323,7 @@ public class QDLWorkspace implements Serializable {
         cmdLine = cmdLine.substring(REPEAT_COMMAND.length());
         if (0 < workspaceCommands.commandHistory.size()) {
             String current = workspaceCommands.commandHistory.get(0);
-            if(cmdLine.trim().length() == 0){
+            if (cmdLine.trim().length() == 0) {
                 return current;
             }
             current = current + " " + cmdLine;
@@ -342,7 +356,7 @@ public class QDLWorkspace implements Serializable {
             workspaceCommands.say("    is from most recent to first entered. If the " + HISTORY_REVERSE_SWITCH + " is present the order is ");
             workspaceCommands.say("    original entry order");
             workspaceCommands.say(HISTORY_SIZE_SWITCH + "  - returns the number of commands in the current history.");
-            workspaceCommands.say( "[more]  - you may add additional commands to be appended to the given history element.\n" +
+            workspaceCommands.say("[more]  - you may add additional commands to be appended to the given history element.\n" +
                     "A new entry in the command history is made.");
 
             workspaceCommands.say("E.g.:");
@@ -446,16 +460,16 @@ public class QDLWorkspace implements Serializable {
             try {
                 int lineNo = Integer.parseInt(st.nextToken());
                 String rest = "";
-                while(st.hasMoreTokens()){
+                while (st.hasMoreTokens()) {
                     rest = rest + " " + st.nextToken();
                 }
                 lineNo = (lineNo < 0) ? (workspaceCommands.commandHistory.size() + lineNo) : lineNo;
 
-                if(rest.trim().length() == 0){
+                if (rest.trim().length() == 0) {
                     if (0 <= lineNo && lineNo < workspaceCommands.commandHistory.size()) {
                         return workspaceCommands.commandHistory.get(lineNo);
                     }
-                }else{
+                } else {
                     if (0 <= lineNo && lineNo < workspaceCommands.commandHistory.size()) {
                         String current = workspaceCommands.commandHistory.get(lineNo) + rest;
                         workspaceCommands.commandHistory.add(0, current);
