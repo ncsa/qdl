@@ -16,17 +16,19 @@ import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
 
 import javax.swing.*;
 import javax.swing.plaf.FontUIResource;
+import javax.swing.text.Element;
 import javax.swing.text.StyleContext;
 import java.awt.*;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.List;
 import java.util.*;
 
 import static edu.uiuc.ncsa.security.core.util.StringUtils.isTrivial;
-import static java.awt.event.InputEvent.ALT_DOWN_MASK;
-import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
+import static java.awt.event.InputEvent.*;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -99,6 +101,8 @@ public class SwingTerminal implements TerminalInterface {
     boolean firstPass = true;
     int altMask = ALT_DOWN_MASK;
     int ctrlMask = CTRL_DOWN_MASK;
+    int shiftMask = SHIFT_DOWN_MASK;
+    int winKeyMask = META_DOWN_MASK;
 
     /**
      * Initialize this with internal state, such as the listeners and {@link Data}
@@ -112,7 +116,6 @@ public class SwingTerminal implements TerminalInterface {
         input.getCaret().setVisible(true);
         input.addKeyListener(new QDLCharKeyAdapter());
         input.addKeyListener(new QDLHistoryKeyAdapter());
-
         output.addKeyListener(new QDLHistoryKeyAdapter());
 
         // setup IO. Has to be done before everything else.
@@ -214,6 +217,7 @@ public class SwingTerminal implements TerminalInterface {
             prompt.setText(null);
         }
 
+
         @Override
         public void keyTyped(KeyEvent e) {
             String keyValue = String.valueOf(e.getKeyChar());
@@ -223,7 +227,11 @@ public class SwingTerminal implements TerminalInterface {
             switch (e.getKeyChar()) {
 
                 case KeyEvent.VK_ENTER:
-                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
+                    if (e.getModifiersEx() ==  KeyEvent.VK_WINDOWS) {
+                        System.out.println("Yo!");
+                    }
+                    //if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
+                    if (e.isControlDown() && e.isAltDown()) {
                         String current = input.getText();
                         if (current.equals(WorkspaceCommands.OFF_COMMAND + " y")) {
                             shutdown();
@@ -235,6 +243,7 @@ public class SwingTerminal implements TerminalInterface {
                         doSend(current);
                         return;
                     }
+
                 default:
 
                     // masks off that alt key is down, ctrl key is up.
@@ -247,6 +256,11 @@ public class SwingTerminal implements TerminalInterface {
                             gotOne = true;
                         }
                     }
+                    if ((e.getModifiersEx() & (ctrlMask)) == ctrlMask) {
+                        //ignore ctrl + keys
+                        return;
+                    }
+
 
                     if (gotOne) {
                         // Only handle special characters if you have one, otherwise
@@ -298,6 +312,35 @@ public class SwingTerminal implements TerminalInterface {
             return ndx;
         }
 
+        /**
+         * Returns the line number (starting at 0) of the current cursor position.
+         *
+         * @return
+         */
+        protected int getLineNumber(int position) {
+            Element root = input.getDocument().getDefaultRootElement();
+            return root.getElementIndex(position); // line 0 is first
+        }
+
+        /**
+         * <h1>NOTE</h1>
+         * This is not just a text area, it is an {@link RSyntaxTextArea} which masks off
+         * various keystroked for itself. A symptom of this is if you attempt to use one of
+         * the (not well documented) reserved keystrokes, you will get mysterious enter key
+         * events as it tries to reformat (or whatever) the input area. So far the list of reserved
+         * keys are
+         * <ul>
+         *     <li>a -- select all</li>
+         *     <li>c -- copy select to clipboard</li>
+         *     <li>d -- delete current line</li>
+         *     <li>j --(justify?)</li>
+         *     <li>k -- beeps?</li>
+         *     <li>v -- paste from clipbaord</li>
+         *     <li>x -- cut selected to clipboard</li>
+         * </ul>
+         *
+         * @param e
+         */
         @Override
         public void keyPressed(KeyEvent e) {
             // Things like cursor keys register as "key pressed" not "key typed"
@@ -314,6 +357,58 @@ public class SwingTerminal implements TerminalInterface {
                         String resp = output.getText();
                         output.setText(old);
                         JOptionPane.showMessageDialog(frame, resp);
+                    }
+                    break;
+/*                case KeyEvent.VK_Y:
+                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
+                        String current = input.getText();
+                        try {
+                            int currentCaret = input.getCaretPosition();
+                            System.out.println("current caret at =" + currentCaret);
+                            int lineNumber = getLineNumber(currentCaret);
+                            input.setText(null); // clear it
+                            input.setText(LineUtil.doOperation(current, lineNumber, LineUtil.JOIN_LINE));
+
+                            input.repaint();
+                            input.setCaretPosition(currentCaret);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        } catch (UnsupportedFlavorException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                    break;*/
+                case KeyEvent.VK_C:
+                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
+                        String current = input.getText();
+                        try {
+                            int currentCaret = input.getCaretPosition();
+                            System.out.println("current caret at =" + currentCaret);
+                            int lineNumber = getLineNumber(currentCaret);
+                            LineUtil.doOperation(current, lineNumber, LineUtil.COPY_LINE); // don't care about output
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        } catch (UnsupportedFlavorException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                    break;
+                case KeyEvent.VK_SLASH:
+                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
+                        String current = input.getText();
+                        try {
+                            int currentCaret = input.getCaretPosition();
+                            System.out.println("current caret at =" + currentCaret);
+                            int lineNumber = getLineNumber(currentCaret);
+                            input.setText(null); // clear it
+                            input.setText(LineUtil.doOperation(current, lineNumber, LineUtil.TOGGLE_COMMENT_LINE));
+                            input.repaint();
+                            input.setCaretPosition(currentCaret);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        } catch (UnsupportedFlavorException ex) {
+                            ex.printStackTrace();
+                        }
                     }
                     break;
                 case KeyEvent.VK_F1:
@@ -348,7 +443,7 @@ public class SwingTerminal implements TerminalInterface {
                     }
                     break;
                 case KeyEvent.VK_Q:
-                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
+                    if (e.isControlDown()) {
                         // ctrl q == quit
                         int out = JOptionPane.showConfirmDialog(frame, "Are you sure you want to quit? No save is done.", "quit workspace", JOptionPane.WARNING_MESSAGE);
                         if (out == JOptionPane.YES_OPTION || out == JOptionPane.OK_OPTION) {
@@ -361,7 +456,7 @@ public class SwingTerminal implements TerminalInterface {
                     if (previousLines.isEmpty()) {
                         return;
                     }
-                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
+                    if (e.isAltDown() && e.isControlDown()) {
                         arrowUp(previousLineIndex, previousResults, output);
                         previousLineIndex = arrowUp(previousLineIndex, previousLines, input);
 
@@ -371,7 +466,7 @@ public class SwingTerminal implements TerminalInterface {
                     if (previousLines.isEmpty()) {
                         return;
                     }
-                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
+                    if (e.isAltDown() && e.isControlDown()) {
                         arrowDown(previousLineIndex, previousResults, output);
                         previousLineIndex = arrowDown(previousLineIndex, previousLines, input);
                     }
