@@ -10,26 +10,6 @@
     </properties>
     <border type="none"/>
     <children>
-      <scrollpane id="cef8e">
-        <constraints>
-          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="2" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
-            <preferred-size width="-1" height="200"/>
-          </grid>
-        </constraints>
-        <properties/>
-        <border type="none"/>
-        <children>
-          <component id="aec6" class="org.fife.ui.rsyntaxtextarea.RSyntaxTextArea" binding="input">
-            <constraints/>
-            <properties>
-              <background color="-1"/>
-              <closeCurlyBraces value="false"/>
-              <font name="DialogInput" size="14" style="1"/>
-              <foreground color="-16777216"/>
-            </properties>
-          </component>
-        </children>
-      </scrollpane>
       <scrollpane id="52bce">
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -51,12 +31,35 @@
       </scrollpane>
       <component id="5094" class="javax.swing.JLabel" binding="prompt">
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <text value="    "/>
         </properties>
       </component>
+      <scrollpane id="86fb2" class="org.fife.ui.rtextarea.RTextScrollPane" binding="RTextScrollPane1" default-binding="true">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <foldIndicatorEnabled value="true"/>
+          <iconRowHeaderEnabled value="true"/>
+          <lineNumbersEnabled value="true"/>
+        </properties>
+        <border type="none"/>
+        <children>
+          <component id="10806" class="org.fife.ui.rsyntaxtextarea.RSyntaxTextArea" binding="input">
+            <constraints/>
+            <properties>
+              <background color="-65537"/>
+              <closeCurlyBraces value="false"/>
+              <codeFoldingEnabled value="true"/>
+              <fractionalFontMetricsEnabled value="true"/>
+              <rows value="0"/>
+            </properties>
+          </component>
+        </children>
+      </scrollpane>
     </children>
   </grid>
 </form>

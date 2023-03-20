@@ -919,7 +919,6 @@ public class QDLListener implements QDLParserListener {
 
     @Override
     public void exitEveryRule(ParserRuleContext parserRuleContext) {
-
     }
 
     protected String stripSingleQuotes(String rawString) {

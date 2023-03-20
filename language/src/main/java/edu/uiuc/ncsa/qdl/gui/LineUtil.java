@@ -208,8 +208,8 @@ public class LineUtil {
         }
         if (currentLine.startsWith("//")) {
             currentLine = currentLine.substring(2);
-            if (0 < non + 2) {
-                currentLine = StringUtils.getBlanks(non + 2) + currentLine;
+            if (0 < non) {
+                currentLine = StringUtils.getBlanks(non) + currentLine;
             }
             lines.set(lineNumber, currentLine);
         }

@@ -10,6 +10,7 @@ import edu.uiuc.ncsa.qdl.sas.response.EditResponse;
 import edu.uiuc.ncsa.qdl.sas.response.GetHelpTopicResponse;
 import edu.uiuc.ncsa.qdl.sas.response.ListFunctionsResponse;
 import edu.uiuc.ncsa.qdl.sas.response.QDLSASResponseDeserializer;
+import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
 import edu.uiuc.ncsa.sas.thing.response.LogonResponse;
 import edu.uiuc.ncsa.sas.thing.response.OutputResponse;
 import edu.uiuc.ncsa.sas.thing.response.Response;
@@ -18,6 +19,7 @@ import edu.uiuc.ncsa.security.util.cli.InputLine;
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
 
 import javax.swing.*;
@@ -39,9 +41,10 @@ public class QDLSASTerminal extends SwingTerminal implements QDLSASConstants {
     protected void init() {
         getInput().getCaret().setVisible(true);
         getInput().addKeyListener(new QDLSASKeyCharAdapter());
-        getInput().addKeyListener(new QDLSASHistoryKeyAdapter());
+        getInput().addKeyListener(new QDLSASHistoryKeyAdapter(getWorkspaceCommands(),
+                frame, getInput(), getOutput()));
 
-        getOutput().addKeyListener(new QDLHistoryKeyAdapter());
+        getOutput().addKeyListener(new QDLHistoryKeyAdapter(getWorkspaceCommands(), frame, getInput(), getOutput()));
 
         // setup IO. Has to be done before everything else.
         data = new Data();
@@ -124,6 +127,10 @@ public class QDLSASTerminal extends SwingTerminal implements QDLSASConstants {
   }
      */
     public class QDLSASHistoryKeyAdapter extends QDLHistoryKeyAdapter {
+        public QDLSASHistoryKeyAdapter(WorkspaceCommands workspaceCommands, JFrame frame, RSyntaxTextArea input, JTextArea output) {
+            super(workspaceCommands, frame, input, output);
+        }
+
         @Override
         protected String getHelp(String text) {
             GetHelpTopicAction getHelpTopicAction = new GetHelpTopicAction(text);
@@ -152,7 +159,7 @@ public class QDLSASTerminal extends SwingTerminal implements QDLSASConstants {
                         getOutput().setText(((OutputResponse) response).getContent());
                         break;
                     case RESPONSE_TYPE_EDIT:
-                        EditResponse editResponse = (EditResponse)response;
+                        EditResponse editResponse = (EditResponse) response;
                         new QDLSASEditor(sasClient, editResponse);
                         break;
                     default:

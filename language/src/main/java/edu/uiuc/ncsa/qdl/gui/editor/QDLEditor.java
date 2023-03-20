@@ -116,7 +116,7 @@ public class QDLEditor {
     protected void init() {
         jFrame = new JFrame();
         input.addKeyListener(new MyKeyAdapter());
-        input.addKeyListener(new ControlOperations());
+        input.addKeyListener(new ControlOperations(getWorkspaceCommands(), jFrame, input, null));
     }
 
     {
@@ -141,6 +141,7 @@ public class QDLEditor {
         input = new RSyntaxTextArea();
         Font inputFont = this.$$$getFont$$$("DialogInput", Font.BOLD, 14, input.getFont());
         if (inputFont != null) input.setFont(inputFont);
+        input.setFractionalFontMetricsEnabled(true);
         scrollPane1.setViewportView(input);
     }
 
@@ -173,11 +174,16 @@ public class QDLEditor {
         return mainPanel;
     }
 
-    public class ControlOperations extends KeyAdapter {
+    public class ControlOperations extends EditorKeyPressedAdapter {
+        public ControlOperations(WorkspaceCommands workspaceCommands, JFrame frame, RSyntaxTextArea input, JTextArea output) {
+            super(workspaceCommands, frame, input, output);
+        }
+
+
         /**
          * Updates i.e. saves the content
          */
-        protected void saveContent() {
+        protected void doSave() {
             if (file == null) {
                 EditDoneEvent editDoneEvent = new EditDoneEvent(uuid, input.getText());
                 editDoneEvent.setType(getType());
@@ -194,29 +200,14 @@ public class QDLEditor {
         }
 
         @Override
-        public void keyPressed(KeyEvent e) {
-            switch (e.getKeyCode()) {
-                case KeyEvent.VK_F1:
-                    JOptionPane.showMessageDialog(jFrame, "ctrl+s saves the buffer, ctrl+q exits.");
-                    break;
-                case KeyEvent.VK_S:
-                    // ctrl s == save
-                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
-                        saveContent();
-                    }
-                    break;
-                case KeyEvent.VK_Q:
-                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
-                        // ctrl q == quit
-                        int out = JOptionPane.showConfirmDialog(jFrame, "Are you sure you want to quit?", "close editor", JOptionPane.WARNING_MESSAGE);
-                        if (out == JOptionPane.YES_OPTION || out == JOptionPane.OK_OPTION) {
-                            jFrame.dispose();
-                         //TODO clean up old workspace commands current edit session by id.   workspaceCommands.curre
-                        }
-                    }
-                    break;
+        protected void doQuit(boolean forceQuit) {
+            // ctrl q == quit
+            int out = JOptionPane.showConfirmDialog(jFrame, "Are you sure you want to quit?", "close editor", JOptionPane.WARNING_MESSAGE);
+            if (out == JOptionPane.YES_OPTION || out == JOptionPane.OK_OPTION) {
+                jFrame.dispose();
+                //TODO clean up old workspace commands current edit session by id.   workspaceCommands.curre
             }
-            super.keyPressed(e);
+
         }
 
     }

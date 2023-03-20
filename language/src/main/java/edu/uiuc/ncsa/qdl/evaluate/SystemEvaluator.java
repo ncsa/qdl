@@ -1325,7 +1325,6 @@ public class SystemEvaluator extends AbstractEvaluator {
             message = pc.getMessage();
         } catch (Throwable t) {
             message = "non-syntax error:" + t.getMessage();
-
         }
 
         polyad.setEvaluated(true);

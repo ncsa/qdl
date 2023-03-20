@@ -3,8 +3,10 @@ package edu.uiuc.ncsa.qdl.sas;
 import edu.uiuc.ncsa.qdl.gui.editor.QDLEditor;
 import edu.uiuc.ncsa.qdl.sas.action.BufferSaveAction;
 import edu.uiuc.ncsa.qdl.sas.response.EditResponse;
+import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
 import edu.uiuc.ncsa.sas.thing.response.Response;
 import edu.uiuc.ncsa.sas.webclient.Client;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import javax.swing.*;
 
@@ -24,8 +26,12 @@ public class QDLSASEditor extends QDLEditor {
     }
 
     public class ControlOperations2 extends ControlOperations {
+        public ControlOperations2(WorkspaceCommands workspaceCommands, JFrame frame, RSyntaxTextArea input, JTextArea output) {
+            super(workspaceCommands, frame, input, output);
+        }
+
         @Override
-        protected void saveContent() {
+        protected void doSave() {
            BufferSaveAction bufferSaveAction = new BufferSaveAction();
             bufferSaveAction.setContent(input.getText());
             bufferSaveAction.setArgState(getArgState());
@@ -44,7 +50,7 @@ public class QDLSASEditor extends QDLEditor {
     protected void init() {
         jFrame = new JFrame();
         input.addKeyListener(new MyKeyAdapter());
-        input.addKeyListener(new ControlOperations2());
+        input.addKeyListener(new ControlOperations2(getWorkspaceCommands(),jFrame,input,null));
 
     }
 }

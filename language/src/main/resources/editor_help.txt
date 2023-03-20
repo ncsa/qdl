@@ -1,0 +1,74 @@
+Help for the editor.
+(To get help for a topic, select the word, hit F1).
+
+To see the special characters, select this word in the input window:
+unicode
+and hit F1. To see the keyboard layout for the special characters select
+this in the input window:
+keyboard
+and hit F1.
+
++------------+-------+---------------------------------------------+
+|Key         | Type  | Description                                 |
++------------+-------+---------------------------------------------+
+|^a          | E     | Select all text                             |
++------------+-------+---------------------------------------------+
+|^c          | E     | Copy current line or selection to clipboard |
++------------+-------+---------------------------------------------+
+|^d          | E     | delete current line                         |
++------------+-------+---------------------------------------------+
+|^h          | B     | check syntax for input or selection         |
++------------+-------+---------------------------------------------+
+|^j          | E     | join next line to current                   |
++------------+-------+---------------------------------------------+
+|^k          | E     | goes to next occurrence of selected text    |
++------------+-------+---------------------------------------------+
+|^@k         | E     | goes to previous occurrence of              |
+|            |       | selected text                               |
++------------+-------+---------------------------------------------+
+|^m          | E     | toggle comment for line or selection.       |
++------------+-------+---------------------------------------------+
+|^q          | W     | Quit QDL (w/ save prompt)                   |
++------------+-------+---------------------------------------------+
+|^Q          | W     | Quit QDL (no prompt)                        |
++------------+-------+---------------------------------------------+
+|^r          | E     | replicate current line or selection         |
++------------+-------+---------------------------------------------+
+|^s          | E     | save workspace                              |
++------------+-------+---------------------------------------------+
+|^v          | E     | Paste from clipboard                        |
++------------+-------+---------------------------------------------+
+|^@v         | E     | Show local clipboard history                |
++------------+-------+---------------------------------------------+
+|^x          | E     | Cut current selection to clipboard          |
++------------+-------+---------------------------------------------+
+|^y          | E     | redo last action                            |
++------------+-------+---------------------------------------------+
+|^z          | E     | undo last action                            |
++------------+-------+---------------------------------------------+
+|^backspace  | E     | delete previous word                        |
++------------+-------+---------------------------------------------+
+|^enter      | E     | Complete word                               |
++------------+-------+---------------------------------------------+
+|^@enter     | W     | execute current code                        |
++------------+-------+---------------------------------------------+
+|^@page up   | B     | Go to previous entry in history             |
++------------+-------+---------------------------------------------+
+|^@page down | B     | Got to next entry in history                |
++------------+-------+---------------------------------------------+
+|@+up        | B     | Move line up in buffer.                     |
++------------+-------+---------------------------------------------+
+|@+down      | B     | Move line down in buffer.                   |
++------------+-------+---------------------------------------------+
+
+
+Keys:
+ ^a = ctrl + a
+ @a = alt + a
+^@a = ctrl + alt + a
+^aA = ctrl + alt + A = ctrl + alt + shift + a
+
+Types:
+B = buffer operation
+E = edit operation
+W = workspace operation

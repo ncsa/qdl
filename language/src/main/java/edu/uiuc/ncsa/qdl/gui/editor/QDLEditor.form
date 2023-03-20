@@ -19,6 +19,7 @@
             <constraints/>
             <properties>
               <font name="DialogInput" size="14" style="1"/>
+              <fractionalFontMetricsEnabled value="true"/>
             </properties>
           </component>
         </children>

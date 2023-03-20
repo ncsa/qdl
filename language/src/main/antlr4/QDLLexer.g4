@@ -109,6 +109,7 @@ SCIENTIFIC_NUMBER : Decimal (E SIGN? Integer)?;
        GreaterThan : '>';
        SingleEqual : '=';
        DoubleQuote : '"';
+       SingleQuote : '\'';
             To_Set : '|^' | '⊢'; // unicode 22a2
         LessEquals : '<=' | '≤' ;  // unicode 2264
         MoreEquals : '>=' | '≥' ;  // unicode 2265

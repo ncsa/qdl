@@ -3,6 +3,7 @@ package edu.uiuc.ncsa.qdl.gui;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import edu.uiuc.ncsa.qdl.gui.editor.EditorKeyPressedAdapter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.workspace.QDLTerminal;
 import edu.uiuc.ncsa.qdl.workspace.QDLWorkspace;
@@ -13,22 +14,20 @@ import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
+import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
 import javax.swing.plaf.FontUIResource;
-import javax.swing.text.Element;
 import javax.swing.text.StyleContext;
 import java.awt.*;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 import java.util.List;
 import java.util.*;
 
-import static edu.uiuc.ncsa.security.core.util.StringUtils.isTrivial;
 import static java.awt.event.InputEvent.*;
+import static org.fife.ui.rsyntaxtextarea.SyntaxConstants.SYNTAX_STYLE_JAVA;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -62,6 +61,7 @@ public class SwingTerminal implements TerminalInterface {
     }
 
     private JLabel prompt;
+    private RTextScrollPane RTextScrollPane1;
 
 
     public SwingTerminal() {
@@ -114,9 +114,11 @@ public class SwingTerminal implements TerminalInterface {
            panel1.getInputMap().put(key,"∈");*/
 
         input.getCaret().setVisible(true);
+        input.setSyntaxEditingStyle(SYNTAX_STYLE_JAVA);
         input.addKeyListener(new QDLCharKeyAdapter());
-        input.addKeyListener(new QDLHistoryKeyAdapter());
-        output.addKeyListener(new QDLHistoryKeyAdapter());
+        input.addKeyListener(new QDLHistoryKeyAdapter(getWorkspaceCommands(), frame, getInput(), getOutput()));
+        output.addKeyListener(new QDLHistoryKeyAdapter(getWorkspaceCommands(), frame, getInput(), getOutput()));
+
 
         // setup IO. Has to be done before everything else.
         data = new Data();
@@ -147,16 +149,7 @@ public class SwingTerminal implements TerminalInterface {
         Font panel1Font = UIManager.getFont("InternalFrame.titleFont");
         if (panel1Font != null) panel1.setFont(panel1Font);
         final JScrollPane scrollPane1 = new JScrollPane();
-        panel1.add(scrollPane1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(-1, 200), null, 0, false));
-        input = new RSyntaxTextArea();
-        input.setBackground(new Color(-1));
-        input.setCloseCurlyBraces(false);
-        Font inputFont = this.$$$getFont$$$("DialogInput", Font.BOLD, 14, input.getFont());
-        if (inputFont != null) input.setFont(inputFont);
-        input.setForeground(new Color(-16777216));
-        scrollPane1.setViewportView(input);
-        final JScrollPane scrollPane2 = new JScrollPane();
-        panel1.add(scrollPane2, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        panel1.add(scrollPane1, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         output = new JTextArea();
         output.setBackground(new Color(-16776961));
         output.setEditable(false);
@@ -164,10 +157,22 @@ public class SwingTerminal implements TerminalInterface {
         if (outputFont != null) output.setFont(outputFont);
         output.setForeground(new Color(-256));
         output.setText("");
-        scrollPane2.setViewportView(output);
+        scrollPane1.setViewportView(output);
         prompt = new JLabel();
         prompt.setText("    ");
-        panel1.add(prompt, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel1.add(prompt, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        RTextScrollPane1 = new RTextScrollPane();
+        RTextScrollPane1.setFoldIndicatorEnabled(true);
+        RTextScrollPane1.setIconRowHeaderEnabled(true);
+        RTextScrollPane1.setLineNumbersEnabled(true);
+        panel1.add(RTextScrollPane1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        input = new RSyntaxTextArea();
+        input.setBackground(new Color(-65537));
+        input.setCloseCurlyBraces(false);
+        input.setCodeFoldingEnabled(true);
+        input.setFractionalFontMetricsEnabled(true);
+        input.setRows(0);
+        RTextScrollPane1.setViewportView(input);
     }
 
     /**
@@ -227,7 +232,7 @@ public class SwingTerminal implements TerminalInterface {
             switch (e.getKeyChar()) {
 
                 case KeyEvent.VK_ENTER:
-                    if (e.getModifiersEx() ==  KeyEvent.VK_WINDOWS) {
+                    if (e.getModifiersEx() == KeyEvent.VK_WINDOWS) {
                         System.out.println("Yo!");
                     }
                     //if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
@@ -290,7 +295,11 @@ public class SwingTerminal implements TerminalInterface {
     /**
      * This listens for ctrl+up or down arrows and will scroll through the input/outputs in tandem
      */
-    public class QDLHistoryKeyAdapter extends KeyAdapter {
+    public class QDLHistoryKeyAdapter extends EditorKeyPressedAdapter {
+        public QDLHistoryKeyAdapter(WorkspaceCommands workspaceCommands, JFrame frame, RSyntaxTextArea input, JTextArea output) {
+            super(workspaceCommands, frame, input, output);
+        }
+
         protected int arrowUp(int ndx, List<String> lines, JTextArea textArea) {
             if (ndx == lines.size() - 1) {
                 textArea.setText(lines.get(ndx));
@@ -312,15 +321,6 @@ public class SwingTerminal implements TerminalInterface {
             return ndx;
         }
 
-        /**
-         * Returns the line number (starting at 0) of the current cursor position.
-         *
-         * @return
-         */
-        protected int getLineNumber(int position) {
-            Element root = input.getDocument().getDefaultRootElement();
-            return root.getElementIndex(position); // line 0 is first
-        }
 
         /**
          * <h1>NOTE</h1>
@@ -346,112 +346,7 @@ public class SwingTerminal implements TerminalInterface {
             // Things like cursor keys register as "key pressed" not "key typed"
             // hence can be handled separately.
             super.keyPressed(e);
-
-
             switch (e.getKeyCode()) {
-                case KeyEvent.VK_S:
-                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
-                        String x = ")save";
-                        String old = output.getText();
-                        workspaceCommands.execute(x);
-                        String resp = output.getText();
-                        output.setText(old);
-                        JOptionPane.showMessageDialog(frame, resp);
-                    }
-                    break;
-/*                case KeyEvent.VK_Y:
-                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
-                        String current = input.getText();
-                        try {
-                            int currentCaret = input.getCaretPosition();
-                            System.out.println("current caret at =" + currentCaret);
-                            int lineNumber = getLineNumber(currentCaret);
-                            input.setText(null); // clear it
-                            input.setText(LineUtil.doOperation(current, lineNumber, LineUtil.JOIN_LINE));
-
-                            input.repaint();
-                            input.setCaretPosition(currentCaret);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        } catch (UnsupportedFlavorException ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-                    break;*/
-                case KeyEvent.VK_C:
-                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
-                        String current = input.getText();
-                        try {
-                            int currentCaret = input.getCaretPosition();
-                            System.out.println("current caret at =" + currentCaret);
-                            int lineNumber = getLineNumber(currentCaret);
-                            LineUtil.doOperation(current, lineNumber, LineUtil.COPY_LINE); // don't care about output
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        } catch (UnsupportedFlavorException ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-                    break;
-                case KeyEvent.VK_SLASH:
-                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
-                        String current = input.getText();
-                        try {
-                            int currentCaret = input.getCaretPosition();
-                            System.out.println("current caret at =" + currentCaret);
-                            int lineNumber = getLineNumber(currentCaret);
-                            input.setText(null); // clear it
-                            input.setText(LineUtil.doOperation(current, lineNumber, LineUtil.TOGGLE_COMMENT_LINE));
-                            input.repaint();
-                            input.setCaretPosition(currentCaret);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        } catch (UnsupportedFlavorException ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-                    break;
-                case KeyEvent.VK_F1:
-                    // If no selected text, put up a generic help message. Otherwise,
-                    // search online help.
-                    String text = input.getSelectedText();
-                    if (text == null) {
-                        // See if they selected something in output
-                        text = output.getSelectedText();
-                    }
-                    if (text != null) {
-                        // just in case they swiped a little too much.
-                        text = text.trim();
-                    }
-
-                    if (isTrivial(text)) {
-                        String title1 = "Help for GUI";
-                        String message1 = "F1 help for selected text or this message\n" +
-                                "ctrl+space autocomplete\n" +
-                                "ctrl+s saves\n" +
-                                "ctrl+q exits (no save!)\n" +
-                                "ctrl+↑ ctrl+↓ navigate history.";
-                        showHelp(title1, message1);
-                    } else {
-                        String title = "Help for " + text;
-                        String helpMessage = "no help available for " + (isTrivial(text) ? "this topic" : "' + text + '");
-                        String x = getHelp(text);
-                        if (x != null) {
-                            helpMessage = x;
-                        }
-                        showHelp(title, getHelp(text));
-                    }
-                    break;
-                case KeyEvent.VK_Q:
-                    if (e.isControlDown()) {
-                        // ctrl q == quit
-                        int out = JOptionPane.showConfirmDialog(frame, "Are you sure you want to quit? No save is done.", "quit workspace", JOptionPane.WARNING_MESSAGE);
-                        if (out == JOptionPane.YES_OPTION || out == JOptionPane.OK_OPTION) {
-                            frame.dispose();
-                            System.exit(0);
-                        }
-                    }
-                    break;
                 case KeyEvent.VK_PAGE_UP:
                     if (previousLines.isEmpty()) {
                         return;
@@ -474,30 +369,7 @@ public class SwingTerminal implements TerminalInterface {
             }
         }
 
-        protected String getHelp(String text) {
-            return createHelpMessage(workspaceCommands.getFunctionHelp(text),
-                    workspaceCommands.getHelpTopic(text),
-                    workspaceCommands.getHelpTopicExample(text));
-        }
 
-        protected String createHelpMessage(String functionHelp, String text, String example) {
-            if (isTrivial(text) && isTrivial(functionHelp)) {
-                return "no help available for " + (isTrivial(text) ? "this topic" : "' + text + '");
-            }
-
-            String message = "";
-            if (!isTrivial(functionHelp)) {
-                message = "\n--------\nUser defined functions\n--------\n" + functionHelp + "\n";
-            }
-
-            if (!isTrivial(text)) {
-                message = message + "\n--------\nOnline help\n--------\n" + text;
-            }
-            if (!isTrivial(example)) {
-                message = message + "\n--------\nExamples\n--------\n" + example;
-            }
-            return message;
-        }
     }
 
     /**
@@ -516,9 +388,11 @@ public class SwingTerminal implements TerminalInterface {
 
         // wrap a scrollpane around it
         JScrollPane scrollPane = new JScrollPane(textArea);
+
         JOptionPane helpPane = new JOptionPane();
         JDialog dialog = helpPane.createDialog(null, title);
         dialog.setModal(false);
+        dialog.setResizable(true);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.setContentPane(scrollPane);
         AbstractAction escapeAction = new AbstractAction() {
