@@ -118,13 +118,45 @@ public class InputFormUtil {
     }
 
     public static String inputForm(String s) {
+        char[] chars = s.toCharArray();
+        StringBuilder sb = new StringBuilder(chars.length + 25); // pad it
+        for(int i = 0; i < chars.length; i++){
+            char current = chars[i];
+            switch(current){
+                case '\\':
+                    sb.append("\\\\");
+                    break;
+                case '\'':
+                    sb.append("\\'");
+                    break;
+                case '\b':
+                    sb.append("\\b");
+                    break ;
+                case '\f':
+                    sb.append("\\f");
+                    break;
+                case '\n':
+                    sb.append("\\n");
+                    break   ;
+                case '\r':
+                    sb.append("\\r");
+                    break;
+                case '\t':
+                    sb.append("\\t");
+                    break;
+                default:
+                    sb.append(current);
+            }
+        }
+/*
         s = s.replace("'", "\\'");
         s = s.replace("\b", "\\b");
         s = s.replace("\f", "\\f");
         s = s.replace("\n", "\\n");
         s = s.replace("\r", "\\r");
         s = s.replace("\t", "\\t");
-        return "'" + s + "'";
+*/
+        return "'" + sb.toString() + "'";
     }
 
     /**

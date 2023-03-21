@@ -3,6 +3,7 @@ package edu.uiuc.ncsa.qdl.gui.editor;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import edu.uiuc.ncsa.qdl.gui.QDLSwingUtil;
+import edu.uiuc.ncsa.qdl.gui.SwingTerminal;
 import edu.uiuc.ncsa.qdl.workspace.QDLTerminal;
 import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
 import edu.uiuc.ncsa.security.core.util.FileUtil;
@@ -32,12 +33,21 @@ import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
  * on 8/10/22 at  1:36 PM
  */
 public class QDLEditor {
-    public QDLEditor(WorkspaceCommands workspaceCommands, String alias) throws HeadlessException {
+    public QDLEditor(WorkspaceCommands workspaceCommands,
+                     String alias, int handle) throws HeadlessException {
         this.workspaceCommands = workspaceCommands;
         this.alias = alias;
+        this.handle = handle;
+
         type = EditDoneEvent.TYPE_BUFFER;
         init();
     }
+
+    protected SwingTerminal getSwingTerminal() {
+        return workspaceCommands.getSwingTerminal();
+    }
+
+    int handle;
 
     public WorkspaceCommands getWorkspaceCommands() {
         return workspaceCommands;
@@ -47,6 +57,7 @@ public class QDLEditor {
         this.workspaceCommands = workspaceCommands;
     }
 
+    SwingTerminal swingTerminal;
     WorkspaceCommands workspaceCommands;
     String alias; // name of buffer
 
@@ -116,6 +127,7 @@ public class QDLEditor {
     protected void init() {
         jFrame = new JFrame();
         input.addKeyListener(new MyKeyAdapter());
+        //input.addKeyListener(new QDLCharKeyAdapter(s));
         input.addKeyListener(new ControlOperations(getWorkspaceCommands(), jFrame, input, null));
     }
 
@@ -216,40 +228,55 @@ public class QDLEditor {
 
         @Override
         public void keyTyped(KeyEvent e) {
-            String keyValue = String.valueOf(e.getKeyChar());
-            int position = input.getCaretPosition();
-
-            // masks off that alt key is down, ctrl key is up.
-            boolean gotOne = false;
-
-            if ((e.getModifiersEx() & (altMask | ctrlMask)) == altMask) {
-                // only alt mask is down
-                if (getCharMap().containsKey(keyValue)) {
-                    keyValue = getCharMap().get(keyValue); // exactly one
-                    gotOne = true;
-                }
-            }
-
-            if (gotOne) {
-                // Only handle special characters if you have one, otherwise
-                // let Swing do the work
-                String x = input.getText();
-
-                x = x.substring(0, position) + keyValue + (x.length() == position ? "" : x.substring(position));
-                input.setText(null);
-                input.setText(x);
-                input.repaint();
-                try {
-                    if (position < x.length()) {
-                        input.setCaretPosition(position + 1);
+            switch (e.getKeyChar()) {
+                case KeyEvent.VK_ENTER:
+                    //if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
+                    if (e.isControlDown() && e.isAltDown()) {
+                        String current = ") " + handle;
+                        // previousResults.add(0, getResultText());
+                        getWorkspaceCommands().execute(current);
+                        //doSend(current);
+                        return;
                     }
-                } catch (Throwable t) {
-                    // sometime caret position can be wrong if user has moved mouse. Bail
-                }
+                    break;
+                default:
+                    String keyValue = String.valueOf(e.getKeyChar());
+                    int position = input.getCaretPosition();
 
-            } else {
-                super.keyTyped(e);
+                    // masks off that alt key is down, ctrl key is up.
+                    boolean gotOne = false;
+
+                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == altMask) {
+                        // only alt mask is down
+                        if (getCharMap().containsKey(keyValue)) {
+                            keyValue = getCharMap().get(keyValue); // exactly one
+                            gotOne = true;
+                        }
+                    }
+
+                    if (gotOne) {
+                        // Only handle special characters if you have one, otherwise
+                        // let Swing do the work
+                        String x = input.getText();
+
+                        x = x.substring(0, position) + keyValue + (x.length() == position ? "" : x.substring(position));
+                        input.setText(null);
+                        input.setText(x);
+                        input.repaint();
+                        try {
+                            if (position < x.length()) {
+                                input.setCaretPosition(position + 1);
+                            }
+                        } catch (Throwable t) {
+                            // sometime caret position can be wrong if user has moved mouse. Bail
+                        }
+
+                    } else {
+                        super.keyTyped(e);
+                    }
+                    break;
             }
+
 
         }
 

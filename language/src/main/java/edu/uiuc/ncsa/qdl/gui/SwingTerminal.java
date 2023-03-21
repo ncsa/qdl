@@ -21,7 +21,6 @@ import javax.swing.plaf.FontUIResource;
 import javax.swing.text.StyleContext;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.*;
@@ -105,6 +104,17 @@ public class SwingTerminal implements TerminalInterface {
     int winKeyMask = META_DOWN_MASK;
 
     /**
+     * This is called in the {@link #setup(JFrame, List)} method. Override as needed.
+     */
+    protected void setupListeners() {
+        input.getCaret().setVisible(true);
+        input.setSyntaxEditingStyle(SYNTAX_STYLE_JAVA);
+        input.addKeyListener(new QDLCharKeyAdapter(this));
+        input.addKeyListener(new QDLHistoryKeyAdapter(getWorkspaceCommands(), frame, getInput(), getOutput()));
+        output.addKeyListener(new QDLHistoryKeyAdapter(getWorkspaceCommands(), frame, getInput(), getOutput()));
+    }
+
+    /**
      * Initialize this with internal state, such as the listeners and {@link Data}
      * for {@link QDLSwingIO}. Should be called in constructor.
      */
@@ -112,12 +122,6 @@ public class SwingTerminal implements TerminalInterface {
    /*   How to do a key binding. Probably should switch to these at some point...
         KeyStroke key = KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK);
            panel1.getInputMap().put(key,"∈");*/
-
-        input.getCaret().setVisible(true);
-        input.setSyntaxEditingStyle(SYNTAX_STYLE_JAVA);
-        input.addKeyListener(new QDLCharKeyAdapter());
-        input.addKeyListener(new QDLHistoryKeyAdapter(getWorkspaceCommands(), frame, getInput(), getOutput()));
-        output.addKeyListener(new QDLHistoryKeyAdapter(getWorkspaceCommands(), frame, getInput(), getOutput()));
 
 
         // setup IO. Has to be done before everything else.
@@ -162,10 +166,10 @@ public class SwingTerminal implements TerminalInterface {
         prompt.setText("    ");
         panel1.add(prompt, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         RTextScrollPane1 = new RTextScrollPane();
-        RTextScrollPane1.setFoldIndicatorEnabled(true);
-        RTextScrollPane1.setIconRowHeaderEnabled(true);
-        RTextScrollPane1.setLineNumbersEnabled(true);
-        panel1.add(RTextScrollPane1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        RTextScrollPane1.setFoldIndicatorEnabled(false);
+        RTextScrollPane1.setIconRowHeaderEnabled(false);
+        RTextScrollPane1.setLineNumbersEnabled(false);
+        panel1.add(RTextScrollPane1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(800, 250), null, null, 0, false));
         input = new RSyntaxTextArea();
         input.setBackground(new Color(-65537));
         input.setCloseCurlyBraces(false);
@@ -204,91 +208,6 @@ public class SwingTerminal implements TerminalInterface {
         return panel1;
     }
 
-
-    /**
-     * This will listen for key strokes that are remapped to special characters
-     * E.g. alt+e is ∈. This might be re-writable as a key binding but won't
-     * be able to use the mechanisms in other terminals, adding the maintenence issues.
-     * So it looks to be a lot of work.
-     * The main argument for doing this is speed -- at some point this is going to get
-     * slow if there is a lot of text to wade through since it has to do surgery
-     * on the entire text area. If that happens, a rewrite is in order.
-     */
-    public class QDLCharKeyAdapter extends KeyAdapter {
-        protected void doSend(String current) {
-            data.send(current);
-            clearCurrentLine();
-            input.setText(null);
-            prompt.setText(null);
-        }
-
-
-        @Override
-        public void keyTyped(KeyEvent e) {
-            String keyValue = String.valueOf(e.getKeyChar());
-            int position = input.getCaretPosition();
-
-
-            switch (e.getKeyChar()) {
-
-                case KeyEvent.VK_ENTER:
-                    if (e.getModifiersEx() == KeyEvent.VK_WINDOWS) {
-                        System.out.println("Yo!");
-                    }
-                    //if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
-                    if (e.isControlDown() && e.isAltDown()) {
-                        String current = input.getText();
-                        if (current.equals(WorkspaceCommands.OFF_COMMAND + " y")) {
-                            shutdown();
-                        }
-                        // previousResults.add(0, getResultText());
-                        previousLines.add(0, current);
-                        previousLineIndex = 0; // reset this
-                        output.setText(null);
-                        doSend(current);
-                        return;
-                    }
-
-                default:
-
-                    // masks off that alt key is down, ctrl key is up.
-                    boolean gotOne = false;
-
-                    if ((e.getModifiersEx() & (altMask | ctrlMask)) == altMask) {
-                        // only alt mask is down
-                        if (getCharMap().containsKey(keyValue)) {
-                            keyValue = getCharMap().get(keyValue); // exactly one
-                            gotOne = true;
-                        }
-                    }
-                    if ((e.getModifiersEx() & (ctrlMask)) == ctrlMask) {
-                        //ignore ctrl + keys
-                        return;
-                    }
-
-
-                    if (gotOne) {
-                        // Only handle special characters if you have one, otherwise
-                        // let Swing do the work
-                        String x = input.getText();
-                        x = x.substring(0, position) + keyValue + (x.length() == position ? "" : x.substring(position));
-                        input.setText(null);
-                        input.setText(x);
-                        input.repaint();
-                        try {
-                            if (position < x.length()) {
-                                input.setCaretPosition(position + 1);
-                            }
-                        } catch (Throwable t) {
-                            // sometime caret position can be wrong if user has moved mouse. Bail
-                        }
-
-                    } else {
-                        super.keyTyped(e);
-                    }
-            } // end switch
-        }
-    }
 
     boolean sasMode = false;
 
@@ -476,6 +395,7 @@ public class SwingTerminal implements TerminalInterface {
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
+        setupListeners();
         frame.setVisible(true);
     }
 

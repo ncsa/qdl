@@ -14,12 +14,14 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import javax.swing.*;
 import javax.swing.text.Element;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.*;
 
+import static edu.uiuc.ncsa.qdl.gui.LineUtil.getClipboard;
 import static edu.uiuc.ncsa.security.core.util.StringUtils.isTrivial;
 
 /**
@@ -168,7 +170,33 @@ public class EditorKeyPressedAdapter extends KeyAdapter {
 
         switch (e.getKeyCode()) {
 
+            case KeyEvent.VK_I:
+                // Insert in input form
+                if (e.isControlDown()) {
+                        try {
+                            String out = (String) getClipboard().getData(DataFlavor.stringFlavor);
+                            out = LineUtil.toInputForm(out, e.isShiftDown());
+                            String content = input.getText();
+                            int position = input.getCaretPosition();
+                            StringBuilder stringBuilder = new StringBuilder();
+                            stringBuilder.append(content.substring(0, position));
+                            stringBuilder.append(out);
+                            if (position + 1 < content.length()) {
+                                stringBuilder.append(content.substring(position + 1));
+                            }
+                            input.setText(null);
+                            input.setText(stringBuilder.toString());
+                            input.repaint();
+                            input.setCaretPosition(position);
 
+                        } catch (UnsupportedFlavorException | IOException ex) {
+                            if (DebugUtil.isEnabled()) {
+                                ex.printStackTrace();
+                            }
+                            break;
+                        }
+                }
+                break;
             case KeyEvent.VK_H:
                 // check syntax. Display result
                 if (e.isControlDown() && !e.isAltDown() && !e.isShiftDown()) {
@@ -327,6 +355,8 @@ public class EditorKeyPressedAdapter extends KeyAdapter {
                 break;
         }
     }
+
+
 
     protected void doQuit(boolean forceQuit) {
         if (forceQuit) {

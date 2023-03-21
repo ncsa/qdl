@@ -1,9 +1,11 @@
 package edu.uiuc.ncsa.qdl.parsing;
 
+import edu.uiuc.ncsa.qdl.exceptions.ParsingException;
 import edu.uiuc.ncsa.qdl.ini_generated.iniListener;
 import edu.uiuc.ncsa.qdl.ini_generated.iniParser;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -124,12 +126,28 @@ public class IniListenerImpl implements iniListener {
     }
 
     protected Object convertEntryToValue(iniParser.EntryContext entryContext) {
+        if(entryContext.exception != null){
+            RecognitionException re = entryContext.exception;
+            throw new ParsingException("parsing error, got " +
+                    re.getOffendingToken().getText(),
+                    re.getOffendingToken().getLine(),
+                    re.getOffendingToken().getCharPositionInLine(),
+                    ParsingException.MISMATCH_TYPE
+                    );
+        }
         if (entryContext.String() != null) {
             String outString = entryContext.String().getText().trim();
             // returned text will have the '' included, so string them off
             if (outString.startsWith("'") && outString.endsWith("'")) {
                 outString = outString.substring(1, outString.length() - 1);
             }
+            // Fix https://github.com/ncsa/OA4MP/issues/88
+             outString = outString.replace("\\n", "\n");
+             outString = outString.replace("\\t", "\t");
+             outString = outString.replace("\\f", "\f");
+             outString = outString.replace("\\r", "\r");
+             outString = outString.replace("\\b", "\b");
+             outString = outString.replace("\\\\", "\\"); // must be last
             return outString;
         }
         if (entryContext.ConstantKeywords() != null) {
@@ -148,7 +166,7 @@ public class IniListenerImpl implements iniListener {
             }
             return new Long(entryContext.Number().getText());
         }
-        throw new IllegalArgumentException("unkown type");
+        throw new IllegalArgumentException("unknown value type");
     }
 
     @Override

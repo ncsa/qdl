@@ -12,6 +12,8 @@ import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.functions.FR_WithState;
 import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
+import edu.uiuc.ncsa.qdl.gui.SwingTerminal;
+import edu.uiuc.ncsa.qdl.gui.TerminalInterface;
 import edu.uiuc.ncsa.qdl.gui.editor.EditDoneEvent;
 import edu.uiuc.ncsa.qdl.gui.editor.QDLEditor;
 import edu.uiuc.ncsa.qdl.module.MIStack;
@@ -383,7 +385,8 @@ public class WorkspaceCommands implements Logable, Serializable {
     Map<UUID, Integer> currentEditorSessions = new HashMap<>();
 
     protected void _doGUIEditor(BufferManager.BufferRecord br) {
-        QDLEditor qdlEditor = new QDLEditor(this, br.alias);
+
+        QDLEditor qdlEditor = new QDLEditor(this, br.alias, bufferManager.getIndex(br));
 
         currentEditorSessions.put(qdlEditor.getID(), bufferManager.getIndex(br));
         if (br.getContent() == null) {
@@ -6068,5 +6071,18 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     boolean ansiModeOn = false;
+    /**
+       * This is really only a {@link edu.uiuc.ncsa.qdl.gui.SwingTerminal} or SASterminal.
+       * @return
+       */
+    public SwingTerminal getSwingTerminal() {
+        return swingTerminal;
+    }
 
+    public void setSwingTerminal(SwingTerminal swingTerminal) {
+        this.swingTerminal = swingTerminal;
+    }
+
+
+    SwingTerminal swingTerminal;
 }

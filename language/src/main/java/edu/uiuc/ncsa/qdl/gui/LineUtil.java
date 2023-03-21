@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl.gui;
 
+import edu.uiuc.ncsa.qdl.util.InputFormUtil;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 
 import java.awt.*;
@@ -8,6 +9,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -131,7 +133,7 @@ public class LineUtil {
         return false;
     }
 
-    protected static Clipboard getClipboard() {
+    public static Clipboard getClipboard() {
         if (clipboard == null) {
             clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         }
@@ -230,33 +232,126 @@ public class LineUtil {
         }
         return -1;
     }
+     protected static void testInputForm() throws Throwable{
+         String test = "{\"tokens\": {\n" +
+                   "   \"access\":  {\n" +
+                   "    \"audience\": \"https://localhost/fermilab\",\n" +
+                   "    \"lifetime\": 300000,\n" +
+                   "       \"qdl\":   {\n" +
+                   "        \"load\": \"ui-test/process.qdl\",\n" +
+                   "        \"xmd\": {\"exec_phase\":    [\n" +
+                   "         \"post_token\",\n" +
+                   "         \"post_refresh\",\n" +
+                   "         \"post_user_info\"\n" +
+                   "        ]}\n" +
+                   "       }\n" +
+                   "    \"templates\": [  {\n" +
+                   "     \"aud\": \"https://localhost/fermilab\",\n" +
+                   "     \"paths\":    [\n" +
+                   "          {\"op\": \"read\", \"path\": \"/home/${sub}\"},\n" +
+                   "          {\"op\": \"x.y\",\"path\": \"/abc/def\"},\n" +
+                   "          {\"op\": \"write\",\"path\": \"/data/${sub}/cluster\"}\n" +
+                   "     ]\n" +
+                   "    }],\n" +
+                   "    \"type\": \"scitoken\"\n" +
+                   "   },\n" +
+                   "   \"refresh\":  {\n" +
+                   "    \"audience\": \"https://localhost/test\",\n" +
+                   "    \"lifetime\": 900000,\n" +
+                   "    \"type\": \"refresh\"\n" +
+                   "   }\n" +
+                   "  }}";
+         String out = (String) getClipboard().getData(DataFlavor.stringFlavor);
 
+          System.out.println(toInputForm(out, true));
+
+     }
+     protected static void testLineModes() throws Throwable{
+         String text = "mairzy doats\nand dozey\n     f(  x)->  x  ^2;\ndoats\n     //  g(c)->c;\nand liddle\nlambsie\nstoats";
+         System.out.println("Original:\n" + text);
+         text = doOperation(text, 2, TOGGLE_COMMENT_LINE);
+         System.out.println("\ncomment on:\n" + text);
+         text = doOperation(text, 2, TOGGLE_COMMENT_LINE);
+         System.out.println("\ncomment off:\n" + text);
+         text = doOperation(text, 4, TOGGLE_COMMENT_LINE);
+         System.out.println("\ncomment off:\n" + text);
+         text = doOperation(text, 4, TOGGLE_COMMENT_LINE);
+         System.out.println("\ncomment on:\n" + text);
+
+         text = doOperation(text, 2, UP_LINE);
+         System.out.println("\nline up:\n" + text);
+         text = doOperation(text, 2, DOWN_LINE);
+         System.out.println("\nline down:\n" + text);
+         text = doOperation(text, 2, CUT_LINE);
+         System.out.println("\ncut line:\n" + text);
+         text = doOperation(text, 2, DUPLICATE_LINE);
+         System.out.println("\nduplicate line:\n" + text);
+         text = doOperation(text, 2, PASTE_LINES);
+         System.out.println("\npaste line:\n" + text);
+         text = doOperation(text, 3, JOIN_LINE);
+         System.out.println("\njoin line 3+4:\n" + text);
+     }
     public static void main(String[] args) throws Throwable {
-        String text = "mairzy doats\nand dozey\n     f(  x)->  x  ^2;\ndoats\n     //  g(c)->c;\nand liddle\nlambsie\nstoats";
-        System.out.println("Original:\n" + text);
-        text = doOperation(text, 2, TOGGLE_COMMENT_LINE);
-        System.out.println("\ncomment on:\n" + text);
-        text = doOperation(text, 2, TOGGLE_COMMENT_LINE);
-        System.out.println("\ncomment off:\n" + text);
-        text = doOperation(text, 4, TOGGLE_COMMENT_LINE);
-        System.out.println("\ncomment off:\n" + text);
-        text = doOperation(text, 4, TOGGLE_COMMENT_LINE);
-        System.out.println("\ncomment on:\n" + text);
-
-        text = doOperation(text, 2, UP_LINE);
-        System.out.println("\nline up:\n" + text);
-        text = doOperation(text, 2, DOWN_LINE);
-        System.out.println("\nline down:\n" + text);
-        text = doOperation(text, 2, CUT_LINE);
-        System.out.println("\ncut line:\n" + text);
-        text = doOperation(text, 2, DUPLICATE_LINE);
-        System.out.println("\nduplicate line:\n" + text);
-        text = doOperation(text, 2, PASTE_LINES);
-        System.out.println("\npaste line:\n" + text);
-        text = doOperation(text, 3, JOIN_LINE);
-        System.out.println("\njoin line 3+4:\n" + text);
+            //testLineModes();
+            testInputForm();
 
 
     }
 
+    /**
+     * Converts a string (from the clipboard) to input form. This checks if it is a string and if
+     * not just returns it. If it is, then shoirt form is a single line of input form, long form
+     * break it up into lines and formats each one as a concatenation. The latter is really useful
+     * when pasting things like long formatted JSON blobs.
+     * @param in
+     * @param isLongForm
+     * @return
+     */
+      public static String toInputForm(String in, boolean isLongForm){
+          if(!checkString(in.trim())){
+              return in;  // so it's a long, decimal, null or boolean
+          }
+          if(!isLongForm){
+              return InputFormUtil.inputForm(in);
+          }
+          List<String> lines = StringUtils.stringToList(in);
+          StringBuilder stringBuilder = new StringBuilder();
+          for(int i = 0; i < lines.size(); i++){
+              String currentLine = lines.get(i);
+             currentLine =  currentLine.replace("\t", "  ");
+              //currentLine.replace("\\n", "\n");
+              if(i +1 < lines.size()){
+                  stringBuilder.append(InputFormUtil.inputForm(currentLine+"\n") +  "+\n" );
+              }else{
+                  // last line
+                  stringBuilder.append(InputFormUtil.inputForm(currentLine));
+              }
+          }
+          return stringBuilder.toString();
+      }
+
+    protected static boolean checkString(String out) {
+           try {
+               Long.parseLong(out);
+               return false;
+           } catch (Throwable t) {
+
+           }
+           try {
+               new BigDecimal(out);
+               return false;
+           } catch (Throwable t) {
+
+           }
+           if (out.equals("null")) {
+               return false;
+           }
+           if (out.equals("true")) {
+               return false;
+           }
+           if (out.equals("false")) {
+               return false;
+           }
+           return true;
+       }
 }

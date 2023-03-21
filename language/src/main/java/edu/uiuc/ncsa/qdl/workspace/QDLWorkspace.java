@@ -104,7 +104,7 @@ public class QDLWorkspace implements Serializable {
             if (t.getMessage().contains("extraneous") || t.getMessage().contains("mismatched")) {
                 workspaceCommands.say("syntax error: Unexpected or illegal character.");
             } else {
-                workspaceCommands.say("syntax error:" + (workspaceCommands.isDebugOn() ? t.getMessage() : "could not parse input"));
+                workspaceCommands.say("syntax error: " + (workspaceCommands.isDebugOn() ? t.getMessage() : "could not parse input"));
             }
             return;
         }
@@ -504,6 +504,7 @@ public class QDLWorkspace implements Serializable {
         return null;
     }
 
+
     //  {'x':{'a':'b'},'c':'d'} ~ {'y':{'p':'q'},'r':'s'}
     public static void main(String[] args) throws Throwable {
         Vector<String> vector = new Vector<>();
@@ -527,7 +528,9 @@ public class QDLWorkspace implements Serializable {
         if (supportsGUI && isSwingGui) {
             try {
                 swingTerminal = new SwingTerminal();
+                
                 workspaceCommands = new WorkspaceCommands(swingTerminal.getQdlSwingIO());
+               workspaceCommands.setSwingTerminal(swingTerminal);
             } catch (AWTError awtError) {
                 System.out.println("warning -- could not start graphical environment: " + awtError.getMessage());
                 isSwingGui = false;

@@ -1365,7 +1365,8 @@ public class StemEvaluator extends AbstractEvaluator {
                     output.fromJSON(array);
                 } catch (Throwable tt) {
                     // ok, so this is not valid JSON.
-                    throw new BadArgException(FROM_JSON + " could not parse the argument as valid JSON", polyad.getArgAt(0));
+                    throw new BadArgException(FROM_JSON + " could not parse the argument as valid JSON: " +
+                            tt.getMessage().substring(0,Math.min(100,tt.getMessage().length())), polyad.getArgAt(0));
                 }
             }
         }

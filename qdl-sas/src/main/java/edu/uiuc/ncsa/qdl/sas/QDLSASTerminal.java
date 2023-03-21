@@ -1,9 +1,6 @@
 package edu.uiuc.ncsa.qdl.sas;
 
-import edu.uiuc.ncsa.qdl.gui.Data;
-import edu.uiuc.ncsa.qdl.gui.QDLSwingIO;
-import edu.uiuc.ncsa.qdl.gui.QDLSwingUtil;
-import edu.uiuc.ncsa.qdl.gui.SwingTerminal;
+import edu.uiuc.ncsa.qdl.gui.*;
 import edu.uiuc.ncsa.qdl.sas.action.GetHelpTopicAction;
 import edu.uiuc.ncsa.qdl.sas.action.ListFunctionsAction;
 import edu.uiuc.ncsa.qdl.sas.response.EditResponse;
@@ -36,15 +33,18 @@ public class QDLSASTerminal extends SwingTerminal implements QDLSASConstants {
         // so adding it here results in multiple listeners.
     }
 
-
     @Override
-    protected void init() {
+    protected void setupListeners() {
         getInput().getCaret().setVisible(true);
-        getInput().addKeyListener(new QDLSASKeyCharAdapter());
+        getInput().addKeyListener(new QDLSASKeyCharAdapter(getWorkspaceCommands().getSwingTerminal()));
         getInput().addKeyListener(new QDLSASHistoryKeyAdapter(getWorkspaceCommands(),
                 frame, getInput(), getOutput()));
 
         getOutput().addKeyListener(new QDLHistoryKeyAdapter(getWorkspaceCommands(), frame, getInput(), getOutput()));
+    }
+
+    @Override
+    protected void init() {
 
         // setup IO. Has to be done before everything else.
         data = new Data();
@@ -146,6 +146,10 @@ public class QDLSASTerminal extends SwingTerminal implements QDLSASConstants {
     }
 
     public class QDLSASKeyCharAdapter extends QDLCharKeyAdapter {
+        public QDLSASKeyCharAdapter(SwingTerminal swingTerminal) {
+            super(swingTerminal);
+        }
+
         @Override
         protected void doSend(String current) {
             Response response = null;
