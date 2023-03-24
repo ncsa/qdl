@@ -150,10 +150,32 @@ See also: execute]]>
     </entry>
     <entry id="hash">
         <body>
- <![CDATA[hash(arg) - calculates the SHA-1 digest of a string or stem of strings.
+ <![CDATA[hash(arg{, algorithm}) - calculates the digest of a string or stem of strings.
             The output is a hexadecimal string. Note that this has nothing to
-            do with converting to or from hex strings.]]>
+            do with converting to or from hex strings.
+Supported algorithms are:
+md2
+md5
+sha-1
+sha-2 (same as sha-256)
+sha-256
+sha-384
+sha-512
+
+The argument is case insensitive.
+
+The default if no argument is given is sha-1]]>
         </body>
+<example>
+    <![CDATA[    hash(3*'woof'); // default, sha-1
+f6bd2bb62f3f93165d8fc903a286f2eb21267b87
+    hash(3*'woof', 'md5'); // Use the MD 5 digest (128 bits)
+0417584e92d7419ada979f982149507f
+    hash(3*'woof', 'md2'); // Use the MD 2 digest (128 bits, different algorithm)
+e2a822e69c905a067d3351635927ba29
+    hash(3*'woof', 'sha-256'); // (256 bits)
+ac1303206238621acf00a17e363a48d7ae3b30deb2d639520c9ae5bd38747a6c]]>
+</example>
     </entry>
     <entry id="mod">
         <body>
@@ -294,7 +316,16 @@ See also: keys(), var_type(), constants('var_type')]]>
         <body>
  <![CDATA[has_key(key | key_list., arg. ) - returns a left conformable result if the key or list
       of keys are in the arg.
-See also: has_value, list_keys]]>
+
+To use in loops, use either for_keys() or ∋
+  a. := [-10;-5]
+  while[j∋a.][say(j);]
+0
+1
+2
+3
+4
+See also: has_value, for_keys, list_keys]]>
         </body>
     </entry>
     <entry id="include_keys">
@@ -679,7 +710,7 @@ See also: n(), remap, pick]]>
                 </example>
 
     </entry>
-    <entry id="mask">
+    <entry id="mask" alt="⌆">
         <body>
  <![CDATA[mask(target., bit_mask.) - returns a subset of target. corresponding to each
                            true value in the mask.
@@ -688,6 +719,15 @@ Note: This operates generally on stems. Many operations return boolean stems
 
 If you need something similar for sets (which have no concept of addressing
 elements) use pick(@f, set).
+
+The operator has the boolean vector first.
+E.g.
+  [true,false,true,false]⌆[;4]
+{0:0,2:2}
+
+versus
+   mask([;4],[true,false,true,false])
+{0:0,2:2}
 
 See also: pick, sublist]]>
         </body>
@@ -1368,8 +1408,17 @@ stem. - is a stem variable. The keys of this stem will be assigned to the var
         and may be accessed  in the loop.
 Note: This only operates inside of looping constructs.
 
+E.g.
+   a. := [-10;-5]
+   while[for_keys(j, a.)][say(j);]
+0
+1
+2
+3
+4
 See also: for_next, to loop over values of the stem]]>
         </body>
+
     </entry>
     <entry id="for_next">
         <body>
@@ -1865,14 +1914,14 @@ ws_file - the current file to save to/load from by default. If you save or load 
           save_dir, which used for resolving all relative path loads and saves.]]>
         </body>
     </entry>
-    <entry id="reduce">
+    <entry id="reduce" alt="⊙">
         <body>
  <![CDATA[reduce(@f, arg) - Apply the function between all elements of the set
     or generic (i.e. not a list) argument, stem, set or (trivially) scalar.
     The result is always a scalar.
-reduce(@f(), list. {,axis}) - Takes a dyadic function f and applied it between
-             successive members of the list (i.e. in order).
-             The final result is a scalar.
+reduce(@f(), arg. {,axis}) - Takes a dyadic function f and applied it between
+             all members of the argument. The final result is a scalar.
+  @f⊙arg. - operator format. Note it is not possible to specify an axis,
 
 See also: expand()]]>
         </body>
@@ -1886,6 +1935,8 @@ This applies && between each element.
 
 E.g. on a set
    reduce(@*, {1,2,3,4,5})
+120
+     @*⊙{1,2,3,4,5}; // Same as previous, with operator.
 120
 E.g. on a stem
    reduce(@+, {'foo':'a', 'bar':'b', 'baz':'c'})
@@ -1909,16 +1960,18 @@ E.g. On a higher dimension list
 </example>
 
     </entry>
-    <entry id="expand">
+    <entry id="expand" alt="⊙">
         <body>
- <![CDATA[expand(@f, list.) = apply the dyadic function f() pairwise and return the
+ <![CDATA[expand(@f, list.) - apply the dyadic function f() pairwise and return the
               intermediate results.
-
+@f⊙list. - operator version
 
 E.g. To compute the factorial of a number and see the parts:
    expand(@*, 1+n(5))
 [1, 2, 6, 24, 120]
-
+Or if you wish
+     @*⊕1+n(5)
+[1, 2, 6, 24, 120]
 In this case [1, 2, 3, 4, 5] becomes [1, 1*2, 1*2*3, 1*2*3*4, 1*2*3*4*5]
 Note that reduce() effectively returns just the final number. Using expand
 lets you use the intermediate results too.
@@ -1926,7 +1979,6 @@ lets you use the intermediate results too.
 Note that it is not possible to apply expand to a set or a generic stem,
 (what would it mean to stash intermediate results in random keys??)
 so attempts to do so will result in an exception.
-
 See also: reduce]]>
         </body>
     </entry>
@@ -2441,7 +2493,11 @@ E              ∉       E    \u2209         is *not* member of
 <=             ≤       <    \u2264         less than or equals
 >=             ≥       >    \u2265         greater than or equals
 ~|             ≁       ~    \u2241         last axis join
+expand         ⊗       X    \u2295         function reference
 @              ⊗       @    \u2297         function reference
+reduce         ⊙       x    \u2299         reduce operator
+mask           ⌆       m    \u2306         mask operator
+transpose      ⦰       t    \u29b0         transpose operator
 [|             ⟦       {    \u27e6         left closed slice bracket
 |]             ⟧       }    \u27e7         right closed slice bracket
 ceiling        ⌈       k    \u2308         ceiling
@@ -2779,7 +2835,7 @@ return f(a), otherwise, return 0.]]>
 These are equivalent
  2&lt;3 ? 'foo' : 'bar'
  2&lt;3 ⇒ 'foo' : 'bar'
-Saa also: ?
+See also: ?
           </body>
     </entry>
     <entry id="then">
@@ -3225,7 +3281,7 @@ Note that indices(a., 1) == indices(a., -1) in this case.]]>
 </example>
 
     </entry>
-    <entry id="transpose" alt="τ">
+    <entry id="transpose" alt="⦰">
         <body>
  <![CDATA[Restructure a higher dimension stem by transposing its axes.
 
@@ -4147,7 +4203,7 @@ And each key is separated by |'s
   Q |  W |  E  |  R |  T |  Y |  U |  I |  O |  P |  { |  } |  | |
     |    |  ∉  |    |    |    |  ∩ |  ∄ |    |    |  ⟦ |  ⟧ |  ∨ |
 q   |w   |e    |r   |t   |y   |u   |i   |o   |p   |[   |]   |\   |
-    |    |∈    |    |τ   |    |∪   |∃   |    |π   |    |   | ≠  |
+    |    |∈    |≈   |τ   |    |∪   |∃   |    |π   |    |   | ≠  |
 
   A |  S |  D |  F |  G |  H |  J |  K |  L |  : |  " |
     |    |  ∆ |    |    |  ∌ |    |    |    |  ≔ |  ≕ |
@@ -4155,7 +4211,7 @@ a   |s   |d   |f   |g   |h   |j   |k   |l   |;   |'   |
 ⊨   |⊢   |→   |    |    |∋   |    |⌈   |⌊   |    |    |
 
   Z |  X |  C |  V |  B |  N |  M |  < |  > |  ? |
-    |    |    |    |    |    |    |  ≤ |  ≥ |  ≈ |
+    |    |    |    |    |    |    |  ≤ |  ≥ |  ⇒ |
 z   |x   |c   |v   |b   |n   |m   |,   |.   |/   |
     |    |    |    |    |∅   |    |    |    |    |
 See also: unicode, greek]]>
@@ -4198,7 +4254,7 @@ which is more computer sciencey and is what you normally want when
 writing libraries (and include auto documentation)and lambda
 expressions (with a ->) for on the fly function defintions.
 
-Global variables are prefaced with a & and are always available,
+Global variables are prefaced with a $$ and are always available,
 and should be used for truly global things.
 
 The define keyword.
@@ -4207,7 +4263,7 @@ This restricts visibility to only imported modules
 These are defined to illustrate the examples.
   a := 4;
   s(x)->x^2
-  &my_global := 5;
+  $$my_global := 5;
 
   define[f(x)][return(a*x);]
   f(2)
@@ -4215,7 +4271,7 @@ unknown symbol 'a' at (1, 20)
 
 but global variables are always there
 
-  define[g(x)][return(&my_global*x);]
+  define[g(x)][return($$my_global*x);]
   f(2)
 10
 
@@ -4232,7 +4288,7 @@ Local block examples. This gives the least visibility of all the options
   h(@s, 2)
 4
 
-  hh(@f, x)->local[return(&my_global*f(x));]
+  hh(@f, x)->local[return($$my_global*f(x));]
   hh(@s, 3)
 45
 
@@ -4814,7 +4870,15 @@ See also: has_key, ∌  ]]>
     'a' ∋ [;5]
 false
     'a' ∌ [;5]; // 'a' is not a key in this stem
-true]]>
+true
+  // E.g. Using in a loop
+  a. := [-10;-5]
+  while[j∋a.][say(a.j);]
+-10
+-9
+-8
+-7
+-6]]>
         </example>
     </entry>
     <entry id="∌">

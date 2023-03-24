@@ -328,18 +328,6 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitF_ref(QDLParserParser.F_refContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code isDefinedDyadicExpression}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterIsDefinedDyadicExpression(QDLParserParser.IsDefinedDyadicExpressionContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code isDefinedDyadicExpression}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitIsDefinedDyadicExpression(QDLParserParser.IsDefinedDyadicExpressionContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code functions}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
@@ -376,18 +364,6 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitPrefix(QDLParserParser.PrefixContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code forAll}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterForAll(QDLParserParser.ForAllContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code forAll}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitForAll(QDLParserParser.ForAllContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code tildeExpression}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
@@ -411,18 +387,6 @@ public interface QDLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitNumbers(QDLParserParser.NumbersContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code association}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterAssociation(QDLParserParser.AssociationContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code association}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitAssociation(QDLParserParser.AssociationContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code notExpression}
 	 * labeled alternative in {@link QDLParserParser#expression}.
@@ -484,18 +448,6 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitEpsilon(QDLParserParser.EpsilonContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code andExpression}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterAndExpression(QDLParserParser.AndExpressionContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code andExpression}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitAndExpression(QDLParserParser.AndExpressionContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code setThing}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
@@ -508,17 +460,17 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitSetThing(QDLParserParser.SetThingContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code strings}
+	 * Enter a parse tree produced by the {@code frefDyadicOps}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
 	 */
-	void enterStrings(QDLParserParser.StringsContext ctx);
+	void enterFrefDyadicOps(QDLParserParser.FrefDyadicOpsContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code strings}
+	 * Exit a parse tree produced by the {@code frefDyadicOps}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
 	 */
-	void exitStrings(QDLParserParser.StringsContext ctx);
+	void exitFrefDyadicOps(QDLParserParser.FrefDyadicOpsContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code compExpression}
 	 * labeled alternative in {@link QDLParserParser#expression}.
@@ -531,18 +483,6 @@ public interface QDLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitCompExpression(QDLParserParser.CompExpressionContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code unaryTildeExpression}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterUnaryTildeExpression(QDLParserParser.UnaryTildeExpressionContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code unaryTildeExpression}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitUnaryTildeExpression(QDLParserParser.UnaryTildeExpressionContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code intersectionOrUnion}
 	 * labeled alternative in {@link QDLParserParser#expression}.
@@ -568,18 +508,6 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitModuleExpression(QDLParserParser.ModuleExpressionContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code postfix}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterPostfix(QDLParserParser.PostfixContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code postfix}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitPostfix(QDLParserParser.PostfixContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code dotOp2}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
@@ -604,30 +532,6 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitLambdaDef(QDLParserParser.LambdaDefContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code realInterval}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterRealInterval(QDLParserParser.RealIntervalContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code realInterval}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitRealInterval(QDLParserParser.RealIntervalContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code variables}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterVariables(QDLParserParser.VariablesContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code variables}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitVariables(QDLParserParser.VariablesContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code containsKey}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
@@ -639,30 +543,6 @@ public interface QDLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitContainsKey(QDLParserParser.ContainsKeyContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code assignment}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterAssignment(QDLParserParser.AssignmentContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code assignment}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitAssignment(QDLParserParser.AssignmentContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code stemLi}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterStemLi(QDLParserParser.StemLiContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code stemLi}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitStemLi(QDLParserParser.StemLiContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code regexMatches}
 	 * labeled alternative in {@link QDLParserParser#expression}.
@@ -676,30 +556,6 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitRegexMatches(QDLParserParser.RegexMatchesContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code intInterval}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterIntInterval(QDLParserParser.IntIntervalContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code intInterval}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitIntInterval(QDLParserParser.IntIntervalContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code logical}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterLogical(QDLParserParser.LogicalContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code logical}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitLogical(QDLParserParser.LogicalContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code altIFExpression}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
@@ -711,42 +567,6 @@ public interface QDLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitAltIFExpression(QDLParserParser.AltIFExpressionContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code orExpression}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterOrExpression(QDLParserParser.OrExpressionContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code orExpression}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitOrExpression(QDLParserParser.OrExpressionContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code toSet}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterToSet(QDLParserParser.ToSetContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code toSet}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitToSet(QDLParserParser.ToSetContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code unaryMinusExpression}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterUnaryMinusExpression(QDLParserParser.UnaryMinusExpressionContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code unaryMinusExpression}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitUnaryMinusExpression(QDLParserParser.UnaryMinusExpressionContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code powerExpression}
 	 * labeled alternative in {@link QDLParserParser#expression}.
@@ -808,6 +628,234 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitAddExpression(QDLParserParser.AddExpressionContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code is_a}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterIs_a(QDLParserParser.Is_aContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code is_a}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitIs_a(QDLParserParser.Is_aContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code stemVar}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterStemVar(QDLParserParser.StemVarContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code stemVar}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitStemVar(QDLParserParser.StemVarContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code dotOp}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterDotOp(QDLParserParser.DotOpContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code dotOp}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitDotOp(QDLParserParser.DotOpContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code isDefinedDyadicExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterIsDefinedDyadicExpression(QDLParserParser.IsDefinedDyadicExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code isDefinedDyadicExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitIsDefinedDyadicExpression(QDLParserParser.IsDefinedDyadicExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code forAll}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterForAll(QDLParserParser.ForAllContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code forAll}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitForAll(QDLParserParser.ForAllContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code association}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterAssociation(QDLParserParser.AssociationContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code association}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitAssociation(QDLParserParser.AssociationContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code andExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterAndExpression(QDLParserParser.AndExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code andExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitAndExpression(QDLParserParser.AndExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code strings}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterStrings(QDLParserParser.StringsContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code strings}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitStrings(QDLParserParser.StringsContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code unaryTildeExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterUnaryTildeExpression(QDLParserParser.UnaryTildeExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code unaryTildeExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitUnaryTildeExpression(QDLParserParser.UnaryTildeExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code postfix}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterPostfix(QDLParserParser.PostfixContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code postfix}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitPostfix(QDLParserParser.PostfixContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code realInterval}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterRealInterval(QDLParserParser.RealIntervalContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code realInterval}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitRealInterval(QDLParserParser.RealIntervalContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code variables}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterVariables(QDLParserParser.VariablesContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code variables}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitVariables(QDLParserParser.VariablesContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code assignment}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterAssignment(QDLParserParser.AssignmentContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code assignment}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitAssignment(QDLParserParser.AssignmentContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code stemLi}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterStemLi(QDLParserParser.StemLiContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code stemLi}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitStemLi(QDLParserParser.StemLiContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code intInterval}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterIntInterval(QDLParserParser.IntIntervalContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code intInterval}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitIntInterval(QDLParserParser.IntIntervalContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code logical}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterLogical(QDLParserParser.LogicalContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code logical}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitLogical(QDLParserParser.LogicalContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code orExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterOrExpression(QDLParserParser.OrExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code orExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitOrExpression(QDLParserParser.OrExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code toSet}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterToSet(QDLParserParser.ToSetContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code toSet}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitToSet(QDLParserParser.ToSetContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code unaryMinusExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterUnaryMinusExpression(QDLParserParser.UnaryMinusExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code unaryMinusExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitUnaryMinusExpression(QDLParserParser.UnaryMinusExpressionContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code isDefinedExpression}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
@@ -856,41 +904,17 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitExtract4(QDLParserParser.Extract4Context ctx);
 	/**
-	 * Enter a parse tree produced by the {@code is_a}
+	 * Enter a parse tree produced by the {@code expressionDyadicOps}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
 	 */
-	void enterIs_a(QDLParserParser.Is_aContext ctx);
+	void enterExpressionDyadicOps(QDLParserParser.ExpressionDyadicOpsContext ctx);
 	/**
-	 * Exit a parse tree produced by the {@code is_a}
+	 * Exit a parse tree produced by the {@code expressionDyadicOps}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
 	 */
-	void exitIs_a(QDLParserParser.Is_aContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code stemVar}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterStemVar(QDLParserParser.StemVarContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code stemVar}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitStemVar(QDLParserParser.StemVarContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code dotOp}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void enterDotOp(QDLParserParser.DotOpContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code dotOp}
-	 * labeled alternative in {@link QDLParserParser#expression}.
-	 * @param ctx the parse tree
-	 */
-	void exitDotOp(QDLParserParser.DotOpContext ctx);
+	void exitExpressionDyadicOps(QDLParserParser.ExpressionDyadicOpsContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link QDLParserParser#variable}.
 	 * @param ctx the parse tree

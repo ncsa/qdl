@@ -115,7 +115,6 @@ public class StemEvaluator extends AbstractEvaluator {
     public static final int ALL_KEYS_TYPE = 111 + STEM_FUNCTION_BASE_VALUE;
 
     public static final String TRANSPOSE = "transpose";
-    public static final String TRANSPOSE2 = "τ";
     public static final int TRANSPOSE_TYPE = 112 + STEM_FUNCTION_BASE_VALUE;
 
     public static final String REMAP = "remap";
@@ -165,7 +164,7 @@ public class StemEvaluator extends AbstractEvaluator {
                     DIFF,
                     STAR,
                     DIMENSION, RANK,
-                    TRANSPOSE, TRANSPOSE2,
+                    TRANSPOSE,
                     REMAP,
                     SIZE,
                     JOIN,
@@ -247,11 +246,8 @@ public class StemEvaluator extends AbstractEvaluator {
                 return UNIQUE_VALUES_TYPE;
             case IS_LIST:
                 return IS_LIST_TYPE;
-
             case TRANSPOSE:
-            case TRANSPOSE2:
                 return TRANSPOSE_TYPE;
-
             case SHORT_MAKE_INDICES:
                 return MAKE_INDICES_TYPE;
             case REMOVE:
@@ -318,7 +314,6 @@ public class StemEvaluator extends AbstractEvaluator {
                 doSetDefault(polyad, state);
                 return true;
             case TRANSPOSE:
-            case TRANSPOSE2:
                 doTransform(polyad, state);
                 return true;
             case MASK:

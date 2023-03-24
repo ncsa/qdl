@@ -17,7 +17,7 @@ import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.*;
 import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
-import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import static edu.uiuc.ncsa.qdl.exceptions.ParsingException.*;
 import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
 
 /**
@@ -66,12 +67,13 @@ public class QDLListener implements QDLParserListener {
 
     @Override
     public void enterElements(QDLParserParser.ElementsContext ctx) {
+        checkLexer(ctx);
 
     }
 
     @Override
     public void exitElements(QDLParserParser.ElementsContext ctx) {
-
+        checkLexer(ctx);
     }
 
     @Override
@@ -138,7 +140,7 @@ public class QDLListener implements QDLParserListener {
     protected Statement resolveChild(ParseTree currentChild) {
         try {
             return resolveChild(currentChild, false);
-        }catch(NullPointerException npe){
+        } catch (NullPointerException npe) {
             // This happens when it cannot actually resolve children so indicates a
             // parsing error
 
@@ -460,6 +462,8 @@ public class QDLListener implements QDLParserListener {
 
     @Override
     public void exitStrings(QDLParserParser.StringsContext ctx) {
+        checkLexer(ctx);
+
         String value = ctx.getChild(0).getText().trim();
         // IF the parser is on the ball, then this is enclosed in single quotes, so we string them
         if (value.startsWith("'")) {
@@ -2197,8 +2201,6 @@ illegal argument:no module named "b" was  imported at (1, 67)
         dyad.setTokenPosition(tp(ctx));
         stash(ctx, dyad);
         finish(dyad, ctx);
-
-
     }
 
     @Override
@@ -2261,6 +2263,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
     @Override
     public void exitIs_a(QDLParserParser.Is_aContext ctx) {
+        checkLexer(ctx);
         Dyad dyad = new Dyad(OpEvaluator.IS_A_VALUE);
         dyad.setTokenPosition(tp(ctx));
         stash(ctx, dyad);
@@ -2274,6 +2277,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
     @Override
     public void exitIsDefinedExpression(QDLParserParser.IsDefinedExpressionContext ctx) {
+        checkLexer(ctx);
         String x = ctx.getChild(0).getText();
         Monad monad = null;
         if (x.equals(OpEvaluator.IS_DEFINED)) {
@@ -2293,6 +2297,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
     @Override
     public void exitIsDefinedDyadicExpression(QDLParserParser.IsDefinedDyadicExpressionContext ctx) {
+        checkLexer(ctx);
         String x = ctx.getChild(1).getText();
 
         Dyad dyad;
@@ -2314,6 +2319,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
     @Override
     public void exitContainsKey(QDLParserParser.ContainsKeyContext ctx) {
+        checkLexer(ctx);
         String x = ctx.getChild(1).getText();
         Dyad dyad;
         if (x.equals(OpEvaluator.CONTAINS_KEY)) {
@@ -2328,17 +2334,91 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
     @Override
     public void enterForAll(QDLParserParser.ForAllContext ctx) {
-
     }
 
     @Override
     public void exitForAll(QDLParserParser.ForAllContext ctx) {
+        checkLexer(ctx);
         Dyad dyad = new Dyad(OpEvaluator.FOR_ALL_KEY_VALUE);
         dyad.setTokenPosition(tp(ctx));
         stash(ctx, dyad);
         finish(dyad, ctx);
     }
 
+    /**
+     * First cut of catching lexer exceptions and handling them
+     * @param pre
+     */
+    protected void checkLexer(ParserRuleContext pre) {
+        if (pre.exception == null) {
+            return;
+        }
+        RecognitionException re = pre.exception;
+        String type = SYNTAX_TYPE;
+        if (re instanceof InputMismatchException) {
+            // Any type of mismatch, when the current token does not match the expected token
+            type = MISMATCH_TYPE;
+        }
+        if (re instanceof LexerNoViableAltException) {
+            // Lexer cannot figure out which of two or more possible alternatives to resolve a token there are
+            type = AMBIGUOUS_TYPE;
+        }
+        if (re instanceof NoViableAltException) {
+            // Parser cannot figure out which of two or more possible alternatives to resolve a token there are
+            type = SYNTAX_TYPE;
+        }
+
+        if (re instanceof FailedPredicateException) {
+            // A token was found but it could not be validated as teh correct one to use.
+            type = AMBIGUOUS_TYPE;
+        }
+        throw new ParsingException("parsing error, got " +
+                re.getOffendingToken().getText(),
+                re.getOffendingToken().getLine(),
+                re.getOffendingToken().getCharPositionInLine(),
+                type
+        );
+    }
+
+    @Override
+    public void enterExpressionDyadicOps(QDLParserParser.ExpressionDyadicOpsContext ctx) {
+
+    }
+
+    @Override
+    public void exitExpressionDyadicOps(QDLParserParser.ExpressionDyadicOpsContext ctx) {
+        String x = ctx.getChild(1).getText();
+        Dyad dyad;
+        dyad = new Dyad(getOpEvaluator().getType(x));
+        dyad.setTokenPosition(tp(ctx));
+        stash(ctx, dyad);
+        finish(dyad, ctx);
+    }
+
+    @Override
+    public void enterFrefDyadicOps(QDLParserParser.FrefDyadicOpsContext ctx) {
+
+    }
+
+    @Override
+    public void exitFrefDyadicOps(QDLParserParser.FrefDyadicOpsContext ctx) {
+        String op = ctx.op.getText();
+        checkLexer(ctx);
+        Dyad dyad = new Dyad(getOpEvaluator().getType(op));
+        dyad.setTokenPosition(tp(ctx));
+        stash(ctx, dyad);
+        finish(dyad, ctx);
+    }
+
+    /**
+     * Only need this for type lookup. Don't use for anything else
+     * @return
+     */
+    public OpEvaluator getOpEvaluator() {
+        return opEvaluator;
+    }
+
+    OpEvaluator opEvaluator = new OpEvaluator();
 }
 
 

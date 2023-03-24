@@ -56,6 +56,7 @@
               <background color="-65537"/>
               <closeCurlyBraces value="false"/>
               <codeFoldingEnabled value="true"/>
+              <font name="DialogInput" size="14" style="1"/>
               <fractionalFontMetricsEnabled value="true"/>
               <rows value="0"/>
             </properties>

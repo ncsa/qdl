@@ -46,20 +46,6 @@ public class MathEvaluator extends AbstractEvaluator {
     public static final String HASH = "hash";
     public static final int HASH_TYPE = 4 + MATH_FUNCTION_BASE_VALUE;
 
-/*
-    public static final String ENCODE_B16 = "encode_b16";
-    public static final int ENCODE_B16_TYPE = 5 + MATH_FUNCTION_BASE_VALUE;
-
-    public static final String DECODE_B16 = "decode_b16";
-    public static final int DECODE_B16_TYPE = 6 + MATH_FUNCTION_BASE_VALUE;
-
-    public static final String ENCODE_B32 = "encode_b32";
-    public static final int ENCODE_B32_TYPE = 17 + MATH_FUNCTION_BASE_VALUE;
-
-    public static final String DECODE_B32 = "decode_b32";
-    public static final int DECODE_B32_TYPE = 18 + MATH_FUNCTION_BASE_VALUE;
-*/
-
     public static final String ENCODE = "encode";
     public static final int ENCODE_TYPE = 19 + MATH_FUNCTION_BASE_VALUE;
 
@@ -110,19 +96,9 @@ public class MathEvaluator extends AbstractEvaluator {
                     HASH,
                     ENCODE,
                     DECODE,
-/*
-                    ENCODE_B16,
-                    DECODE_B16,
-*/
                     DATE_MS,
                     DATE_ISO,
                     NUMERIC_DIGITS,
-/*
-                    DECODE_B64,
-                    ENCODE_B64,
-                    DECODE_B32,
-                    ENCODE_B32,
-*/
                     MOD,
                     MAX, MIN,
                     DATE_ISO};
@@ -150,20 +126,6 @@ public class MathEvaluator extends AbstractEvaluator {
                 return ENCODE_TYPE;
             case DECODE:
                 return DECODE_TYPE;
-/*
-            case ENCODE_B16:
-                return ENCODE_B16_TYPE;
-            case DECODE_B16:
-                return DECODE_B16_TYPE;
-            case ENCODE_B64:
-                return ENCODE_B64_TYPE;
-            case DECODE_B64:
-                return DECODE_B64_TYPE;
-            case ENCODE_B32:
-                return ENCODE_B32_TYPE;
-            case DECODE_B32:
-                return DECODE_B32_TYPE;
-*/
             case DATE_MS:
                 return DATE_MS_TYPE;
             case DATE_ISO:
@@ -216,32 +178,9 @@ public class MathEvaluator extends AbstractEvaluator {
             case DECODE:
                 doCodec(polyad, state, false);
                 return true;
-
-/*
-            case ENCODE_B16:
-                toFromhex(polyad, state, true);
-                return true;
-            case DECODE_B16:
-                toFromhex(polyad, state, false);
-                return true;
-*/
             case NUMERIC_DIGITS:
                 doNumericDigits(polyad, state);
                 return true;
-/*
-            case ENCODE_B64:
-                doB64(polyad, state, true);
-                return true;
-            case DECODE_B64:
-                doB64(polyad, state, false);
-                return true;
-            case ENCODE_B32:
-                doB32(polyad, state, true);
-                return true;
-            case DECODE_B32:
-                doB32(polyad, state, false);
-                return true;
-*/
             case DATE_MS:
                 doDates(polyad, state, true);
                 return true;
@@ -610,59 +549,58 @@ public class MathEvaluator extends AbstractEvaluator {
 
     protected void doHash(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setResult(new int[]{1,2});
             polyad.setEvaluated(true);
             return;
         }
         if (polyad.getArgCount() < 1) {
-            throw new MissingArgException(HASH + " requires 1 argument", polyad);
+            throw new MissingArgException(HASH + " requires at least 1 argument", polyad);
         }
 
-        if (1 < polyad.getArgCount()) {
-            throw new ExtraArgException(HASH + " requires 1 argument", polyad.getArgAt(1));
+        if (2 < polyad.getArgCount()) {
+            throw new ExtraArgException(HASH + " takes at most 2 arguments", polyad.getArgAt(2));
         }
 
-        AbstractEvaluator.fPointer pointer = new AbstractEvaluator.fPointer() {
-            @Override
-            public AbstractEvaluator.fpResult process(Object... objects) {
-                AbstractEvaluator.fpResult r = new AbstractEvaluator.fpResult();
-                if (objects[0] instanceof String) {
-                    r.result = DigestUtils.sha1Hex(objects[0].toString());
-                    r.resultType = Constant.STRING_TYPE;
-                } else {
-                    r.result = objects[0];
-                    r.resultType = polyad.getArguments().get(0).getResultType();
-                }
-                return r;
+        String algorithm = "sha-1";
+        if(polyad.getArgCount() == 2){
+            Object arg2 = polyad.evalArg(1, state);
+            if(!(arg2 instanceof String)){
+                throw new BadArgException(HASH + " requires a string as the second argument", polyad.getArgAt(1));
             }
-        };
-        process1(polyad, pointer, HASH, state);
-    }
-
-/*
-    protected void doB64(Polyad polyad, State state, boolean isEncode) {
-        if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
-            polyad.setEvaluated(true);
-            return;
+            algorithm = ((String)arg2).toLowerCase();
         }
-        if (polyad.getArgCount() < 1) {
-            throw new MissingArgException((isEncode ? ENCODE_B64 : DECODE_B64) + " requires 1 argument", polyad);
-        }
-
-        if (1 < polyad.getArgCount()) {
-            throw new ExtraArgException((isEncode ? ENCODE_B64 : DECODE_B64) + " requires at most 1 argument", polyad.getArgAt(1));
-        }
-
         AbstractEvaluator.fPointer pointer = new AbstractEvaluator.fPointer() {
             @Override
             public AbstractEvaluator.fpResult process(Object... objects) {
                 AbstractEvaluator.fpResult r = new AbstractEvaluator.fpResult();
                 if (objects[0] instanceof String) {
-                    if (isEncode) {
-                        r.result = Base64.encodeBase64URLSafeString(objects[0].toString().getBytes());
-                    } else {
-                        r.result = new String(Base64.decodeBase64(objects[0].toString()));
+                    String algorithm = "sha-1";
+                    if(objects.length == 2){
+                         algorithm = (String)objects[1];
+                    }
+                    switch (algorithm){
+                        case "md2":
+                            r.result = DigestUtils.md2Hex((String)objects[0]);
+                            break;
+                        case "md5":
+                            r.result = DigestUtils.md5Hex((String)objects[0]);
+                            break;
+                        case "sha-1":
+                            r.result = DigestUtils.sha1Hex((String)objects[0]);
+                            break;
+                        case "sha-2":
+                        case "sha-256":
+                            r.result = DigestUtils.sha256Hex((String)objects[0]);
+                            break;
+                        case "sha-384":
+                            r.result = DigestUtils.sha384Hex((String)objects[0]);
+                            break;
+                        case "sha-512":
+                            r.result = DigestUtils.sha512Hex((String)objects[0]);
+                            break;
+                        default:
+                         throw new BadArgException("unknown hash algorithm'" + algorithm + "'", polyad.getArgAt(1));
+
                     }
                     r.resultType = Constant.STRING_TYPE;
                 } else {
@@ -672,51 +610,13 @@ public class MathEvaluator extends AbstractEvaluator {
                 return r;
             }
         };
-        process1(polyad, pointer, isEncode ? ENCODE_B64 : DECODE_B64, state);
+        if(polyad.getArgCount() == 1){
+            process1(polyad, pointer, HASH, state);
+        }   else{
+            process2(polyad, pointer, HASH, state);
+        }
     }
 
-    protected void toFromhex(Polyad polyad, State state, boolean toHex) {
-        if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
-            polyad.setEvaluated(true);
-            return;
-        }
-        if (polyad.getArgCount() < 1) {
-            throw new MissingArgException((toHex ? ENCODE_B16 : DECODE_B16) + " requires 1 argument", polyad);
-        }
-
-        if (1 < polyad.getArgCount()) {
-            throw new ExtraArgException((toHex ? ENCODE_B16 : DECODE_B16) + " requires at most 1 argument", polyad.getArgAt(1));
-        }
-
-        AbstractEvaluator.fPointer pointer = new AbstractEvaluator.fPointer() {
-            @Override
-            public AbstractEvaluator.fpResult process(Object... objects) {
-                AbstractEvaluator.fpResult r = new AbstractEvaluator.fpResult();
-                Long ll = null;
-
-                if (objects[0] instanceof String) {
-                    if (toHex) {
-                        r.result = Hex.encodeHexString(objects[0].toString().getBytes());
-                    } else {
-                        try {
-                            byte[] decoded = Hex.decodeHex(objects[0].toString().toCharArray());
-                            r.result = new String(decoded);
-                        } catch (Throwable t) {
-                            r.result = "(error)";
-                        }
-                    }
-                    r.resultType = Constant.STRING_TYPE;
-                } else {
-                    r.result = objects[0];
-                    r.resultType = polyad.getArguments().get(0).getResultType();
-                }
-                return r;
-            }
-        };
-        process1(polyad, pointer, toHex ? ENCODE_B16 : DECODE_B16, state);
-    }
-*/
 
     /**
      * Compute the modulus of two numbers, i.e. the remainder after division

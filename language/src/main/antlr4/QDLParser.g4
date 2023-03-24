@@ -165,6 +165,8 @@ expression
  // Note that we cannot have something like a lambda on the lhs of ∀
  // because the parser won't quite flag it right.
  | f_ref op=ForAll expression                                                  #forAll  // unicode 2200
+ | expression op=ExprDyadicOps expression                                      #expressionDyadicOps
+ | f_ref op=FRefDyadicOps expression                                           #frefDyadicOps
  | STRING                                                                      #strings
  | integer                                                                     #integers
  | number                                                                      #numbers

@@ -1040,7 +1040,7 @@ public class ParserTest extends AbstractQDLTester {
         String slash = "\\";
         addLine(script, "a:='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\\n" + //alphanumeric
                 "  ~`!@#$%^&*()[]{}<>\\\\/\\'\"-_=+|;:,.?\\n" + // other ASCII symbols
-                "  ¬¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧≁⊗⊢∈∉∀∋∌∃∄∩∪∆\\n" + // unicode
+                "  ¬¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧≁⊕⊗⊙⌆⦰⊢∈∉∀∋∌∃∄∩∪∆\\n" + // unicode
                 "  ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω';" // Greek
         );
         addLine(script, "say('\\nprinting all base characters with say:');");
@@ -2004,9 +2004,11 @@ public class ParserTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "x := reduce(@*, 1+n(5));");
+        addLine(script, "y := ⊗*⊙1+n(5);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getLongValue("x", state) == 120L;
+        assert getLongValue("y", state) == 120L;
     }
 
     /**
@@ -2047,6 +2049,7 @@ public class ParserTest extends AbstractQDLTester {
         addLine(script, "a. := [1,3,5,7];");
         addLine(script, "b. := [1,3,6,7];");
         addLine(script, "x. := expand(@&&, a. == b.);");
+        addLine(script, "y. := ⊗∧⊕a. == b.;");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         // returns [T T F F]
@@ -2054,6 +2057,10 @@ public class ParserTest extends AbstractQDLTester {
         assert getBooleanValue("x.1", state);
         assert !getBooleanValue("x.2", state);
         assert !getBooleanValue("x.3", state);
+        assert getBooleanValue("y.0", state);
+        assert getBooleanValue("y.1", state);
+        assert !getBooleanValue("y.2", state);
+        assert !getBooleanValue("y.3", state);
     }
 
 

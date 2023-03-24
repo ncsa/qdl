@@ -1995,9 +1995,9 @@ public class StemTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "ξ.  := n(3,4,5,n(60));");
-        addLine(script, "ξ0. := reduce(@+," + StemEvaluator.TRANSPOSE2 + "(ξ.,0));");
-        addLine(script, "ξ1. := reduce(@+," + StemEvaluator.TRANSPOSE2 + "(ξ.,1));");
-        addLine(script, "ξ2. := reduce(@+," + StemEvaluator.TRANSPOSE2 + "(ξ.,2));");
+        addLine(script, "ξ0. := reduce(@+," + StemEvaluator.TRANSPOSE + "(ξ.,0));");
+        addLine(script, "ξ1. := reduce(@+," + StemEvaluator.TRANSPOSE + "(ξ.,1));");
+        addLine(script, "ξ2. := reduce(@+," + StemEvaluator.TRANSPOSE + "(ξ.,2));");
         // Check against computed output. We break this up in statements or these get really long
         addLine(script, "η0. := [[60,63,66,69,72],[75,78,81,84,87],[90,93,96,99,102],[105,108,111,114,117]];");
         addLine(script, "η1. := [[30,34,38,42,46],[110,114,118,122,126],[190,194,198,202,206]];");
@@ -2009,9 +2009,9 @@ public class StemTest extends AbstractQDLTester {
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
 
         interpreter.execute(script.toString());
-        assert getBooleanValue("ok0", state) : StemEvaluator.TRANSPOSE2 + " operator failed for axis = 0.";
-        assert getBooleanValue("ok1", state) : StemEvaluator.TRANSPOSE2 + " operator failed for axis = 1.";
-        assert getBooleanValue("ok2", state) : StemEvaluator.TRANSPOSE2 + " operator failed for axis = 2.";
+        assert getBooleanValue("ok0", state) : StemEvaluator.TRANSPOSE + " operator failed for axis = 0.";
+        assert getBooleanValue("ok1", state) : StemEvaluator.TRANSPOSE + " operator failed for axis = 1.";
+        assert getBooleanValue("ok2", state) : StemEvaluator.TRANSPOSE + " operator failed for axis = 2.";
     }
 
     /**

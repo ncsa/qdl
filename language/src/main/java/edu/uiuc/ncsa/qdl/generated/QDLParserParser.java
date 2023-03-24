@@ -27,12 +27,12 @@ public class QDLParserParser extends Parser {
 		Plus=47, MinusMinus=48, Minus=49, LessThan=50, GreaterThan=51, SingleEqual=52, 
 		DoubleQuote=53, SingleQuote=54, To_Set=55, LessEquals=56, MoreEquals=57, 
 		IsA=58, Equals=59, NotEquals=60, RegexMatches=61, LogicalNot=62, Membership=63, 
-		IsDefined=64, ForAll=65, ContainsKey=66, Exponentiation=67, And=68, Or=69, 
-		Backtick=70, Percent=71, Tilde=72, Backslash=73, Backslash2=74, Backslash3=75, 
-		Backslash4=76, Hash=77, Stile=78, TildeRight=79, StemDot=80, UnaryMinus=81, 
-		UnaryPlus=82, Floor=83, Ceiling=84, FunctionMarker=85, AltIfMarker=86, 
-		ASSIGN=87, Identifier=88, FuncStart=89, F_REF=90, FDOC=91, WS=92, COMMENT=93, 
-		LINE_COMMENT=94;
+		IsDefined=64, ForAll=65, ContainsKey=66, Exponentiation=67, ExprDyadicOps=68, 
+		FRefDyadicOps=69, And=70, Or=71, Backtick=72, Percent=73, Tilde=74, Backslash=75, 
+		Backslash2=76, Backslash3=77, Backslash4=78, Hash=79, Stile=80, TildeRight=81, 
+		StemDot=82, UnaryMinus=83, UnaryPlus=84, Floor=85, Ceiling=86, FunctionMarker=87, 
+		AltIfMarker=88, ASSIGN=89, Identifier=90, FuncStart=91, F_REF=92, FDOC=93, 
+		WS=94, COMMENT=95, LINE_COMMENT=96;
 	public static final int
 		RULE_elements = 0, RULE_element = 1, RULE_statement = 2, RULE_conditionalStatement = 3, 
 		RULE_ifStatement = 4, RULE_ifElseStatement = 5, RULE_loopStatement = 6, 
@@ -68,9 +68,9 @@ public class QDLParserParser extends Parser {
 			"'while'", null, null, null, null, null, "'['", "']'", "','", "':'", 
 			"';'", null, null, null, null, null, "'++'", "'+'", "'--'", "'-'", "'<'", 
 			"'>'", "'='", "'\"'", "'''", null, null, null, "'<<'", null, null, null, 
-			null, null, null, "'\u2200'", null, "'^'", null, null, "'`'", null, "'~'", 
-			null, null, null, null, "'#'", "'|'", null, "'.'", "'\u00AF'", "'\u207A'", 
-			"'\u230A'", "'\u2308'"
+			null, null, null, "'\u2200'", null, "'^'", null, null, null, null, "'`'", 
+			null, "'~'", null, null, null, null, "'#'", "'|'", null, "'.'", "'\u00AF'", 
+			"'\u207A'", "'\u230A'", "'\u2308'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
@@ -86,11 +86,11 @@ public class QDLParserParser extends Parser {
 			"SingleEqual", "DoubleQuote", "SingleQuote", "To_Set", "LessEquals", 
 			"MoreEquals", "IsA", "Equals", "NotEquals", "RegexMatches", "LogicalNot", 
 			"Membership", "IsDefined", "ForAll", "ContainsKey", "Exponentiation", 
-			"And", "Or", "Backtick", "Percent", "Tilde", "Backslash", "Backslash2", 
-			"Backslash3", "Backslash4", "Hash", "Stile", "TildeRight", "StemDot", 
-			"UnaryMinus", "UnaryPlus", "Floor", "Ceiling", "FunctionMarker", "AltIfMarker", 
-			"ASSIGN", "Identifier", "FuncStart", "F_REF", "FDOC", "WS", "COMMENT", 
-			"LINE_COMMENT"
+			"ExprDyadicOps", "FRefDyadicOps", "And", "Or", "Backtick", "Percent", 
+			"Tilde", "Backslash", "Backslash2", "Backslash3", "Backslash4", "Hash", 
+			"Stile", "TildeRight", "StemDot", "UnaryMinus", "UnaryPlus", "Floor", 
+			"Ceiling", "FunctionMarker", "AltIfMarker", "ASSIGN", "Identifier", "FuncStart", 
+			"F_REF", "FDOC", "WS", "COMMENT", "LINE_COMMENT"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -2291,25 +2291,6 @@ public class QDLParserParser extends Parser {
 			super.copyFrom(ctx);
 		}
 	}
-	public static class IsDefinedDyadicExpressionContext extends ExpressionContext {
-		public Token op;
-		public List<ExpressionContext> expression() {
-			return getRuleContexts(ExpressionContext.class);
-		}
-		public ExpressionContext expression(int i) {
-			return getRuleContext(ExpressionContext.class,i);
-		}
-		public TerminalNode IsDefined() { return getToken(QDLParserParser.IsDefined, 0); }
-		public IsDefinedDyadicExpressionContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterIsDefinedDyadicExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitIsDefinedDyadicExpression(this);
-		}
-	}
 	public static class FunctionsContext extends ExpressionContext {
 		public FunctionContext function() {
 			return getRuleContext(FunctionContext.class,0);
@@ -2355,25 +2336,6 @@ public class QDLParserParser extends Parser {
 			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitPrefix(this);
 		}
 	}
-	public static class ForAllContext extends ExpressionContext {
-		public Token op;
-		public F_refContext f_ref() {
-			return getRuleContext(F_refContext.class,0);
-		}
-		public ExpressionContext expression() {
-			return getRuleContext(ExpressionContext.class,0);
-		}
-		public TerminalNode ForAll() { return getToken(QDLParserParser.ForAll, 0); }
-		public ForAllContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterForAll(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitForAll(this);
-		}
-	}
 	public static class TildeExpressionContext extends ExpressionContext {
 		public List<ExpressionContext> expression() {
 			return getRuleContexts(ExpressionContext.class);
@@ -2405,20 +2367,6 @@ public class QDLParserParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitNumbers(this);
-		}
-	}
-	public static class AssociationContext extends ExpressionContext {
-		public ExpressionContext expression() {
-			return getRuleContext(ExpressionContext.class,0);
-		}
-		public AssociationContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterAssociation(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitAssociation(this);
 		}
 	}
 	public static class NotExpressionContext extends ExpressionContext {
@@ -2505,24 +2453,6 @@ public class QDLParserParser extends Parser {
 			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitEpsilon(this);
 		}
 	}
-	public static class AndExpressionContext extends ExpressionContext {
-		public List<ExpressionContext> expression() {
-			return getRuleContexts(ExpressionContext.class);
-		}
-		public ExpressionContext expression(int i) {
-			return getRuleContext(ExpressionContext.class,i);
-		}
-		public TerminalNode And() { return getToken(QDLParserParser.And, 0); }
-		public AndExpressionContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterAndExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitAndExpression(this);
-		}
-	}
 	public static class SetThingContext extends ExpressionContext {
 		public SetContext set() {
 			return getRuleContext(SetContext.class,0);
@@ -2537,16 +2467,23 @@ public class QDLParserParser extends Parser {
 			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitSetThing(this);
 		}
 	}
-	public static class StringsContext extends ExpressionContext {
-		public TerminalNode STRING() { return getToken(QDLParserParser.STRING, 0); }
-		public StringsContext(ExpressionContext ctx) { copyFrom(ctx); }
+	public static class FrefDyadicOpsContext extends ExpressionContext {
+		public Token op;
+		public F_refContext f_ref() {
+			return getRuleContext(F_refContext.class,0);
+		}
+		public ExpressionContext expression() {
+			return getRuleContext(ExpressionContext.class,0);
+		}
+		public TerminalNode FRefDyadicOps() { return getToken(QDLParserParser.FRefDyadicOps, 0); }
+		public FrefDyadicOpsContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterStrings(this);
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterFrefDyadicOps(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitStrings(this);
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitFrefDyadicOps(this);
 		}
 	}
 	public static class CompExpressionContext extends ExpressionContext {
@@ -2569,22 +2506,6 @@ public class QDLParserParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitCompExpression(this);
-		}
-	}
-	public static class UnaryTildeExpressionContext extends ExpressionContext {
-		public ExpressionContext expression() {
-			return getRuleContext(ExpressionContext.class,0);
-		}
-		public TerminalNode Tilde() { return getToken(QDLParserParser.Tilde, 0); }
-		public TerminalNode TildeRight() { return getToken(QDLParserParser.TildeRight, 0); }
-		public UnaryTildeExpressionContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterUnaryTildeExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitUnaryTildeExpression(this);
 		}
 	}
 	public static class IntersectionOrUnionContext extends ExpressionContext {
@@ -2621,23 +2542,6 @@ public class QDLParserParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitModuleExpression(this);
-		}
-	}
-	public static class PostfixContext extends ExpressionContext {
-		public Token postfix;
-		public ExpressionContext expression() {
-			return getRuleContext(ExpressionContext.class,0);
-		}
-		public TerminalNode PlusPlus() { return getToken(QDLParserParser.PlusPlus, 0); }
-		public TerminalNode MinusMinus() { return getToken(QDLParserParser.MinusMinus, 0); }
-		public PostfixContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterPostfix(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitPostfix(this);
 		}
 	}
 	public static class DotOp2Context extends ExpressionContext {
@@ -2683,34 +2587,6 @@ public class QDLParserParser extends Parser {
 			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitLambdaDef(this);
 		}
 	}
-	public static class RealIntervalContext extends ExpressionContext {
-		public RIntervalContext rInterval() {
-			return getRuleContext(RIntervalContext.class,0);
-		}
-		public RealIntervalContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterRealInterval(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitRealInterval(this);
-		}
-	}
-	public static class VariablesContext extends ExpressionContext {
-		public VariableContext variable() {
-			return getRuleContext(VariableContext.class,0);
-		}
-		public VariablesContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterVariables(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitVariables(this);
-		}
-	}
 	public static class ContainsKeyContext extends ExpressionContext {
 		public Token op;
 		public List<ExpressionContext> expression() {
@@ -2728,39 +2604,6 @@ public class QDLParserParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitContainsKey(this);
-		}
-	}
-	public static class AssignmentContext extends ExpressionContext {
-		public Token op;
-		public List<ExpressionContext> expression() {
-			return getRuleContexts(ExpressionContext.class);
-		}
-		public ExpressionContext expression(int i) {
-			return getRuleContext(ExpressionContext.class,i);
-		}
-		public TerminalNode ASSIGN() { return getToken(QDLParserParser.ASSIGN, 0); }
-		public AssignmentContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterAssignment(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitAssignment(this);
-		}
-	}
-	public static class StemLiContext extends ExpressionContext {
-		public StemListContext stemList() {
-			return getRuleContext(StemListContext.class,0);
-		}
-		public StemLiContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterStemLi(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitStemLi(this);
 		}
 	}
 	public static class RegexMatchesContext extends ExpressionContext {
@@ -2782,32 +2625,6 @@ public class QDLParserParser extends Parser {
 			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitRegexMatches(this);
 		}
 	}
-	public static class IntIntervalContext extends ExpressionContext {
-		public IIntervalContext iInterval() {
-			return getRuleContext(IIntervalContext.class,0);
-		}
-		public IntIntervalContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterIntInterval(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitIntInterval(this);
-		}
-	}
-	public static class LogicalContext extends ExpressionContext {
-		public TerminalNode Bool() { return getToken(QDLParserParser.Bool, 0); }
-		public LogicalContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterLogical(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitLogical(this);
-		}
-	}
 	public static class AltIFExpressionContext extends ExpressionContext {
 		public List<ExpressionContext> expression() {
 			return getRuleContexts(ExpressionContext.class);
@@ -2825,57 +2642,6 @@ public class QDLParserParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitAltIFExpression(this);
-		}
-	}
-	public static class OrExpressionContext extends ExpressionContext {
-		public List<ExpressionContext> expression() {
-			return getRuleContexts(ExpressionContext.class);
-		}
-		public ExpressionContext expression(int i) {
-			return getRuleContext(ExpressionContext.class,i);
-		}
-		public TerminalNode Or() { return getToken(QDLParserParser.Or, 0); }
-		public OrExpressionContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterOrExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitOrExpression(this);
-		}
-	}
-	public static class ToSetContext extends ExpressionContext {
-		public TerminalNode To_Set() { return getToken(QDLParserParser.To_Set, 0); }
-		public ExpressionContext expression() {
-			return getRuleContext(ExpressionContext.class,0);
-		}
-		public ToSetContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterToSet(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitToSet(this);
-		}
-	}
-	public static class UnaryMinusExpressionContext extends ExpressionContext {
-		public ExpressionContext expression() {
-			return getRuleContext(ExpressionContext.class,0);
-		}
-		public TerminalNode Plus() { return getToken(QDLParserParser.Plus, 0); }
-		public TerminalNode UnaryPlus() { return getToken(QDLParserParser.UnaryPlus, 0); }
-		public TerminalNode Minus() { return getToken(QDLParserParser.Minus, 0); }
-		public TerminalNode UnaryMinus() { return getToken(QDLParserParser.UnaryMinus, 0); }
-		public UnaryMinusExpressionContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterUnaryMinusExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitUnaryMinusExpression(this);
 		}
 	}
 	public static class PowerExpressionContext extends ExpressionContext {
@@ -2966,6 +2732,312 @@ public class QDLParserParser extends Parser {
 			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitAddExpression(this);
 		}
 	}
+	public static class Is_aContext extends ExpressionContext {
+		public List<ExpressionContext> expression() {
+			return getRuleContexts(ExpressionContext.class);
+		}
+		public ExpressionContext expression(int i) {
+			return getRuleContext(ExpressionContext.class,i);
+		}
+		public TerminalNode IsA() { return getToken(QDLParserParser.IsA, 0); }
+		public Is_aContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterIs_a(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitIs_a(this);
+		}
+	}
+	public static class StemVarContext extends ExpressionContext {
+		public StemVariableContext stemVariable() {
+			return getRuleContext(StemVariableContext.class,0);
+		}
+		public StemVarContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterStemVar(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitStemVar(this);
+		}
+	}
+	public static class DotOpContext extends ExpressionContext {
+		public List<ExpressionContext> expression() {
+			return getRuleContexts(ExpressionContext.class);
+		}
+		public ExpressionContext expression(int i) {
+			return getRuleContext(ExpressionContext.class,i);
+		}
+		public List<TerminalNode> StemDot() { return getTokens(QDLParserParser.StemDot); }
+		public TerminalNode StemDot(int i) {
+			return getToken(QDLParserParser.StemDot, i);
+		}
+		public DotOpContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterDotOp(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitDotOp(this);
+		}
+	}
+	public static class IsDefinedDyadicExpressionContext extends ExpressionContext {
+		public Token op;
+		public List<ExpressionContext> expression() {
+			return getRuleContexts(ExpressionContext.class);
+		}
+		public ExpressionContext expression(int i) {
+			return getRuleContext(ExpressionContext.class,i);
+		}
+		public TerminalNode IsDefined() { return getToken(QDLParserParser.IsDefined, 0); }
+		public IsDefinedDyadicExpressionContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterIsDefinedDyadicExpression(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitIsDefinedDyadicExpression(this);
+		}
+	}
+	public static class ForAllContext extends ExpressionContext {
+		public Token op;
+		public F_refContext f_ref() {
+			return getRuleContext(F_refContext.class,0);
+		}
+		public ExpressionContext expression() {
+			return getRuleContext(ExpressionContext.class,0);
+		}
+		public TerminalNode ForAll() { return getToken(QDLParserParser.ForAll, 0); }
+		public ForAllContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterForAll(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitForAll(this);
+		}
+	}
+	public static class AssociationContext extends ExpressionContext {
+		public ExpressionContext expression() {
+			return getRuleContext(ExpressionContext.class,0);
+		}
+		public AssociationContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterAssociation(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitAssociation(this);
+		}
+	}
+	public static class AndExpressionContext extends ExpressionContext {
+		public List<ExpressionContext> expression() {
+			return getRuleContexts(ExpressionContext.class);
+		}
+		public ExpressionContext expression(int i) {
+			return getRuleContext(ExpressionContext.class,i);
+		}
+		public TerminalNode And() { return getToken(QDLParserParser.And, 0); }
+		public AndExpressionContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterAndExpression(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitAndExpression(this);
+		}
+	}
+	public static class StringsContext extends ExpressionContext {
+		public TerminalNode STRING() { return getToken(QDLParserParser.STRING, 0); }
+		public StringsContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterStrings(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitStrings(this);
+		}
+	}
+	public static class UnaryTildeExpressionContext extends ExpressionContext {
+		public ExpressionContext expression() {
+			return getRuleContext(ExpressionContext.class,0);
+		}
+		public TerminalNode Tilde() { return getToken(QDLParserParser.Tilde, 0); }
+		public TerminalNode TildeRight() { return getToken(QDLParserParser.TildeRight, 0); }
+		public UnaryTildeExpressionContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterUnaryTildeExpression(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitUnaryTildeExpression(this);
+		}
+	}
+	public static class PostfixContext extends ExpressionContext {
+		public Token postfix;
+		public ExpressionContext expression() {
+			return getRuleContext(ExpressionContext.class,0);
+		}
+		public TerminalNode PlusPlus() { return getToken(QDLParserParser.PlusPlus, 0); }
+		public TerminalNode MinusMinus() { return getToken(QDLParserParser.MinusMinus, 0); }
+		public PostfixContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterPostfix(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitPostfix(this);
+		}
+	}
+	public static class RealIntervalContext extends ExpressionContext {
+		public RIntervalContext rInterval() {
+			return getRuleContext(RIntervalContext.class,0);
+		}
+		public RealIntervalContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterRealInterval(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitRealInterval(this);
+		}
+	}
+	public static class VariablesContext extends ExpressionContext {
+		public VariableContext variable() {
+			return getRuleContext(VariableContext.class,0);
+		}
+		public VariablesContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterVariables(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitVariables(this);
+		}
+	}
+	public static class AssignmentContext extends ExpressionContext {
+		public Token op;
+		public List<ExpressionContext> expression() {
+			return getRuleContexts(ExpressionContext.class);
+		}
+		public ExpressionContext expression(int i) {
+			return getRuleContext(ExpressionContext.class,i);
+		}
+		public TerminalNode ASSIGN() { return getToken(QDLParserParser.ASSIGN, 0); }
+		public AssignmentContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterAssignment(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitAssignment(this);
+		}
+	}
+	public static class StemLiContext extends ExpressionContext {
+		public StemListContext stemList() {
+			return getRuleContext(StemListContext.class,0);
+		}
+		public StemLiContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterStemLi(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitStemLi(this);
+		}
+	}
+	public static class IntIntervalContext extends ExpressionContext {
+		public IIntervalContext iInterval() {
+			return getRuleContext(IIntervalContext.class,0);
+		}
+		public IntIntervalContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterIntInterval(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitIntInterval(this);
+		}
+	}
+	public static class LogicalContext extends ExpressionContext {
+		public TerminalNode Bool() { return getToken(QDLParserParser.Bool, 0); }
+		public LogicalContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterLogical(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitLogical(this);
+		}
+	}
+	public static class OrExpressionContext extends ExpressionContext {
+		public List<ExpressionContext> expression() {
+			return getRuleContexts(ExpressionContext.class);
+		}
+		public ExpressionContext expression(int i) {
+			return getRuleContext(ExpressionContext.class,i);
+		}
+		public TerminalNode Or() { return getToken(QDLParserParser.Or, 0); }
+		public OrExpressionContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterOrExpression(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitOrExpression(this);
+		}
+	}
+	public static class ToSetContext extends ExpressionContext {
+		public TerminalNode To_Set() { return getToken(QDLParserParser.To_Set, 0); }
+		public ExpressionContext expression() {
+			return getRuleContext(ExpressionContext.class,0);
+		}
+		public ToSetContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterToSet(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitToSet(this);
+		}
+	}
+	public static class UnaryMinusExpressionContext extends ExpressionContext {
+		public ExpressionContext expression() {
+			return getRuleContext(ExpressionContext.class,0);
+		}
+		public TerminalNode Plus() { return getToken(QDLParserParser.Plus, 0); }
+		public TerminalNode UnaryPlus() { return getToken(QDLParserParser.UnaryPlus, 0); }
+		public TerminalNode Minus() { return getToken(QDLParserParser.Minus, 0); }
+		public TerminalNode UnaryMinus() { return getToken(QDLParserParser.UnaryMinus, 0); }
+		public UnaryMinusExpressionContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterUnaryMinusExpression(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitUnaryMinusExpression(this);
+		}
+	}
 	public static class IsDefinedExpressionContext extends ExpressionContext {
 		public TerminalNode IsDefined() { return getToken(QDLParserParser.IsDefined, 0); }
 		public ExpressionContext expression() {
@@ -3031,57 +3103,23 @@ public class QDLParserParser extends Parser {
 			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitExtract4(this);
 		}
 	}
-	public static class Is_aContext extends ExpressionContext {
+	public static class ExpressionDyadicOpsContext extends ExpressionContext {
+		public Token op;
 		public List<ExpressionContext> expression() {
 			return getRuleContexts(ExpressionContext.class);
 		}
 		public ExpressionContext expression(int i) {
 			return getRuleContext(ExpressionContext.class,i);
 		}
-		public TerminalNode IsA() { return getToken(QDLParserParser.IsA, 0); }
-		public Is_aContext(ExpressionContext ctx) { copyFrom(ctx); }
+		public TerminalNode ExprDyadicOps() { return getToken(QDLParserParser.ExprDyadicOps, 0); }
+		public ExpressionDyadicOpsContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterIs_a(this);
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterExpressionDyadicOps(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitIs_a(this);
-		}
-	}
-	public static class StemVarContext extends ExpressionContext {
-		public StemVariableContext stemVariable() {
-			return getRuleContext(StemVariableContext.class,0);
-		}
-		public StemVarContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterStemVar(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitStemVar(this);
-		}
-	}
-	public static class DotOpContext extends ExpressionContext {
-		public List<ExpressionContext> expression() {
-			return getRuleContexts(ExpressionContext.class);
-		}
-		public ExpressionContext expression(int i) {
-			return getRuleContext(ExpressionContext.class,i);
-		}
-		public List<TerminalNode> StemDot() { return getTokens(QDLParserParser.StemDot); }
-		public TerminalNode StemDot(int i) {
-			return getToken(QDLParserParser.StemDot, i);
-		}
-		public DotOpContext(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterDotOp(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitDotOp(this);
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitExpressionDyadicOps(this);
 		}
 	}
 
@@ -3101,7 +3139,7 @@ public class QDLParserParser extends Parser {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(402);
+			setState(406);
 			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,35,_ctx) ) {
 			case 1:
@@ -3132,7 +3170,7 @@ public class QDLParserParser extends Parser {
 				setState(350);
 				match(Hash);
 				setState(351);
-				expression(40);
+				expression(42);
 				}
 				break;
 			case 3:
@@ -3247,7 +3285,7 @@ public class QDLParserParser extends Parser {
 				setState(373);
 				match(To_Set);
 				setState(374);
-				expression(33);
+				expression(35);
 				}
 				break;
 			case 10:
@@ -3267,7 +3305,7 @@ public class QDLParserParser extends Parser {
 					consume();
 				}
 				setState(376);
-				expression(30);
+				expression(32);
 				}
 				break;
 			case 11:
@@ -3286,7 +3324,7 @@ public class QDLParserParser extends Parser {
 					consume();
 				}
 				setState(378);
-				expression(26);
+				expression(28);
 				}
 				break;
 			case 12:
@@ -3305,7 +3343,7 @@ public class QDLParserParser extends Parser {
 					consume();
 				}
 				setState(380);
-				expression(25);
+				expression(27);
 				}
 				break;
 			case 13:
@@ -3324,7 +3362,7 @@ public class QDLParserParser extends Parser {
 					consume();
 				}
 				setState(382);
-				expression(24);
+				expression(26);
 				}
 				break;
 			case 14:
@@ -3335,7 +3373,7 @@ public class QDLParserParser extends Parser {
 				setState(383);
 				match(IsDefined);
 				setState(384);
-				expression(23);
+				expression(25);
 				}
 				break;
 			case 15:
@@ -3354,7 +3392,7 @@ public class QDLParserParser extends Parser {
 					consume();
 				}
 				setState(386);
-				expression(14);
+				expression(16);
 				}
 				break;
 			case 16:
@@ -3380,75 +3418,88 @@ public class QDLParserParser extends Parser {
 				setState(392);
 				((ForAllContext)_localctx).op = match(ForAll);
 				setState(393);
-				expression(9);
+				expression(11);
 				}
 				break;
 			case 18:
 				{
-				_localctx = new StringsContext(_localctx);
+				_localctx = new FrefDyadicOpsContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
 				setState(395);
-				match(STRING);
+				f_ref();
+				setState(396);
+				((FrefDyadicOpsContext)_localctx).op = match(FRefDyadicOps);
+				setState(397);
+				expression(9);
 				}
 				break;
 			case 19:
 				{
-				_localctx = new IntegersContext(_localctx);
+				_localctx = new StringsContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(396);
-				integer();
+				setState(399);
+				match(STRING);
 				}
 				break;
 			case 20:
 				{
-				_localctx = new NumbersContext(_localctx);
+				_localctx = new IntegersContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(397);
-				number();
+				setState(400);
+				integer();
 				}
 				break;
 			case 21:
 				{
-				_localctx = new VariablesContext(_localctx);
+				_localctx = new NumbersContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(398);
-				variable();
+				setState(401);
+				number();
 				}
 				break;
 			case 22:
 				{
-				_localctx = new KeywordsContext(_localctx);
+				_localctx = new VariablesContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(399);
-				keyword();
+				setState(402);
+				variable();
 				}
 				break;
 			case 23:
 				{
-				_localctx = new LogicalContext(_localctx);
+				_localctx = new KeywordsContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(400);
-				match(Bool);
+				setState(403);
+				keyword();
 				}
 				break;
 			case 24:
 				{
+				_localctx = new LogicalContext(_localctx);
+				_ctx = _localctx;
+				_prevctx = _localctx;
+				setState(404);
+				match(Bool);
+				}
+				break;
+			case 25:
+				{
 				_localctx = new NullContext(_localctx);
 				_ctx = _localctx;
 				_prevctx = _localctx;
-				setState(401);
+				setState(405);
 				match(Null);
 				}
 				break;
 			}
 			_ctx.stop = _input.LT(-1);
-			setState(478);
+			setState(485);
 			_errHandler.sync(this);
 			_alt = getInterpreter().adaptivePredict(_input,38,_ctx);
 			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
@@ -3456,64 +3507,64 @@ public class QDLParserParser extends Parser {
 					if ( _parseListeners!=null ) triggerExitRuleEvent();
 					_prevctx = _localctx;
 					{
-					setState(476);
+					setState(483);
 					_errHandler.sync(this);
 					switch ( getInterpreter().adaptivePredict(_input,37,_ctx) ) {
 					case 1:
 						{
 						_localctx = new DotOpContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(404);
-						if (!(precpred(_ctx, 46))) throw new FailedPredicateException(this, "precpred(_ctx, 46)");
-						setState(406); 
+						setState(408);
+						if (!(precpred(_ctx, 48))) throw new FailedPredicateException(this, "precpred(_ctx, 48)");
+						setState(410); 
 						_errHandler.sync(this);
 						_la = _input.LA(1);
 						do {
 							{
 							{
-							setState(405);
+							setState(409);
 							match(StemDot);
 							}
 							}
-							setState(408); 
+							setState(412); 
 							_errHandler.sync(this);
 							_la = _input.LA(1);
 						} while ( _la==StemDot );
-						setState(410);
-						expression(47);
+						setState(414);
+						expression(49);
 						}
 						break;
 					case 2:
 						{
 						_localctx = new ExtractContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(411);
-						if (!(precpred(_ctx, 44))) throw new FailedPredicateException(this, "precpred(_ctx, 44)");
-						setState(412);
+						setState(415);
+						if (!(precpred(_ctx, 46))) throw new FailedPredicateException(this, "precpred(_ctx, 46)");
+						setState(416);
 						match(Backslash);
-						setState(413);
-						expression(45);
+						setState(417);
+						expression(47);
 						}
 						break;
 					case 3:
 						{
 						_localctx = new Extract3Context(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(414);
-						if (!(precpred(_ctx, 42))) throw new FailedPredicateException(this, "precpred(_ctx, 42)");
-						setState(415);
+						setState(418);
+						if (!(precpred(_ctx, 44))) throw new FailedPredicateException(this, "precpred(_ctx, 44)");
+						setState(419);
 						match(Backslash3);
-						setState(416);
-						expression(43);
+						setState(420);
+						expression(45);
 						}
 						break;
 					case 4:
 						{
 						_localctx = new TildeExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(417);
-						if (!(precpred(_ctx, 32))) throw new FailedPredicateException(this, "precpred(_ctx, 32)");
-						setState(418);
+						setState(421);
+						if (!(precpred(_ctx, 34))) throw new FailedPredicateException(this, "precpred(_ctx, 34)");
+						setState(422);
 						_la = _input.LA(1);
 						if ( !(_la==Tilde || _la==TildeRight) ) {
 						_errHandler.recoverInline(this);
@@ -3523,29 +3574,29 @@ public class QDLParserParser extends Parser {
 							_errHandler.reportMatch(this);
 							consume();
 						}
-						setState(419);
-						expression(33);
+						setState(423);
+						expression(35);
 						}
 						break;
 					case 5:
 						{
 						_localctx = new PowerExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(420);
-						if (!(precpred(_ctx, 29))) throw new FailedPredicateException(this, "precpred(_ctx, 29)");
-						setState(421);
+						setState(424);
+						if (!(precpred(_ctx, 31))) throw new FailedPredicateException(this, "precpred(_ctx, 31)");
+						setState(425);
 						match(Exponentiation);
-						setState(422);
-						expression(30);
+						setState(426);
+						expression(32);
 						}
 						break;
 					case 6:
 						{
 						_localctx = new IntersectionOrUnionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(423);
-						if (!(precpred(_ctx, 28))) throw new FailedPredicateException(this, "precpred(_ctx, 28)");
-						setState(424);
+						setState(427);
+						if (!(precpred(_ctx, 30))) throw new FailedPredicateException(this, "precpred(_ctx, 30)");
+						setState(428);
 						((IntersectionOrUnionContext)_localctx).op = _input.LT(1);
 						_la = _input.LA(1);
 						if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << T__4) | (1L << T__5) | (1L << T__6) | (1L << T__7))) != 0)) ) {
@@ -3556,17 +3607,17 @@ public class QDLParserParser extends Parser {
 							_errHandler.reportMatch(this);
 							consume();
 						}
-						setState(425);
-						expression(29);
+						setState(429);
+						expression(31);
 						}
 						break;
 					case 7:
 						{
 						_localctx = new MultiplyExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(426);
-						if (!(precpred(_ctx, 27))) throw new FailedPredicateException(this, "precpred(_ctx, 27)");
-						setState(427);
+						setState(430);
+						if (!(precpred(_ctx, 29))) throw new FailedPredicateException(this, "precpred(_ctx, 29)");
+						setState(431);
 						((MultiplyExpressionContext)_localctx).op = _input.LT(1);
 						_la = _input.LA(1);
 						if ( !(((((_la - 44)) & ~0x3f) == 0 && ((1L << (_la - 44)) & ((1L << (Times - 44)) | (1L << (Divide - 44)) | (1L << (Percent - 44)))) != 0)) ) {
@@ -3577,29 +3628,29 @@ public class QDLParserParser extends Parser {
 							_errHandler.reportMatch(this);
 							consume();
 						}
-						setState(428);
-						expression(28);
+						setState(432);
+						expression(30);
 						}
 						break;
 					case 8:
 						{
 						_localctx = new IsDefinedDyadicExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(429);
-						if (!(precpred(_ctx, 22))) throw new FailedPredicateException(this, "precpred(_ctx, 22)");
-						setState(430);
+						setState(433);
+						if (!(precpred(_ctx, 24))) throw new FailedPredicateException(this, "precpred(_ctx, 24)");
+						setState(434);
 						((IsDefinedDyadicExpressionContext)_localctx).op = match(IsDefined);
-						setState(431);
-						expression(23);
+						setState(435);
+						expression(25);
 						}
 						break;
 					case 9:
 						{
 						_localctx = new AddExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(432);
-						if (!(precpred(_ctx, 21))) throw new FailedPredicateException(this, "precpred(_ctx, 21)");
-						setState(433);
+						setState(436);
+						if (!(precpred(_ctx, 23))) throw new FailedPredicateException(this, "precpred(_ctx, 23)");
+						setState(437);
 						((AddExpressionContext)_localctx).op = _input.LT(1);
 						_la = _input.LA(1);
 						if ( !(_la==Plus || _la==Minus) ) {
@@ -3610,17 +3661,17 @@ public class QDLParserParser extends Parser {
 							_errHandler.reportMatch(this);
 							consume();
 						}
-						setState(434);
-						expression(22);
+						setState(438);
+						expression(24);
 						}
 						break;
 					case 10:
 						{
 						_localctx = new CompExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(435);
-						if (!(precpred(_ctx, 20))) throw new FailedPredicateException(this, "precpred(_ctx, 20)");
-						setState(436);
+						setState(439);
+						if (!(precpred(_ctx, 22))) throw new FailedPredicateException(this, "precpred(_ctx, 22)");
+						setState(440);
 						((CompExpressionContext)_localctx).op = _input.LT(1);
 						_la = _input.LA(1);
 						if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << LessThan) | (1L << GreaterThan) | (1L << LessEquals) | (1L << MoreEquals))) != 0)) ) {
@@ -3631,17 +3682,17 @@ public class QDLParserParser extends Parser {
 							_errHandler.reportMatch(this);
 							consume();
 						}
-						setState(437);
-						expression(21);
+						setState(441);
+						expression(23);
 						}
 						break;
 					case 11:
 						{
 						_localctx = new EqExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(438);
-						if (!(precpred(_ctx, 19))) throw new FailedPredicateException(this, "precpred(_ctx, 19)");
-						setState(439);
+						setState(442);
+						if (!(precpred(_ctx, 21))) throw new FailedPredicateException(this, "precpred(_ctx, 21)");
+						setState(443);
 						((EqExpressionContext)_localctx).op = _input.LT(1);
 						_la = _input.LA(1);
 						if ( !(_la==Equals || _la==NotEquals) ) {
@@ -3652,147 +3703,159 @@ public class QDLParserParser extends Parser {
 							_errHandler.reportMatch(this);
 							consume();
 						}
-						setState(440);
-						expression(20);
+						setState(444);
+						expression(22);
 						}
 						break;
 					case 12:
 						{
 						_localctx = new RegexMatchesContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(441);
-						if (!(precpred(_ctx, 18))) throw new FailedPredicateException(this, "precpred(_ctx, 18)");
-						setState(442);
+						setState(445);
+						if (!(precpred(_ctx, 20))) throw new FailedPredicateException(this, "precpred(_ctx, 20)");
+						setState(446);
 						((RegexMatchesContext)_localctx).op = match(RegexMatches);
-						setState(443);
-						expression(19);
+						setState(447);
+						expression(21);
 						}
 						break;
 					case 13:
 						{
 						_localctx = new Is_aContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(444);
-						if (!(precpred(_ctx, 17))) throw new FailedPredicateException(this, "precpred(_ctx, 17)");
-						setState(445);
+						setState(448);
+						if (!(precpred(_ctx, 19))) throw new FailedPredicateException(this, "precpred(_ctx, 19)");
+						setState(449);
 						match(IsA);
-						setState(446);
-						expression(18);
+						setState(450);
+						expression(20);
 						}
 						break;
 					case 14:
 						{
 						_localctx = new AndExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(447);
-						if (!(precpred(_ctx, 16))) throw new FailedPredicateException(this, "precpred(_ctx, 16)");
-						setState(448);
+						setState(451);
+						if (!(precpred(_ctx, 18))) throw new FailedPredicateException(this, "precpred(_ctx, 18)");
+						setState(452);
 						match(And);
-						setState(449);
-						expression(17);
+						setState(453);
+						expression(19);
 						}
 						break;
 					case 15:
 						{
 						_localctx = new OrExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(450);
-						if (!(precpred(_ctx, 15))) throw new FailedPredicateException(this, "precpred(_ctx, 15)");
-						setState(451);
+						setState(454);
+						if (!(precpred(_ctx, 17))) throw new FailedPredicateException(this, "precpred(_ctx, 17)");
+						setState(455);
 						match(Or);
-						setState(452);
-						expression(16);
+						setState(456);
+						expression(18);
 						}
 						break;
 					case 16:
 						{
 						_localctx = new AltIFExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(453);
-						if (!(precpred(_ctx, 12))) throw new FailedPredicateException(this, "precpred(_ctx, 12)");
-						setState(454);
-						match(AltIfMarker);
-						setState(455);
-						expression(0);
-						setState(456);
-						match(Colon);
 						setState(457);
-						expression(13);
+						if (!(precpred(_ctx, 14))) throw new FailedPredicateException(this, "precpred(_ctx, 14)");
+						setState(458);
+						match(AltIfMarker);
+						setState(459);
+						expression(0);
+						setState(460);
+						match(Colon);
+						setState(461);
+						expression(15);
 						}
 						break;
 					case 17:
 						{
 						_localctx = new EpsilonContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(459);
-						if (!(precpred(_ctx, 11))) throw new FailedPredicateException(this, "precpred(_ctx, 11)");
-						setState(460);
+						setState(463);
+						if (!(precpred(_ctx, 13))) throw new FailedPredicateException(this, "precpred(_ctx, 13)");
+						setState(464);
 						((EpsilonContext)_localctx).op = match(Membership);
-						setState(461);
-						expression(12);
+						setState(465);
+						expression(14);
 						}
 						break;
 					case 18:
 						{
 						_localctx = new ContainsKeyContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(462);
-						if (!(precpred(_ctx, 10))) throw new FailedPredicateException(this, "precpred(_ctx, 10)");
-						setState(463);
+						setState(466);
+						if (!(precpred(_ctx, 12))) throw new FailedPredicateException(this, "precpred(_ctx, 12)");
+						setState(467);
 						((ContainsKeyContext)_localctx).op = match(ContainsKey);
-						setState(464);
-						expression(11);
+						setState(468);
+						expression(13);
 						}
 						break;
 					case 19:
 						{
-						_localctx = new AssignmentContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new ExpressionDyadicOpsContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(465);
-						if (!(precpred(_ctx, 1))) throw new FailedPredicateException(this, "precpred(_ctx, 1)");
-						setState(466);
-						((AssignmentContext)_localctx).op = match(ASSIGN);
-						setState(467);
-						expression(2);
+						setState(469);
+						if (!(precpred(_ctx, 10))) throw new FailedPredicateException(this, "precpred(_ctx, 10)");
+						setState(470);
+						((ExpressionDyadicOpsContext)_localctx).op = match(ExprDyadicOps);
+						setState(471);
+						expression(11);
 						}
 						break;
 					case 20:
 						{
-						_localctx = new DotOp2Context(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new AssignmentContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(468);
-						if (!(precpred(_ctx, 45))) throw new FailedPredicateException(this, "precpred(_ctx, 45)");
-						setState(469);
-						((DotOp2Context)_localctx).postfix = match(StemDot);
+						setState(472);
+						if (!(precpred(_ctx, 1))) throw new FailedPredicateException(this, "precpred(_ctx, 1)");
+						setState(473);
+						((AssignmentContext)_localctx).op = match(ASSIGN);
+						setState(474);
+						expression(2);
 						}
 						break;
 					case 21:
 						{
-						_localctx = new Extract2Context(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new DotOp2Context(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(470);
-						if (!(precpred(_ctx, 43))) throw new FailedPredicateException(this, "precpred(_ctx, 43)");
-						setState(471);
-						((Extract2Context)_localctx).postfix = match(Backslash2);
+						setState(475);
+						if (!(precpred(_ctx, 47))) throw new FailedPredicateException(this, "precpred(_ctx, 47)");
+						setState(476);
+						((DotOp2Context)_localctx).postfix = match(StemDot);
 						}
 						break;
 					case 22:
 						{
-						_localctx = new Extract4Context(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new Extract2Context(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(472);
-						if (!(precpred(_ctx, 41))) throw new FailedPredicateException(this, "precpred(_ctx, 41)");
-						setState(473);
-						((Extract4Context)_localctx).postfix = match(Backslash4);
+						setState(477);
+						if (!(precpred(_ctx, 45))) throw new FailedPredicateException(this, "precpred(_ctx, 45)");
+						setState(478);
+						((Extract2Context)_localctx).postfix = match(Backslash2);
 						}
 						break;
 					case 23:
 						{
+						_localctx = new Extract4Context(new ExpressionContext(_parentctx, _parentState));
+						pushNewRecursionContext(_localctx, _startState, RULE_expression);
+						setState(479);
+						if (!(precpred(_ctx, 43))) throw new FailedPredicateException(this, "precpred(_ctx, 43)");
+						setState(480);
+						((Extract4Context)_localctx).postfix = match(Backslash4);
+						}
+						break;
+					case 24:
+						{
 						_localctx = new PostfixContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(474);
-						if (!(precpred(_ctx, 31))) throw new FailedPredicateException(this, "precpred(_ctx, 31)");
-						setState(475);
+						setState(481);
+						if (!(precpred(_ctx, 33))) throw new FailedPredicateException(this, "precpred(_ctx, 33)");
+						setState(482);
 						((PostfixContext)_localctx).postfix = _input.LT(1);
 						_la = _input.LA(1);
 						if ( !(_la==PlusPlus || _la==MinusMinus) ) {
@@ -3808,7 +3871,7 @@ public class QDLParserParser extends Parser {
 					}
 					} 
 				}
-				setState(480);
+				setState(487);
 				_errHandler.sync(this);
 				_alt = getInterpreter().adaptivePredict(_input,38,_ctx);
 			}
@@ -3847,7 +3910,7 @@ public class QDLParserParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(481);
+			setState(488);
 			match(Identifier);
 			}
 		}
@@ -3886,7 +3949,7 @@ public class QDLParserParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(483);
+			setState(490);
 			_la = _input.LA(1);
 			if ( !(_la==Decimal || _la==SCIENTIFIC_NUMBER) ) {
 			_errHandler.recoverInline(this);
@@ -3931,7 +3994,7 @@ public class QDLParserParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(485);
+			setState(492);
 			match(Integer);
 			}
 		}
@@ -3968,7 +4031,7 @@ public class QDLParserParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(487);
+			setState(494);
 			match(ConstantKeywords);
 			}
 		}
@@ -3993,57 +4056,59 @@ public class QDLParserParser extends Parser {
 	private boolean expression_sempred(ExpressionContext _localctx, int predIndex) {
 		switch (predIndex) {
 		case 0:
-			return precpred(_ctx, 46);
+			return precpred(_ctx, 48);
 		case 1:
-			return precpred(_ctx, 44);
+			return precpred(_ctx, 46);
 		case 2:
-			return precpred(_ctx, 42);
+			return precpred(_ctx, 44);
 		case 3:
-			return precpred(_ctx, 32);
+			return precpred(_ctx, 34);
 		case 4:
-			return precpred(_ctx, 29);
-		case 5:
-			return precpred(_ctx, 28);
-		case 6:
-			return precpred(_ctx, 27);
-		case 7:
-			return precpred(_ctx, 22);
-		case 8:
-			return precpred(_ctx, 21);
-		case 9:
-			return precpred(_ctx, 20);
-		case 10:
-			return precpred(_ctx, 19);
-		case 11:
-			return precpred(_ctx, 18);
-		case 12:
-			return precpred(_ctx, 17);
-		case 13:
-			return precpred(_ctx, 16);
-		case 14:
-			return precpred(_ctx, 15);
-		case 15:
-			return precpred(_ctx, 12);
-		case 16:
-			return precpred(_ctx, 11);
-		case 17:
-			return precpred(_ctx, 10);
-		case 18:
-			return precpred(_ctx, 1);
-		case 19:
-			return precpred(_ctx, 45);
-		case 20:
-			return precpred(_ctx, 43);
-		case 21:
-			return precpred(_ctx, 41);
-		case 22:
 			return precpred(_ctx, 31);
+		case 5:
+			return precpred(_ctx, 30);
+		case 6:
+			return precpred(_ctx, 29);
+		case 7:
+			return precpred(_ctx, 24);
+		case 8:
+			return precpred(_ctx, 23);
+		case 9:
+			return precpred(_ctx, 22);
+		case 10:
+			return precpred(_ctx, 21);
+		case 11:
+			return precpred(_ctx, 20);
+		case 12:
+			return precpred(_ctx, 19);
+		case 13:
+			return precpred(_ctx, 18);
+		case 14:
+			return precpred(_ctx, 17);
+		case 15:
+			return precpred(_ctx, 14);
+		case 16:
+			return precpred(_ctx, 13);
+		case 17:
+			return precpred(_ctx, 12);
+		case 18:
+			return precpred(_ctx, 10);
+		case 19:
+			return precpred(_ctx, 1);
+		case 20:
+			return precpred(_ctx, 47);
+		case 21:
+			return precpred(_ctx, 45);
+		case 22:
+			return precpred(_ctx, 43);
+		case 23:
+			return precpred(_ctx, 33);
 		}
 		return true;
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3`\u01ec\4\2\t\2\4"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3b\u01f3\4\2\t\2\4"+
 		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t"+
 		"\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31\t\31"+
@@ -4073,158 +4138,161 @@ public class QDLParserParser extends Parser {
 		"\5\"\u015f\n\"\3\"\3\"\3\"\3\"\3\"\7\"\u0166\n\"\f\"\16\"\u0169\13\"\3"+
 		"\"\5\"\u016c\n\"\3\"\3\"\3\"\5\"\u0171\n\"\3\"\3\"\3\"\3\"\3\"\3\"\3\""+
 		"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3"+
-		"\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\5\"\u0195\n\"\3\"\3\"\6\"\u0199"+
-		"\n\"\r\"\16\"\u019a\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3"+
+		"\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\5\"\u0199\n\"\3"+
+		"\"\3\"\6\"\u019d\n\"\r\"\16\"\u019e\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3"+
 		"\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\""+
 		"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3"+
 		"\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\""+
-		"\3\"\7\"\u01df\n\"\f\"\16\"\u01e2\13\"\3#\3#\3$\3$\3%\3%\3&\3&\3&\2\3"+
-		"B\'\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&(*,.\60\62\64\668:<>@B"+
-		"DFHJ\2\r\4\2\60\60\62\62\3\2UV\5\2\61\61\63\63ST\4\2JJQQ\3\2\13\f\3\2"+
-		"\7\n\4\2./II\4\2\61\61\63\63\4\2\64\65:;\3\2=>\3\2\"#\2\u0225\2O\3\2\2"+
-		"\2\4T\3\2\2\2\6c\3\2\2\2\bg\3\2\2\2\ni\3\2\2\2\fp\3\2\2\2\16y\3\2\2\2"+
-		"\20\u0080\3\2\2\2\22\u008c\3\2\2\2\24\u00a0\3\2\2\2\26\u00a2\3\2\2\2\30"+
-		"\u00af\3\2\2\2\32\u00b4\3\2\2\2\34\u00bc\3\2\2\2\36\u00bf\3\2\2\2 \u00c2"+
-		"\3\2\2\2\"\u00c8\3\2\2\2$\u00d3\3\2\2\2&\u00e3\3\2\2\2(\u00ef\3\2\2\2"+
-		"*\u00f3\3\2\2\2,\u00f5\3\2\2\2.\u0102\3\2\2\2\60\u011c\3\2\2\2\62\u011e"+
-		"\3\2\2\2\64\u012b\3\2\2\2\66\u013d\3\2\2\28\u0142\3\2\2\2:\u0144\3\2\2"+
-		"\2<\u014f\3\2\2\2>\u0151\3\2\2\2@\u0159\3\2\2\2B\u0194\3\2\2\2D\u01e3"+
-		"\3\2\2\2F\u01e5\3\2\2\2H\u01e7\3\2\2\2J\u01e9\3\2\2\2LN\5\4\3\2ML\3\2"+
-		"\2\2NQ\3\2\2\2OM\3\2\2\2OP\3\2\2\2PR\3\2\2\2QO\3\2\2\2RS\7\2\2\3S\3\3"+
-		"\2\2\2TU\5\6\4\2UV\7*\2\2V\5\3\2\2\2Wd\5\22\n\2Xd\5\b\5\2Yd\5\16\b\2Z"+
-		"d\5\20\t\2[d\5B\"\2\\d\5\30\r\2]d\5\24\13\2^d\5\32\16\2_d\5 \21\2`d\5"+
-		"\34\17\2ad\5\36\20\2bd\5\26\f\2cW\3\2\2\2cX\3\2\2\2cY\3\2\2\2cZ\3\2\2"+
-		"\2c[\3\2\2\2c\\\3\2\2\2c]\3\2\2\2c^\3\2\2\2c_\3\2\2\2c`\3\2\2\2ca\3\2"+
-		"\2\2cb\3\2\2\2d\7\3\2\2\2eh\5\n\6\2fh\5\f\7\2ge\3\2\2\2gf\3\2\2\2h\t\3"+
-		"\2\2\2ij\7\31\2\2jl\5(\25\2km\7\36\2\2lk\3\2\2\2lm\3\2\2\2mn\3\2\2\2n"+
-		"o\5\"\22\2o\13\3\2\2\2pq\7\31\2\2qs\5(\25\2rt\7\36\2\2sr\3\2\2\2st\3\2"+
-		"\2\2tu\3\2\2\2uv\5\"\22\2vw\7\30\2\2wx\5\"\22\2x\r\3\2\2\2yz\7 \2\2z|"+
-		"\5(\25\2{}\7\27\2\2|{\3\2\2\2|}\3\2\2\2}~\3\2\2\2~\177\5\"\22\2\177\17"+
-		"\3\2\2\2\u0080\u0081\7\35\2\2\u0081\u0087\7&\2\2\u0082\u0083\5\n\6\2\u0083"+
-		"\u0084\7*\2\2\u0084\u0086\3\2\2\2\u0085\u0082\3\2\2\2\u0086\u0089\3\2"+
-		"\2\2\u0087\u0085\3\2\2\2\u0087\u0088\3\2\2\2\u0088\u008a\3\2\2\2\u0089"+
-		"\u0087\3\2\2\2\u008a\u008b\7\'\2\2\u008b\21\3\2\2\2\u008c\u008d\7\26\2"+
-		"\2\u008d\u008e\7&\2\2\u008e\u008f\5:\36\2\u008f\u0091\7\'\2\2\u0090\u0092"+
-		"\7\24\2\2\u0091\u0090\3\2\2\2\u0091\u0092\3\2\2\2\u0092\u0093\3\2\2\2"+
-		"\u0093\u0094\5$\23\2\u0094\23\3\2\2\2\u0095\u0096\5:\36\2\u0096\u009a"+
-		"\7-\2\2\u0097\u0099\5*\26\2\u0098\u0097\3\2\2\2\u0099\u009c\3\2\2\2\u009a"+
-		"\u0098\3\2\2\2\u009a\u009b\3\2\2\2\u009b\u009d\3\2\2\2\u009c\u009a\3\2"+
-		"\2\2\u009d\u009e\5\6\4\2\u009e\u00a1\3\2\2\2\u009f\u00a1\5\"\22\2\u00a0"+
-		"\u0095\3\2\2\2\u00a0\u009f\3\2\2\2\u00a1\25\3\2\2\2\u00a2\u00a3\7\32\2"+
-		"\2\u00a3\u00a4\7&\2\2\u00a4\u00a7\7%\2\2\u00a5\u00a6\7(\2\2\u00a6\u00a8"+
-		"\7%\2\2\u00a7\u00a5\3\2\2\2\u00a7\u00a8\3\2\2\2\u00a8\u00a9\3\2\2\2\u00a9"+
-		"\u00ab\7\'\2\2\u00aa\u00ac\7\24\2\2\u00ab\u00aa\3\2\2\2\u00ab\u00ac\3"+
-		"\2\2\2\u00ac\u00ad\3\2\2\2\u00ad\u00ae\5$\23\2\u00ae\27\3\2\2\2\u00af"+
-		"\u00b0\7\37\2\2\u00b0\u00b1\5\"\22\2\u00b1\u00b2\7\25\2\2\u00b2\u00b3"+
-		"\5\"\22\2\u00b3\31\3\2\2\2\u00b4\u00b5\7\16\2\2\u00b5\u00b6\7&\2\2\u00b6"+
-		"\u00b7\5B\"\2\u00b7\u00b8\7\'\2\2\u00b8\u00b9\7&\2\2\u00b9\u00ba\5B\""+
-		"\2\u00ba\u00bb\7\'\2\2\u00bb\33\3\2\2\2\u00bc\u00bd\7\22\2\2\u00bd\u00be"+
-		"\5\"\22\2\u00be\35\3\2\2\2\u00bf\u00c0\7\23\2\2\u00c0\u00c1\5\"\22\2\u00c1"+
-		"\37\3\2\2\2\u00c2\u00c3\7\17\2\2\u00c3\u00c6\5B\"\2\u00c4\u00c5\7)\2\2"+
-		"\u00c5\u00c7\5B\"\2\u00c6\u00c4\3\2\2\2\u00c6\u00c7\3\2\2\2\u00c7!\3\2"+
-		"\2\2\u00c8\u00ce\7&\2\2\u00c9\u00ca\5\6\4\2\u00ca\u00cb\7*\2\2\u00cb\u00cd"+
-		"\3\2\2\2\u00cc\u00c9\3\2\2\2\u00cd\u00d0\3\2\2\2\u00ce\u00cc\3\2\2\2\u00ce"+
-		"\u00cf\3\2\2\2\u00cf\u00d1\3\2\2\2\u00d0\u00ce\3\2\2\2\u00d1\u00d2\7\'"+
-		"\2\2\u00d2#\3\2\2\2\u00d3\u00d7\7&\2\2\u00d4\u00d6\5*\26\2\u00d5\u00d4"+
-		"\3\2\2\2\u00d6\u00d9\3\2\2\2\u00d7\u00d5\3\2\2\2\u00d7\u00d8\3\2\2\2\u00d8"+
-		"\u00dd\3\2\2\2\u00d9\u00d7\3\2\2\2\u00da\u00db\5\6\4\2\u00db\u00dc\7*"+
-		"\2\2\u00dc\u00de\3\2\2\2\u00dd\u00da\3\2\2\2\u00de\u00df\3\2\2\2\u00df"+
-		"\u00dd\3\2\2\2\u00df\u00e0\3\2\2\2\u00e0\u00e1\3\2\2\2\u00e1\u00e2\7\'"+
-		"\2\2\u00e2%\3\2\2\2\u00e3\u00e4\7&\2\2\u00e4\u00e5\5B\"\2\u00e5\u00e9"+
-		"\7*\2\2\u00e6\u00e7\5B\"\2\u00e7\u00e8\7*\2\2\u00e8\u00ea\3\2\2\2\u00e9"+
-		"\u00e6\3\2\2\2\u00ea\u00eb\3\2\2\2\u00eb\u00e9\3\2\2\2\u00eb\u00ec\3\2"+
-		"\2\2\u00ec\u00ed\3\2\2\2\u00ed\u00ee\7\'\2\2\u00ee\'\3\2\2\2\u00ef\u00f0"+
-		"\7&\2\2\u00f0\u00f1\5B\"\2\u00f1\u00f2\7\'\2\2\u00f2)\3\2\2\2\u00f3\u00f4"+
-		"\7]\2\2\u00f4+\3\2\2\2\u00f5\u00f7\7&\2\2\u00f6\u00f8\5B\"\2\u00f7\u00f6"+
-		"\3\2\2\2\u00f7\u00f8\3\2\2\2\u00f8\u00f9\3\2\2\2\u00f9\u00fa\7*\2\2\u00fa"+
-		"\u00fe\5B\"\2\u00fb\u00ff\7*\2\2\u00fc\u00fd\7*\2\2\u00fd\u00ff\5B\"\2"+
-		"\u00fe\u00fb\3\2\2\2\u00fe\u00fc\3\2\2\2\u00fe\u00ff\3\2\2\2\u00ff\u0100"+
-		"\3\2\2\2\u0100\u0101\7\'\2\2\u0101-\3\2\2\2\u0102\u0104\7+\2\2\u0103\u0105"+
-		"\5B\"\2\u0104\u0103\3\2\2\2\u0104\u0105\3\2\2\2\u0105\u0106\3\2\2\2\u0106"+
-		"\u0107\7*\2\2\u0107\u010b\5B\"\2\u0108\u010c\7*\2\2\u0109\u010a\7*\2\2"+
-		"\u010a\u010c\5B\"\2\u010b\u0108\3\2\2\2\u010b\u0109\3\2\2\2\u010b\u010c"+
-		"\3\2\2\2\u010c\u010d\3\2\2\2\u010d\u010e\7,\2\2\u010e/\3\2\2\2\u010f\u0110"+
-		"\7\3\2\2\u0110\u0115\5B\"\2\u0111\u0112\7(\2\2\u0112\u0114\5B\"\2\u0113"+
-		"\u0111\3\2\2\2\u0114\u0117\3\2\2\2\u0115\u0113\3\2\2\2\u0115\u0116\3\2"+
-		"\2\2\u0116\u0118\3\2\2\2\u0117\u0115\3\2\2\2\u0118\u0119\7\4\2\2\u0119"+
-		"\u011d\3\2\2\2\u011a\u011b\7\3\2\2\u011b\u011d\7\4\2\2\u011c\u010f\3\2"+
-		"\2\2\u011c\u011a\3\2\2\2\u011d\61\3\2\2\2\u011e\u011f\7\3\2\2\u011f\u0124"+
-		"\5\64\33\2\u0120\u0121\7(\2\2\u0121\u0123\5\64\33\2\u0122\u0120\3\2\2"+
-		"\2\u0123\u0126\3\2\2\2\u0124\u0122\3\2\2\2\u0124\u0125\3\2\2\2\u0125\u0127"+
-		"\3\2\2\2\u0126\u0124\3\2\2\2\u0127\u0128\7\4\2\2\u0128\63\3\2\2\2\u0129"+
-		"\u012c\7.\2\2\u012a\u012c\5B\"\2\u012b\u0129\3\2\2\2\u012b\u012a\3\2\2"+
-		"\2\u012c\u012d\3\2\2\2\u012d\u012e\7)\2\2\u012e\u012f\58\35\2\u012f\65"+
-		"\3\2\2\2\u0130\u0131\7&\2\2\u0131\u0136\58\35\2\u0132\u0133\7(\2\2\u0133"+
-		"\u0135\58\35\2\u0134\u0132\3\2\2\2\u0135\u0138\3\2\2\2\u0136\u0134\3\2"+
-		"\2\2\u0136\u0137\3\2\2\2\u0137\u0139\3\2\2\2\u0138\u0136\3\2\2\2\u0139"+
-		"\u013a\7\'\2\2\u013a\u013e\3\2\2\2\u013b\u013c\7&\2\2\u013c\u013e\7\'"+
-		"\2\2\u013d\u0130\3\2\2\2\u013d\u013b\3\2\2\2\u013e\67\3\2\2\2\u013f\u0143"+
-		"\5B\"\2\u0140\u0143\5\62\32\2\u0141\u0143\5\66\34\2\u0142\u013f\3\2\2"+
-		"\2\u0142\u0140\3\2\2\2\u0142\u0141\3\2\2\2\u01439\3\2\2\2\u0144\u0148"+
-		"\7[\2\2\u0145\u0147\5> \2\u0146\u0145\3\2\2\2\u0147\u014a\3\2\2\2\u0148"+
-		"\u0146\3\2\2\2\u0148\u0149\3\2\2\2\u0149\u014b\3\2\2\2\u014a\u0148\3\2"+
-		"\2\2\u014b\u014c\7\5\2\2\u014c;\3\2\2\2\u014d\u0150\58\35\2\u014e\u0150"+
-		"\5@!\2\u014f\u014d\3\2\2\2\u014f\u014e\3\2\2\2\u0150=\3\2\2\2\u0151\u0156"+
-		"\5<\37\2\u0152\u0153\7(\2\2\u0153\u0155\5<\37\2\u0154\u0152\3\2\2\2\u0155"+
-		"\u0158\3\2\2\2\u0156\u0154\3\2\2\2\u0156\u0157\3\2\2\2\u0157?\3\2\2\2"+
-		"\u0158\u0156\3\2\2\2\u0159\u015a\7\\\2\2\u015aA\3\2\2\2\u015b\u015c\b"+
-		"\"\1\2\u015c\u0195\5:\36\2\u015d\u015f\5D#\2\u015e\u015d\3\2\2\2\u015e"+
-		"\u015f\3\2\2\2\u015f\u0160\3\2\2\2\u0160\u0161\7O\2\2\u0161\u0195\5B\""+
-		"*\u0162\u016c\5:\36\2\u0163\u0167\7\6\2\2\u0164\u0166\5> \2\u0165\u0164"+
-		"\3\2\2\2\u0166\u0169\3\2\2\2\u0167\u0165\3\2\2\2\u0167\u0168\3\2\2\2\u0168"+
-		"\u016a\3\2\2\2\u0169\u0167\3\2\2\2\u016a\u016c\7\5\2\2\u016b\u0162\3\2"+
-		"\2\2\u016b\u0163\3\2\2\2\u016c\u016d\3\2\2\2\u016d\u0170\7-\2\2\u016e"+
-		"\u0171\5B\"\2\u016f\u0171\5&\24\2\u0170\u016e\3\2\2\2\u0170\u016f\3\2"+
-		"\2\2\u0171\u0195\3\2\2\2\u0172\u0195\5\62\32\2\u0173\u0195\5\66\34\2\u0174"+
-		"\u0195\5\60\31\2\u0175\u0195\5.\30\2\u0176\u0195\5,\27\2\u0177\u0178\7"+
-		"9\2\2\u0178\u0195\5B\"#\u0179\u017a\t\2\2\2\u017a\u0195\5B\" \u017b\u017c"+
-		"\t\3\2\2\u017c\u0195\5B\"\34\u017d\u017e\t\4\2\2\u017e\u0195\5B\"\33\u017f"+
-		"\u0180\t\5\2\2\u0180\u0195\5B\"\32\u0181\u0182\7B\2\2\u0182\u0195\5B\""+
-		"\31\u0183\u0184\t\6\2\2\u0184\u0195\5B\"\20\u0185\u0186\7\6\2\2\u0186"+
-		"\u0187\5B\"\2\u0187\u0188\7\5\2\2\u0188\u0195\3\2\2\2\u0189\u018a\5@!"+
-		"\2\u018a\u018b\7C\2\2\u018b\u018c\5B\"\13\u018c\u0195\3\2\2\2\u018d\u0195"+
-		"\7%\2\2\u018e\u0195\5H%\2\u018f\u0195\5F$\2\u0190\u0195\5D#\2\u0191\u0195"+
-		"\5J&\2\u0192\u0195\7$\2\2\u0193\u0195\7\33\2\2\u0194\u015b\3\2\2\2\u0194"+
-		"\u015e\3\2\2\2\u0194\u016b\3\2\2\2\u0194\u0172\3\2\2\2\u0194\u0173\3\2"+
-		"\2\2\u0194\u0174\3\2\2\2\u0194\u0175\3\2\2\2\u0194\u0176\3\2\2\2\u0194"+
-		"\u0177\3\2\2\2\u0194\u0179\3\2\2\2\u0194\u017b\3\2\2\2\u0194\u017d\3\2"+
-		"\2\2\u0194\u017f\3\2\2\2\u0194\u0181\3\2\2\2\u0194\u0183\3\2\2\2\u0194"+
-		"\u0185\3\2\2\2\u0194\u0189\3\2\2\2\u0194\u018d\3\2\2\2\u0194\u018e\3\2"+
-		"\2\2\u0194\u018f\3\2\2\2\u0194\u0190\3\2\2\2\u0194\u0191\3\2\2\2\u0194"+
-		"\u0192\3\2\2\2\u0194\u0193\3\2\2\2\u0195\u01e0\3\2\2\2\u0196\u0198\f\60"+
-		"\2\2\u0197\u0199\7R\2\2\u0198\u0197\3\2\2\2\u0199\u019a\3\2\2\2\u019a"+
-		"\u0198\3\2\2\2\u019a\u019b\3\2\2\2\u019b\u019c\3\2\2\2\u019c\u01df\5B"+
-		"\"\61\u019d\u019e\f.\2\2\u019e\u019f\7K\2\2\u019f\u01df\5B\"/\u01a0\u01a1"+
-		"\f,\2\2\u01a1\u01a2\7M\2\2\u01a2\u01df\5B\"-\u01a3\u01a4\f\"\2\2\u01a4"+
-		"\u01a5\t\5\2\2\u01a5\u01df\5B\"#\u01a6\u01a7\f\37\2\2\u01a7\u01a8\7E\2"+
-		"\2\u01a8\u01df\5B\" \u01a9\u01aa\f\36\2\2\u01aa\u01ab\t\7\2\2\u01ab\u01df"+
-		"\5B\"\37\u01ac\u01ad\f\35\2\2\u01ad\u01ae\t\b\2\2\u01ae\u01df\5B\"\36"+
-		"\u01af\u01b0\f\30\2\2\u01b0\u01b1\7B\2\2\u01b1\u01df\5B\"\31\u01b2\u01b3"+
-		"\f\27\2\2\u01b3\u01b4\t\t\2\2\u01b4\u01df\5B\"\30\u01b5\u01b6\f\26\2\2"+
-		"\u01b6\u01b7\t\n\2\2\u01b7\u01df\5B\"\27\u01b8\u01b9\f\25\2\2\u01b9\u01ba"+
-		"\t\13\2\2\u01ba\u01df\5B\"\26\u01bb\u01bc\f\24\2\2\u01bc\u01bd\7?\2\2"+
-		"\u01bd\u01df\5B\"\25\u01be\u01bf\f\23\2\2\u01bf\u01c0\7<\2\2\u01c0\u01df"+
-		"\5B\"\24\u01c1\u01c2\f\22\2\2\u01c2\u01c3\7F\2\2\u01c3\u01df\5B\"\23\u01c4"+
-		"\u01c5\f\21\2\2\u01c5\u01c6\7G\2\2\u01c6\u01df\5B\"\22\u01c7\u01c8\f\16"+
-		"\2\2\u01c8\u01c9\7X\2\2\u01c9\u01ca\5B\"\2\u01ca\u01cb\7)\2\2\u01cb\u01cc"+
-		"\5B\"\17\u01cc\u01df\3\2\2\2\u01cd\u01ce\f\r\2\2\u01ce\u01cf\7A\2\2\u01cf"+
-		"\u01df\5B\"\16\u01d0\u01d1\f\f\2\2\u01d1\u01d2\7D\2\2\u01d2\u01df\5B\""+
-		"\r\u01d3\u01d4\f\3\2\2\u01d4\u01d5\7Y\2\2\u01d5\u01df\5B\"\4\u01d6\u01d7"+
-		"\f/\2\2\u01d7\u01df\7R\2\2\u01d8\u01d9\f-\2\2\u01d9\u01df\7L\2\2\u01da"+
-		"\u01db\f+\2\2\u01db\u01df\7N\2\2\u01dc\u01dd\f!\2\2\u01dd\u01df\t\2\2"+
-		"\2\u01de\u0196\3\2\2\2\u01de\u019d\3\2\2\2\u01de\u01a0\3\2\2\2\u01de\u01a3"+
-		"\3\2\2\2\u01de\u01a6\3\2\2\2\u01de\u01a9\3\2\2\2\u01de\u01ac\3\2\2\2\u01de"+
-		"\u01af\3\2\2\2\u01de\u01b2\3\2\2\2\u01de\u01b5\3\2\2\2\u01de\u01b8\3\2"+
-		"\2\2\u01de\u01bb\3\2\2\2\u01de\u01be\3\2\2\2\u01de\u01c1\3\2\2\2\u01de"+
-		"\u01c4\3\2\2\2\u01de\u01c7\3\2\2\2\u01de\u01cd\3\2\2\2\u01de\u01d0\3\2"+
-		"\2\2\u01de\u01d3\3\2\2\2\u01de\u01d6\3\2\2\2\u01de\u01d8\3\2\2\2\u01de"+
-		"\u01da\3\2\2\2\u01de\u01dc\3\2\2\2\u01df\u01e2\3\2\2\2\u01e0\u01de\3\2"+
-		"\2\2\u01e0\u01e1\3\2\2\2\u01e1C\3\2\2\2\u01e2\u01e0\3\2\2\2\u01e3\u01e4"+
-		"\7Z\2\2\u01e4E\3\2\2\2\u01e5\u01e6\t\f\2\2\u01e6G\3\2\2\2\u01e7\u01e8"+
-		"\7!\2\2\u01e8I\3\2\2\2\u01e9\u01ea\7\r\2\2\u01eaK\3\2\2\2)Ocgls|\u0087"+
-		"\u0091\u009a\u00a0\u00a7\u00ab\u00c6\u00ce\u00d7\u00df\u00eb\u00f7\u00fe"+
-		"\u0104\u010b\u0115\u011c\u0124\u012b\u0136\u013d\u0142\u0148\u014f\u0156"+
-		"\u015e\u0167\u016b\u0170\u0194\u019a\u01de\u01e0";
+		"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\3\"\7\"\u01e6\n\"\f\"\16\"\u01e9\13\"\3#"+
+		"\3#\3$\3$\3%\3%\3&\3&\3&\2\3B\'\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36"+
+		" \"$&(*,.\60\62\64\668:<>@BDFHJ\2\r\4\2\60\60\62\62\3\2WX\5\2\61\61\63"+
+		"\63UV\4\2LLSS\3\2\13\f\3\2\7\n\4\2./KK\4\2\61\61\63\63\4\2\64\65:;\3\2"+
+		"=>\3\2\"#\2\u022e\2O\3\2\2\2\4T\3\2\2\2\6c\3\2\2\2\bg\3\2\2\2\ni\3\2\2"+
+		"\2\fp\3\2\2\2\16y\3\2\2\2\20\u0080\3\2\2\2\22\u008c\3\2\2\2\24\u00a0\3"+
+		"\2\2\2\26\u00a2\3\2\2\2\30\u00af\3\2\2\2\32\u00b4\3\2\2\2\34\u00bc\3\2"+
+		"\2\2\36\u00bf\3\2\2\2 \u00c2\3\2\2\2\"\u00c8\3\2\2\2$\u00d3\3\2\2\2&\u00e3"+
+		"\3\2\2\2(\u00ef\3\2\2\2*\u00f3\3\2\2\2,\u00f5\3\2\2\2.\u0102\3\2\2\2\60"+
+		"\u011c\3\2\2\2\62\u011e\3\2\2\2\64\u012b\3\2\2\2\66\u013d\3\2\2\28\u0142"+
+		"\3\2\2\2:\u0144\3\2\2\2<\u014f\3\2\2\2>\u0151\3\2\2\2@\u0159\3\2\2\2B"+
+		"\u0198\3\2\2\2D\u01ea\3\2\2\2F\u01ec\3\2\2\2H\u01ee\3\2\2\2J\u01f0\3\2"+
+		"\2\2LN\5\4\3\2ML\3\2\2\2NQ\3\2\2\2OM\3\2\2\2OP\3\2\2\2PR\3\2\2\2QO\3\2"+
+		"\2\2RS\7\2\2\3S\3\3\2\2\2TU\5\6\4\2UV\7*\2\2V\5\3\2\2\2Wd\5\22\n\2Xd\5"+
+		"\b\5\2Yd\5\16\b\2Zd\5\20\t\2[d\5B\"\2\\d\5\30\r\2]d\5\24\13\2^d\5\32\16"+
+		"\2_d\5 \21\2`d\5\34\17\2ad\5\36\20\2bd\5\26\f\2cW\3\2\2\2cX\3\2\2\2cY"+
+		"\3\2\2\2cZ\3\2\2\2c[\3\2\2\2c\\\3\2\2\2c]\3\2\2\2c^\3\2\2\2c_\3\2\2\2"+
+		"c`\3\2\2\2ca\3\2\2\2cb\3\2\2\2d\7\3\2\2\2eh\5\n\6\2fh\5\f\7\2ge\3\2\2"+
+		"\2gf\3\2\2\2h\t\3\2\2\2ij\7\31\2\2jl\5(\25\2km\7\36\2\2lk\3\2\2\2lm\3"+
+		"\2\2\2mn\3\2\2\2no\5\"\22\2o\13\3\2\2\2pq\7\31\2\2qs\5(\25\2rt\7\36\2"+
+		"\2sr\3\2\2\2st\3\2\2\2tu\3\2\2\2uv\5\"\22\2vw\7\30\2\2wx\5\"\22\2x\r\3"+
+		"\2\2\2yz\7 \2\2z|\5(\25\2{}\7\27\2\2|{\3\2\2\2|}\3\2\2\2}~\3\2\2\2~\177"+
+		"\5\"\22\2\177\17\3\2\2\2\u0080\u0081\7\35\2\2\u0081\u0087\7&\2\2\u0082"+
+		"\u0083\5\n\6\2\u0083\u0084\7*\2\2\u0084\u0086\3\2\2\2\u0085\u0082\3\2"+
+		"\2\2\u0086\u0089\3\2\2\2\u0087\u0085\3\2\2\2\u0087\u0088\3\2\2\2\u0088"+
+		"\u008a\3\2\2\2\u0089\u0087\3\2\2\2\u008a\u008b\7\'\2\2\u008b\21\3\2\2"+
+		"\2\u008c\u008d\7\26\2\2\u008d\u008e\7&\2\2\u008e\u008f\5:\36\2\u008f\u0091"+
+		"\7\'\2\2\u0090\u0092\7\24\2\2\u0091\u0090\3\2\2\2\u0091\u0092\3\2\2\2"+
+		"\u0092\u0093\3\2\2\2\u0093\u0094\5$\23\2\u0094\23\3\2\2\2\u0095\u0096"+
+		"\5:\36\2\u0096\u009a\7-\2\2\u0097\u0099\5*\26\2\u0098\u0097\3\2\2\2\u0099"+
+		"\u009c\3\2\2\2\u009a\u0098\3\2\2\2\u009a\u009b\3\2\2\2\u009b\u009d\3\2"+
+		"\2\2\u009c\u009a\3\2\2\2\u009d\u009e\5\6\4\2\u009e\u00a1\3\2\2\2\u009f"+
+		"\u00a1\5\"\22\2\u00a0\u0095\3\2\2\2\u00a0\u009f\3\2\2\2\u00a1\25\3\2\2"+
+		"\2\u00a2\u00a3\7\32\2\2\u00a3\u00a4\7&\2\2\u00a4\u00a7\7%\2\2\u00a5\u00a6"+
+		"\7(\2\2\u00a6\u00a8\7%\2\2\u00a7\u00a5\3\2\2\2\u00a7\u00a8\3\2\2\2\u00a8"+
+		"\u00a9\3\2\2\2\u00a9\u00ab\7\'\2\2\u00aa\u00ac\7\24\2\2\u00ab\u00aa\3"+
+		"\2\2\2\u00ab\u00ac\3\2\2\2\u00ac\u00ad\3\2\2\2\u00ad\u00ae\5$\23\2\u00ae"+
+		"\27\3\2\2\2\u00af\u00b0\7\37\2\2\u00b0\u00b1\5\"\22\2\u00b1\u00b2\7\25"+
+		"\2\2\u00b2\u00b3\5\"\22\2\u00b3\31\3\2\2\2\u00b4\u00b5\7\16\2\2\u00b5"+
+		"\u00b6\7&\2\2\u00b6\u00b7\5B\"\2\u00b7\u00b8\7\'\2\2\u00b8\u00b9\7&\2"+
+		"\2\u00b9\u00ba\5B\"\2\u00ba\u00bb\7\'\2\2\u00bb\33\3\2\2\2\u00bc\u00bd"+
+		"\7\22\2\2\u00bd\u00be\5\"\22\2\u00be\35\3\2\2\2\u00bf\u00c0\7\23\2\2\u00c0"+
+		"\u00c1\5\"\22\2\u00c1\37\3\2\2\2\u00c2\u00c3\7\17\2\2\u00c3\u00c6\5B\""+
+		"\2\u00c4\u00c5\7)\2\2\u00c5\u00c7\5B\"\2\u00c6\u00c4\3\2\2\2\u00c6\u00c7"+
+		"\3\2\2\2\u00c7!\3\2\2\2\u00c8\u00ce\7&\2\2\u00c9\u00ca\5\6\4\2\u00ca\u00cb"+
+		"\7*\2\2\u00cb\u00cd\3\2\2\2\u00cc\u00c9\3\2\2\2\u00cd\u00d0\3\2\2\2\u00ce"+
+		"\u00cc\3\2\2\2\u00ce\u00cf\3\2\2\2\u00cf\u00d1\3\2\2\2\u00d0\u00ce\3\2"+
+		"\2\2\u00d1\u00d2\7\'\2\2\u00d2#\3\2\2\2\u00d3\u00d7\7&\2\2\u00d4\u00d6"+
+		"\5*\26\2\u00d5\u00d4\3\2\2\2\u00d6\u00d9\3\2\2\2\u00d7\u00d5\3\2\2\2\u00d7"+
+		"\u00d8\3\2\2\2\u00d8\u00dd\3\2\2\2\u00d9\u00d7\3\2\2\2\u00da\u00db\5\6"+
+		"\4\2\u00db\u00dc\7*\2\2\u00dc\u00de\3\2\2\2\u00dd\u00da\3\2\2\2\u00de"+
+		"\u00df\3\2\2\2\u00df\u00dd\3\2\2\2\u00df\u00e0\3\2\2\2\u00e0\u00e1\3\2"+
+		"\2\2\u00e1\u00e2\7\'\2\2\u00e2%\3\2\2\2\u00e3\u00e4\7&\2\2\u00e4\u00e5"+
+		"\5B\"\2\u00e5\u00e9\7*\2\2\u00e6\u00e7\5B\"\2\u00e7\u00e8\7*\2\2\u00e8"+
+		"\u00ea\3\2\2\2\u00e9\u00e6\3\2\2\2\u00ea\u00eb\3\2\2\2\u00eb\u00e9\3\2"+
+		"\2\2\u00eb\u00ec\3\2\2\2\u00ec\u00ed\3\2\2\2\u00ed\u00ee\7\'\2\2\u00ee"+
+		"\'\3\2\2\2\u00ef\u00f0\7&\2\2\u00f0\u00f1\5B\"\2\u00f1\u00f2\7\'\2\2\u00f2"+
+		")\3\2\2\2\u00f3\u00f4\7_\2\2\u00f4+\3\2\2\2\u00f5\u00f7\7&\2\2\u00f6\u00f8"+
+		"\5B\"\2\u00f7\u00f6\3\2\2\2\u00f7\u00f8\3\2\2\2\u00f8\u00f9\3\2\2\2\u00f9"+
+		"\u00fa\7*\2\2\u00fa\u00fe\5B\"\2\u00fb\u00ff\7*\2\2\u00fc\u00fd\7*\2\2"+
+		"\u00fd\u00ff\5B\"\2\u00fe\u00fb\3\2\2\2\u00fe\u00fc\3\2\2\2\u00fe\u00ff"+
+		"\3\2\2\2\u00ff\u0100\3\2\2\2\u0100\u0101\7\'\2\2\u0101-\3\2\2\2\u0102"+
+		"\u0104\7+\2\2\u0103\u0105\5B\"\2\u0104\u0103\3\2\2\2\u0104\u0105\3\2\2"+
+		"\2\u0105\u0106\3\2\2\2\u0106\u0107\7*\2\2\u0107\u010b\5B\"\2\u0108\u010c"+
+		"\7*\2\2\u0109\u010a\7*\2\2\u010a\u010c\5B\"\2\u010b\u0108\3\2\2\2\u010b"+
+		"\u0109\3\2\2\2\u010b\u010c\3\2\2\2\u010c\u010d\3\2\2\2\u010d\u010e\7,"+
+		"\2\2\u010e/\3\2\2\2\u010f\u0110\7\3\2\2\u0110\u0115\5B\"\2\u0111\u0112"+
+		"\7(\2\2\u0112\u0114\5B\"\2\u0113\u0111\3\2\2\2\u0114\u0117\3\2\2\2\u0115"+
+		"\u0113\3\2\2\2\u0115\u0116\3\2\2\2\u0116\u0118\3\2\2\2\u0117\u0115\3\2"+
+		"\2\2\u0118\u0119\7\4\2\2\u0119\u011d\3\2\2\2\u011a\u011b\7\3\2\2\u011b"+
+		"\u011d\7\4\2\2\u011c\u010f\3\2\2\2\u011c\u011a\3\2\2\2\u011d\61\3\2\2"+
+		"\2\u011e\u011f\7\3\2\2\u011f\u0124\5\64\33\2\u0120\u0121\7(\2\2\u0121"+
+		"\u0123\5\64\33\2\u0122\u0120\3\2\2\2\u0123\u0126\3\2\2\2\u0124\u0122\3"+
+		"\2\2\2\u0124\u0125\3\2\2\2\u0125\u0127\3\2\2\2\u0126\u0124\3\2\2\2\u0127"+
+		"\u0128\7\4\2\2\u0128\63\3\2\2\2\u0129\u012c\7.\2\2\u012a\u012c\5B\"\2"+
+		"\u012b\u0129\3\2\2\2\u012b\u012a\3\2\2\2\u012c\u012d\3\2\2\2\u012d\u012e"+
+		"\7)\2\2\u012e\u012f\58\35\2\u012f\65\3\2\2\2\u0130\u0131\7&\2\2\u0131"+
+		"\u0136\58\35\2\u0132\u0133\7(\2\2\u0133\u0135\58\35\2\u0134\u0132\3\2"+
+		"\2\2\u0135\u0138\3\2\2\2\u0136\u0134\3\2\2\2\u0136\u0137\3\2\2\2\u0137"+
+		"\u0139\3\2\2\2\u0138\u0136\3\2\2\2\u0139\u013a\7\'\2\2\u013a\u013e\3\2"+
+		"\2\2\u013b\u013c\7&\2\2\u013c\u013e\7\'\2\2\u013d\u0130\3\2\2\2\u013d"+
+		"\u013b\3\2\2\2\u013e\67\3\2\2\2\u013f\u0143\5B\"\2\u0140\u0143\5\62\32"+
+		"\2\u0141\u0143\5\66\34\2\u0142\u013f\3\2\2\2\u0142\u0140\3\2\2\2\u0142"+
+		"\u0141\3\2\2\2\u01439\3\2\2\2\u0144\u0148\7]\2\2\u0145\u0147\5> \2\u0146"+
+		"\u0145\3\2\2\2\u0147\u014a\3\2\2\2\u0148\u0146\3\2\2\2\u0148\u0149\3\2"+
+		"\2\2\u0149\u014b\3\2\2\2\u014a\u0148\3\2\2\2\u014b\u014c\7\5\2\2\u014c"+
+		";\3\2\2\2\u014d\u0150\58\35\2\u014e\u0150\5@!\2\u014f\u014d\3\2\2\2\u014f"+
+		"\u014e\3\2\2\2\u0150=\3\2\2\2\u0151\u0156\5<\37\2\u0152\u0153\7(\2\2\u0153"+
+		"\u0155\5<\37\2\u0154\u0152\3\2\2\2\u0155\u0158\3\2\2\2\u0156\u0154\3\2"+
+		"\2\2\u0156\u0157\3\2\2\2\u0157?\3\2\2\2\u0158\u0156\3\2\2\2\u0159\u015a"+
+		"\7^\2\2\u015aA\3\2\2\2\u015b\u015c\b\"\1\2\u015c\u0199\5:\36\2\u015d\u015f"+
+		"\5D#\2\u015e\u015d\3\2\2\2\u015e\u015f\3\2\2\2\u015f\u0160\3\2\2\2\u0160"+
+		"\u0161\7Q\2\2\u0161\u0199\5B\",\u0162\u016c\5:\36\2\u0163\u0167\7\6\2"+
+		"\2\u0164\u0166\5> \2\u0165\u0164\3\2\2\2\u0166\u0169\3\2\2\2\u0167\u0165"+
+		"\3\2\2\2\u0167\u0168\3\2\2\2\u0168\u016a\3\2\2\2\u0169\u0167\3\2\2\2\u016a"+
+		"\u016c\7\5\2\2\u016b\u0162\3\2\2\2\u016b\u0163\3\2\2\2\u016c\u016d\3\2"+
+		"\2\2\u016d\u0170\7-\2\2\u016e\u0171\5B\"\2\u016f\u0171\5&\24\2\u0170\u016e"+
+		"\3\2\2\2\u0170\u016f\3\2\2\2\u0171\u0199\3\2\2\2\u0172\u0199\5\62\32\2"+
+		"\u0173\u0199\5\66\34\2\u0174\u0199\5\60\31\2\u0175\u0199\5.\30\2\u0176"+
+		"\u0199\5,\27\2\u0177\u0178\79\2\2\u0178\u0199\5B\"%\u0179\u017a\t\2\2"+
+		"\2\u017a\u0199\5B\"\"\u017b\u017c\t\3\2\2\u017c\u0199\5B\"\36\u017d\u017e"+
+		"\t\4\2\2\u017e\u0199\5B\"\35\u017f\u0180\t\5\2\2\u0180\u0199\5B\"\34\u0181"+
+		"\u0182\7B\2\2\u0182\u0199\5B\"\33\u0183\u0184\t\6\2\2\u0184\u0199\5B\""+
+		"\22\u0185\u0186\7\6\2\2\u0186\u0187\5B\"\2\u0187\u0188\7\5\2\2\u0188\u0199"+
+		"\3\2\2\2\u0189\u018a\5@!\2\u018a\u018b\7C\2\2\u018b\u018c\5B\"\r\u018c"+
+		"\u0199\3\2\2\2\u018d\u018e\5@!\2\u018e\u018f\7G\2\2\u018f\u0190\5B\"\13"+
+		"\u0190\u0199\3\2\2\2\u0191\u0199\7%\2\2\u0192\u0199\5H%\2\u0193\u0199"+
+		"\5F$\2\u0194\u0199\5D#\2\u0195\u0199\5J&\2\u0196\u0199\7$\2\2\u0197\u0199"+
+		"\7\33\2\2\u0198\u015b\3\2\2\2\u0198\u015e\3\2\2\2\u0198\u016b\3\2\2\2"+
+		"\u0198\u0172\3\2\2\2\u0198\u0173\3\2\2\2\u0198\u0174\3\2\2\2\u0198\u0175"+
+		"\3\2\2\2\u0198\u0176\3\2\2\2\u0198\u0177\3\2\2\2\u0198\u0179\3\2\2\2\u0198"+
+		"\u017b\3\2\2\2\u0198\u017d\3\2\2\2\u0198\u017f\3\2\2\2\u0198\u0181\3\2"+
+		"\2\2\u0198\u0183\3\2\2\2\u0198\u0185\3\2\2\2\u0198\u0189\3\2\2\2\u0198"+
+		"\u018d\3\2\2\2\u0198\u0191\3\2\2\2\u0198\u0192\3\2\2\2\u0198\u0193\3\2"+
+		"\2\2\u0198\u0194\3\2\2\2\u0198\u0195\3\2\2\2\u0198\u0196\3\2\2\2\u0198"+
+		"\u0197\3\2\2\2\u0199\u01e7\3\2\2\2\u019a\u019c\f\62\2\2\u019b\u019d\7"+
+		"T\2\2\u019c\u019b\3\2\2\2\u019d\u019e\3\2\2\2\u019e\u019c\3\2\2\2\u019e"+
+		"\u019f\3\2\2\2\u019f\u01a0\3\2\2\2\u01a0\u01e6\5B\"\63\u01a1\u01a2\f\60"+
+		"\2\2\u01a2\u01a3\7M\2\2\u01a3\u01e6\5B\"\61\u01a4\u01a5\f.\2\2\u01a5\u01a6"+
+		"\7O\2\2\u01a6\u01e6\5B\"/\u01a7\u01a8\f$\2\2\u01a8\u01a9\t\5\2\2\u01a9"+
+		"\u01e6\5B\"%\u01aa\u01ab\f!\2\2\u01ab\u01ac\7E\2\2\u01ac\u01e6\5B\"\""+
+		"\u01ad\u01ae\f \2\2\u01ae\u01af\t\7\2\2\u01af\u01e6\5B\"!\u01b0\u01b1"+
+		"\f\37\2\2\u01b1\u01b2\t\b\2\2\u01b2\u01e6\5B\" \u01b3\u01b4\f\32\2\2\u01b4"+
+		"\u01b5\7B\2\2\u01b5\u01e6\5B\"\33\u01b6\u01b7\f\31\2\2\u01b7\u01b8\t\t"+
+		"\2\2\u01b8\u01e6\5B\"\32\u01b9\u01ba\f\30\2\2\u01ba\u01bb\t\n\2\2\u01bb"+
+		"\u01e6\5B\"\31\u01bc\u01bd\f\27\2\2\u01bd\u01be\t\13\2\2\u01be\u01e6\5"+
+		"B\"\30\u01bf\u01c0\f\26\2\2\u01c0\u01c1\7?\2\2\u01c1\u01e6\5B\"\27\u01c2"+
+		"\u01c3\f\25\2\2\u01c3\u01c4\7<\2\2\u01c4\u01e6\5B\"\26\u01c5\u01c6\f\24"+
+		"\2\2\u01c6\u01c7\7H\2\2\u01c7\u01e6\5B\"\25\u01c8\u01c9\f\23\2\2\u01c9"+
+		"\u01ca\7I\2\2\u01ca\u01e6\5B\"\24\u01cb\u01cc\f\20\2\2\u01cc\u01cd\7Z"+
+		"\2\2\u01cd\u01ce\5B\"\2\u01ce\u01cf\7)\2\2\u01cf\u01d0\5B\"\21\u01d0\u01e6"+
+		"\3\2\2\2\u01d1\u01d2\f\17\2\2\u01d2\u01d3\7A\2\2\u01d3\u01e6\5B\"\20\u01d4"+
+		"\u01d5\f\16\2\2\u01d5\u01d6\7D\2\2\u01d6\u01e6\5B\"\17\u01d7\u01d8\f\f"+
+		"\2\2\u01d8\u01d9\7F\2\2\u01d9\u01e6\5B\"\r\u01da\u01db\f\3\2\2\u01db\u01dc"+
+		"\7[\2\2\u01dc\u01e6\5B\"\4\u01dd\u01de\f\61\2\2\u01de\u01e6\7T\2\2\u01df"+
+		"\u01e0\f/\2\2\u01e0\u01e6\7N\2\2\u01e1\u01e2\f-\2\2\u01e2\u01e6\7P\2\2"+
+		"\u01e3\u01e4\f#\2\2\u01e4\u01e6\t\2\2\2\u01e5\u019a\3\2\2\2\u01e5\u01a1"+
+		"\3\2\2\2\u01e5\u01a4\3\2\2\2\u01e5\u01a7\3\2\2\2\u01e5\u01aa\3\2\2\2\u01e5"+
+		"\u01ad\3\2\2\2\u01e5\u01b0\3\2\2\2\u01e5\u01b3\3\2\2\2\u01e5\u01b6\3\2"+
+		"\2\2\u01e5\u01b9\3\2\2\2\u01e5\u01bc\3\2\2\2\u01e5\u01bf\3\2\2\2\u01e5"+
+		"\u01c2\3\2\2\2\u01e5\u01c5\3\2\2\2\u01e5\u01c8\3\2\2\2\u01e5\u01cb\3\2"+
+		"\2\2\u01e5\u01d1\3\2\2\2\u01e5\u01d4\3\2\2\2\u01e5\u01d7\3\2\2\2\u01e5"+
+		"\u01da\3\2\2\2\u01e5\u01dd\3\2\2\2\u01e5\u01df\3\2\2\2\u01e5\u01e1\3\2"+
+		"\2\2\u01e5\u01e3\3\2\2\2\u01e6\u01e9\3\2\2\2\u01e7\u01e5\3\2\2\2\u01e7"+
+		"\u01e8\3\2\2\2\u01e8C\3\2\2\2\u01e9\u01e7\3\2\2\2\u01ea\u01eb\7\\\2\2"+
+		"\u01ebE\3\2\2\2\u01ec\u01ed\t\f\2\2\u01edG\3\2\2\2\u01ee\u01ef\7!\2\2"+
+		"\u01efI\3\2\2\2\u01f0\u01f1\7\r\2\2\u01f1K\3\2\2\2)Ocgls|\u0087\u0091"+
+		"\u009a\u00a0\u00a7\u00ab\u00c6\u00ce\u00d7\u00df\u00eb\u00f7\u00fe\u0104"+
+		"\u010b\u0115\u011c\u0124\u012b\u0136\u013d\u0142\u0148\u014f\u0156\u015e"+
+		"\u0167\u016b\u0170\u0198\u019e\u01e5\u01e7";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

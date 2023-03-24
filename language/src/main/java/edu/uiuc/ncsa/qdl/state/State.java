@@ -303,7 +303,10 @@ public class State extends FunctionState implements QDLConstants {
         characters.put("27e6", "⟦");
         characters.put("27e7", "⟧");
         characters.put("22a2", OpEvaluator.TO_SET);
-        characters.put("03c4", StemEvaluator.TRANSPOSE2);
+        characters.put("2299", OpEvaluator.REDUCE_OP_KEY);
+        characters.put("2295", OpEvaluator.EXPAND_OP_KEY);
+        characters.put("2306", OpEvaluator.MASK_OP_KEY);
+        characters.put("29b0", OpEvaluator.TRANSPOSE_OP_KEY);
         characters.put("03c0", TMathEvaluator.PI2);
         characters.put("2229", "∩");
         characters.put("222a", "∪");

@@ -16,37 +16,45 @@ The QD Language
 
 Documentation
 
-    *{{{./pdf/qdl_reference.pdf}QDL Reference Manual}}
+    *{{{./docs/pdf/qdl_reference.pdf}QDL Reference Manual}}
 
-    *{{{./pdf/qdl_workspace.pdf}QDL Workspace Reference Manual}}
+    *{{{./docs/pdf/qdl_workspace.pdf}QDL Workspace Reference Manual}}
 
-    *{{{./pdf/qdl_configuration.pdf}QDL Configuration Reference Manual}}
+    *{{{./docs/pdf/qdl_configuration.pdf}QDL Configuration Reference Manual}}
 
-    *{{{./pdf/qdl_extensions.pdf}Writing your own extensions to QDL}}
+    *{{{./docs/pdf/qdl_extensions.pdf}Writing your own extensions to QDL}}
 
-    *{{{./pdf/iso6429.pdf}How to use the (experimental) ISO 6429 terminal support.}}
+    *{{{./docs/pdf/qdl_scripting.pdf}General introduction to writing scripts with QDL}}
 
-    *{{{./pdf/qdl_scripting.pdf.pdf}General introduction to writing scripts with QDL}}
+    *{{{./docs/pdf/qdl_ini_file.pdf}QDL's ini file}}
 
-    *{{{./pdf/qdl_ini_file.pdf}QDL's ini file}}
+    *{{{./docs/pdf/tutorial.pdf}A basic tutorial to QDL}}
 
-    *{{{./pdf/tutorial.pdf}A basic tutorial to QDL}}
+User Interfaces to QDL
+
+    *{{{./docs/pdf/qdl_swing_gui.pdf}Reference Manual for the Swing GUI}}
+
+    *{{{./docs/pdf/iso6429.pdf}How to use the ISO 6429 terminal support.}}
 
 Standard Extensions
 
-    *{{{./pdf/http-extension.pdf}HTTP extension.}}
+    *{{{./docs/pdf/http-extension.pdf}HTTP extension.}}
 
-    *{{{./pdf/qdldb-extension.pdf}The database extension.}}
+    *{{{./docs/pdf/qdldb-extension.pdf}The database extension.}}
+
+    *{{{./docs/pdf/xml-extension.pdf}The conversions extension.}}
+
+    *{{{./docs/pdf/cli-extension.pdf}The command line interface (CLI) extension.}}
 
 OA4MP Extensions
 
-    *{{{./docs/qdl_server_scripts.pdf}Introduction to writing server-side scripts with QDL}}
+    *{{{./docs/pdf/qdl_server_scripts.pdf}Introduction to writing server-side scripts with QDL}}
 
-    *{{{./docs/creating_claim_sources2.pdf}Creating claims in server scripting.}}
+    *{{{./docs/pdf/creating_claim_sources2.pdf}Creating claims in server scripting.}}
 
-    *{{{./docs/claim_source_examples.pdf}Examples for creating claim sources.}}
+    *{{{./docs/pdf/claim_source_examples.pdf}Examples for creating claim sources.}}
 
-    *{{{./docs/token_handler_configuration.pdf}Configuring token handlers.}}
+    *{{{./docs/pdf/token_handler_configuration.pdf}Configuring token handlers.}}
 
 Javadoc for QDL
 

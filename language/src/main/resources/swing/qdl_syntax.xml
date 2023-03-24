@@ -187,7 +187,10 @@ By Jeff Gaynor</classComment>
     <function>vfs_unmount</function>
     <function>ws_macro</function>
     <function>π</function>
-    <function>τ</function>
+    <function>⦰</function>
+    <function>⌆</function>
+    <function>⊙</function>
+    <function>⊕</function>
   </functions>
   <numbers>
     <hexLiteral/>

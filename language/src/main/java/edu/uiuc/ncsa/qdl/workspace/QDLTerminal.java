@@ -1,6 +1,5 @@
 package edu.uiuc.ncsa.qdl.workspace;
 
-import edu.uiuc.ncsa.qdl.gui.TerminalInterface;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
 import edu.uiuc.ncsa.security.util.terminal.ISO6429Terminal;
 import edu.uiuc.ncsa.security.util.terminal.KeyStroke;
@@ -55,11 +54,14 @@ public class QDLTerminal extends ISO6429Terminal  {
             charMap['i'] = '∃';
             charMap['k'] = '⌈';
             charMap['l'] = '⌊';
+            charMap['m'] = '⌆';
             charMap['n'] = '∅';
             charMap['p'] = 'π';
             charMap['r'] = '≈';
             charMap['s'] = '⊢';
-            charMap['t'] = 'τ';
+            charMap['t'] = '⦰';
+            charMap['x'] = '⊕';
+            charMap['X'] = '⊙';
             charMap['U'] = '∩';
             charMap['u'] = '∪';
             charMap['{'] = '⟦';

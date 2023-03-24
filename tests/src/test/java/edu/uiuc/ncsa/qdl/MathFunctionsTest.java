@@ -105,15 +105,29 @@ public class MathFunctionsTest extends AbstractQDLTester {
     }
 
 
-    public void testHash() throws Exception {
+    public void testHash() throws Throwable {
         State state = testUtils.getNewState();
-
-        String expectedResult = "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12";
-        Polyad polyad = new Polyad(MathEvaluator.HASH);
-        ConstantNode arg = new ConstantNode("The quick brown fox jumps over the lazy dog", Constant.STRING_TYPE);
-        polyad.addArgument(arg);
-        polyad.evaluate(state);
-        assert polyad.getResult().equals(expectedResult);
+         StringBuffer script = new StringBuffer();
+         addLine(script, "ok0 := hash(3*'woof')=='f6bd2bb62f3f93165d8fc903a286f2eb21267b87';");
+         addLine(script, "ok1 := hash('The quick brown fox jumps over the lazy dog','sha-1')=='2fd4e1c67a2d28fced849ee1bb76e7391b93eb12';");
+         addLine(script, "ok2 := hash(3*'woof','md2')=='e2a822e69c905a067d3351635927ba29';");
+         addLine(script, "ok3 := hash(3*'woof','md5')=='0417584e92d7419ada979f982149507f';");
+         addLine(script, "ok4 := hash(3*'woof','sha-1')=='f6bd2bb62f3f93165d8fc903a286f2eb21267b87';");
+         addLine(script, "ok5 := hash(3*'woof','sha-2')=='ac1303206238621acf00a17e363a48d7ae3b30deb2d639520c9ae5bd38747a6c';");
+         addLine(script, "ok6 := hash(3*'woof','sha-256')=='ac1303206238621acf00a17e363a48d7ae3b30deb2d639520c9ae5bd38747a6c';");
+         addLine(script, "ok7 := hash(3*'woof','sha-384')=='86c77cb23bd700db8e98427e36253bc9c7d1f2be8446beb257ad549f15fe935dc776de421f34e80b675e5c51cb605b45';");
+         addLine(script, "ok8 := hash(3*'woof','sha-512')=='0612369c638261e0576b625290a6d8bfb53672b978f0a3920291767212364c0a10cd3cb1ec6c711ca35833b24a66ac11450966070769fe10e65964dffe912210';");
+         QDLInterpreter interpreter = new QDLInterpreter(null, state);
+         interpreter.execute(script.toString());
+         assert getBooleanValue("ok0", state) : "failed hash for default";
+         assert getBooleanValue("ok1", state) : "failed hash for sha-1";
+         assert getBooleanValue("ok2", state) : "failed hash for md2";
+         assert getBooleanValue("ok3", state) : "failed hash for md5";
+         assert getBooleanValue("ok4", state) : "failed hash for sha-1, test #2";
+         assert getBooleanValue("ok5", state) : "failed hash for sha-2";
+         assert getBooleanValue("ok6", state) : "failed hash for sha-256";
+         assert getBooleanValue("ok7", state) : "failed hash for sha-384";
+         assert getBooleanValue("ok8", state) : "failed hash for sha-512";
     }
 
 

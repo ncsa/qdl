@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.*;
 
 import static java.awt.event.InputEvent.*;
-import static org.fife.ui.rsyntaxtextarea.SyntaxConstants.SYNTAX_STYLE_JAVA;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -108,7 +107,7 @@ public class SwingTerminal implements TerminalInterface {
      */
     protected void setupListeners() {
         input.getCaret().setVisible(true);
-        input.setSyntaxEditingStyle(SYNTAX_STYLE_JAVA);
+        //  input.setSyntaxEditingStyle(SYNTAX_STYLE_JAVA); // does weird things to comments. Makes them all javadoc
         input.addKeyListener(new QDLCharKeyAdapter(this));
         input.addKeyListener(new QDLHistoryKeyAdapter(getWorkspaceCommands(), frame, getInput(), getOutput()));
         output.addKeyListener(new QDLHistoryKeyAdapter(getWorkspaceCommands(), frame, getInput(), getOutput()));
@@ -174,6 +173,8 @@ public class SwingTerminal implements TerminalInterface {
         input.setBackground(new Color(-65537));
         input.setCloseCurlyBraces(false);
         input.setCodeFoldingEnabled(true);
+        Font inputFont = this.$$$getFont$$$("DialogInput", Font.BOLD, 14, input.getFont());
+        if (inputFont != null) input.setFont(inputFont);
         input.setFractionalFontMetricsEnabled(true);
         input.setRows(0);
         RTextScrollPane1.setViewportView(input);

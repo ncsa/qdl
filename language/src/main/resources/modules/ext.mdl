@@ -153,7 +153,7 @@ module[
      »      ϱ. := unique(['a','b',0,3,true]~'c'~[['a','b',-2,'q',true]]~[[['aa','b',4,17,2/3]]])
      »      inner_product(⊗∨, ['a','b','s','c',0,3,true], @≡,  ϱ.)
      » [true,true,false,true,true,true,true]
-          return(reduce(⊗f, τ(for_each(⊗g, x., τ(y.,-1)) ,-1)));
+          return(reduce(⊗f, transpose(for_each(⊗g, x., τ(y.,-1)) ,-1)));
    ];
 
     define[

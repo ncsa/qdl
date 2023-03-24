@@ -229,7 +229,6 @@ public class EditorKeyPressedAdapter extends KeyAdapter {
                     String current = input.getText();
                     try {
                         int currentCaret = input.getCaretPosition();
-                        System.out.println("current caret at =" + currentCaret);
                         int lineNumber = getLineNumber(currentCaret);
                         LineUtil.doOperation(current, lineNumber, LineUtil.COPY_LINE); // don't care about output
                     } catch (IOException ex) {
@@ -286,6 +285,14 @@ public class EditorKeyPressedAdapter extends KeyAdapter {
             case KeyEvent.VK_F1:
                 // If no selected text, put up a generic help message. Otherwise,
                 // search online help.
+                if(e.isControlDown()&& !e.isAltDown()){
+                    String x = getHelp("keyboard");
+                    if (x != null) {
+                       String helpMessage = x;
+                    }
+                    showHelp("QDL keyboard layout", x);
+                    break;
+                }
                 String text = input.getSelectedText();
                 if (text == null && output != null) {
                     // See if they selected something in output

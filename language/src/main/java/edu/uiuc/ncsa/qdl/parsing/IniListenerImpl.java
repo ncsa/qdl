@@ -4,13 +4,15 @@ import edu.uiuc.ncsa.qdl.exceptions.ParsingException;
 import edu.uiuc.ncsa.qdl.ini_generated.iniListener;
 import edu.uiuc.ncsa.qdl.ini_generated.iniParser;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.apache.commons.lang.StringEscapeUtils;
 
 import java.math.BigDecimal;
 import java.util.StringTokenizer;
+
+import static edu.uiuc.ncsa.qdl.exceptions.ParsingException.*;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -40,6 +42,7 @@ public class IniListenerImpl implements iniListener {
 
     @Override
     public void exitIni(iniParser.IniContext ctx) {
+        checkLexer(ctx);
 
     }
 
@@ -50,6 +53,7 @@ public class IniListenerImpl implements iniListener {
 
     @Override
     public void exitSection(iniParser.SectionContext ctx) {
+        checkLexer(ctx);
 
         currentStem = null; // so we clean up
     }
@@ -63,6 +67,8 @@ public class IniListenerImpl implements iniListener {
 
     @Override
     public void exitSectionheader(iniParser.SectionheaderContext ctx) {
+        checkLexer(ctx);
+        
         currentSectionHeader = ctx.Identifier().getText();
         if (currentSectionHeader.contains(".")) {
             StringTokenizer tokenizer = new StringTokenizer(currentSectionHeader, ".");
@@ -93,6 +99,8 @@ public class IniListenerImpl implements iniListener {
 
     @Override
     public void exitLine(iniParser.LineContext ctx) {
+        checkLexer(ctx);
+
         if (ctx.Identifier() == null) {
             return; // means there was a blank line
         }
@@ -108,6 +116,7 @@ public class IniListenerImpl implements iniListener {
 
     @Override
     public void exitEntries(iniParser.EntriesContext ctx) {
+        checkLexer(ctx);
         int entryCount = ctx.children.size();
         if (entryCount == 1) {
             currentLineValue = convertEntryToValue(ctx.entry(0));
@@ -126,15 +135,6 @@ public class IniListenerImpl implements iniListener {
     }
 
     protected Object convertEntryToValue(iniParser.EntryContext entryContext) {
-        if(entryContext.exception != null){
-            RecognitionException re = entryContext.exception;
-            throw new ParsingException("parsing error, got " +
-                    re.getOffendingToken().getText(),
-                    re.getOffendingToken().getLine(),
-                    re.getOffendingToken().getCharPositionInLine(),
-                    ParsingException.MISMATCH_TYPE
-                    );
-        }
         if (entryContext.String() != null) {
             String outString = entryContext.String().getText().trim();
             // returned text will have the '' included, so string them off
@@ -142,12 +142,7 @@ public class IniListenerImpl implements iniListener {
                 outString = outString.substring(1, outString.length() - 1);
             }
             // Fix https://github.com/ncsa/OA4MP/issues/88
-             outString = outString.replace("\\n", "\n");
-             outString = outString.replace("\\t", "\t");
-             outString = outString.replace("\\f", "\f");
-             outString = outString.replace("\\r", "\r");
-             outString = outString.replace("\\b", "\b");
-             outString = outString.replace("\\\\", "\\"); // must be last
+            outString = StringEscapeUtils.unescapeJava(outString);
             return outString;
         }
         if (entryContext.ConstantKeywords() != null) {
@@ -176,6 +171,7 @@ public class IniListenerImpl implements iniListener {
 
     @Override
     public void exitEntry(iniParser.EntryContext ctx) {
+        checkLexer(ctx);
 
     }
 
@@ -197,5 +193,39 @@ public class IniListenerImpl implements iniListener {
     @Override
     public void exitEveryRule(ParserRuleContext parserRuleContext) {
 
+    }
+    /**
+     * First cut of catching lexer exceptions and handling them
+     * @param pre
+     */
+    protected void checkLexer(ParserRuleContext pre) {
+        if (pre.exception == null) {
+            return;
+        }
+        RecognitionException re = pre.exception;
+        String type = SYNTAX_TYPE;
+        if (re instanceof InputMismatchException) {
+            // Any type of mismatch, when the current token does not match the expected token
+            type = MISMATCH_TYPE;
+        }
+        if (re instanceof LexerNoViableAltException) {
+            // Lexer cannot figure out which of two or more possible alternatives to resolve a token there are
+            type = AMBIGUOUS_TYPE;
+        }
+        if (re instanceof NoViableAltException) {
+            // Parser cannot figure out which of two or more possible alternatives to resolve a token there are
+            type = SYNTAX_TYPE;
+        }
+
+        if (re instanceof FailedPredicateException) {
+            // A token was found but it could not be validated as teh correct one to use.
+            type = AMBIGUOUS_TYPE;
+        }
+        throw new ParsingException("parsing error, got " +
+                re.getOffendingToken().getText(),
+                re.getOffendingToken().getLine(),
+                re.getOffendingToken().getCharPositionInLine(),
+                type
+        );
     }
 }

@@ -1054,9 +1054,6 @@ public class SystemEvaluator extends AbstractEvaluator {
             return;
         }
 
-        // newReduceOrExpand(polyad, state, doReduce, axis, (FunctionReferenceNode) arg0, stemVariable);
-        // oldReduceOrExpand(polyad, state, doReduce, (FunctionReferenceNode) arg0, stemVariable);
-        // oldReduceOrExpand2(polyad, state, doReduce, (FunctionReferenceNode) arg0, stemVariable);
         StemUtility.StemAxisWalkerAction1 axisWalker;
         try {
             if (doReduce) {

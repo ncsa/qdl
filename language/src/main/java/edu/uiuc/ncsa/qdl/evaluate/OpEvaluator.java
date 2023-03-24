@@ -82,7 +82,12 @@ public class OpEvaluator extends AbstractEvaluator {
     public static final String IS_NOT_DEFINED = "∄";
     public static final String CONTAINS_KEY = "∋"; //2203
     public static final String NOT_CONTAINS_KEY = "∌"; //220c
-    public static final String FOR_ALL_KEY = "∀"; //220o
+    public static final String FOR_ALL_KEY = "∀"; //2200
+    public static final String MASK_OP_KEY = "⌆"; // 2306
+    public static final String TRANSPOSE_OP_KEY = "⦰"; //29b0
+    public static final String REDUCE_OP_KEY = "⊙"; //2299
+    public static final String EXPAND_OP_KEY = "⊕"; //2295
+
 
     public static final int ASSIGNMENT_VALUE = 10;
     public static final int PLUS_VALUE = 100;
@@ -120,11 +125,18 @@ public class OpEvaluator extends AbstractEvaluator {
     public static final int NOT_CONTAINS_KEY_VALUE = 228;
     public static final int FOR_ALL_KEY_VALUE = 229;
 
+    public static final int MASK_OP_VALUE = 230; // 2306
+    public static final int TRANSPOSE_OP_VALUE = 231; //29b0
+
+    public static final int REDUCE_OP_VALUE = 232; //2a00
+    public static final int EXPAND_OP_VALUE = 233; //2a01
+
     /**
      * All Math operators. These are used in function references.
      */
     public static String[] ALL_MATH_OPS = new String[]{
-            CONTAINS_KEY, NOT_CONTAINS_KEY, FOR_ALL_KEY,
+            CONTAINS_KEY, NOT_CONTAINS_KEY, FOR_ALL_KEY, MASK_OP_KEY, TRANSPOSE_OP_KEY,
+            REDUCE_OP_KEY, EXPAND_OP_KEY,
             IS_DEFINED, IS_NOT_DEFINED,
             EPSILON, EPSILON_NOT, IS_A,
             TO_SET, TO_SET2,
@@ -149,6 +161,7 @@ public class OpEvaluator extends AbstractEvaluator {
             LESS_THAN,
             LESS_THAN_EQUAL,
             LESS_THAN_EQUAL2,
+            LESS_THAN_EQUAL3,
             MORE_THAN,
             MORE_THAN_EQUAL,
             MORE_THAN_EQUAL2,
@@ -244,6 +257,14 @@ public class OpEvaluator extends AbstractEvaluator {
      */
     public int getType(String oo) {
         switch (oo) {
+            case EXPAND_OP_KEY:
+                return EXPAND_OP_VALUE;
+            case REDUCE_OP_KEY:
+                return REDUCE_OP_VALUE;
+            case MASK_OP_KEY:
+                return MASK_OP_VALUE;
+            case TRANSPOSE_OP_KEY:
+                return TRANSPOSE_OP_VALUE;
             case FOR_ALL_KEY:
                 return FOR_ALL_KEY_VALUE;
             case CONTAINS_KEY:
@@ -349,6 +370,18 @@ public class OpEvaluator extends AbstractEvaluator {
 
     public void evaluate2(Dyad dyad, State state) {
         switch (dyad.getOperatorType()) {
+            case REDUCE_OP_VALUE:
+                doFRefDyadicOperator(dyad, SystemEvaluator.REDUCE, state);
+                return;
+            case EXPAND_OP_VALUE:
+                doFRefDyadicOperator(dyad, SystemEvaluator.EXPAND, state);
+                return;
+            case MASK_OP_VALUE:
+                doExpressionDyadOperator(dyad, StemEvaluator.MASK, state, true);
+                return;
+            case TRANSPOSE_OP_VALUE:
+                doExpressionDyadOperator(dyad, StemEvaluator.TRANSPOSE, state, true);
+                return;
             case FOR_ALL_KEY_VALUE:
                 doForAll(dyad, state);
                 return;
@@ -423,6 +456,40 @@ public class OpEvaluator extends AbstractEvaluator {
         }
     }
 
+    private void doFRefDyadicOperator(Dyad dyad, String expand, State state) {
+        Polyad polyad = new Polyad(expand);
+        polyad.setTokenPosition(dyad.getTokenPosition());
+        polyad.setSourceCode(dyad.getSourceCode());
+        polyad.addArgument(dyad.getLeftArgument()); // should be a function reference
+        Object obj = dyad.getRightArgument().evaluate(state);
+        polyad.addArgument(new ConstantNode(obj));
+        state.getMetaEvaluator().evaluate(polyad, state);
+        dyad.setResult(polyad.getResult());
+        dyad.setResultType(polyad.getResultType());
+        dyad.setEvaluated(polyad.isEvaluated());
+    }
+
+    private void doExpressionDyadOperator(Dyad dyad, String operatorKey, State state, boolean swapArgs) {
+        Polyad polyad = new Polyad(operatorKey);
+        polyad.setTokenPosition(dyad.getTokenPosition());
+        polyad.setSourceCode(dyad.getSourceCode());
+        if(swapArgs){ // a op B --> op(B,A)
+            polyad.addArgument(dyad.getRightArgument());
+            polyad.addArgument(dyad.getLeftArgument());
+        }else{ // a op B --> op(A,B)
+            polyad.addArgument(dyad.getLeftArgument());
+            polyad.addArgument(dyad.getRightArgument());
+        }
+        state.getMetaEvaluator().evaluate(polyad, state);
+        dyad.setResult(polyad.getResult());
+        dyad.setResultType(polyad.getResultType());
+        dyad.setEvaluated(polyad.isEvaluated());
+    }
+      /*
+        a. := [true, false, false, true]
+  b. := [;4]
+  a.⌆b.
+       */
     private void doForAll(Dyad dyad, State state) {
         Polyad polyad = new Polyad(StemEvaluator.FOR_EACH);
         polyad.setTokenPosition(dyad.getTokenPosition());

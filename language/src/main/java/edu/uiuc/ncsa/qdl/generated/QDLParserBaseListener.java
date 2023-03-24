@@ -400,18 +400,6 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterIsDefinedDyadicExpression(QDLParserParser.IsDefinedDyadicExpressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitIsDefinedDyadicExpression(QDLParserParser.IsDefinedDyadicExpressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterFunctions(QDLParserParser.FunctionsContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -448,18 +436,6 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterForAll(QDLParserParser.ForAllContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitForAll(QDLParserParser.ForAllContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterTildeExpression(QDLParserParser.TildeExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -479,18 +455,6 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitNumbers(QDLParserParser.NumbersContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterAssociation(QDLParserParser.AssociationContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitAssociation(QDLParserParser.AssociationContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -556,18 +520,6 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAndExpression(QDLParserParser.AndExpressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitAndExpression(QDLParserParser.AndExpressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterSetThing(QDLParserParser.SetThingContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -580,13 +532,13 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterStrings(QDLParserParser.StringsContext ctx) { }
+	@Override public void enterFrefDyadicOps(QDLParserParser.FrefDyadicOpsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitStrings(QDLParserParser.StringsContext ctx) { }
+	@Override public void exitFrefDyadicOps(QDLParserParser.FrefDyadicOpsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -599,18 +551,6 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitCompExpression(QDLParserParser.CompExpressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterUnaryTildeExpression(QDLParserParser.UnaryTildeExpressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitUnaryTildeExpression(QDLParserParser.UnaryTildeExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -640,18 +580,6 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPostfix(QDLParserParser.PostfixContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitPostfix(QDLParserParser.PostfixContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterDotOp2(QDLParserParser.DotOp2Context ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -676,30 +604,6 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterRealInterval(QDLParserParser.RealIntervalContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitRealInterval(QDLParserParser.RealIntervalContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterVariables(QDLParserParser.VariablesContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitVariables(QDLParserParser.VariablesContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterContainsKey(QDLParserParser.ContainsKeyContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -707,30 +611,6 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitContainsKey(QDLParserParser.ContainsKeyContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterAssignment(QDLParserParser.AssignmentContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitAssignment(QDLParserParser.AssignmentContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterStemLi(QDLParserParser.StemLiContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitStemLi(QDLParserParser.StemLiContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -748,30 +628,6 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterIntInterval(QDLParserParser.IntIntervalContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitIntInterval(QDLParserParser.IntIntervalContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterLogical(QDLParserParser.LogicalContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitLogical(QDLParserParser.LogicalContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterAltIFExpression(QDLParserParser.AltIFExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -779,42 +635,6 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitAltIFExpression(QDLParserParser.AltIFExpressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterOrExpression(QDLParserParser.OrExpressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitOrExpression(QDLParserParser.OrExpressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterToSet(QDLParserParser.ToSetContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitToSet(QDLParserParser.ToSetContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterUnaryMinusExpression(QDLParserParser.UnaryMinusExpressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitUnaryMinusExpression(QDLParserParser.UnaryMinusExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -880,6 +700,234 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterIs_a(QDLParserParser.Is_aContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIs_a(QDLParserParser.Is_aContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterStemVar(QDLParserParser.StemVarContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitStemVar(QDLParserParser.StemVarContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterDotOp(QDLParserParser.DotOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDotOp(QDLParserParser.DotOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterIsDefinedDyadicExpression(QDLParserParser.IsDefinedDyadicExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIsDefinedDyadicExpression(QDLParserParser.IsDefinedDyadicExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterForAll(QDLParserParser.ForAllContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitForAll(QDLParserParser.ForAllContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAssociation(QDLParserParser.AssociationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAssociation(QDLParserParser.AssociationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAndExpression(QDLParserParser.AndExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAndExpression(QDLParserParser.AndExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterStrings(QDLParserParser.StringsContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitStrings(QDLParserParser.StringsContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterUnaryTildeExpression(QDLParserParser.UnaryTildeExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitUnaryTildeExpression(QDLParserParser.UnaryTildeExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterPostfix(QDLParserParser.PostfixContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPostfix(QDLParserParser.PostfixContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterRealInterval(QDLParserParser.RealIntervalContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitRealInterval(QDLParserParser.RealIntervalContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterVariables(QDLParserParser.VariablesContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitVariables(QDLParserParser.VariablesContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAssignment(QDLParserParser.AssignmentContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAssignment(QDLParserParser.AssignmentContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterStemLi(QDLParserParser.StemLiContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitStemLi(QDLParserParser.StemLiContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterIntInterval(QDLParserParser.IntIntervalContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIntInterval(QDLParserParser.IntIntervalContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterLogical(QDLParserParser.LogicalContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitLogical(QDLParserParser.LogicalContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterOrExpression(QDLParserParser.OrExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitOrExpression(QDLParserParser.OrExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterToSet(QDLParserParser.ToSetContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitToSet(QDLParserParser.ToSetContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterUnaryMinusExpression(QDLParserParser.UnaryMinusExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitUnaryMinusExpression(QDLParserParser.UnaryMinusExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterIsDefinedExpression(QDLParserParser.IsDefinedExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -928,37 +976,13 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterIs_a(QDLParserParser.Is_aContext ctx) { }
+	@Override public void enterExpressionDyadicOps(QDLParserParser.ExpressionDyadicOpsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitIs_a(QDLParserParser.Is_aContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterStemVar(QDLParserParser.StemVarContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitStemVar(QDLParserParser.StemVarContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterDotOp(QDLParserParser.DotOpContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitDotOp(QDLParserParser.DotOpContext ctx) { }
+	@Override public void exitExpressionDyadicOps(QDLParserParser.ExpressionDyadicOpsContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

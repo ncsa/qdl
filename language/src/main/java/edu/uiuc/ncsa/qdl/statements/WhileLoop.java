@@ -75,6 +75,9 @@ public class WhileLoop implements Statement {
             if (d.getOperatorType() == OpEvaluator.EPSILON_VALUE) {
                 return forKeysOrValuesLoop(localState, false);
             }
+            if (d.getOperatorType() == OpEvaluator.CONTAINS_KEY_VALUE) {
+                return forKeysOrValuesLoop(localState, true);
+            }
         }
         if (conditional instanceof Polyad) {
             Polyad p = (Polyad) conditional;
@@ -378,9 +381,9 @@ public class WhileLoop implements Statement {
 
         } else {
             Iterator iterator;
-            if(doKeys){
+            if (doKeys) {
                 iterator = stemVariable.keySet().iterator();
-            }else{
+            } else {
                 iterator = stemVariable.valuesIterator();
             }
 
