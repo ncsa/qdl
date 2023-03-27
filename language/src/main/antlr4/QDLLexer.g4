@@ -123,8 +123,9 @@ SCIENTIFIC_NUMBER : Decimal (E SIGN? Integer)?;
             ForAll : '∀' ;       // unicode 2200
        ContainsKey : '∋' | '∌';  // unicode 220B, 220C
     Exponentiation : '^';
+         Transpose : '⦰';  // 29b0
  //    ExprDyadicOps : '∈' | '∉' | '∋' | '∌' | '⌆' | '⦰'; // 2306 29b0 operations that require expressions left and right
-     ExprDyadicOps :  '⌆' | '⦰'; // 2306 29b0 operations that require expressions left and right
+     ExprDyadicOps :  '⌆' | Transpose; // 2306 29b0 operations that require expressions left and right
  //    FRefDyadicOps :  '∀' | '⨀' | '⨁' ; //  2a00 2a01 29b0 ops that have a function ref for LHS
      FRefDyadicOps :   '⊙' | '⊕' ; //  2297 2295  ops that have a function ref for LHS
 
@@ -190,7 +191,7 @@ fragment FUNCTION_NAME :
 /*
    § 9 Comments and white space
 */          
-           FDOC :  '»' ~[\r\n]*;
+           FDOC :  ('»' | '===') ~[\r\n]*;
              WS : [ \t\r\n\u000C]+ -> skip;
         COMMENT : '/*' .*? '*/' -> skip;
    LINE_COMMENT : '//' ~[\r\n]* -> skip;

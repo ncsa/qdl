@@ -1026,7 +1026,7 @@ public class StemEvaluator extends AbstractEvaluator {
 
         if (returnAsPaths) {
             try {
-                output = JsonPath.using(conf).parse(stemVariable.toJSON(false).toString()).read(query).toString();
+                output = JsonPath.using(conf).parse(stemVariable.toJSON().toString()).read(query).toString();
                 outStem = stemPathConverter(output);
             } catch (JsonPathException jpe) {
                 if (jpe.getMessage().contains("No results")) {
@@ -1046,7 +1046,7 @@ public class StemEvaluator extends AbstractEvaluator {
                 // we just have to convert it to a stem and return that. Handles the couple cases
                 // of a JSON array vs object. The JsonPath generally tends to return arrays so we
                 // test for that first.
-                output = JsonPath.using(conf).parse(stemVariable.toJSON(false).toString()).read(query).toString();
+                output = JsonPath.using(conf).parse(stemVariable.toJSON().toString()).read(query).toString();
                 outStem = new QDLStem();
                 try {
                     JSONArray array = JSONArray.fromObject(output);
@@ -1308,24 +1308,25 @@ public class StemEvaluator extends AbstractEvaluator {
         if (2 < polyad.getArgCount()) {
             throw new ExtraArgException(FROM_JSON + " takes at most two arguments", polyad.getArgAt(2));
         }
-        Object arg = polyad.evalArg(0, state);
-        checkNull(arg, polyad.getArgAt(0));
+        Object arg0 = polyad.evalArg(0, state);
+        checkNull(arg0, polyad.getArgAt(0));
         boolean convertKeys = false;
-
+         int converterType = -1;
         if (polyad.getArgCount() == 2) {
-            Object arg2 = polyad.evalArg(1, state);
-            checkNull(arg2, polyad.getArgAt(2));
-            if (!isBoolean(arg2)) {
-                throw new BadArgException(FROM_JSON + " requires a boolean as its second argument if present.", polyad.getArgAt(1));
+            Object arg1 = polyad.evalArg(1, state);
+            checkNull(arg1, polyad.getArgAt(2));
+            if (!isLong(arg1)) {
+                throw new BadArgException(FROM_JSON + " requires an integer boolean as its second argument, if present.", polyad.getArgAt(1));
             }
-            convertKeys = (Boolean) arg2;
+            convertKeys = true;
+            converterType = ((Long)arg1).intValue();
         }
         JSONObject jsonObject = null;
         QDLStem output = new QDLStem();
         boolean gotOne = false;
-        if (isStem(arg)) {
+        if (isStem(arg0)) {
             gotOne = true;
-            QDLStem stem = (QDLStem) arg;
+            QDLStem stem = (QDLStem) arg0;
             for (Object key : stem.keySet()) {
                 Object value = stem.get(key);
                 if (!isString(value)) {
@@ -1335,7 +1336,7 @@ public class StemEvaluator extends AbstractEvaluator {
                 try {
                     QDLStem nextStem = new QDLStem();
                     jsonObject = JSONObject.fromObject(value);
-                    nextStem.fromJSON(jsonObject, convertKeys);
+                    nextStem.fromJSON(jsonObject, convertKeys, converterType);
                     if (key instanceof Long) {
                         output.put((Long) key, nextStem);
                     } else {
@@ -1349,19 +1350,20 @@ public class StemEvaluator extends AbstractEvaluator {
             }
         }
 
-        if (isString(arg)) {
+        if (isString(arg0)) {
             gotOne = true;
             try {
-                jsonObject = JSONObject.fromObject((String) arg);
-                output.fromJSON(jsonObject, convertKeys);
+                jsonObject = JSONObject.fromObject((String) arg0);
+                output.fromJSON(jsonObject, convertKeys, converterType);
             } catch (Throwable t) {
                 try {
-                    JSONArray array = JSONArray.fromObject((String) arg);
-                    output.fromJSON(array);
+                    JSONArray array = JSONArray.fromObject((String) arg0);
+                    output.fromJSON(array, convertKeys,converterType);
                 } catch (Throwable tt) {
-                    // ok, so this is not valid JSON.
+                    // ok, so this is not valid JSON. Constrcut error message with first exception since that
+                    // is more apt to be correct.
                     throw new BadArgException(FROM_JSON + " could not parse the argument as valid JSON: " +
-                            tt.getMessage().substring(0,Math.min(100,tt.getMessage().length())), polyad.getArgAt(0));
+                            t.getMessage().substring(0,Math.min(100,t.getMessage().length())), polyad.getArgAt(0));
                 }
             }
         }
@@ -1369,7 +1371,9 @@ public class StemEvaluator extends AbstractEvaluator {
             throw new BadArgException(FROM_JSON + " requires a string or stem of strings as its first argument", polyad.getArgAt(0));
         }
 
-
+        /*
+        {'$2E':'a','$2E$2E':'b','$2E$2E$2Ec$2E$2E':'c'}
+         */
         polyad.setResult(output);
         polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
@@ -1388,58 +1392,58 @@ public class StemEvaluator extends AbstractEvaluator {
         if (3 < polyad.getArgCount()) {
             throw new ExtraArgException(TO_JSON + " takes at most 3 arguments", polyad.getArgAt(3));
         }
-        Object arg1 = polyad.evalArg(0, state);
-        checkNull(arg1, polyad.getArgAt(0));
+        Object arg0 = polyad.evalArg(0, state);
+        checkNull(arg0, polyad.getArgAt(0));
 
-        if (!isStem(arg1)) {
+        if (!isStem(arg0)) {
             throw new BadArgException(TO_JSON + " requires a stem as its first argument", polyad.getArgAt(0));
         }
         int indent = -1;
         boolean convertNames = false;
+        int conversionAlgorithm = 0; // default v-encode
         /*
         Two args means the second is either a boolean for conversion or it an  int as the indent factor.
          */
         if (polyad.getArgCount() == 2) {
-            Object arg2 = polyad.evalArg(1, state);
-            checkNull(arg2, polyad.getArgAt(1));
+            Object arg1 = polyad.evalArg(1, state);
+            checkNull(arg1, polyad.getArgAt(1));
 
-            boolean argOK = false; // got a valid input, boolean or long.
-            if (isBoolean(arg2)) {
+            /*boolean argOK = false; // got a valid input, boolean or long.
+            if (isBoolean(arg1)) {
                 argOK = true;
-                convertNames = (Boolean) arg2;
-            }
+                convertNames = (Boolean) arg1;
+            }*/
 
-            if (isLong(arg2)) {
-                Long argL = (Long) arg2;
+            if (isLong(arg1)) {
+                Long argL = (Long) arg1;
                 indent = argL.intValue(); // best we can do
-
-            }
-            if (!argOK) {
-                throw new BadArgException(TO_JSON + " requires an integer or boolean as its second argument", polyad.getArgAt(1));
+            }else{
+                throw new BadArgException(TO_JSON + " requires an integer  as its second argument", polyad.getArgAt(1));
             }
         }
         /*
-        3 arguments means second is the flag for conversion, 3rd is the indent factor
+        3 arguments:  2nd = indent, 3rd = type of conversion
          */
         if (polyad.getArgCount() == 3) {
-            Object arg2 = polyad.evalArg(1, state);
-            checkNull(arg2, polyad.getArgAt(1));
-            if (isBoolean(arg2)) {
-                convertNames = (Boolean) arg2;
+            convertNames = true;
+            Object arg1 = polyad.evalArg(1, state);
+            checkNull(arg1, polyad.getArgAt(1));
+            if (isLong(arg1)) { // contract true = v-encode, false means no encode
+                indent = ((Long)arg1).intValue(); // best we can do
             } else {
-                throw new BadArgException(TO_JSON + " with 3 arguments requires a boolean as its second argument", polyad.getArgAt(1));
+                throw new BadArgException(TO_JSON + " with 3 arguments requires an integer as its second argument", polyad.getArgAt(1));
             }
 
-            Object arg3 = polyad.evalArg(2, state);
-            checkNull(arg3, polyad.getArgAt(2));
-            if (!isLong(arg3)) {
+            Object arg2 = polyad.evalArg(2, state);
+            checkNull(arg2, polyad.getArgAt(2));
+            if (!isLong(arg2)) {
                 throw new BadArgException(TO_JSON + " requires an integer as its third argument", polyad.getArgAt(2));
             }
-            Long argL = (Long) arg3;
-            indent = argL.intValue(); // best we can do
+            Long argL = (Long) arg2;
+            conversionAlgorithm = argL.intValue(); // best we can do
         }
 
-        JSON j = ((QDLStem) arg1).toJSON(convertNames);
+        JSON j = ((QDLStem) arg0).toJSON(convertNames, conversionAlgorithm);
         if (0 < indent) {
             polyad.setResult(j.toString(indent));
         } else {

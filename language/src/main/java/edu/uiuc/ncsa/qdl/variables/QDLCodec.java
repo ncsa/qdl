@@ -1,9 +1,6 @@
 package edu.uiuc.ncsa.qdl.variables;
 
-import edu.uiuc.ncsa.qdl.exceptions.QDLException;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.EncoderException;
-import org.apache.commons.codec.net.URLCodec;
+import edu.uiuc.ncsa.qdl.variables.codecs.*;
 
 /**
  * This will convert a string and encode or decode all characters that are not [a-z][A-Z]_. The encoding
@@ -19,37 +16,49 @@ import org.apache.commons.codec.net.URLCodec;
  * on 3/9/20 at  6:13 AM
  */
 public class QDLCodec {
-    public String encode(String token) {
-        if (token == null || token.isEmpty()) return token;
-        String encoded = null;
-        URLCodec codec = new URLCodec();
-        try {
-            //replace + to %20
-            encoded = codec.encode(token).replace("+", "%20");
-            encoded = encoded.replace("$", "%24");
-            encoded = encoded.replace("*", "%2A");
-            encoded = encoded.replace("-", "%2D");
-            encoded = encoded.replace(".", "%2E");
-            encoded = encoded.replace("%", "$");
-
-        } catch (EncoderException e) {
-            throw new QDLException("Error: Could not encode string:" + e.getMessage(), e);
-        }
-        return encoded;
+    public QDLCodec() {
+        realCodec = new VariableCodec();
     }
 
-    public String decode(String encoded) {
-        if (encoded == null || encoded.isEmpty()) return encoded;
-        URLCodec codec = new URLCodec();
-        String token = null;
-        try {
-            token = encoded.replace("$", "%");
-
-            token = codec.decode(token);
-        } catch (DecoderException e) {
-            throw new QDLException("invalid escape sequence for'" + encoded + "'" , e);
+    public QDLCodec(int currentType) {
+        this.currentType = currentType;
+        switch (currentType) {
+            case QDLCodec.ALGORITHM_VENCODE:
+                realCodec = new VariableCodec();
+                break;
+            case QDLCodec.ALGORITHM_URLCODE:
+                realCodec = new edu.uiuc.ncsa.qdl.variables.codecs.URLCodec();
+                break;
+            case QDLCodec.ALGORITHM_BASE16:
+                realCodec = new Base16Codec();
+                break;
+            case QDLCodec.ALGORITHM_BASE32:
+                realCodec = new Base32Codec();
+                break;
+            case ALGORITHM_BASE64:
+                realCodec = new Base64Codec();
+                break;
+            default:
+                throw new IllegalArgumentException("unknown codec type '" + currentType + "'");
         }
-        return token;
+    }
+
+    public final static int ALGORITHM_VENCODE = 0;
+    public final static int ALGORITHM_URLCODE = 1;
+    public final static int ALGORITHM_BASE16 = 16;
+    public final static int ALGORITHM_BASE32 = 32;
+    public final static int ALGORITHM_BASE64 = 64;
+
+    public String encode(String token) {
+        return realCodec.encode(token);
+    }
+
+    long currentType = ALGORITHM_BASE64;
+
+    AbstractCodec realCodec;
+
+    public String decode(String encoded) {
+        return realCodec.decode(encoded);
     }
 
     public static void main(String[] args) {

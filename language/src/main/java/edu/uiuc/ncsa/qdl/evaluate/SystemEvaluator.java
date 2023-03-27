@@ -30,7 +30,6 @@ import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -1317,13 +1316,13 @@ public class SystemEvaluator extends AbstractEvaluator {
         String message = "";
         QDLParserDriver driver = new QDLParserDriver(new XProperties(), state.newCleanState());
         try {
-            QDLRunner runner = new QDLRunner(driver.parse(r));
-        } catch (ParseCancellationException pc) {
-            message = pc.getMessage();
+            new QDLRunner(driver.parse(r));
         } catch (Throwable t) {
-            message = "non-syntax error:" + t.getMessage();
+            if (t instanceof RuntimeException) {
+                throw (RuntimeException) t;
+            }
+            throw new QDLException("non-syntax error:" + t.getMessage());
         }
-
         polyad.setEvaluated(true);
         polyad.setResult(message);
         polyad.setResultType(Constant.STRING_TYPE);

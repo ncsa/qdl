@@ -459,14 +459,14 @@ subset(b., 3, 6)
      * @return
      */
     public JSONArray toJSON() {
-        return toJSON(false);
+        return toJSON(false,-1);
     }
 
-    public JSONArray toJSON(boolean escapeNames) {
+    public JSONArray toJSON(boolean escapeNames, int type) {
         JSONArray array = new JSONArray();
         for (Object element : getArrayList()) {
             if (element instanceof QDLStem) {
-                array.add(((QDLStem) element).toJSON(escapeNames));
+                array.add(((QDLStem) element).toJSON(escapeNames,type));
             } else {
                 if (element instanceof QDLNull) {
                     array.add(QDLConstants.JSON_QDL_NULL);
@@ -478,7 +478,7 @@ subset(b., 3, 6)
         for (SparseEntry s : getSparseEntries()) {
             Object v = s.entry;
             if (v instanceof QDLStem) {
-                array.add(((QDLStem) v).toJSON(escapeNames));
+                array.add(((QDLStem) v).toJSON(escapeNames,type));
             } else {
                 array.add(v);
             }
@@ -1041,6 +1041,9 @@ subset(b., 3, 6)
             SparseEntry newEntry = new SparseEntry(lastEntry.index + 1, o);
             getSparseEntries().add(newEntry);
             return true;
+        }
+        if(o instanceof SparseEntry){
+            return getArrayList().add(((SparseEntry)o).entry);
         }
         return getArrayList().add(o);
     }

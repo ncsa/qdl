@@ -20,6 +20,7 @@ import edu.uiuc.ncsa.qdl.statements.TryCatch;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.util.QDLVersion;
 import edu.uiuc.ncsa.qdl.variables.Constant;
+import edu.uiuc.ncsa.qdl.variables.QDLCodec;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.VStack;
 import edu.uiuc.ncsa.qdl.vfs.VFSEntry;
@@ -337,17 +338,37 @@ public class State extends FunctionState implements QDLConstants {
         detokenizeTypes.put(SYS_DETOKENIZE_OMIT_DANGLING_DELIMITER, StringEvaluator.DETOKENIZE_OMIT_DANGLING_DELIMITER_VALUE);
         systemConstants.put(SYS_DETOKENIZE_TYPE, detokenizeTypes);
 
+        QDLStem hashAlgorithms = new QDLStem();
+        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_MD2,MathEvaluator.HASH_ALGORITHM_MD2);
+        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_MD5,MathEvaluator.HASH_ALGORITHM_MD5);
+        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA1,MathEvaluator.HASH_ALGORITHM_SHA1);
+        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA2,MathEvaluator.HASH_ALGORITHM_SHA2);
+        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA_256,MathEvaluator.HASH_ALGORITHM_SHA_256);
+        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA_384,MathEvaluator.HASH_ALGORITHM_SHA_384);
+        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA_512,MathEvaluator.HASH_ALGORITHM_SHA_512);
+        systemConstants.put(SYS_HASH_ALGORITHMS, hashAlgorithms);
+
+        QDLStem codecs = new QDLStem();
+        codecs.put(SYS_CODEC_VENCODE, (long) QDLCodec.ALGORITHM_VENCODE);
+        codecs.put(SYS_CODEC_URLCODE, (long) QDLCodec.ALGORITHM_URLCODE);
+        codecs.put(SYS_CODEC_B16CODE, (long) QDLCodec.ALGORITHM_BASE16);
+        codecs.put(SYS_CODEC_B32CODE, (long) QDLCodec.ALGORITHM_BASE32);
+        codecs.put(SYS_CODEC_B64CODE, (long) QDLCodec.ALGORITHM_BASE64);
+        systemConstants.put(SYS_CODEC_ALGORITHMS, codecs);
+
         QDLStem errorCodes = new QDLStem();
         errorCodes.put(SYS_ERROR_CODE_SYSTEM_ERROR, TryCatch.RESERVED_SYSTEM_ERROR_CODE);
         errorCodes.put(SYS_ASSERT_CODE_SYSTEM_ERROR, TryCatch.RESERVED_ASSERTION_CODE);
         errorCodes.put(SYS_ERROR_CODE_DEFAULT_USER_ERROR, TryCatch.RESERVED_USER_ERROR_CODE);
         systemConstants.put(SYS_ERROR_CODES, errorCodes);
+
         QDLStem fileTypes = new QDLStem();
         fileTypes.put(SYS_FILE_TYPE_BINARY, (long) IOEvaluator.FILE_OP_BINARY);
         fileTypes.put(SYS_FILE_TYPE_STEM, (long) IOEvaluator.FILE_OP_TEXT_STEM);
         fileTypes.put(SYS_FILE_TYPE_STRING, (long) IOEvaluator.FILE_OP_TEXT_STRING);
         fileTypes.put(SYS_FILE_TYPE_INIT, (long) IOEvaluator.FILE_OP_TEXT_INI);
         systemConstants.put(SYS_FILE_TYPES, fileTypes);
+
 
         QDLStem uriFields = new QDLStem();
         uriFields.put(URI_AUTHORITY, URI_AUTHORITY);

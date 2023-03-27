@@ -810,17 +810,30 @@ public class StringFunctionTests extends AbstractQDLTester {
         // π
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "ok1 ≔ encode('foo &&*bar baz',0) == 'foo$20$26$26$2Abar$20baz';");
-        addLine(script, "ok4 ≔ decode('foo$20$26$26$2Abar$20baz', 0) == 'foo &&*bar baz';");
-        addLine(script, "ok2 ≔ encode('foo &&*bar baz', 1) == 'foo+%26%26*bar+baz';"); // URL encode
-        addLine(script, "ok3 ≔ decode('foo+%26%26*bar+baz', 1) == 'foo &&*bar baz';");
+        addLine(script, "a := 'foo &&*bar baz.';");
+        //input_form(@encode∀[a,[0,1,16,32,64]])
+        addLine(script, "v. := ['foo$20$26$26$2Abar$20baz$2E','foo%20%26%26*bar%20baz.','666f6f2026262a6261722062617a2e','MZXW6IBGEYVGEYLSEBRGC6RO','Zm9vICYmKmJhciBiYXou'];");
+        addLine(script, "f(x,k)->encode(a,k)==x && decode(encode(a,k),k) == a;");
+        addLine(script,"ok0 := f(v.0, 0);");
+        addLine(script,"ok1 := f(v.1, 1);");
+        addLine(script,"ok16 := f(v.2, 16);");
+        addLine(script,"ok32 := f(v.3, 32);");
+        addLine(script,"ok64 := f(v.4, 64);");
+/*        addLine(script, "ok1 ≔ encode(a,0) == v.0;");
+        addLine(script, "ok4 ≔ decode(v.0, 0) == a;");
+        addLine(script, "ok2 ≔ encode(a, 1) == v.1;"); // URL encode
+        addLine(script, "ok3 ≔ decode(v.1, 1) == a;");
+        addLine(script, "ok16 ≔ decode(encode(a, 16), 16) ;");
+        addLine(script, "ok32 ≔ decode(encode(a, 32), 32) ;");
+        addLine(script, "ok64 ≔ decode(encode(a, 64), 64) ;");*/
 
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state);
         assert getBooleanValue("ok1", state);
-        assert getBooleanValue("ok2", state);
-        assert getBooleanValue("ok3", state);
-        assert getBooleanValue("ok4", state);
+        assert getBooleanValue("ok16", state);
+        assert getBooleanValue("ok32", state);
+        assert getBooleanValue("ok64", state);
 
     }
 }

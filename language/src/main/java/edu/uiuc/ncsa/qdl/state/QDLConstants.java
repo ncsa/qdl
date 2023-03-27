@@ -50,6 +50,13 @@ public interface QDLConstants {
     String SYS_DETOKENIZE_OMIT_DANGLING_DELIMITER = "omit_dangling_delimiter";
 
 
+    String SYS_HASH_ALGORITHMS = "hashes.";
+    String SYS_CODEC_ALGORITHMS = "codecs.";
+    String SYS_CODEC_VENCODE = "var_encode";
+    String SYS_CODEC_URLCODE = "url_encode";
+    String SYS_CODEC_B16CODE = "base_16";
+    String SYS_CODEC_B32CODE = "base_32";
+    String SYS_CODEC_B64CODE = "base_64";
     String SYS_VAR_TYPES = "var_type.";
     String SYS_VAR_TYPE_DECIMAL = "decimal";
     String SYS_VAR_TYPE_INTEGER = "integer";

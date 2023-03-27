@@ -747,18 +747,7 @@ public class QDLListener implements QDLParserListener {
         }
         //docStatementBlockContext = defineContext.docStatementBlock();
         for (QDLParserParser.FdocContext fd : docStatementBlockContext.fdoc()) {
-            String doc = fd.getText();
-            // strip off function comment marker
-            //if (doc.startsWith(">>")) {
-            int pos = doc.indexOf(FDOC_MARKER);
-            if (pos != -1) {
-                if (pos + 1 < doc.length()) {
-                    doc = doc.substring(pos + 1);
-                } else {
-                    doc = "";// blank line
-                }
-            }
-            functionRecord.documentation.add(doc);
+            functionRecord.documentation.add(getFdocLine(fd.getText()));
         }
         for (QDLParserParser.StatementContext sc : docStatementBlockContext.statement()) {
             functionRecord.statements.add(resolveChild(sc));
@@ -828,19 +817,7 @@ public class QDLListener implements QDLParserListener {
         functionRecord.name = name;
 
         for (QDLParserParser.FdocContext fd : lambdaContext.fdoc()) {
-            String doc = fd.getText();
-            // strip off function comment marker
-            //if (doc.startsWith(">>")) {
-            int pos = doc.indexOf(FDOC_MARKER);
-
-            if (pos != -1) {
-                if (pos + 1 < doc.length()) {
-                    doc = doc.substring(pos + 1);
-                } else {
-                    doc = "";// blank line
-                }
-            }
-            functionRecord.documentation.add(doc);
+            functionRecord.documentation.add(getFdocLine(fd.getText()));
         }
         //for (QDLParserParser.ArgListContext argListContext : nameAndArgsNode.argList()) {
         for (QDLParserParser.F_argsContext argListContext : nameAndArgsNode.f_args()) {
@@ -905,6 +882,30 @@ public class QDLListener implements QDLParserListener {
         }
     }
 
+    protected String getFdocLine(String doc) {
+
+        int pos = doc.indexOf(FDOC_MARKER);
+        if (pos != -1) {
+            if (pos + 1 < doc.length()) {
+                doc = doc.substring(pos + FDOC_MARKER.length());
+            } else {
+                doc = "";// blank line
+            }
+            return doc;
+        }
+        if (pos == -1) {
+            pos = doc.indexOf(FDOC_MARKER2);
+        }
+        if (pos != -1) {
+            if (pos + 1 < doc.length()) {
+                doc = doc.substring(pos + FDOC_MARKER2.length());
+            } else {
+                doc = "";// blank line
+            }
+            return doc;
+        }
+        return doc;
+    }
 
     @Override
     public void visitTerminal(TerminalNode terminalNode) {
@@ -1049,26 +1050,14 @@ illegal argument:no module named "b" was  imported at (1, 67)
         }
         //       For fdoc support.  Probably not, but maybe
         for (QDLParserParser.FdocContext fd : docStatementBlockContext.fdoc()) {
-            String doc = fd.getText();
-            // strip off function comment marker
-
-            //if (doc.startsWith(">>")) {
-            int pos = doc.indexOf(FDOC_MARKER);
-
-            if (pos != -1) {
-                if (pos + 1 < doc.length()) {
-                    doc = doc.substring(pos + 1);
-                } else {
-                    doc = "";// blank line
-                }
-            }
-            moduleStatement.getDocumentation().add(doc);
+            moduleStatement.getDocumentation().add(getFdocLine(fd.getText()));
         }
         // Parser strips off trailing ; which in turn causes a parser error later when we are runnign the import command.
         moduleStatement.setSourceCode(getSource(moduleContext));
     }
 
     static String FDOC_MARKER = "»";
+    static String FDOC_MARKER2 = "===";
 
     /*
     module['a:a','A'][module['b:b','B'][u:=2;f(x)->x+1;];];module_import('b:b');say(B#u);];
@@ -2347,6 +2336,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
     /**
      * First cut of catching lexer exceptions and handling them
+     *
      * @param pre
      */
     protected void checkLexer(ParserRuleContext pre) {
@@ -2410,8 +2400,23 @@ illegal argument:no module named "b" was  imported at (1, 67)
         finish(dyad, ctx);
     }
 
+    @Override
+    public void enterUnaryTransposeExpression(QDLParserParser.UnaryTransposeExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void exitUnaryTransposeExpression(QDLParserParser.UnaryTransposeExpressionContext ctx) {
+        Monad monad = new Monad(getOpEvaluator().getType(ctx.Transpose().getText()), false);
+        monad.setSourceCode(getSource(ctx));
+        monad.setTokenPosition(tp(ctx));
+        stash(ctx, monad);
+        finish(monad, ctx);
+    }
+
     /**
      * Only need this for type lookup. Don't use for anything else
+     *
      * @return
      */
     public OpEvaluator getOpEvaluator() {

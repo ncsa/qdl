@@ -170,7 +170,7 @@ public class OpEvaluator extends AbstractEvaluator {
             REGEX_MATCH, REGEX_MATCH2};
 
     public static ArrayList<String> ALL_MONADS = new ArrayList<>(Arrays.asList(new String[]{
-            NOT, NOT2, MINUS, MINUS2, PLUS, PLUS2, TILDE, PLUS_PLUS, MINUS_MINUS, IS_DEFINED, IS_NOT_DEFINED
+            NOT, NOT2, MINUS, MINUS2, PLUS, PLUS2, TILDE, PLUS_PLUS, MINUS_MINUS, IS_DEFINED, IS_NOT_DEFINED , TRANSPOSE_OP_KEY
     }));
     public static ArrayList<String> ONLY_MONADS = new ArrayList<>(Arrays.asList(new String[]{
             NOT, NOT2, PLUS_PLUS, MINUS_MINUS, FLOOR, CEILING, TO_SET, TO_SET2, IS_DEFINED, IS_NOT_DEFINED
@@ -1366,6 +1366,9 @@ public class OpEvaluator extends AbstractEvaluator {
     public void evaluate2(Monad monad, State state) {
 
         switch (monad.getOperatorType()) {
+            case TRANSPOSE_OP_VALUE:
+                doMonadicTranspose(monad, state);
+                return;
             case IS_DEFINED_VALUE:
                 doIsDefined(monad, state, true);
                 return;
@@ -1409,6 +1412,17 @@ public class OpEvaluator extends AbstractEvaluator {
                 throw new NotImplementedException("Unknown monadic operator");
         }
 
+    }
+
+    private void doMonadicTranspose(Monad monad, State state) {
+        Polyad polyad = new Polyad(StemEvaluator.TRANSPOSE);
+        polyad.setTokenPosition(monad.getTokenPosition());
+        polyad.setSourceCode(monad.getSourceCode());
+        polyad.addArgument(monad.getArgument());
+        polyad.evaluate(state);
+        monad.setResult(polyad.getResult());
+        monad.setResultType(polyad.getResultType());
+        monad.setEvaluated(true);
     }
 
     protected void doMonadicTilde(Monad monad, State state, boolean isStile) {

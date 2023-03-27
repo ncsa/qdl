@@ -1,7 +1,7 @@
 module[
    'qdl:/extensions','ext'
 ]body[
-   » This module defines several additional functions for mathematics
+   === This module defines several additional functions for mathematics
    » These include sec(), sech() etc.
    »    clone(arg.) - make a complete copy of a stem
    »    for_each(@monad, arg.) -- apply the monad to each individual element of arg.

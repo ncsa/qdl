@@ -1196,7 +1196,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
      *     {"#foo":...}
      * </pre> I.e. the $23 is treated as an escaped name
      * and converted back. If you do not want stem names escaped when converting to JSON, then use
-     * {@link #toJSON(boolean)} with the argument being <b>false</b>. In that case the outputted JSON would be
+     * {@link #toJSON(boolean, int)} with the argument being <b>false</b>. In that case the outputted JSON would be
      * <pre>
      *     {"$23foo":...}
      * </pre>
@@ -1204,27 +1204,20 @@ public class QDLStem implements Map<String, Object>, Serializable {
      * @return
      */
     public JSON toJSON() {
-        return toJSON(false); //
+        return toJSON(false, -1); //
     }
 
-    /**
-     * Convert this to JSON.
-     *
-     * @param escapeNames -- whether or not to escape stem names when creating the JSON object.
-     * @return
-     */
-    public JSON toJSON(boolean escapeNames) {
-        return newToJSON(escapeNames);
-    }
 
-    protected JSON newToJSON(boolean escapeNames) {
+
+    public JSON toJSON(boolean escapeNames, int type) {
+        QDLCodec codec = escapeNames?(new QDLCodec(type)):null;
 
         if (getQDLMap().size() == 0 && getQDLList().size() == 0) {
             // Empty stem corresponds to an empty JSON Object
             return new JSONObject();
         }
         if (getQDLList().size() == size()) {
-            return getQDLList().toJSON(escapeNames); // handles case of simple list of simple elements
+            return getQDLList().toJSON(escapeNames, type); // handles case of simple list of simple elements
         }
         JSONObject json = new JSONObject();
         //edge case. empty stem list should return a JSON object
@@ -1235,11 +1228,10 @@ public class QDLStem implements Map<String, Object>, Serializable {
             // super.size counts the number of non-stem entries. This means there are
             // list elements and nothing else.
             // if it is just a list, return it asap.
-            return getQDLList().toJSON(escapeNames);
+            return getQDLList().toJSON(escapeNames, type);
         }
         QDLList localSL = new QDLList();
         localSL.addAll(getQDLList());
-        QDLCodec codec = new QDLCodec();
 
         // Special case of a JSON array of objects that has been turned in to a stem list.
         // We want to recover this since it is a very common construct.
@@ -1265,7 +1257,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
                                 "and a stem entry '" + key + "'. This is not convertible to a JSON Object", null);
                     }
                 } else {
-                    json.put(escapeNames ? codec.decode(newKey) : newKey, x.toJSON(escapeNames));
+                    json.put(escapeNames ? codec.decode(newKey) : newKey, x.toJSON(escapeNames, type));
                 }
 
             } else {
@@ -1297,15 +1289,15 @@ public class QDLStem implements Map<String, Object>, Serializable {
 
     public QDLStem fromJSON(JSON json) {
       if(json instanceof JSONObject)  {
-          return fromJSON((JSONObject) json);
+          return fromJSON((JSONObject) json, false, -1);
       }
       if(json instanceof JSONArray){
-          return fromJSON((JSONArray)json);
+          return fromJSON((JSONArray)json, false, -1);
       }
       throw new IllegalArgumentException("argument is neither a JSON object nor JSON array");
     }
     public QDLStem fromJSON(JSONObject jsonObject) {
-        return fromJSON(jsonObject, false);
+        return fromJSON(jsonObject, false, -1);
     }
 
     /**
@@ -1313,8 +1305,8 @@ public class QDLStem implements Map<String, Object>, Serializable {
      *
      * @param jsonObject return this object, populated
      */
-    public QDLStem fromJSON(JSONObject jsonObject, boolean convertVars) {
-        QDLCodec codec = new QDLCodec();
+    public QDLStem fromJSON(JSONObject jsonObject, boolean convertVars, int type) {
+        QDLCodec codec = convertVars?(new QDLCodec(type)):null;
         for (Object k : jsonObject.keySet()) {
             String key = k.toString();
 
@@ -1322,17 +1314,17 @@ public class QDLStem implements Map<String, Object>, Serializable {
             if (v instanceof JSONObject) {
                 QDLStem x = newInstance();
                 if (convertVars) {
-                    put(codec.encode(key) + STEM_INDEX_MARKER, x.fromJSON((JSONObject) v));
+                    put(codec.encode(key) + STEM_INDEX_MARKER, x.fromJSON((JSONObject) v,convertVars,type));
                 } else {
-                    put(key + STEM_INDEX_MARKER, x.fromJSON((JSONObject) v));
+                    put(key + STEM_INDEX_MARKER, x.fromJSON((JSONObject) v,convertVars,type));
                 }
             } else {
                 if (v instanceof JSONArray) {
                     QDLStem x = newInstance();
                     if (convertVars) {
-                        put(codec.encode(key) + STEM_INDEX_MARKER, x.fromJSON((JSONArray) v));
+                        put(codec.encode(key) + STEM_INDEX_MARKER, x.fromJSON((JSONArray) v,convertVars,type));
                     } else {
-                        put(key + STEM_INDEX_MARKER, x.fromJSON((JSONArray) v));
+                        put(key + STEM_INDEX_MARKER, x.fromJSON((JSONArray) v,convertVars,type));
                     }
                 } else {
                     if (convertVars) {
@@ -1359,16 +1351,16 @@ public class QDLStem implements Map<String, Object>, Serializable {
         return this;
     }
 
-    public QDLStem fromJSON(JSONArray array) {
+    public QDLStem fromJSON(JSONArray array, boolean convert, int type) {
         for (int i = 0; i < array.size(); i++) {
             Object v = array.get(i);
             if (v instanceof JSONObject) {
                 QDLStem x = newInstance();
-                put((long) i, x.fromJSON((JSONObject) v));
+                put((long) i, x.fromJSON((JSONObject) v, convert, type));
             } else {
                 if (v instanceof JSONArray) {
                     QDLStem x = newInstance();
-                    put((long) i, x.fromJSON((JSONArray) v));
+                    put((long) i, x.fromJSON((JSONArray) v,convert, type));
                 } else {
                     //   sl.add(new StemEntry(i, v));
                     if (v instanceof Integer) {
@@ -1396,6 +1388,9 @@ public class QDLStem implements Map<String, Object>, Serializable {
 
     public String toString(int indentFactor, String currentIndent) {
         if (isEmpty()) {
+            if(hasDefaultValue()){
+                return "[]~{*:"+getDefaultValue() + "}";
+            }
             return "[]";
         }
         String list = null;

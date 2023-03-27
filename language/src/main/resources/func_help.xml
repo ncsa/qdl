@@ -49,6 +49,7 @@ type  name   notes
  32    b32   RFC 4648, character set is A-Z2-7
  64    b64   RFC 4648, character set is  A-Za-z0-9-_
 
+these reside in constants().codecs.
 RFC 4648:
    https://datatracker.ietf.org/doc/html/rfc4648
 
@@ -162,6 +163,8 @@ sha-256
 sha-384
 sha-512
 
+and reside in constants().hashes.
+
 The argument is case insensitive.
 
 The default if no argument is given is sha-1]]>
@@ -253,13 +256,14 @@ Note: The result will be a subset of target. that contains none of the keys
         <body>
  <![CDATA[from_json(arg | arg.) - takes the argument which is a string  or stem of string
                           representation(s) of JSON and turns it into a stem or stem of stems.
-from_json(arg | arg., convert) - as per single argument case, but allows a flag (true
-                          or false) if vencode is to be applied to each key.
-                          The default is false.
+from_json(arg | arg., convert_type) - as per single argument case, but allows a conversion type to be
+                  applied per key.
 
-Note that i the case of stems,  this will only convert strings, so non-strings will be skipped
+convert_type are the same as doe the encode function and reside in constants().codecs.
+
+Note that in the case of stems,  this will only convert strings, so non-strings will be skipped
 and not returned.
-See also: vencode, to_json]]>
+See also: encode, to_json]]>
         </body>
 <example>
     <![CDATA[Here is an example to read an encoded JWT (JSON Web Token)
@@ -830,12 +834,23 @@ args is a scalar - zero, since scalars (such as integers) have no size.]]>
     <entry id="to_json">
         <body>
  <![CDATA[                 to_json(stem.) - convert the stem to a JSON string.
-        to_json(stem., convert) - if convert is true, vencode all keys in the
+        to_json(stem., indent) - if convert is true, vencode all keys in the
                                   JSON for the stem
-to_json(stem., convert, indent) - (requires convert), indent is an integer
+to_json(stem., indent, convert_type) - (requires convert), indent is an integer
                                   giving the number ofspaces to indent the
-                                  JSON string
-The default for convert is false.
+                                  JSON string, the type is one of
+type
+0     variable encode
+1     url encode
+16    hex encode
+32    base 32 encode
+64    base 64 encode
+
+If you specify a conversion is to be done, that means you know for a fact that all of the
+keys in stem. have been converted to that type and you are merely converting them
+back.
+
+The default for convert is no conversion of keys.
 
 See also: from_json]]>
         </body>
@@ -1960,7 +1975,7 @@ E.g. On a higher dimension list
 </example>
 
     </entry>
-    <entry id="expand" alt="⊙">
+    <entry id="expand" alt="⊕">
         <body>
  <![CDATA[expand(@f, list.) - apply the dyadic function f() pairwise and return the
               intermediate results.
@@ -3294,6 +3309,11 @@ transpose(x., permutation.) - transforms x. as per the permutation.
                     permutation. is a list stem of axes indices.
 This does not alter x.  This has no effect on a rank 1 stem (i.e. a simple list).
 
+Operator forms are resp.
+⦰x.
+a⦰x.
+permutaton.⦰x.
+
 See also: shuffle
 ]]>
             <example>
@@ -3325,11 +3345,14 @@ i.e. add this structure vertically:
 [6,8,10]
 What if we want to add the elements in each row together,
 i.e. add horizontally? This is summation on the last axis:
-    reduce(@+, transpose([[1,2,3],[5,6,7]],-1));
+    reduce(@+, transpose([[1,2,3],[5,6,7]]));
 [
  6,
  18
 ]
+or in wholly operator form
+  ⊗+⊙⦰[[1,2,3],[5,6,7]]
+[6,18]
 
 An axis of -1 is always the last axis.]]></example>
         </body>
@@ -4203,7 +4226,7 @@ And each key is separated by |'s
   Q |  W |  E  |  R |  T |  Y |  U |  I |  O |  P |  { |  } |  | |
     |    |  ∉  |    |    |    |  ∩ |  ∄ |    |    |  ⟦ |  ⟧ |  ∨ |
 q   |w   |e    |r   |t   |y   |u   |i   |o   |p   |[   |]   |\   |
-    |    |∈    |≈   |τ   |    |∪   |∃   |    |π   |    |   | ≠  |
+    |    |∈    |≈   |⦰   |    |∪   |∃   |    |π   |    |   | ≠  |
 
   A |  S |  D |  F |  G |  H |  J |  K |  L |  : |  " |
     |    |  ∆ |    |    |  ∌ |    |    |    |  ≔ |  ≕ |
@@ -4211,9 +4234,9 @@ a   |s   |d   |f   |g   |h   |j   |k   |l   |;   |'   |
 ⊨   |⊢   |→   |    |    |∋   |    |⌈   |⌊   |    |    |
 
   Z |  X |  C |  V |  B |  N |  M |  < |  > |  ? |
-    |    |    |    |    |    |    |  ≤ |  ≥ |  ⇒ |
+    |  ⊕ |    |    |    |    |    |  ≤ |  ≥ |  ⇒ |
 z   |x   |c   |v   |b   |n   |m   |,   |.   |/   |
-    |    |    |    |    |∅   |    |    |    |    |
+    |⊙   |    |    |    |∅   |⌆   |    |    |    |
 See also: unicode, greek]]>
        </body>
 

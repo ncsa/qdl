@@ -1984,6 +1984,22 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok", state) : ListEvaluator.LIST_SUBSET + " did not create matrix transpose.";
     }
 
+    /**
+     * Test moadic transpose operator. This also uses the operator form of reduce.
+     * @throws Throwable
+     */
+    public void testMonadicTransposeOperator() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "x. := ⦰n(3,4,n(12));");
+        addLine(script, "ok := ⊗∧⊙⊗∧⊙(x.==[[0,4,8],[1,5,9],[2,6,10],[3,7,11]]);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : StemEvaluator.TRANSPOSE + " operator failed.";
+
+    }
+
     /*
             a. := n(3,4,5,n(60))
             reduce(@+, transpose(a., 2))
@@ -2106,6 +2122,7 @@ public class StemTest extends AbstractQDLTester {
 
     /**
      * In this case, there are two 2-rank stems. Ensure for each is applied to all of them
+     *
      * @throws Throwable
      */
     public void testForEach4Axes() throws Throwable {
@@ -2122,6 +2139,7 @@ public class StemTest extends AbstractQDLTester {
 
     /**
      * Here three 1 rank stems are passed in and create a 3 rank stem
+     *
      * @throws Throwable
      */
     public void testForEach3Axes() throws Throwable {

@@ -928,6 +928,18 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterUnaryTransposeExpression(QDLParserParser.UnaryTransposeExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitUnaryTransposeExpression(QDLParserParser.UnaryTransposeExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterIsDefinedExpression(QDLParserParser.IsDefinedExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}
