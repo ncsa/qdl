@@ -2377,6 +2377,17 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
     @Override
     public void exitExpressionDyadicOps(QDLParserParser.ExpressionDyadicOpsContext ctx) {
+        exitDyadicOps(ctx);
+/*
+        String x = ctx.getChild(1).getText();
+        Dyad dyad;
+        dyad = new Dyad(getOpEvaluator().getType(x));
+        dyad.setTokenPosition(tp(ctx));
+        stash(ctx, dyad);
+        finish(dyad, ctx);
+*/
+    }
+    protected void exitDyadicOps(ParserRuleContext ctx) {
         String x = ctx.getChild(1).getText();
         Dyad dyad;
         dyad = new Dyad(getOpEvaluator().getType(x));
@@ -2384,7 +2395,6 @@ illegal argument:no module named "b" was  imported at (1, 67)
         stash(ctx, dyad);
         finish(dyad, ctx);
     }
-
     @Override
     public void enterFrefDyadicOps(QDLParserParser.FrefDyadicOpsContext ctx) {
 
@@ -2412,6 +2422,16 @@ illegal argument:no module named "b" was  imported at (1, 67)
         monad.setTokenPosition(tp(ctx));
         stash(ctx, monad);
         finish(monad, ctx);
+    }
+
+    @Override
+    public void enterTransposeOperator(QDLParserParser.TransposeOperatorContext ctx) {
+
+    }
+
+    @Override
+    public void exitTransposeOperator(QDLParserParser.TransposeOperatorContext ctx) {
+    exitDyadicOps(ctx);
     }
 
     /**

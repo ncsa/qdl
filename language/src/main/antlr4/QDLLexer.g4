@@ -125,7 +125,7 @@ SCIENTIFIC_NUMBER : Decimal (E SIGN? Integer)?;
     Exponentiation : '^';
          Transpose : '⦰';  // 29b0
  //    ExprDyadicOps : '∈' | '∉' | '∋' | '∌' | '⌆' | '⦰'; // 2306 29b0 operations that require expressions left and right
-     ExprDyadicOps :  '⌆' | Transpose; // 2306 29b0 operations that require expressions left and right
+     ExprDyadicOps :  '⌆' ; // 2306 29b0 operations that require expressions left and right
  //    FRefDyadicOps :  '∀' | '⨀' | '⨁' ; //  2a00 2a01 29b0 ops that have a function ref for LHS
      FRefDyadicOps :   '⊙' | '⊕' ; //  2297 2295  ops that have a function ref for LHS
 

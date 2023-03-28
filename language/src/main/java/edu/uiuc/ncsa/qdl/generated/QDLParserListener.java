@@ -760,6 +760,18 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitRealInterval(QDLParserParser.RealIntervalContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code transposeOperator}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterTransposeOperator(QDLParserParser.TransposeOperatorContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code transposeOperator}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitTransposeOperator(QDLParserParser.TransposeOperatorContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code variables}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree

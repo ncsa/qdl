@@ -142,6 +142,26 @@ module[
          » splot(@x, @y, @z, t., s.)
           join(x(t.,s.)~|y(t.,s.), z(t.,s.), 1);
 
+   ip(@r, @f, x., y.)->
+   » ip(@r, @f, x., y.) -- generalized inner product of two stems
+   » This loops over the zeroth axis of each stem and applies f
+   » between the elements and then reduces with r.
+   » For instance, the general product of two matrices
+   » a. and b. is just
+   » ip(@+,@*, a., 1⦰b.)
+   » since this applies multiplication then addition along the
+   » appropriate axes.
+   local[
+        z.:= null;
+          while[i ∋ x. ]
+             do[
+               while[j ∋ y.]
+                  do[
+                      z.(i~j) := @r⊙f(x.i,y.j);
+                   ]; // end j do
+             ];// end i do
+             return(z.);
+        ]; //end local
    mm(x., y.)->
        » mm(x., y.) - multiply an n×m and m×k matrix.
        » The result is the n×k matrix product.
@@ -158,8 +178,7 @@ module[
        » and the 3×2 multiplied by the 2×3 matrix yields a 3×3 result.
        » Cf. mm(b., a.) which yields a 2×2 result, simply showing that
        » matrix multiplication is not, of course, commutative.
-       reduce(@+, transpose(for_each(@*, x., τ(y.,-1)) ,-1));
-
+       ip(@+,@*, x., 1⦰y.);
    /*
       A list of primes less than 10,000.      
    */
