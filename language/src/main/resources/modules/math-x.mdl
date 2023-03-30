@@ -146,13 +146,42 @@ module[
    » ip(@r, @f, x., y.) -- generalized inner product of two stems
    » This loops over the zeroth axis of each stem and applies f
    » between the elements and then reduces with r.
-   » For instance, the general product of two matrices
+   » E.g. standard inner product of two 3 vectors
+   »    ip(@+,@*, [1,-1,2],[-2,1,3])
+   » 3
+   » Another example, the general product of two matrices
    » a. and b. is just
    » ip(@+,@*, a., 1⦰b.)
    » since this applies multiplication then addition along the
    » appropriate axes.
+   » To get the matrix product of the transposes, issue
+   » ip(@+, @*, 1⦰a., b.)
+   » Final note: Remember that subsetting is on, so be sure your stems are
+   » the right size!
    local[
         z.:= null;
+        if[rank(x.)==1][
+          if[rank(y.) == 1][
+             return(@r⊙f(x.,y.));
+           ]else[
+           z. := null;
+             while[j ∋ y.]
+                do[
+                  z.j := @r⊙f(x.,y.j);
+                  ];
+                  return(z.);
+           ];
+        ]else[
+           if[rank(y.)==1][
+               z. := null;
+                        while[j ∋ x.]
+                           do[
+                             z.j := @r⊙f(x.j,y.);
+                             ];
+                             return(z.);
+
+             ];
+        ];
           while[i ∋ x. ]
              do[
                while[j ∋ y.]
@@ -176,7 +205,13 @@ module[
        »   [69,86,88]
        »  ]
        » and the 3×2 multiplied by the 2×3 matrix yields a 3×3 result.
-       » Cf. mm(b., a.) which yields a 2×2 result, simply showing that
+       » Cf. mm(b., a.) which yields a 2×2 result,
+       »     mm(1⦰a., 1⦰b.);
+       » [
+       »   [41,112],
+       »   [59,119]
+       »  ]
+       » (so flip them both) simply showing that
        » matrix multiplication is not, of course, commutative.
        ip(@+,@*, x., 1⦰y.);
    /*

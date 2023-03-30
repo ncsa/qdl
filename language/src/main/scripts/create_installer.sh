@@ -43,7 +43,7 @@ cp /home/ncsa/dev/ncsa-git/qdl/language/target/classes/edu/uiuc/ncsa/qdl/install
 mkdir "bin"
 cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/scripts/qdl bin
 mkdir "docs"
-cp /home/ncsa/dev/ncsa-git/cilogon.github.io.git/qdl/docs/*.pdf docs
+cp /home/ncsa/dev/ncsa-git/cilogon.github.io.git/qdl/docs/pdf/*.pdf docs
 cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/docs/jsonpath.pdf docs
 
 mkdir "etc"
