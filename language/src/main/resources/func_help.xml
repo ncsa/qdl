@@ -2887,22 +2887,24 @@ or with the optional do keyword
 E.g.
 All of these are the same:
    // loops that access the element directly
-   while[j∈{2,3,4}][say(j);];
-   while[for_next(j, [2;5])][say(j);];
-   while[for_next(j, 5, 2)][say(j);];
+   while[j∈{2,3,4}][say(j);]; // loop over values in stem
+   while[has_value(j, index.)][say(index.j);]; // Loop over values in stem
+   while[for_next(j, [2;5])][say(j);]; // loop over values in stem
+   
+   while[for_next(j, 5, 2)][say(j);]; // construct loop explicitly
 
    // loops that iterate over a stem (here just a list)
    index. := [2;5];
-   while[has_value(j, index.)][say(index.j);];
    while[for_keys(j, index.)][say(index.j);];
+   while[j∋index.][say(index.j);]; // loop over keys
 
-   // looping directly
+   // looping directly, like in C/C++
    i := 2;
    while[i< 5][say(i++);];
 
 That said, you really should not need to loop much in QDL...
 
-See also: do, for_next, for_keys, has_value, ∈, ∉, return]]>
+See also: do, for_next, for_keys, has_value, ∈, ∋, return]]>
         </body>
     </entry>
     <entry id="do">
@@ -4231,7 +4233,7 @@ q   |w   |e    |r   |t   |y   |u   |i   |o   |p   |[   |]   |\   |
   A |  S |  D |  F |  G |  H |  J |  K |  L |  : |  " |
     |    |  ∆ |    |    |  ∌ |    |    |    |  ≔ |  ≕ |
 a   |s   |d   |f   |g   |h   |j   |k   |l   |;   |'   |
-⊨   |⊢   |→   |    |    |∋   |    |⌈   |⌊   |    |    |
+⊨   |⊢   |→   |    |    |∋   |    |⌈   |⌊   |    | »  |
 
   Z |  X |  C |  V |  B |  N |  M |  < |  > |  ? |
     |  ⊕ |    |    |    |    |    |  ≤ |  ≥ |  ⇒ |
@@ -4412,15 +4414,15 @@ false;
 true]]>
         </example>
     </entry>
-    <entry id="»">
+    <entry id="===" alt="»">
        <body>
   <![CDATA[unicode \u00bb.
   This is the marker for module or function documentation. The general format is
 define[
   signature
   ][
-  » first line
-  » second line...
+  === first line
+  === second line...
   body
   ];
 When listing the function (or module) the first line will be spit out as a
@@ -4430,7 +4432,7 @@ outside of this are ignored.]]>
        </body>
        <example>
    <![CDATA[E.g. of how the help system works, This has to be in a file or buffer.
-since it has to span several lines:
+since it has to span several lines (using the guillemet » rather than ===):
 
   define[
     f(x)
@@ -4465,9 +4467,19 @@ m_set(a., keys., values) - set multiple values
        <example>
    <![CDATA[    a. := n(5,5,n(25))
     m_set(a., [[0,0],[1,1],[2,2],[3,3],[4,4]], ['a','b','c','d','e'])
-[[a,1,2,3,4],[5,b,7,8,9],[10,11,c,13,14],[15,16,17,d,19],[20,21,22,23,e]]
+[[a,1,2,3,4],
+ [5,b,7,8,9],
+ [10,11,c,13,14],
+ [15,16,17,d,19],
+ [20,21,22,23,e]
+]
     m_set(a., [[0,0],[1,1],[2,2],[3,3],[4,4]], -1); // scalar multi-set
-[[-1,1,2,3,4],[5,-1,7,8,9],[10,11,-1,13,14],[15,16,17,-1,19],[20,21,22,23,-1]]
+[[-1,1,2,3,4],
+ [5,-1,7,8,9],
+ [10,11,-1,13,14],
+ [15,16,17,-1,19],
+ [20,21,22,23,-1]
+]
     m_set(a., m_indices([;5],2), -5); // set column 2 to -5 (formatted for view)
 [
  [-1,  1, -5,  3,  4],
@@ -4478,12 +4490,18 @@ m_set(a., keys., values) - set multiple values
 ]
       b.:=  m_set(n(5,5,[0]), m_indices([;5],-1), 1); // set last column to 1
       b.
-[[0,0,0,0,1],[0,0,0,0,1],[0,0,0,0,1],[0,0,0,0,1],[0,0,0,0,1]]]]>
+[[0,0,0,0,1],
+ [0,0,0,0,1],
+ [0,0,0,0,1],
+ [0,0,0,0,1],
+ [0,0,0,0,1]
+]
+]]>
         </example>
     </entry>
     <entry id="\">
        <body>
-  <![CDATA[\ is the extractionoperator for stems. This allows you to
+  <![CDATA[\ is the extraction operator for stems. This allows you to
 pull out parts of a stem.
 
 var ((\ scalar | stem | *) | (\! scalar | stem | *))+
@@ -4654,7 +4672,7 @@ command line analog, the venerable diff) for more wide-ranging analyses.]]>
 {b:[q,r], c:[null,t]}
 
 here passing a last argument of false means the mising key of 'c' in
-the first argument is treated as if it is a null
+the first argument is treated as if it is a null. Compare with
 
   diff({'a':'p','b':'q'},{'a':'p','b':'r', 'c':'t'})
 {b:[q,r]}
@@ -4801,7 +4819,7 @@ See also: kill
 0]]>
         </example>
     </entry>
-    <entry id="">
+    <entry id="kill">
         <body>
    <![CDATA[kill(pid) - kill a process given its process identifier.
 This returns 1 if success and 0 otherwise.
@@ -4811,7 +4829,16 @@ Note to view current threads in the workspace, issue
 
 See also: fork]]>
         </body>
+        <example>
+    <![CDATA[When forking a script, you will get a process id back, so
 
+    fork('/path/to/script')
+ 42
+
+ If you need to stop this thread for any reason, issue
+    kill(42)
+ true]]>
+         </example>
      </entry>
 
     <entry id="jload">
@@ -4825,21 +4852,6 @@ is equivalent to
    <![CDATA[E.g. to load the http module
    jload(info().lib.http)
 http]]>
-        </example>
-    </entry>
-    <entry id="kill">
-       <body>
-  <![CDATA[kill(pid) - kill a thread that was created with the fork function.]]>
-       </body>
-       <example>
-   <![CDATA[When forking a script, you will get a process id back, so
-
-   fork('/path/to/script')
-42
-
-If you need to stop this thread for any reason, issue
-   kill(42)
-true]]>
         </example>
     </entry>
     <entry id="∃">
