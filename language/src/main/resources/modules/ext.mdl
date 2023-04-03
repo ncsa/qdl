@@ -286,9 +286,8 @@ module[
         » while2(@f, input.) -- (shallow while loop construct) apply f to axis 0 of input. only
         » This is a common idiom.
         » E.g. to detokenize a stem of lists
-        »    dt(x.)->detokenize(x., '|'); // must be monadic
         »    x. ≔ {'dogs':['woof', 'arf', 'bark'],'numbers':[;5]};
-        »    while2(@dt, x.)
+        »    while2((x.)->detokenize(x., '|'), x.)
         »  {
         »    dogs:woof|arf|bark,
         »    numbers:0|1|2|3|4
