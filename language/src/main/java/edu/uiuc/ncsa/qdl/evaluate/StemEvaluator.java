@@ -147,7 +147,7 @@ public class StemEvaluator extends AbstractEvaluator {
     public static final String JSON_PATH_QUERY = "query";
     public static final int JSON_PATH_QUERY_TYPE = 302 + STEM_FUNCTION_BASE_VALUE;
 
-    public static final String DISPLAY = "display";
+    public static final String DISPLAY = "print";
     public static final int DISPLAY_TYPE = 303 + STEM_FUNCTION_BASE_VALUE;
 
     /**

@@ -1594,7 +1594,6 @@ public class ParserTest extends AbstractQDLTester {
         addLine(script, "j. := " + rawJSON + ";");
         addLine(script, "jj := to_json(j.);"); // creates a nice standard JSON object from the stem
         addLine(script, "j2. := from_json(jj, 0);"); // escapes all the names
-        addLine(script, "say(j2.);");
         addLine(script, "to_json(j2.,0, 0);"); // The test. If the names were not properly escapes, this will fail
 
         QDLInterpreter interpreter = new QDLInterpreter(null, state);

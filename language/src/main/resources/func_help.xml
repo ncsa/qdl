@@ -977,13 +977,6 @@ for debugging too.
 See also: print]]>
         </body>
     </entry>
-    <entry id="print">
-        <body>
- <![CDATA[print - this is a synonym for the say function, so read the help for that.
-
-See also: say]]>
-        </body>
-    </entry>
     <entry id="file_read">
         <body>
  <![CDATA[file_read(file_name) - read a file in. The result is a single string of the
@@ -1704,9 +1697,9 @@ tokenize(target, arg{, use_regex}) - tokenize a string or stem of strings
 
     <entry id="detokenize">
         <body>
- <![CDATA[detokenize(arg, delimiter) - converts  a string or stem of strings (tokens)
+ <![CDATA[detokenize(tokens., delimiter) - converts  a  list of tokens
                              into a string using the delimiter between entries.
-detokenize(arg, delimiter, options) - options is an integer which is the sum of
+detokenize(tokens., delimiter, options) - options is an integer which is the sum of
           1 for prepend
           2 for omit dangling delimiter
 So options = 0 means append, have a trailing delimiter
@@ -1714,18 +1707,25 @@ So options = 0 means append, have a trailing delimiter
    options = 2 means append, omit trailing delimiter
    options = 3 means prepend, omit first delimiter
 
+default is option 2. i.e., append the delimiter, omit the trailing delimiter.
+
+Note that this takes a single list of tokens. and returns a string. To process
+multiple lists requires a loop, not for_each (which would detokenize every
+individual element).
+
 See also: tokenize, constants (which contains the option values for reference)]]>
         </body>
 <example>
-<![CDATA[   detokenize([;4],'|')
+<![CDATA[   detokenize([;4],'|'); // default, option = 2.
+0|1|2|3
+   detokenize([;4], '|', 0)
 0|1|2|3|
-
-// Note the trailing | added at the end.
-
+   detokenize([;4], '|', 1)
+|0|1|2|3
    detokenize([;4]], '|',2)
 0|1|2|3
-
-omits the trailing |.]]>
+   detokenize([;4], '|', 3)
+0|1|2|3]]>
 </example>
 
     </entry>
@@ -4703,9 +4703,9 @@ See: \
   ]]>
        </body>
     </entry>
-    <entry id="display">
+    <entry id="print">
          <body>
-<![CDATA[display(arg.{,format. | width}) - format a stem for display.
+<![CDATA[print(arg.{,format. | width}) - format a stem for display.
 This will take the stem (or list) and format it in columns according to
 various parameters which may be specified in the format. argument.
 arg. - stem to be formatted
@@ -4715,7 +4715,7 @@ width - the total width of the display
 Table of values for format.
 Name          Default   Description
 -------------+---------+----------------------------------------------
-width        | -11     | The total width the output should fit in. The
+width        |  -1     | The total width the output should fit in. The
              |         | values may be wrapped as needed. A value of
              |         | -1 means the line length is infinite.
 -------------+---------+----------------------------------------------
@@ -4723,7 +4723,7 @@ keys         |  --     | list of keys that are a subset to be printed
 -------------+---------+----------------------------------------------
 sort         |  true   | If the elements should be sorted
 -------------+---------+----------------------------------------------
-short        |  false  | Restrict the value displayed to a single line
+short        |  false  | Restrict the value printed to a single line
              |         | within the given width.
              |         | This is useful for large values to get a quick
              |         | overview
@@ -4741,16 +4741,16 @@ Output is columnar and of the form
 
 Where the values may span multiple lines.
 
-Caveat: This is intended for displaying information in tabular format for reports, e.g.
+Caveat: This is intended for printing information in tabular format for reports, e.g.
         and is not a general purpose stem formatting function.
 ]]>
          </body>
          <example>
-<![CDATA[  display({'a':'woof', 'fnord':'warf'})
+<![CDATA[  print({'a':'woof', 'fnord':'warf'})
     a : woof
 fnord : warf
 
-  display(pi()^[;7])
+  print(pi()^[;7])
 0 : 1
 1 : 3.14159265358979
 2 : 9.86960440108934
@@ -4759,7 +4759,7 @@ fnord : warf
 5 : 306.019684785280
 6 : 961.389193575298
 
-   display({'first':random_string(64), 'second':random_string(64)}, {'width':50})
+   print({'first':random_string(64), 'second':random_string(64)}, {'width':50})
  first : WIzEQR3-Og0i9c-3mh-LuQAfx2docUkTF3MOHVwXi
          v-QcASqN-YOrRAdEbpEErAfFy9rPEeruPEPK1zIW0
          F4vA
@@ -4767,17 +4767,17 @@ second : zLO5uMm2Vqt9vXIekmEw-_3BzSxDFz5Tbh8dPrBx2
          5I55ncS8rcvfSzYObymSB-tiAJ9gLjHCN6QRCJVdn
          OSBg
 
-Here long strings are formatted with a total display width of 50 characters. To show a
+Here long strings are formatted with a total print width of 50 characters. To show a
 short version (restricting the value to a single line and truncating it if needed),
 set the short flag to true:
 
-  display({'first':random_string(64), 'second':random_string(64)}, {'short':true, 'width':50})
+  print({'first':random_string(64), 'second':random_string(64)}, {'short':true, 'width':50})
     first : FLYj-L8HA2PUfuyw9Z09qdQOaE7x7w3BjzSPQTFiilF2...
    second : ydViwpcAO2mNCkAjvepnOlYAzvavAtVn2LVp3ofDAs4t...
 
 // Note that this only works at the top level and embedded stems are
-// displayed in their to_string format.
-  display({'p':{'a':'x','b':'y'},'q':{'c':'z','d':'w'}})
+// printed in their to_string format.
+  print({'p':{'a':'x','b':'y'},'q':{'c':'z','d':'w'}})
 p : {a:x, b:y}
 q : {c:z, d:w}]]>
           </example>

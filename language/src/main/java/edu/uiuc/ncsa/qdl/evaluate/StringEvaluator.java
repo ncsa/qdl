@@ -64,11 +64,6 @@ public class StringEvaluator extends AbstractEvaluator {
     public static final String TOKENIZE = "tokenize";
     public static final int TOKENIZE_TYPE = 9 + STRING_FUNCTION_BASE_VALUE;
 
-/*    public static final String ENCODE = "vencode";
-    public static final int ENCODE_TYPE = 10 + STRING_FUNCTION_BASE_VALUE;
-
-    public static final String DECODE = "vdecode";
-    public static final int DECODE_TYPE = 11 + STRING_FUNCTION_BASE_VALUE;*/
 
     public static final String DETOKENIZE = "detokenize";
     public static final int DETOKENIZE_TYPE = 12 + STRING_FUNCTION_BASE_VALUE;
@@ -106,8 +101,6 @@ public class StringEvaluator extends AbstractEvaluator {
                     CAPUT,
                     TOKENIZE,
                     DETOKENIZE,
-                //    ENCODE,
-                  //  DECODE,
                     TO_URI,
                     FROM_URI};
         }
@@ -141,10 +134,6 @@ public class StringEvaluator extends AbstractEvaluator {
                 return TOKENIZE_TYPE;
             case DETOKENIZE:
                 return DETOKENIZE_TYPE;
-/*            case ENCODE:
-                return ENCODE_TYPE;
-            case DECODE:
-                return DECODE_TYPE;*/
             case TO_URI:
                 return TO_URI_TYPE;
             case FROM_URI:
@@ -205,12 +194,6 @@ public class StringEvaluator extends AbstractEvaluator {
             case SUBSTRING:
                 doSubstring(polyad, state);
                 return true;
-/*            case ENCODE:
-                doEncode(polyad, state);
-                return true;
-            case DECODE:
-                doDecode(polyad, state);
-                return true;*/
             case TO_URI:
                 doToURI(polyad, state);
                 return true;
@@ -370,7 +353,7 @@ public class StringEvaluator extends AbstractEvaluator {
                     String s1 = (String) objects[1];
                     if (isRegEx) {
                         String[] x = s0.split(s1);
-                        if (x == null && x.length == 0) {
+                        if (x.length == 1) {
                             // no match
                             r.result = "";
                         } else {
@@ -510,7 +493,7 @@ public class StringEvaluator extends AbstractEvaluator {
         Object leftArg = polyad.evalArg(0, state);
         Object rightArg = polyad.evalArg(1, state);
         boolean isPrepend = false;
-        boolean omitDanglingDelimiter = false;
+        boolean omitDanglingDelimiter = true;
         if (polyad.getArgCount() == 3) {
             Object prepend = polyad.evalArg(2, state);
             if (!isLong(prepend)) {

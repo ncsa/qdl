@@ -17,7 +17,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.PRINT_FUNCTION;
 import static edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.SAY_FUNCTION;
 
 /**
@@ -123,8 +122,7 @@ public class QDLRunner implements Serializable {
                             ExpressionNode expression = (ExpressionNode) stmt;
                             if (expression instanceof Polyad) {
                                 // so if this is already a print statement, don't wrap it in one
-                                boolean isPrint = ((Polyad) expression).getName().equals(SAY_FUNCTION) ||
-                                        ((Polyad) expression).getName().equals(PRINT_FUNCTION);
+                                boolean isPrint = ((Polyad) expression).getName().equals(SAY_FUNCTION);
                                 if (!isPrint) {
                                     Polyad p = new Polyad(SAY_FUNCTION);
                                     p.addArgument(expression);

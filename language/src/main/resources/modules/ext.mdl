@@ -137,7 +137,7 @@ module[
    ]; // end laminate
 
 
-   define[
+/*   define[
       inner_product(⊗f, x., ⊗g, y.)
    ][
      » inner_product(⊗f, x., ⊗g, y.) - compute the inner product of x. and y.
@@ -154,7 +154,7 @@ module[
      »      inner_product(⊗∨, ['a','b','s','c',0,3,true], @≡,  ϱ.)
      » [true,true,false,true,true,true,true]
           return(reduce(⊗f, transpose(for_each(⊗g, x., τ(y.,-1)) ,-1)));
-   ];
+   ];*/
 
     define[
        reduce_all(⊗f, arg.)
@@ -182,6 +182,7 @@ module[
        return(module_import(module_load(path)));
     ];
 
+/*
     define[
       jload(path)
     ][
@@ -189,10 +190,13 @@ module[
       » once. This returns the name of the imported module.
        return(module_import(module_load(path, 'java')));
     ];
+*/
 
       // make sure it loads in the main process.
-      lib_load(name)->module_import(module_load(info('lib').name, 'java'));
-
+      lib_load(name)->
+      === loads a system library by name.
+      === This loads info().'lib'.name as a java module into the workspace.
+     ws_macro(' module_import(module_load(info(\'lib\').' + name + ', \'java\'))');
 
     define[
       m_set(x., y., z)
@@ -277,6 +281,24 @@ module[
         ];
         return(r.);
       ]; // end m_indices
+
+      define[while2(@f, input.)][
+        » while2(@f, input.) -- (shallow while loop construct) apply f to axis 0 of input. only
+        » This is a common idiom.
+        » E.g. to detokenize a stem of lists
+        »    dt(x.)->detokenize(x., '|'); // must be monadic
+        »    x. ≔ {'dogs':['woof', 'arf', 'bark'],'numbers':[;5]};
+        »    while2(@dt, x.)
+        »  {
+        »    dogs:woof|arf|bark,
+        »    numbers:0|1|2|3|4
+        »   }
+        » The result is a pair of strings that have been detokenized.
+        out. := null;
+        while[j∋input.]
+           do[out.j := f(input.j);];
+        return(out.);
+      ];
     /*
      a. := n(3,4,5,6,[;3*4*5*6])
      reduce_all(@&&, a. < 1000)

@@ -101,7 +101,7 @@ public class SystemEvaluator extends AbstractEvaluator {
     public static final int EXPAND_TYPE = 14 + SYSTEM_BASE_VALUE;
 
     public static final String SAY_FUNCTION = "say";
-    public static final String PRINT_FUNCTION = "print";
+   // public static final String PRINT_FUNCTION = "print";
     public static final int SAY_TYPE = 15 + SYSTEM_BASE_VALUE;
 
     public static final String TO_STRING = "to_string";
@@ -222,7 +222,6 @@ public class SystemEvaluator extends AbstractEvaluator {
                     TO_STRING,
                     TO_BOOLEAN,
                     SAY_FUNCTION,
-                    PRINT_FUNCTION,
                     REDUCE, EXPAND,
                     SCRIPT_PATH_COMMAND,
                     SCRIPT_ARGS_COMMAND,
@@ -280,7 +279,6 @@ public class SystemEvaluator extends AbstractEvaluator {
                 return VAR_TYPE_TYPE;
             case IS_DEFINED:
                 return IS_DEFINED_TYPE;
-            case PRINT_FUNCTION:
             case SAY_FUNCTION:
                 return SAY_TYPE;
             case TO_NUMBER:
@@ -422,11 +420,10 @@ public class SystemEvaluator extends AbstractEvaluator {
                 doToBoolean(polyad, state);
                 return true;
 
-            case PRINT_FUNCTION:
             case SAY_FUNCTION:
                 printIt = true;
             case TO_STRING:
-                doPrint(polyad, state, printIt);
+                doSay(polyad, state, printIt);
                 return true;
             case EXPAND:
                 doReduceOrExpand(polyad, state, false);
@@ -2770,7 +2767,7 @@ public class SystemEvaluator extends AbstractEvaluator {
      * @param state
      * @param printIt
      */
-    protected void doPrint(Polyad polyad, State state, boolean printIt) {
+    protected void doSay(Polyad polyad, State state, boolean printIt) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{0, 1, 2});
             polyad.setEvaluated(true);

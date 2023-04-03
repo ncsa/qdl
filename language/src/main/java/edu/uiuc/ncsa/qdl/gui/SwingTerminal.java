@@ -4,6 +4,7 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import edu.uiuc.ncsa.qdl.gui.editor.EditorKeyPressedAdapter;
+import edu.uiuc.ncsa.qdl.gui.editor.QDLEditor;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.workspace.QDLTerminal;
 import edu.uiuc.ncsa.qdl.workspace.QDLWorkspace;
@@ -22,6 +23,8 @@ import javax.swing.text.StyleContext;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.*;
 
@@ -64,6 +67,16 @@ public class SwingTerminal implements TerminalInterface {
 
     public SwingTerminal() {
         init();
+        output.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1 && e.isControlDown()) {
+                    QDLEditor qdlEditor = new QDLEditor(getWorkspaceCommands(), "result", -1);
+                    qdlEditor.setup(output.getText());
+                }
+                super.mouseClicked(e);
+            }
+        });
     }
 
     @Override
