@@ -2,13 +2,11 @@ package edu.uiuc.ncsa.qdl.config;
 
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.QDLException;
+import edu.uiuc.ncsa.qdl.state.LibLoader;
 import edu.uiuc.ncsa.qdl.util.QDLVersion;
 import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
 import edu.uiuc.ncsa.security.core.configuration.StorageConfigurationTags;
-import edu.uiuc.ncsa.security.core.util.ConfigurationLoader;
-import edu.uiuc.ncsa.security.core.util.DebugUtil;
-import edu.uiuc.ncsa.security.core.util.LoggingConfigLoader;
-import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
+import edu.uiuc.ncsa.security.core.util.*;
 import edu.uiuc.ncsa.security.util.cli.editing.EditorEntry;
 import edu.uiuc.ncsa.security.util.cli.editing.EditorUtils;
 import edu.uiuc.ncsa.security.util.cli.editing.Editors;
@@ -313,11 +311,29 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
         return configs;
     }
 
+    public LibLoader getLibLoader() {
+        return libLoader;
+    }
+
+    LibLoader libLoader= null;
     protected List<ModuleConfig> getModuleConfigs() {
         ArrayList<ModuleConfig> configs = new ArrayList<>();
         ConfigurationNode vNode = getFirstNode(cn, MODULES_TAG_NAME);
         if (vNode == null) {
             return new ArrayList<>();
+        }
+        String libLoaderName =getFirstAttribute(vNode, MODULE_ATTR_LIB_LOADER);
+        if(!StringUtils.isTrivial(libLoaderName)){
+             try{
+                 Class<?> clazz = Class.forName(libLoaderName);
+                 libLoader = (LibLoader) clazz.getConstructor().newInstance();
+             }catch(Throwable t){
+                  if(myLogger!=null){
+                      myLogger.warn("could not find library loader '" + libLoaderName + "'" + t.getMessage());
+                  }else{
+                      DebugUtil.trace(this, "could not find library loader'" + libLoaderName + "':" + t.getMessage());
+                  }
+             }
         }
         // need to snoop through children and create VFSEntries.
         for (ConfigurationNode kid : vNode.getChildren()) {
@@ -371,7 +387,8 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
                 isEnableLibrarySupport(),
                 areAssertionsEnabled(),
                 getSaveDir(),
-                isOverwriteBaseFunctionsOn());
+                isOverwriteBaseFunctionsOn(),
+                getLibLoader());
     }
 
     @Override

@@ -69,6 +69,9 @@ and hit F1.
 +------------+-------+---------------------------------------------+
 |^F1         | E     | Show QDL keyboard layout.                   |
 +------------+-------+---------------------------------------------+
+| !mouseclick| E     | ctrl + mouse left click on the result window|
+|            |       | will open the result in a dumb edit window  |
++------------+-------+---------------------------------------------+
 
 Keys:
  ^a = ctrl + a

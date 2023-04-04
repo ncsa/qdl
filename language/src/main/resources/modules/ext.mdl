@@ -195,9 +195,14 @@ module[
       // make sure it loads in the main process.
       lib_load(name)->
       === loads a system library by name.
-      === This loads info().'lib'.name as a java module into the workspace.
-     ws_macro(' module_import(module_load(info(\'lib\').' + name + ', \'java\'))');
+      === This loads info().'lib'.'tools'.name as a java module into the workspace.
+     ws_macro(' module_import(module_load(info(\'lib\').\'tools\'.' + name + ', \'java\'))');
 
+      lib_load(library, name)->
+      === loads a user library by name.
+      === This loads info().'lib'.library.name as a java module into the workspace.
+      === E.g. lib_load('oa2','storage');
+     ws_macro(' module_import(module_load(info(\'lib\').\'' + library + '\'.' + name + ', \'java\'))');
     define[
       m_set(x., y., z)
       ][
@@ -282,12 +287,12 @@ module[
         return(r.);
       ]; // end m_indices
 
-      define[while2(@f, input.)][
-        » while2(@f, input.) -- (shallow while loop construct) apply f to axis 0 of input. only
+      define[while0(@f, input.)][
+        » while0(@f, input.) -- (shallow while loop construct) apply f to axis 0 of input. only
         » This is a common idiom.
         » E.g. to detokenize a stem of lists
         »    x. ≔ {'dogs':['woof', 'arf', 'bark'],'numbers':[;5]};
-        »    while2((x.)->detokenize(x., '|'), x.)
+        »    while0((x.)->detokenize(x., '|'), x.)
         »  {
         »    dogs:woof|arf|bark,
         »    numbers:0|1|2|3|4

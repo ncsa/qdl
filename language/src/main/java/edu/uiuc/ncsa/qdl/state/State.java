@@ -69,6 +69,7 @@ public class State extends FunctionState implements QDLConstants {
     /**
      * The internal id of the state object is needed in serialization and other operations.
      * Every instance of a state object has a unique id.
+     *
      * @return
      */
     public String getInternalID() {
@@ -83,6 +84,7 @@ public class State extends FunctionState implements QDLConstants {
     /**
      * This is used in the debugger and refers to paused vs running processes. It does
      * not refer to process ids or the internal id of the state object.
+     *
      * @return
      */
     public int getStateID() {
@@ -104,6 +106,7 @@ public class State extends FunctionState implements QDLConstants {
     }
 
     Map<Integer, QDLThreadRecord> threadTable = new HashMap<>();
+
     /**
      * If you extend this class, you must override this method to return a new instance
      * of your state with everything in it you want or need.
@@ -214,6 +217,10 @@ public class State extends FunctionState implements QDLConstants {
 
         QDLStem qdl_props = new QDLStem();
         QDLStem buildInfo;
+        // get modules to list in the "lib" entry
+        QDLStem libStem = new QDLStem();
+        libStem.put("tools", getLibMap());
+        systemInfo.put("lib", libStem);
         if (qe != null && qe.isEnabled()) {
             // means this was started from a config file, not the command line
             qdl_props.put(SYS_BOOT_QDL_HOME, qe.getWSHomeDir());
@@ -229,13 +236,16 @@ public class State extends FunctionState implements QDLConstants {
             qdl_props.put(SYS_SCRIPTS_PATH, qe.getScriptPath());
             systemInfo.put(SYS_BOOT, qdl_props);
             buildInfo = addManifestConstants(qe.getWSHomeDir());
-           if (buildInfo != null) {
-               systemInfo.put(SYS_QDL_BUILD, buildInfo);
-           }
+            if (buildInfo != null) {
+                systemInfo.put(SYS_QDL_BUILD, buildInfo);
+            }
+            if(qe.hasLibLoader()){
+                qe.getLibLoader().add(this);
+            }
 
-        }else{
+        } else {
             // started from the command line.
-            if(getLogger() != null) {
+            if (getLogger() != null) {
                 qdl_props.put(SYS_BOOT_LOG_FILE, getLogger().getFileName());
                 qdl_props.put(SYS_BOOT_LOG_NAME, getLogger().getClassName());
             }
@@ -246,23 +256,68 @@ public class State extends FunctionState implements QDLConstants {
             qdl_props.put(SYS_SCRIPTS_PATH, scriptPath);
             systemInfo.put(SYS_BOOT, qdl_props);
             buildInfo = addManifestConstants(null);
-           if (buildInfo != null) {
-               systemInfo.put(SYS_QDL_BUILD, buildInfo);
-           }
+            if (buildInfo != null) {
+                systemInfo.put(SYS_QDL_BUILD, buildInfo);
+            }
         }
-        // get modules to list in the "lib" entry
-        QDLStem libStem = new QDLStem();
-        Map<String, String> libMap = getLibMap();
-        for (String key : libMap.keySet()) {
-            libStem.put(key, libMap.get(key));
-        }
-        systemInfo.put("lib", libStem);
-
 
     }
 
-    protected Map<String, String> getLibMap() {
-        Map<String, String> map = new HashMap<>();
+    /**
+     * Adds a list of classpath to the info().lib key entry. This allows modules to add their classes
+     * to the library so users can find them. The argument is a stem with key values pairs:<br/>
+     * name : classpath<br/><br/>
+     * and will be added to an existing entry with the same key or a new one.
+     * <p>E.g. calling</p>
+     * addLibEntries("oa2", {"store":"path.to.store"})
+     * <p>would result in the entry info().'lib'.'oa2'.'store' <br/>
+     * returning the path.to.store</p>
+     *
+     * @param libraryKey
+     * @param classPaths
+     */
+    public void addLibEntries(String libraryKey, QDLStem classPaths) {
+        // systemInfo cannot be null since it should be created on boot.
+        if (systemInfo == null) {
+            createSystemInfo(null);// no other choice really.
+        }
+        QDLStem entry;
+        QDLStem lib = systemInfo.getStem("lib");
+        if (lib.containsKey(libraryKey)) {
+            entry = lib.getStem(libraryKey);
+        } else {
+            entry = new QDLStem();
+        }
+        entry = entry.union(classPaths); // new stem with everything in it
+        lib.put(libraryKey, entry);
+    }
+
+    /**
+     * Add a single entry to a given library
+     * @param libraryKey
+     * @param moduleKey
+     * @param className
+     */
+    public void addLibEntry(String libraryKey, String moduleKey, String className) {
+        if (systemInfo == null) {
+            createSystemInfo(null);// no other choice really.
+        }
+        QDLStem entry;
+        QDLStem lib = systemInfo.getStem("lib");
+        if (lib.containsKey(libraryKey)) {
+            entry = lib.getStem(libraryKey);
+        } else {
+            entry = new QDLStem();
+            lib.put(libraryKey, entry);
+        }
+        entry.put(moduleKey, className);
+
+    }
+
+
+    protected QDLStem getLibMap() {
+        QDLStem map = new QDLStem();
+        map.put("description", "System tools for http, conversions and other very useful things.");
         map.put("http", QDLHTTPLoader.class.getCanonicalName());
         map.put("db", QDLDBLoader.class.getCanonicalName());
         map.put("crypto", CryptoLoader.class.getCanonicalName());
@@ -339,13 +394,13 @@ public class State extends FunctionState implements QDLConstants {
         systemConstants.put(SYS_DETOKENIZE_TYPE, detokenizeTypes);
 
         QDLStem hashAlgorithms = new QDLStem();
-        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_MD2,MathEvaluator.HASH_ALGORITHM_MD2);
-        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_MD5,MathEvaluator.HASH_ALGORITHM_MD5);
-        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA1,MathEvaluator.HASH_ALGORITHM_SHA1);
-        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA2,MathEvaluator.HASH_ALGORITHM_SHA2);
-        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA_256,MathEvaluator.HASH_ALGORITHM_SHA_256);
-        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA_384,MathEvaluator.HASH_ALGORITHM_SHA_384);
-        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA_512,MathEvaluator.HASH_ALGORITHM_SHA_512);
+        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_MD2, MathEvaluator.HASH_ALGORITHM_MD2);
+        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_MD5, MathEvaluator.HASH_ALGORITHM_MD5);
+        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA1, MathEvaluator.HASH_ALGORITHM_SHA1);
+        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA2, MathEvaluator.HASH_ALGORITHM_SHA2);
+        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA_256, MathEvaluator.HASH_ALGORITHM_SHA_256);
+        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA_384, MathEvaluator.HASH_ALGORITHM_SHA_384);
+        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA_512, MathEvaluator.HASH_ALGORITHM_SHA_512);
         systemConstants.put(SYS_HASH_ALGORITHMS, hashAlgorithms);
 
         QDLStem codecs = new QDLStem();
@@ -416,7 +471,7 @@ public class State extends FunctionState implements QDLConstants {
     protected QDLStem addManifestConstants(String path) {
         QDLStem versionInfo = new QDLStem();
         versionInfo.put(SYS_QDL_VERSION, QDLVersion.VERSION);
-        if(path == null){
+        if (path == null) {
             return versionInfo;
         }
         List<String> manifest = null;
@@ -778,7 +833,7 @@ public class State extends FunctionState implements QDLConstants {
     }
 
     /**
-     * This is needed for XML deserlization and makes dummy state for everything, assuming the deserializer will
+     * This is needed for XML deserialization and makes dummy state for everything, assuming the deserializer will
      * replace it all. Generally do not use outside of XML deserialization.
      */
     public State() {
@@ -1064,9 +1119,9 @@ public class State extends FunctionState implements QDLConstants {
             text = new String(Base64.decodeBase64(text));
             JSONObject json = JSONObject.fromObject(text);
             setAssertionsOn(json.getBoolean(STATE_ASSERTIONS_ENABLED_TAG));
-            if(json.containsKey(STATE_ID_TAG)) {
+            if (json.containsKey(STATE_ID_TAG)) {
                 setStateID(json.getInt(STATE_ID_TAG));
-            }else{
+            } else {
                 setStateID(0);
             }
             setServerMode(json.getBoolean(STATE_SERVER_MODE_TAG));
@@ -1181,4 +1236,6 @@ public class State extends FunctionState implements QDLConstants {
     }
 
     boolean allowBaseFunctionOverrides = false;
+
+
 }

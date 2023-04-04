@@ -36,6 +36,7 @@ public interface QDLConfigurationConstants {
     // The next attribute only works for Java module. QDL modules can specify in their scripts if they should be
     // imported and how.
     String MODULE_ATTR_IMPORT_ON_START = "import_on_start";
+    String MODULE_ATTR_LIB_LOADER = "libLoader";
     String MODULE_ATTR_TYPE = "type";
     String MODULE_TYPE_JAVA = "java";
     String MODULE_TYPE_QDL = "qdl";

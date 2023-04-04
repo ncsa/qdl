@@ -1,6 +1,7 @@
 package edu.uiuc.ncsa.qdl.config;
 
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
+import edu.uiuc.ncsa.qdl.state.LibLoader;
 import edu.uiuc.ncsa.security.core.util.AbstractEnvironment;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
 import edu.uiuc.ncsa.security.util.cli.editing.Editors;
@@ -52,7 +53,8 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
                           boolean enableLibrarySupport,
                           boolean assertionsOn,
                           String saveDir,
-                          boolean allowOverwriteBaseFunctions) {
+                          boolean allowOverwriteBaseFunctions,
+                          LibLoader libLoader) {
         super(myLogger);
         this.cfgFile = cfgFile;
         this.name = name;
@@ -84,6 +86,7 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
         this.saveDir = saveDir;
         this.isRestrictedIO = isRestrictedIO;
         this.allowOverwriteBaseFunctions = allowOverwriteBaseFunctions;
+        this.libLoader = libLoader;
     }
 
     public boolean isAllowOverwriteBaseFunctions() {
@@ -331,4 +334,17 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
     }
 
     boolean enableLibrarySupport = false;
+
+    public LibLoader getLibLoader() {
+        return libLoader;
+    }
+
+    public void setLibLoader(LibLoader libLoader) {
+        this.libLoader = libLoader;
+    }
+
+    LibLoader libLoader = null;
+    public boolean hasLibLoader(){
+        return libLoader!=null;
+    }
 }
