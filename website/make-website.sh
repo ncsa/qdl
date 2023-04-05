@@ -24,6 +24,8 @@ lowriter --headless --convert-to pdf ~/dev/ncsa-git/qdl/language/src/main/docs/q
 lowriter --headless --convert-to pdf ~/dev/ncsa-git/qdl/language/src/main/docs/http-extension.odt
 lowriter --headless --convert-to pdf ~/dev/ncsa-git/qdl/language/src/main/docs/xml-extension.odt
 lowriter --headless --convert-to pdf ~/dev/ncsa-git/qdl/language/src/main/docs/cli-extension.odt
+lowriter --headless --convert-to pdf ~/dev/ncsa-git/qdl/language/src/main/docs/crypto.odt
+
 echo "done converting PDFs"
 
 # ===============

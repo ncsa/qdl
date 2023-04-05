@@ -24,13 +24,15 @@ public class CryptoModule extends JavaModule {
     public Module newInstance(State state) {
         CryptoModule cryptoModule = new CryptoModule(URI.create("qdl:/tools/crypto"), "crypto");
         Crypto crypto = new Crypto();
-        funcs.add(crypto.new ReadKeys());
+        funcs.add(crypto.new ImportJWKS());
+        funcs.add(crypto.new ExportJWKS());
         funcs.add(crypto.new RSAEncrypt());
         funcs.add(crypto.new RSADecrypt());
         funcs.add(crypto.new RSACreateKey());
         funcs.add(crypto.new GetPublicKey());
         funcs.add(crypto.new SymmetricEncrypt());
         funcs.add(crypto.new SymmetricDecrypt());
+        funcs.add(crypto.new CreateSymmetricKey());
         cryptoModule.addFunctions(funcs);
         if (state != null) {
             cryptoModule.init(state);

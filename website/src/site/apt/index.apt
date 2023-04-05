@@ -46,6 +46,8 @@ Standard Extensions
 
     *{{{./pdf/cli-extension.pdf}The command line interface (CLI) extension.}}
 
+    *{{{./pdf/crypto.pdf}The RSA and symmetric key cryptography extension.}}
+
 
 Javadoc for QDL
 
