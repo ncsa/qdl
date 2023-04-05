@@ -6,7 +6,7 @@ QDL_ROOT=/home/ncsa/dev/ncsa-git/qdl
 
 #GITHUB_ROOT=$QDL_ROOT/docs
 # OLD location for now so the website updates
-GITHUB_ROOT=/home/ncsa/dev/ncsa-git/qdl.github.io/docs
+GITHUB_ROOT=/home/ncsa/dev/ncsa-git/qdl/docs
 cd $GITHUB_ROOT/pdf
 echo "converting docs to PDF"
 
@@ -28,14 +28,10 @@ lowriter --headless --convert-to pdf ~/dev/ncsa-git/qdl/language/src/main/docs/c
 echo "done converting PDFs"
 
 # ===============
-cd $QDL_ROOT/language
-mvn javadoc:javadoc
-cd $QDL_ROOT/qdl-sas
-mvn javadoc:javadoc
-cp -r $QDL_ROOT/language/target/site/apidocs/* $GITHUB_ROOT/apidocs
-cp -r $QDL_ROOT/qdl-sas/target/site/apidocs/* $GITHUB_ROOT/apidocs
+cd $QDL_ROOT
+mvn javadoc:aggregate
 cd $QDL_ROOT/website
 mvn clean site
-# Note the source directory in the next command has no apidocs subdirectory, so this overlays
-# without overwriting.
+
 cp -r $QDL_ROOT/website/target/site/* $GITHUB_ROOT
+cp -r $QDL_ROOT/target/site/* $GITHUB_ROOT
