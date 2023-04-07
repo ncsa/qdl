@@ -2013,6 +2013,8 @@ public class SystemEvaluator extends AbstractEvaluator {
         if (polyad.getArgCount() == 0) {
             throw new MissingArgException((hasNewState ? RUN_COMMAND : LOAD_COMMAND) + " requires at least 1 argument", polyad);
         }
+        // Contract is that script_load runs in the current state -- it does not make its own. This
+        // allows scripts to inject state and have it remain.
         State localState = state;
         if (hasNewState) {
             localState = state.newCleanState();
@@ -2021,17 +2023,20 @@ public class SystemEvaluator extends AbstractEvaluator {
         Object arg1 = polyad.evalArg(0, state);
         checkNull(arg1, polyad.getArgAt(0), state);
         Object[] argList = new Object[0];
-
+        // https://github.com/ncsa/qdl/issues/20
+         state.setTargetState(localState);
         if (2 <= polyad.getArgCount()) {
             ArrayList<Object> aa = new ArrayList<>();
             // zero-th argument is the name of the script, so start with element 1.
             for (int i = 1; i < polyad.getArgCount(); i++) {
-                Object arg = polyad.evalArg(i, state);
+                Object arg;
+                    arg = polyad.evalArg(i, state);
                 checkNull(arg, polyad.getArgAt(i), state);
                 aa.add(arg);
             }
             argList = aa.toArray(new Object[0]);
         }
+        state.setTargetState(null);
         String resourceName = arg1.toString();
         QDLScript script;
         state.getScriptStack().add(resourceName);

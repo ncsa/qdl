@@ -391,6 +391,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
 
         HashMap<UUID, State> referencedStates = new HashMap<>();
         referencedStates.put(localState.getUuid(), localState);
+        state.setTargetState(localState);
         for (int i = 0; i < functionRecord.getArgCount(); i++) {
             // note that the call evaluates the state in the non-local environment as per contract,
             // but the named result goes in to the localState.
@@ -450,13 +451,22 @@ public class FunctionEvaluator extends AbstractEvaluator {
                             referencedStates.put(ss.getUuid(), ss);
                         }
                     }
-                }
+                }      ;
                 // This had better be a function reference or this should blow up.
             } else {
-                VThing vThing = new VThing(new XKey(functionRecord.argNames.get(i)), polyad.getArguments().get(i).evaluate(state));
+                // This had better be a function reference or this should blow up.
+                VThing vThing;
+                //if(polyad.getArgAt(i) instanceof ANode2){
+
+                //    vThing = new VThing(new XKey(functionRecord.argNames.get(i)), polyad.getArguments().get(i).evaluate(localState));
+                //} else{
+
+                     vThing = new VThing(new XKey(functionRecord.argNames.get(i)), polyad.getArguments().get(i).evaluate(state));
+                //}
                 paramList.add(vThing);
             }
         }
+        state.setTargetState(null);
         // Add the arguments to the state object(s). At the least, there is always
         // localState (derived from the original state argument to this method).
         for (UUID uuid : referencedStates.keySet()) {

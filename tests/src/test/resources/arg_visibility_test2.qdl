@@ -1,0 +1,7 @@
+/*
+   Used in unit tests to show that setting a variable in the arg list is propagated, e.g.
+   script_run(this,2*a:=5))
+   should return 5
+   https://github.com/ncsa/qdl/issues/20
+*/
+block[return(a);];

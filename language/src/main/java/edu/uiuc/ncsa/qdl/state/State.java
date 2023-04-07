@@ -3,11 +3,11 @@ package edu.uiuc.ncsa.qdl.state;
 import edu.uiuc.ncsa.qdl.config.QDLEnvironment;
 import edu.uiuc.ncsa.qdl.evaluate.*;
 import edu.uiuc.ncsa.qdl.extensions.JavaModule;
+import edu.uiuc.ncsa.qdl.extensions.convert.QDLConvertLoader;
 import edu.uiuc.ncsa.qdl.extensions.crypto.CryptoLoader;
 import edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader;
 import edu.uiuc.ncsa.qdl.extensions.http.QDLHTTPLoader;
 import edu.uiuc.ncsa.qdl.extensions.inputLine.QDLCLIToolsLoader;
-import edu.uiuc.ncsa.qdl.extensions.convert.QDLConvertLoader;
 import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.functions.FTable;
@@ -239,7 +239,7 @@ public class State extends FunctionState implements QDLConstants {
             if (buildInfo != null) {
                 systemInfo.put(SYS_QDL_BUILD, buildInfo);
             }
-            if(qe.hasLibLoader()){
+            if (qe.hasLibLoader()) {
                 qe.getLibLoader().add(this);
             }
 
@@ -294,6 +294,7 @@ public class State extends FunctionState implements QDLConstants {
 
     /**
      * Add a single entry to a given library
+     *
      * @param libraryKey
      * @param moduleKey
      * @param className
@@ -507,15 +508,22 @@ public class State extends FunctionState implements QDLConstants {
                 // e.g. Created-By: Apache Maven 3.6.0
                 versionInfo.put(SYS_QDL_VERSION_CREATED_BY, truncateLine("Created-By:", linein));
             }
+            // There are some instances where this is munged. Only stick something there
+            // if you can make sense of it.
             if (linein.startsWith("implementation-build:")) {
-                // e.g.     implementation-build: Build: #21 (2020-04-12T16:28:09.841-05:00)
-                String build = truncateLine("implementation-build:", linein);
-                build = build.substring(0, build.indexOf("("));
-                build = truncateLine("Build:", build);
-                if (build.startsWith("#")) {
-                    build = build.substring(1);
+                // https://github.com/ncsa/qdl/issues/19
+                try {
+                    // e.g.     implementation-build: Build: #21 (2020-04-12T16:28:09.841-05:00)
+                    String build = truncateLine("implementation-build:", linein);
+                    build = build.substring(0, build.indexOf("("));
+                    build = truncateLine("Build:", build);
+                    if (build.startsWith("#")) {
+                        build = build.substring(1);
+                    }
+                    versionInfo.put(SYS_QDL_VERSION_BUILD_NUMBER, build);
+                } catch (Throwable t) {
+                    versionInfo.put(SYS_QDL_VERSION_BUILD_NUMBER, "(unknown)");
                 }
-                versionInfo.put(SYS_QDL_VERSION_BUILD_NUMBER, build);
             }
 
         }
@@ -1237,5 +1245,23 @@ public class State extends FunctionState implements QDLConstants {
 
     boolean allowBaseFunctionOverrides = false;
 
+State targetState=null;
 
+    /**
+     * The target state is used in cases where argument lists are processed. This allows for
+     * the {@link edu.uiuc.ncsa.qdl.expressions.ANode2} assignment to a different state that
+     * the calling state, in particular, this is how functions can assign variables in their
+     * argument list only for the duration of the function.
+     * @return
+     */
+    public State getTargetState() {
+        if(targetState == null){
+            return this;
+        }
+        return targetState;
+    }
+
+    public void setTargetState(State targetState) {
+        this.targetState = targetState;
+    }
 }

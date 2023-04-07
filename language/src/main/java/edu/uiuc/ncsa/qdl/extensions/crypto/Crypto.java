@@ -16,6 +16,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
@@ -691,9 +692,11 @@ public class Crypto implements QDLModuleMetaClass {
                     throw new IllegalArgumentException("The byte count for the key must be positive");
                 }
             }
-            byte[] b = new byte[length];
-            secureRandom.nextBytes(b);
-            return Base64.encodeBase64URLSafeString(b);
+            BigInteger bigInteger = new BigInteger(length, secureRandom);
+            String s = Base64.encodeBase64URLSafeString(bigInteger.toByteArray());
+            int digits = length/6 + (length%6 == 0?0:1);
+            s = s.substring(0,Math.round(digits));
+            return s;
         }
 
         @Override

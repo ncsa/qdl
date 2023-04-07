@@ -161,12 +161,14 @@ public class ANode2 extends ExpressionImpl {
                     throw new QDLExceptionWithTrace("unknown left assignment statement ", getLeftArg());
                 }
                 Object value = rStem.get(i);
-                state.setValue(((VariableNode) swri).getVariableReference(), value);
+                // https://github.com/ncsa/qdl/issues/20
+                state.getTargetState().setValue(((VariableNode) swri).getVariableReference(), value);
             }
             return getResult();
         }
         if (realLeftArg instanceof VariableNode) {
-            state.setValue(((VariableNode) realLeftArg).getVariableReference(), getResult());
+            // https://github.com/ncsa/qdl/issues/20
+            state.getTargetState().setValue(((VariableNode) realLeftArg).getVariableReference(), getResult());
             return getResult();
         }
         if (realLeftArg instanceof ConstantNode) {
