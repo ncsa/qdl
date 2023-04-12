@@ -20,6 +20,7 @@ import net.sf.json.JSON;
 import net.sf.json.JSONObject;
 import net.sf.json.xml.XMLSerializer;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLOutputFactory;
@@ -796,7 +797,9 @@ public class QDLConvert {
         @Override
         public Object evaluate(Object[] objects, State state) {
             String inString = getFileArg(objects[0], state, getName());
-            Yaml yaml = new Yaml();
+            // deprecated SafeConstructor, but prevents a very scary injection attack:
+            // https://devhub.checkmarx.com/cve-details/CVE-2022-1471/?utm_source=jetbrains&utm_medium=referral&utm_campaign=idea&utm_term=maven
+            Yaml yaml = new Yaml(new SafeConstructor());
             Object map = yaml.load(inString);
             QDLStem stem = null;
             if (map instanceof Map) {

@@ -72,4 +72,5 @@ mkdir "lib/cp"
 mkdir "var"
 mkdir "var/ws"
 # jar cmf manifest-file jar-file input-files
-jar cmf installer.mf $JAR_NAME edu/uiuc/ncsa/qdl/install/Installer.class version.txt  build-info.txt bin docs etc lib log var examples
+#jar cmf installer.mf $JAR_NAME edu/uiuc/ncsa/qdl/install/Installer.class version.txt  build-info.txt bin docs etc lib log var examples
+jar cmf installer.mf $JAR_NAME edu/uiuc/ncsa/qdl/install/Installer.class version.txt  bin docs etc lib log var examples

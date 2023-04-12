@@ -4,11 +4,11 @@
 # the qdl installer jar.
 
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-DEPLOY_ROOT=/home/ncsa/dev/temp-deploy
+#DEPLOY_ROOT=/home/ncsa/dev/temp-deploy
 QDL_ROOT=/home/ncsa/dev/ncsa-git/qdl
 
 # Uncomment the next two lines if you want/need to regenerate all of the parser.
-# Generally you should rarely need to do this  since it implies
+# Generally, you should rarely need to do this  since it implies
 # a change to the QDL language itself:
 
 # cd $QDL_ROOT/language/src/main/antlr
@@ -23,5 +23,3 @@ mvn -P qdl package
 mv target/qdl-jar-with-dependencies.jar target/qdl.jar
 /home/ncsa/dev/ncsa-git/qdl/language/src/main/scripts/create_installer.sh
 
-QDL_LOCAL_INSTALL=/home/ncsa/apps/qdl
-OA2_LOCAL_INSTALL=/home/ncsa/apps/oa2

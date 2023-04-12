@@ -1,160 +1,108 @@
-QDL and Types
+4/10/2023
+This document is the most current thinking on types.
+ Type = common features for a set of objects. They have an interface and an implementation.   They are
+        nouns, as it were with associated operations. E.g. integers can be added.
+ Classes is a realization of a type and has a factory method(s) to create instances.
 
-2022-07-15
-One thought with types from Cue Definition Language (which has the same file extension
-of qdl that we use, which is how I tripped over it). It is an extension of JSON that
-allows for typing entries, so
-#MyThing{
-  a: int,
-  b: string
-  c: boolean
-  }
+ In systems where there is a single implementation of a type, classes and types are not distinct.
 
-with the '#' sets this as a JSOn template and creating the template My_Impl:
-My_Impl & MyThing{
-  a:123,
-  b:"asd"
-  c:false
-  }
+ In QDL we propose
+ type = type definition. This is like an interface in Java in that it has signatures of functions.
+ type_factory = an implementation of a type, along with a contract for making new types.
 
-  would restrict those entries to the given types and an attempt to set My_impl.a to "bar"
-  would throw a type exception.
+ Types may be added using the restriction operator: |
+ Integer|x restricts x to integer values, so
 
-This is a genuinely interesting idea for stems (the rest of Cue is mostly syntactic sugar on
-JSON, since Cue is a language to describe  configurations)
+ Integer | x := 3; // works
+ Integer | x := 3/4; // raises type error
 
-If we allow for types and built in types, this allows for integrity checking by the
-system if we want.  Not sure how to have a good notation that gives types for stems though...
+ Since stems have implicit type with trailing ".",
+    Integer | x.
+ means to restrict all values of x. to being integers. Can also do
+    Integer | List | x.
+which restricts x. to being a list of integers.
 
-==> Objects in C are emulated as struc + methods. Could also do this in QDL as stem + functions???
+| x (monadic) queries the type, so
+   Integer == | x ? 0: "empty"
 
-2022-06-13
+Also works in function signatures
 
-Rather than have classes, QDL should have user defined types. This allows for
+   f(Integer | x, Boolean | flag)->...
 
-* add URI type
-* this keyword for current type.
-* no multiple inheritance, but multiple prototypes - based on order, so no diamond problem
-* interfaces - promise of certain functions/variables
-* overrides
-* Constructors of all prototypes are called in order and instances of them maintained(?)
-* Constructors have same name as type. Can also call ::new.
-* Access prototypes How? prototype(A)::f() calls the function f from internally managed instance of A.
-* Casting never needed
-* Static method and member access. C++ does this with :: vs. .
-* private are denoted with lead __, make static with lead $$ and static private _$ or $_.
-* Namespace resolution comes from module. Types typically live inside a module though they
-  do not have to. Type names therefore are simple.
+Tells the system to enforce types.
 
-type[
-  uri, name
-  ]prototypes[
-    //list of prototypes
-  ]implements[
-    // list of interfaces
-  ][
-  // body
-  ];
+Types
+-----
+These are names with lists of functions. There are no implementation details.
 
-All types support the following functions
-  * constructor, same names as type
-  * to_string - convert this type to s string representation
-  * clone - create a copy of this type
-  * ?input_form - spit out constructor
+   type[Name]extends[X0,X1,...][f0(arg0,...);f1(arg0,...);...]
 
-There will also be a Java interface to implement:
-  public interface QDLType extends Serializable{
-    String to_string(); // to_string
-    QDLType make_copy_of(); //clone
-    void create(Object[] args); // new
-    QDLType self_ref; // constant for this
-  }
-
-Type resolution operator is ::
-  x := X::new(3, 'a'); // create a new object of type X with the given arguments
-  x::add(y); // invoke the function add on x for argument y.
-
------------------
-uri := URI('qdl:/math/ext');
-module[
-  uri
-  ][
-
-   interface[My_Number][
-     plus(x);
-     times(x);
-     over(x);
-     power(n);
-     eq();
-   ]; //end My_Number
+Types may extend other types.
+If a factory does not implement one of the given functions, then an error is raised.
 
 
-   type[
-     Complex
-    ]implements[
-      My_Number
-    ][
-      $$Zero := Complex(0,0);
-      $$One := Complex(1,0);
-      $$I := Complex(0,1);
-      [__re, __im] := [0,0];
-      re()->__re();
-      im()->__im();
-      Complex(x,y)->[__re,__im]:=[x,y];
-      Complex(z.)->[__re,__im]:=z.;// assumes z. is a 2-list
-      Complex(x., y.)->...; // make a list of complex numbers [[x.0,y.0],[x.1,y.1],...]
-      plus(w)->Complex(re()+w::re(), im()+w::im());
-      mod()->(re^2+im()^2)^0.5; // read-valued
-      times(w)->Complex(re()*w::re()-im()*w::im(), re*w::im() + im*w::re());
-      conj()->Complex(re(), -im());
-      over(w)->Complex(times(w::conj())/mod(w)^2;
-      power(n)->local[
-        //de Moivre's theorem.
-          if[n==2][return(this::times(this))];
-          rho := mod();
-          theta = atan(_im/_re);
-          return(Complex(rho^n*cos(n*theta), rho^n*sin(n*theta)));
-      ]; // end power
-      eq(w)->re()==w::re() && im()==w::im();
-      to_string()->to_string(re()) + (im()<0?' - ':' + ') + to_string(abs(im())) + 'i';
-   ];
+Type Forges
+------------
+These are implementation tasked with creating new types.  These may implement types
+and extend existing factories:
+      forge[Name]
+    extends[X0, X1, ...] // extends forges.
+ implements[Y0, Y1,...] // ?? these would be types -- shouldn't they be with types?
+       body[
+           Name()->... ;//constructor
+            ...
+           ];
 
-  type[
-     Fraction
-    ]implements[
-       My_Number
-     ][
-       [__a,__b,__c]:=[1,0,1];
-       Fraction(a,b,c)-> [__a,__b,__c]:=[a,b,c]; // probably reduce to lowest terms, check c != 0, etc.
-      plus(f)->...Fraction(
-      eval()->(__a<0||__b<0?-1:1)*(abs(__a)+__b/__c);
+Xi, Yj are resp types or factories. These reside in imported modules and should be fully qualified.
 
-  ]; // end Fraction type
-  ]; //end module
+Inheritance contract
+--------------------
+For each of the Xi, an internally managed instance will be created. The order of these matters
+in that if a function, f, is in any of the Xi and not overridden, then the first on the list
+will win. This prevents the dreaded multiple inheritance "diamond problem".
 
-Use
-  c := module(uri); // create module instance
-  z := c#Complex(-1,1); // create complex number -1+i
-  z
--1 + 1i
-  w := c#Complex(2,3);
-  z::plus(w)
-1 + 4i
-  [z,w]::over(c#Complex(0,1))
-[1 - 1i, 3 + 2i]
+Constructor contract
+--------------------
+The name of the constructor is the same as the name of the type. It is accessed exactly once with the
+reserved word new. If there is no override, then the Xi's constructors are called in order.
 
-Another example
-z. := c#Complex(x., y.); //creates conformable stem z., if constructor allows it
+Accessing an Xi
+---------------
+The reserved function super(x) can be used. This returns the internally managed instance. In constructos,
+you may call super(x, y) to set the internally managed instance to y.
 
 E.g.
-  (z^2 - w^2)/(1+z*w)
+module['qdl:/math', 'math']
+  body[
+        type[Complex]
+     extends[Number]
+        body[
+              re();im();add(Complex|w);subtract(Complex|x);mod();...
+            ;]
+  ];
+module_import('qdl:/math');
 
-z::power(2)::minus(w::power(2))::over(Complex::$$One::plus(z::times(w)));
+     forge[Complex]
+implements[math#Complex]
+      body[
+          Complex(Number|x, Number|y)->block[__real := x; __imag:=y;];
+          __real:=null; __ imag:=null;
+          re()->__real;im()->__imag;
+          mod()->sqrt(__real^2+__imag^2);
+          add(Complex|w)->Complex::new(re()+w::re(), im()+w::im());
+          times(Complex|w)->Complex::new(re()*w::re()-im()*w::im(), re()*w::im()+im()*w::re());
+          to_string()->'<' + re() +',' + imag() + '>';
+          input_form()->'Complex::new(' + re() + ','+imag() + ')';
+       ];
 
-alternate notation possibilities
-z**power(w)
-z!power(w)
-z?power(w)
-z|power(w)
-z#power(w)
-z\power(w)
+    z := Complex::new(2, 3/2);
+    w := Complex::new(-1, 1/2);
+    z::add(w)
+    // If we allow for overloading operators as part of the Number contract:
+    z+w
+<1,2>
+    Complex | u. := {'a':Complex::new(1,sin(pi()/4))};
+    u.'b' := Complex::new(-1,cos(pi()/3));
+    u.
+['a':<1,0.7>,'b':<-1,0.5>]
+
