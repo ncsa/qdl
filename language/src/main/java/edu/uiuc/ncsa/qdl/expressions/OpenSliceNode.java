@@ -2,7 +2,7 @@ package edu.uiuc.ncsa.qdl.expressions;
 
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
@@ -142,7 +142,7 @@ public class OpenSliceNode extends ExpressionImpl {
     }
 
     @Override
-    public StatementWithResultInterface makeCopy() {
+    public ExpressionInterface makeCopy() {
         OpenSliceNode sliceNode = new OpenSliceNode(getTokenPosition());
         sliceNode.setArguments(getArguments());
         return sliceNode;

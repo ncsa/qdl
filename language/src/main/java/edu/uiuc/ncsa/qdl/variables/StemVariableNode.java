@@ -2,7 +2,7 @@ package edu.uiuc.ncsa.qdl.variables;
 
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.HasResultInterface;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
@@ -17,7 +17,7 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 9/28/20 at  10:57 AM
  */
-public class StemVariableNode implements StatementWithResultInterface {
+public class StemVariableNode implements ExpressionInterface {
     TokenPosition tokenPosition = null;
     @Override
     public void setTokenPosition(TokenPosition tokenPosition) {this.tokenPosition=tokenPosition;}
@@ -109,7 +109,7 @@ public class StemVariableNode implements StatementWithResultInterface {
                 return result;
             }
 
-            StatementWithResultInterface keyRI = sen.getKey();
+            ExpressionInterface keyRI = sen.getKey();
 
             switch (keyRI.getResultType()) {
                 case Constant.LONG_TYPE:
@@ -141,7 +141,7 @@ public class StemVariableNode implements StatementWithResultInterface {
     }
 
     @Override
-    public StatementWithResultInterface makeCopy() {
+    public ExpressionInterface makeCopy() {
         StemVariableNode newSVN = new StemVariableNode();
         for (StemEntryNode s : statements) {
             newSVN.getStatements().add((StemEntryNode) s.makeCopy());

@@ -3,7 +3,7 @@ package edu.uiuc.ncsa.qdl.variables;
 import edu.uiuc.ncsa.qdl.exceptions.UnknownSymbolException;
 import edu.uiuc.ncsa.qdl.expressions.VariableNode;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import net.sf.json.JSONObject;
@@ -15,7 +15,7 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 9/28/20 at  1:28 PM
  */
-public class StemListNode implements StatementWithResultInterface {
+public class StemListNode implements ExpressionInterface {
     TokenPosition tokenPosition = null;
     @Override
     public void setTokenPosition(TokenPosition tokenPosition) {this.tokenPosition=tokenPosition;}
@@ -82,21 +82,21 @@ public class StemListNode implements StatementWithResultInterface {
         this.evaluated = evaluated;
     }
 
-    public ArrayList<StatementWithResultInterface> getStatements() {
+    public ArrayList<ExpressionInterface> getStatements() {
         return statements;
     }
 
-    public void setStatements(ArrayList<StatementWithResultInterface> statements) {
+    public void setStatements(ArrayList<ExpressionInterface> statements) {
         this.statements = statements;
     }
 
-    ArrayList<StatementWithResultInterface> statements = new ArrayList<>();
+    ArrayList<ExpressionInterface> statements = new ArrayList<>();
 
     @Override
     public Object evaluate(State state) {
         result = new QDLStem();
         long i = 0;
-        for (StatementWithResultInterface stmt : statements) {
+        for (ExpressionInterface stmt : statements) {
             stmt.evaluate(state);
             if(stmt.getResult() == null && stmt instanceof VariableNode){
                 throw new UnknownSymbolException("\'" + ((VariableNode)stmt).getVariableReference() + "' not found", stmt);
@@ -122,9 +122,9 @@ public class StemListNode implements StatementWithResultInterface {
     }
 
     @Override
-    public StatementWithResultInterface makeCopy() {
+    public ExpressionInterface makeCopy() {
         StemListNode newSLN = new StemListNode();
-        for (StatementWithResultInterface s : statements) {
+        for (ExpressionInterface s : statements) {
             newSLN.getStatements().add(s.makeCopy());
         }
         QDLStem newStem = new QDLStem();

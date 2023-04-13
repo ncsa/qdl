@@ -2,7 +2,7 @@ package edu.uiuc.ncsa.qdl.functions;
 
 import edu.uiuc.ncsa.qdl.expressions.ExpressionImpl;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 
 /**
@@ -44,7 +44,7 @@ public class LambdaDefinitionNode extends ExpressionImpl {
     }
 
     @Override
-    public StatementWithResultInterface makeCopy() {
+    public ExpressionInterface makeCopy() {
         throw new NotImplementedException();
     }
     public boolean isLambda() {

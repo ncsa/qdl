@@ -6,7 +6,7 @@ import edu.uiuc.ncsa.qdl.exceptions.UnknownSymbolException;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 
 /**
@@ -89,23 +89,23 @@ public class ModuleExpression extends ExpressionImpl {
         return result;
     }
 
-    public StatementWithResultInterface getExpression() {
+    public ExpressionInterface getExpression() {
         if (getArguments().isEmpty()) {
             throw new IllegalStateException("no expression set for module reference");
         }
         return getArguments().get(0);
     }
 
-    public void setExpression(StatementWithResultInterface statementWithResultInterface) {
+    public void setExpression(ExpressionInterface expressionInterface) {
         if (getArguments().isEmpty()) {
-            getArguments().add(statementWithResultInterface);
+            getArguments().add(expressionInterface);
         } else {
-            getArguments().set(0, statementWithResultInterface);
+            getArguments().set(0, expressionInterface);
         }
     }
 
     @Override
-    public StatementWithResultInterface makeCopy() {
+    public ExpressionInterface makeCopy() {
         ModuleExpression moduleExpression = new ModuleExpression();
         moduleExpression.setAlias(getAlias());
         moduleExpression.setExpression(getExpression().makeCopy());

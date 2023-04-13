@@ -47,6 +47,7 @@
         <module>tests</module>
         <module>gui</module>
         <module>qdl-sas</module>
+        <module>skin</module>
     </modules>
     <build>
         <plugins>

@@ -3,7 +3,7 @@ package edu.uiuc.ncsa.qdl.expressions;
 import edu.uiuc.ncsa.qdl.exceptions.IndexError;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
@@ -529,18 +529,18 @@ a.
      */
 
     @Override
-    public StatementWithResultInterface makeCopy() {
+    public ExpressionInterface makeCopy() {
         throw new NotImplementedException();
     }
 
-    public StatementWithResultInterface getLeftArg() {
+    public ExpressionInterface getLeftArg() {
         if (getArguments().isEmpty()) {
             return null;
         }
         return getArguments().get(0);
     }
 
-    public void setLeftArg(StatementWithResultInterface swri) {
+    public void setLeftArg(ExpressionInterface swri) {
         if (getArguments().size() == 0) {
             getArguments().add(swri);
         } else {
@@ -548,7 +548,7 @@ a.
         }
     }
 
-    public void setRightArg(StatementWithResultInterface swri) {
+    public void setRightArg(ExpressionInterface swri) {
         if (getArguments().size() == 1) {
             getArguments().add(swri);
         } else {
@@ -556,7 +556,7 @@ a.
         }
     }
 
-    public StatementWithResultInterface getRightArg() {
+    public ExpressionInterface getRightArg() {
         if (getArguments().size() < 2) {
             return null;
         }

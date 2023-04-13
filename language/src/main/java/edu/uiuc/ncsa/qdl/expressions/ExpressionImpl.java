@@ -3,7 +3,7 @@ package edu.uiuc.ncsa.qdl.expressions;
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 
@@ -72,15 +72,15 @@ public abstract class ExpressionImpl implements ExpressionNode {
      */
     protected int valence = 0;
 
-    protected ArrayList<StatementWithResultInterface> arguments = new ArrayList<>();
+    protected ArrayList<ExpressionInterface> arguments = new ArrayList<>();
 
     @Override
-    public ArrayList<StatementWithResultInterface> getArguments() {
+    public ArrayList<ExpressionInterface> getArguments() {
         return arguments;
     }
 
     @Override
-    public StatementWithResultInterface getArgAt(int index) {
+    public ExpressionInterface getArgAt(int index) {
         if ((index < 0) || (getArgCount() <= index)) {
             return null;
         }
@@ -101,7 +101,7 @@ public abstract class ExpressionImpl implements ExpressionNode {
     }
 
     @Override
-    public void setArguments(ArrayList<StatementWithResultInterface> arguments) {
+    public void setArguments(ArrayList<ExpressionInterface> arguments) {
         this.arguments = arguments;
     }
 

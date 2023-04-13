@@ -3,7 +3,7 @@ package edu.uiuc.ncsa.qdl.variables;
 import edu.uiuc.ncsa.qdl.exceptions.UnknownSymbolException;
 import edu.uiuc.ncsa.qdl.expressions.VariableNode;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 
@@ -14,7 +14,7 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 4/6/22 at  4:06 PM
  */
-public class QDLSetNode implements StatementWithResultInterface {
+public class QDLSetNode implements ExpressionInterface {
     QDLSet result;
 
     @Override
@@ -54,21 +54,21 @@ public class QDLSetNode implements StatementWithResultInterface {
         this.evaluated = evaluated;
     }
 
-    public ArrayList<StatementWithResultInterface> getStatements() {
+    public ArrayList<ExpressionInterface> getStatements() {
         return statements;
     }
 
-    public void setStatements(ArrayList<StatementWithResultInterface> statements) {
+    public void setStatements(ArrayList<ExpressionInterface> statements) {
         this.statements = statements;
     }
 
-    ArrayList<StatementWithResultInterface> statements = new ArrayList<>();
+    ArrayList<ExpressionInterface> statements = new ArrayList<>();
 
     @Override
     public Object evaluate(State state) {
         result = new QDLSet();
         long i = 0;
-        for (StatementWithResultInterface stmt : statements) {
+        for (ExpressionInterface stmt : statements) {
             stmt.evaluate(state);
             if(stmt.getResult() == null && stmt instanceof VariableNode){
                      throw new UnknownSymbolException("\'" + ((VariableNode)stmt).getVariableReference() + "' not found for set value", stmt);
@@ -128,9 +128,9 @@ public class QDLSetNode implements StatementWithResultInterface {
 
 
     @Override
-    public StatementWithResultInterface makeCopy() {
+    public ExpressionInterface makeCopy() {
         QDLSetNode setNode = new QDLSetNode();
-        for (StatementWithResultInterface s : statements) {
+        for (ExpressionInterface s : statements) {
             setNode.getStatements().add(s.makeCopy());
         }
         QDLSet qdlSet = new QDLSet();

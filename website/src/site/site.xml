@@ -4,22 +4,24 @@
   xmlns="http://maven.apache.org/DECORATION/1.8.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/DECORATION/1.8.0 http://maven.apache.org/xsd/decoration-1.8.0.xsd">
   <bannerLeft>
-    <name>${artifactId}</name>
-    <src>https://maven.apache.org/images/apache-maven-project.png</src>
-    <href>https://www.apache.org/</href>
+    <src>images/ncsa-logo-sm.gif</src>
   </bannerLeft>
 
   <bannerRight>
-    <src>images/qdl-color-logo.png</src>
-<!--    <href>https://cilogon.org/</href> -->
+    <src>images/qdl-logo-color.png</src>
   </bannerRight>
 
-  <skin>
+<!--  <skin>
     <groupId>org.apache.maven.skins</groupId>
     <artifactId>maven-fluido-skin</artifactId>
     <version>1.7</version>
-  </skin>
+  </skin>-->
 
+  <skin>
+      <groupId>edu.uiuc.ncsa.qdl.skin</groupId>
+      <artifactId>skin</artifactId>
+      <version>1.5-QDL-SNAPSHOT</version>
+  </skin>
   <body>
 
     <menu name="Quick reference">

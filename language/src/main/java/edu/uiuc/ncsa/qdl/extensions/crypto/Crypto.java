@@ -16,7 +16,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
@@ -556,13 +555,11 @@ public class Crypto implements QDLModuleMetaClass {
         @Override
         public List<String> getDocumentation(int argCount) {
             if (dd.isEmpty()) {
-                dd.add(getName() + "(key, target)");
-                dd.add("Symmetric encryption on the target, returning a");
-                dd.add("base 64 encoded byte string.");
+                dd.add(getName() + "(key, target) - Symmetric encryption on the target, returning a base 64 encoded byte string.");
                 dd.add("Note 1: target may be a string or stem  of them");
-                dd.add("Note 2: in QDL it is easy to make a key with random_string(n), n*8 is the bit count.");
+                dd.add("Note 2: in QDL it is easy to make a key with " + MathEvaluator.RANDOM_STRING + "(n), n*8 is the bit count.");
                 dd.add("\nE.g.");
-                dd.add("key := random_string(64); // 64*8 == 512 bit strength");
+                dd.add("key := " + MathEvaluator.RANDOM_STRING + "(64); // 64*8 == 512 bit strength");
                 dd.add("target := 'mairzy doats and dozey doats';");
                 dd.add("    " + getName() + "(key, target)");
                 dd.add("HUhqqoHJc3-AqWbRGbS-6V2KnXQ26tiR9ivkmA");
@@ -598,8 +595,7 @@ public class Crypto implements QDLModuleMetaClass {
         @Override
         public List<String> getDocumentation(int argCount) {
             if (dd.isEmpty()) {
-                dd.add(getName() + "(key, target)");
-                dd.add("Symmetric key decryption for an encrypted, base 64 byte-string.");
+                dd.add(getName() + "(key, target) - Symmetric key decryption for an encrypted, base 64 byte-string.");
                 dd.add("This returns the original string.");
                 dd.add("See also:" + SYMM_ENCRYPT_NAME);
             }
@@ -667,58 +663,6 @@ public class Crypto implements QDLModuleMetaClass {
         return stem.containsKey(JSONWebKeyUtil.KEY_TYPE);
     }
 
-    public static final String S_KEY_CREATE_NAME = "s_create_key";
-
-    public class CreateSymmetricKey implements QDLFunction {
-        @Override
-        public String getName() {
-            return S_KEY_CREATE_NAME;
-        }
-
-        @Override
-        public int[] getArgCount() {
-            return new int[]{0, 1};
-        }
-
-        @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            int length = 1024;
-            if (objects.length == 1) {
-                if (!(objects[0] instanceof Long)) {
-                    throw new IllegalArgumentException("The argument of " + getName() + " must be an integer");
-                }
-                length = ((Long) objects[0]).intValue();
-                if (length < 0) {
-                    throw new IllegalArgumentException("The byte count for the key must be positive");
-                }
-            }
-            BigInteger bigInteger = new BigInteger(length, secureRandom);
-            String s = Base64.encodeBase64URLSafeString(bigInteger.toByteArray());
-            int digits = length/6 + (length%6 == 0?0:1);
-            s = s.substring(0,Math.round(digits));
-            return s;
-        }
-
-        @Override
-        public List<String> getDocumentation(int argCount) {
-            List<String> dd = new ArrayList<>();
-            switch (argCount) {
-                case 0:
-                    dd.add(getName() + "() - create a symmetric key with the default length of 1024 bits");
-                    break;
-                case 1:
-                    dd.add(getName() + "(length) - create a symmetric key with the given length.");
-                    break;
-            }
-            dd.add("Note that QDL's " + MathEvaluator.RANDOM_STRING + " function is quite similar, but does not allow you");
-            dd.add("to specify the bit count, merely the number of bytes (= 8 bits)");
-            dd.add("E.g.");
-            dd.add("    " + getName() + "(2)");
-            dd.add("mXQ");
-            dd.add("(answer will vary since the result is random). This gives you a 2 bit symmetric key.");
-            return dd;
-        }
-    }
 
     SecureRandom secureRandom = new SecureRandom();
 }

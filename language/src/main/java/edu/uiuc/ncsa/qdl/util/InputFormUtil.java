@@ -24,6 +24,7 @@ import java.text.DecimalFormat;
 
 
 /**
+ * Utility that converts variosu objects to their input form.
  * <p>Created by Jeff Gaynor<br>
  * on 3/10/21 at  8:38 AM
  */

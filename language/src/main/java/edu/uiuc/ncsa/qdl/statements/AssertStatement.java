@@ -25,13 +25,13 @@ public class AssertStatement implements Statement{
         this.tokenPosition = tokenPosition;
     }
 
-    StatementWithResultInterface conditional;
+    ExpressionInterface conditional;
 
-    public StatementWithResultInterface getConditional() {
+    public ExpressionInterface getConditional() {
         return conditional;
     }
 
-    public void setConditional(StatementWithResultInterface conditional) {
+    public void setConditional(ExpressionInterface conditional) {
         this.conditional = conditional;
     }
 

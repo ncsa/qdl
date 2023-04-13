@@ -19,7 +19,7 @@ import edu.uiuc.ncsa.qdl.parsing.QDLRunner;
 import edu.uiuc.ncsa.qdl.scripting.QDLScript;
 import edu.uiuc.ncsa.qdl.state.*;
 import edu.uiuc.ncsa.qdl.statements.Element;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TryCatch;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
@@ -928,7 +928,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
         State state = state0.newLocalState();
         FunctionReferenceNode frn;
-        StatementWithResultInterface arg0 = polyad.getArguments().get(0);
+        ExpressionInterface arg0 = polyad.getArguments().get(0);
 
         frn = getFunctionReferenceNode(state, polyad.getArguments().get(0), true);
         Object arg1 = polyad.evalArg(1, state);
@@ -1087,7 +1087,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
             while (iterator.hasNext()) {
                 Object currentValue = iterator.next();
-                ArrayList<StatementWithResultInterface> argList = new ArrayList<>();
+                ArrayList<ExpressionInterface> argList = new ArrayList<>();
                 argList.add(new ConstantNode(lastValue, Constant.getType(lastValue)));
                 argList.add(new ConstantNode(currentValue, Constant.getType(currentValue)));
                 operator.setArguments(argList);
@@ -1120,7 +1120,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             while (iterator.hasNext()) {
                 Object key = iterator.next();
                 Object currentValue = inStem.get(key);
-                ArrayList<StatementWithResultInterface> argList = new ArrayList<>();
+                ArrayList<ExpressionInterface> argList = new ArrayList<>();
                 argList.add(new ConstantNode(lastValue, Constant.getType(lastValue)));
                 argList.add(new ConstantNode(currentValue, Constant.getType(currentValue)));
                 operator.setArguments(argList);
@@ -2629,8 +2629,8 @@ public class SystemEvaluator extends AbstractEvaluator {
             return;
         }
         Element lastElement = elements.get(elements.size() - 1);
-        if (lastElement.getStatement() instanceof StatementWithResultInterface) {
-            StatementWithResultInterface swri = (StatementWithResultInterface) lastElement.getStatement();
+        if (lastElement.getStatement() instanceof ExpressionInterface) {
+            ExpressionInterface swri = (ExpressionInterface) lastElement.getStatement();
             if (swri instanceof ANode2) {
                 polyad.setResult("");
                 polyad.setResultType(Constant.STRING_TYPE);

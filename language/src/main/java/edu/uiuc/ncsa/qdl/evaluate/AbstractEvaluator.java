@@ -4,7 +4,7 @@ import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.expressions.*;
 import edu.uiuc.ncsa.qdl.functions.*;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.qdl.vfs.VFSEntry;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
@@ -759,7 +759,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param informativeMessage
      * @return
      */
-    protected QDLStem getOrCreateStem(StatementWithResultInterface node, State state, String informativeMessage) {
+    protected QDLStem getOrCreateStem(ExpressionInterface node, State state, String informativeMessage) {
         QDLStem stem1 = null;
         if (node instanceof VariableNode) {
             VariableNode vn = (VariableNode) node;
@@ -882,12 +882,12 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
           //  pick((k)->3<k<10, |>mod(random(20),11))
     /**
      * Checks if the argument is some form of a function reference. This lets you test for
-     * overloading before invoking one of {@link #getFunctionReferenceNode(State, StatementWithResultInterface)}
+     * overloading before invoking one of {@link #getFunctionReferenceNode(State, ExpressionInterface)}
      *
      * @param arg0
      * @return
      */
-    public boolean isFunctionRef(StatementWithResultInterface arg0) {
+    public boolean isFunctionRef(ExpressionInterface arg0) {
         return (arg0 instanceof LambdaDefinitionNode) || (arg0 instanceof FunctionDefinitionStatement) || (arg0 instanceof FunctionReferenceNode);
     }
 
@@ -903,7 +903,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param arg0
      * @return
      */
-    public FunctionReferenceNode getFunctionReferenceNode(State state, StatementWithResultInterface arg0, boolean pushNewState) {
+    public FunctionReferenceNode getFunctionReferenceNode(State state, ExpressionInterface arg0, boolean pushNewState) {
         FunctionReferenceNode frn = null;
         if (arg0 instanceof LambdaDefinitionNode) {
             LambdaDefinitionNode lds = (LambdaDefinitionNode) arg0;
@@ -964,8 +964,8 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param objects
      * @return
      */
-    protected ArrayList<StatementWithResultInterface> toConstants(ArrayList<Object> objects) {
-        ArrayList<StatementWithResultInterface> args = new ArrayList<>();
+    protected ArrayList<ExpressionInterface> toConstants(ArrayList<Object> objects) {
+        ArrayList<ExpressionInterface> args = new ArrayList<>();
         for (Object obj : objects) {
             int type = Constant.getType(obj);
             if (type == UNKNOWN_TYPE) {
@@ -977,7 +977,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         return args;
     }
 
-    protected FunctionReferenceNode getFunctionReferenceNode(State state, StatementWithResultInterface arg0) {
+    protected FunctionReferenceNode getFunctionReferenceNode(State state, ExpressionInterface arg0) {
         return getFunctionReferenceNode(state, arg0, false);
     }
 
@@ -988,7 +988,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param arg
      * @param swri
      */
-    public static void checkNull(Object arg, StatementWithResultInterface swri) {
+    public static void checkNull(Object arg, ExpressionInterface swri) {
         if (arg != null) {
             return;
         }
@@ -1006,7 +1006,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param swri
      * @param state
      */
-    public static void checkNull(Object arg1, StatementWithResultInterface swri, State state) {
+    public static void checkNull(Object arg1, ExpressionInterface swri, State state) {
         if (arg1 == null) {
             UnknownSymbolException unknownSymbolException;
             String message = "unknown symbol";

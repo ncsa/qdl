@@ -1,7 +1,7 @@
 package edu.uiuc.ncsa.qdl.expressions;
 
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 
@@ -12,32 +12,32 @@ import java.util.ArrayList;
  * on 5/27/21 at  5:13 PM
  */
 public class AltIfExpressionNode extends ExpressionImpl {
-    public StatementWithResultInterface getIF() {
+    public ExpressionInterface getIF() {
         return getArguments().get(0);
     }
 
-    public void setIF(StatementWithResultInterface x) {
+    public void setIF(ExpressionInterface x) {
         getArguments().set(0, x);
     }
 
-    public StatementWithResultInterface getTHEN() {
+    public ExpressionInterface getTHEN() {
         return getArguments().get(1);
     }
 
-    public void setTHEN(StatementWithResultInterface x) {
+    public void setTHEN(ExpressionInterface x) {
         getArguments().set(1, x);
     }
 
-    public StatementWithResultInterface getELSE() {
+    public ExpressionInterface getELSE() {
         return getArguments().get(2);
     }
 
-    public void setELSE(StatementWithResultInterface x) {
+    public void setELSE(ExpressionInterface x) {
         getArguments().set(2, x);
     }
 
     @Override
-    public ArrayList<StatementWithResultInterface> getArguments() {
+    public ArrayList<ExpressionInterface> getArguments() {
         if (arguments == null || arguments.size()!= 3) {
             arguments = new ArrayList<>(3);
             arguments.add(null);
@@ -90,7 +90,7 @@ public class AltIfExpressionNode extends ExpressionImpl {
     }
 
     @Override
-    public StatementWithResultInterface makeCopy() {
+    public ExpressionInterface makeCopy() {
         return null;
     }
 }

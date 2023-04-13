@@ -1,6 +1,6 @@
 package edu.uiuc.ncsa.qdl.expressions;
 
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLSet;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
@@ -52,7 +52,7 @@ public class IndexArg implements Serializable {
     }
 
 
-    public IndexArg(StatementWithResultInterface swri, boolean strictOrder) {
+    public IndexArg(ExpressionInterface swri, boolean strictOrder) {
         this.swri = swri;
         this.strictOrder = strictOrder;
     }
@@ -61,7 +61,7 @@ public class IndexArg implements Serializable {
         return swri instanceof AllIndices;
     }
 
-    public StatementWithResultInterface swri;
+    public ExpressionInterface swri;
     public boolean strictOrder = false;
 
     @Override

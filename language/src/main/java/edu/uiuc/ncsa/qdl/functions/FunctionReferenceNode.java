@@ -1,7 +1,7 @@
 package edu.uiuc.ncsa.qdl.functions;
 
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 
@@ -12,7 +12,7 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 3/14/21 at  3:26 PM
  */
-public class FunctionReferenceNode implements StatementWithResultInterface {
+public class FunctionReferenceNode implements ExpressionInterface {
     TokenPosition tokenPosition = null;
 
     @Override
@@ -120,7 +120,7 @@ public class FunctionReferenceNode implements StatementWithResultInterface {
     }
 
     @Override
-    public StatementWithResultInterface makeCopy() {
+    public ExpressionInterface makeCopy() {
         return null;
     }
 }

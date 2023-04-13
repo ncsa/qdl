@@ -4,7 +4,7 @@ import edu.uiuc.ncsa.qdl.exceptions.UnknownSymbolException;
 import edu.uiuc.ncsa.qdl.expressions.VariableNode;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.Statement;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 9/28/20 at  1:47 PM
  */
-public class StemEntryNode implements StatementWithResultInterface {
+public class StemEntryNode implements ExpressionInterface {
     TokenPosition tokenPosition = null;
     @Override
     public void setTokenPosition(TokenPosition tokenPosition) {this.tokenPosition=tokenPosition;}
@@ -28,8 +28,8 @@ public class StemEntryNode implements StatementWithResultInterface {
 
     @Override
     public boolean hasTokenPosition() {return tokenPosition!=null;}
-    StatementWithResultInterface key;
-    StatementWithResultInterface value;
+    ExpressionInterface key;
+    ExpressionInterface value;
 
     @Override
     public boolean isInModule() {
@@ -56,11 +56,11 @@ public class StemEntryNode implements StatementWithResultInterface {
     }
 
     boolean isDefaultValue = false;
-    public StatementWithResultInterface getKey() {
+    public ExpressionInterface getKey() {
         return key;
     }
 
-    public void setKey(StatementWithResultInterface key) {
+    public void setKey(ExpressionInterface key) {
         this.key = key;
     }
 
@@ -68,7 +68,7 @@ public class StemEntryNode implements StatementWithResultInterface {
         return value;
     }
 
-    public void setValue(StatementWithResultInterface value) {
+    public void setValue(ExpressionInterface value) {
         this.value = value;
     }
 
@@ -116,7 +116,7 @@ public class StemEntryNode implements StatementWithResultInterface {
     }
 
     @Override
-    public StatementWithResultInterface makeCopy() {
+    public ExpressionInterface makeCopy() {
         return null;
     }
 

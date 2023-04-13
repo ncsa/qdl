@@ -2,7 +2,7 @@ package edu.uiuc.ncsa.qdl.expressions;
 
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class ParenthesizedExpression implements ExpressionNode {
         this.alias = alias;
     }
 
-    public StatementWithResultInterface getExpression() {
+    public ExpressionInterface getExpression() {
         if (getArgCount() == 0) {
             return null;
         }
@@ -47,14 +47,14 @@ public class ParenthesizedExpression implements ExpressionNode {
     }
 
     @Override
-    public StatementWithResultInterface getArgAt(int index) {
+    public ExpressionInterface getArgAt(int index) {
         if ((index < 0) || (getArgCount() <= index)) {
             return null;
         }
         return getArguments().get(index);
     }
 
-    public void setExpression(StatementWithResultInterface expression) {
+    public void setExpression(ExpressionInterface expression) {
         if (getArgCount() == 0) {
             getArguments().add(expression);
         } else {
@@ -114,21 +114,21 @@ public class ParenthesizedExpression implements ExpressionNode {
     }
 
     @Override
-    public StatementWithResultInterface makeCopy() {
+    public ExpressionInterface makeCopy() {
         ParenthesizedExpression parenthesizedExpression = new ParenthesizedExpression();
         parenthesizedExpression.setExpression(getExpression().makeCopy());
         return parenthesizedExpression;
     }
 
-    ArrayList<StatementWithResultInterface> args = new ArrayList<>();
+    ArrayList<ExpressionInterface> args = new ArrayList<>();
 
     @Override
-    public ArrayList<StatementWithResultInterface> getArguments() {
+    public ArrayList<ExpressionInterface> getArguments() {
         return args;
     }
 
     @Override
-    public void setArguments(ArrayList<StatementWithResultInterface> arguments) {
+    public void setArguments(ArrayList<ExpressionInterface> arguments) {
         args = arguments;
     }
 

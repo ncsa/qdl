@@ -27,6 +27,7 @@ import java.util.List;
  * Bunch of file reading and writing utilities so I don't have to boiler plate this stuff
  * Note that these are all VFS aware and server mode aware, so exceptions are
  * thrown if, e.g., a read attempt is made of a native file in server mode.
+ * <h3>Always use this for file reads and writes.</h3>
  * <h2>Main functions</h2>
  * <ul>
  *     <li>{@link #readBinaryFile(State, String)}  - returns byte array</li>

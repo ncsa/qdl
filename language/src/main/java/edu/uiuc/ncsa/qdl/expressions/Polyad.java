@@ -2,7 +2,7 @@ package edu.uiuc.ncsa.qdl.expressions;
 
 import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 
 /**
@@ -66,7 +66,7 @@ public class Polyad extends ExpressionImpl {
         }
          return getResult();
     }
-    public void addArgument(StatementWithResultInterface expr){
+    public void addArgument(ExpressionInterface expr){
         getArguments().add(expr);
     }
     @Override
@@ -82,7 +82,7 @@ public class Polyad extends ExpressionImpl {
     public ExpressionNode makeCopy() {
         Polyad polyad = new Polyad(operatorType);
         polyad.setName(getName());
-        for(StatementWithResultInterface arg: getArguments()){
+        for(ExpressionInterface arg: getArguments()){
             polyad.addArgument(arg.makeCopy());
         }
         return polyad;

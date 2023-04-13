@@ -9,7 +9,7 @@ import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XThing;
 import edu.uiuc.ncsa.qdl.statements.LocalBlockStatement;
 import edu.uiuc.ncsa.qdl.statements.Statement;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.util.QDLVersion;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.VThing;
@@ -340,8 +340,8 @@ public class FunctionEvaluator extends AbstractEvaluator {
             }
         }
         for (Statement statement : functionRecord.statements) {
-            if (statement instanceof StatementWithResultInterface) {
-                ((StatementWithResultInterface) statement).setAlias(polyad.getAlias());
+            if (statement instanceof ExpressionInterface) {
+                ((ExpressionInterface) statement).setAlias(polyad.getAlias());
             }
             try {
                 if(statement instanceof LocalBlockStatement){

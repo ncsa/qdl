@@ -164,16 +164,16 @@ public class QDLListener implements QDLParserListener {
         currentA.setSourceCode(getSource(assignmentContext));
         currentA.setTokenPosition(tp(assignmentContext));
         currentA.setOp(assignmentContext.ASSIGN().getText());
-        StatementWithResultInterface leftArg;
-        StatementWithResultInterface rightArg;
+        ExpressionInterface leftArg;
+        ExpressionInterface rightArg;
         // swap them if it is a right assignment
         if (currentA.getAssignmentType() == ANode2.rightAssignmentType) {
-            leftArg = (StatementWithResultInterface) resolveChild(assignmentContext.getChild(2));
-            rightArg = (StatementWithResultInterface) resolveChild(assignmentContext.getChild(0));
+            leftArg = (ExpressionInterface) resolveChild(assignmentContext.getChild(2));
+            rightArg = (ExpressionInterface) resolveChild(assignmentContext.getChild(0));
 
         } else {
-            leftArg = (StatementWithResultInterface) resolveChild(assignmentContext.getChild(0));
-            rightArg = (StatementWithResultInterface) resolveChild(assignmentContext.getChild(2));
+            leftArg = (ExpressionInterface) resolveChild(assignmentContext.getChild(0));
+            rightArg = (ExpressionInterface) resolveChild(assignmentContext.getChild(2));
         }
 
         if (leftArg instanceof ConstantNode) {
@@ -215,8 +215,8 @@ public class QDLListener implements QDLParserListener {
                 // add it.
                 //        dyad.setLeftArgument((ExpressionNode) resolveChild(parseTree.getChild(0)));
                 Statement s = resolveChild(kid);
-                if (s instanceof StatementWithResultInterface) {
-                    polyad.getArguments().add((StatementWithResultInterface) s);
+                if (s instanceof ExpressionInterface) {
+                    polyad.getArguments().add((ExpressionInterface) s);
 
                 }
                 if (s instanceof FunctionDefinitionStatement) {
@@ -313,9 +313,9 @@ public class QDLListener implements QDLParserListener {
         parenthesizedExpression.setTokenPosition(tp(ctx));
         parenthesizedExpression.setSourceCode(getSource(ctx));
         ParseTree p = ctx.expression();
-        StatementWithResultInterface v = (StatementWithResultInterface) parsingMap.getStatementFromContext(p);
+        ExpressionInterface v = (ExpressionInterface) parsingMap.getStatementFromContext(p);
         if (v == null) {
-            v = (StatementWithResultInterface) resolveChild(p);
+            v = (ExpressionInterface) resolveChild(p);
         }
         parenthesizedExpression.setExpression(v);
 
@@ -354,8 +354,8 @@ public class QDLListener implements QDLParserListener {
     }
 
     protected void finish(Dyad dyad, ParseTree parseTree) {
-        dyad.setLeftArgument((StatementWithResultInterface) resolveChild(parseTree.getChild(0)));
-        dyad.setRightArgument((StatementWithResultInterface) resolveChild(parseTree.getChild(2)));
+        dyad.setLeftArgument((ExpressionInterface) resolveChild(parseTree.getChild(0)));
+        dyad.setRightArgument((ExpressionInterface) resolveChild(parseTree.getChild(2)));
         List<String> source = new ArrayList<>();
         source.add(parseTree.getText());
         dyad.setSourceCode(source);
@@ -363,7 +363,7 @@ public class QDLListener implements QDLParserListener {
 
     protected void finish(Monad monad, ParseTree parseTree) {
         int index = monad.isPostFix() ? 0 : 1; // post fix means 0th is the arg, prefix means 1 is the arg.
-        monad.setArgument((StatementWithResultInterface) resolveChild(parseTree.getChild(index)));
+        monad.setArgument((ExpressionInterface) resolveChild(parseTree.getChild(index)));
         List<String> source = new ArrayList<>();
         source.add(parseTree.getText());
         monad.setSourceCode(source);
@@ -858,7 +858,7 @@ public class QDLListener implements QDLParserListener {
             // a return
             Statement stmt = resolveChild(p);
             // Contract: Wrap simple expressions in a return.
-            if (stmt instanceof StatementWithResultInterface) {
+            if (stmt instanceof ExpressionInterface) {
                 if (stmt instanceof ExpressionImpl) {
                     ExpressionImpl expr = (ExpressionImpl) stmt;
                     if (expr.getOperatorType() != SystemEvaluator.RETURN_TYPE) {
@@ -872,7 +872,7 @@ public class QDLListener implements QDLParserListener {
                 } else {
                     Polyad expr1 = new Polyad(SystemEvaluator.RETURN_TYPE);
                     expr1.setName(SystemEvaluator.RETURN);
-                    expr1.addArgument((StatementWithResultInterface) stmt);
+                    expr1.addArgument((ExpressionInterface) stmt);
                     functionRecord.statements.add(expr1); // wrapped in a return
                 }
             } else {
@@ -1121,13 +1121,13 @@ illegal argument:no module named "b" was  imported at (1, 67)
     public void exitStemEntry(QDLParserParser.StemEntryContext ctx) {
         StemEntryNode svn = (StemEntryNode) parsingMap.getStatementFromContext(ctx);
         if (ctx.getChild(0).getText().equals("*")) {
-            StatementWithResultInterface value = (StatementWithResultInterface) resolveChild(ctx.getChild(2));
+            ExpressionInterface value = (ExpressionInterface) resolveChild(ctx.getChild(2));
             svn.setDefaultValue(true);
             svn.setValue(value);
             return;
         }
-        StatementWithResultInterface key = (StatementWithResultInterface) resolveChild(ctx.getChild(0));
-        StatementWithResultInterface value = (StatementWithResultInterface) resolveChild(ctx.getChild(2));
+        ExpressionInterface key = (ExpressionInterface) resolveChild(ctx.getChild(0));
+        ExpressionInterface value = (ExpressionInterface) resolveChild(ctx.getChild(2));
         svn.setKey(key);
         svn.setValue(value);
         svn.setSourceCode(getSource(ctx));
@@ -1148,7 +1148,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
         for (int i = 0; i < ctx.getChildCount(); i++) {
             ParseTree pt = ctx.getChild(i);
             if (pt instanceof QDLParserParser.StemValueContext) {
-                StatementWithResultInterface stmt = (StatementWithResultInterface) resolveChild(pt);
+                ExpressionInterface stmt = (ExpressionInterface) resolveChild(pt);
                 sln.getStatements().add(stmt);
             }
         }
@@ -1250,7 +1250,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
             Dyad d = new Dyad(OpEvaluator.TILDE_VALUE);
             d.setTokenPosition(tp(dotOpContext));
             d.setSourceCode(getSource(dotOpContext));
-            d.setRightArgument((StatementWithResultInterface) resolveChild(um.getChild(1)));
+            d.setRightArgument((ExpressionInterface) resolveChild(um.getChild(1)));
             ESN2 leftArg = new ESN2();
             Statement s = resolveChild(dotOpContext.getChild(0));
             if (s instanceof VariableNode) {
@@ -1258,7 +1258,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
                 vNode.setVariableReference(vNode.getVariableReference() + STEM_INDEX_MARKER);
                 leftArg.setLeftArg(vNode);
             } else {
-                leftArg.setLeftArg((StatementWithResultInterface) s);
+                leftArg.setLeftArg((ExpressionInterface) s);
             }
             leftArg.setRightArg(null);
             d.setLeftArgument(leftArg);
@@ -1274,7 +1274,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
                 Dyad d = new Dyad(um.Plus() == null ? OpEvaluator.MINUS_VALUE : OpEvaluator.PLUS_VALUE);
                 d.setTokenPosition(tp(ctx));
                 d.setSourceCode(getSource(ctx));
-                d.setRightArgument((StatementWithResultInterface) resolveChild(um.getChild(1)));
+                d.setRightArgument((ExpressionInterface) resolveChild(um.getChild(1)));
                 ESN2 leftArg = new ESN2();
                 leftArg.setTokenPosition(tp(ctx)); // This is not right, it is the start of the expression,, best we can do
                 Statement s = resolveChild(dotOpContext.getChild(0));
@@ -1283,7 +1283,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
                     vNode.setVariableReference(vNode.getVariableReference() + STEM_INDEX_MARKER);
                     leftArg.setLeftArg(vNode);
                 } else {
-                    leftArg.setLeftArg((StatementWithResultInterface) s);
+                    leftArg.setLeftArg((ExpressionInterface) s);
                 }
                 leftArg.setRightArg(null);
                 d.setLeftArgument(leftArg);
@@ -1297,12 +1297,12 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
         expressionStemNode.setSourceCode(getSource(dotOpContext));
         List<QDLParserParser.ExpressionContext> list = dotOpContext.expression();
-        StatementWithResultInterface exp = (StatementWithResultInterface) resolveChild(list.get(0));
+        ExpressionInterface exp = (ExpressionInterface) resolveChild(list.get(0));
         for (int i = 0; i < dotOpContext.getChildCount(); i++) {
             ParseTree p = dotOpContext.getChild(i);
             // If it is a termminal node (a node consisting of just be the stem marker) skip it
             if (!(p instanceof TerminalNodeImpl)) {
-                StatementWithResultInterface swri = (StatementWithResultInterface) resolveChild(p);
+                ExpressionInterface swri = (ExpressionInterface) resolveChild(p);
                 if (i == 0) {
                     if (swri instanceof VariableNode) {
                         VariableNode vNode = (VariableNode) swri;
@@ -1480,8 +1480,8 @@ illegal argument:no module named "b" was  imported at (1, 67)
         AltIfExpressionNode altIfExpressionNode = (AltIfExpressionNode) parsingMap.getStatementFromContext(ctx);
         //#0 is if[ // #1 is conditional, #2 is ]then[. #3 starts the statements
         altIfExpressionNode.setIF((ExpressionNode) resolveChild(ctx.getChild(0)));
-        altIfExpressionNode.setTHEN((StatementWithResultInterface) resolveChild(ctx.getChild(2)));
-        altIfExpressionNode.setELSE((StatementWithResultInterface) resolveChild(ctx.getChild(4)));
+        altIfExpressionNode.setTHEN((ExpressionInterface) resolveChild(ctx.getChild(2)));
+        altIfExpressionNode.setELSE((ExpressionInterface) resolveChild(ctx.getChild(4)));
         altIfExpressionNode.setTokenPosition(tp(ctx));
         altIfExpressionNode.setSourceCode(getSource(ctx));
     }
@@ -1599,7 +1599,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
             if (ctx.getChild(i) instanceof TerminalNodeImpl) {
                 continue;
             }
-            sliceNode.getArguments().add((StatementWithResultInterface) resolveChild(ctx.getChild(i)));
+            sliceNode.getArguments().add((ExpressionInterface) resolveChild(ctx.getChild(i)));
         }
         sliceNode.setTokenPosition(tp(ctx));
         sliceNode.setSourceCode(getSource(ctx));
@@ -1621,7 +1621,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
             if (ctx.getChild(i) instanceof TerminalNodeImpl) {
                 continue;
             }
-            realIntervalNode.getArguments().add((StatementWithResultInterface) resolveChild(ctx.getChild(i)));
+            realIntervalNode.getArguments().add((ExpressionInterface) resolveChild(ctx.getChild(i)));
         }
         realIntervalNode.setTokenPosition(tp(ctx));
         realIntervalNode.setSourceCode(getSource(ctx));
@@ -1688,7 +1688,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
                 continue;
             }
             if (isFirst) {
-                assertStatement.setConditional((StatementWithResultInterface) resolveChild(ctx.getChild(i)));
+                assertStatement.setConditional((ExpressionInterface) resolveChild(ctx.getChild(i)));
                 isFirst = false;
             } else {
                 assertStatement.setMesssge((ExpressionNode) resolveChild(ctx.getChild(i)));
@@ -1714,7 +1714,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
                 continue;
             }
             if (isFirst) {
-                assertStatement.setConditional((StatementWithResultInterface) resolveChild(ctx.getChild(i)));
+                assertStatement.setConditional((ExpressionInterface) resolveChild(ctx.getChild(i)));
                 isFirst = false;
             } else {
                 assertStatement.setMesssge((ExpressionNode) resolveChild(ctx.getChild(i)));
@@ -1815,7 +1815,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
                 }*/
 
             } else {
-                StatementWithResultInterface swri = (StatementWithResultInterface) resolveChild(p);
+                ExpressionInterface swri = (ExpressionInterface) resolveChild(p);
                 if (i == 0) {
                     if (swri instanceof VariableNode) {
                         VariableNode vNode = (VariableNode) swri;
@@ -1886,7 +1886,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
             esn.setSourceCode(getSource(ctx));
             esn.setTokenPosition(tp(ctx));
             stash(ctx, esn);
-            esn.setLeftArg((StatementWithResultInterface) resolveChild(expressionContext));
+            esn.setLeftArg((ExpressionInterface) resolveChild(expressionContext));
         }
         if (expressionContext instanceof QDLParserParser.ModuleExpressionContext) {
             QDLParserParser.ModuleExpressionContext moduleExpressionContext = (QDLParserParser.ModuleExpressionContext) expressionContext;
@@ -2003,7 +2003,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
             // a return
             Statement stmt = resolveChild(expressionContext);
             // Contract: Wrap simple expressions in a return.
-            if (stmt instanceof StatementWithResultInterface) {
+            if (stmt instanceof ExpressionInterface) {
                 if (stmt instanceof ExpressionImpl) {
                     ExpressionImpl expr = (ExpressionImpl) stmt;
                     if (expr.getOperatorType() != SystemEvaluator.RETURN_TYPE) {
@@ -2020,7 +2020,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
                     expr1.setTokenPosition(tp(lambdaContext)); // best we can do
 
                     expr1.setName(SystemEvaluator.RETURN);
-                    expr1.addArgument((StatementWithResultInterface) stmt);
+                    expr1.addArgument((ExpressionInterface) stmt);
                     functionRecord.statements.add(expr1); // wrapped in a return
                 }
             } else {
@@ -2086,7 +2086,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
         dyad.setTokenPosition(tp(ctx));
         stash(ctx, dyad);
         dyad.setLeftArgument(new ConstantNode(new QDLStem(), Constant.STEM_TYPE));
-        dyad.setRightArgument((StatementWithResultInterface) resolveChild(ctx.expression()));
+        dyad.setRightArgument((ExpressionInterface) resolveChild(ctx.expression()));
         List<String> source = new ArrayList<>();
         source.add(ctx.getText());
         dyad.setSourceCode(source);
@@ -2131,13 +2131,13 @@ illegal argument:no module named "b" was  imported at (1, 67)
         List<String> source = new ArrayList<>();
         source.add(ctx.getText());
         moduleExpression.setSourceCode(source);
-        StatementWithResultInterface var = (StatementWithResultInterface) resolveChild(ctx.variable());
+        ExpressionInterface var = (ExpressionInterface) resolveChild(ctx.variable());
         if (!(var instanceof VariableNode)) {
             throw new IllegalArgumentException("unexpected argument for alias");
         }
         moduleExpression.setAlias(((VariableNode) var).getVariableReference());
 
-        moduleExpression.setExpression((StatementWithResultInterface) statement);
+        moduleExpression.setExpression((ExpressionInterface) statement);
 
     }
 
@@ -2166,7 +2166,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
         for (int i = 0; i < ctx.set().getChildCount(); i++) {
             ParseTree pt = ctx.set().getChild(i);
             if (!(pt instanceof TerminalNode)) {
-                StatementWithResultInterface stmt = (StatementWithResultInterface) resolveChild(pt);
+                ExpressionInterface stmt = (ExpressionInterface) resolveChild(pt);
                 setNode.getStatements().add(stmt);
 
             }

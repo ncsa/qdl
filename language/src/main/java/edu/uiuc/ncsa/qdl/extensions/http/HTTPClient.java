@@ -220,7 +220,6 @@ public class HTTPClient implements QDLModuleMetaClass {
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> doxx = new ArrayList<>();
-            doxx.add(getName() + "({uri_path,}{parameters.}) -  do an HTTP GET");
             switch (argCount) {
                 case 0:
                     doxx.add(getName() + "() - do an HTTP GET to the host with the current headers and no parameters.");
@@ -234,6 +233,9 @@ public class HTTPClient implements QDLModuleMetaClass {
             }
             doxx.add("The two basic ways of accessing RESTful services are to have the uri overloaded or to send parameters (or both).");
             doxx.add("This function will do either of those. ");
+            if(argCount == 2){
+                doxx.addAll(getURIPathBlurb());
+            }
             doxx.add("E.g.");
             doxx.add("Let us say you needed to make a call to https://students.bsu.edu/user/123?format=json");
             doxx.add("In this case, you must supply the type of object ('user') and an identifier ('123') as part of the path");
@@ -326,13 +328,12 @@ public class HTTPClient implements QDLModuleMetaClass {
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> doxx = new ArrayList<>();
-            doxx.add(getName() + "({headers.}) - get or set the headers");
             switch (argCount) {
                 case 0:
-                    doxx.add("get current set of headers.");
+                    doxx.add(getName() + "() - get current set of headers.");
                     break;
                 case 1:
-                    doxx.add("The argument is the new headers. Previous headers are returned.");
+                    doxx.add(getName() + "(headers.) - Set the current headers. The previous headers are returned.");
             }
             doxx.add("The keys are the names of the headers, the value is its value");
             doxx.add("E.g.s of various random headers you can set");
@@ -443,9 +444,9 @@ public class HTTPClient implements QDLModuleMetaClass {
                 case 1:
                     doxx.add(getName() + "(unverified) - if unverified is true will allow for connecting without SSL verfication");
                     doxx.add("Unless you have a very specific");
-                    doxx.add("reason for this (such as you are testing a server with a self-signed cert");
+                    doxx.add("reason for this, such as you are testing a server with a self-signed cert, ");
                     doxx.add("you should not use this feature.");
-                    doxx.add("This neither boost speed nor performance.");
+                    doxx.add("This boosts neither speed nor performance and turns off essential security.");
                     break;
             }
             return doxx;
@@ -501,7 +502,6 @@ public class HTTPClient implements QDLModuleMetaClass {
         public List<String> getDocumentation(int argCount) {
             List<String> doxx = new ArrayList<>();
             doxx.add(getName() + "() - returns true if the connection is open, false otherwise.");
-
             return doxx;
         }
     }
@@ -525,9 +525,16 @@ public class HTTPClient implements QDLModuleMetaClass {
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> doxx = new ArrayList<>();
+            switch (argCount) {
+                case 1:
+                    break;
+                case 2:
+                    break;
+            }
             doxx.add(getName() + "({uri_path,} string|stem.) do a post with the payload as a string or stem. ");
-            doxx.add("uri_path is optional and will use whatever was set with the " + HOST_METHOD + " function.");
-            doxx.add("You may supply it and add query parameters to it, for instance.");
+            if(argCount == 2){
+                doxx.addAll(getURIPathBlurb());
+            }
             doxx.add("If you send along a simple string, it will be treated as the entire body of the post.");
             doxx.add("Various content types and their uses are:");
             doxx.add("(none)         \n  string only          \n   body of the post is the string, content type set to " + CONTENT_TEXT);
@@ -542,6 +549,13 @@ public class HTTPClient implements QDLModuleMetaClass {
             doxx.add("a=b&c=d");
             return doxx;
         }
+    }
+
+    protected List<String> getURIPathBlurb() {
+        List<String> doc = new ArrayList<>();
+        doc.add("uri_path is optional and will use whatever was set with the " + HOST_METHOD + " function.");
+        doc.add("You may supply it and add query parameters to it, for instance.");
+        return doc;
     }
 
     public class Put implements QDLFunction {
@@ -563,10 +577,18 @@ public class HTTPClient implements QDLModuleMetaClass {
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> doxx = new ArrayList<>();
-            doxx.add(getName() + "({uri_path,} string | payload.) do a put with the payload. ");
+            switch (argCount) {
+                case 1:
+                    doxx.add(getName() + "( string | payload.) do a put with the payload. ");
+                    break;
+                case 2:
+                    doxx.add(getName() + "(uri_path, string | payload.) do a put using the uri_path and the payload. ");
+                    doxx.addAll(getURIPathBlurb());
+                    break;
+            }
             doxx.add("Note that the payload will be the body of the post. If a string, the whole string is the body.");
             doxx.add("If you need to add authorization headers, set them in the header() function first.");
-            doxx.add("See Post for details of how payloads and content types are handled");
+            doxx.add("See " + POST_METHOD + " for details of how payloads and content types are handled");
             return doxx;
         }
     }
@@ -763,8 +785,6 @@ public class HTTPClient implements QDLModuleMetaClass {
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> doxx = new ArrayList<>();
-            doxx.add(getName() + "({uri_path}, parameters) - delete something from the server");
-            doxx.add("This uses the current host and headers.");
             switch (argCount) {
                 case 0:
                     doxx.add(getName() + "() - use only the current host ");
@@ -776,6 +796,7 @@ public class HTTPClient implements QDLModuleMetaClass {
                     doxx.add(getName() + "(uri_path, parameters.)  - use  current host + uri_path, then append the parameters to the request uri ");
                     break;
             }
+            doxx.add("This uses the current host and headers.");
             doxx.add("This returns a response stem if the operation worked and throws an error if it did not.");
             return doxx;
         }

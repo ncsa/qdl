@@ -2,7 +2,7 @@ package edu.uiuc.ncsa.qdl.expressions;
 
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 
@@ -72,11 +72,11 @@ public class Monad extends ExpressionImpl{
         return getResult();
     }
 
-    public StatementWithResultInterface getArgument() {
+    public ExpressionInterface getArgument() {
         return getArguments().get(0);
     }
 
-    public void setArgument(StatementWithResultInterface node) {
+    public void setArgument(ExpressionInterface node) {
         if (getArgCount() == 0) {
             getArguments().add(node);
             return;

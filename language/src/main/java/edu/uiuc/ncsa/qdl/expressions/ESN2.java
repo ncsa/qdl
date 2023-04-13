@@ -3,7 +3,7 @@ package edu.uiuc.ncsa.qdl.expressions;
 import edu.uiuc.ncsa.qdl.exceptions.IndexError;
 import edu.uiuc.ncsa.qdl.exceptions.UnknownSymbolException;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
@@ -24,18 +24,18 @@ public class ESN2 extends ExpressionImpl {
 
 
     @Override
-    public StatementWithResultInterface makeCopy() {
+    public ExpressionInterface makeCopy() {
         throw new NotImplementedException();
     }
 
-    public StatementWithResultInterface getLeftArg() {
+    public ExpressionInterface getLeftArg() {
         if (getArguments().isEmpty()) {
             return null;
         }
         return getArguments().get(0);
     }
 
-    public void setLeftArg(StatementWithResultInterface swri) {
+    public void setLeftArg(ExpressionInterface swri) {
         if (getArguments().size() == 0) {
             getArguments().add(swri);
         } else {
@@ -43,7 +43,7 @@ public class ESN2 extends ExpressionImpl {
         }
     }
 
-    public void setRightArg(StatementWithResultInterface swri) {
+    public void setRightArg(ExpressionInterface swri) {
         if (getArguments().size() == 1) {
             getArguments().add(swri);
         } else {
@@ -51,7 +51,7 @@ public class ESN2 extends ExpressionImpl {
         }
     }
 
-    public StatementWithResultInterface getRightArg() {
+    public ExpressionInterface getRightArg() {
         if (getArguments().size() < 2) {
             return null;
         }
@@ -59,8 +59,8 @@ public class ESN2 extends ExpressionImpl {
     }
 
     protected Object get(State state) {
-        ArrayList<StatementWithResultInterface> leftArgs = new ArrayList<>();
-        ArrayList<StatementWithResultInterface> rightArgs = new ArrayList<>();
+        ArrayList<ExpressionInterface> leftArgs = new ArrayList<>();
+        ArrayList<ExpressionInterface> rightArgs = new ArrayList<>();
         linearizeTree(leftArgs, rightArgs);
 
         // Evaluation pass. Make sure everything resolves w.r.t. the state
@@ -88,7 +88,7 @@ public class ESN2 extends ExpressionImpl {
 
         Object r0 = leftArgs.get(leftArgs.size() - 1).evaluate(state);
         if (r0 == null) {
-            StatementWithResultInterface lll = leftArgs.get(leftArgs.size() - 1);
+            ExpressionInterface lll = leftArgs.get(leftArgs.size() - 1);
             if (lll instanceof VariableNode) {
                 throw new UnknownSymbolException("variable '" + ((VariableNode) lll).getVariableReference() + "' is undefined", lll);
             }
@@ -159,7 +159,7 @@ public class ESN2 extends ExpressionImpl {
         }
     }
 
-    private IndexList getIndexList(State state, ArrayList<StatementWithResultInterface> rightArgs) {
+    private IndexList getIndexList(State state, ArrayList<ExpressionInterface> rightArgs) {
         IndexList indexList = new IndexList(rightArgs.size());
         boolean isFirst = true;
         Object obj = null;
@@ -193,7 +193,7 @@ public class ESN2 extends ExpressionImpl {
 
             if (obj == null) {
                 VariableNode vNode = null;
-                StatementWithResultInterface x;
+                ExpressionInterface x;
                 if (rightArgs.get(i) instanceof ParenthesizedExpression) {
                     x = ((ParenthesizedExpression) rightArgs.get(i)).getExpression();
                     if (x instanceof VariableNode) {
@@ -218,13 +218,13 @@ public class ESN2 extends ExpressionImpl {
      * @param leftArgs
      * @param rightArgs
      */
-    private void linearizeTree(ArrayList<StatementWithResultInterface> leftArgs, ArrayList<StatementWithResultInterface> rightArgs) {
+    private void linearizeTree(ArrayList<ExpressionInterface> leftArgs, ArrayList<ExpressionInterface> rightArgs) {
         //     leftArgs.add(getLeftArg());
         if (getRightArg() != null) {
             // This can have a null right arg, e.g. a.b.
             rightArgs.add(getRightArg());
         }
-        StatementWithResultInterface swri = getLeftArg();
+        ExpressionInterface swri = getLeftArg();
         while (swri instanceof ESN2) {
             ESN2 esn2 = (ESN2) swri;
             leftArgs.add(esn2.getLeftArg());
@@ -236,8 +236,8 @@ public class ESN2 extends ExpressionImpl {
     }
 
     public boolean remove(State state) {
-        ArrayList<StatementWithResultInterface> leftArgs = new ArrayList<>();
-        ArrayList<StatementWithResultInterface> rightArgs = new ArrayList<>();
+        ArrayList<ExpressionInterface> leftArgs = new ArrayList<>();
+        ArrayList<ExpressionInterface> rightArgs = new ArrayList<>();
         linearizeTree(leftArgs, rightArgs);
         // Evaluation pass. Make sure everything resolves w.r.t. the state
         IndexList indexList = getIndexList(state, rightArgs);
@@ -247,7 +247,7 @@ public class ESN2 extends ExpressionImpl {
         whittleIndices(indexList);
         QDLStem stemVariable = null;
         boolean gotOne = false;
-        StatementWithResultInterface realLeftArg = leftArgs.get(leftArgs.size() - 1);
+        ExpressionInterface realLeftArg = leftArgs.get(leftArgs.size() - 1);
         Object arg0 = realLeftArg.evaluate(state);
         if (arg0 instanceof QDLStem) {
             QDLStem arg = (QDLStem) arg0;
@@ -262,8 +262,8 @@ public class ESN2 extends ExpressionImpl {
     }
 
     public void set(State state, Object newValue) {
-        ArrayList<StatementWithResultInterface> leftArgs = new ArrayList<>();
-        ArrayList<StatementWithResultInterface> rightArgs = new ArrayList<>();
+        ArrayList<ExpressionInterface> leftArgs = new ArrayList<>();
+        ArrayList<ExpressionInterface> rightArgs = new ArrayList<>();
         linearizeTree(leftArgs, rightArgs);
         // Evaluation pass. Make sure everything resolves w.r.t. the state
         IndexList indexList = getIndexList(state, rightArgs);
@@ -273,7 +273,7 @@ public class ESN2 extends ExpressionImpl {
         whittleIndices(indexList);
         QDLStem stemVariable = null;
         boolean gotOne = false;
-        StatementWithResultInterface realLeftArg = leftArgs.get(leftArgs.size() - 1);
+        ExpressionInterface realLeftArg = leftArgs.get(leftArgs.size() - 1);
         realLeftArg.evaluate(state);
         boolean isParenthesized = realLeftArg instanceof ParenthesizedExpression;
         if (isParenthesized) {

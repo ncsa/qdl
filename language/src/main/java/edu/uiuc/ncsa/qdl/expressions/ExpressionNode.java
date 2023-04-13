@@ -1,7 +1,7 @@
 package edu.uiuc.ncsa.qdl.expressions;
 
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 
 import java.util.ArrayList;
 
@@ -11,13 +11,13 @@ import java.util.ArrayList;
  * <p>Created by Jeff Gaynor<br>
  * on 1/13/20 at  3:02 PM
  */
-public interface ExpressionNode extends StatementWithResultInterface {
+public interface ExpressionNode extends ExpressionInterface {
 
-    ArrayList<StatementWithResultInterface> getArguments(); // need this to preserve order of lists
+    ArrayList<ExpressionInterface> getArguments(); // need this to preserve order of lists
 
-    StatementWithResultInterface getArgAt(int index);
+    ExpressionInterface getArgAt(int index);
 
-    void setArguments(ArrayList<StatementWithResultInterface> arguments);
+    void setArguments(ArrayList<ExpressionInterface> arguments);
 
     int getArgCount();
 

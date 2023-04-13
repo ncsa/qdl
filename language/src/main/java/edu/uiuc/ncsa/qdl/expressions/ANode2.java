@@ -3,7 +3,7 @@ package edu.uiuc.ncsa.qdl.expressions;
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
@@ -49,14 +49,14 @@ public class ANode2 extends ExpressionImpl {
 
     String op;
 
-    public StatementWithResultInterface getLeftArg() {
+    public ExpressionInterface getLeftArg() {
         if (!hasLeftArg()) {
             return null;
         }
         return getArguments().get(0);
     }
 
-    public void setLeftArg(StatementWithResultInterface leftArg) {
+    public void setLeftArg(ExpressionInterface leftArg) {
         if (getArguments().size() == 0) {
             getArguments().add(leftArg);
         } else {
@@ -64,14 +64,14 @@ public class ANode2 extends ExpressionImpl {
         }
     }
 
-    public StatementWithResultInterface getRightArg() {
+    public ExpressionInterface getRightArg() {
         if (!hasRightArg()) {
             return null;
         }
         return getArguments().get(1);
     }
 
-    public void setRightArg(StatementWithResultInterface rightArg) {
+    public void setRightArg(ExpressionInterface rightArg) {
         if (getArguments().size() == 1) {
 
             getArguments().add(rightArg);
@@ -118,7 +118,7 @@ public class ANode2 extends ExpressionImpl {
         }
         setEvaluated(true);
         ANode2 lastAnode = this;
-        StatementWithResultInterface realLeftArg = getLeftArg();
+        ExpressionInterface realLeftArg = getLeftArg();
         boolean chained = false;
         while (realLeftArg instanceof ANode2) {
             ANode2 rla = (ANode2) realLeftArg;
@@ -156,7 +156,7 @@ public class ANode2 extends ExpressionImpl {
             }
 
             for (int i = 0; i < stemListNode.getStatements().size(); i++) {
-                StatementWithResultInterface swri = stemListNode.getStatements().get(i);
+                ExpressionInterface swri = stemListNode.getStatements().get(i);
                 if (!(swri instanceof VariableNode)) {
                     throw new QDLExceptionWithTrace("unknown left assignment statement ", getLeftArg());
                 }
@@ -188,7 +188,7 @@ public class ANode2 extends ExpressionImpl {
 
 
     @Override
-    public StatementWithResultInterface makeCopy() {
+    public ExpressionInterface makeCopy() {
         ANode2 aNode2 = new ANode2(getTokenPosition());
         aNode2.setOp(getOp());
         aNode2.setLeftArg(getLeftArg().makeCopy());

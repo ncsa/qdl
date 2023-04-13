@@ -2,7 +2,7 @@ package edu.uiuc.ncsa.qdl.expressions;
 
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.StemMultiIndex;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
@@ -18,7 +18,7 @@ import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
  * <p>Created by Jeff Gaynor<br>
  * on 3/5/21 at  5:58 AM
  */
-public class ExpressionStemNode implements StatementWithResultInterface {
+public class ExpressionStemNode implements ExpressionInterface {
     TokenPosition tokenPosition = null;
     @Override
     public void setTokenPosition(TokenPosition tokenPosition) {this.tokenPosition=tokenPosition;}
@@ -46,15 +46,15 @@ public class ExpressionStemNode implements StatementWithResultInterface {
     }
 
 
-    public ArrayList<StatementWithResultInterface> getArguments() {
+    public ArrayList<ExpressionInterface> getArguments() {
         return arguments;
     }
 
-    public void setArguments(ArrayList<StatementWithResultInterface> arguments) {
+    public void setArguments(ArrayList<ExpressionInterface> arguments) {
         this.arguments = arguments;
     }
 
-    ArrayList<StatementWithResultInterface> arguments = new ArrayList<>();
+    ArrayList<ExpressionInterface> arguments = new ArrayList<>();
 
     Object result = null;
 
@@ -93,14 +93,14 @@ public class ExpressionStemNode implements StatementWithResultInterface {
         this.evaluated = evaluated;
     }
 
-    public StatementWithResultInterface getLeftArg() {
+    public ExpressionInterface getLeftArg() {
         if(getArguments().isEmpty()){
             return null;
         }
         return getArguments().get(0);
     }
 
-    public void setLeftArg(StatementWithResultInterface swri){
+    public void setLeftArg(ExpressionInterface swri){
             if(getArguments().size() == 0){
                 getArguments().add(swri);
             }else{
@@ -108,7 +108,7 @@ public class ExpressionStemNode implements StatementWithResultInterface {
             }
     }
 
-    public void setRightArg(StatementWithResultInterface swri){
+    public void setRightArg(ExpressionInterface swri){
             if(getArguments().size() == 1){
                 getArguments().add(swri);
             }else{
@@ -116,7 +116,7 @@ public class ExpressionStemNode implements StatementWithResultInterface {
             }
     }
 
-    public StatementWithResultInterface getRightArg() {
+    public ExpressionInterface getRightArg() {
         if(getArguments().size() < 2){
             return null;
         }
@@ -275,12 +275,12 @@ The following are working:
             // cannot be a stem, e.g. (1).(2).
             throw new IllegalStateException("left hand argument not a valid stem.");
         }
-        StatementWithResultInterface swri = getLeftArg();
+        ExpressionInterface swri = getLeftArg();
 
-        StatementWithResultInterface lastSWRI = getRightArg();
+        ExpressionInterface lastSWRI = getRightArg();
         Object r = null;
         ExpressionStemNode esn = null;
-        ArrayList<StatementWithResultInterface> indices = new ArrayList<>();
+        ArrayList<ExpressionInterface> indices = new ArrayList<>();
 
         while (swri instanceof ExpressionStemNode) {
             esn = (ExpressionStemNode) swri;
@@ -322,8 +322,8 @@ The following are working:
 
     // a. := {'p':'x', 'q':'y', 'r':5, 's':[2,4,6], 't':{'m':true,'n':345.345}}
     //  (a.).query(a., '$..m',true).(0)
-    protected Object doLeftSVCase(StatementWithResultInterface leftArg, StatementWithResultInterface rightArg, State state) {
-        List<StatementWithResultInterface> x = new ArrayList<>();
+    protected Object doLeftSVCase(ExpressionInterface leftArg, ExpressionInterface rightArg, State state) {
+        List<ExpressionInterface> x = new ArrayList<>();
         x.add(rightArg);
         return doLeftSVCase(leftArg, x, state);
     }
@@ -337,7 +337,7 @@ The following are working:
      * @param state
      * @return
      */
-    protected Object doLeftSVCase(StatementWithResultInterface leftArg, List<StatementWithResultInterface> indices, State state) {
+    protected Object doLeftSVCase(ExpressionInterface leftArg, List<ExpressionInterface> indices, State state) {
         QDLStem stemLeft = (QDLStem) leftArg.getResult();
         if(stemLeft == null){
             if(indices.get(0) instanceof VariableNode) {
@@ -345,7 +345,7 @@ The following are working:
             }
         }
         String rawMI = "_"; // dummy name for stem
-        for (StatementWithResultInterface rightArg : indices) {
+        for (ExpressionInterface rightArg : indices) {
 
             boolean gotOne = false;
             if (rightArg instanceof VariableNode) {
@@ -411,7 +411,7 @@ The following are working:
     }
 
     @Override
-    public StatementWithResultInterface makeCopy() {
+    public ExpressionInterface makeCopy() {
         return null;
     }
 }

@@ -1,7 +1,7 @@
 package edu.uiuc.ncsa.qdl.expressions;
 
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 
 import java.util.ArrayList;
@@ -50,15 +50,15 @@ public class Dyad extends ExpressionImpl{
         return getResult();
     }
 
-    public StatementWithResultInterface getLeftArgument() {
+    public ExpressionInterface getLeftArgument() {
         return getArguments().get(0);
     }
 
-    public StatementWithResultInterface getRightArgument() {
+    public ExpressionInterface getRightArgument() {
         return getArguments().get(1);
     }
 
-    public void setLeftArgument(StatementWithResultInterface node) {
+    public void setLeftArgument(ExpressionInterface node) {
         if(getArguments().size()==0){
             getArguments().add(node);
         }else {
@@ -66,7 +66,7 @@ public class Dyad extends ExpressionImpl{
         }
     }
 
-    public void setRightArgument(StatementWithResultInterface node) {
+    public void setRightArgument(ExpressionInterface node) {
         switch(getArguments().size()){
             case 0:
                 getArguments().add(null);

@@ -2,7 +2,7 @@ package edu.uiuc.ncsa.qdl.parsing;
 
 import edu.uiuc.ncsa.qdl.expressions.ExpressionNode;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 6/1/21 at  6:43 AM
  */
-public class ParseExpressionBlock implements StatementWithResultInterface {
+public class ParseExpressionBlock implements ExpressionInterface {
     TokenPosition tokenPosition = null;
     @Override
     public void setTokenPosition(TokenPosition tokenPosition) {this.tokenPosition=tokenPosition;}
@@ -97,7 +97,7 @@ public class ParseExpressionBlock implements StatementWithResultInterface {
     }
 
     @Override
-    public StatementWithResultInterface makeCopy() {
+    public ExpressionInterface makeCopy() {
         return null;
     }
 }

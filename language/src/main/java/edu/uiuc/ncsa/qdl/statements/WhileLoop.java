@@ -112,7 +112,7 @@ public class WhileLoop implements Statement {
             throw new ExtraArgException(FOR_LINES + " requires at most two arguments", conditional.getArgAt(2));
 
         }
-        StatementWithResultInterface swri = conditional.getArgAt(0);
+        ExpressionInterface swri = conditional.getArgAt(0);
         if (!(swri instanceof VariableNode)) {
             throw new BadArgException(FOR_LINES + " requires a variable as its first argument", conditional.getArgAt(0));
         }

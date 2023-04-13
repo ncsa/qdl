@@ -5,7 +5,7 @@ import edu.uiuc.ncsa.qdl.expressions.ConstantNode;
 import edu.uiuc.ncsa.qdl.expressions.ExpressionStemNode;
 import edu.uiuc.ncsa.qdl.expressions.VariableNode;
 import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.statements.StatementWithResultInterface;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -173,9 +173,9 @@ public class StemUtility {
          */
     public static void doNodeSurgery(ExpressionStemNode ESN, State state) {
 
-        ArrayList<StatementWithResultInterface> leftArgs = new ArrayList<>();
-        ArrayList<StatementWithResultInterface> rightArgs = new ArrayList<>();
-        StatementWithResultInterface swri = ESN;
+        ArrayList<ExpressionInterface> leftArgs = new ArrayList<>();
+        ArrayList<ExpressionInterface> rightArgs = new ArrayList<>();
+        ExpressionInterface swri = ESN;
         while (swri != null) {
             leftArgs.add(swri);
             if (swri instanceof ExpressionStemNode) {

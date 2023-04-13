@@ -32,7 +32,6 @@ public class CryptoModule extends JavaModule {
         funcs.add(crypto.new GetPublicKey());
         funcs.add(crypto.new SymmetricEncrypt());
         funcs.add(crypto.new SymmetricDecrypt());
-        funcs.add(crypto.new CreateSymmetricKey());
         cryptoModule.addFunctions(funcs);
         if (state != null) {
             cryptoModule.init(state);
