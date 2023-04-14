@@ -8,47 +8,83 @@
    Date
    March 16 2020
 
-The QD Language
+The QDL Programming Language
 
-    The QDL Programming Language is a general purpose scripting language that is designed to work on aggregate
-    objects. It includes the usual constructs for a language such as looping, conditionals,
-    switch statements and encapsulation.
+    The QDL Programming Language (QDL is pronounced "quiddle") is a general purpose
+    scripting language that is designed to work on aggregate objects.
+    Specifically, it is an aggregate-oriented functional programming language with static rank polymorphism.
+    It also includes the usual constructs for a language such as looping, conditionals, switch statements and encapsulation
+    because frankly, you need them sometimes. To use QDL on a project is referred to as "quiddling".
+
+    The main way of interacting with QDL is to use its workspace and issue commands interactively, allowing real
+    time processing. The origin of QDL was as a notation to abstractly write algorithms in various languages before
+    implementing them. It works admirably in this capacity with its workspace model and can be used as a very rapid
+    prototyping system or just an "algorithmic calculator." Most people that dabble with it find it extremely useful
+    and keep a copy running for all sorts of oddball things. True to its original purpose, many functions can be
+    replaced with single (unicode) operators, potentially giving QDL a very sleek, terse appearance if desired.
+
+    It eventually found a home as the scripting language for {{{https://ncsa.github.io/oa4mp}OA4MP}}, NCSA's
+    Open Authorization server, where it is heavily used, especially in the NCSA's
+    {{{https://www.cilogon.org}CILogon}} service, and it is largely responsible for the customized identity
+    management magic there. If you've ever logged in with CILogon, there is an excellent chance you've already
+    run into QDL on the sly.
 
 Documentation
 
-    *{{{./pdf/qdl_reference.pdf}QDL Reference Manual}}
+    *{{{./pdf/qdl_reference.pdf}QDL Reference Manual}} THE reference manual. This is large and aims to be quite complete.
 
-    *{{{./pdf/qdl_workspace.pdf}QDL Workspace Reference Manual}}
+    *{{{./pdf/tutorial.pdf}A basic tutorial to QDL}} A much smaller, gentler introduction to QDL. Suitable for a first foray.
 
-    *{{{./pdf/qdl_configuration.pdf}QDL Configuration Reference Manual}}
+    *{{{./pdf/qdl_configuration.pdf}QDL Configuration Reference Manual}} How to configure QDL's workspace.
 
-    *{{{./pdf/qdl_extensions.pdf}Writing your own extensions to QDL}}
+    *{{{./pdf/qdl_scripting.pdf}General introduction to writing scripts with QDL}} QDL functions quite well as another
+    scripting language (like bash) on your system and there are any number of cases where it works astonishingly
+    better than other solutions.
 
-    *{{{./pdf/qdl_scripting.pdf}General introduction to writing scripts with QDL}}
+    *{{{./pdf/qdl_ini_file.pdf}QDL's ini file}} A user friendly way to create a stem. This format is
+    intended to allow non-programmers to write configurations easily that can be used to bootstrap or
+    configure systems.
 
-    *{{{./pdf/qdl_ini_file.pdf}QDL's ini file}}
+    *{{{./pdf/qdl_extensions.pdf}Writing your own extensions to QDL}} If you really want to extend QDL using the Java
+    interface, this is where to look. Note that since you can write modules in QDL, this would be for something
+    much more exotic. Unless you have an articulated need for this, you probably don't need it.
 
-    *{{{./pdf/tutorial.pdf}A basic tutorial to QDL}}
 
 User Interfaces to QDL
 
-    *{{{./pdf/qdl_swing_gui.pdf}Reference Manual for the Swing GUI}}
+    *{{{./pdf/qdl_workspace.pdf}QDL Workspace Reference Manual}}  The basic command line way to quiddle.
 
-    *{{{./pdf/iso6429.pdf}How to use the ISO 6429 terminal support.}}
+    *{{{./pdf/iso6429.pdf}How to use the ISO 6429 terminal support.}} Java has terrible command line support. This adds
+    an agnostic way to get basic command line functionality (such as cursor keys, history, special characters) in a purely
+    Java setting.  There are a few oddities such as clipboard support so do read this.
+
+    *{{{./pdf/qdl_swing_gui.pdf}Reference Manual for the Swing GUI}} A Swing-based GUI for quiddling. It includes syntax highlighting,
+    a wide array of use shortcuts (such as ctrl+i to paste input form, ctrl+x to copy a line or selected area), special
+    characters and a bevy of other things.
 
 Standard Extensions
 
-    *{{{./pdf/http-extension.pdf}HTTP extension.}}
+    These extensions are the building blocks for applications. For instance, the database extension
+    is not a full-featured client, but has a small handful of commands and a framework so you can
+    write your database access easily. In Java, this would be the equivalent of the JDBC or in Python
+    an adapter.
 
-    *{{{./pdf/qdldb-extension.pdf}The database extension.}}
+    *{{{./pdf/http-extension.pdf}HTTP extension.}} Basic HTTP functions. It's never been easier to get access to
+    your favorite site. Responses are converted to stems so you can quiddle them with wild abandon.
 
-    *{{{./pdf/xml-extension.pdf}The conversions extension.}}
+    *{{{./pdf/qdldb-extension.pdf}The database extension.}} Basic database access for CRUD (Create, Read, Update, Delete)
+    operations.
 
-    *{{{./pdf/cli-extension.pdf}The command line interface (CLI) extension.}}
+    *{{{./pdf/xml-extension.pdf}The conversions extension.}} Allows for import/export/conversions between YAML, HOCON (a
+    human readable form of JSON), and rudimentary XML. Note that QDL supports JSON natively already.
 
-    *{{{./pdf/crypto.pdf}The RSA and symmetric key cryptography extension.}}
+    *{{{./pdf/cli-extension.pdf}The command line interface (CLI) extension.}} A very useful way to manage command
+    line arguments for scripts.
+
+    *{{{./pdf/crypto.pdf}The RSA and symmetric key cryptography extension.}} A simple and well-aimed set of tools
+    for working with RSA and symmetric key cryptography.
 
 
 Javadoc for QDL
 
-    *{{{./apidocs/index.html}Javadoc for the QDL implementation}}
+    *{{{./apidocs/index.html}Javadoc for the QDL implementation}}  Javadoc for the implementation of QDL itself.

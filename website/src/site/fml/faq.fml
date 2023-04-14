@@ -21,7 +21,7 @@
         <faq id="workspace">
             <question>What is the workspace model?</question>
             <answer>The workspace (aka WS) is a basic unit of work organization. It is
-            an interactive shell that allows for managing QDL development. In short
+            an interactive shell that allows for managing QDL development. In short,
             it is QDL's IDE. Workspaces can be saved with their current state as
             a snapshot, then reloaded. They are also portable, so you can share them with
             others. This allows you to create a workspace per project
@@ -66,8 +66,8 @@
                     Work is a conserved quantity.
                 </p>
                 <p>
-                    As such, most server-side code is quite terse (very good for an administrator too look at and vet
-                    before accepting it) and quite easy to write. Most QDL on a server is a couple of line and
+                    As such, most server-side code is quite terse (very good for an administrator to look at and vet
+                    before accepting it) and quite easy to write. Most QDL on a server is a couple of lines and
                     implicit looping plus aggregate operations allow a lot to be done by more or less making
                     qualitative statements about the data.
                 </p>

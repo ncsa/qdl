@@ -118,6 +118,12 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
         return getFirstBooleanValue(node, WS_EDITOR_ENABLE, false);
     }
 
+    Boolean ansiModeOn = null;
+    protected Boolean isAnsiModeOn(){
+        ConfigurationNode node = getFirstNode(cn, WS_TAG);
+        return getFirstBooleanValue(node, WS_ATTR_ANSI_MODE_ON, false);
+    }
+
     protected String getExternalEditorPath() {
         ConfigurationNode node = getFirstNode(cn, WS_TAG);
         String x = getFirstAttribute(node, WS_EDITOR_NAME);
@@ -388,7 +394,8 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
                 areAssertionsEnabled(),
                 getSaveDir(),
                 isOverwriteBaseFunctionsOn(),
-                getLibLoader());
+                getLibLoader(),
+                isAnsiModeOn());
     }
 
     @Override

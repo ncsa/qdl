@@ -142,7 +142,7 @@ public class QDLDB implements QDLModuleMetaClass {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable{
+        public Object evaluate(Object[] objects, State state) throws Throwable {
             if (!isConnected) {
                 throw new IllegalStateException("No database connection. Please run " + CONNECT_COMMAND + " first.");
             }
@@ -215,7 +215,7 @@ public class QDLDB implements QDLModuleMetaClass {
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> doc = new ArrayList<>();
-            switch (argCount){
+            switch (argCount) {
                 case 1:
                     doc.add(getName() + "(statement) - execute a query ");
                     break;
@@ -223,22 +223,20 @@ public class QDLDB implements QDLModuleMetaClass {
                     doc.add(getName() + "(statement,arg_list) - execute a prepared query");
                     break;
             }
-            if (doc.isEmpty()) {
-                doc.add("A query is  a select, query, count or anything else that");
-                doc.add("has  a result. The statement may be simply a statement or it may be a prepared statement.");
-                doc.add("If it is prepared, then arg_list is a list of either scalars or pairs of the form [value, type]");
-                doc.add("where type is one of the types in the variable " + TYPE_VAR_NAME);
-                doc.add("E.g.");
-                doc.add("db#query('select * from my_table where user_id=?',['2355',types.SMALLINT]);");
-                doc.add("Note that the types are specific to the table structure of the database! ");
-                doc.add("If you do not supply them then the default will be ");
-                doc.add("int -> BIGINT");
-                doc.add("decimal -> NUMERIC");
-                doc.add("string -> STRING");
-                doc.add("boolean -> BOOLEAN");
-                doc.add("stem, set -> STRING (as input form)");
-                doc.add("null -> LONGVARCHAR as a  NULL");
-            }
+            doc.add("A query is  a select, query, count or anything else that");
+            doc.add("has  a result. The statement may be simply a statement or it may be a prepared statement.");
+            doc.add("If it is prepared, then arg_list is a list of either scalars or pairs of the form [value, type]");
+            doc.add("where type is one of the types in the variable " + TYPE_VAR_NAME);
+            doc.add("E.g.");
+            doc.add("db#query('select * from my_table where user_id=?',['2355',types.SMALLINT]);");
+            doc.add("Note that the types are specific to the table structure of the database! ");
+            doc.add("If you do not supply them then the default will be ");
+            doc.add("int -> BIGINT");
+            doc.add("decimal -> NUMERIC");
+            doc.add("string -> STRING");
+            doc.add("boolean -> BOOLEAN");
+            doc.add("stem, set -> STRING (as input form)");
+            doc.add("null -> LONGVARCHAR as a  NULL");
             return doc;
         }
     }
@@ -388,7 +386,7 @@ public class QDLDB implements QDLModuleMetaClass {
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> doc = new ArrayList();
-            switch (argCount){
+            switch (argCount) {
                 case 1:
                     doc.add(getName() + "(statement) - update an existing row or table in an SQL database");
                     break;
@@ -396,7 +394,7 @@ public class QDLDB implements QDLModuleMetaClass {
                     doc.add(getName() + "(statement,args) - update an existing row or table in an SQL database using a prepared statement");
                     break;
             }
-            if(argCount == 2){
+            if (argCount == 2) {
                 doc.addAll(getArgStatement());
             }
             return doc;
@@ -425,7 +423,7 @@ public class QDLDB implements QDLModuleMetaClass {
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> doc = new ArrayList<>();
-            switch (argCount){
+            switch (argCount) {
                 case 1:
                     doc.add(getName() + "(statement) - executes a statement with no return value");
                     break;
@@ -433,8 +431,8 @@ public class QDLDB implements QDLModuleMetaClass {
                     doc.add(getName() + "(statement,arg_list) - executes a prepared statement that has no return values.");
                     break;
             }
-                doc.add("This is used for inserts and deletes in particular.");
-            if(argCount == 2){
+            doc.add("This is used for inserts and deletes in particular.");
+            if (argCount == 2) {
                 doc.addAll(getArgStatement());
             }
             return doc;
@@ -457,28 +455,28 @@ public class QDLDB implements QDLModuleMetaClass {
             if (types == null) {
                 types = new QDLStem();
                 types.put("VARCHAR", (long) VARCHAR);
-                types.put("CHAR", (long)CHAR);
-                types.put("LONGVARCHAR", (long)LONGVARCHAR);
-                types.put("BIT", (long)BIT);
-                types.put("NUMERIC", (long)NUMERIC);
-                types.put("TINYINT", (long)TINYINT);
-                types.put("SMALLINT", (long)SMALLINT);
-                types.put("INTEGER", (long)INTEGER);
-                types.put("BIGINT", (long)BIGINT);
-                types.put("REAL", (long)REAL);
-                types.put("FLOAT", (long)FLOAT);
-                types.put("DOUBLE", (long)DOUBLE);
-                types.put("VARBINARY", (long)VARBINARY);
-                types.put("BINARY", (long)BINARY);
-                types.put("DATE", (long)DATE);
-                types.put("TIME", (long)TIME);
-                types.put("TIMESTAMP", (long)TIMESTAMP);
-                types.put("CLOB", (long)CLOB);
-                types.put("BLOB", (long)BLOB);
-                types.put("ARRAY", (long)ARRAY);
-                types.put("REF", (long)REF);
-                types.put("STRUCT", (long)STRUCT);
-                types.put("SQLXML", (long)SQLXML);
+                types.put("CHAR", (long) CHAR);
+                types.put("LONGVARCHAR", (long) LONGVARCHAR);
+                types.put("BIT", (long) BIT);
+                types.put("NUMERIC", (long) NUMERIC);
+                types.put("TINYINT", (long) TINYINT);
+                types.put("SMALLINT", (long) SMALLINT);
+                types.put("INTEGER", (long) INTEGER);
+                types.put("BIGINT", (long) BIGINT);
+                types.put("REAL", (long) REAL);
+                types.put("FLOAT", (long) FLOAT);
+                types.put("DOUBLE", (long) DOUBLE);
+                types.put("VARBINARY", (long) VARBINARY);
+                types.put("BINARY", (long) BINARY);
+                types.put("DATE", (long) DATE);
+                types.put("TIME", (long) TIME);
+                types.put("TIMESTAMP", (long) TIMESTAMP);
+                types.put("CLOB", (long) CLOB);
+                types.put("BLOB", (long) BLOB);
+                types.put("ARRAY", (long) ARRAY);
+                types.put("REF", (long) REF);
+                types.put("STRUCT", (long) STRUCT);
+                types.put("SQLXML", (long) SQLXML);
             }
             return types;
         }
@@ -531,21 +529,23 @@ public class QDLDB implements QDLModuleMetaClass {
         }
         return Boolean.TRUE;
     }
-  List<String> argStatement = new ArrayList<>();
-    protected List<String> getArgStatement(){
-        if(argStatement.isEmpty()){
-           argStatement.add("The argument list is used for prepared statements and is of the form");
-           argStatement.add(" [a0,a1,...]\n" +
-                   "where a's are either simple types - long, big decimal, string, boolean or null\n" +
-                   "or are an explicit record\n" +
-                   "   [value, sql_type]\n" +
-                   "In which case the type will be asserted (and the value may be changed too).\n" +
-                   "E.g.\n" +
-                   "   ['foo',[12223," + TYPE_VAR_NAME + "DATE],['3dgb3ty24fgf'," + TYPE_VAR_NAME + "BINARY]]\n" +
-                   "would assert the first is a string, convert the second into a date and the 3rd is assumed\n" +
-                   "to be base 64 encoded and would be decoded and asserted as a byte array\n");
-           argStatement.add("If QDL is given a complex type (stem, set) it will,");
-           argStatement.add("convert it to " + SystemEvaluator.INPUT_FORM + " and pass along the value as a string.");
+
+    List<String> argStatement = new ArrayList<>();
+
+    protected List<String> getArgStatement() {
+        if (argStatement.isEmpty()) {
+            argStatement.add("The argument list is used for prepared statements and is of the form");
+            argStatement.add(" [a0,a1,...]\n" +
+                    "where a's are either simple types - long, big decimal, string, boolean or null\n" +
+                    "or are an explicit record\n" +
+                    "   [value, sql_type]\n" +
+                    "In which case the type will be asserted (and the value may be changed too).\n" +
+                    "E.g.\n" +
+                    "   ['foo',[12223," + TYPE_VAR_NAME + "DATE],['3dgb3ty24fgf'," + TYPE_VAR_NAME + "BINARY]]\n" +
+                    "would assert the first is a string, convert the second into a date and the 3rd is assumed\n" +
+                    "to be base 64 encoded and would be decoded and asserted as a byte array\n");
+            argStatement.add("If QDL is given a complex type (stem, set) it will,");
+            argStatement.add("convert it to " + SystemEvaluator.INPUT_FORM + " and pass along the value as a string.");
         }
         return argStatement;
     }

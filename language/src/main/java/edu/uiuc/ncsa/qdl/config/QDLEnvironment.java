@@ -54,7 +54,8 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
                           boolean assertionsOn,
                           String saveDir,
                           boolean allowOverwriteBaseFunctions,
-                          LibLoader libLoader) {
+                          LibLoader libLoader,
+                          boolean ansiModeOn) {
         super(myLogger);
         this.cfgFile = cfgFile;
         this.name = name;
@@ -87,8 +88,14 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
         this.isRestrictedIO = isRestrictedIO;
         this.allowOverwriteBaseFunctions = allowOverwriteBaseFunctions;
         this.libLoader = libLoader;
+        this.ansiModeOn = ansiModeOn;
     }
 
+    public boolean isAnsiModeOn() {
+        return ansiModeOn;
+    }
+
+    boolean ansiModeOn= false;
     public boolean isAllowOverwriteBaseFunctions() {
         return allowOverwriteBaseFunctions;
     }
