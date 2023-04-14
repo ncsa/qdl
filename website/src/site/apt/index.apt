@@ -16,7 +16,7 @@ The QDL Programming Language
     It also includes the usual constructs for a language such as looping, conditionals, switch statements and encapsulation
     because frankly, you need them sometimes. To use QDL on a project is referred to as "quiddling".
 
-    The main way of interacting with QDL is to use its workspace and issue commands interactively, allowing real
+    One of the main ways of interacting with QDL is to use its workspace and issue commands interactively, allowing real
     time processing. The origin of QDL was as a notation to abstractly write algorithms in various languages before
     implementing them. It works admirably in this capacity with its workspace model and can be used as a very rapid
     prototyping system or just an "algorithmic calculator." Most people that dabble with it find it extremely useful

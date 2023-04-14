@@ -29,6 +29,20 @@
             (a very common case), you can simply load the workspace for that project and
             instantly resume what you were doing.</answer>
         </faq>
+        <faq id="stems and what not">
+            <question>What's the deal with stems? What makes them different from an array?</question>
+            <answer>Stems are generally referred to as an "associative array" whose keys may be
+            strings or integers. If strings only, this is effectively a map. If integers, it is a list.
+
+            Probably the most interesting thing is that operations are done on aggregates, which
+            renders much of a program’s control structure implicit. You mostly have operators that
+            describe what you want to happen to the data and it just occurs.
+
+            On top of that, there are functions like query() which let you use JSON Path to interrogate
+            the contents of a stem and the extraction operator, \, which lets you dissect one. A common
+            happenstance is getting some enormous JSON blob and having to dissect it for useful information.
+            QDL makes this quite easy.</answer>
+        </faq>
         <faq id="origin">
             <question>Where did QDL come from?</question>
             <answer>
@@ -126,6 +140,46 @@ my_variable. := sqrt(my_variable.);
             and the result is smaller than you suspect, that tells you straight off the bat your
             inputs were off. </p>
             </answer>
+        </faq>
+        <faq id="comparison">
+            <question>Can you give an example showing QDL vs. another language?</question>
+            <answer>An easy one is to fill an array of doubles with acos(sin(x)) for 1,000
+                values in the range -1 up to, but not including 1. In Java:
+
+                <pre>
+
+     int n = 1000;
+     double[] values = new double[n];
+     for(int i = 0; i &lt; n; i++){
+         // Note the trick: You have indices that don't match up to values, so you must
+         // compute them. On top of this, if you divide an integer by and integer in Java, you get
+         // an integer, hence you must divide by 500.0 and on top of it, you want to ensure that it is
+         // a double, so you must append a "d" to force the issue
+        values[i] = Math.acos(Math.sin(i/500.0d -1));
+     }
+                </pre>
+                We can contrast this with QDL:
+
+                <pre>
+                    values. := acos(sin([-1;1;1/500]));
+                </pre>
+
+                Yes indeed. That's it. This tells QDL to start at -1 and increment by 1/500 (the
+                expression in the brackets is called a slice). You could even
+                use an alternate slice operator and just specify the number of elements you want
+                <pre>
+                    values. := acos(sin([|-1;1;1000|]));
+                </pre>
+                which tells QDL to make 1000 elements evenly distributed between -1 and 1 inclusive.
+                And what if you needed to do this with higher precision, say to 25 decimal places? In Java
+                you need to switch all of your variables over to BigDecimals and find some libraries that
+                support them. In QDL you just set the precision:
+                <pre>
+                    numeric_digits(25)
+                </pre>
+                and re-run the command.
+            </answer>
+
         </faq>
     </part>
 </faqs>

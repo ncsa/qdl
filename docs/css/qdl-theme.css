@@ -42,7 +42,7 @@ h2 {
   border: 1px solid #999;
   color: #ffff00;
   background-color: #0000ff;
-  font-weight:900;
+  font-weight:bold;
   font-size: x-large;
 }
 h3 {
@@ -50,7 +50,7 @@ h3 {
   border: 1px solid #aaa;
   color: #ffff00;
   background-color: #0000ff;
-  font-weight: normal;
+  font-weight: bold;
   font-size: large;
 }
 h4 {
@@ -58,13 +58,15 @@ h4 {
   border: 1px solid #bbb;
   color: #ffff00;
   background-color: #0000ff;
-  font-weight: normal;
-  font-size: large;
+  font-weight: bold;
+  font-size: medium;
 }
 h5 {
   padding: 4px 4px 4px 6px;
-  color: #900;
+  color: #ffff00;
+  background-color: #0000ff;
   font-size: medium;
+  font-weight: normal;
 }
 p {
   line-height: 1.3em;
