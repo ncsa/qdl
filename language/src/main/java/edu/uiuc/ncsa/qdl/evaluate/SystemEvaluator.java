@@ -2080,6 +2080,10 @@ public class SystemEvaluator extends AbstractEvaluator {
                     localState.setScriptArgs(oldArgs);
                 }
             } catch (QDLException qe) {
+                if(qe instanceof ParsingException){
+                      ParsingException parsingException = (ParsingException) qe;
+                      parsingException.setScriptName(resourceName);   // make sure this gets propagated back
+                }
                 if (qe instanceof QDLExceptionWithTrace) {
                     QDLExceptionWithTrace qq = (QDLExceptionWithTrace) qe;
                     qq.setScriptName(resourceName);

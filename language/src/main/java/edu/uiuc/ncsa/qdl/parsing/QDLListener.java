@@ -1039,6 +1039,10 @@ illegal argument:no module named "b" was  imported at (1, 67)
         moduleStatement.setNamespace(namespace);
         moduleStatement.setSourceCode(getSource(moduleContext));
         QDLParserParser.DocStatementBlockContext docStatementBlockContext = moduleContext.docStatementBlock();
+        if(docStatementBlockContext == null){
+            TokenPosition tp = tp(moduleContext);
+            throw new ParsingException("malformed module statement",tp.line, tp.col, SYNTAX_TYPE);
+        }
         for (QDLParserParser.StatementContext stmt : docStatementBlockContext.statement()) {
             // Issue is that resolving children as we do gets the function definitions.
             // that are in any define contexts. So if this is a define context,

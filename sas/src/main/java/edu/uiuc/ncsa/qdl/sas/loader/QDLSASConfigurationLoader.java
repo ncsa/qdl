@@ -2,7 +2,7 @@ package edu.uiuc.ncsa.qdl.sas.loader;
 
 import edu.uiuc.ncsa.qdl.sas.action.QDLSASActionDeserializer;
 import edu.uiuc.ncsa.sas.loader.SASConfigurationLoader;
-import edu.uiuc.ncsa.sas.satclient.SATClient;
+import edu.uiuc.ncsa.sas.client.SASClient;
 import edu.uiuc.ncsa.sas.thing.response.ResponseSerializer;
 import edu.uiuc.ncsa.security.core.Store;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
@@ -24,7 +24,7 @@ public class QDLSASConfigurationLoader<T extends QDLSASEnvironment> extends SASC
     @Override
     public T createInstance() {
         return (T) new QDLSASEnvironment(loggerProvider.get(),
-                (Store<? extends SATClient>) getCSP().get(),
+                (Store<? extends SASClient>) getCSP().get(),
                 new QDLSASActionDeserializer(),
                 new ResponseSerializer());
     }

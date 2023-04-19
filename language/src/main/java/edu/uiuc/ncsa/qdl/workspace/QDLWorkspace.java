@@ -88,16 +88,17 @@ public class QDLWorkspace implements Serializable {
         }
         if (t instanceof ParsingException) {
             ParsingException parsingException = (ParsingException) t;
+            String message = parsingException.getType() + " error";
+              if(parsingException.hasScriptName()){
+                  message = message + " in script '" + parsingException.getScriptName() + "'";
+              }
             if (parsingException.getLineNumber() == -1) {
-                workspaceCommands.say(parsingException.getType() +
-                        " error: "
-                        + (workspaceCommands.isDebugOn() ? t.getMessage() : " could not parse input"));
-                return;
-
+                message = message + ":";
+            }else{
+                message = message + " at ("+ parsingException.getLineNumber() + "," + parsingException.getCharacterPosition() + ") ";
             }
-            workspaceCommands.say(parsingException.getType() +
-                    " error at (" + parsingException.getLineNumber() + "," + parsingException.getCharacterPosition() + ")"
-                    + (workspaceCommands.isDebugOn() ? t.getMessage() : " could not parse input"));
+            message = message + (workspaceCommands.isDebugOn() ? t.getMessage() : "could not parse input");
+            workspaceCommands.say(message);
             return;
         }
         if ((t instanceof ParseCancellationException)) {

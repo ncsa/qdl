@@ -6,9 +6,9 @@
         <version>1.5-QDL-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>qdl-sas</artifactId>
+    <artifactId>sas</artifactId>
     <packaging>war</packaging>
-    <name>qdl-sas Maven Webapp</name>
+    <name>SAS for QDL</name>
     <url>http://maven.apache.org</url>
     <dependencies>
         <dependency>
@@ -33,6 +33,12 @@
             <artifactId>language</artifactId>
             <version>1.5-QDL-SNAPSHOT</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
     <build>

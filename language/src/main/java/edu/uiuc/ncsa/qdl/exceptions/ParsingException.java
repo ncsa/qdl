@@ -79,4 +79,16 @@ public class ParsingException extends QDLException {
 
     int endCharacterPosition = -1;
 
+    public boolean hasScriptName(){
+        return scriptName!=null;
+    }
+    public String getScriptName() {
+        return scriptName;
+    }
+
+    public void setScriptName(String scriptName) {
+        this.scriptName = scriptName;
+    }
+
+    String scriptName = null;
 }

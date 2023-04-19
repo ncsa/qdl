@@ -39,10 +39,18 @@ public class QDLSASTerminal extends SwingTerminal implements QDLSASConstants {
         getInput().addKeyListener(new QDLSASKeyCharAdapter(getWorkspaceCommands().getSwingTerminal()));
         getInput().addKeyListener(new QDLSASHistoryKeyAdapter(getWorkspaceCommands(),
                 frame, getInput(), getOutput()));
-
-        getOutput().addKeyListener(new QDLHistoryKeyAdapter(getWorkspaceCommands(), frame, getInput(), getOutput()));
+        getOutput().addKeyListener(new QDLSASHistoryKeyAdapter(getWorkspaceCommands(), frame, getInput(), getOutput()));
     }
 
+    /*
+        protected void setupListeners() {
+        input.getCaret().setVisible(true);
+        //  input.setSyntaxEditingStyle(SYNTAX_STYLE_JAVA); // does weird things to comments. Makes them all javadoc
+        input.addKeyListener(new QDLCharKeyAdapter(this));
+        input.addKeyListener(new QDLHistoryKeyAdapter(getWorkspaceCommands(), frame, getInput(), getOutput()));
+        output.addKeyListener(new QDLHistoryKeyAdapter(getWorkspaceCommands(), frame, getInput(), getOutput()));
+    }
+     */
     @Override
     protected void init() {
 
@@ -50,7 +58,7 @@ public class QDLSASTerminal extends SwingTerminal implements QDLSASConstants {
         data = new Data();
         qdlSwingIO = new QDLSwingIO(this, data);
         qdlioThread = new Thread(qdlSwingIO);
-        //qdlioThread.start();
+        //  qdlioThread.start();
     }
 
     Data data;
@@ -102,30 +110,11 @@ public class QDLSASTerminal extends SwingTerminal implements QDLSASConstants {
         CompletionProvider provider = QDLSwingUtil.createCompletionProvider(listFunctionsResponse.getFunctions());
         AutoCompletion ac = new AutoCompletion(provider);
         ac.install(getInput());
+        setupWS(new InputLine());
+        getWorkspaceCommands().setSwingTerminal(this);
+        setupListeners();
     }
 
-    /*
-        protected void setupWS(InputLine inputLine) throws Throwable {
-
-      State state = new State();
-      CompletionProvider provider = QDLSwingUtil.createCompletionProvider(state);
-      AutoCompletion ac = new AutoCompletion(provider);
-      ac.install(input);
-      state.setIoInterface(qdlSwingIO);
-      workspaceCommands = new WorkspaceCommands(qdlSwingIO);
-      workspaceCommands.setState(state);
-      qdlWorkspace = new QDLWorkspace(workspaceCommands);
-      workspaceCommands.setWorkspace(qdlWorkspace);
-      try {
-          workspaceCommands.init(new InputLine());
-      } catch (Throwable e) {
-          e.printStackTrace();
-      }
-      //qdlWorkspace.workspaceCommands = workspaceCommands;
-      //this.qdlWorkspace = qdlWorkspace;
-
-  }
-     */
     public class QDLSASHistoryKeyAdapter extends QDLHistoryKeyAdapter {
         public QDLSASHistoryKeyAdapter(WorkspaceCommands workspaceCommands, JFrame frame, RSyntaxTextArea input, JTextArea output) {
             super(workspaceCommands, frame, input, output);
