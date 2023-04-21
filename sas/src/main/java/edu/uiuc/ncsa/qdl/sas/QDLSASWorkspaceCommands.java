@@ -9,6 +9,8 @@ import java.util.List;
 import static edu.uiuc.ncsa.security.core.util.StringUtils.listToString;
 
 /**
+ * Extends the QDL Workspace commands. These return {@link edu.uiuc.ncsa.sas.thing.response.Response}s
+ * rather than op codes and the system will process responses accordingly.
  * <p>Created by Jeff Gaynor<br>
  * on 8/26/22 at  10:19 AM
  */

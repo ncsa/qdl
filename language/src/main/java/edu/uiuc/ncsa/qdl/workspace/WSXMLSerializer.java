@@ -195,7 +195,6 @@ public class WSXMLSerializer {
         json.put(AUTOSAVE_INTERVAL, workspaceCommands.getAutosaveInterval());
         // dates
         json.put(START_TS, Iso8601.date2String(workspaceCommands.startTimeStamp));
-
         // strings
 
         if (!isTrivial(workspaceCommands.getExternalEditorName())) {

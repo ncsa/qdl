@@ -29,6 +29,7 @@ import edu.uiuc.ncsa.qdl.workspace.QDLWorkspace;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
+import edu.uiuc.ncsa.security.core.util.MetaDebugUtil;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 
 import java.awt.*;
@@ -38,6 +39,8 @@ import java.awt.datatransfer.StringSelection;
 import java.io.*;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
 import java.util.logging.Level;
@@ -101,7 +104,7 @@ public class SystemEvaluator extends AbstractEvaluator {
     public static final int EXPAND_TYPE = 14 + SYSTEM_BASE_VALUE;
 
     public static final String SAY_FUNCTION = "say";
-   // public static final String PRINT_FUNCTION = "print";
+    // public static final String PRINT_FUNCTION = "print";
     public static final int SAY_TYPE = 15 + SYSTEM_BASE_VALUE;
 
     public static final String TO_STRING = "to_string";
@@ -1382,6 +1385,12 @@ public class SystemEvaluator extends AbstractEvaluator {
         return getLogLevel(myLevel.intValue());
     }
 
+    /**
+     * Just checks that the logging level is set in the right range,
+     *
+     * @param longLevel
+     * @return
+     */
     private boolean isValidLoggingLevel(Long longLevel) {
         int value = longLevel.intValue();
         switch (value) {
@@ -1454,14 +1463,29 @@ public class SystemEvaluator extends AbstractEvaluator {
                 currentIntLevel = getMyLogLevel(state.getLogger().getLogger().getLevel());
             }
         }
-        Long currentLongLevel = new Long((long) currentIntLevel);
+        Long currentLongLevel = (long) currentIntLevel;
+        // Contract is that if there is no logger, no logger operations should work
+        if ((!isDebug) && state.getLogger() == null) {
+            if (polyad.getArgCount() <= 1) {
+                polyad.setResult(LOG_LEVEL_NONE);
+                polyad.setResultType(Constant.LONG_TYPE);
+                polyad.setEvaluated(true);
+                return;
+            }
+            polyad.setResult(Boolean.FALSE);
+            polyad.setResultType(Constant.BOOLEAN_TYPE);
+            polyad.setEvaluated(true);
+            return;
 
-        if (polyad.getArgCount() == 0 || state.getLogger() == null) {
+
+        }
+        if (polyad.getArgCount() == 0 ) {
             polyad.setResult(currentLongLevel);
             polyad.setResultType(Constant.LONG_TYPE);
             polyad.setEvaluated(true);
             return;
         }
+
         int newLogLevel = currentIntLevel;
 
         Object arg0 = polyad.evalArg(0, state);
@@ -1491,9 +1515,19 @@ public class SystemEvaluator extends AbstractEvaluator {
             }
             // Use whatever the current level is at as the default for the message
             if (isString(arg0)) {
-                message = (String) arg0;
-                newLogLevel = LOG_LEVEL_INFO; // default if nothing supplied
+
+                int newLevel = MetaDebugUtil.toLevel((String) arg0);
+                if (isDebug) {
+                    state.getDebugUtil().setDebugLevel((String) arg0);
+                } else {
+                    state.getLogger().setLogLevel(getLogLevel(newLevel));
+                }
+                polyad.setResult(currentIntLevel);
+                polyad.setResultType(Constant.LONG_TYPE);
+                polyad.setEvaluated(true);
+                return;
             }
+            throw new BadArgException("unknown logging type of " + arg0 + " encountered.", polyad.getArgAt(0));
         }
 
 
@@ -1508,14 +1542,14 @@ public class SystemEvaluator extends AbstractEvaluator {
                 }
 
             } else {
-                // Now it will just fall through and print the message to the default level.
-                // Used to do something else here. Changed contract. Still do something else??
-                /*String msg = "requested logging level \"" + arg0 + "\"is unknown.";
-                if (isDebug) {
-                    DebugUtil.info(QDLWorkspace.class, msg);
+                if (isString(arg0)) {
+                    newLogLevel = MetaDebugUtil.toLevel((String) arg0);
+                    if (!isValidLoggingLevel((Long) arg0)) {
+                        throw new BadArgException("unknown logging level of " + arg0 + " encountered.", polyad.getArgAt(0));
+                    }
                 } else {
-                    state.getLogger().info(msg);
-                }*/
+                    throw new BadArgException("unknown logging level of " + arg0 + " encountered.", polyad.getArgAt(0));
+                }
             }
             message = arg1.toString();
         }
@@ -1970,7 +2004,15 @@ public class SystemEvaluator extends AbstractEvaluator {
 
         } else {
             // case 3: No qualifications, just a string. Try everything.
-            File testFile = new File(name);
+            File testFile;
+            if(name.startsWith("./")){
+                // special case starting from current directory for scripts
+                Path currentRelativePath = Paths.get("");
+                String s = currentRelativePath.toAbsolutePath().toString();
+                testFile = new File(s + name.substring(1));
+            }else{
+                testFile = new File(name);
+            }
             if (testFile.isAbsolute()) {
                 if (state.isServerMode()) {
                     throw new QDLServerModeException("File access forbidden in server mode.");
@@ -2024,13 +2066,13 @@ public class SystemEvaluator extends AbstractEvaluator {
         checkNull(arg1, polyad.getArgAt(0), state);
         Object[] argList = new Object[0];
         // https://github.com/ncsa/qdl/issues/20
-         state.setTargetState(localState);
+        state.setTargetState(localState);
         if (2 <= polyad.getArgCount()) {
             ArrayList<Object> aa = new ArrayList<>();
             // zero-th argument is the name of the script, so start with element 1.
             for (int i = 1; i < polyad.getArgCount(); i++) {
                 Object arg;
-                    arg = polyad.evalArg(i, state);
+                arg = polyad.evalArg(i, state);
                 checkNull(arg, polyad.getArgAt(i), state);
                 aa.add(arg);
             }
@@ -2080,9 +2122,9 @@ public class SystemEvaluator extends AbstractEvaluator {
                     localState.setScriptArgs(oldArgs);
                 }
             } catch (QDLException qe) {
-                if(qe instanceof ParsingException){
-                      ParsingException parsingException = (ParsingException) qe;
-                      parsingException.setScriptName(resourceName);   // make sure this gets propagated back
+                if (qe instanceof ParsingException) {
+                    ParsingException parsingException = (ParsingException) qe;
+                    parsingException.setScriptName(resourceName);   // make sure this gets propagated back
                 }
                 if (qe instanceof QDLExceptionWithTrace) {
                     QDLExceptionWithTrace qq = (QDLExceptionWithTrace) qe;

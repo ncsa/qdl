@@ -449,9 +449,15 @@ public class State extends FunctionState implements QDLConstants {
 
     }
 
+    /**
+     * Debug utility for QDL. Note that this is completely independent of the {@link edu.uiuc.ncsa.security.core.util.DebugUtil}
+     * for the JVM, which can be toggled with the WS variable 'debug'
+     * @return
+     */
     public MetaDebugUtil getDebugUtil() {
         if (debugUtil == null) {
             debugUtil = new MetaDebugUtil();
+            debugUtil.setPrintTS(true); // have the timestamps display
             debugUtil.setDebugLevel(MetaDebugUtil.DEBUG_LEVEL_OFF_LABEL);
         }
         return debugUtil;
@@ -768,6 +774,7 @@ public class State extends FunctionState implements QDLConstants {
         newState.setVfsFileProviders(getVfsFileProviders());
         newState.setIoInterface(getIoInterface());
         newState.systemInfo = systemInfo;
+        newState.setDebugUtil(getDebugUtil()); // share the debugger.
         return newState;
     }
 
@@ -808,6 +815,7 @@ public class State extends FunctionState implements QDLConstants {
     /**
      * This creates a completely clean state, using the current environment
      * (so modules and script paths, but not variables, modules etc.)
+     * and preserves debugging
      *
      * @return
      */
@@ -828,6 +836,7 @@ public class State extends FunctionState implements QDLConstants {
         newState.setScriptPaths(getScriptPaths());
         newState.setModulePaths(getModulePaths());
         newState.setVfsFileProviders(getVfsFileProviders());
+        newState.setDebugUtil(getDebugUtil());
         return newState;
     }
 
@@ -1088,6 +1097,7 @@ public class State extends FunctionState implements QDLConstants {
         xsr.writeStartElement(STATE_CONSTANTS_TAG);
         JSONObject json = new JSONObject();
         json.put(STATE_ASSERTIONS_ENABLED_TAG, isAssertionsOn());
+        json.put(DEBUG_LEVEL, getDebugUtil().getDebugLevel());
         json.put(STATE_ID_TAG, getStateID());
         json.put(STATE_RESTRICTED_IO_TAG, isRestrictedIO());
         json.put(STATE_SERVER_MODE_TAG, isServerMode());
@@ -1135,6 +1145,9 @@ public class State extends FunctionState implements QDLConstants {
             setServerMode(json.getBoolean(STATE_SERVER_MODE_TAG));
             setRestrictedIO(json.getBoolean(STATE_RESTRICTED_IO_TAG));
             OpEvaluator.setNumericDigits(json.getInt(STATE_NUMERIC_DIGITS_TAG));
+            if(json.containsKey(DEBUG_LEVEL)) {
+                getDebugUtil().setDebugLevel(json.getInt(DEBUG_LEVEL));
+            }
         }
     }
 

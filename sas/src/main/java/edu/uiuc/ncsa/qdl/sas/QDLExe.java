@@ -21,9 +21,22 @@ import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.util.cli.IOInterface;
 import edu.uiuc.ncsa.security.util.cli.InputLine;
 
+import java.util.List;
+
 import static edu.uiuc.ncsa.security.core.util.StringUtils.stringToList;
 
 /**
+ * This wraps the QDL workspace and turns it into a SAS executable. All QDL commands are run here.
+ * <h3>Adding more actions</h3>
+ * <p>To add an action,</p>
+ * <ol>
+ *     <li> extend an {@link Action} and a {@link Response}</li>
+ *     <li>Override the {@link edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands}
+ *         action you want (e.g. {@link QDLSASWorkspaceCommands#editVariable(List, List, String, boolean, boolean)}
+ *         to return the response you made</li>
+ *     <li>Add the action to the main event loop in {@link #execute(Action)}</li>
+ *     <li>Finally, implement creating the action in the correct component. </li>
+ * </ol>
  * <p>Created by Jeff Gaynor<br>
  * on 8/24/22 at  12:01 PM
  */
@@ -58,17 +71,6 @@ public class QDLExe implements Executable, QDLSASConstants {
         }
         setIO(stringIO);
     }
-
-
-/*    @Override
-    public void execute(Action action) {
-        switch (action.getType()) {
-            case SASConstants.ACTION_EXECUTE:
-                ExecuteAction executeAction = (ExecuteAction) action;
-                qdlWorkspace.execute(executeAction.getArg());
-                break;
-        }
-    }*/
 
     IOInterface ioInterface;
 

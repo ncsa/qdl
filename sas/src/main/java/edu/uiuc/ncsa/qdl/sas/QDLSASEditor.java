@@ -11,6 +11,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import javax.swing.*;
 
 /**
+ * Slight tweak on the standard {@link QDLEditor} to work with SAS clients.
  * <p>Created by Jeff Gaynor<br>
  * on 8/26/22 at  10:57 PM
  */

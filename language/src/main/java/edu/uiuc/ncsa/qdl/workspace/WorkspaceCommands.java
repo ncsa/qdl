@@ -13,7 +13,6 @@ import edu.uiuc.ncsa.qdl.functions.FR_WithState;
 import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
 import edu.uiuc.ncsa.qdl.gui.SwingTerminal;
-import edu.uiuc.ncsa.qdl.gui.TerminalInterface;
 import edu.uiuc.ncsa.qdl.gui.editor.EditDoneEvent;
 import edu.uiuc.ncsa.qdl.gui.editor.QDLEditor;
 import edu.uiuc.ncsa.qdl.module.MIStack;
@@ -71,6 +70,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.zip.GZIPOutputStream;
@@ -5673,18 +5673,18 @@ public class WorkspaceCommands implements Logable, Serializable {
                     "qdl logger",
                     1,
                     1000000,
-                    false,
                     true,
-                    true);
+                    true,
+                    Level.INFO);
         } else {
             File f = resolveAgainstRoot("qdl_log.xml");
             loggerProvider = new LoggerProvider(f.getAbsolutePath(),
                     "cli logger",
                     1,
                     1000000,
-                    false,
                     true,
-                    true);
+                    true,
+                    Level.INFO);
         }
         logger = loggerProvider.get();
         State state = getState();

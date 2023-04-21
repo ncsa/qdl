@@ -56,6 +56,7 @@ public interface XMLConstants {
     String USE_EXTERNAL_EDITOR = "use_external_editor";
     String COMMAND_HISTORY = "command_history";
     String ASSERTIONS_ON = "assertions_on";
+    String DEBUG_LEVEL = "debug_level";
 
 
     String VARIABLE_TAG = "var";

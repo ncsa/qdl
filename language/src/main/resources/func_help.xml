@@ -1795,20 +1795,50 @@ will be turned into a single string with linefeeds after each entry.]]>
     <entry id="debug">
         <body>
  <![CDATA[Either a workspace variable or the system command to manage debugging
-System command:
-debug([level , message])
-     no args = print out current debug level
-       level = an integer in the range 0 (no output) to 5 (trace mode)
-               that determines the level of debugging output
-     message = A string that contains the entry to the debug log.
+System command: Write messages to standard error using a graded level system
+                This is an analog to log_entry, but log_entry write to a file.
+debug() - query current level
+debug(string | int) - set the level, returns previous level
+debug(string|int, message) - writes the message to standard error.
+
+Supported values are
+   constants().sys_log
+      off : 10
+    error : 5
+   severe : 4
+     warn : 3
+     info : 2
+    trace : 1
+
+Using this for debugging would mean putting various debug statements in your
+code at various levels. You can then turn this off and on as needed.
 See also: log_entry
 
 Workspace variable:
 debug - Toggle low-level debugging of the innards of the workspace and QDL.
+        This sets the level to 'trace' for the JVM (not just QDL!).
         This is only useful if you are having a serious issue (such as
         writing a Java module and need to see stack traces). This may be
         (on | true) or (off | false). Generally you do not need this.]]>
         </body>
+<example><![CDATA[Sample session. Note that if you are in text mode, the messages
+will by default show up at the console as per here (they may be a different
+color depending on your terminal, since they are in standard error):
+
+    debug(2); // set the new level to 2 = info. Shows previous level
+  10
+    // write to level 1 = trace. Since 1 < 2 nothing is printed
+    // Note that the result of true means the debug log operation worked
+    // not that something was written.
+    debug(1,'woof');
+  true
+    debug(3,'arf'); //Write to the debug stream. 2< 3 so there is a message:
+  true
+   QDLWorkspace warn: arf
+    debug(4,'woof!'); // repeat with a higher level. Note that the message changes.
+  true
+   QDLWorkspace severe: woof!]]>
+</example>
     </entry>
 
     <entry id="start_ts">
@@ -2141,10 +2171,52 @@ See also: ln(), exp()]]>
 
     <entry id="log_entry">
         <body>
- <![CDATA[log_entry(level, message) - put a message in the current log.
+<![CDATA[log_entry() - query the current logging level
+log_entry(level) -- set the new logging level
+log_entry(level, message) - put a message in the current log.
 
+The log is a file and is set in the configuration and the
+current location is at info().boot.log_file
+
+The logging levels are at
+
+   constants().sys_log
+      off : 10
+    error : 5
+   severe : 4
+     warn : 3
+     info : 2
+    trace : 1
+
+You may either use the number of the name. Names for logging are
+case-insensitive.
+
+How does logging work? You set the logging level, e.g. info (either
+use the word or numeric value) and then put logging messages where you need
+them. Only levels at or above what you have set will print,
+so if you set the log level to 'error', then no trace or warning messages
+will print. If you set it to 'trace' all of the messages print.
+Normally you set the level  at the start of a file, but you
+can turn the granularity of logging up or down.
+
+Debugging works in the same way, except that it puts output in
+standard error, giving essentially a private view of certain commands.
+
+Question: I can't seem to change the level. It keeps reporting 'off' (level 10).
+  Answer: This happens if you did not configure logging. It's telling you there is
+          no place to log to. Set the log up in the configuration and try again.
+ Question: I keep trying to write to the log and it keeps returning false. Why?
+   Answer: Again, this happens if there is no logger configured.
 See also: debug (system command)]]>
         </body>
+        <example>
+<![CDATA[
+E.g. Set the logging level
+   log_entry('info'); // now only info or above (e.g. error) commands print.
+   log_entry('trace','starting setup...'); // this won't print to the log now
+   log_entry('error','missing password'); // this prints fine.
+]]>
+        </example>
     </entry>
 
     <entry id="nroot">

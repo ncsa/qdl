@@ -89,6 +89,13 @@ public class VFSPassThruFileProvider extends AbstractVFSFileProvider {
 
         File f = new File(realPath);
         String[] fileList = f.list();
+        // Now, directories should have a path separator appended.
+        for(int i = 0; i < fileList.length; i++){
+            File ff = new File(f, fileList[i]);
+            if(ff.isDirectory()){
+                fileList[i] = fileList[i] + PATH_SEPARATOR;
+            }
+        }
         return fileList;
     }
 

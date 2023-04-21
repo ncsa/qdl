@@ -24,6 +24,7 @@ import java.util.Map;
 
 import static edu.uiuc.ncsa.qdl.config.QDLConfigurationConstants.*;
 import static edu.uiuc.ncsa.qdl.config.QDLConfigurationLoaderUtils.setupMySQLDatabase;
+import static edu.uiuc.ncsa.qdl.vfs.VFSPaths.PATH_SEPARATOR;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -398,7 +399,8 @@ public class IOEvaluator extends AbstractEvaluator {
         boolean hasVF = false;
         if (state.isVFSFile(fileName)) {
             try {
-                vfs = state.getVFS(fileName);
+                // Add in a final path separator if needed so it looks for a directory with this name.
+                vfs = state.getVFS(fileName+(fileName.endsWith(PATH_SEPARATOR)?"":PATH_SEPARATOR));
                 if (vfs != null) {
                     DebugUtil.trace(this, "in " + DIR + " command: got a VFS=" + vfs);
 
@@ -417,12 +419,19 @@ public class IOEvaluator extends AbstractEvaluator {
                 throw new QDLIOException("Error; Could not resolve virtual file system for '" + fileName + "'");
             }
         } else {
-            // So its just a file.
+            // So it's just a file.
             if (state.isServerMode()) {
                 throw new QDLServerModeException("File system operations not permitted in server mode.");
             }
             File f = new File(fileName);
             entries = f.list();
+            for(int i = 0; i< entries.length; i++){
+
+                File ff = new File(f, entries[i]);
+                if(ff.isDirectory()){
+                      entries[i] = entries[i] + "/";
+                }
+            }
         }
         DebugUtil.trace(this, "in " + DIR + " command: entries =" + entries);
 

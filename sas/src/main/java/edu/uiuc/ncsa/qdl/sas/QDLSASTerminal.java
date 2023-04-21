@@ -21,7 +21,12 @@ import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Vector;
+
+import static edu.uiuc.ncsa.sas.webclient.Client.FLAG_NEW;
+import static edu.uiuc.ncsa.sas.webclient.Client.say;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -65,13 +70,58 @@ public class QDLSASTerminal extends SwingTerminal implements QDLSASConstants {
     QDLSwingIO qdlSwingIO;
     Thread qdlioThread;
 
+    protected static void showHelp() {
+        say(QDLSASTerminal.class.getSimpleName() + " [" + FLAG_NEW + " [filename]] | " + Client.FLAG_CONFIG + " filename");
+        say("Starts the GUI OR allows you to create a configuration first.");
+        say("To create a new configuration, start with the " + FLAG_NEW + " and fill in the configuration.");
+        say("Yo will be prompted if you want to start the GUI");
+    }
+
+    /**
+     * If this is started with the -new flag (may or may not have an argument that is the file name)
+     * then the user will be prompted at the command line to create a new configuration and then asked
+     * if they want to start the system.
+     *
+     * @param args
+     * @throws Throwable
+     */
     public static void main(String[] args) throws Throwable {
         Vector v = new Vector();
         v.add("dummy"); // so the command line switches are all found. Dummy method name
         for (String arg : args) {
             v.add(arg);
         }
+
         InputLine inputLine = new InputLine(v); // now we can use this.
+        if (inputLine.hasArg(Client.FLAG_HELP)) {
+            showHelp();
+            return;
+        }
+        if (inputLine.hasArg(FLAG_NEW)) {
+            String filename = null;
+            if (inputLine.hasNextArgFor(FLAG_NEW)) {
+                filename = inputLine.getNextArgFor(FLAG_NEW);
+                if (filename.startsWith("-")) {
+                    // assumption is that they did not actually supply a filename.
+                    filename = null;
+                    inputLine.removeSwitch(FLAG_NEW);
+                } else {
+                    inputLine.removeSwitchAndValue(FLAG_NEW);
+                }
+            } else {
+                inputLine.removeSwitch(FLAG_NEW);
+            }
+            filename = Client.createConfig(filename, true);
+            if (Client.getInput("Did you want to run this configuration(y/n)?").equals("n")) {
+                return;
+            }
+            String[] allArgs = inputLine.argsToStringArray();
+            ArrayList<String> argList = new ArrayList();
+            argList.add(Client.FLAG_CONFIG);
+            argList.add(filename);
+            argList.addAll(Arrays.asList(allArgs));
+            inputLine = new InputLine(argList);
+        }
         JFrame frame = new JFrame("QDL Terminal");
         QDLSASTerminal qdlTerminal = new QDLSASTerminal();
         qdlTerminal.frame = frame;
