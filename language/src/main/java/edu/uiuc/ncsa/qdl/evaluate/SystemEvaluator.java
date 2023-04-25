@@ -38,7 +38,9 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.io.*;
 import java.math.BigDecimal;
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -58,6 +60,11 @@ public class SystemEvaluator extends AbstractEvaluator {
     public static final String SYS_NAMESPACE = "sys";
     public static final String SYS_FQ = SYS_NAMESPACE + State.NS_DELIMITER;
     public static final int SYSTEM_BASE_VALUE = 5000;
+    public static final String DEBUGGER_PROPERTY_NAME_LEVEL = "level";
+    public static final String DEBUGGER_PROPERTY_NAME_DELIMITER = "delimiter";
+    public static final String DEBUGGER_PROPERTY_NAME_TS_ON = "ts_on";
+    public static final String DEBUGGER_PROPERTY_NAME_TITLE = "title";
+    public static final String DEBUGGER_PROPERTY_NAME_HOST = "host";
 
     @Override
     public String getNamespace() {
@@ -88,8 +95,8 @@ public class SystemEvaluator extends AbstractEvaluator {
     public static final String IS_DEFINED = "is_defined";
     public static final int IS_DEFINED_TYPE = 8 + SYSTEM_BASE_VALUE;
 
-    public static final String EXECUTE = "execute";
-    public static final int EXECUTE_TYPE = 9 + SYSTEM_BASE_VALUE;
+    public static final String INTERPRET = "interpret";
+    public static final int INTERPRET_TYPE = 9 + SYSTEM_BASE_VALUE;
 
     public static final String CHECK_SYNTAX = "check_syntax";
     public static final int CHECK_SYNTAX_TYPE = 10 + SYSTEM_BASE_VALUE;
@@ -160,12 +167,12 @@ public class SystemEvaluator extends AbstractEvaluator {
     public static final int OS_ENV_TYPE = 208 + SYSTEM_BASE_VALUE;
 
     // logging
-    public static final String SYSTEM_LOG = "log_entry";
+    public static final String SYSTEM_LOG = "logger";
     public static final int SYSTEM_LOG_TYPE = 209 + SYSTEM_BASE_VALUE;
 
 
     // logging
-    public static final String DEBUG = "debug";
+    public static final String DEBUG = "debugger";
     public static final int DEBUG_TYPE = 210 + SYSTEM_BASE_VALUE;
 
     // try ... catch
@@ -203,13 +210,16 @@ public class SystemEvaluator extends AbstractEvaluator {
     public static final int CLIPBOARD_PASTE_COMMAND_TYPE = 407 + SYSTEM_BASE_VALUE;
 
     public static final String SCRIPT_ARGS2_COMMAND = "args";
-    public static final int SCRIPT_ARGS2_COMMAND_TYPE = 408 + SYSTEM_BASE_VALUE;
+
+    public static final String SCRIPT_NAME_COMMAND = "script_name";
+      public static final int SCRIPT_NAME_COMMAND_TYPE = 408 + SYSTEM_BASE_VALUE;
 
 
     @Override
     public String[] getFunctionNames() {
         if (fNames == null) {
             fNames = new String[]{
+                    SCRIPT_NAME_COMMAND,
                     JAVA_MODULE_LOAD,
                     KILL_PROCESS,
                     FORK,
@@ -237,7 +247,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                     CONTINUE,
                     INTERRUPT,
                     BREAK,
-                    EXECUTE,
+                    INTERPRET,
                     CHECK_SYNTAX,
                     INPUT_FORM,
                     FOR_KEYS,
@@ -260,6 +270,8 @@ public class SystemEvaluator extends AbstractEvaluator {
     @Override
     public int getType(String name) {
         switch (name) {
+            case SCRIPT_NAME_COMMAND:
+                return SCRIPT_NAME_COMMAND_TYPE;
             case JAVA_MODULE_LOAD:
                 return JAVA_MODULE_LOAD_TYPE;
             case KILL_PROCESS:
@@ -312,8 +324,8 @@ public class SystemEvaluator extends AbstractEvaluator {
                 return CONSTANTS_TYPE;
             case CONTINUE:
                 return CONTINUE_TYPE;
-            case EXECUTE:
-                return EXECUTE_TYPE;
+            case INTERPRET:
+                return INTERPRET_TYPE;
             case INPUT_FORM:
                 return INPUT_FORM_TYPE;
             case CHECK_SYNTAX:
@@ -371,6 +383,9 @@ public class SystemEvaluator extends AbstractEvaluator {
         boolean printIt = false;
 
         switch (polyad.getName()) {
+            case SCRIPT_NAME_COMMAND:
+                doScriptName(polyad, state);
+                return true;
             case JAVA_MODULE_LOAD:
                 doJLoad(polyad, state);
                 return true;
@@ -512,8 +527,8 @@ public class SystemEvaluator extends AbstractEvaluator {
             case RAISE_ERROR:
                 doRaiseError(polyad, state);
                 return true;
-            case EXECUTE:
-                doExecute(polyad, state);
+            case INTERPRET:
+                doInterpret(polyad, state);
                 return true;
             case CHECK_SYNTAX:
                 doCheckSyntax(polyad, state);
@@ -523,6 +538,21 @@ public class SystemEvaluator extends AbstractEvaluator {
                 return true;
         }
         return false;
+    }
+
+    private void doScriptName(Polyad polyad, State state) {
+        if (polyad.isSizeQuery()) {
+              polyad.setResult(new int[]{0});
+              polyad.setEvaluated(true);
+              return;
+          }
+        String name = "";
+        if(state.hasScriptName()){
+                     name = state.getScriptName();
+        }
+        polyad.setResult(name);
+        polyad.setResultType(Constant.STRING_TYPE);
+        polyad.setEvaluated(true);
     }
 
     /**
@@ -1466,7 +1496,16 @@ public class SystemEvaluator extends AbstractEvaluator {
         Long currentLongLevel = (long) currentIntLevel;
         // Contract is that if there is no logger, no logger operations should work
         if ((!isDebug) && state.getLogger() == null) {
-            if (polyad.getArgCount() <= 1) {
+            if(polyad.getArgCount() == 0){
+                QDLStem stem = new QDLStem();
+                stem.put(DEBUGGER_PROPERTY_NAME_LEVEL, (long) LOG_LEVEL_NONE);
+                polyad.setResult(stem);
+                polyad.setResultType(Constant.STEM_TYPE);
+                polyad.setEvaluated(true);
+                return;
+            }
+
+            if (polyad.getArgCount() == 1) {
                 polyad.setResult(LOG_LEVEL_NONE);
                 polyad.setResultType(Constant.LONG_TYPE);
                 polyad.setEvaluated(true);
@@ -1479,9 +1518,25 @@ public class SystemEvaluator extends AbstractEvaluator {
 
 
         }
-        if (polyad.getArgCount() == 0 ) {
-            polyad.setResult(currentLongLevel);
-            polyad.setResultType(Constant.LONG_TYPE);
+        if (polyad.getArgCount() == 0) {
+            QDLStem stem = new QDLStem();
+            if(isDebug) {
+                stem.put(DEBUGGER_PROPERTY_NAME_TITLE, state.getDebugUtil().getTitle());
+                stem.put(DEBUGGER_PROPERTY_NAME_TS_ON, state.getDebugUtil().isPrintTS());
+                long lll = (long) state.getDebugUtil().getDebugLevel();
+                stem.put(DEBUGGER_PROPERTY_NAME_LEVEL, lll);
+                stem.put(DEBUGGER_PROPERTY_NAME_DELIMITER, state.getDebugUtil().getDelimiter());
+                if(state.getDebugUtil().hasHost()) {
+                    stem.put(DEBUGGER_PROPERTY_NAME_HOST, state.getDebugUtil().getHost());
+                }
+            }else{
+                Level lll = state.getLogger().getLogLevel();
+                long llll = (long)getMyLogLevel(lll);
+                stem.put(DEBUGGER_PROPERTY_NAME_LEVEL, llll); // I hate coming up with names...
+                stem.put(DEBUGGER_PROPERTY_NAME_TITLE, state.getLogger().getClassName());
+            }
+            polyad.setResult(stem);
+            polyad.setResultType(Constant.STEM_TYPE);
             polyad.setEvaluated(true);
             return;
         }
@@ -1493,6 +1548,91 @@ public class SystemEvaluator extends AbstractEvaluator {
         String message = null;
 
         if (polyad.getArgCount() == 1) {
+            if(isStem(arg0)){
+                QDLStem oldCfg = new QDLStem();
+
+                QDLStem cfg = (QDLStem) arg0;
+                if(cfg.containsKey(DEBUGGER_PROPERTY_NAME_TITLE)){
+                    if(isDebug) {
+                        oldCfg.put(DEBUGGER_PROPERTY_NAME_TITLE, state.getDebugUtil().getTitle());
+                        state.getDebugUtil().setTitle(cfg.getString(DEBUGGER_PROPERTY_NAME_TITLE));
+                    } // can't change the title of the logger
+                }
+                if(cfg.containsKey(DEBUGGER_PROPERTY_NAME_HOST)){ // options are name, address or off.
+                    String host = null;
+                    try {
+                        switch (cfg.getString(DEBUGGER_PROPERTY_NAME_HOST).toLowerCase()){
+                            default:
+                            case "name":
+                                host =InetAddress.getLocalHost().getHostName();
+                                break;
+                            case "address":
+                                host = InetAddress.getLocalHost().getHostAddress();
+                                break;
+                            case "off":
+                                host = null;
+                                break;
+                        }
+                    }catch (UnknownHostException e) {
+                        if(DebugUtil.isEnabled()) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if(isDebug && host != null){
+                        if(state.getDebugUtil().hasHost()) {
+                            oldCfg.put(DEBUGGER_PROPERTY_NAME_HOST, state.getDebugUtil().getHost());
+                        }else{
+                            oldCfg.put(DEBUGGER_PROPERTY_NAME_HOST, "");
+                        }
+                        state.getDebugUtil().setHost(host);
+                    }
+                }
+                if(cfg.containsKey(DEBUGGER_PROPERTY_NAME_DELIMITER)){
+                    if(isDebug){
+                        oldCfg.put(DEBUGGER_PROPERTY_NAME_DELIMITER, state.getDebugUtil().getDelimiter());
+                        state.getDebugUtil().setDelimiter(cfg.getString(DEBUGGER_PROPERTY_NAME_DELIMITER));
+                    }
+                }
+                if(cfg.containsKey(DEBUGGER_PROPERTY_NAME_TS_ON)){
+                    if(isDebug) {
+                        oldCfg.put(DEBUGGER_PROPERTY_NAME_TS_ON, state.getDebugUtil().isPrintTS());
+                        state.getDebugUtil().setPrintTS(cfg.getBoolean(DEBUGGER_PROPERTY_NAME_TS_ON));
+                    }
+                }
+                if(cfg.containsKey(DEBUGGER_PROPERTY_NAME_LEVEL)){
+                    Object newLevel = cfg.get(DEBUGGER_PROPERTY_NAME_LEVEL);
+                    if(newLevel instanceof Long){
+                        if(isDebug) {
+                            oldCfg.put(DEBUGGER_PROPERTY_NAME_LEVEL, (long)state.getDebugUtil().getDebugLevel());
+                            state.getDebugUtil().setDebugLevel(((Long) newLevel).intValue());
+                        }else{
+                            Level ll = state.getLogger().getLogLevel();
+                            oldCfg.put(DEBUGGER_PROPERTY_NAME_LEVEL, (long)getMyLogLevel(ll));
+                            state.getLogger().setLogLevel(getLogLevel(((Long) newLevel).intValue()));
+                        }
+                    }else{
+
+                        if(newLevel instanceof String){
+                         if(isDebug){
+                             oldCfg.put(DEBUGGER_PROPERTY_NAME_LEVEL,MetaDebugUtil.toLabel(state.getDebugUtil().getDebugLevel()));
+                             state.getDebugUtil().setDebugLevel((String)newLevel);
+                         }else{
+                             Level ll = state.getLogger().getLogLevel();
+                             oldCfg.put(DEBUGGER_PROPERTY_NAME_LEVEL,MetaDebugUtil.toLabel(getMyLogLevel(ll)));
+                             Level lll = getLogLevel(MetaDebugUtil.toLevel((String)newLevel));
+                             state.getLogger().setLogLevel(lll);
+                         }
+                        }else{
+                            throw new BadArgException("Illegal argument type for " + DEBUG + " level", polyad.getArgAt(0));
+                        }
+
+                    }
+                }
+                polyad.setResult(oldCfg);
+                polyad.setResultType(Constant.STEM_TYPE);
+                polyad.setEvaluated(true);
+                return;
+            }
             if (isLong(arg0)) {
                 // Cannot reset logging levels in server mode or server loses control of logging
                 if (!state.isRestrictedIO()) {
@@ -1517,6 +1657,19 @@ public class SystemEvaluator extends AbstractEvaluator {
             if (isString(arg0)) {
 
                 int newLevel = MetaDebugUtil.toLevel((String) arg0);
+                if (newLevel == DEBUG_LEVEL_UNKNOWN) {
+                    // Idiom -- log or debug at info level if not a level
+                    if (isDebug) {
+                        state.getDebugUtil().info((String) arg0);
+                    } else {
+                        state.getLogger().info((String) arg0);
+                    }
+                    polyad.setResult(Boolean.TRUE);
+                    polyad.setResultType(Constant.BOOLEAN_TYPE);
+                    polyad.setEvaluated(true);
+                    return;
+
+                }
                 if (isDebug) {
                     state.getDebugUtil().setDebugLevel((String) arg0);
                 } else {
@@ -1544,7 +1697,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             } else {
                 if (isString(arg0)) {
                     newLogLevel = MetaDebugUtil.toLevel((String) arg0);
-                    if (!isValidLoggingLevel((Long) arg0)) {
+                    if (newLogLevel == DEBUG_LEVEL_UNKNOWN) {
                         throw new BadArgException("unknown logging level of " + arg0 + " encountered.", polyad.getArgAt(0));
                     }
                 } else {
@@ -1561,35 +1714,35 @@ public class SystemEvaluator extends AbstractEvaluator {
                 break;
             case LOG_LEVEL_TRACE:
                 if (isDebug) {
-                    state.getDebugUtil().trace(QDLWorkspace.class, message);
+                    state.getDebugUtil().trace(message);
                 } else {
                     state.getLogger().debug(message);
                 }
                 break;
             case LOG_LEVEL_INFO:
                 if (isDebug) {
-                    state.getDebugUtil().info(QDLWorkspace.class, message);
+                    state.getDebugUtil().info(message);
                 } else {
                     state.getLogger().info(message);
                 }
                 break;
             case LOG_LEVEL_WARN:
                 if (isDebug) {
-                    state.getDebugUtil().warn(QDLWorkspace.class, message);
+                    state.getDebugUtil().warn( message);
                 } else {
                     state.getLogger().warn(message);
                 }
                 break;
             case LOG_LEVEL_ERROR:
                 if (isDebug) {
-                    state.getDebugUtil().error(QDLWorkspace.class, message);
+                    state.getDebugUtil().error(message);
                 } else {
                     state.getLogger().error(message);
                 }
                 break;
             case LOG_LEVEL_SEVERE:
                 if (isDebug) {
-                    state.getDebugUtil().severe(QDLWorkspace.class, message);
+                    state.getDebugUtil().severe(message);
                 } else {
                     state.getLogger().warn(message); // no other options
                 }
@@ -1769,13 +1922,13 @@ public class SystemEvaluator extends AbstractEvaluator {
         if (index < 0) {
             throw new BadArgException(SCRIPT_ARGS_COMMAND + " requires a non-negative integer argument.", polyad.getArgAt(0));
         }
-        if (state.getScriptArgs().length <= index) {
-            throw new BadArgException("index " + index + " out of bounds for " + SCRIPT_ARGS_COMMAND + " with " + state.getScriptArgs().length + " arguments.", polyad.getArgAt(0));
+        if (state.getScriptArgStem().size() <= index) {
+            throw new BadArgException("index " + index + " out of bounds for " + SCRIPT_ARGS_COMMAND + " with " + state.getScriptArgStem().size() + " arguments.", polyad.getArgAt(0));
         }
 
         polyad.setEvaluated(true);
         polyad.setResultType(Constant.STRING_TYPE);
-        polyad.setResult(state.getScriptArgs()[index]);
+        polyad.setResult(state.getScriptArgStem().get((long)index));
         return;
     }
 
@@ -2005,12 +2158,12 @@ public class SystemEvaluator extends AbstractEvaluator {
         } else {
             // case 3: No qualifications, just a string. Try everything.
             File testFile;
-            if(name.startsWith("./")){
+            if (name.startsWith("./")) {
                 // special case starting from current directory for scripts
                 Path currentRelativePath = Paths.get("");
                 String s = currentRelativePath.toAbsolutePath().toString();
                 testFile = new File(s + name.substring(1));
-            }else{
+            } else {
                 testFile = new File(name);
             }
             if (testFile.isAbsolute()) {
@@ -2095,8 +2248,14 @@ public class SystemEvaluator extends AbstractEvaluator {
             throw new QDLRuntimeException("Could not find '" + resourceName + "'. Is your script path set?");
         } else {
             try {
-                Object[] oldArgs = localState.getScriptArgs();
-                localState.setScriptArgs(argList);
+                //Object[] oldArgs = localState.getScriptArgs();
+                QDLStem oldArgs = localState.getScriptArgStem();
+                String oldScriptName = localState.getScriptName();
+                QDLStem newArgs = new QDLStem();
+                localState.setScriptName(resourceName);
+                List list = Arrays.asList(argList);
+                newArgs.addList(list);
+                localState.setScriptArgStem(newArgs);
                 if (newThread) {
                     int pid = (int) (System.currentTimeMillis() % 999983); // largest 6 digit prime number.
                     if (state.getThreadTable().containsKey(pid)) {
@@ -2119,7 +2278,8 @@ public class SystemEvaluator extends AbstractEvaluator {
                     return pid;
                 } else {
                     script.execute(localState);
-                    localState.setScriptArgs(oldArgs);
+                    localState.setScriptArgStem(oldArgs);
+                    localState.setScriptName(oldScriptName);
                 }
             } catch (QDLException qe) {
                 if (qe instanceof ParsingException) {
@@ -2618,18 +2778,18 @@ public class SystemEvaluator extends AbstractEvaluator {
         return argStem;
     }
 
-    protected void doExecute(Polyad polyad, State state) {
+    protected void doInterpret(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
         if (polyad.getArgCount() < 1) {
-            throw new MissingArgException(EXECUTE + " requires at least 1 argument", polyad);
+            throw new MissingArgException(INTERPRET + " requires at least 1 argument", polyad);
         }
 
         if (1 < polyad.getArgCount()) {
-            throw new ExtraArgException(EXECUTE + " requires at most 1 argument", polyad.getArgAt(1));
+            throw new ExtraArgException(INTERPRET + " requires at most 1 argument", polyad.getArgAt(1));
         }
 
         Object result = polyad.evalArg(0, state);
@@ -2664,7 +2824,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             if (t instanceof RuntimeException) {
                 throw (RuntimeException) t;
             }
-            throw new QDLExceptionWithTrace(EXECUTE + " failed:'" + t.getMessage() + "'", t, polyad);
+            throw new QDLExceptionWithTrace(INTERPRET + " failed:'" + t.getMessage() + "'", t, polyad);
         }
         List<Element> elements = runner.getElements();
         if (elements.size() == 0) {

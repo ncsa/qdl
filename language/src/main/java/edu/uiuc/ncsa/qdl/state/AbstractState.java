@@ -216,13 +216,25 @@ public abstract class AbstractState implements StateInterface, Logable {
     protected Object[] scriptArgs = null;
 
     public boolean hasScriptArgs() {
-        return scriptArgs != null;
+        return scriptArgs != null || scriptArgStem!=null;
     }
 
+    public boolean hasScriptName(){
+        return scriptName != null && scriptName.length()!=0;
+    }
+    public String getScriptName() {
+        return scriptName;
+    }
+
+    public void setScriptName(String scriptName) {
+        this.scriptName = scriptName;
+    }
+
+    String scriptName = "";
     public QDLStem getScriptArgStem() {
         if (scriptArgStem == null) {
             scriptArgStem = new QDLStem();
-            if (hasScriptArgs()) {
+            if (scriptArgs!=null) {
                 for (Object object : getScriptArgs()) {
                     scriptArgStem.listAdd(object);
                 }

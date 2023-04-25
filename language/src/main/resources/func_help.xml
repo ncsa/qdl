@@ -126,29 +126,60 @@ This is equivalent to returning tokenize(a,b,is_regex).(-1);]]>
 
     <entry id="check_syntax">
         <body>
- <![CDATA[check_syntax(string) - This will take the (possibly very long) string and run
-                       it through the parser checking for syntax errors. Note
-                       that this does not run anything! Its use is to help
-                       you track down errors like missing semi-colons, illegal
-                       characters and other statements. It returns either an
-                       empty string (no issues found) or an error message
-                       containing something like 'syntax error: line 1:4'.
-                       This means that the first line of input (lines are
-                       counted starting at 1) had an error at position 4
-                       (characters on the line are counted from zero).
-E.g.
-   check_syntax(file_read('/path/to/file/x.qdl'))
+ <![CDATA[check_syntax(string) - This will take the (possibly very
+        long) string and run
+        it through the parser checking for syntax errors. Note
+        that this does not run anything! Its use is to help
+        you track down errors like missing semi-colons, illegal
+        characters and other statements. It only returns an
+        empty string (no issues found) or raises an error
+        containing something like 'syntax error: line 1:4'.
+        This means that the first line of input (lines are
+        counted starting at 1) had an error at position 4
+        (characters on the line are counted from zero).
+
+Notes.
+------
+1. If you are running this on stand-alone scripts that start with
+   a shebang directive of #! in the very first line,
+   the shebang will be stripped out to prevent it from being checked.
+   The shebang is used by the operating system and is not part of QDL.
+
+2. If there is no trailing semi-colon for the last line, one will be
+   added. However, QDL will not do that for any other line.
+See also: interpret]]>
+        </body>
+  <example>
+<![CDATA[E.g.
+In the workspace, errors are caught by the shell and the message is
+displayed:
+  check_syntax('2+')
+syntax error at (1,1) could not parse input
+
+Meaning: The string inside the quotes is the input. This states that on
+   line 1, character 1 QDL found an expression is could not figure out,
+   in this case, + is dyadic and needs a right hand side.
+
+  check_syntax(file_read('/path/to/file/x.qdl'))
 syntax error:line 11:27 mismatched input '=' expecting {'^', '>=', '<=', ...
 
-Meaning that on line 11, position 27 there was an error in the file.
+Meaning: On line 11, position 27 there was an error in the file, and
+    that error was an extra = sign QDL could not figure out what to do
+    with.
 
-Note that if you are running this on stand-alone scripts (that start with
-a shebang directive of #!) the shebang will cause this to fail. Simply
-comment out the first line to use the syntax check on it or otherwise
-prevent it from being checked. The shebang is used by the operating system
-and is not part of QDL.
-See also: execute]]>
-        </body>
+E.g. A more realistic example
+try[
+    x := file_read(path_to_file);
+    check_syntax(x);
+    y := interpret(x); // do stuff
+   ]
+ catch[
+   say('there was an error processing the input:' + error_message);
+ ];
+
+ If the syntax checks, then interpret the string, if not, print out some helpful message
+   ]]>
+  </example>
     </entry>
     <entry id="hash">
         <body>
@@ -385,7 +416,7 @@ input_form(f, arg_ct) - The arguments are a function (not a string) and the
 
 Note that as an artifact of parsing, whitespace may be different. The result, however
 if interpreted,  will return the original argument.
-See also: execute();]]>
+See also: interpret();]]>
         </body>
         <example>
 <![CDATA[  f(x)->x^2
@@ -1134,13 +1165,13 @@ has 0->2, 1->1, 2->3, 3->0. This works generally with stems too.]]>
                 </example>
 
     </entry>
-    <entry id="execute">
+    <entry id="interpret">
         <body>
- <![CDATA[execute(arg) - take the argument which is a string and execute it as if it
+ <![CDATA[interpret(arg) - take the argument which is a string and run/execute it as if it
                were typed in.]]>
         </body>
         <example>
-<![CDATA[   execute('2+2');
+<![CDATA[   interpret('2+2');
 4]]>
                 </example>
 
@@ -1173,7 +1204,7 @@ Old                     New                      Description
 script_args(-1)         args()                   get the arg list
 script_args()           size(args());            get the number of args
 script_args(n)          args(n) OR args().n      get arg with index n
-
+                        args().name              Name of the calling script, if any.
 Note that this is always defined, even if the current call is not in
 a script, then it is simply empty.
 
@@ -1792,17 +1823,58 @@ Would set the contents of this to the list of strings given. Note that this
 will be turned into a single string with linefeeds after each entry.]]>
         </body>
     </entry>
-    <entry id="debug">
+    <entry id="java_trace">
+       <body>
+  <![CDATA[
+Toggle low-level debugging of the innards of the workspace and QDL.
+This sets the level to 'trace' for the JVM (not just QDL!).
+This is only useful if you are having a serious issue (such as
+writing a Java module and need to see stack traces). This may be
+(on | true) or (off | false). Generally you do not need this.]]>
+       </body>
+       <example>
+   <![CDATA[E.g., you are writing your own module with a badly misbehaving
+function called my_func. This is how you enable Java stack traces for
+devlopment:
+   )ws set java_trace on
+java_trace is now on
+   my_func(2); // or whatever is causing the problem
+(massive stack trace)
+   ]]>
+        </example>
+    </entry>
+
+    <entry id="debugger">
         <body>
- <![CDATA[Either a workspace variable or the system command to manage debugging
-System command: Write messages to standard error using a graded level system
-                This is an analog to log_entry, but log_entry write to a file.
-debug() - query current level
-debug(string | int) - set the level, returns previous level
-debug(string|int, message) - writes the message to standard error.
+ <![CDATA[The system command to manage debugging
+Write messages to standard error using a graded level system
+debugger() - return current configuration
+debugger(int) - sets level, return integer of previous level
+debugger(reserved_word) - sets the level to the reserved level word.
+             These are off, info, trace, warn, error or severe
+debugger(non-reserved_word) - log argument at the info level
+debugger(level, message) - log the message at the given level
+debugger(cfg.) - configure the debugger with the configuration.
+       This returns the previous value of what was changed.
+
+This is an analog to logger, but logger write to a file while
+debugger writes to standard error.
+
+For the cfg. stem, values are
+'title' - name associated with the entry
+'ts_on' - print current timestamp if true
+'level' - integer for the level
+'delimiter' - the delimiter between components of the log entry.
+     The default it ' | '. These are to help readability.
+'host' - the host name for this system. The options are
+             name - the name of this system
+         adddress - the IP address of this system
+              off - (default) no host is shown.
 
 Supported values are
    constants().sys_log
+  moniker : value
+  ---------------
       off : 10
     error : 5
    severe : 4
@@ -1812,32 +1884,81 @@ Supported values are
 
 Using this for debugging would mean putting various debug statements in your
 code at various levels. You can then turn this off and on as needed.
-See also: log_entry
-
-Workspace variable:
-debug - Toggle low-level debugging of the innards of the workspace and QDL.
-        This sets the level to 'trace' for the JVM (not just QDL!).
-        This is only useful if you are having a serious issue (such as
-        writing a Java module and need to see stack traces). This may be
-        (on | true) or (off | false). Generally you do not need this.]]>
+See also: logger]]>
         </body>
-<example><![CDATA[Sample session. Note that if you are in text mode, the messages
+<example><![CDATA[E.g. Starting from a clean workspace,
+  debugger()
+{
+     level : 10,
+ delimiter :  | ,
+     ts_on : true,
+     title : QDLWorkspace
+     host :
+}
+
+E.g. set a couple of attributes. Response is the old values.
+   debugger({'title':'my entry','level':'info'})
+{title:QDLWorkspace, level:off}
+
+This indicates that the debugger was off before this call. Now
+  debugger('info', 'test message')
+true
+2023-04-25T13:11:43.979Z | my entry | info: test message
+
+What this means. The first line is the result from the function, and true
+means there were no errors writing the debug message. In the default (ASCII or ANSI)
+case, standard error is displayed at the console (in my case on Linux, it showed up
+in red). The actual message then has
+
+timestamp | title | level: message
+
+Sample session. Note that if you are in text mode, the messages
 will by default show up at the console as per here (they may be a different
 color depending on your terminal, since they are in standard error):
 
     debug(2); // set the new level to 2 = info. Shows previous level
-  10
+10
     // write to level 1 = trace. Since 1 < 2 nothing is printed
     // Note that the result of true means the debug log operation worked
     // not that something was written.
     debug(1,'woof');
-  true
-    debug(3,'arf'); //Write to the debug stream. 2< 3 so there is a message:
-  true
-   QDLWorkspace warn: arf
-    debug(4,'woof!'); // repeat with a higher level. Note that the message changes.
-  true
-   QDLWorkspace severe: woof!]]>
+true
+    debugger(3,'arf'); //Write to the debug stream. 2< 3 so there is a message:
+true
+2023-04-25T13:13:58.929Z | my entry | warn: arf
+
+    debugger(4,'woof!'); // repeat with a higher level. Note that the message changes.
+true
+2023-04-25T13:14:15.975Z | my entry | severe: woof!
+
+  debugger('foo'); // A non-moniker for the arguments logs at the info level.
+true
+2023-04-25T14:53:43.968Z | <localhost> | my entry | info: foo
+
+E.g. Adding the host name:
+    debugger({'title':'my entry','level':'info', 'host':'name'})
+{
+ level:off,
+ host:,
+ title:QDLWorkspace
+}
+  debugger('info','test')
+true
+2023-04-25T13:22:56.551Z | <localhost> | my entry | info: test
+
+This adds another field to the entry.
+
+E.g. Capturing the debug output someplace else. This is a pretty common
+way to do it and is done by piping standard error from the executable.
+Assuming that your prompt is bash$, you would start QDL as per normal,
+just with a redirect.
+
+bash$qdl 2> debug.txt
+
+Now standard error will end up in the given file, debug.txt rather than interleved
+with the current session. For very complex code with lots of debug statements,
+this is the way to go since you can pull up the log in your editor and search it.
+]]>
 </example>
     </entry>
 
@@ -2165,15 +2286,27 @@ E.g.
   To get log base 2 of 8:
   log(8)/log(2)
 3.00000000001
+
+Note that the system logging utility is called logger().
 See also: ln(), exp()]]>
         </body>
     </entry>
 
-    <entry id="log_entry">
+    <entry id="logger">
         <body>
-<![CDATA[log_entry() - query the current logging level
-log_entry(level) -- set the new logging level
-log_entry(level, message) - put a message in the current log.
+<![CDATA[
+logger() - return current configuration
+logger(int) - sets level, return integer of previous level
+logger(reserved_word) - sets the level to the reserved level word.
+             These are off, info, trace, warn, error or severe
+logger(non-reserved_word) - log argument at the info level
+logger(level, message) - log the message at the given level
+logger(cfg.) - configure the logger with the configuration.
+       This returns the previous value of what was changed.
+       See note under debugger. You cannot set the title or toggle
+       timestamps, since that is done at the system level (log files can
+       have several sources in a complex system and this tells which
+       component wrote the message.)
 
 The log is a file and is set in the configuration and the
 current location is at info().boot.log_file
@@ -2212,9 +2345,9 @@ See also: debug (system command)]]>
         <example>
 <![CDATA[
 E.g. Set the logging level
-   log_entry('info'); // now only info or above (e.g. error) commands print.
-   log_entry('trace','starting setup...'); // this won't print to the log now
-   log_entry('error','missing password'); // this prints fine.
+   logger('info'); // now only info or above (e.g. error) commands print.
+   logger('trace','starting setup...'); // this won't print to the log now
+   logger('error','missing password'); // this prints fine.
 ]]>
         </example>
     </entry>
@@ -2224,7 +2357,7 @@ E.g. Set the logging level
  <![CDATA[nroot(x,n) - compute the n-th root of x.
              n is an integer.
              If n is odd, x may be any number,
-             If n is even, 0 <= 0
+             If n is even, 0 <= x
 The general case of exponentiation x^y will fail for fractional roots and
 negative numbers. This is because there is no way to check if an exponent
 is an n-th root, due to internal computer representation not being exact,
@@ -5010,6 +5143,14 @@ E.g.
    @*∀[[1;11],[1;11]]
 returns a 10x10 multiplication table.
 See also: for_each]]>
+       </body>
+    </entry>
+    <entry id="script_name">
+       <body>
+  <![CDATA[script_name() - get the name of the currently running script, if any.
+If there is no current script, the result is the empty string. The result is a string
+and is the entire original path to the script.
+  ]]>
        </body>
     </entry>
     <!--

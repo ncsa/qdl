@@ -296,7 +296,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "cosh" |
 "date_iso" |
 "date_ms" |
-"debug" |
+"debugger" |
 "decode" |
 "detokenize" |
 "diff" |
@@ -348,7 +348,8 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "list_keys" |
 "ln" |
 "log" |
-"log_entry" |
+"logger" |
+"script_name" |
 "mask" |
 "max" |
 "min" |

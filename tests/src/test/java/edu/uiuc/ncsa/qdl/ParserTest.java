@@ -1404,10 +1404,10 @@ public class ParserTest extends AbstractQDLTester {
     }
 
 
-    public void testExecute() throws Throwable {
+    public void testInterpret() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "execute('var := \\'abc\\' + \\'def\\';');");
+        addLine(script, "interpret('var := \\'abc\\' + \\'def\\';');");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getStringValue("var", state).equals("abcdef");
@@ -1423,7 +1423,7 @@ public class ParserTest extends AbstractQDLTester {
     public void testExecuteNoSemiColon() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "execute('var := \\'abc\\' + \\'def\\';');");
+        addLine(script, "interpret('var := \\'abc\\' + \\'def\\';');");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getStringValue("var", state).equals("abcdef");
@@ -1441,7 +1441,7 @@ public class ParserTest extends AbstractQDLTester {
         addLine(script, "my_stem.1 :=':= \\'abc\\'';");
         addLine(script, "my_stem.2 := '+';");
         addLine(script, "my_stem.3 := '\\'def\\';';");
-        addLine(script, "execute(my_stem.);");
+        addLine(script, "interpret(my_stem.);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getStringValue("var", state).equals("abcdef");
@@ -1451,7 +1451,7 @@ public class ParserTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "my_stem. :=['3','*','5',';'];");
-        addLine(script, "ok := 15 == execute(my_stem.);");
+        addLine(script, "ok := 15 == interpret(my_stem.);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);

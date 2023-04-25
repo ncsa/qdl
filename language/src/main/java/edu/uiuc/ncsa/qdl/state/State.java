@@ -26,6 +26,7 @@ import edu.uiuc.ncsa.qdl.variables.VStack;
 import edu.uiuc.ncsa.qdl.vfs.VFSEntry;
 import edu.uiuc.ncsa.qdl.vfs.VFSFileProvider;
 import edu.uiuc.ncsa.qdl.vfs.VFSPaths;
+import edu.uiuc.ncsa.qdl.workspace.QDLWorkspace;
 import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
 import edu.uiuc.ncsa.qdl.xml.XMLMissingCloseTagException;
 import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
@@ -452,13 +453,15 @@ public class State extends FunctionState implements QDLConstants {
     /**
      * Debug utility for QDL. Note that this is completely independent of the {@link edu.uiuc.ncsa.security.core.util.DebugUtil}
      * for the JVM, which can be toggled with the WS variable 'debug'
+     *
      * @return
      */
     public MetaDebugUtil getDebugUtil() {
         if (debugUtil == null) {
-            debugUtil = new MetaDebugUtil();
-            debugUtil.setPrintTS(true); // have the timestamps display
-            debugUtil.setDebugLevel(MetaDebugUtil.DEBUG_LEVEL_OFF_LABEL);
+            debugUtil = new MetaDebugUtil(QDLWorkspace.class.getSimpleName(),
+                    MetaDebugUtil.DEBUG_LEVEL_OFF, // no debugging by default
+                    true // print time stamps by default
+            );
         }
         return debugUtil;
     }
@@ -768,7 +771,8 @@ public class State extends FunctionState implements QDLConstants {
                 isServerMode(),
                 isRestrictedIO(),
                 isAssertionsOn());
-        newState.setScriptArgs(getScriptArgs());
+        newState.setScriptArgStem(getScriptArgStem());
+        newState.setScriptName(getScriptName());
         newState.setScriptPaths(getScriptPaths());
         newState.setModulePaths(getModulePaths());
         newState.setVfsFileProviders(getVfsFileProviders());
@@ -832,7 +836,8 @@ public class State extends FunctionState implements QDLConstants {
                 isServerMode(),
                 isRestrictedIO(),
                 isAssertionsOn());
-        newState.setScriptArgs(getScriptArgs());
+        newState.setScriptArgStem(getScriptArgStem());
+        newState.setScriptName(getScriptName());
         newState.setScriptPaths(getScriptPaths());
         newState.setModulePaths(getModulePaths());
         newState.setVfsFileProviders(getVfsFileProviders());
@@ -1145,7 +1150,7 @@ public class State extends FunctionState implements QDLConstants {
             setServerMode(json.getBoolean(STATE_SERVER_MODE_TAG));
             setRestrictedIO(json.getBoolean(STATE_RESTRICTED_IO_TAG));
             OpEvaluator.setNumericDigits(json.getInt(STATE_NUMERIC_DIGITS_TAG));
-            if(json.containsKey(DEBUG_LEVEL)) {
+            if (json.containsKey(DEBUG_LEVEL)) {
                 getDebugUtil().setDebugLevel(json.getInt(DEBUG_LEVEL));
             }
         }
@@ -1258,17 +1263,18 @@ public class State extends FunctionState implements QDLConstants {
 
     boolean allowBaseFunctionOverrides = false;
 
-State targetState=null;
+    State targetState = null;
 
     /**
      * The target state is used in cases where argument lists are processed. This allows for
      * the {@link edu.uiuc.ncsa.qdl.expressions.ANode2} assignment to a different state that
      * the calling state, in particular, this is how functions can assign variables in their
      * argument list only for the duration of the function.
+     *
      * @return
      */
     public State getTargetState() {
-        if(targetState == null){
+        if (targetState == null) {
             return this;
         }
         return targetState;

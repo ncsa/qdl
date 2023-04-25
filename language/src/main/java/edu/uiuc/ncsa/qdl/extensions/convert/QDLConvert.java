@@ -1057,7 +1057,7 @@ public class QDLConvert {
         @Override
         public Object evaluate(Object[] objects, State state) {
             String inString = getFileArg(objects[0], state, getName());
-            Polyad polyad = new Polyad(SystemEvaluator.EXECUTE);
+            Polyad polyad = new Polyad(SystemEvaluator.INTERPRET);
             polyad.addArgument(new ConstantNode(inString));
             try {
                 polyad.evaluate(state);

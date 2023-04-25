@@ -178,27 +178,16 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     protected void splashScreen() {
         if (showBanner) {
-            say(banner);
+            say(Banners.ROMAN);
             say("*****************************************");
             say("Welcome to the QDL Workspace");
             say("Version " + QDLVersion.VERSION);
             say("Type " + HELP_COMMAND + " for help.");
             say("*****************************************");
-        } /*else {
-            say("QDL Workspace, version " + QDLVersion.VERSION);
-        }*/
+        }
     }
 
     boolean showBanner = true;
-    String banner =
-            "- - . -  / - . .  / . - . . \n" +  // morse code for Q D L
-                    "(  ___  )(  __  \\ ( \\      \n" +
-                    "| (   ) || (  \\  )| (      \n" +
-                    "| |   | || |   | || |      \n" +
-                    "| | /\\| || |   ) || |      \n" +
-                    "| (_\\ \\ || (__/  )| (____/\\\n" +
-                    "(____\\/_)(______/ (_______/\n" +
-                    "- - . -  / - . .  / . - . . ";
 
     protected void showHelp4Help() {
         say(HELP_COMMAND + " syntax:");
@@ -2924,7 +2913,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
         }
         String[] names = resolveRealHelpName(name);
-   
+
         String altName = null;
         if (names != null && names.length == 2) {
             altName = names[1];
@@ -3279,7 +3268,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 return isPrettyPrint();
             case ECHO:
                 return isEchoModeOn();
-            case DEBUG:
+            case JAVA_TRACE:
                 return isDebugOn();
             case UNICODE_ON:
                 return State.isPrintUnicode();
@@ -3376,7 +3365,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             case ECHO:
                 say(onOrOff(isEchoModeOn()));
                 break;
-            case DEBUG:
+            case JAVA_TRACE:
                 say(onOrOff(isDebugOn()));
                 break;
             case UNICODE_ON:
@@ -3469,7 +3458,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     public static final String PRETTY_PRINT = "pretty_print";
     public static final String ECHO = "echo";
     public static final String UNICODE_ON = "unicode";
-    public static final String DEBUG = "debug";
+    public static final String JAVA_TRACE = "java_trace";
     public static final String START_TS = "start_ts";
     public static final String ROOT_DIR = "root_dir";
     public static final String SAVE_DIR = "save_dir";
@@ -4031,7 +4020,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 getInterpreter().setEchoModeOn(isEchoModeOn());
                 say("echo mode " + (echoModeOn ? "on" : "off"));
                 break;
-            case DEBUG:
+            case JAVA_TRACE:
                 setDebugOn(isOnOrTrue(value));
                 say("debug " + (debugOn ? "on" : "off"));
                 break;
@@ -4239,7 +4228,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             AUTOSAVE_ON,
             COMPRESS_XML,
             CURRENT_WORKSPACE_FILE,
-            DEBUG,
+            JAVA_TRACE,
             DESCRIPTION,
             ECHO,
             ENABLE_LIBRARY_SUPPORT,
@@ -5285,6 +5274,8 @@ public class WorkspaceCommands implements Logable, Serializable {
     public static final String CLA_VERBOSE_ON = "-v";
     public static final String CLA_LONG_FORMAT_ON = "-l";
     public static final String CLA_NO_BANNER = "-no_banner";
+    public static final String CLA_NO_HEADER = "-no_header";
+    public static final String CLA_LOGO = "-logo";
     public static final String CLA_DEBUG_ON = "-debug";
     public static final String CLA_RUN_SCRIPT_ON = "-run";
     public static final String CLA_SCRIPT_PATH = "-script_path";
@@ -5331,11 +5322,27 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     public void fromConfigFile(InputLine inputLine) throws Throwable {
         String cfgname = inputLine.hasArg(CONFIG_NAME_FLAG) ? inputLine.getNextArgFor(CONFIG_NAME_FLAG) : "default";
+        if (inputLine.hasArg(CLA_LOGO)) {
+             String logoName = inputLine.getNextArgFor(CLA_LOGO).toLowerCase();
+             logo = getLogo(logoName);
+             inputLine.removeSwitchAndValue(CLA_LOGO);
+         }
 //      Old style -- single inheritance
         ConfigurationNode node = ConfigUtil.findConfiguration(
                 inputLine.getNextArgFor(CONFIG_FILE_FLAG),
                 cfgname, CONFIG_TAG_NAME);
         fromConfigFile(inputLine, node);
+        /*
+        //      Old style -- single inheritance
+                ConfigurationNode node = ConfigUtil.findConfiguration(
+                        inputLine.getNextArgFor(CONFIG_FILE_FLAG),
+                        cfgname, CONFIG_TAG_NAME);
+
+                // New style -- multi-inheritance.
+                //     ConfigurationNode node = ConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgname, CONFIG_TAG_NAME );
+                SASConfigurationLoader loader = new SASConfigurationLoader(node);
+
+         */
     }
 
     public void fromConfigFile(InputLine inputLine, ConfigurationNode node) throws Throwable {
@@ -5366,8 +5373,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             DebugUtil.setDebugLevel(DebugConstants.DEBUG_LEVEL_TRACE);
 
         }
-        MetaDebugUtil du = new MetaDebugUtil();
-        du.setDebugLevel(qe.getDebugLevel());
+        MetaDebugUtil du = new MetaDebugUtil(WorkspaceCommands.class.getSimpleName(), MetaDebugUtil.DEBUG_LEVEL_OFF, true);
         state.setDebugUtil(du);
         state.setServerMode(qe.isServerModeOn());
         state.setRestrictedIO(qe.isRestrictedIO());
@@ -5623,6 +5629,28 @@ public class WorkspaceCommands implements Logable, Serializable {
     boolean isRunScript = false;
     String runScriptPath = null;
     Editors qdlEditors;
+    String logo = Banners.TIMES;
+
+    protected String getLogo(String name) {
+        switch (logo.toLowerCase()) {
+            case "times":
+                return Banners.TIMES;
+            case "roman":
+                return Banners.ROMAN;
+            case "os2":
+                return Banners.OS2;
+            case "plain":
+                return Banners.DEFAULT;
+            case "small":
+                return Banners.SMALL;
+            case "fraktur":
+                return Banners.FRAKTUR;
+            case "none":
+                showBanner = false;
+                return "";
+        }
+        return Banners.TIMES;
+    }
 
     protected void fromCommandLine(InputLine inputLine) throws Throwable {
         boolean isVerbose = inputLine.hasArg(CLA_VERBOSE_ON);
@@ -5642,6 +5670,11 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         showBanner = !inputLine.hasArg(CLA_NO_BANNER);
         inputLine.removeSwitch(CLA_NO_BANNER);
+        if (inputLine.hasArg(CLA_LOGO)) {
+            String logoName = inputLine.getNextArgFor(CLA_LOGO).toLowerCase();
+            logo = getLogo(logoName);
+            inputLine.removeSwitchAndValue(CLA_LOGO);
+        }
         // Make sure logging is in place before actually setting up the state,
         // so the state has logging.
         LoggerProvider loggerProvider = null;
@@ -5859,8 +5892,11 @@ public class WorkspaceCommands implements Logable, Serializable {
                 }
 
             }
-            String[] args = argList.toArray(new String[0]);
-            getState().setScriptArgs(args);
+            //String[] args = argList.toArray(new String[0]);
+            QDLStem argStem = new QDLStem();
+            argStem.addList(argList);
+            getState().setScriptArgStem(argStem);
+            getState().setScriptName(runScriptPath);
             try {
                 List<String> lines = readFileAsLines(runScriptPath);
                 StringBuffer stringBuffer = new StringBuffer();
@@ -6071,10 +6107,12 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     boolean ansiModeOn = false;
+
     /**
-       * This is really only a {@link edu.uiuc.ncsa.qdl.gui.SwingTerminal} or SASterminal.
-       * @return
-       */
+     * This is really only a {@link edu.uiuc.ncsa.qdl.gui.SwingTerminal} or SASterminal.
+     *
+     * @return
+     */
     public SwingTerminal getSwingTerminal() {
         return swingTerminal;
     }

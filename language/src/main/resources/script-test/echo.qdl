@@ -1,1 +1,2 @@
-return(script_args(0));
+#! /usr/bin/env -S qdl-run
+return(args());

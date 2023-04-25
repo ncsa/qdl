@@ -1561,6 +1561,41 @@ cannot access '__a'
         assert getBooleanValue("ok6", state);
     }
     /*
+       module['a:/a','a'][n(x)->1;];
+    module['a:/b','b'][n(x)->2;];
+
+module_import('a:/a');
+module_import('a:/b');
+a#n(0)
+     */
+
+    /**
+     * Tests that different modules keep their visibility, so here we import modules with
+     * names a and and a like-named function f.
+     * @throws Throwable
+     */
+    public void testModuleVisibility2() throws Throwable {
+          State state = testUtils.getNewState();
+          StringBuffer script = new StringBuffer();
+          addLine(script,
+                  "module['a:/c','c'][\n" +
+                  "   f(x)->1; \n" +
+                  "   module['a:/d','d'][f(x)->2;]; \n" +
+                  "   module_import('a:/d','d');\n" +
+                  "   ff(x)->f(3)+d#f(5);\n" +
+                  " ];\n" +
+                  "module_import('a:/c');");
+          addLine(script, "ok0 := c#f(100)==1;");
+          addLine(script, "ok1 := c#d#f(100)==2;");
+          addLine(script, "ok2 := c#ff(1)==3;");
+          QDLInterpreter interpreter = new QDLInterpreter(null, state);
+          interpreter.execute(script.toString());
+          assert getBooleanValue("ok0", state);
+          assert getBooleanValue("ok1", state);
+          assert getBooleanValue("ok2", state);
+      }
+
+    /*
    module['a:/t','a']body[define[f(x)]body[return(x+1);];];
    module['q:/z','w']body[module_import('a:/t');define[g(x)]body[return(a#f(x)+3);];];
    module_import('q:/z');

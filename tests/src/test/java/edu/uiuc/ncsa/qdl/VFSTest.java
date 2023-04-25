@@ -819,13 +819,14 @@ public class VFSTest extends AbstractQDLTester {
         addLine(script, "vfs_mount(vfs_cfg.);");  // Now we have a functional VFS with the target file in it.
         addLine(script, "script_path('vfs2#/test:vfs2#/test2');");
         // tests with volume name
-        addLine(script, "ok0 := 0 == script_run('vfs2#echo.qdl', 0);");
-        addLine(script, "ok1 := 1 == script_run('vfs2#/test2/echo.qdl', 1);"); // FQ
+        // The test echo.qdl echos back all args, while sub_dir/echo2.qdl echos back arg 0.
+        addLine(script, "ok0 := 0 == script_run('vfs2#echo.qdl', 0).0;");
+        addLine(script, "ok1 := 1 == script_run('vfs2#/test2/echo.qdl', 1).0;"); // FQ
         addLine(script, "ok2 := 2 == script_run('vfs2#sub_dir/echo2.qdl',2);");
         addLine(script, "ok3 := 3 == script_run('vfs2#/test2/sub_dir/echo2.qdl',3);");
 
         // test relying on the script path
-        addLine(script, "ok4 := 4 == script_run('echo.qdl',4);");
+        addLine(script, "ok4 := 4 == script_run('echo.qdl',4).0;");
         addLine(script, "ok5 := 5 == script_run('sub_dir/echo2.qdl',5);");
 
         QDLInterpreter interpreter = new QDLInterpreter(null, state);

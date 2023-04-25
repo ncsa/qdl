@@ -2374,7 +2374,7 @@ public class StemTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "qq. := {*:4}~[2];");
-        addLine(script, "ok := 4 ==  execute(input_form(qq.)).42;"); // round trip it, check default value
+        addLine(script, "ok := 4 ==  interpret(input_form(qq.)).42;"); // round trip it, check default value
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "failed to round trip default value with a ~.";
