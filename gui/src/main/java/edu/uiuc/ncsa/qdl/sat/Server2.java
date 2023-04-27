@@ -10,8 +10,12 @@ import java.net.Socket;
  * <p>Created by Jeff Gaynor<br>
  * on 9/7/22 at  6:54 AM
  */
-class Server2 {
-
+public class Server2 {
+    /**
+     * Main and only entry point for the server.
+     * @param args
+     * @throws Exception
+     */
     public static void main(String args[])
         throws Exception
     {

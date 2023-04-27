@@ -80,6 +80,7 @@ import static edu.uiuc.ncsa.qdl.config.QDLConfigurationLoaderUtils.*;
 import static edu.uiuc.ncsa.qdl.util.InputFormUtil.*;
 import static edu.uiuc.ncsa.qdl.util.QDLFileUtil.*;
 import static edu.uiuc.ncsa.qdl.vfs.VFSPaths.SCHEME_DELIMITER;
+import static edu.uiuc.ncsa.qdl.workspace.Banners.*;
 import static edu.uiuc.ncsa.security.core.util.StringUtils.*;
 import static edu.uiuc.ncsa.security.util.cli.CLIDriver.EXIT_COMMAND;
 import static edu.uiuc.ncsa.security.util.cli.CLIDriver.HELP_SWITCH;
@@ -178,15 +179,34 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     protected void splashScreen() {
         if (showBanner) {
-            say(Banners.ROMAN);
-            say("*****************************************");
+            say(logo);
+            switch(logoName){
+                case TIMES_STYLE:
+                case ROMAN_STYLE:
+                case OS2_STYLE:
+                    break;
+                case SMALL_STYLE:
+                    say("----------------------");
+                    break;
+                default:
+                    say("*****************************************");
+            }
             say("Welcome to the QDL Workspace");
             say("Version " + QDLVersion.VERSION);
             say("Type " + HELP_COMMAND + " for help.");
-            say("*****************************************");
+            switch(logoName){
+                case OS2_STYLE:
+                    say("¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯");
+                    break;
+                case SMALL_STYLE:
+                    say("----------------------");
+                    break;
+                default:
+                    say("*****************************************");
+            }
         }
     }
-
+    String logoName;
     boolean showBanner = true;
 
     protected void showHelp4Help() {
@@ -5328,21 +5348,15 @@ public class WorkspaceCommands implements Logable, Serializable {
              inputLine.removeSwitchAndValue(CLA_LOGO);
          }
 //      Old style -- single inheritance
+/*
         ConfigurationNode node = ConfigUtil.findConfiguration(
                 inputLine.getNextArgFor(CONFIG_FILE_FLAG),
                 cfgname, CONFIG_TAG_NAME);
+*/
+        // New style -- multi-inheritance.
+        ConfigurationNode node = ConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgname, CONFIG_TAG_NAME );
+
         fromConfigFile(inputLine, node);
-        /*
-        //      Old style -- single inheritance
-                ConfigurationNode node = ConfigUtil.findConfiguration(
-                        inputLine.getNextArgFor(CONFIG_FILE_FLAG),
-                        cfgname, CONFIG_TAG_NAME);
-
-                // New style -- multi-inheritance.
-                //     ConfigurationNode node = ConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgname, CONFIG_TAG_NAME );
-                SASConfigurationLoader loader = new SASConfigurationLoader(node);
-
-         */
     }
 
     public void fromConfigFile(InputLine inputLine, ConfigurationNode node) throws Throwable {
@@ -5397,6 +5411,9 @@ public class WorkspaceCommands implements Logable, Serializable {
         state.setAllowBaseFunctionOverrides(qe.isAllowOverwriteBaseFunctions());
         boolean isVerbose = qe.isWSVerboseOn();
         showBanner = qe.isShowBanner();
+        logoName = qe.getLogoName();
+        logo = getLogo(logoName); // check for logo after show banner since they can select none and turn it anyway.
+
         logger = qe.getMyLogger();
 
         if (qe.getWSHomeDir().isEmpty() && rootDir == null) {
@@ -5632,18 +5649,19 @@ public class WorkspaceCommands implements Logable, Serializable {
     String logo = Banners.TIMES;
 
     protected String getLogo(String name) {
-        switch (logo.toLowerCase()) {
-            case "times":
+        switch (name.toLowerCase()) {
+            case TIMES_STYLE:
                 return Banners.TIMES;
-            case "roman":
+            case ROMAN_STYLE:
                 return Banners.ROMAN;
-            case "os2":
+            case OS2_STYLE:
                 return Banners.OS2;
-            case "plain":
+            case PLAIN_STYLE:
+            case DEFAULT_STYLE:
                 return Banners.DEFAULT;
-            case "small":
+            case SMALL_STYLE:
                 return Banners.SMALL;
-            case "fraktur":
+            case FRAKTUR_STYLE:
                 return Banners.FRAKTUR;
             case "none":
                 showBanner = false;
@@ -5670,8 +5688,9 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         showBanner = !inputLine.hasArg(CLA_NO_BANNER);
         inputLine.removeSwitch(CLA_NO_BANNER);
+        logoName="default";
         if (inputLine.hasArg(CLA_LOGO)) {
-            String logoName = inputLine.getNextArgFor(CLA_LOGO).toLowerCase();
+            logoName = inputLine.getNextArgFor(CLA_LOGO).toLowerCase();
             logo = getLogo(logoName);
             inputLine.removeSwitchAndValue(CLA_LOGO);
         }

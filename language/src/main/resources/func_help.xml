@@ -5153,6 +5153,67 @@ and is the entire original path to the script.
   ]]>
        </body>
     </entry>
+    <entry id="#">
+       <body>
+  <![CDATA[Resolution operator for modules.
+ The typical use is
+
+    alias#thing
+
+  where thing is a member of the module. The alias is
+  the alias from the import, so if you import a module like
+    module_import('mine:/tools/syntax','checker')
+ checker
+
+ then
+
+   checker#f(x); // refers to the function f(x) defined in the module
+   checker#z; // refers to the variable defined in the module
+
+You may also refer to modules inside of other modules.
+
+   checker#json#g(x);
+
+means there is a module imported under the name json and you are
+referring to the alias there.
+
+If you omit the alias, e.g. write #foo(x) then this it is ignored
+and treated as if you wrote foo(x).
+
+If you import a module and the names are unique, you do not have to
+qualify them -- they will be resolved. However, if there are multiple
+like-named things, you will get an error and be asked which one you want.
+
+  ]]>
+       </body>
+       <example>
+   <![CDATA[E.g. Here is a module with a nested module
+module['a:/c','c']
+  body[
+       n(x)->5;
+       module['a:/d','d'][n(x)->7;];
+       module_import('a:/d','y');
+       f(x)->n(3)+y#n(5);
+       nn(x)->stem#n(x)+n(x);
+    ];
+    module_import('a:/c', 'x');
+x
+
+So what does this do? It create a module, imported under the alias 'x' which
+contains another module imported as y.
+   x#y#n(1)
+7
+   x#n(1)
+5
+   x#nn(5)
+[5,6,7,8,9]
+
+In this last example, the definition says to use the built in n function which
+is qualified to its alias and since n is locally defined, that will be used
+without qualification.
+   ]]>
+        </example>
+    </entry>
     <!--
     <entry id="">
        <body>

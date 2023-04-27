@@ -29,7 +29,8 @@ echo "done converting PDFs"
 
 # ===============
 cd $QDL_ROOT
-mvn clean javadoc:aggregate
+mvn clean javadoc:javadoc -Dmaven.javadoc.skip=false
+mvn javadoc:aggregate
 cd $QDL_ROOT/website
 mvn clean site
 

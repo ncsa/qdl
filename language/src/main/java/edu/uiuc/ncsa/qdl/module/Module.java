@@ -267,6 +267,8 @@ public abstract class Module implements XThing, Serializable {
                                     qdlModule.setAlias(tempM.getAlias());
                                     qdlModule.setNamespace(tempM.getNamespace());
                                     qdlModule.setParentTemplateID(tempM.getParentTemplateID());
+                                    qdlModule.setParentInstanceID(tempM.getParentInstanceID());
+                                    qdlModule.setParentInstanceAlias(tempM.getParentInstanceAlias());
                                     // Note that the source is gotten from the ModuleStatement
                                 }
                             } catch (Throwable e) {
@@ -383,12 +385,32 @@ public abstract class Module implements XThing, Serializable {
     public UUID getParentTemplateID() {
         return parentTemplateID;
     }
-
     public void setParentTemplateID(UUID parentTemplateID) {
         this.parentTemplateID = parentTemplateID;
     }
 
     UUID parentTemplateID;
+
+    public UUID getParentInstanceID() {
+        return parentInstanceID;
+    }
+
+    public void setParentInstanceID(UUID parentInstanceID) {
+        this.parentInstanceID = parentInstanceID;
+    }
+
+    UUID parentInstanceID=null;
+
+    public String getParentInstanceAlias() {
+        return parentInstanceAlias;
+    }
+
+    public void setParentInstanceAlias(String parentInstanceAlias) {
+        this.parentInstanceAlias = parentInstanceAlias;
+    }
+
+    String parentInstanceAlias=null;
+
 
     public UUID getId() {
         return id;

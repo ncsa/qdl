@@ -12,8 +12,12 @@ package edu.uiuc.ncsa.qdl.sat;
 import java.io.*;
 import java.net.*;
 
-class Client2 {
-
+public class Client2 {
+    /**
+     * Main and only entry point for the client
+     * @param args
+     * @throws Exception
+     */
     public static void main(String args[])
         throws Exception
     {

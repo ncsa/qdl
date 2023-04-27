@@ -205,7 +205,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
         }
         return list;
     }
-
+ 
     /**
      * Since all new tables are added at 0, the initial one, called the root, is last. This gets
      * the root {@link XTable}.
@@ -270,7 +270,6 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
             }
         }
         return peek().put(xKey, xThing);
-
     }
 
     public XThing put(XThing value) {

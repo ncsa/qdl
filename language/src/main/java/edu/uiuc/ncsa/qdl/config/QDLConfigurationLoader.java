@@ -167,6 +167,12 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
         return getFirstBooleanValue(node, WS_ATTR_SHOW_BANNER, true);
     }
 
+    protected String useLogo() {
+           ConfigurationNode node = getFirstNode(cn, WS_TAG);
+           String logo = getFirstAttribute(node, WS_ATTR_logo);
+           if(StringUtils.isTrivial(logo)) return "default";
+           return logo;
+       }
     protected boolean isEnabled() {
         return getFirstBooleanValue(cn, CONFG_ATTR_ENABLED, true);
     }
@@ -395,7 +401,8 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
                 getSaveDir(),
                 isOverwriteBaseFunctionsOn(),
                 getLibLoader(),
-                isAnsiModeOn());
+                isAnsiModeOn(),
+                useLogo());
     }
 
     @Override

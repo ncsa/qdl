@@ -47,6 +47,7 @@ public interface QDLConfigurationConstants {
     String WS_ATTR_VERBOSE = "verbose";
     String WS_ATTR_ANSI_MODE_ON = "ansi_mode_on";
     String WS_ATTR_SHOW_BANNER = "showBanner";
+    String WS_ATTR_logo = "logo";
     String WS_ATTR_ECHO_MODE_ON = "echoModeOn";
     String WS_ATTR_ASSERTIONS_ON = "assertions_on";
     String WS_ATTR_PRETTY_PRINT = "prettyPrint";

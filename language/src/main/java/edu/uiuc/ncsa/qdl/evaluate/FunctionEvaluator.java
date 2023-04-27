@@ -127,7 +127,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 return true;
         }
         try {
-            figureOutEvaluation(polyad, state, !polyad.isInModule());
+            figureOutEvaluation(polyad, state, !polyad.hasAlias());
             return true;
         } catch (UndefinedFunctionException ufe) {
             // special case this one QDLException so it gives usedful user feedback.
@@ -221,7 +221,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
     protected void figureOutEvaluation(Polyad polyad, State state, boolean checkForDuplicates) throws Throwable {
         FR_WithState frs;
         try {
-            if (state.isIntrinsic(polyad.getName()) && polyad.isInModule()) {
+            if (state.isIntrinsic(polyad.getName()) && polyad.hasAlias()) {
                 // if it is in a module and at the top of the stack, then this is an access violation
                 if (state.getFTStack().localHas(new FKey(polyad.getName(), polyad.getArgCount()))) {
                     throw new IntrinsicViolation("cannot access intrinsic function directly.", polyad);
@@ -278,7 +278,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
             }
         }
         localState.setWorkspaceCommands(state.getWorkspaceCommands());
-
+        localState.setModuleState(state.isModuleState() || localState.isModuleState()); // it might have been set,
         // we are going to write local variables here and the MUST get priority over already exiting ones
         // but without actually changing them (or e.g., recursion is impossible). 
         for (int i = 0; i < polyad.getArgCount(); i++) {

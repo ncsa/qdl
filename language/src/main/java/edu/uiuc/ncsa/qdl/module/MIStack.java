@@ -1,10 +1,7 @@
 package edu.uiuc.ncsa.qdl.module;
 
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
-import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.state.XKey;
-import edu.uiuc.ncsa.qdl.state.XStack;
-import edu.uiuc.ncsa.qdl.state.XTable;
+import edu.uiuc.ncsa.qdl.state.*;
 import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 
@@ -52,6 +49,13 @@ public class MIStack<V extends MITable<? extends XKey, ? extends MIWrapper>> ext
          return (wrapper).getModule();
    }
 
+    @Override
+    public XThing get(XKey key) {
+        if(key.getKey().equals("this")){
+              return (XThing) ((MITable)getStack().get(0)).values().iterator().next();
+          }
+        return super.get(key);
+    }
 
     @Override
     public String getXMLStackTag() {

@@ -32,7 +32,7 @@ public class StemEntryNode implements ExpressionInterface {
     ExpressionInterface value;
 
     @Override
-    public boolean isInModule() {
+    public boolean hasAlias() {
         return alias!=null;
     }
     String alias = null;

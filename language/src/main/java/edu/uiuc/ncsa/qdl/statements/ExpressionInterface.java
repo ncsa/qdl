@@ -8,7 +8,7 @@ package edu.uiuc.ncsa.qdl.statements;
  */
 public interface ExpressionInterface extends Statement, HasResultInterface {
     public ExpressionInterface makeCopy(); // would prefer clone, but there is a conflict in packages because it has protected access
-    boolean isInModule();
+    boolean hasAlias();
     String getAlias();
     void setAlias(String alias);
 }

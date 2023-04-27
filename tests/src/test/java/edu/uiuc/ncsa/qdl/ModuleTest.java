@@ -1578,16 +1578,17 @@ a#n(0)
           State state = testUtils.getNewState();
           StringBuffer script = new StringBuffer();
           addLine(script,
+                  "f(x)->3;\n" +
                   "module['a:/c','c'][\n" +
-                  "   f(x)->1; \n" +
-                  "   module['a:/d','d'][f(x)->2;]; \n" +
+                  "   f(x)->5; \n" +
+                  "   module['a:/d','d'][f(x)->7;]; \n" +
                   "   module_import('a:/d','d');\n" +
-                  "   ff(x)->f(3)+d#f(5);\n" +
+                  "   ff(x)->f(x)+d#f(x);\n" +
                   " ];\n" +
                   "module_import('a:/c');");
-          addLine(script, "ok0 := c#f(100)==1;");
-          addLine(script, "ok1 := c#d#f(100)==2;");
-          addLine(script, "ok2 := c#ff(1)==3;");
+          addLine(script, "ok0 := c#f(100)==5;");
+          addLine(script, "ok1 := c#d#f(100)==7;");
+          addLine(script, "ok2 := c#ff(100)==12;");
           QDLInterpreter interpreter = new QDLInterpreter(null, state);
           interpreter.execute(script.toString());
           assert getBooleanValue("ok0", state);
@@ -1595,6 +1596,50 @@ a#n(0)
           assert getBooleanValue("ok2", state);
       }
 
+    /**
+     * Users should have the ability to create like-named functions for the standard QDL
+     * functions in their own modules. So if (as here) n(x) is function, then c#n(x) can
+     * be defined and is not confused with the built in. This shows that namespace qualification
+     * works as it should and is a critical test.
+     * @throws Throwable
+     */
+    public void testModuleVisibilityBuiltInFunctions() throws Throwable {
+          State state = testUtils.getNewState();
+          StringBuffer script = new StringBuffer();
+          addLine(script,
+                  "module['a:/c','c'][\n" +
+                      "   n(x)->5; \n" +
+                      "   module['a:/d','d'][n(x)->7;]; \n" +
+                      "   module_import('a:/d','d');\n" +
+                      "   f(x)->stem#n(x)+d#n(x);\n" + // can't access d#n() until it is imported
+                      "   g(x)->stem#n(x)+n(x);\n" + // resolves n to the one in this module
+                      "   ];\n" +
+                      "module_import('a:/c');");
+          addLine(script, "ok0 := reduce(@&&,c#f(3)==[7,8,9]);");
+          addLine(script, "ok1 := c#n(1)==5;");
+        addLine(script, "ok2 := c#d#n(1)==7;");
+        addLine(script, "ok3 := reduce(@&&,c#g(3)==[5,6,7]);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+          interpreter.execute(script.toString());
+          assert getBooleanValue("ok0", state);
+          assert getBooleanValue("ok1", state);
+          assert getBooleanValue("ok2", state);
+          assert getBooleanValue("ok3", state);
+      }
+
+   /*
+       module['a:/c','c'][
+      n(x)->1;
+      module['a:/d','d'][n(x)->2;];
+      module_import('a:/d','d');
+      f(x)->n(3)+d#n(5);
+      nn(x)->#n(x)+n(x);
+      ];
+module_import('a:/c');
+c#n(4); //1
+c#d#n(4); //2
+c#f(4);//1+2 == 3
+    */
     /*
    module['a:/t','a']body[define[f(x)]body[return(x+1);];];
    module['q:/z','w']body[module_import('a:/t');define[g(x)]body[return(a#f(x)+3);];];

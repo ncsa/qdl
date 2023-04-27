@@ -8,7 +8,7 @@ This document is the most current thinking on types.
 
  In QDL we propose
  type = type definition. This is like an interface in Java in that it has signatures of functions.
- type_factory = an implementation of a type, along with a contract for making new types.
+ forge = an factory to make types.
 
  Types may be added using the restriction operator: |
  Integer|x restricts x to integer values, so
@@ -61,10 +61,21 @@ For each of the Xi, an internally managed instance will be created. The order of
 in that if a function, f, is in any of the Xi and not overridden, then the first on the list
 will win. This prevents the dreaded multiple inheritance "diamond problem".
 
+Access super antecessors with super(name), e.g., super(X0) woulf give access to the (managed super-forge)
+X0.
+
 Constructor contract
 --------------------
 The name of the constructor is the same as the name of the type. It is accessed exactly once with the
 reserved word new. If there is no override, then the Xi's constructors are called in order.
+
+E.g.
+ X x := X::X(a,b,c); // calls constructor in forge named X.
+
+ inside of the forge constructor is something like
+ X0 X0 := X0::X0(a,b,c);
+ X1 X1 := X1::X1(a,b,c); etc.
+
 
 Accessing an Xi
 ---------------
@@ -105,4 +116,15 @@ implements[math#Complex]
     u.'b' := Complex::new(-1,cos(pi()/3));
     u.
 ['a':<1,0.7>,'b':<-1,0.5>]
+
+Overriding operators
+It is also possible to define types for number, string and such, so that
+a mapping from monadic and dyadic operators is in effect. E.g. if
+a type extends Integer, then functions named add, subtract would be implemented
+and would map to + and -. For complex numbers (above example) that would automatically
+allow for things like
+
+   Complex z := Complex::new(2,2/3) + Complex::new(-1,1);
+
+ and it would just work.
 

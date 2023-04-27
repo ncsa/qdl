@@ -28,7 +28,7 @@ public class StemVariableNode implements ExpressionInterface {
     @Override
     public boolean hasTokenPosition() {return tokenPosition!=null;}
     @Override
-    public boolean isInModule() {
+    public boolean hasAlias() {
         return alias!=null;
     }
     String alias = null;

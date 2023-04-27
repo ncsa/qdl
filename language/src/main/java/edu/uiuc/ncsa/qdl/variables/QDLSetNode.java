@@ -110,7 +110,7 @@ public class QDLSetNode implements ExpressionInterface {
     }
 
     @Override
-    public boolean isInModule() {
+    public boolean hasAlias() {
         return alias != null;
     }
 

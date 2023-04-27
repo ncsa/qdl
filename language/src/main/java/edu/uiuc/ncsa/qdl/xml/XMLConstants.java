@@ -110,6 +110,8 @@ public interface XMLConstants {
     String STATE_RESTRICTED_IO_TAG = "restricted_io";
     String STATE_SERVER_MODE_TAG = "server_mode";
     String TEMPLATE_REFERENCE_TAG = "template_reference";
+    String PARENT_INSTANCE_UUID_TAG = "parent_instance_uuid";
+    String PARENT_INSTANCE_ALIAS_TAG = "parent_instance_uuid";
     String TEMPLATE_STACK = "template_stack";
     String UUID_TAG = "uuid";
     String VARIABLES_TAG = "variables";

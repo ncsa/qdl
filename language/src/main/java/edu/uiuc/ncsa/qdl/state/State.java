@@ -711,7 +711,7 @@ public class State extends FunctionState implements QDLConstants {
     }
 
     protected State newStateWithImportsNEW(State moduleState) {
-        return newStateWithImportsNEW(moduleState, true);
+        return  newStateWithImportsNEW(moduleState, true);
     }
 
     protected State newStateWithImportsNEW(State moduleState, boolean pushVariables) {
@@ -759,7 +759,6 @@ public class State extends FunctionState implements QDLConstants {
             miStack.appendTables(getMInstances());
         }
 
-
         State newState = newInstance(
                 newStack,
                 getOpEvaluator(),
@@ -779,6 +778,10 @@ public class State extends FunctionState implements QDLConstants {
         newState.setIoInterface(getIoInterface());
         newState.systemInfo = systemInfo;
         newState.setDebugUtil(getDebugUtil()); // share the debugger.
+        if(moduleState!=null){
+             newState.setModuleState(moduleState.isModuleState());
+        }
+
         return newState;
     }
 
@@ -1283,4 +1286,19 @@ public class State extends FunctionState implements QDLConstants {
     public void setTargetState(State targetState) {
         this.targetState = targetState;
     }
+
+    public boolean isModuleState() {
+        return moduleState;
+    }
+
+    /**
+     * Flag this if it is used as the local state for a module. This is used to enforce
+     * local resolutions at runtime.
+     * @param moduleState
+     */
+    public void setModuleState(boolean moduleState) {
+        this.moduleState = moduleState;
+    }
+
+    boolean moduleState = false;
 }

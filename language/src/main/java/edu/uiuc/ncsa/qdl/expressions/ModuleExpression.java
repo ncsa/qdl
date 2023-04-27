@@ -3,7 +3,6 @@ package edu.uiuc.ncsa.qdl.expressions;
 import edu.uiuc.ncsa.qdl.exceptions.ImportException;
 import edu.uiuc.ncsa.qdl.exceptions.IntrinsicViolation;
 import edu.uiuc.ncsa.qdl.exceptions.UnknownSymbolException;
-import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
@@ -81,6 +80,7 @@ public class ModuleExpression extends ExpressionImpl {
             result = getExpression().evaluate(getModuleState(state));
         } else {
             // Simple expressions like a#b must work within the scope of a
+            getExpression().setAlias(getAlias());
             result = getExpression().evaluate(getModuleState(state));
         }
         setResult(result);
@@ -124,12 +124,10 @@ public class ModuleExpression extends ExpressionImpl {
         }
         if (moduleState == null) {
             XKey xKey = new XKey(getAlias());
-            if (!state.getMInstances().containsKey(xKey)) {
+            if (!(alias.equals("this") || state.getMInstances().containsKey(xKey))) {
                 throw new IllegalArgumentException("no module named '" + getAlias() + "' was  imported");
             }
-            Module module = state.getMInstances().getModule(xKey);
             moduleState = state.newLocalState(state.getMInstances().getModule(xKey).getState());
-          // setModuleState(module.getState());
         }
         return moduleState;
     }

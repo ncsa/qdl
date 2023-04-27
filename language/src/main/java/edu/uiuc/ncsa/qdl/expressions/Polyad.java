@@ -19,7 +19,8 @@ public class Polyad extends ExpressionImpl {
     }
 
     /**
-     * Human readable name for this. 
+     * Human readable name for this.
+     *
      * @return
      */
     public String getName() {
@@ -52,10 +53,45 @@ public class Polyad extends ExpressionImpl {
 
     @Override
     public Object evaluate(State state) {
-        // Some finagling. If this is being evaluated in a module, check that
-        // there is an override in place. If not, kick it up to the main system
-        // (so evalute with no alias).
-        if(isInModule()){
+        /*
+         Some finagling. If this is being evaluated in a module, check that
+         there is an override in place. If not, kick it up to the main system
+         (so evaluate with no alias). This allows for local resolution in a module
+         for a function of unqualified names
+         E.g.
+         foo(x)->...; // defined outside of module
+        module['a:a','a']
+        body [foo(x)->....; // locally defined
+              fnord(x)->foo(x)+...; // resolves foo to the one in the module
+             ...];
+        Otherwise there is no way to reference any local functions in the module.
+        You should be able to define things in a module and work locally without having
+        to be aware of any other state.
+        Partial answer to https://github.com/ncsa/qdl/issues/23 -- no need for this# now.
+         */
+        if (state.isModuleState()) {
+            if (state.getFTStack().containsKey(new FKey(getName(), getArgCount()))) {
+                if (hasAlias()) {
+                    state.getMetaEvaluator().evaluate(getAlias(), this, state);
+                } else {
+                    state.getMetaEvaluator().getFunctionEvaluator().evaluate(this, state);
+                }
+                return getResult();
+            }
+        }
+        state.getMetaEvaluator().evaluate(this, state);
+/*        if (state.getFTStack().containsKey(new FKey(getName(), getArgCount()))) {
+            if (isInModule()) {
+                state.getMetaEvaluator().evaluate(getAlias(), this, state);
+            } else {
+                state.getMetaEvaluator().getFunctionEvaluator().evaluate(this, state);
+            }
+        } else {
+            state.getMetaEvaluator().evaluate(this, state);
+        }*/
+
+
+/*        if(isInModule()){
             if(state.getFTStack().containsKey(new FKey(getName(), getArgCount()))) {
                 state.getMetaEvaluator().evaluate(getAlias(), this, state);
             }else{
@@ -63,12 +99,15 @@ public class Polyad extends ExpressionImpl {
             }
         }else {
             state.getMetaEvaluator().evaluate(this, state);
-        }
-         return getResult();
+        }*/
+
+        return getResult();
     }
-    public void addArgument(ExpressionInterface expr){
+
+    public void addArgument(ExpressionInterface expr) {
         getArguments().add(expr);
     }
+
     @Override
     public String toString() {
         return "Polyad[" +
@@ -82,7 +121,7 @@ public class Polyad extends ExpressionImpl {
     public ExpressionNode makeCopy() {
         Polyad polyad = new Polyad(operatorType);
         polyad.setName(getName());
-        for(ExpressionInterface arg: getArguments()){
+        for (ExpressionInterface arg : getArguments()) {
             polyad.addArgument(arg.makeCopy());
         }
         return polyad;

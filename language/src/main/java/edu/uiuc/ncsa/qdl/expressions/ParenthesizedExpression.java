@@ -23,7 +23,7 @@ public class ParenthesizedExpression implements ExpressionNode {
     @Override
     public boolean hasTokenPosition() {return tokenPosition!=null;}
     @Override
-    public boolean isInModule() {
+    public boolean hasAlias() {
         return alias != null;
     }
 

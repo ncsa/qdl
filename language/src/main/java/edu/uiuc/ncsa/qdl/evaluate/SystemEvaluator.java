@@ -2682,6 +2682,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             //Module newInstance = m.newInstance(null);
             if (newInstance instanceof JavaModule) {
                 State newModuleState = state.newLocalState(state);
+                newModuleState.setModuleState(true);
                 ((JavaModule) newInstance).init(newModuleState);
             }
 

@@ -37,7 +37,7 @@ public abstract class ExpressionImpl implements ExpressionNode {
     }
 
     @Override
-    public boolean isInModule() {
+    public boolean hasAlias() {
         return alias!=null;
     }
 

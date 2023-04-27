@@ -63,6 +63,7 @@ public class QDLModule extends Module {
         }
         State localState = state.newLocalState();
         try {
+            localState.setModuleState(true);
             //p.execute(getModuleStatement().getSourceCode());
             localState.setImportMode(true);
             getModuleStatement().evaluate(localState);

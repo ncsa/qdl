@@ -12,6 +12,7 @@ import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
+import edu.uiuc.ncsa.security.core.util.StringUtils;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
@@ -44,6 +45,12 @@ public class MITable<K extends XKey, V extends MIWrapper> extends XTable<K, V> i
             Module module = wrapper.getModule();
             xsw.writeAttribute(XMLConstants.UUID_TAG, module.getId().toString());
             xsw.writeAttribute(XMLConstants.TEMPLATE_REFERENCE_TAG, module.getParentTemplateID().toString());
+            if(module.getParentInstanceID()!=null) {
+                xsw.writeAttribute(XMLConstants.PARENT_INSTANCE_ALIAS_TAG, module.getParentInstanceID().toString());
+            }
+            if(!StringUtils.isTrivial(module.getParentInstanceAlias())) {
+                xsw.writeAttribute(XMLConstants.PARENT_INSTANCE_ALIAS_TAG, module.getParentInstanceAlias());
+            }
             xsw.writeAttribute(XMLConstants.MODULE_ALIAS_ATTR, key.getKey()); // What this was imported as
             xsw.writeAttribute(XMLConstants.STATE_REFERENCE_TAG, module.getState().getInternalID());
             xsw.writeEndElement(); // end module tag
