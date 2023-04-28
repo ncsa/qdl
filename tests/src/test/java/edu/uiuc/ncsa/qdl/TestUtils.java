@@ -70,6 +70,7 @@ public class TestUtils {
                 null,
                 false,
                 true);
+        state.setRootState(state);
         return state;
     }
 

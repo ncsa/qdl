@@ -4042,7 +4042,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 break;
             case JAVA_TRACE:
                 setDebugOn(isOnOrTrue(value));
-                say("debug " + (debugOn ? "on" : "off"));
+                say("java trace is " + (debugOn ? "on" : "off"));
                 break;
             case UNICODE_ON:
                 State.setPrintUnicode(isOnOrTrue(value));
@@ -5240,6 +5240,10 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     State state;
 
+    /**
+     * Creates the top-level state object for the system. All other state objects are dervied from it.
+     * @return
+     */
     public State getState() {
         if (state == null) {
             VStack stack = new VStack();
@@ -5257,6 +5261,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             );// workspace is never in server mode, nor restricted IO
             state.setStateID(0);
             state.setWorkspaceCommands(this);
+            state.setRootState(state);  // resolves https://github.com/ncsa/qdl/issues/24
         }
         return state;
 

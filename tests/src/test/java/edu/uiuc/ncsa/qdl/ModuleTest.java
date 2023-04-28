@@ -1476,7 +1476,7 @@ cannot access '__a'
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, VariableState.EXTRINSIC_MARKER + "j := 5;");
-        addLine(script, "module['a:a','A'][define[f(s)][return(s*"+VariableState.EXTRINSIC_MARKER + "j);];];");
+        addLine(script, "module['a:a','A'][define[f(s)][return(s*" + VariableState.EXTRINSIC_MARKER + "j);];];");
         QDLInterpreter interpreter;
         switch (testCase) {
             case 1:
@@ -1572,61 +1572,160 @@ a#n(0)
     /**
      * Tests that different modules keep their visibility, so here we import modules with
      * names a and and a like-named function f.
+     *
      * @throws Throwable
      */
     public void testModuleVisibility2() throws Throwable {
-          State state = testUtils.getNewState();
-          StringBuffer script = new StringBuffer();
-          addLine(script,
-                  "f(x)->3;\n" +
-                  "module['a:/c','c'][\n" +
-                  "   f(x)->5; \n" +
-                  "   module['a:/d','d'][f(x)->7;]; \n" +
-                  "   module_import('a:/d','d');\n" +
-                  "   ff(x)->f(x)+d#f(x);\n" +
-                  " ];\n" +
-                  "module_import('a:/c');");
-          addLine(script, "ok0 := c#f(100)==5;");
-          addLine(script, "ok1 := c#d#f(100)==7;");
-          addLine(script, "ok2 := c#ff(100)==12;");
-          QDLInterpreter interpreter = new QDLInterpreter(null, state);
-          interpreter.execute(script.toString());
-          assert getBooleanValue("ok0", state);
-          assert getBooleanValue("ok1", state);
-          assert getBooleanValue("ok2", state);
-      }
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script,
+                "f(x)->3;\n" +
+                        "module['a:/c','c'][\n" +
+                        "   f(x)->5; \n" +
+                        "   module['a:/d','d'][f(x)->7;]; \n" +
+                        "   module_import('a:/d','d');\n" +
+                        "   ff(x)->f(x)+d#f(x);\n" +
+                        " ];\n" +
+                        "module_import('a:/c');");
+        addLine(script, "ok0 := c#f(100)==5;");
+        addLine(script, "ok1 := c#d#f(100)==7;");
+        addLine(script, "ok2 := c#ff(100)==12;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state);
+        assert getBooleanValue("ok1", state);
+        assert getBooleanValue("ok2", state);
+    }
 
     /**
      * Users should have the ability to create like-named functions for the standard QDL
      * functions in their own modules. So if (as here) n(x) is function, then c#n(x) can
      * be defined and is not confused with the built in. This shows that namespace qualification
      * works as it should and is a critical test.
+     *
      * @throws Throwable
      */
     public void testModuleVisibilityBuiltInFunctions() throws Throwable {
-          State state = testUtils.getNewState();
-          StringBuffer script = new StringBuffer();
-          addLine(script,
-                  "module['a:/c','c'][\n" +
-                      "   n(x)->5; \n" +
-                      "   module['a:/d','d'][n(x)->7;]; \n" +
-                      "   module_import('a:/d','d');\n" +
-                      "   f(x)->stem#n(x)+d#n(x);\n" + // can't access d#n() until it is imported
-                      "   g(x)->stem#n(x)+n(x);\n" + // resolves n to the one in this module
-                      "   ];\n" +
-                      "module_import('a:/c');");
-          addLine(script, "ok0 := reduce(@&&,c#f(3)==[7,8,9]);");
-          addLine(script, "ok1 := c#n(1)==5;");
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script,
+                "module['a:/c','c'][\n" +
+                        "   n(x)->5; \n" +
+                        "   module['a:/d','d'][n(x)->7;]; \n" +
+                        "   module_import('a:/d','d');\n" +
+                        "   f(x)->stem#n(x)+d#n(x);\n" + // can't access d#n() until it is imported
+                        "   g(x)->stem#n(x)+n(x);\n" + // resolves n to the one in this module
+                        "   ];\n" +
+                        "module_import('a:/c');");
+        addLine(script, "ok0 := reduce(@&&,c#f(3)==[7,8,9]);");
+        addLine(script, "ok1 := c#n(1)==5;");
         addLine(script, "ok2 := c#d#n(1)==7;");
         addLine(script, "ok3 := reduce(@&&,c#g(3)==[5,6,7]);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
-          interpreter.execute(script.toString());
-          assert getBooleanValue("ok0", state);
-          assert getBooleanValue("ok1", state);
-          assert getBooleanValue("ok2", state);
-          assert getBooleanValue("ok3", state);
-      }
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state);
+        assert getBooleanValue("ok1", state);
+        assert getBooleanValue("ok2", state);
+        assert getBooleanValue("ok3", state);
+    }
 
+    /**
+     * The default namespace should be refenceable. This test checks that indeed the system knows
+     * when a system function is over-ridden and flags an unqualified use.
+     *
+     * @throws Throwable
+     */
+    public void testDefaultNamespaceFail() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "n(x)->5;");
+        addLine(script, "n(5);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        try {
+            interpreter.execute(script.toString());
+            assert false : "Was able to create a like-named function n for the system and it was not flagged as ambiguous";
+        } catch (QDLExceptionWithTrace x) {
+            assert x.getMessage().contains("ambiguous");
+        }
+    }
+
+    /**
+     * Basic use case. Create a new function, here like-named with system function n, and reference it
+     * explicitly. Simple, but a critical regression test for namespaces.
+     *
+     * @throws Throwable
+     */
+    public void testDefaultNamespaceOK() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "n(x)->5;");
+        addLine(script, "ok := 5==#n(0);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state);
+    }
+
+    /**
+     * Show that a like-named function can be referenced unambiguously
+     *
+     * @throws Throwable
+     */
+    public void testDefaultNamespaceOK2() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "n(x)->5;");
+        addLine(script, "ok := reduce(@&&, [5,6,7,8,9]==stem#n(5) + #n(5));");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state);
+    }
+
+    /**
+     * Test is that a module tries to access a function in the default namespace that has not been defined
+     * when there is a like-named one in the module. The system should tell the user that the function is
+     * not defined.
+     * @throws Throwable
+     */
+    public void testDefaultNamespaceOK3() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module['a:/c','c']\n" +
+                "  body[\n" +
+                "       n(x)->5; \n" +
+                "       module['a:/d','d'][n(x)->7;]; \n" +
+                "       module_import('a:/d','y');\n" +
+                "       nn(x)->stem#n(x)+#n(x); // Note this has a problem. We'd like n(x) to refer to c#n(x) but it refers to builtin\n" +
+                "      ];\n" +
+                "module_import('a:/c', 'x');");
+        addLine(script, "x#nn(5);"); // fails since the function references the default NS.
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        try {
+            interpreter.execute(script.toString());
+            assert false : "Undefined function in default namespace should cause error when referencing it";
+        } catch (QDLExceptionWithTrace q) {
+            assert q.getMessage().contains("no such function");
+        }
+    }
+
+    public void testDefaultNamespaceOK4() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "n(x)->99;"); // Add a function to the default namespace
+        addLine(script, "module['a:/c','c']\n" +
+                "  body[\n" +
+                "       n(x)->5; \n" +
+                "       module['a:/d','d'][n(x)->7;]; \n" +
+                "       module_import('a:/d','y');\n" +
+                "       nn(x)->stem#n(x)+#n(x); // Note this has a problem. We'd like n(x) to refer to c#n(x) but it refers to builtin\n" +
+                "      ];\n" +
+                "module_import('a:/c', 'x');");
+        addLine(script, "x#nn(5);"); // fails since the function references the default NS.
+        addLine(script, "ok := reduce(@&&,x#nn(5)==[99,100,101,102,103]);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state);
+
+    }
    /*
        module['a:/c','c'][
       n(x)->1;

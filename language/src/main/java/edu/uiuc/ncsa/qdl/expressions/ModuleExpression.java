@@ -2,7 +2,9 @@ package edu.uiuc.ncsa.qdl.expressions;
 
 import edu.uiuc.ncsa.qdl.exceptions.ImportException;
 import edu.uiuc.ncsa.qdl.exceptions.IntrinsicViolation;
+import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.exceptions.UnknownSymbolException;
+import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
@@ -17,6 +19,15 @@ import edu.uiuc.ncsa.qdl.variables.Constant;
  * on 9/23/21 at  6:10 AM
  */
 public class ModuleExpression extends ExpressionImpl {
+    public boolean isDefaultNamespace() {
+        return defaultNamespace;
+    }
+
+    public void setDefaultNamespace(boolean defaultNamespace) {
+        this.defaultNamespace = defaultNamespace;
+    }
+
+    boolean defaultNamespace = false;
 
     public ModuleExpression() {
     }
@@ -37,6 +48,49 @@ public class ModuleExpression extends ExpressionImpl {
 
     @Override
     public Object evaluate(State state) {
+        // resolves https://github.com/ncsa/qdl/issues/24
+        if (isDefaultNamespace()) {
+            if (getExpression() instanceof ConstantNode) {
+                ConstantNode cNode = (ConstantNode) getExpression();
+                setResult(cNode.getResult());
+                setResultType(cNode.getResultType());
+                setEvaluated(true);
+                return getResult();
+            }
+            if (getExpression() instanceof VariableNode) {
+                VariableNode vvv = (VariableNode) getExpression();
+                Object obj = state.getRootState().getValue(vvv.getVariableReference());
+                if (obj == null) {
+                    throw new UnknownSymbolException("'" + vvv.getVariableReference() + "'   not found", vvv);
+                } else {
+                    setResult(obj);
+                    setResultType(Constant.getType(obj));
+                    setEvaluated(true);
+                    return getResult();
+                }
+            }
+            if (getExpression() instanceof Polyad) {
+                // in this case, the user is explicitly telling us where to get the function from
+                Polyad polyad = (Polyad) getExpression();
+                if (null != state.getRootState().getFTStack().get(new FKey(polyad.getName(), polyad.getArgCount()))) {
+                    state.getRootState().getMetaEvaluator().getFunctionEvaluator().evaluate(polyad, state.getRootState());
+
+                } else {
+                    throw new QDLExceptionWithTrace("no such function " + polyad.getName() + "(" + polyad.getArgCount() + ")", polyad);
+                }
+
+            } else {
+                // Since this should not happen if the parser is working right, it implies
+                // that something in the parser changed and non-expressions are not
+                // being sent along.
+                throw new IllegalArgumentException("cannot evaluate expression '" + getExpression().getSourceCode() + "' in this module");
+            }
+            setResult(getExpression().getResult());
+            setResultType(getExpression().getResultType());
+            setEvaluated(true);
+            return getResult();
+
+        }
         if (state.getMetaEvaluator().isSystemNS(getAlias())) {
             // In this case, it is a built in function and there are no constants
             // or variables defined in those modules.

@@ -1039,9 +1039,9 @@ illegal argument:no module named "b" was  imported at (1, 67)
         moduleStatement.setNamespace(namespace);
         moduleStatement.setSourceCode(getSource(moduleContext));
         QDLParserParser.DocStatementBlockContext docStatementBlockContext = moduleContext.docStatementBlock();
-        if(docStatementBlockContext == null){
+        if (docStatementBlockContext == null) {
             TokenPosition tp = tp(moduleContext);
-            throw new ParsingException("malformed module statement",tp.line, tp.col, SYNTAX_TYPE);
+            throw new ParsingException("malformed module statement", tp.line, tp.col, SYNTAX_TYPE);
         }
         for (QDLParserParser.StatementContext stmt : docStatementBlockContext.statement()) {
             // Issue is that resolving children as we do gets the function definitions.
@@ -2103,12 +2103,15 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
     @Override
     public void exitModuleExpression(QDLParserParser.ModuleExpressionContext ctx) {
+        boolean defaultNS = ctx.getChildCount() == 2;
+/*
         if (ctx.getChildCount() == 2) {
             // This is of the form #expression, so it is just an expression
             // Don't wrap it and no special processing needed.
             stash(ctx, resolveChild(ctx.expression()));
             return;
         }
+*/
         /**
          * Check for intrinsic violations here rather than try to set things up and check later.
          * Basically any varliable or function that starts with a __ cannot have an alias attached to
@@ -2135,12 +2138,16 @@ illegal argument:no module named "b" was  imported at (1, 67)
         List<String> source = new ArrayList<>();
         source.add(ctx.getText());
         moduleExpression.setSourceCode(source);
-        ExpressionInterface var = (ExpressionInterface) resolveChild(ctx.variable());
-        if (!(var instanceof VariableNode)) {
-            throw new IllegalArgumentException("unexpected argument for alias");
+        if (defaultNS) {
+            moduleExpression.setAlias("");
+            moduleExpression.setDefaultNamespace(true);
+        } else {
+            ExpressionInterface var = (ExpressionInterface) resolveChild(ctx.variable());
+            if (!(var instanceof VariableNode)) {
+                throw new IllegalArgumentException("unexpected argument for alias");
+            }
+            moduleExpression.setAlias(((VariableNode) var).getVariableReference());
         }
-        moduleExpression.setAlias(((VariableNode) var).getVariableReference());
-
         moduleExpression.setExpression((ExpressionInterface) statement);
 
     }
@@ -2391,6 +2398,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
         finish(dyad, ctx);
 */
     }
+
     protected void exitDyadicOps(ParserRuleContext ctx) {
         String x = ctx.getChild(1).getText();
         Dyad dyad;
@@ -2399,6 +2407,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
         stash(ctx, dyad);
         finish(dyad, ctx);
     }
+
     @Override
     public void enterFrefDyadicOps(QDLParserParser.FrefDyadicOpsContext ctx) {
 
@@ -2435,7 +2444,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
     @Override
     public void exitTransposeOperator(QDLParserParser.TransposeOperatorContext ctx) {
-    exitDyadicOps(ctx);
+        exitDyadicOps(ctx);
     }
 
     /**

@@ -4,6 +4,7 @@ import edu.uiuc.ncsa.qdl.exceptions.FunctionArgException;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.exceptions.UndefinedFunctionException;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
+import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.state.NamespaceAwareState;
 import edu.uiuc.ncsa.qdl.state.State;
 
@@ -117,13 +118,16 @@ public class MetaEvaluator extends AbstractEvaluator {
 
     public static final int META_BASE_VALUE = 6000;
     List<AbstractEvaluator> evaluators = new ArrayList<>();
+    Map<String, AbstractEvaluator> evaluatorsByAlias = new HashMap<>();
 
     public void addEvaluator(AbstractEvaluator evaluator) {
         evaluators.add(evaluator);
+        evaluatorsByAlias.put(evaluator.getNamespace(), evaluator);
     }
 
     public void addEvaluator(int index, AbstractEvaluator evaluator) {
         evaluators.add(index, evaluator);
+        evaluatorsByAlias.put(evaluator.getNamespace(), evaluator);
     }
 
 
@@ -140,7 +144,7 @@ public class MetaEvaluator extends AbstractEvaluator {
 
     @Override
     public boolean evaluate(Polyad polyad, State state) {
-        if(state == null || !state.isAllowBaseFunctionOverrides()){
+        if (state == null || !state.isAllowBaseFunctionOverrides()) {
             return evaluateOLD(polyad, state);
         }
         return evaluateNEW(polyad, state);
@@ -197,18 +201,24 @@ public class MetaEvaluator extends AbstractEvaluator {
 
     public boolean evaluateOLD(Polyad polyad, State state) {
         FunctionArgException farg = null;
+        // If there is state (so not loading a template), it is built in and there is a like-named top-level
+        // function. throw and ambiguous function error
+        if (state != null && polyad.isBuiltIn() && null != state.getFTStack().get(new FKey(polyad.getName(), polyad.getArgCount()))) {
+            throw new QDLExceptionWithTrace("ambiguous function. There are multiple definitions of " + polyad.getName() + "(" + polyad.getArgCount() + ")",
+                    polyad);
+        }
         for (AbstractEvaluator evaluator : evaluators) {
             try {
                 if (evaluator.evaluate(polyad, state)) return true;
-            }catch(FunctionArgException functionArgException){
+            } catch (FunctionArgException functionArgException) {
                 farg = functionArgException;
                 // So maybe its overloaded??? Check user defined function.
                 // If not then blow up for real
-                try{
+                try {
                     if (getFunctionEvaluator().evaluate(polyad, state)) {
                         return true;
                     }
-                }catch(Throwable t){
+                } catch (Throwable t) {
                     throw farg;
                 }
             }
@@ -217,14 +227,17 @@ public class MetaEvaluator extends AbstractEvaluator {
             return true;
         }
 
-        if(farg != null){
+        if (farg != null) {
             throw farg;
         }
         throw new UndefinedFunctionException("unknown function '" + polyad.getName() + "'", polyad);
     }
 
     public boolean evaluate(String alias, Polyad polyad, State state) {
-
+        if (evaluatorsByAlias.containsKey(alias)) { // Explicit request, honor it
+            if (evaluatorsByAlias.get(alias).evaluate(alias, polyad, state)) return true;
+            throw new UndefinedFunctionException("unknown function '" + polyad.getName() + "'", polyad);
+        }
         for (AbstractEvaluator evaluator : evaluators) {
             if (evaluator.evaluate(alias, polyad, state)) return true;
         }

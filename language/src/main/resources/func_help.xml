@@ -5177,13 +5177,33 @@ You may also refer to modules inside of other modules.
 means there is a module imported under the name json and you are
 referring to the alias there.
 
-If you omit the alias, e.g. write #foo(x) then this it is ignored
-and treated as if you wrote foo(x).
+The default namespace.
+----------------------
+In the workspace, whenever you create an unqualified function or variable
+it is placed in the default namespace. This can be accessed using
+
+   #name
+
+E.g.
+  n(x)->5; // there is a system function, stem#n(x) already.
+  n(5);
+ambiguous function. There are multiple definitions of n(1) At (1, 0)
+
+this means that n(1) -- a function named n with one argument
+exists in multiple namespaces. If you want the system function, you
+will need to qualify every instance from now on. The right way is
+
+   #n(42)
+5
+   stem#n(5) + #n(5)
+[5,6,7,8,9]
 
 If you import a module and the names are unique, you do not have to
 qualify them -- they will be resolved. However, if there are multiple
 like-named things, you will get an error and be asked which one you want.
-
+This is why in a clean workspace you can just use the built in system functions
+without qualification. You will only have to qualify functions if you re-used a system
+function (do you really need to name your function module_import???).
   ]]>
        </body>
        <example>

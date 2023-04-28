@@ -557,8 +557,8 @@ public class State extends FunctionState implements QDLConstants {
     boolean serverMode = false;
 
     /**
-     * In server mode, some IO for debugging can still be allowed. This is checked
-     *
+     * In server mode, some IO for debugging with debugger is still be allowed. If this flag
+     * is set true, then printing is not allowed nor is saving the workspace.
      * @return
      */
     public boolean isRestrictedIO() {
@@ -1301,4 +1301,20 @@ public class State extends FunctionState implements QDLConstants {
     }
 
     boolean moduleState = false;
+
+    static State rootState = null;
+
+    /**
+     * At system startup this is set to be the top-level state object for the system. It is
+     * used, e.g. in resolving default namepsace requests everywhere and should be set
+     * exactly once on startup by the system.
+     * @return
+     */
+    // resolves https://github.com/ncsa/qdl/issues/24
+    public static State getRootState(){
+           return rootState;
+    }
+    public static void setRootState(State newRoot){
+        rootState = newRoot;
+    }
 }
