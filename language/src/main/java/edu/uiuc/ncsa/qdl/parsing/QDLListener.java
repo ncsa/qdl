@@ -1034,8 +1034,10 @@ illegal argument:no module named "b" was  imported at (1, 67)
         isModule = false;
         ModuleStatement moduleStatement = (ModuleStatement) parsingMap.getStatementFromContext(moduleContext);
         URI namespace = URI.create(stripSingleQuotes(moduleContext.STRING(0).toString()));
-        String alias = stripSingleQuotes(moduleContext.STRING(1).toString());
-        moduleStatement.setAlias(alias);
+        if (moduleContext.STRING().size() == 2) {
+            String alias = stripSingleQuotes(moduleContext.STRING(1).toString());
+            moduleStatement.setAlias(alias);
+        }
         moduleStatement.setNamespace(namespace);
         moduleStatement.setSourceCode(getSource(moduleContext));
         QDLParserParser.DocStatementBlockContext docStatementBlockContext = moduleContext.docStatementBlock();

@@ -3,8 +3,8 @@ This blurb is about serialization for QDL.
 3/1/2022
 
 There is still Java serialization, but that is fragile and, except in a few specific use cases,
-should be avoided. Mostly this is because any changes to the state (frequent between between
-version) render the saved workspaces unreadable.
+should be avoided. Mostly this is because any changes to the state (frequent between
+versions) render the saved workspaces unreadable.
 
 XML serialization is what we have settled on.
 

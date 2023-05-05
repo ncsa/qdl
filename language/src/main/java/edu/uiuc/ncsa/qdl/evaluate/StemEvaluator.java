@@ -480,7 +480,12 @@ public class StemEvaluator extends AbstractEvaluator {
                 }
             }
         }
-
+        if(!isStem(arg0)){
+            polyad.setEvaluated(true);
+              polyad.setResult(arg0.toString());
+              polyad.setResultType(STRING_TYPE);
+              return;
+        }
         QDLStem stem = (QDLStem) arg0;
 /*        if(returnAsString){
             polyad.setEvaluated(true);

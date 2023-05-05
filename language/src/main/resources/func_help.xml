@@ -2714,7 +2714,7 @@ E              ∉       E    \u2209         is *not* member of
 <=             ≤       <    \u2264         less than or equals
 >=             ≥       >    \u2265         greater than or equals
 ~|             ≁       ~    \u2241         last axis join
-expand         ⊗       X    \u2295         function reference
+expand         ⊕       X    \u2295         expand operator
 @              ⊗       @    \u2297         function reference
 reduce         ⊙       x    \u2299         reduce operator
 mask           ⌆       m    \u2306         mask operator
@@ -2723,7 +2723,7 @@ transpose      ⦰       t    \u29b0         transpose operator
 |]             ⟧       }    \u27e7         right closed slice bracket
 ceiling        ⌈       k    \u2308         ceiling
 floor          ⌊       l    \u230a         floor
-|^             ⊢       s    \u22a2         create a set
+|^             ⊢       s    \u22a2         create a set from a stem
 transpose      τ       t    \u03c4         alias for the transpose function.
 pi             π       p    \u03c0         Greek letter pi.
 

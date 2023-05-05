@@ -236,7 +236,7 @@ public class MetaEvaluator extends AbstractEvaluator {
     public boolean evaluate(String alias, Polyad polyad, State state) {
         if (evaluatorsByAlias.containsKey(alias)) { // Explicit request, honor it
             if (evaluatorsByAlias.get(alias).evaluate(alias, polyad, state)) return true;
-            throw new UndefinedFunctionException("unknown function '" + polyad.getName() + "'", polyad);
+            throw new UndefinedFunctionException("unknown function '" + polyad.getName() + "' in module " + alias, polyad);
         }
         for (AbstractEvaluator evaluator : evaluators) {
             if (evaluator.evaluate(alias, polyad, state)) return true;

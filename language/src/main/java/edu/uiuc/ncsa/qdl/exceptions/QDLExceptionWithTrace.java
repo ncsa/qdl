@@ -85,7 +85,7 @@ public class QDLExceptionWithTrace extends QDLException{
         if (getScriptStack().isEmpty()) {
             return "";
         }
-        StringBuilder stringBuilder = new StringBuilder();
+       StringBuilder stringBuilder = new StringBuilder();
         String indent = "";
         for (String s : getScriptStack()) {
             stringBuilder.append(indent + s);

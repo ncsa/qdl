@@ -37,8 +37,16 @@ public abstract class Module implements XThing, Serializable {
 
     @Override
     public XKey getKey() {
-        if (key == null) {
-            key = new XKey(getName());
+        if(key == null){
+           if(StringUtils.isTrivial(getAlias())){
+               if(isTemplate()){
+                   key = getMTKey();
+               }else{
+                   throw new IllegalStateException("No alias for module '" + getNamespace() + "'");
+               }
+           } else{
+               key = new XKey(getName()); // for instances, stash with the alias
+           }
         }
         return key;
     }

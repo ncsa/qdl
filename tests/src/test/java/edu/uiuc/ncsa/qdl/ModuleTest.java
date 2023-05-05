@@ -1689,10 +1689,10 @@ a#n(0)
     public void testDefaultNamespaceOK3() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "module['a:/c','c']\n" +
+        addLine(script, "module['a:/c']\n" +
                 "  body[\n" +
                 "       n(x)->5; \n" +
-                "       module['a:/d','d'][n(x)->7;]; \n" +
+                "       module['a:/d'][n(x)->7;]; \n" +
                 "       module_import('a:/d','y');\n" +
                 "       nn(x)->stem#n(x)+#n(x); // Note this has a problem. We'd like n(x) to refer to c#n(x) but it refers to builtin\n" +
                 "      ];\n" +
@@ -1711,10 +1711,10 @@ a#n(0)
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "n(x)->99;"); // Add a function to the default namespace
-        addLine(script, "module['a:/c','c']\n" +
+        addLine(script, "module['a:/c']\n" +
                 "  body[\n" +
                 "       n(x)->5; \n" +
-                "       module['a:/d','d'][n(x)->7;]; \n" +
+                "       module['a:/d'][n(x)->7;]; \n" +
                 "       module_import('a:/d','y');\n" +
                 "       nn(x)->stem#n(x)+#n(x); // Note this has a problem. We'd like n(x) to refer to c#n(x) but it refers to builtin\n" +
                 "      ];\n" +

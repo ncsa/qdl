@@ -2676,6 +2676,10 @@ public class SystemEvaluator extends AbstractEvaluator {
             if (m == null) {
                 throw new IllegalStateException("no such module '" + moduleNS + "'");
             }
+            if(m.getAlias() == null && alias == null){
+                //no alias was set as a default and none was specified.
+                throw new QDLExceptionWithTrace("No default alias for " + moduleNS + " and none specified for import.", polyad);
+            }
             // QDLModules create the local state, java modules assume the state is exactly the local state.
             // Get a new instance and then set the state to the local state later for Java modules.
             Module newInstance = m.newInstance((m instanceof JavaModule) ? null : state);

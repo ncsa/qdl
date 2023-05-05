@@ -115,6 +115,35 @@ public class StatementTest extends AbstractQDLTester {
         assert getLongValue("i", state).equals(3L) : "continue() inside try..catch inside loop did not execute properly.";
     }
 
+    /*
+    msg := 'fail';
+    try[
+     ⊨ 2 == 3 : 'ok';
+    ]catch[
+       msg:=error_message;
+    ];
+    ok := msg=='ok';
+     */
+
+    /**
+     * Regression test that error messages from assert statements get propagated correctly.
+     * @throws Throwable
+     */
+    public void testCatchAssertion() throws Throwable {
+           StringBuffer script = new StringBuffer();
+            addLine(script, "    msg := 'fail';\n" +
+                    "    try[\n" +
+                    "     ⊨ 2 == 3 : 'ok';\n" +
+                    "    ]catch[\n" +
+                    "       msg:=error_message;\n" +
+                    "    ];\n" +
+                    "    ok := msg=='ok';");
+           State state = testUtils.getNewState();
+
+           QDLInterpreter interpreter = new QDLInterpreter(null, state);
+           interpreter.execute(script.toString());
+           assert getBooleanValue("ok", state): "failed to propagate assertion message.";
+       }
 
     /**
      * Test that assigning a value to a keyword, e.g. false := true fails.

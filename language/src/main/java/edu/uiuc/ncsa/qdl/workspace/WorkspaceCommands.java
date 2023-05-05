@@ -6120,7 +6120,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         getState().setAssertionsOn(assertionsOn);
     }
 
-    boolean assertionsOn;
+    boolean assertionsOn =true;
 
     public boolean isAnsiModeOn() {
         return ansiModeOn;
