@@ -480,11 +480,11 @@ public class StemEvaluator extends AbstractEvaluator {
                 }
             }
         }
-        if(!isStem(arg0)){
+        if (!isStem(arg0)) {
             polyad.setEvaluated(true);
-              polyad.setResult(arg0.toString());
-              polyad.setResultType(STRING_TYPE);
-              return;
+            polyad.setResult(arg0.toString());
+            polyad.setResultType(STRING_TYPE);
+            return;
         }
         QDLStem stem = (QDLStem) arg0;
 /*        if(returnAsString){
@@ -1316,7 +1316,7 @@ public class StemEvaluator extends AbstractEvaluator {
         Object arg0 = polyad.evalArg(0, state);
         checkNull(arg0, polyad.getArgAt(0));
         boolean convertKeys = false;
-         int converterType = -1;
+        int converterType = -1;
         if (polyad.getArgCount() == 2) {
             Object arg1 = polyad.evalArg(1, state);
             checkNull(arg1, polyad.getArgAt(2));
@@ -1324,7 +1324,7 @@ public class StemEvaluator extends AbstractEvaluator {
                 throw new BadArgException(FROM_JSON + " requires an integer boolean as its second argument, if present.", polyad.getArgAt(1));
             }
             convertKeys = true;
-            converterType = ((Long)arg1).intValue();
+            converterType = ((Long) arg1).intValue();
         }
         JSONObject jsonObject = null;
         QDLStem output = new QDLStem();
@@ -1363,12 +1363,12 @@ public class StemEvaluator extends AbstractEvaluator {
             } catch (Throwable t) {
                 try {
                     JSONArray array = JSONArray.fromObject((String) arg0);
-                    output.fromJSON(array, convertKeys,converterType);
+                    output.fromJSON(array, convertKeys, converterType);
                 } catch (Throwable tt) {
                     // ok, so this is not valid JSON. Constrcut error message with first exception since that
                     // is more apt to be correct.
                     throw new BadArgException(FROM_JSON + " could not parse the argument as valid JSON: " +
-                            t.getMessage().substring(0,Math.min(100,t.getMessage().length())), polyad.getArgAt(0));
+                            t.getMessage().substring(0, Math.min(100, t.getMessage().length())), polyad.getArgAt(0));
                 }
             }
         }
@@ -1422,7 +1422,7 @@ public class StemEvaluator extends AbstractEvaluator {
             if (isLong(arg1)) {
                 Long argL = (Long) arg1;
                 indent = argL.intValue(); // best we can do
-            }else{
+            } else {
                 throw new BadArgException(TO_JSON + " requires an integer  as its second argument", polyad.getArgAt(1));
             }
         }
@@ -1434,7 +1434,7 @@ public class StemEvaluator extends AbstractEvaluator {
             Object arg1 = polyad.evalArg(1, state);
             checkNull(arg1, polyad.getArgAt(1));
             if (isLong(arg1)) { // contract true = v-encode, false means no encode
-                indent = ((Long)arg1).intValue(); // best we can do
+                indent = ((Long) arg1).intValue(); // best we can do
             } else {
                 throw new BadArgException(TO_JSON + " with 3 arguments requires an integer as its second argument", polyad.getArgAt(1));
             }
@@ -2704,14 +2704,32 @@ public class StemEvaluator extends AbstractEvaluator {
 
         Object obj2 = polyad.getArgAt(1).getResult();
         checkNull(obj2, polyad.getArgAt(1));
-
+        QDLStem stem1 = null;
+        QDLStem stem2 = null;
+        if (isStem(obj1)) {
+            stem1 = (QDLStem) obj1;
+            // short circuit for https://github.com/ncsa/qdl/issues/25
+            if (stem1.isEmpty() && (obj2 == QDLNull.getInstance())) {
+                polyad.setResultType(STEM_TYPE);
+                polyad.setResult(new QDLStem());
+                polyad.setEvaluated(true);
+                return;
+            }
+        }
+        if (isStem(obj2)) {
+            stem2 = (QDLStem) obj2;
+            if (stem1 != null && stem1.isEmpty() && stem2.isEmpty()) {
+                polyad.setResultType(STEM_TYPE);
+                polyad.setResult(new QDLStem());
+                polyad.setEvaluated(true);
+                return;
+            }
+        }
 
         if (!areAllStems(obj1, obj2)) {
             Statement s = isStem(obj1) ? polyad.getArgAt(0) : polyad.getArgAt(1);
             throw new BadArgException("the " + MASK + " requires both arguments be stem variables", s);
         }
-        QDLStem stem1 = (QDLStem) obj1;
-        QDLStem stem2 = (QDLStem) obj2;
         QDLStem result = stem1.mask(stem2);
         polyad.setResultType(STEM_TYPE);
         polyad.setResult(result);

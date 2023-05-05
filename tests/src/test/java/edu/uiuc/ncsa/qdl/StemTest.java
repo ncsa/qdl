@@ -1860,6 +1860,23 @@ public class StemTest extends AbstractQDLTester {
 
     }
 
+    public void testMasklShortCircuit() throws Throwable {
+        // Test for https://github.com/ncsa/qdl/issues/25
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ξ. := mask([],null);"); // tests that it is a stem on assignment
+        addLine(script, "ok := size(ξ.) == 0;"); // test that it is empty
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "short circuit for mask() failed";
+    }
+
+    /*
+      mask([],null)
+
+     */
+
     /**
      * Because ~ does not fit into the order of operations, expressions with a
      * . and a ~ like
