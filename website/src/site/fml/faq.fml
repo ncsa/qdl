@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
-<faqs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="https://maven.apache.org/FML/1.0"
-      xsi:schemaLocation="https://maven.apache.org/FML/1.0 https://maven.apache.org/xsd/fml-1.0.xsd"
+<faqs xmlns="http://maven.apache.org/FML/1.0.1"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
       id="General FAQ">
     <part id="General">
         <faq id="meaning">
@@ -10,38 +11,32 @@
                 it also is humorously referred to as "quick and dirty language".
             </answer>
         </faq>
+        <faq id="philosophy">
+            <question>Philosophy</question>
+            <answer>
+                <p>The basic philosophies are:
+                    <br/>
+                    * Small is beautiful
+                    <br/>
+                    * Aim at probabilities (what you are likely to do) not possibilities (edge cases)
+                    <br/>
+                    * Simple things should be simple
+                    <br/>
+                </p>
+            </answer>
+        </faq>
         <faq id="Executive summary">
-               <question>In a nutshell, how does it work?</question>
+            <question>In a nutshell, how does it work?</question>
             <answer>QDL is a functional programming language that works on aggregates. It is
-            a fairly direct outgrowth of <b>Church's λ-calculus</b>. However, while
-            this is Turing complete in and of itself, it can be a pain in the neck
-            in practice. Therefore QDL has standard procedural statements (such
-            as for looping, switches, etc.) and such.</answer>
-        </faq>
-        <faq id="workspace">
-            <question>What is the workspace model?</question>
-            <answer>The workspace (aka WS) is a basic unit of work organization. It is
-            an interactive shell that allows for managing QDL development. In short,
-            it is QDL's IDE. Workspaces can be saved with their current state as
-            a snapshot, then reloaded. They are also portable, so you can share them with
-            others. This allows you to create a workspace per project
-            and keep everything available. In cases where you may have large gaps in activity
-            (a very common case), you can simply load the workspace for that project and
-            instantly resume what you were doing.</answer>
-        </faq>
-        <faq id="stems and what not">
-            <question>What's the deal with stems? What makes them different from an array?</question>
-            <answer>Stems are generally referred to as an "associative array" whose keys may be
-            strings or integers. If strings only, this is effectively a map. If integers, it is a list.
-
-            Probably the most interesting thing is that operations are done on aggregates, which
-            renders much of a program’s control structure implicit. You mostly have operators that
-            describe what you want to happen to the data and it just occurs.
-
-            On top of that, there are functions like query() which let you use JSON Path to interrogate
-            the contents of a stem and the extraction operator, \, which lets you dissect one. A common
-            happenstance is getting some enormous JSON blob and having to dissect it for useful information.
-            QDL makes this quite easy.</answer>
+                a fairly direct outgrowth of <b>Church's λ-calculus</b> and also satisfies
+                the <b>Böhm-Jacopini Theorem</b>, viz., it has the correct control
+                structures to allow structured programming as well, hence is also
+                doubly Turing-complete. Why do that? It can be a pain in the neck
+                in practice to have precisely one way to do everything.
+                (Remember that the promise and curse of Java is that <i>everything</i> is an object?)
+                Therefore, QDL has standard procedural statements (such
+                as for looping, switches, etc.) and such.
+            </answer>
         </faq>
         <faq id="origin">
             <question>Where did QDL come from?</question>
@@ -55,18 +50,84 @@
                     but can be messy to implement. On top of this there any
                     number of special cases are requirements in how the protocol is used. So either
                 </p>
-                    <ul>
-                        <li>one is constantly tweaking the server code or</li>
-                        <li>one fixes it to run the bare-bone protocol and has a scripting language</li>
-                    </ul>
+                <ul>
+                    <li>one is constantly tweaking the server code or</li>
+                    <li>one fixes it to run the bare-bone protocol and has a scripting language</li>
+                </ul>
                 <p>that can be invoked at regular intervals in processing to handle the special cases.</p>
+            </answer>
+        </faq>
+        <faq id="comparison">
+            <question>Can you give an example showing QDL vs. another language?</question>
+            <answer>An easy one is to fill an array of doubles with acos(sin(x)) for 1,000
+                values in the range -1 up to, but not including 1. In Java:
+
+                <pre>
+                    int n = 1000;
+                    double[] values = new double[n];
+                    for(int i = 0; i &lt; n; i++){
+                    // Note the trick: You have indices that don't match up to values, so you must
+                    // compute them. On top of this, if you divide an integer by and integer in Java, you get
+                    // an integer, hence you must divide by 500.0 and on top of it, you want to ensure that it is
+                    // a double, so you must append a "d" to force the issue
+                      values[i] = Math.acos(Math.sin(i/500.0d -1));
+                    }
+                </pre>
+                We can contrast this with QDL:
+
+                <pre>
+                    values. := acos(sin([-1;1;1/500]));
+                </pre>
+
+                <p>Yes indeed. That's it. This tells QDL to start at -1 and increment by 1/500 (the
+                expression in the brackets is called a slice). You could even
+                    use an alternate slice operator and just specify the number of elements you want.</p>
+                <pre>
+                    values. := acos(sin([|-1;1;1000|]));
+                </pre>
+                <p>which tells QDL to make 1000 elements evenly distributed between -1 and 1 inclusive.
+                And what if you needed to do this with higher precision, say to 25 decimal places? In Java
+                you need to switch all of your variables over to BigDecimals and find some libraries that
+                    support them. In QDL you just set the precision:</p>
+                <pre>
+                    numeric_digits(25)
+                </pre>
+                <p>and re-run the command.</p>
+            </answer>
+        </faq>
+        <faq id="workspace">
+            <question>What is the workspace model?</question>
+            <answer>The workspace (aka WS) is a basic unit of work organization. It is
+                an interactive shell that allows for managing QDL development. In short,
+                it is QDL's IDE. Workspaces can be saved with their current state as
+                a snapshot, then reloaded. They are also portable, so you can share them with
+                others. This allows you to create a workspace per project
+                and keep everything available. In cases where you may have large gaps in activity
+                (a very common case), you can simply load the workspace for that project and
+                instantly resume what you were doing.
+            </answer>
+        </faq>
+        <faq id="stems and what not">
+            <question>What's the deal with stems? What makes them different from an array?</question>
+            <answer>Stems are generally referred to as an "associative array" whose keys may be
+                strings or integers. If strings only, this is effectively a map. If integers, it is a list.
+
+                Probably the most interesting thing is that operations are done on aggregates, which
+                renders much of a program’s control structure implicit. You mostly have operators that
+                describe what you want to happen to the data and it just occurs.
+
+                On top of that, there are functions like query() which let you use JSON Path to interrogate
+                the contents of a stem and the extraction operator, \, which lets you dissect one. A common
+                happenstance is getting some enormous JSON blob and having to dissect it for useful information.
+                QDL makes this quite easy.
             </answer>
         </faq>
         <faq id="why not other languages">
             <question>Why use QDL for server side scripting?</question>
             <answer>
                 <p>There are many high-level languages that could have been used, such as Java,
-                Python, Ruby etc. Here are the major reasons for using QDL:</p>
+                    Python, Ruby etc. Here are the major reasons for using QDL:
+                </p>
                 <p>On an OAuth server, there are many -- possibly thousands -- of clients. Under OA4MP, which
                     handles identity management and single sign-on, each of these may have imposing
                     institutional uses, restrictions and
@@ -87,99 +148,51 @@
                 </p>
             </answer>
         </faq>
-        <faq id="philosophy">
-            <question>Philosophy</question>
+        <faq id="conceptual">
+            <question>What is the hardest conceptual hurdle in using QDL?</question>
             <answer>
-                <p>The basic philosophies are:
-                    <br/>
-                    * Small is beautiful
-                    <br/>
-                    * Aim at probabilities (what you are likely to do) not possibilities (edge cases)
-                    <br/>
-                    * Simple things should be simple
-                    <br/>
-                </p>
-            </answer>
-        </faq>
-            <faq id="conceptual">
-                <question>What is the hardest conceptual hurdle in using QDL?</question>
-            <answer>
-                    <p>Aggregates, aka stem variables. These are written with a trailing period, hence
+                <p>Aggregates, aka stem variables. These are written with a trailing period, hence
                     in QDL, <b>my_variable.</b> is a stem. Basic operations follow the
-                    "freshman algebra" paradigm that every operator is linear, <i>i.e.</i>
+                    "freshman algebra" paradigm that every operator is linear,
+                    <i>i.e.</i>
                     functions are applied to each element. So to take the
                     square root of every element in the above stem, you would just write
                     something like
-                    </p>
+                </p>
                 <pre>
-my_variable. := sqrt(my_variable.);
+                    my_variable. := sqrt(my_variable.);
                 </pre>
                 <p>Once you get the knack of it though, it is very easy to work with data
-                and mostly you tell QDL what you want to happen to your data and it does it.
-                This can immensely streamline what would be large chunks of code in other
-                languages.</p>
-                <p>A good comparison is in the <a href="https://ncsa.github.io/qdl/pdf/qdl_reference.pdf">reference manual</a>
-                with  Armstrong numbers. Just search for Armstrong there.</p>
+                    and mostly you tell QDL what you want to happen to your data and it does it.
+                    This can immensely streamline what would be large chunks of code in other
+                    languages.
+                </p>
+                <p>A good comparison is in the
+                    <a href="https://qdl-lang.org/pdf/qdl_reference.pdf">reference manual</a>
+                    with Armstrong numbers. Just search for Armstrong there.
+                </p>
             </answer>
-            </faq>
+        </faq>
         <faq id="subsetting">
             <question>What is subsetting?</question>
             <answer>Since operations happen on stems element-wise, operations are only done
-            on corresponding elements with the same index. This means you always will get
-            a (possibly improper) subset of the indices. <i>E.g.</i>
-            <pre>
-    a. := [;10]; // 10 elements, 0,1,...,9
-    b. := [;4]*2; // 4 elements, values are 0,2,4,6
-    a.^b.; // raise each element of a. to corresponding power in b.
-[1,1,16,729]
-            </pre>
-            <p>In this case, since there are only 4 elements, in b., only 4 elements get returned.</p>
-            <p>The reason for this is quite practical. We <i>could</i> do something like supply
-            missing default values (actually, most languages do), but that would mean that the system
-            is, in essence, generating data. That is a big no-no. If you do an operation on some stems
-            and the result is smaller than you suspect, that tells you straight off the bat your
-            inputs were off. </p>
+                on corresponding elements with the same index. This means you always will get
+                a (possibly improper) subset of the indices.
+                <i>E.g.</i>
+                <pre>
+                    a. := [;10]; // 10 elements, 0,1,...,9
+                    b. := [;4]*2; // 4 elements, values are 0,2,4,6
+                    a.^b.; // raise each element of a. to corresponding power in b.
+                    [1,1,16,729]
+                </pre>
+                <p>In this case, since there are only 4 elements, in b., only 4 elements get returned.</p>
+                <p>The reason for this is quite practical. We <i>could</i> do something like supply
+                    missing default values (actually, most languages do), but that would mean that the system
+                    is, in essence, generating data. That is a big no-no. If you do an operation on some stems
+                    and the result is smaller than you suspect, that tells you straight off the bat your
+                    inputs were off.
+                </p>
             </answer>
-        </faq>
-        <faq id="comparison">
-            <question>Can you give an example showing QDL vs. another language?</question>
-            <answer>An easy one is to fill an array of doubles with acos(sin(x)) for 1,000
-                values in the range -1 up to, but not including 1. In Java:
-
-                <pre>
-
-     int n = 1000;
-     double[] values = new double[n];
-     for(int i = 0; i &lt; n; i++){
-         // Note the trick: You have indices that don't match up to values, so you must
-         // compute them. On top of this, if you divide an integer by and integer in Java, you get
-         // an integer, hence you must divide by 500.0 and on top of it, you want to ensure that it is
-         // a double, so you must append a "d" to force the issue
-        values[i] = Math.acos(Math.sin(i/500.0d -1));
-     }
-                </pre>
-                We can contrast this with QDL:
-
-                <pre>
-                    values. := acos(sin([-1;1;1/500]));
-                </pre>
-
-                Yes indeed. That's it. This tells QDL to start at -1 and increment by 1/500 (the
-                expression in the brackets is called a slice). You could even
-                use an alternate slice operator and just specify the number of elements you want
-                <pre>
-                    values. := acos(sin([|-1;1;1000|]));
-                </pre>
-                which tells QDL to make 1000 elements evenly distributed between -1 and 1 inclusive.
-                And what if you needed to do this with higher precision, say to 25 decimal places? In Java
-                you need to switch all of your variables over to BigDecimals and find some libraries that
-                support them. In QDL you just set the precision:
-                <pre>
-                    numeric_digits(25)
-                </pre>
-                and re-run the command.
-            </answer>
-
         </faq>
     </part>
 </faqs>
