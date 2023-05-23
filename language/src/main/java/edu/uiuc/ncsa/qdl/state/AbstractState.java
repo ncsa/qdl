@@ -216,12 +216,13 @@ public abstract class AbstractState implements StateInterface, Logable {
     protected Object[] scriptArgs = null;
 
     public boolean hasScriptArgs() {
-        return scriptArgs != null || scriptArgStem!=null;
+        return scriptArgs != null || scriptArgStem != null;
     }
 
-    public boolean hasScriptName(){
-        return scriptName != null && scriptName.length()!=0;
+    public boolean hasScriptName() {
+        return scriptName != null && scriptName.length() != 0;
     }
+
     public String getScriptName() {
         return scriptName;
     }
@@ -231,10 +232,11 @@ public abstract class AbstractState implements StateInterface, Logable {
     }
 
     String scriptName = "";
+
     public QDLStem getScriptArgStem() {
         if (scriptArgStem == null) {
             scriptArgStem = new QDLStem();
-            if (scriptArgs!=null) {
+            if (scriptArgs != null) {
                 for (Object object : getScriptArgs()) {
                     scriptArgStem.listAdd(object);
                 }
@@ -243,8 +245,17 @@ public abstract class AbstractState implements StateInterface, Logable {
         return scriptArgStem;
     }
 
+    /*
+    Note that scriptArgs (as an array) is the old way of doing things. Having it as a stem
+    is the new way. Update everything just in case to keep them in sync.
+     */
     public void setScriptArgStem(QDLStem scriptArgStem) {
         this.scriptArgStem = scriptArgStem;
+        scriptArgs = new Object[scriptArgStem.size()];
+        int i = 0;
+        for (Object key : scriptArgStem.keySet()) {
+            scriptArgs[i++] = scriptArgStem.get(key);
+        }
     }
 
     QDLStem scriptArgStem = null;

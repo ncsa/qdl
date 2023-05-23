@@ -2340,6 +2340,21 @@ Question: I can't seem to change the level. It keeps reporting 'off' (level 10).
           no place to log to. Set the log up in the configuration and try again.
  Question: I keep trying to write to the log and it keeps returning false. Why?
    Answer: Again, this happens if there is no logger configured.
+
+Tip #1: Your current log file is always at info().'build'.'log_file'
+
+Tip #2: In some applications you want to log everything and pipe at least some
+        of it to the console. Remember that the say() command returns a value of
+        its argument, so this is fine:
+
+        logger(4,say('error running script ' + x));
+
+        which would log at level 4 and print that in the command. This is useful
+        since it would be a warning in the log (easy to search for). One could also
+        just create a utility function like
+
+        my_log(n,x)-> logger(n,say(x));
+
 See also: debug (system command)]]>
         </body>
         <example>
