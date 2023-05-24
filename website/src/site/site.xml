@@ -14,7 +14,7 @@
   <skin>
       <groupId>edu.uiuc.ncsa.qdl.skin</groupId>
       <artifactId>skin</artifactId>
-      <version>1.5-QDL-SNAPSHOT</version>
+      <version>1.5.1</version>
   </skin>
   <body>
 
