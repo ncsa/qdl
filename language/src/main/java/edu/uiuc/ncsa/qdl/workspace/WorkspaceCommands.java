@@ -245,7 +245,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         sayi(RJustify(EDIT_COMMAND, length) + " - commands relating to running the current editor.");
         sayi(RJustify(EXECUTE_COMMAND, length) + " - short hand to execute whatever is in the current buffer.");
         say("Generally, supplying --help as a parameter to a command will print out something useful.");
-        say("Full documentation is available in the docs directory of the distro or at https://cilogon.github.io/qdl/docs/qdl_workspace.pdf");
+        say("Full documentation is available in the docs directory of the distro or at https://qdl-lang.org/pdf/qdl_workspace.pdf");
 
     }
 

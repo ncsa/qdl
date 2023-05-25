@@ -3655,7 +3655,7 @@ docs\iso6429.pdf
 
 or online at
 
-https://cilogon.github.io/qdl/docs/iso6429.pdf
+https://qdl-lang.org/pdf/iso6429.pdf
 
 Note that this does not persist through WS saves. If you are working
 in ANSI mode and the system is restarted in ASCII mode, that is

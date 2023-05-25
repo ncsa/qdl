@@ -2,7 +2,7 @@
     <!--
     Most minimal configuration possible: nothing. This uses the current directory as
     the root. Not great. Look at the one called example for more ideas and be sure to read
-    the documentation on the main website: https://cilogon.github.io/qdl/docs/qdl_configuration.pdf
+    the documentation on the main website: https://qdl-lang.org/pdf/qdl_configuration.pdf
     -->
     <qdl name="default" />
     <!-- A more complete example. Set your root directory properly -->
