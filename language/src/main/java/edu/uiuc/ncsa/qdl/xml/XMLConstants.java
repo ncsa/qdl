@@ -33,6 +33,8 @@ public interface XMLConstants {
     String BUFFER_DEFAULT_SAVE_PATH = "buffer_default_save_path";
     String ECHO_MODE = "echo_mode";
     String DEBUG_MODE = "debug_mode";
+    String DEBUG_UTIL = "debug_util";
+
     String AUTOSAVE_ON = "autosave_on";
     String AUTOSAVE_INTERVAL = "autosave_interval";
     String ENABLE_LIBRARY_SUPPORT = "enable_library_support";

@@ -13,6 +13,7 @@ import edu.uiuc.ncsa.qdl.xml.XMLUtilsV2;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
+import edu.uiuc.ncsa.security.core.util.MetaDebugUtil;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
@@ -172,7 +173,7 @@ public class WSXMLSerializer {
 
     private void processWSEnvNEW(WorkspaceCommands workspaceCommands, XMLStreamWriter xsw) throws XMLStreamException {
         JSONObject json = new JSONObject();
-       // json.put(PRETTY_PRINT, Boolean.toString(workspaceCommands.prettyPrint));
+        // json.put(PRETTY_PRINT, Boolean.toString(workspaceCommands.prettyPrint));
         String zzz = workspaceCommands.getBufferDefaultSavePath();
         if (zzz != null) {
             json.put(BUFFER_DEFAULT_SAVE_PATH, zzz);
@@ -180,6 +181,8 @@ public class WSXMLSerializer {
         // booleans
         json.put(ECHO_MODE, workspaceCommands.echoModeOn);
         json.put(DEBUG_MODE, workspaceCommands.debugOn);
+        // Fixed https://github.com/ncsa/qdl/issues/29
+        json.put(DEBUG_UTIL, Base64.encodeBase64URLSafeString(workspaceCommands.getState().getDebugUtil().toJSON().toString().getBytes(StandardCharsets.UTF_8)));
         json.put(AUTOSAVE_ON, workspaceCommands.isAutosaveOn());
         json.put(RUN_INIT_ON_LOAD, workspaceCommands.runInitOnLoad);
         json.put(AUTOSAVE_MESSAGES_ON, workspaceCommands.isAutosaveMessagesOn());
@@ -404,7 +407,7 @@ public class WSXMLSerializer {
                                 // Clear it, then re-populate it.
                                 testCommands.state.getExtrinsicVars().clear();
                                 XMLUtilsV2.deserializeExtrinsicVariables(xer, testCommands.state, xmlSerializationState);
-                           break;
+                                break;
                             case BUFFER_MANAGER:
                                 if (!workspaceAttributesOnly) {
                                     testCommands.bufferManager = new BufferManager();
@@ -571,6 +574,17 @@ public class WSXMLSerializer {
         // booleans
         workspaceCommands.echoModeOn = json.getBoolean(ECHO_MODE);
         workspaceCommands.debugOn = json.getBoolean(DEBUG_MODE);
+        if (json.containsKey(DEBUG_UTIL)) {
+            try {
+                // Fix https://github.com/ncsa/qdl/issues/29
+                MetaDebugUtil metaDebugUtil = new MetaDebugUtil();
+                JSONObject jsonObject = JSONObject.fromObject(new String(Base64.decodeBase64(json.getString(DEBUG_UTIL))));
+                metaDebugUtil.fromJSON(jsonObject);
+                workspaceCommands.getState().setDebugUtil(metaDebugUtil);
+            } catch (Throwable t) {
+                // just bail if it does not work.
+            }
+        }
         workspaceCommands.setAutosaveOn(json.getBoolean(AUTOSAVE_ON));
         workspaceCommands.runInitOnLoad = json.getBoolean(RUN_INIT_ON_LOAD);
         workspaceCommands.setAutosaveMessagesOn(json.getBoolean(AUTOSAVE_MESSAGES_ON));
@@ -578,7 +592,7 @@ public class WSXMLSerializer {
         workspaceCommands.setUseExternalEditor(json.getBoolean(USE_EXTERNAL_EDITOR));
         workspaceCommands.setAssertionsOn(json.getBoolean(ASSERTIONS_ON));
         workspaceCommands.setPrettyPrint(json.getBoolean(PRETTY_PRINT));
-        if(json.containsKey(OVERWRITE_BASE_FUNCTIONS)) {
+        if (json.containsKey(OVERWRITE_BASE_FUNCTIONS)) {
             workspaceCommands.getState().setAllowBaseFunctionOverrides(json.getBoolean(OVERWRITE_BASE_FUNCTIONS));
         }
         // numbers
@@ -608,7 +622,7 @@ public class WSXMLSerializer {
             workspaceCommands.rootDir = json.getString(ROOT_DIR);
         }
         if (json.containsKey(SAVE_DIR)) {
-            workspaceCommands.saveDir =json.getString(SAVE_DIR);
+            workspaceCommands.saveDir = json.getString(SAVE_DIR);
         }
         if (json.containsKey(DESCRIPTION)) {
             workspaceCommands.description = json.getString(DESCRIPTION);
@@ -649,6 +663,16 @@ public class WSXMLSerializer {
                     break;
                 case DEBUG_MODE:
                     testCommands.setDebugOn(Boolean.parseBoolean(v));
+                    break;
+                case DEBUG_UTIL:
+                    try {
+                        MetaDebugUtil metaDebugUtil = new MetaDebugUtil();
+                        JSONObject jsonObject = JSONObject.fromObject(new String(Base64.decodeBase64(v)));
+                        metaDebugUtil.fromJSON(jsonObject);
+                        testCommands.getState().setDebugUtil(metaDebugUtil);
+                    } catch (Throwable t) {
+                        // just bail if it does not work.
+                    }
                     break;
                 case CURRENT_WORKSPACE:
                     testCommands.currentWorkspace = v;

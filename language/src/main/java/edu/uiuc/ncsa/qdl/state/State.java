@@ -339,6 +339,7 @@ public class State extends FunctionState implements QDLConstants {
         characters.put("00ac", OpEvaluator.NOT2);
         characters.put("00af", OpEvaluator.MINUS2);
         characters.put("00b7", QDLConstants.STEM_PATH_MARKER2);
+        characters.put("00bf", "¿");
         characters.put("00d7", OpEvaluator.TIMES2);
         characters.put("00f7", OpEvaluator.DIVIDE2);
         characters.put("207a", OpEvaluator.PLUS2);

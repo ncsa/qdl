@@ -10,6 +10,7 @@ import java.util.TreeSet;
 /**
  * A set for looping through keys of a stem. This manages long indices and string keys.
  * This will keep the keys in order and will process long keys first, then string keys.
+ * <br/>N.B. it produces keys that are Objects.
  * <p>Created by Jeff Gaynor<br>
  * on 5/12/22 at  6:44 AM
  */

@@ -40,6 +40,7 @@ public class QDLTerminal extends ISO6429Terminal  {
             charMap['>'] = '≥';
             charMap['@'] = '⊗';
             charMap['?'] = '⇒';
+            charMap['$'] = '¿';
             charMap['\''] = '»';
             charMap['\\'] = '≠';
             charMap['A'] = '∀';
@@ -198,6 +199,8 @@ public class QDLTerminal extends ISO6429Terminal  {
                     return new KeyStroke('≁');
                 case '@':
                     return new KeyStroke('⊗');
+                case '#':
+                    return new KeyStroke('¿');
 
             }
 

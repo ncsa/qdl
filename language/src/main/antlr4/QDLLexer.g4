@@ -150,6 +150,7 @@ SCIENTIFIC_NUMBER : Decimal (E SIGN? Integer)?;
            Ceiling : '⌈'; // unicode 2308
      FunctionMarker: '@' | '⊗';  // unicode 2297
        AltIfMarker : '?' | '⇒' ; // unicode 21d2
+       SwitchMarker : '¿'  ; // unicode 00bf
             ASSIGN : '≔' | ':=' | '≕' | '=:' | '+=' | '-=' | (Times '=') | (Divide '=') | '%=' | '^=' ;  // unicode 2254, 2255
 
 // Remember that changing this file is taking your life in your hands, since tiny changes here

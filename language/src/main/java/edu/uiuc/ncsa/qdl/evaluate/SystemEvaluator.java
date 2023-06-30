@@ -1521,6 +1521,8 @@ public class SystemEvaluator extends AbstractEvaluator {
         if (polyad.getArgCount() == 0) {
             QDLStem stem = new QDLStem();
             if(isDebug) {
+                stem.fromJSON(state.getDebugUtil().toJSON());
+/*
                 stem.put(DEBUGGER_PROPERTY_NAME_TITLE, state.getDebugUtil().getTitle());
                 stem.put(DEBUGGER_PROPERTY_NAME_TS_ON, state.getDebugUtil().isPrintTS());
                 long lll = (long) state.getDebugUtil().getDebugLevel();
@@ -1529,6 +1531,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 if(state.getDebugUtil().hasHost()) {
                     stem.put(DEBUGGER_PROPERTY_NAME_HOST, state.getDebugUtil().getHost());
                 }
+*/
             }else{
                 Level lll = state.getLogger().getLogLevel();
                 long llll = (long)getMyLogLevel(lll);

@@ -7,7 +7,10 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>sas</artifactId>
+    <!--  Turn into a war for local testing, otherwise this is a jar.
     <packaging>war</packaging>
+    -->
+    <packaging>jar</packaging>
     <name>SAS for QDL</name>
     <url>http://maven.apache.org</url>
     <dependencies>

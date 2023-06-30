@@ -74,7 +74,7 @@ public class QDLSASTerminal extends SwingTerminal implements QDLSASConstants {
         say(QDLSASTerminal.class.getSimpleName() + " [" + FLAG_NEW + " [filename]] | " + Client.FLAG_CONFIG + " filename");
         say("Starts the GUI OR allows you to create a configuration first.");
         say("To create a new configuration, start with the " + FLAG_NEW + " and fill in the configuration.");
-        say("Yo will be prompted if you want to start the GUI");
+        say("You will be prompted if you want to start the GUI");
     }
 
     /**

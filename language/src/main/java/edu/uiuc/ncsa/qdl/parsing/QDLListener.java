@@ -2459,6 +2459,33 @@ illegal argument:no module named "b" was  imported at (1, 67)
     }
 
     OpEvaluator opEvaluator = new OpEvaluator();
+    @Override
+    public void enterSwitchExpression(QDLParserParser.SwitchExpressionContext ctx) {
+     SwitchExpressionNode s = new SwitchExpressionNode();
+     stash(ctx, s);
+    }
+
+    @Override
+    public void exitSwitchExpression(QDLParserParser.SwitchExpressionContext ctx) {
+         SwitchExpressionNode switchExpressionNode = (SwitchExpressionNode) parsingMap.getStatementFromContext(ctx);
+         switchExpressionNode.setSWITCH((ExpressionInterface) resolveChild(ctx.getChild(0)));
+         switchExpressionNode.setCASE((ExpressionInterface) resolveChild(ctx.getChild(2)));
+         switchExpressionNode.setDEFAULT((ExpressionInterface) resolveChild(ctx.getChild(4)));
+         switchExpressionNode.setTokenPosition(tp(ctx));
+         switchExpressionNode.setSourceCode(getSource(ctx));
+    }
+    /*
+        public void exitAltIFExpression(QDLParserParser.AltIFExpressionContext ctx) {
+            AltIfExpressionNode altIfExpressionNode = (AltIfExpressionNode) parsingMap.getStatementFromContext(ctx);
+            //#0 is if[ // #1 is conditional, #2 is ]then[. #3 starts the statements
+            altIfExpressionNode.setIF((ExpressionNode) resolveChild(ctx.getChild(0)));
+            altIfExpressionNode.setTHEN((ExpressionInterface) resolveChild(ctx.getChild(2)));
+            altIfExpressionNode.setELSE((ExpressionInterface) resolveChild(ctx.getChild(4)));
+            altIfExpressionNode.setTokenPosition(tp(ctx));
+            altIfExpressionNode.setSourceCode(getSource(ctx));
+        }
+     */
+
 }
 
 

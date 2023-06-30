@@ -1040,7 +1040,7 @@ public class ParserTest extends AbstractQDLTester {
         String slash = "\\";
         addLine(script, "a:='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\\n" + //alphanumeric
                 "  ~`!@#$%^&*()[]{}<>\\\\/\\'\"-_=+|;:,.?\\n" + // other ASCII symbols
-                "  ¬¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧≁⊕⊗⊙⌆⦰⊢∈∉∀∋∌∃∄∩∪∆\\n" + // unicode
+                "  ¬¿¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧≁⊕⊗⊙⌆⦰⊢∈∉∀∋∌∃∄∩∪∆\\n" + // unicode
                 "  ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω';" // Greek
         );
         addLine(script, "say('\\nprinting all base characters with say:');");
@@ -2974,5 +2974,46 @@ public class ParserTest extends AbstractQDLTester {
   size([;5], 7)
 35
      */
+
+    /*
+      true¿3:4
+3
+  false¿a+3:1
+1
+  true¿[;4]:-1
+[0,1,2,3]
+  [false,true]¿[a+3, 2+2]:5
+4
+  [false,true]¿{1:3+3,'z':a*3}:5
+6
+  {'p':'q',1:true}¿{1:3+3,'z':a*3}:5
+left hand argument at index 'p' is not a boolean At (1, 0)
+  {'p':false,1:true}¿{1:3+3,'z':a*3}:5
+6
+     */
+    public void testSwitchExpression() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        // Note that parentheses are needed for OOO since a==b¿c:d parses as (a==b)¿c:d
+        // which is often what you want in practice, vs. echoing chosen values.
+        addLine(script, "ok0 := 3 == (true¿3:4);");
+        addLine(script, "ok1 := 1 == (false¿a+3:1);");
+        addLine(script, "ok2 := reduce(@&&, [;4] == (true¿[;4]:-1));");
+        addLine(script, "ok3 := 4 == ([false,true]¿[a+3, 2+2]:5);");
+        addLine(script, "ok4 := 6 == ([false,true]¿{1:3+3,'z':a*3}:5);");
+        addLine(script, "ok5 := 6 == ({'p':false,1:true}¿{1:3+3,'z':a*3}:5);");
+        addLine(script, "ok6 := false;");
+        addLine(script, "try[{'p':'q',1:true}¿{1:3+3,'z':a*3}:5;]catch[ok6:=true;];");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "switch failed to evaluate scalar case for true";
+        assert getBooleanValue("ok1", state) : "switch failed to evaluate scalar case for default";
+        assert getBooleanValue("ok2", state) : "switch failed to return stem as chosen value";
+        assert getBooleanValue("ok3", state) : "switch failed test for selecting only defined expression";
+        assert getBooleanValue("ok4", state) : "switch failed to select case from general stem: list¿stem.:default";
+        assert getBooleanValue("ok5", state) : "switch failed to select case of general switch and general case";
+        assert getBooleanValue("ok6", state) : "switch should fail for missing arguments";
+    }
+
 }
 
