@@ -25,4 +25,8 @@ public class AllIndices extends ConstantNode {
         return "*";
     }
 
+    @Override
+    public int getNodeType() {
+        return ALL_INDICES_NODE;
+    }
 }

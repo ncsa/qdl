@@ -86,4 +86,8 @@ public class Dyad extends ExpressionImpl{
         dyad.setRightArgument(getRightArgument().makeCopy());
         return dyad;
     }
+    @Override
+        public int getNodeType() {
+            return DYAD_NODE;
+        }
 }

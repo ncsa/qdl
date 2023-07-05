@@ -43,4 +43,8 @@ public class QDLNull extends ConstantNode {
         }
         return "null";
     }
+    @Override
+        public int getNodeType() {
+            return QDL_NULL_NODE;
+        }
 }

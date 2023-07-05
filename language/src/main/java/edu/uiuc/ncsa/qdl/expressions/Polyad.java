@@ -80,26 +80,7 @@ public class Polyad extends ExpressionImpl {
             }
         }
         state.getMetaEvaluator().evaluate(this, state);
-/*        if (state.getFTStack().containsKey(new FKey(getName(), getArgCount()))) {
-            if (isInModule()) {
-                state.getMetaEvaluator().evaluate(getAlias(), this, state);
-            } else {
-                state.getMetaEvaluator().getFunctionEvaluator().evaluate(this, state);
-            }
-        } else {
-            state.getMetaEvaluator().evaluate(this, state);
-        }*/
 
-
-/*        if(isInModule()){
-            if(state.getFTStack().containsKey(new FKey(getName(), getArgCount()))) {
-                state.getMetaEvaluator().evaluate(getAlias(), this, state);
-            }else{
-                state.getMetaEvaluator().evaluate(this, state);
-            }
-        }else {
-            state.getMetaEvaluator().evaluate(this, state);
-        }*/
 
         return getResult();
     }
@@ -126,4 +107,8 @@ public class Polyad extends ExpressionImpl {
         }
         return polyad;
     }
+    @Override
+        public int getNodeType() {
+            return POLYAD_NODE;
+        }    
 }

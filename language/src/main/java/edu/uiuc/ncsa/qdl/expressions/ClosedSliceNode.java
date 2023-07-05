@@ -71,4 +71,8 @@ public class ClosedSliceNode extends ExpressionImpl{
         r.setArguments(getArguments());
         return r;
     }
+    @Override
+        public int getNodeType() {
+            return CLOSED_SLICE_NODE;
+        }
 }

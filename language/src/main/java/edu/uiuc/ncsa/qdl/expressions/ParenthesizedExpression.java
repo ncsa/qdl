@@ -144,6 +144,9 @@ public class ParenthesizedExpression implements ExpressionNode {
 
     @Override
     public void setOperatorType(int operatorType) {
-
     }
+    @Override
+        public int getNodeType() {
+            return PARENTHESIZED_NODE;
+        }
 }

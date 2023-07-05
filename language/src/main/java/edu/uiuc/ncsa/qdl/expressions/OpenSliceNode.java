@@ -82,10 +82,10 @@ public class OpenSliceNode extends ExpressionImpl {
         // Now check that this isn't goofy.
         // step < 0 and start < stop means an infinite loop would happen
 
-        if((step.compareTo(BigDecimal.ZERO) == 0) || ((step.compareTo(BigDecimal.ZERO) <0) && (start.compareTo(stop) < 0 )) ||
-                ((0<step.compareTo(BigDecimal.ZERO)) && (stop.compareTo(start) < 0 ))){
-              throw new IllegalArgumentException("cannot do slice from " + start + " to " + stop + " by increment of " + step);
-           }
+        if ((step.compareTo(BigDecimal.ZERO) == 0) || ((step.compareTo(BigDecimal.ZERO) < 0) && (start.compareTo(stop) < 0)) ||
+                ((0 < step.compareTo(BigDecimal.ZERO)) && (stop.compareTo(start) < 0))) {
+            throw new IllegalArgumentException("cannot do slice from " + start + " to " + stop + " by increment of " + step);
+        }
 
         QDLStem out = new QDLStem();
         out.put(0L, start);
@@ -95,18 +95,18 @@ public class OpenSliceNode extends ExpressionImpl {
             result = result.add(step, OpEvaluator.getMathContext());
         }
         if (stop.compareTo(start) < 0) {
-                  // decrement case
+            // decrement case
             while (result.compareTo(stop) > 0) {
                 out.put(i++, result);
                 result = result.add(step, OpEvaluator.getMathContext());
             }
-              } else {
-                  //increment case
+        } else {
+            //increment case
             while (result.compareTo(stop) < 0) {
                 out.put(i++, result);
                 result = result.add(step, OpEvaluator.getMathContext());
             }
-              }
+        }
         return out;
     }
 
@@ -116,8 +116,8 @@ public class OpenSliceNode extends ExpressionImpl {
         long step = (Long) args[2];
         // step == 0 ∨ (step < 0 ∧ start < stop) ∨ (0 < step ∧ stop < start)
         // means an infinite loop would happen
-        if((step == 0)||((step < 0) && (start < stop)) || ((0 < step ) && (stop < start))){
-           throw new IllegalArgumentException("cannot do slice from " + start + " to " + stop + " by increment of " + step);
+        if ((step == 0) || ((step < 0) && (start < stop)) || ((0 < step) && (stop < start))) {
+            throw new IllegalArgumentException("cannot do slice from " + start + " to " + stop + " by increment of " + step);
         }
 
         Long result = start;
@@ -146,5 +146,10 @@ public class OpenSliceNode extends ExpressionImpl {
         OpenSliceNode sliceNode = new OpenSliceNode(getTokenPosition());
         sliceNode.setArguments(getArguments());
         return sliceNode;
+    }
+
+    @Override
+    public int getNodeType() {
+        return OPEN_SLICE_NODE;
     }
 }

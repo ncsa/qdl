@@ -577,5 +577,8 @@ a.
                 "indexArgs=" + indexArgs +
                 '}';
     }
-
+    @Override
+        public int getNodeType() {
+            return STEM_EXTRACTION_NODE;
+        }
 }

@@ -153,8 +153,8 @@ expression
  | ('!'  | '¬') expression                                                       #notExpression
 // | expression '<<' typeList                                                    #is_a
  | '(' expression ')'                                                          #association
- | expression AltIfMarker expression ':' expression                            #altIFExpression
- | expression SwitchMarker expression ':' expression                           #switchExpression
+ | expression AltIfMarker expression (':' expression)?                            #altIFExpression
+ | expression SwitchMarker expression (':' expression)?                           #switchExpression
 //| expression '&'+ expression                                                  #typeCheck
 // | expression '`'+ expression                                                  #index
 // | expression '|'+ expression                                                  #stile

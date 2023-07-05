@@ -165,6 +165,10 @@ public abstract class ExpressionImpl implements ExpressionNode {
 
     int operatorType = OpEvaluator.UNKNOWN_VALUE;
 
+    /**
+     * If the is the operator equiavalent of a function. {@link OpEvaluator#UNKNOWN_VALUE} is the default.
+     * @return
+     */
     @Override
     public int getOperatorType() {
         return operatorType;

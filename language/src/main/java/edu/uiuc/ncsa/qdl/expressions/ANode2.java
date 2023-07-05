@@ -100,7 +100,7 @@ public class ANode2 extends ExpressionImpl {
         if (getAssignmentType() != leftAssignmentType && getAssignmentType() != rightAssignmentType) {
             // Do other assignments like +=
             d = new Dyad(getAssignmentType());
-            if (getLeftArg() instanceof ANode2) {
+            if (getLeftArg().getNodeType() == ExpressionInterface.ASSIGNMENT_NODE) {
                 d.setLeftArgument(((ANode2) getLeftArg()).getRightArg());
             } else {
                 d.setLeftArgument(getLeftArg());
@@ -120,7 +120,7 @@ public class ANode2 extends ExpressionImpl {
         ANode2 lastAnode = this;
         ExpressionInterface realLeftArg = getLeftArg();
         boolean chained = false;
-        while (realLeftArg instanceof ANode2) {
+        while (realLeftArg.getNodeType()==ExpressionInterface.ASSIGNMENT_NODE) {
             ANode2 rla = (ANode2) realLeftArg;
             ANode2 xNode = new ANode2(rla.getTokenPosition());
             xNode.setLeftArg(rla.getRightArg());
@@ -272,5 +272,10 @@ public class ANode2 extends ExpressionImpl {
                 ", left=" + getLeftArg() +
                 ", right=" + getRightArg() +
                 '}';
+    }
+
+    @Override
+    public int getNodeType() {
+        return ASSIGNMENT_NODE;
     }
 }

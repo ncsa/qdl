@@ -140,4 +140,8 @@ public class StemEntryNode implements ExpressionInterface {
     public void setResultType(int type) {
 
     }
+    @Override
+        public int getNodeType() {
+            return STEM_ENTRY_NODE;
+        }
 }

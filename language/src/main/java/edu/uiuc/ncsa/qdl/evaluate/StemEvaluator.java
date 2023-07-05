@@ -8,6 +8,7 @@ import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.expressions.*;
 import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNode;
 import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.Statement;
 import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
@@ -2305,6 +2306,28 @@ public class StemEvaluator extends AbstractEvaluator {
             return;
         }
         String var = null;
+        switch (polyad.getArgAt(0).getNodeType()){
+            case ExpressionInterface.VARIABLE_NODE:
+                VariableNode variableNode = (VariableNode) polyad.getArgAt(0);
+                           // Don't evaluate this because it might not exist (that's what we are testing for). Just check
+                           // if the name is defined.
+                           var = variableNode.getVariableReference();
+                           if (var == null) {
+                               polyad.setResult(Boolean.FALSE);
+                           } else {
+                               state.remove(var);
+                               polyad.setResult(Boolean.TRUE);
+                           }
+                           break;
+            case ExpressionInterface.CONSTANT_NODE:
+                throw new BadArgException(" cannot remove a constant", polyad.getArgAt(0));
+
+            case ExpressionInterface.EXPRESSION_STEM2_NODE:
+                ESN2 esn2 = (ESN2) polyad.getArgAt(0);
+                          polyad.setResult(esn2.remove(state));
+                          break;
+        }
+/*
         if (polyad.getArgAt(0) instanceof VariableNode) {
             VariableNode variableNode = (VariableNode) polyad.getArgAt(0);
             // Don't evaluate this because it might not exist (that's what we are testing for). Just check
@@ -2325,6 +2348,7 @@ public class StemEvaluator extends AbstractEvaluator {
             polyad.setResult(esn2.remove(state));
         }
 
+*/
         polyad.setResultType(BOOLEAN_TYPE);
         polyad.setEvaluated(true);
     }

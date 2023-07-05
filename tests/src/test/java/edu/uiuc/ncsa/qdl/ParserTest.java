@@ -2252,8 +2252,8 @@ public class ParserTest extends AbstractQDLTester {
         addLine(script, "y := is_function(q,1);");
         addLine(script, "q(x)->x^3;");
         addLine(script, "if[a][q(x)->x^3;]else[q(x)->x^2;];");
-        addLine(script, "z := is_function(q,1);");
-        addLine(script, "noz := !is_function(q,11);");
+        addLine(script, "z := q∃1;");
+        addLine(script, "noz := q∄11;");
         addLine(script, "w := q(2);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
@@ -2997,13 +2997,14 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         // Note that parentheses are needed for OOO since a==b¿c:d parses as (a==b)¿c:d
         // which is often what you want in practice, vs. echoing chosen values.
         addLine(script, "ok0 := 3 == (true¿3:4);");
-        addLine(script, "ok1 := 1 == (false¿a+3:1);");
+        addLine(script, "ok1 := 1 == (false?!a+3:1);");
         addLine(script, "ok2 := reduce(@&&, [;4] == (true¿[;4]:-1));");
         addLine(script, "ok3 := 4 == ([false,true]¿[a+3, 2+2]:5);");
         addLine(script, "ok4 := 6 == ([false,true]¿{1:3+3,'z':a*3}:5);");
         addLine(script, "ok5 := 6 == ({'p':false,1:true}¿{1:3+3,'z':a*3}:5);");
         addLine(script, "ok6 := false;");
         addLine(script, "try[{'p':'q',1:true}¿{1:3+3,'z':a*3}:5;]catch[ok6:=true;];");
+        addLine(script, "b. := [;5]*2-1;ok7 := -1 == ([;5]==11?!b.:-1);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok0", state) : "switch failed to evaluate scalar case for true";
@@ -3013,6 +3014,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         assert getBooleanValue("ok4", state) : "switch failed to select case from general stem: list¿stem.:default";
         assert getBooleanValue("ok5", state) : "switch failed to select case of general switch and general case";
         assert getBooleanValue("ok6", state) : "switch should fail for missing arguments";
+        assert getBooleanValue("ok7", state) : "switch fails for resolving variable cases";
     }
 
 }

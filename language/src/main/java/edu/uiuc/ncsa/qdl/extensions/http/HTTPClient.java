@@ -104,6 +104,11 @@ public class HTTPClient implements QDLModuleMetaClass {
     public static final int CONTENT_TEXT_VALUE = 3;
     public static final int CONTENT_TYPE_MISSING_VALUE = -1;
 
+    public static final String CONTENT_KEY = "content";
+    public static final String HEADERS_KEY = "headers";
+    public static final String STATUS_KEY = "status";
+
+
     protected int getContentType(Set<String> contentType) {
         if (contentType.contains(CONTENT_FORM)) return CONTENT_FORM_VALUE;
         if (contentType.contains(CONTENT_JSON)) return CONTENT_JSON_VALUE;
@@ -233,7 +238,7 @@ public class HTTPClient implements QDLModuleMetaClass {
             }
             doxx.add("The two basic ways of accessing RESTful services are to have the uri overloaded or to send parameters (or both).");
             doxx.add("This function will do either of those. ");
-            if(argCount == 2){
+            if (argCount == 2) {
                 doxx.addAll(getURIPathBlurb());
             }
             doxx.add("E.g.");
@@ -268,7 +273,7 @@ public class HTTPClient implements QDLModuleMetaClass {
         if (!StringUtils.isTrivial(response.getStatusLine().getReasonPhrase())) {
             responseStem.put("message", response.getStatusLine().getReasonPhrase());
         }
-        s.put("status", responseStem);
+        s.put(STATUS_KEY, responseStem);
         HttpEntity entity = response.getEntity();
         QDLStem stemResponse = null;
         if (entity != null) {
@@ -284,7 +289,7 @@ public class HTTPClient implements QDLModuleMetaClass {
             }
         }
 
-        s.put("content", stemResponse == null ? QDLNull.getInstance() : stemResponse);
+        s.put(CONTENT_KEY, stemResponse == null ? QDLNull.getInstance() : stemResponse);
         Header[] headers = response.getAllHeaders();
         QDLStem h = new QDLStem();
         for (int i = 0; i < headers.length; i++) {
@@ -292,7 +297,7 @@ public class HTTPClient implements QDLModuleMetaClass {
             h.put(header.getName(), header.getValue());
         }
         if (!h.isEmpty()) {
-            s.put("headers", h);
+            s.put(HEADERS_KEY, h);
         }
         return s;
     }
@@ -532,7 +537,7 @@ public class HTTPClient implements QDLModuleMetaClass {
                     break;
             }
             doxx.add(getName() + "({uri_path,} string|stem.) do a post with the payload as a string or stem. ");
-            if(argCount == 2){
+            if (argCount == 2) {
                 doxx.addAll(getURIPathBlurb());
             }
             doxx.add("If you send along a simple string, it will be treated as the entire body of the post.");
@@ -829,6 +834,91 @@ public class HTTPClient implements QDLModuleMetaClass {
             doxx.add(getName() + "(username, password) - create the correct credential for the basic auth header");
             doxx.add("The standard is to return encode_b64(url_escape(username) + ':' + url_escape(password))");
             return doxx;
+        }
+    }
+
+    public static String IS_JSON = "is_json";
+
+    public class IsJSON implements QDLFunction {
+        @Override
+        public String getName() {
+            return IS_JSON;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1};
+        }
+
+        @Override
+        public Object evaluate(Object[] objects, State state) throws Throwable {
+            if (!(objects[0] instanceof QDLStem)) {
+                throw new IllegalArgumentException("argument must be a stem");
+            }
+            QDLStem stem = (QDLStem) objects[0];
+
+            if (stem.containsKey(HEADERS_KEY)) {
+                stem = stem.getStem(HEADERS_KEY);
+            }
+            if (stem.containsKey("Content-Type")) {
+                return stem.getString("Content-Type").contains("application/json");
+            }
+            throw new IllegalArgumentException("could not find content type");
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            dd.add(getName() + "(resp.) - check if the response content is JSON.");
+            dd.add("You may supply either the whole response or just the content part of it");
+            return dd;
+        }
+    }
+
+    public static String IS_TEXT = "is_text";
+
+    public class IsText implements QDLFunction {
+        @Override
+        public String getName() {
+            return IS_TEXT;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1};
+        }
+
+        @Override
+        public Object evaluate(Object[] objects, State state) throws Throwable {
+            if (!(objects[0] instanceof QDLStem)) {
+                throw new IllegalArgumentException("argument must be a stem");
+            }
+            QDLStem stem = (QDLStem) objects[0];
+
+            if (stem.containsKey(HEADERS_KEY)) {
+                stem = stem.getStem(HEADERS_KEY);
+            }
+            if (stem.containsKey("Content-Type")) {
+                String type = stem.getString("Content-Type");
+                return type.contains("text") ||
+                        type.contains("/xml") ||
+                        type.contains("/java") ||
+                        type.contains("/xhtml") ||
+                        type.contains("/x-sh") ||
+                        type.contains("/x-shellscript") ||
+                        type.contains("/xhtml+xml") ||
+                        type.contains("/javascript");
+            }
+            throw new IllegalArgumentException("could not find content type");
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            dd.add(getName() + "(resp.) - check if the response content is text.");
+            dd.add("You may supply either the whole response or just the content part of it");
+            dd.add("This includes types like text, html, java, javascript etc.");
+            return dd;
         }
     }
 }

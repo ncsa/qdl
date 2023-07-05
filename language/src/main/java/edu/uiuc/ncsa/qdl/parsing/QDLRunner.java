@@ -118,7 +118,7 @@ public class QDLRunner implements Serializable {
                         // Checking for expression nodes allows for printing things like
                         // (((2+2)))
                         // correctly
-                        if (((stmt instanceof ExpressionNode) && !(stmt instanceof ANode2))) {
+                        if (((stmt instanceof ExpressionNode) && (((ExpressionNode) stmt).getNodeType()!=ExpressionInterface.ASSIGNMENT_NODE))) {
                             ExpressionNode expression = (ExpressionNode) stmt;
                             if (expression instanceof Polyad) {
                                 // so if this is already a print statement, don't wrap it in one

@@ -1302,15 +1302,58 @@ See also: info()]]>
         <body>
  <![CDATA[is_defined(var) - a boolean-valued function that tells you if a given variable
                   has been named.
-Note: the argument is not a string, it is the actual variable.]]>
+Note: the argument is not a string, it is the actual variable.
+
+See also: is_function]]>
         </body>
+<example>
+    It works on parts of stems
+    z. := {'a':'foo'}
+    ∃z.
+true
+    ∃z.'a'
+true
+    ∃z.'b'
+false
+
+    It works on lists and stems too
+    b:=3
+    ∃[p,q,b]
+[false,false,true]
+
+    ∃{'a':p,'b':q}
+{
+a:false,
+b:false
+}
+</example>
     </entry>
     <entry id="is_function" alt="∃">
         <body>
- <![CDATA[is_function(name) - checks if the value of name (it is a string) is defined.
+ <![CDATA[is_function(name) - checks if the value of name is defined. This means
+          that there is some function with this name, but you do not know
+          the number of arguments
 is_function(name, arg_count) checks if a function given in name with the number
-                    of arguments is defined.]]>
+                    of arguments is defined.
+Remember that for stems of names and argument counts, subsetting is in effect.]]>
         </body>
+<example>
+<![CDATA[
+    f(x)->x^2
+    f∃1
+true
+// So there is a function, f with one argument
+    f∃null
+true
+// This means that there is some function named f defined in the workspace.
+    [f,g]∃[1,3]
+  [true,false]
+// There is a function named f with one argument, but no function named g with 3 arguments.
+// If we diefine g with one argument, we can check f or it an f as follows
+   g(x)->x+1
+   [f,g]∃1
+[true,true]]]>
+</example>
     </entry>
     <entry id="os_env">
         <body>
@@ -3035,15 +3078,31 @@ See also: then, else, ?]]>
     <entry id="?" alt="⇒">
         <body>
 <![CDATA[Used in the ternary operator
-   boolean ?|⇒ expression0 : expression1
-   boolean. ?|⇒ expression0 : expression1
+   boolean ?|⇒ expression0 {: expression1}
+   boolean. ?|⇒ expression0 {: expression1}
+
 If boolean is true, then expression0 is evaluated and returned. Otherwise
-expression1 is used.
+expression1 is used.  If expression1 (called the else clause) is
+omitted, it defaults to null.
 
-    user_name := script_args() == 2 ? script_args(1) : 'guest';
+    user_name := size(args()) == 2 ? args().1 : 'guest';
 
-These may be used like any other algebraic expression, where the if statement
-cannot be.
+These may be used like any other algebraic expression.
+The if[]... statement uses blocks and changes the scope
+of the expressions. This is very useful, but sometimes you do
+not want or need that.
+
+E.g.
+  if[condition]
+then[a := script_load('my_script.qdl');]
+
+has the value of a of the state in the block only. If you
+need a, then use
+
+a := condition?script_load('my_script.qdl')
+
+(Note that since there is no else clause, if the condition is false,
+then a will be null, so in practice you might want to set it.)
 
 If the left argument is a stem (list or simple stem) then a conformable
 result is returned.
@@ -3055,7 +3114,7 @@ result is returned.
 Note that expression0 and expression1 are not subject to subsetting, they
 are returned as is.
 
-See also: if, then, else]]>
+See also: ?!, if, then, else]]>
         </body>
         <example>
 <![CDATA[For a list of strings, add a trailing slash if one is missing.
@@ -5252,9 +5311,14 @@ without qualification.
    ]]>
         </example>
     </entry>
-    <entry id="¿">
+    <entry id="?!" alt="¿">
        <body>
-  <![CDATA[switch.¿case.:default the switch expression.
+  <![CDATA[switch.?!case.{:default} the exclusive OR aka switch expression.
+The default clause is optional, meaning a null will be supplied if
+missing, so
+
+   switch.?!case <==> switch.?!case:null
+
 Note that there is a switch statement, like switch[]... and
 the difference is that the expression is evaluated in the current
 state, always returns a value and may be treated like any other expression.
@@ -5265,12 +5329,16 @@ of only boolean values. and at most one of them is true. The corresponding
 case. element is then evaluated. If no switch. elements are true, then the default is
 returned.
 
+You may omit the default clause, in which case null is assumed, e.g.
+   [false,false]?![1,2]
+null
+
 The contract is as follows:
-For scalars: return case if switch is true, default otherwise
+For scalars: return case if switch is true, default otherwise.
+             This means in the trivial case, ? and ?! are the same
 For stems: Evaluate the case when true. Failing that, evaluate the default.
 
-The QDL keyboard shortcut is alt+$.
-  ]]>
+See also: ?, if, then, else]]>
        </body>
        <example>
    <![CDATA[
@@ -5289,8 +5357,36 @@ it and the default are ignored
 
 Here, a general stem is evaluated (note all the values are boolean) and even though there
 are 'extra' elements in the stem, they are still ignored.
-   ]]>
-        </example>
+
+E.g. comparison with ? and mask
+   a. := [;5]<2;
+   a.
+[true,true,false,false,false]
+   b. := [;5]*2-1
+mask - punches out true elements:
+  mask(b., a.)
+[-1,1]
+The result is a list of the first two elements.
+
+? selects one of two values based on whether or not the values are true
+
+  a.?1:0
+[1,1,0,0,0]
+
+     a.?!1:0
+redundant value at index 1 (0 already found)  At (1, 0)
+
+This is telling you that there is more than one true value in a. There must be
+exactly one true value in the left argument:
+
+     [;5]==3?!b.:-1
+5
+
+     [;5]==11?!b.:-1
+-1
+Here there is no such value equal to 11, so the default case value of -1 is returned.
+]]>
+       </example>
     </entry>
 
     <!--

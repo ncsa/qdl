@@ -54,4 +54,8 @@ public class ConstantNode extends ExpressionImpl {
         ConstantNode constantNode = new ConstantNode(result, resultType);
         return constantNode;
     }
+    @Override
+        public int getNodeType() {
+            return CONSTANT_NODE;
+        }
 }

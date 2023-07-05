@@ -144,12 +144,14 @@ public class ModuleTest extends AbstractQDLTester {
         addLine(script, "ok := g∄1;");// imported into f means not in session
         //addLine(script, "ok2 := !is_function(h,1);");// imported into f means not in session
         addLine(script, "ok2 := h∄1;");// imported into f means not in session
+        addLine(script, "ok3 := reduce(@&&, [g,h]∄1);");// check is defined for modules
         // It will ingest the function fine. It is attempting to use it later that will cause the error
         interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
 
         assert getBooleanValue("ok", state);
         assert getBooleanValue("ok2", state);
+        assert getBooleanValue("ok3", state) : "module check for is_function with two arguments failed";
 
         for (int i = 1; i < 1 + results.length; i++) {
             script = new StringBuffer();

@@ -164,14 +164,65 @@ public class QDLVariableTest extends AbstractQDLTester {
         addLine(script, "ok1 := is_defined(b);"); // most basic test
         addLine(script, "ok2 := !is_defined(a.ZZZ);"); // check that missing elements in stems
         addLine(script, "ok3 := ∄aaa.ZZZ;"); // check that no stem is caught right
+        addLine(script, "ok4 := reduce(@&&, [false,false,true]==∃[p,q,b]);"); // check that stems are checked
+        addLine(script, "zzz. := ∃{'a':p,'b':q};");
+        addLine(script, "ok5:= (!zzz.'a')&&(!zzz.'b');");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok0", state) : "is_defined failed for a stem";
         assert getBooleanValue("ok1", state) : "is_defined failed for a scalar variable";
         assert getBooleanValue("ok2", state) : "is_defined failed for missing element in a stem.";
         assert getBooleanValue("ok3", state) : "is_defined failed for non-existent stem.";
+        assert getBooleanValue("ok4", state) : "is_defined failed to check list elements.";
+        assert getBooleanValue("ok5", state) : "is_defined failed to check general stem elements.";
     }
 
+    public void testIsFunction() throws Throwable {
+        testIsFunction(false);
+        testIsFunction(true);
+    }
+    public void testIsFunction(boolean testXML) throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)->x^2;");
+        addLine(script, "f(x,y,z)->x+y+z;");
+        addLine(script, "g(x,y)->x*y;");
+        if (testXML) {
+            state = roundTripXMLSerialization(state, script);
+            script = new StringBuffer();
+        }
+        addLine(script, "ok0 := f∃null;");
+        addLine(script, "ok1 := f∃1;");
+        addLine(script, "ok2 := !(f∃2);");
+        addLine(script, "ok3 := f∄2;");
+        addLine(script, "ok4 := reduce(@&&, f∃[1,3]);");
+        addLine(script, "ok5 := reduce(@&&, [f,g]∃[1,2]);");
+        addLine(script, "ok6 := 2 == mask([;5], g∃[;5]).2;"); //
+        addLine(script, "ok7 := reduce(@&&, g∄[0,1,4,5]);"); //
+        addLine(script, "ok8 := reduce(@&&, {'a':f,'b':g}∃{'a':1,'b':2});"); //
+        addLine(script, "ok9 := reduce(@&&, {'a':f,'b':g, 'q':h}∃{'a':1,'b':2,'c':4,'d':7});"); // make sure it does subsetting
+
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "∃ failed for testing any function existance";
+        assert getBooleanValue("ok1", state) : "∃ failed for f with one argument";
+        assert getBooleanValue("ok2", state) : "!∃ test failed";
+        assert getBooleanValue("ok3", state) : "∄ test failed";
+        assert getBooleanValue("ok4", state) : "∃ failed for list of functions and scalar cound.";
+        assert getBooleanValue("ok5", state) : "∃ failed for mixed list of functions and arg counts";
+        assert getBooleanValue("ok6", state) : "∃ failed for single function and list of arg counts";
+        assert getBooleanValue("ok7", state) : "∄ failed for single function and list of arguments";
+        assert getBooleanValue("ok8", state) : "∃ failed for stem of functions and arg counts";
+        assert getBooleanValue("ok9", state) : "∃ failed subsetting for stem of functions and arg counts";
+    }
+
+    /*
+          ∃{'a':p,'b':q}
+{
+ a:false,
+ b:false
+}
+     */
     public void testRemoveVariable() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();

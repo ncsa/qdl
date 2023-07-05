@@ -155,4 +155,8 @@ public class StemVariableNode implements ExpressionInterface {
         newSVN.setEvaluated(isEvaluated());
         return newSVN;
     }
+    @Override
+        public int getNodeType() {
+            return STEM_NODE;
+        }
 }

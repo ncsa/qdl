@@ -143,5 +143,8 @@ public class QDLSetNode implements ExpressionInterface {
 
         return setNode;
     }
-
+    @Override
+        public int getNodeType() {
+            return SET_NODE;
+        }
 }

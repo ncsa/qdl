@@ -231,4 +231,8 @@ public class ModuleExpression extends ExpressionImpl {
         }
         throw new IllegalArgumentException("unkown left assignment argument.");
     }
+    @Override
+        public int getNodeType() {
+            return MODULE_NODE;
+        }
 }

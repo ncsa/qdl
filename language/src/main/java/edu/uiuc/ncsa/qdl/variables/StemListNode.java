@@ -143,4 +143,8 @@ public class StemListNode implements ExpressionInterface {
                 "sourceCode=" + sourceCode +
                 '}';
     }
+    @Override
+        public int getNodeType() {
+            return LIST_NODE;
+        }
 }

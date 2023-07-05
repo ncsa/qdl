@@ -9,7 +9,8 @@ import edu.uiuc.ncsa.qdl.variables.QDLStem;
  * <p>Created by Jeff Gaynor<br>
  * on 1/13/20 at  4:28 PM
  */
-public class VariableNode extends ExpressionImpl {
+public
+class VariableNode extends ExpressionImpl {
     public VariableNode() {
            super();
     }
@@ -60,4 +61,8 @@ public class VariableNode extends ExpressionImpl {
                 "variableReference='" + variableReference + '\'' +
                 '}';
     }
+    @Override
+        public int getNodeType() {
+            return VARIABLE_NODE;
+        }
 }

@@ -11,8 +11,7 @@ import edu.uiuc.ncsa.qdl.statements.LocalBlockStatement;
 import edu.uiuc.ncsa.qdl.statements.Statement;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.util.QDLVersion;
-import edu.uiuc.ncsa.qdl.variables.Constant;
-import edu.uiuc.ncsa.qdl.variables.VThing;
+import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
 
@@ -62,68 +61,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
     public boolean evaluate(String alias, Polyad polyad, State state) {
         switch (polyad.getName()) {
             case IS_FUNCTION:
-                if (polyad.isSizeQuery()) {
-                    polyad.setResult(new int[]{1, 2});
-                    polyad.setEvaluated(true);
-                    return true;
-                }
-                if (polyad.getArgCount() < 1) {
-                    throw new MissingArgException(IS_FUNCTION + " requires at least 1 argument", polyad);
-                }
-
-                if (2 < polyad.getArgCount()) {
-                    throw new ExtraArgException(IS_FUNCTION + " requires at most 2 argument", polyad.getArgAt(1));
-                }
-                int argCount = -1; // default -- get any
-                if (polyad.getArgCount() == 2) {
-                    Object object2 = polyad.evalArg(1, state);
-                    if (!isLong(object2)) {
-                        throw new BadArgException(" The argument count must be a number.", polyad.getArgAt(1));
-                    }
-                    argCount = ((Long) object2).intValue();
-                }
-
-                if (polyad.getArgAt(0) instanceof ModuleExpression) {
-                    ModuleExpression me = (ModuleExpression) polyad.getArgAt(0);
-                    State lastState = me.getModuleState(state);
-                    ModuleExpression lastME = me;
-                    while (lastME.getExpression() instanceof ModuleExpression) {
-                        lastME = (ModuleExpression) lastME.getExpression();
-                        lastState = lastME.getModuleState(lastState);
-                    }
-                    Polyad pp = new Polyad(IS_FUNCTION);
-                    pp.addArgument(lastME.getExpression());
-                    if (polyad.getArgCount() == 2) {
-                        pp.addArgument(polyad.getArgAt(1));
-                    }
-                    lastState.getMetaEvaluator().evaluate(pp, lastState);
-                    polyad.setResult(pp.getResult());
-                    polyad.setResultType(pp.getResultType());
-                    polyad.setEvaluated(true);
-                    return true;
-
-                }
-                if (polyad.getArgAt(0) instanceof VariableNode) {
-                    // they either are asking about a variable or it does not exist and by default, the parser thinks
-                    // it was one
-                    VariableNode vNode = (VariableNode) polyad.getArgAt(0);
-
-                    try {
-                        if (argCount < 0) {
-                            polyad.setResult(state.getFTStack().containsKey(new FKey(vNode.getVariableReference(), argCount)));
-                        } else {
-                            polyad.setResult(state.resolveFunction(vNode.getVariableReference(), argCount, true).functionRecord != null);
-                        }
-                    } catch (UndefinedFunctionException ufx) {
-                        polyad.setResult(Boolean.FALSE);
-                    }
-                    polyad.setResultType(Constant.BOOLEAN_TYPE);
-                    polyad.setEvaluated(true);
-                    return true;
-                }
-                polyad.setEvaluated(true);
-                polyad.setResultType(Constant.BOOLEAN_TYPE);
-                polyad.setResult(false);
+                doIsFunction(polyad, state);
                 return true;
         }
         try {
@@ -141,11 +79,172 @@ public class FunctionEvaluator extends AbstractEvaluator {
         }
     }
 
+    protected void doIsFunction(Polyad polyad, State state) {
+        if (polyad.isSizeQuery()) {
+            polyad.setResult(new int[]{1, 2});
+            polyad.setEvaluated(true);
+            return;
+        }
+        if (polyad.getArgCount() < 1) {
+            throw new MissingArgException(IS_FUNCTION + " requires at least 1 argument", polyad);
+        }
+
+        if (2 < polyad.getArgCount()) {
+            throw new ExtraArgException(IS_FUNCTION + " requires at most 2 argument", polyad.getArgAt(1));
+        }
+        boolean isScalarArgCount = false;
+        Long argCount = -1L;
+        QDLStem argCounts = null;
+        if (polyad.getArgCount() == 2) {
+            Object object2 = polyad.evalArg(1, state);
+            switch (Constant.getType(object2)) {
+                case Constant.LONG_TYPE:
+                    isScalarArgCount = true;
+                    argCount = (Long) object2;
+                    argCounts = new QDLStem();
+                    argCounts.put(0L, object2);
+                    break;
+                case Constant.STEM_TYPE:
+                    argCounts = (QDLStem) object2;
+                    isScalarArgCount = false;
+                    // ok
+                    break;
+                case Constant.NULL_TYPE:
+                    argCount = -1L;
+                    isScalarArgCount = true;
+                    break;
+                default:
+                    throw new BadArgException(" The argument count must be a number.", polyad.getArgAt(1));
+            }
+        }else{
+            argCount = -1L;
+            isScalarArgCount = true;
+        }
+
+        if (polyad.getArgAt(0) instanceof ModuleExpression) {
+            ModuleExpression me = (ModuleExpression) polyad.getArgAt(0);
+            State lastState = me.getModuleState(state);
+            ModuleExpression lastME = me;
+            while (lastME.getExpression() instanceof ModuleExpression) {
+                lastME = (ModuleExpression) lastME.getExpression();
+                lastState = lastME.getModuleState(lastState);
+            }
+            Polyad pp = new Polyad(IS_FUNCTION);
+            pp.addArgument(lastME.getExpression());
+            if (polyad.getArgCount() == 2) {
+                pp.addArgument(polyad.getArgAt(1));
+            }
+            lastState.getMetaEvaluator().evaluate(pp, lastState);
+            polyad.setResult(pp.getResult());
+            polyad.setResultType(pp.getResultType());
+            polyad.setEvaluated(true);
+            return;
+
+        }
+        switch (polyad.getArgAt(0).getNodeType()) {
+            case ExpressionImpl.VARIABLE_NODE:
+                VariableNode vNode = (VariableNode) polyad.getArgAt(0);
+                if (isScalarArgCount) {
+                    polyad.setResult(checkIsFunction(vNode.getVariableReference(), argCount.intValue(), state));
+                    polyad.setResultType(Constant.BOOLEAN_TYPE);
+                } else {
+                    QDLStem x = new QDLStem();
+                    for (Object k : argCounts.keySet()) {
+                        Object v = argCounts.get(k);
+                        boolean gotOne = false;
+                        if ((v instanceof Long)) {
+                            gotOne = true;
+                            x.putLongOrString(k, checkIsFunction(vNode.getVariableReference(), ((Long) v).intValue(), state));
+                        }
+                        if (v instanceof QDLNull) {
+                            gotOne = true;
+                            x.putLongOrString(k, checkIsFunction(vNode.getVariableReference(), -1, state));
+                        }
+                        if (!gotOne) {
+                            throw new BadArgException("arg count element at " + k + " is not a valid", polyad.getArgAt(1));
+                        }
+                    }
+                    polyad.setResult(x);
+                    polyad.setResultType(Constant.STEM_TYPE);
+                }
+                polyad.setEvaluated(true);
+                return;
+            case ExpressionInterface.LIST_NODE:
+                StemListNode stemListNode = (StemListNode) polyad.getArgAt(0);
+                QDLList out = new QDLList();
+                for (int i = 0; i < stemListNode.getStatements().size(); i++) {
+                    ExpressionInterface ei = stemListNode.getStatements().get(i);
+                    if (ei.getNodeType() == ExpressionImpl.VARIABLE_NODE) {
+                        VariableNode vNode2 = (VariableNode) ei;
+                        if (isScalarArgCount) {
+                            out.add(checkIsFunction(vNode2.getVariableReference(), argCount.intValue(), state));
+                        } else {
+                            Long longKey = (long) i;
+                            // process as list
+                            if (argCounts.containsKey(longKey)) {
+                                Object v = argCounts.get(longKey);
+                                if (v instanceof Long) {
+                                    out.add(checkIsFunction(vNode2.getVariableReference(), ((Long) v).intValue(), state));
+                                } else {
+                                    throw new BadArgException("arg count element at " + i + " is not a valid", polyad.getArgAt(1));
+                                }
+
+                            }
+                        }
+                    }
+                }
+                // It's really a list and that means all the keys are just longs
+                polyad.setResult(new QDLStem(out));
+                polyad.setResultType(Constant.STEM_TYPE);
+                polyad.setEvaluated(true);
+                return;
+            case ExpressionInterface.STEM_NODE:
+                StemVariableNode stemVariableNode = (StemVariableNode) polyad.getArgAt(0);
+                QDLStem out2 = new QDLStem();
+                for (StemEntryNode stemEntryNode : stemVariableNode.getStatements()) {
+                    Object key = stemEntryNode.getKey().evaluate(state);
+                    if (stemEntryNode.getValue() instanceof VariableNode) {
+                        VariableNode vNode2 = (VariableNode) stemEntryNode.getValue();
+                        if (isScalarArgCount) {
+                            out2.putLongOrString(key, checkIsFunction(vNode2.getVariableReference(), argCount.intValue(), state));
+                        } else {
+                            // do subsetting directly
+                            if (argCounts.containsKey(key)) {
+                                Object v = argCounts.get(key);
+                                if (v instanceof Long) {
+                                    out2.putLongOrString(key, checkIsFunction(vNode2.getVariableReference(), ((Long) v).intValue(), state));
+                                } else {
+                                    throw new BadArgException("arg count element at " + key + " is not a valid", polyad.getArgAt(1));
+                                }
+                            }
+                        }
+                    } else {
+                        throw new BadArgException("left hand element at " + key + " is not a valid argument", polyad.getArgAt(0));
+                    }
+                }
+                polyad.setResult(out2);
+                polyad.setResultType(Constant.STEM_TYPE);
+                polyad.setEvaluated(true);
+                return;
+            default:
+                throw new BadArgException("left hand element is not a valid argument", polyad.getArgAt(0));
+        }
+    }
+
+    protected Boolean checkIsFunction(String fName, int argCount, State state) {
+        try {
+            if (argCount < 0) {
+                return state.getFTStack().containsKey(new FKey(fName, argCount));
+            } else {
+                return state.resolveFunction(fName, argCount, true).functionRecord != null;
+            }
+        } catch (UndefinedFunctionException ufx) {
+
+        }
+        return Boolean.FALSE;
+    }
+
     /*
-
-
-    
-
       m := '/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/test.mdl'
   q :=module_load(m)
   )ws set debug on
@@ -280,7 +379,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
         localState.setWorkspaceCommands(state.getWorkspaceCommands());
         localState.setModuleState(state.isModuleState() || localState.isModuleState()); // it might have been set,
         // we are going to write local variables here and the MUST get priority over already exiting ones
-        // but without actually changing them (or e.g., recursion is impossible). 
+        // but without actually changing them (or e.g., recursion is impossible).
         for (int i = 0; i < polyad.getArgCount(); i++) {
             if (polyad.getArguments().get(i) instanceof LambdaDefinitionNode) {
                 LambdaDefinitionNode ldn = (LambdaDefinitionNode) polyad.getArguments().get(i);
@@ -344,9 +443,9 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 ((ExpressionInterface) statement).setAlias(polyad.getAlias());
             }
             try {
-                if(statement instanceof LocalBlockStatement){
+                if (statement instanceof LocalBlockStatement) {
                     // Can't tell when you get a function block, so have to do this
-                    ((LocalBlockStatement)statement).setFunctionParameters(foundParameters);
+                    ((LocalBlockStatement) statement).setFunctionParameters(foundParameters);
                 }
                 statement.evaluate(localState);
             } catch (ReturnException rx) {
@@ -378,9 +477,9 @@ public class FunctionEvaluator extends AbstractEvaluator {
      * @param localState
      */
     protected ArrayList<XThing> resolveArguments(FunctionRecord functionRecord,
-                                    Polyad polyad,
-                                    State state,
-                                    State localState) {
+                                                 Polyad polyad,
+                                                 State state,
+                                                 State localState) {
         ArrayList<XThing> paramList = new ArrayList<>();
         if (functionRecord.isFuncRef) {
             return paramList;// implicit parameter list since this is an operator or built in function.
@@ -451,7 +550,8 @@ public class FunctionEvaluator extends AbstractEvaluator {
                             referencedStates.put(ss.getUuid(), ss);
                         }
                     }
-                }      ;
+                }
+                ;
                 // This had better be a function reference or this should blow up.
             } else {
                 // This had better be a function reference or this should blow up.
@@ -461,7 +561,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 //    vThing = new VThing(new XKey(functionRecord.argNames.get(i)), polyad.getArguments().get(i).evaluate(localState));
                 //} else{
 
-                     vThing = new VThing(new XKey(functionRecord.argNames.get(i)), polyad.getArguments().get(i).evaluate(state));
+                vThing = new VThing(new XKey(functionRecord.argNames.get(i)), polyad.getArguments().get(i).evaluate(state));
                 //}
                 paramList.add(vThing);
             }

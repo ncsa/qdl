@@ -11,7 +11,7 @@ import edu.uiuc.ncsa.qdl.state.State;
  * <p>Created by Jeff Gaynor<br>
  * on 1/13/20 at  3:36 PM
  */
-public class Nilad extends ExpressionImpl{
+public class Nilad extends ExpressionImpl {
     public Nilad(int operatorType) {
         super(operatorType);
         valence = 0;
@@ -28,5 +28,10 @@ public class Nilad extends ExpressionImpl{
     public ExpressionNode makeCopy() {
         Nilad nilad = new Nilad(operatorType);
         return nilad;
+    }
+
+    @Override
+    public int getNodeType() {
+        return NILAD_NODE;
     }
 }

@@ -12,7 +12,7 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 6/1/21 at  6:43 AM
  */
-public class ParseExpressionBlock implements ExpressionInterface {
+public class ParseExpressionBlockNode implements ExpressionInterface {
     TokenPosition tokenPosition = null;
     @Override
     public void setTokenPosition(TokenPosition tokenPosition) {this.tokenPosition=tokenPosition;}
@@ -100,4 +100,8 @@ public class ParseExpressionBlock implements ExpressionInterface {
     public ExpressionInterface makeCopy() {
         return null;
     }
+    @Override
+        public int getNodeType() {
+            return PARSE_EXPRESSION_BLOCK_NODE;
+        }
 }

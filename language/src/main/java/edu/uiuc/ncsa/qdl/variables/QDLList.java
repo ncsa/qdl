@@ -1129,8 +1129,10 @@ subset(b., 3, 6)
 
     @Override
     public void add(int index, Object element) {
-        throw new NotImplementedException("add(int, Object)");
-
+   /*    if(!hasSparseEntries()){
+            getArrayList().add(index, element);
+        }
+   */     throw new NotImplementedException("add(int, Object) -- need logic for sparse entries");
     }
 
     @Override

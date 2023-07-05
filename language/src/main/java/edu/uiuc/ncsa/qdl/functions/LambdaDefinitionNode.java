@@ -66,5 +66,8 @@ public class LambdaDefinitionNode extends ExpressionImpl {
 
       FunctionRecord functionRecord;
 
-
+    @Override
+        public int getNodeType() {
+            return LAMBDA_DEFINITION_NODE;
+        }
 }

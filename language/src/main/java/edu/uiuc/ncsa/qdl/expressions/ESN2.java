@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
+ * After a parser change to treat the dot as an operator, this was
+ * introduced. It mostly has replaced the older {@link ExpressionStemNode},
+ * but not quite everywhere yet.
  * <p>Created by Jeff Gaynor<br>
  * on 6/12/21 at  6:42 AM
  */
@@ -313,5 +316,8 @@ public class ESN2 extends ExpressionImpl {
         setEvaluated(true);
 
     }
-
+    @Override
+        public int getNodeType() {
+            return EXPRESSION_STEM2_NODE;
+        }
 }

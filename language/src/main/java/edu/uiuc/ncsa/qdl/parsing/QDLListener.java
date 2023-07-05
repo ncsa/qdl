@@ -589,8 +589,8 @@ public class QDLListener implements QDLParserListener {
         conditionalStatement.setTokenPosition(tp((ParserRuleContext) ctx));
         boolean addToIf = true;
 
-        ParseExpressionBlock parseExpressionBlock = (ParseExpressionBlock) parsingMap.getStatementFromContext(ctx.getChild(1));
-        conditionalStatement.setConditional(parseExpressionBlock.getExpressionNodes().get(0));
+        ParseExpressionBlockNode parseExpressionBlockNode = (ParseExpressionBlockNode) parsingMap.getStatementFromContext(ctx.getChild(1));
+        conditionalStatement.setConditional(parseExpressionBlockNode.getExpressionNodes().get(0));
         for (int i = 2; i < ctx.getChildCount(); i++) {
             ParseTree p = ctx.getChild(i);
             if (p instanceof TerminalNodeImpl) {
@@ -1487,7 +1487,11 @@ illegal argument:no module named "b" was  imported at (1, 67)
         //#0 is if[ // #1 is conditional, #2 is ]then[. #3 starts the statements
         altIfExpressionNode.setIF((ExpressionNode) resolveChild(ctx.getChild(0)));
         altIfExpressionNode.setTHEN((ExpressionInterface) resolveChild(ctx.getChild(2)));
-        altIfExpressionNode.setELSE((ExpressionInterface) resolveChild(ctx.getChild(4)));
+        if(3<ctx.getChildCount()){
+            altIfExpressionNode.setELSE((ExpressionInterface) resolveChild(ctx.getChild(4)));
+        }else{
+            altIfExpressionNode.setELSE(QDLNull.getInstance());
+        }
         altIfExpressionNode.setTokenPosition(tp(ctx));
         altIfExpressionNode.setSourceCode(getSource(ctx));
     }
@@ -1495,13 +1499,13 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
     @Override
     public void enterExpressionBlock(QDLParserParser.ExpressionBlockContext ctx) {
-        stash(ctx, new ParseExpressionBlock());
+        stash(ctx, new ParseExpressionBlockNode());
 
     }
 
     @Override
     public void exitExpressionBlock(QDLParserParser.ExpressionBlockContext ctx) {
-        ParseExpressionBlock parseExpressionBlock = (ParseExpressionBlock) parsingMap.getStatementFromContext(ctx);
+        ParseExpressionBlockNode parseExpressionBlockNode = (ParseExpressionBlockNode) parsingMap.getStatementFromContext(ctx);
         // Now we fill it up with expressions
         for (int i = 0; i < ctx.getChildCount(); i++) {
             if (ctx.getChild(i) instanceof TerminalNodeImpl) {
@@ -1511,29 +1515,29 @@ illegal argument:no module named "b" was  imported at (1, 67)
             Statement s = parsingMap.getStatementFromContext(expr);
             if (s instanceof FunctionDefinitionStatement) {
                 LambdaDefinitionNode lds = new LambdaDefinitionNode((FunctionDefinitionStatement) s);
-                parseExpressionBlock.getExpressionNodes().add((lds));
+                parseExpressionBlockNode.getExpressionNodes().add((lds));
             } else {
 
-                parseExpressionBlock.getExpressionNodes().add((ExpressionNode) s);
+                parseExpressionBlockNode.getExpressionNodes().add((ExpressionNode) s);
             }
         }
-        parseExpressionBlock.setSourceCode(getSource(ctx));
-        parseExpressionBlock.setTokenPosition(tp(ctx));
+        parseExpressionBlockNode.setSourceCode(getSource(ctx));
+        parseExpressionBlockNode.setTokenPosition(tp(ctx));
     }
 
     @Override
     public void enterConditionalBlock(QDLParserParser.ConditionalBlockContext ctx) {
-        stash(ctx, new ParseExpressionBlock());
+        stash(ctx, new ParseExpressionBlockNode());
 
     }
 
     @Override
     public void exitConditionalBlock(QDLParserParser.ConditionalBlockContext ctx) {
-        ParseExpressionBlock parseExpressionBlock = (ParseExpressionBlock) parsingMap.getStatementFromContext(ctx);
+        ParseExpressionBlockNode parseExpressionBlockNode = (ParseExpressionBlockNode) parsingMap.getStatementFromContext(ctx);
         ParseTree expr = ctx.getChild(1); // only one
-        parseExpressionBlock.getExpressionNodes().add((ExpressionNode) resolveChild(expr));
-        parseExpressionBlock.setTokenPosition(tp(ctx));
-        parseExpressionBlock.setSourceCode(getSource(ctx));
+        parseExpressionBlockNode.getExpressionNodes().add((ExpressionNode) resolveChild(expr));
+        parseExpressionBlockNode.setTokenPosition(tp(ctx));
+        parseExpressionBlockNode.setSourceCode(getSource(ctx));
     }
 
 
@@ -2461,30 +2465,23 @@ illegal argument:no module named "b" was  imported at (1, 67)
     OpEvaluator opEvaluator = new OpEvaluator();
     @Override
     public void enterSwitchExpression(QDLParserParser.SwitchExpressionContext ctx) {
-     SwitchExpressionNode s = new SwitchExpressionNode();
+     SelectExpressionNode s = new SelectExpressionNode();
      stash(ctx, s);
     }
 
     @Override
     public void exitSwitchExpression(QDLParserParser.SwitchExpressionContext ctx) {
-         SwitchExpressionNode switchExpressionNode = (SwitchExpressionNode) parsingMap.getStatementFromContext(ctx);
-         switchExpressionNode.setSWITCH((ExpressionInterface) resolveChild(ctx.getChild(0)));
-         switchExpressionNode.setCASE((ExpressionInterface) resolveChild(ctx.getChild(2)));
-         switchExpressionNode.setDEFAULT((ExpressionInterface) resolveChild(ctx.getChild(4)));
-         switchExpressionNode.setTokenPosition(tp(ctx));
-         switchExpressionNode.setSourceCode(getSource(ctx));
+         SelectExpressionNode selectExpressionNode = (SelectExpressionNode) parsingMap.getStatementFromContext(ctx);
+         selectExpressionNode.setSWITCH((ExpressionInterface) resolveChild(ctx.getChild(0)));
+         selectExpressionNode.setCASE((ExpressionInterface) resolveChild(ctx.getChild(2)));
+         if(3 < ctx.getChildCount()){
+             selectExpressionNode.setDEFAULT((ExpressionInterface) resolveChild(ctx.getChild(4)));
+         }else{
+             selectExpressionNode.setDEFAULT(QDLNull.getInstance());
+         }
+         selectExpressionNode.setTokenPosition(tp(ctx));
+         selectExpressionNode.setSourceCode(getSource(ctx));
     }
-    /*
-        public void exitAltIFExpression(QDLParserParser.AltIFExpressionContext ctx) {
-            AltIfExpressionNode altIfExpressionNode = (AltIfExpressionNode) parsingMap.getStatementFromContext(ctx);
-            //#0 is if[ // #1 is conditional, #2 is ]then[. #3 starts the statements
-            altIfExpressionNode.setIF((ExpressionNode) resolveChild(ctx.getChild(0)));
-            altIfExpressionNode.setTHEN((ExpressionInterface) resolveChild(ctx.getChild(2)));
-            altIfExpressionNode.setELSE((ExpressionInterface) resolveChild(ctx.getChild(4)));
-            altIfExpressionNode.setTokenPosition(tp(ctx));
-            altIfExpressionNode.setSourceCode(getSource(ctx));
-        }
-     */
 
 }
 

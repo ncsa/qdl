@@ -93,4 +93,8 @@ public class AltIfExpressionNode extends ExpressionImpl {
     public ExpressionInterface makeCopy() {
         return null;
     }
+    @Override
+        public int getNodeType() {
+            return ALT_IF_NODE;
+        }
 }

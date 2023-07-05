@@ -105,4 +105,8 @@ public class ParseStatementBlock implements ExpressionInterface {
     public ExpressionInterface makeCopy() {
         return null;
     }
+    @Override
+        public int getNodeType() {
+            return PARSE_STATEMENT_BLOCK_NODE;
+        }
 }

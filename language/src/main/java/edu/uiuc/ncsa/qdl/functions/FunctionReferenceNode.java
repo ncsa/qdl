@@ -123,4 +123,8 @@ public class FunctionReferenceNode implements ExpressionInterface {
     public ExpressionInterface makeCopy() {
         return null;
     }
+    @Override
+        public int getNodeType() {
+            return FUNCTION_REFERENCE_NODE;
+        }
 }

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Dyad that compares the arguments, such as with comparisons, regex matching and types of equality.
  * <p>Created by Jeff Gaynor<br>
  * on 10/26/21 at  12:34 PM
  */
@@ -176,4 +177,8 @@ public class ComparisonDyad extends Dyad {
     protected ExpressionInterface leftmostNode() {
         return leftmostNode;
     }
+    @Override
+        public int getNodeType() {
+            return COMPARISON_DYAD_NODE;
+        }
 }

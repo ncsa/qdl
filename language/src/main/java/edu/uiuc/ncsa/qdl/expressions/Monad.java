@@ -112,5 +112,8 @@ public class Monad extends ExpressionImpl{
         }
         return isSigned()?((BigDecimal)getResult()).negate():(BigDecimal)getResult();
     }
-
+    @Override
+        public int getNodeType() {
+            return MONAD_NODE;
+        }
 }

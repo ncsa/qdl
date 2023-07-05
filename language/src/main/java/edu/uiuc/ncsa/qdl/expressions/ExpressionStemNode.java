@@ -15,6 +15,7 @@ import static edu.uiuc.ncsa.qdl.variables.Constant.*;
 import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
 
 /**
+ * Models a stem.
  * <p>Created by Jeff Gaynor<br>
  * on 3/5/21 at  5:58 AM
  */
@@ -414,4 +415,8 @@ The following are working:
     public ExpressionInterface makeCopy() {
         return null;
     }
+    @Override
+        public int getNodeType() {
+            return EXPRESSION_STEM_NODE;
+        }
 }

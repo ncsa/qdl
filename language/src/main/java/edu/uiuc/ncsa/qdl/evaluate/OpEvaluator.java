@@ -543,10 +543,11 @@ public class OpEvaluator extends AbstractEvaluator {
         polyad.setTokenPosition(dyad.getTokenPosition());
         polyad.setSourceCode(dyad.getSourceCode());
         polyad.addArgument(dyad.getLeftArgument());
-        if (dyad.getRightArgument() instanceof ConstantNode && dyad.getRightArgument().getResult() != QDLNull.getInstance()) {
+//        if (dyad.getRightArgument().getNodeType() == ExpressionInterface.CONSTANT_NODE && dyad.getRightArgument().getResult() != QDLNull.getInstance()) {
             polyad.addArgument(dyad.getRightArgument());
-        }
+//        }
         if (!isDefined) {
+            // The request is for !whatever, so wrap the whole thing in a negation.
             Monad monad = new Monad(OpEvaluator.NOT_VALUE, false);
             monad.setArgument(polyad);
             monad.setTokenPosition(polyad.getTokenPosition());
