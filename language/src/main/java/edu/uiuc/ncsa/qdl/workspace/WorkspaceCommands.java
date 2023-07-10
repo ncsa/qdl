@@ -4904,13 +4904,6 @@ public class WorkspaceCommands implements Logable, Serializable {
     public boolean _xmlWSJavaLoad(String fullPath) {
         try {
             InputStream inputStream = QDLFileUtil.readFileAsInputStream(getState(), fullPath);
-/*
-            if (isVFSPath(fullPath)) {
-                inputStream = new ByteArrayInputStream(readBinaryVFS(getState(), fullPath));
-            } else {
-                inputStream = inputStreamFromFile(new File(fullPath));
-            }
-*/
             if (_xmlWSJavaLoad(inputStream)) {
                 currentWorkspace = fullPath;
                 return true;
@@ -4921,7 +4914,6 @@ public class WorkspaceCommands implements Logable, Serializable {
                 t.printStackTrace();
             }
             say("sorry, but '" + fullPath + "' does not exist");
-            t.printStackTrace();
         }
         return false;
     }
