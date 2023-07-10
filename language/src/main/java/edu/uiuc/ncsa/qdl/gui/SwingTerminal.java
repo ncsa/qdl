@@ -381,7 +381,7 @@ public class SwingTerminal implements TerminalInterface {
 */
         frame = frame1;
         //System.setProperty("awt.useSystemAAFontSettings", "on");
-        frame.setTitle("QDL Workspace (version 1.5-QDL-SNAPSHOT)");
+        frame.setTitle("QDL Workspace (version 1.5.2)");
         frame.setContentPane(getMainPanel());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
