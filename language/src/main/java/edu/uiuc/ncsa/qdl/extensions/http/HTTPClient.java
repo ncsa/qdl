@@ -150,6 +150,9 @@ public class HTTPClient implements QDLModuleMetaClass {
             parameters = (QDLStem) objects[0];
         }
         // make the parameters.
+        if(parameters == null){
+            return actualHost;
+        }
         String p = parameters.size() == 0 ? "" : "?";
         boolean isFirst = true;
         for (Object key : parameters.keySet()) {
