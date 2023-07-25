@@ -2355,21 +2355,31 @@ public class StemTest extends AbstractQDLTester {
     public void testCopy() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "z. :=   copy([1,2,3,4,5,6],1,2,[10,11,12,13,14,15], 3) == [10,11,12,2,3,15];");
-        addLine(script, "ok := reduce(@&&, z.);"); // z. is boolean
+        addLine(script, " ok ≔ ⊗∧⊙(copy([1,2,3,4,5,6],1,2,[10,11,12,13,14,15], 3) ≡ [10,11,12,2,3,15]);");
+        addLine(script, "ok1 ≔ ⊗∧⊙(copy([1;5],1,[10;17])≡[2,3,4,13,14,15,16]);");
+        addLine(script, "ok2 ≔ ⊗∧⊙(copy([1;5],1,[10;17],3)≡[10,11,12,2,3,4,16]);");
+        addLine(script, "ok3 ≔ ⊗∧⊙(copy([1;5],[10;17],-1)≡[10,11,12,13,14,15,1,2,3,4]);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);
+        assert getBooleanValue("ok1", state);
+        assert getBooleanValue("ok2", state);
+        assert getBooleanValue("ok3", state);
     }
 
     public void testInsertAt() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "z. :=   insert_at([1,2,3,4,5,6],1,2,[10,11,12,13,14,15], 3) == [10,11,12,2,3,13,14,15];");
-        addLine(script, "ok := reduce(@&&, z.);"); // z. is boolean
+        addLine(script, " ok ≔ ⊗∧⊙(insert_at([1,2,3,4,5,6],1,2,[10,11,12,13,14,15], 3) ≡ [10,11,12,2,3,13,14,15]);");
+        addLine(script, "ok1 ≔ ⊗∧⊙(insert_at([1;5],1,[10;17])≡[2,3,4,10,11,12,13,14,15,16]);");
+        addLine(script, "ok2 ≔ ⊗∧⊙(insert_at([1;5],1,[10;17],3)≡[10,11,12,2,3,4,13,14,15,16]);");
+        addLine(script, "ok3 ≔ ⊗∧⊙(insert_at([1;5],[10;17],-1)≡[10,11,12,13,14,15,1,2,3,4,16]);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);
+        assert getBooleanValue("ok1", state);
+        assert getBooleanValue("ok2", state);
+        assert getBooleanValue("ok3", state);
     }
 
     public void testRoundtripJSONWithNull() throws Throwable {
