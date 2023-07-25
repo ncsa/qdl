@@ -8,6 +8,7 @@ import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
 import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNode;
 import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 
@@ -269,77 +270,99 @@ public class ListEvaluator extends AbstractEvaluator {
         }
     }
 
+    /*
+        copy(source., startIndex, length, target., targetIndex)
+                                           ^ targetArgIndex
+     */
     protected void doListCopyOrInsert(Polyad polyad, State state, boolean doInsert) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{5});
+            polyad.setResult(new int[]{2, 3, 45});
             polyad.setEvaluated(true);
             return;
         }
-        if (polyad.getArgCount() < 5) {
-            throw new MissingArgException((doInsert ? LIST_INSERT_AT : LIST_COPY) + " requires 5 arguments", polyad);
+        if (polyad.getArgCount() < 2) {
+            throw new MissingArgException((doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires at least 2 arguments", polyad);
         }
 
         if (5 < polyad.getArgCount()) {
-            throw new ExtraArgException((doInsert ? LIST_INSERT_AT : LIST_COPY) + " requires 5 arguments", polyad.getArgAt(5));
+            throw new ExtraArgException((doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires at most 5 arguments", polyad.getArgAt(5));
         }
-
         Object arg1 = polyad.evalArg(0, state);
         checkNull(arg1, polyad.getArgAt(0));
 
         if (!isStem(arg1)) {
-            throw new BadArgException((doInsert ? LIST_INSERT_AT : LIST_COPY) + " requires a stem as its first argument", polyad.getArgAt(0));
+            throw new BadArgException((doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires a stem as its first argument", polyad.getArgAt(0));
         }
-        QDLStem souorceStem = (QDLStem) arg1;
-
-        Object arg2 = polyad.evalArg(1, state);
-        checkNull(arg2, polyad.getArgAt(1));
-        if (!isLong(arg2)) {
-            throw new BadArgException((doInsert ? LIST_INSERT_AT : LIST_COPY) + " requires an integer as its second argument", polyad.getArgAt(1));
-        }
-        Long startIndex = (Long) arg2;
-
-        Object arg3 = polyad.evalArg(2, state);
-        checkNull(arg3, polyad.getArgAt(2));
-
-        if (!isLong(arg3)) {
-            throw new BadArgException((doInsert ? LIST_INSERT_AT : LIST_COPY) + " requires an integer as its third argument", polyad.getArgAt(2));
-        }
-        Long length = (Long) arg3;
-
-        // need to handle case that the target does not exist.
-        QDLStem targetStem;
-        if (polyad.getArgAt(3) instanceof VariableNode) {
-            targetStem = getOrCreateStem(polyad.getArgAt(3),
-                    state, (doInsert ? LIST_INSERT_AT : LIST_COPY) + " requires a stem as its fourth argument"
-            );
-        } else {
-            Object obj = polyad.evalArg(3, state);
-            checkNull(obj, polyad.getArgAt(3));
-
-            if (!isStem(obj)) {
-                throw new BadArgException((doInsert ? LIST_INSERT_AT : LIST_COPY) + " requires an integer as its fourth argument", polyad.getArgAt(3));
+        QDLStem sourceStem = (QDLStem) arg1;
+        QDLStem targetStem = null;
+        Long targetIndex = 0L;
+        int targetArgIndex = 5;
+        // There are a couple of cases for the targetStem. It can be just an expression to evaluate like [;5] or
+        // it may be a variable. If the variable does not exist, then create it (that's the trick). So we have
+        // to check if the argument is a variable node and take action accordingly.
+        Object ooo = checkCopyNode(polyad.getLastArg(), state, doInsert);
+        if(ooo instanceof QDLStem){
+            targetStem = (QDLStem) ooo;
+            targetIndex = 0L;
+            targetArgIndex = polyad.getArgCount() - 1;
+        }else{
+            if(!(ooo instanceof Long)){
+                throw new BadArgException((doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires an integer as its last argument", polyad.getArgAt(4));
             }
-            targetStem = (QDLStem) obj;
+            targetIndex = (Long)ooo;
+            ooo = checkCopyNode(polyad.getArgAt(polyad.getArgCount()-2), state, doInsert);
+            if(!(ooo instanceof QDLStem)){
+                throw new BadArgException((doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires a stem as its next to lat argument", polyad.getArgAt(4));
+            }
+            targetStem = (QDLStem)ooo;
+            if(targetIndex < 0L){
+                targetIndex = targetIndex + targetStem.size();
+            }
+            targetArgIndex = polyad.getArgCount() - 2;
         }
-
-        Object arg5 = polyad.evalArg(4, state);
-        checkNull(arg5, polyad.getArgAt(4));
-
-        if (!isLong(arg5)) {
-            throw new BadArgException((doInsert ? LIST_INSERT_AT : LIST_COPY) + " requires an integer as its fifth argument", polyad.getArgAt(4));
+        // Now for the other arguments, if any.
+        Long startIndex = 0L;
+        long length = sourceStem.size();
+        if (1 < targetArgIndex) {
+            Object arg2 = polyad.evalArg(1, state);
+            checkNull(arg2, polyad.getArgAt(1));
+            if (!isLong(arg2)) {
+                throw new BadArgException((doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires an integer as its second argument", polyad.getArgAt(1));
+            }
+            startIndex = (Long) arg2;
+            length = length - startIndex; // just take the rest of the stem.
         }
-        Long targetIndex = (Long) arg5;
+        if (2 < targetArgIndex) {
+            Object arg3 = polyad.evalArg(2, state);
+            checkNull(arg3, polyad.getArgAt(2));
+
+            if (!isLong(arg3)) {
+                throw new BadArgException((doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires an integer as its third argument", polyad.getArgAt(2));
+            }
+            length = (Long) arg3;
+            if(length <0){
+                length = length + sourceStem.size();
+            }
+        }
 
         if (doInsert) {
-            souorceStem.listInsertAt(startIndex, length, targetStem, targetIndex);
+            sourceStem.listInsertAt(startIndex, length, targetStem, targetIndex);
         } else {
-            souorceStem.listCopy(startIndex, length, targetStem, targetIndex);
+            sourceStem.listCopy(startIndex, length, targetStem, targetIndex);
         }
         polyad.setResult(targetStem);
         polyad.setResultType(Constant.STEM_TYPE);
         polyad.setEvaluated(true);
-        return;
+    }
 
+    protected Object checkCopyNode(ExpressionInterface expr, State state, boolean doInsert) {
+        if (expr instanceof VariableNode) {
+            // If the last argument is a stem, then supply default targetIndex
+            return getOrCreateStem(expr,
+                    state, (doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires a stem as its target argument"
+            );
+        }
+            return expr.evaluate(state); // May be a stem or Long
     }
 
     /*

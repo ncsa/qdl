@@ -18,18 +18,27 @@ public abstract class ExpressionImpl implements ExpressionNode {
     public ExpressionImpl() {
 
     }
+
     public ExpressionImpl(TokenPosition tokenPosition) {
         this.tokenPosition = tokenPosition;
     }
+
     TokenPosition tokenPosition = null;
-    @Override
-    public void setTokenPosition(TokenPosition tokenPosition) {this.tokenPosition=tokenPosition;}
 
     @Override
-    public TokenPosition getTokenPosition() {return tokenPosition;}
+    public void setTokenPosition(TokenPosition tokenPosition) {
+        this.tokenPosition = tokenPosition;
+    }
 
     @Override
-    public boolean hasTokenPosition() {return tokenPosition!=null;}
+    public TokenPosition getTokenPosition() {
+        return tokenPosition;
+    }
+
+    @Override
+    public boolean hasTokenPosition() {
+        return tokenPosition != null;
+    }
 
     public ExpressionImpl(int operatorType, TokenPosition tokenPosition) {
         this(operatorType);
@@ -38,7 +47,7 @@ public abstract class ExpressionImpl implements ExpressionNode {
 
     @Override
     public boolean hasAlias() {
-        return alias!=null;
+        return alias != null;
     }
 
 
@@ -61,6 +70,23 @@ public abstract class ExpressionImpl implements ExpressionNode {
     @Override
     public int getArgCount() {
         return getArguments().size();
+    }
+
+    public ExpressionInterface getLastArg() {
+        return getArgAt(getArgCount() - 1);
+    }
+
+    public Object evalLastArg(State state) {
+        try {
+            return getArguments().get(getArgCount() - 1).evaluate(state);
+        } catch (QDLException returnException) {
+            // These should be passed back, since they are needed for the internal operation of QDL
+            // E.g. IndexError, NamespaceError, ReturnException,...
+            throw returnException;
+        } catch (Throwable t) {
+            // Generate a bona fide error if there is a non-QDL one.
+            throw new QDLExceptionWithTrace(t, this);
+        }
     }
 
     /**
@@ -90,11 +116,11 @@ public abstract class ExpressionImpl implements ExpressionNode {
     public Object evalArg(int index, State state) {
         try {
             return getArguments().get(index).evaluate(state);
-        }catch(QDLException returnException){
+        } catch (QDLException returnException) {
             // These should be passed back, since they are needed for the internal operation of QDL
             // E.g. IndexError, NamespaceError, ReturnException,...
-             throw returnException;
-        }catch(Throwable t){
+            throw returnException;
+        } catch (Throwable t) {
             // Generate a bona fide error if there is a non-QDL one.
             throw new QDLExceptionWithTrace(t, this);
         }
@@ -128,6 +154,7 @@ public abstract class ExpressionImpl implements ExpressionNode {
     /**
      * Used when resolving function references to query the operator itself as to how many
      * arguments it accepts.
+     *
      * @return
      */
     public boolean isSizeQuery() {
@@ -167,6 +194,7 @@ public abstract class ExpressionImpl implements ExpressionNode {
 
     /**
      * If the is the operator equiavalent of a function. {@link OpEvaluator#UNKNOWN_VALUE} is the default.
+     *
      * @return
      */
     @Override

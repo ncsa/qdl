@@ -488,43 +488,66 @@ true]]>
 
     <entry id="copy">
         <body>
- <![CDATA[copy(source., start_index, length, target., target_index) -
+ <![CDATA[copy(source., {start_index, length,} target. {,target_index}) -
                copy one list into another, overwriting old elements.
 
      source. = the stem that is the source of the copy.
- start_index = the index in source. where the copy starts
-      length = how many elements to copy from source.
+ start_index = the index in source. where the copy starts,
+               default is 0
+      length = how many elements to copy from source,
+               default is from start_index to end of list
      target. = the target stem of the copy
-target_index = the index  target. that will receive the copy. Note that
+target_index = the index  target. that will receive the copy.
+               default is index 0. Note that
                any elements already in these locations will be replaced. If you
                need to insert elements, consider using the insert_at
                command.
 See also: insert_at]]>
         </body>
         <example>
-<![CDATA[   copy([1,2,3,4,5,6],1,2,[10,11,12,13,14,15], 3)
-[10,11,12,2,3,4]]]>
+<![CDATA[    copy([1,2,3,4,5,6],1,2,[10,11,12,13,14,15], 3)
+[10,11,12,2,3,4]
+    copy([;4],[10;15]); // effectively overwrites first arg to second
+[0,1,2,3,14]
+  copy([;4],2,[10;15]); // copy first list to end of second starting at index 2
+[10,11,12,13,14,2,3]
+  copy([;4],2,[10;15],1); // copy first list to second, starting at index 1 of target, 2 in source
+[10,2,3,13,14]]]>
                 </example>
 
     </entry>
     <entry id="insert_at">
         <body>
- <![CDATA[insert_at(source., start_index, length, target., target_index) -
+ <![CDATA[insert_at(source.{, start_index, length}, target.{, target_index}) -
                insert one list in another, moving the old elements.
 
      source. = the stem that is the source of the copy.
  start_index = the index in source. where the copy starts
+                default is 0
       length = how many elements in source. to copy
+                default is from start_index to end of list
      target. = the target stem of the copy
-target_index = the index in target. that will receive the copy. Note that
+target_index = the index in target. that will receive the copy.
+               default is index 0. Note that
                any elements already in these locations will be moved. If you
                intend to replace a section of this list, consider using the
                copy command.
 See also: copy]]>
         </body>
         <example>
-<![CDATA[   insert_at([1,2,3,4,5,6],1,2,[10,11,12,13,14,15], 3)
-[10,11,12,2,3,13,14,15]]]>
+<![CDATA[    insert_at([1,2,3,4,5,6],1,2,[10,11,12,13,14,15], 3)
+[10,11,12,2,3,13,14,15]
+  insert_at([;3],[10;15]); // effectively prepends list.
+[0,1,2,10,11,12,13,14]
+    insert_at([;3],[10;15],-1);  // signed indices supported.
+[10,11,12,13,0,1,2,14]
+  insert_at([;4],2,[10;15],1)
+[10,2,3,11,12,13,14]
+
+   Q: Great, but how do I append one list to another?
+   Ans:Use the ~ operator. insert_at and copy are for list surgery.
+  [10;15]~[;3]
+[10,11,12,13,14,0,1,2]]]>
                 </example>
     </entry>
     <entry id="remap">
