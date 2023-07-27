@@ -2359,12 +2359,15 @@ public class StemTest extends AbstractQDLTester {
         addLine(script, "ok1 ≔ ⊗∧⊙(copy([1;5],1,[10;17])≡[2,3,4,13,14,15,16]);");
         addLine(script, "ok2 ≔ ⊗∧⊙(copy([1;5],1,[10;17],3)≡[10,11,12,2,3,4,16]);");
         addLine(script, "ok3 ≔ ⊗∧⊙(copy([1;5],[10;17],-1)≡[10,11,12,13,14,15,1,2,3,4]);");
+        addLine(script, "copy([;5],z.);");
+        addLine(script, "ok4:= ⊗∧⊙z.==[;5];");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);
         assert getBooleanValue("ok1", state);
         assert getBooleanValue("ok2", state);
         assert getBooleanValue("ok3", state);
+        assert getBooleanValue("ok4", state) : "Did not create a new variable on " + ListEvaluator.LIST_COPY2;
     }
 
     public void testInsertAt() throws Throwable {
@@ -2374,12 +2377,16 @@ public class StemTest extends AbstractQDLTester {
         addLine(script, "ok1 ≔ ⊗∧⊙(insert_at([1;5],1,[10;17])≡[2,3,4,10,11,12,13,14,15,16]);");
         addLine(script, "ok2 ≔ ⊗∧⊙(insert_at([1;5],1,[10;17],3)≡[10,11,12,2,3,4,13,14,15,16]);");
         addLine(script, "ok3 ≔ ⊗∧⊙(insert_at([1;5],[10;17],-1)≡[10,11,12,13,14,15,1,2,3,4,16]);");
+        addLine(script, "insert_at([;5],z.);");
+        addLine(script, "ok4:= ⊗∧⊙z.==[;5];");
+
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);
         assert getBooleanValue("ok1", state);
         assert getBooleanValue("ok2", state);
         assert getBooleanValue("ok3", state);
+        assert getBooleanValue("ok4", state) : "Did not create a new variable on " + ListEvaluator.LIST_INSERT_AT;
     }
 
     public void testRoundtripJSONWithNull() throws Throwable {
