@@ -5555,7 +5555,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         Writer w = null;
         if (doFile) {
             if (isTrivial(filename)) {
-                filename = "/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/ws-test.xml";
+                filename = DebugUtil.getDevPath()+"/qdl/language/src/main/resources/ws-test.xml";
             }
             File file = new File(filename);
             w = new FileWriter(file);

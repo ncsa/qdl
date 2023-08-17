@@ -9,6 +9,7 @@ import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.vfs.*;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
+import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.storage.sql.ConnectionPool;
 import edu.uiuc.ncsa.security.storage.sql.derby.DerbyConnectionParameters;
 import edu.uiuc.ncsa.security.storage.sql.mysql.MySQLConnectionParameters;
@@ -481,7 +482,7 @@ public class VFSTest extends AbstractQDLTester {
 
 
     public void testFilePassThrough() throws Throwable {
-        String rootDir = "/home/ncsa/dev/ncsa-git/qdl/language/src/test/resources";
+        String rootDir = DebugUtil.getDevPath()+"/qdl/language/src/test/resources";
         VFSPassThruFileProvider vfs = new VFSPassThruFileProvider(
                 rootDir,
                 "qdl-vfs",
@@ -636,7 +637,7 @@ public class VFSTest extends AbstractQDLTester {
 
     public void testZipVFS() throws Throwable {
 
-        String pathToZip = "/home/ncsa/dev/ncsa-git/qdl/tests/src/test/resources/vfs-test/vfs-test.zip";
+        String pathToZip = DebugUtil.getDevPath()+"/qdl/tests/src/test/resources/vfs-test/vfs-test.zip";
         // now for the path inside the zip file. Note that when mounted, this is absolute with respect to the
         // mount point. See the readme in the folder with the vfs-test.zip file for more info
         String mountPoint = VFSPaths.PATH_SEPARATOR;
@@ -677,7 +678,7 @@ public class VFSTest extends AbstractQDLTester {
     }
 
     public void testServerMode() throws Throwable {
-        String rootDir = "/home/ncsa/dev/ncsa-git/qdl/tests/src/test/resources";
+        String rootDir = DebugUtil.getDevPath()+"/qdl/tests/src/test/resources";
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "    cfg.type := 'pass_through';");
@@ -700,7 +701,7 @@ public class VFSTest extends AbstractQDLTester {
     }
 
     public void testServerModeBad() throws Throwable {
-        String rootDir = "/home/ncsa/dev/ncsa-git/qdl/language/src/test/resources";
+        String rootDir = DebugUtil.getDevPath()+"/qdl/language/src/test/resources";
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         state.setServerMode(true);
@@ -736,7 +737,7 @@ public class VFSTest extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testServerModes() throws Throwable {
-        String rootDir = "/home/ncsa/dev/ncsa-git/qdl/language/src/test/resources";
+        String rootDir = DebugUtil.getDevPath()+"/qdl/language/src/test/resources";
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         state.setServerMode(true);

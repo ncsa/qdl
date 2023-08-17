@@ -1,8 +1,8 @@
 # This will create the installer (an executable jar file).
 # Be sure you have run the build scripts first so there is stuff to copy.
 #
-DEFAULT_QDL_ROOT="/home/ncsa/dev/ncsa-git/qdl/language"
-DEFAULT_TARGET_ROOT="/home/ncsa/dev/temp-deploy/qdl"
+DEFAULT_QDL_ROOT=$NCSA_DEV_INPUT/qdl
+DEFAULT_TARGET_ROOT=$NCS_DEV_OUTPUT/qdl
 DEFAULT_JAR_NAME="qdl-installer.jar"
 
 if [[  "$1" = "--help" ]];then
@@ -35,28 +35,28 @@ mkdir edu/uiuc/ncsa/qdl/install
 
 
 cd $TARGET_ROOT
-cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/scripts/installer.mf .
-cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/scripts/version.txt .
-cp /home/ncsa/dev/ncsa-git/qdl/language/target/classes/edu/uiuc/ncsa/qdl/install/Installer.class edu/uiuc/ncsa/qdl/install
+cp $QDL_ROOT/language/src/main/scripts/installer.mf .
+cp $QDL_ROOT/language/src/main/scripts/version.txt .
+cp $QDL_ROOT/language/target/classes/edu/uiuc/ncsa/qdl/install/Installer.class edu/uiuc/ncsa/qdl/install
 
 # Now make the directories
 mkdir "bin"
-cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/scripts/qdl bin
+cp $QDL_ROOT/language/src/main/scripts/qdl bin
 mkdir "docs"
-cp /home/ncsa/dev/ncsa-git/qdl/docs/pdf/*.pdf docs
-cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/docs/jsonpath.pdf docs
+cp $QDL_ROOT/docs/pdf/*.pdf docs
+cp $QDL_ROOT/language/src/main/docs/jsonpath.pdf docs
 
 mkdir "etc"
-cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/min-cfg.xml etc/min-cfg.xml
-cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/nano/qdl.nanorc etc/qdl.nanorc
-cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/nano/qdl.nanorc-2.3.1 etc/qdl.nanorc-2.3.1
-cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/sample.ini etc/sample.ini
+cp $QDL_ROOT/language/src/main/resources/min-cfg.xml etc/min-cfg.xml
+cp $QDL_ROOT/language/src/main/resources/nano/qdl.nanorc etc/qdl.nanorc
+cp $QDL_ROOT/language/src/main/resources/nano/qdl.nanorc-2.3.1 etc/qdl.nanorc-2.3.1
+cp $QDL_ROOT/language/src/main/resources/sample.ini etc/sample.ini
 mkdir "etc/modules"
-cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/math-x.mdl etc/modules
-cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/ext.mdl etc/modules
-cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/readme.txt etc/modules
+cp $QDL_ROOT/language/src/main/resources/modules/math-x.mdl etc/modules
+cp $QDL_ROOT/language/src/main/resources/modules/ext.mdl etc/modules
+cp $QDL_ROOT/language/src/main/resources/modules/readme.txt etc/modules
 mkdir "examples"
-cp /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/examples/*.qdl examples/
+cp $QDL_ROOT/language/src/main/resources/examples/*.qdl examples/
 mkdir "lib"
 cp "$QDL_ROOT/target/qdl.jar" lib
 cd lib

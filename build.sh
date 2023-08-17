@@ -4,14 +4,21 @@
 # the qdl installer jar.
 
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-#DEPLOY_ROOT=/home/ncsa/dev/temp-deploy
-QDL_ROOT=/home/ncsa/dev/ncsa-git/qdl
+QDL_ROOT=$NCSA_DEV_ROOT/qdl
 
 # Uncomment the next two lines if you want/need to regenerate all of the parser.
-# Generally, you should rarely need to do this  since it implies
-# a change to the QDL language itself:
+# Generally, you should rarely need to do this  since  again, doing this implies a
+# change to the language itself
+# Note that the binary files are included in this distribution.
 
 # cd $QDL_ROOT/language/src/main/antlr
+# ./build.sh
+
+# Uncoment the next two lines to regenerate the parser for the
+# ini files. Again, doing this implies a change to the grammar
+# since the binary files are included in this distribution.
+
+# cd $QDL_ROOT/language/src/main/antlr/iniFile
 # ./build.sh
 
 # build qdl proper
@@ -21,5 +28,4 @@ mvn clean install
 cd $QDL_ROOT/language
 mvn -P qdl package
 mv target/qdl-jar-with-dependencies.jar target/qdl.jar
-/home/ncsa/dev/ncsa-git/qdl/language/src/main/scripts/create_installer.sh
-
+$QDL_ROOT/language/src/main/scripts/create_installer.sh

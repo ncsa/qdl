@@ -4,6 +4,7 @@ import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.VariableState;
+import edu.uiuc.ncsa.security.core.util.DebugUtil;
 
 import java.math.BigDecimal;
 
@@ -1007,7 +1008,7 @@ cannot access '__a'
     (vs. running a module) and is special cased in the VariableState/FunctionState objects. Mostly this is to
     guard against a change that breaks this. Simple, basic and essentail regression checks.
      */
-    protected static String testModulePath = "/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/test.mdl";
+    protected static String testModulePath = DebugUtil.getDevPath()+"/qdl/language/src/main/resources/modules/test.mdl";
 
     // ML = module_load
     public void testMLIntrinsicFunction() throws Throwable {

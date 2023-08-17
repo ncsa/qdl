@@ -4,6 +4,7 @@ import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.StateUtils;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
+import edu.uiuc.ncsa.security.core.util.DebugUtil;
 
 import javax.xml.stream.*;
 import javax.xml.stream.events.Characters;
@@ -51,7 +52,7 @@ public class XMLTest {
     }
 
     public static void testEvent() throws Throwable {
-        File file = new File("/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/ws-test.xml");
+        File file = new File(DebugUtil.getDevPath()+"/qdl/language/src/main/resources/ws-test.xml");
         FileReader fileReader = new FileReader(file);
 
         XMLInputFactory xmlif = XMLInputFactory.newInstance();
@@ -141,7 +142,7 @@ public class XMLTest {
         state.toXML(xsw);
     }
     public static void testReader() throws FileNotFoundException, XMLStreamException {
-        File file = new File("/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/xml-test1.xml");
+        File file = new File(DebugUtil.getDevPath()+"/qdl/language/src/main/resources/xml-test1.xml");
         FileReader fileReader = new FileReader(file);
         XMLInputFactory xif = XMLInputFactory.newInstance();
         XMLStreamReader xsr = xif.createXMLStreamReader(fileReader);

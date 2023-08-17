@@ -6,6 +6,7 @@ import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.variables.VTable;
 import edu.uiuc.ncsa.qdl.variables.VThing;
+import edu.uiuc.ncsa.security.core.util.DebugUtil;
 
 /**
  * Test that directly test the functioning of variables and state. These typically create and manipulate stacks
@@ -303,7 +304,7 @@ public class QDLVariableTest extends AbstractQDLTester {
      */
     public void testLocalVariableAssignInScriptRun() throws Throwable {
         State state = testUtils.getNewState();
-        String test_script = "/home/ncsa/dev/ncsa-git/qdl/tests/src/test/resources/arg_visibility_test.qdl";
+        String test_script = DebugUtil.getDevPath()+"/qdl/tests/src/test/resources/arg_visibility_test.qdl";
         StringBuffer script = new StringBuffer();
         addLine(script, "ok:= 2 == script_run('" + test_script + "', 3*(2=:a));");
         addLine(script, "ok1 := !is_defined(a);");
@@ -325,7 +326,7 @@ public class QDLVariableTest extends AbstractQDLTester {
      */
     public void testLocalVariableAssignInScriptLoad1() throws Throwable {
         State state = testUtils.getNewState();
-        String test_script = "/home/ncsa/dev/ncsa-git/qdl/tests/src/test/resources/arg_visibility_test2.qdl";
+        String test_script = DebugUtil.getDevPath()+"/qdl/tests/src/test/resources/arg_visibility_test2.qdl";
         StringBuffer script = new StringBuffer();
         addLine(script, "ok:= 2 == script_load('" + test_script + "', 3*((x:=2)=:a));");
         addLine(script, "ok1 := is_defined(a) ;");
@@ -337,7 +338,7 @@ public class QDLVariableTest extends AbstractQDLTester {
 
     public void testLocalVariableAssignInScriptLoad2() throws Throwable {
         State state = testUtils.getNewState();
-        String test_script = "/home/ncsa/dev/ncsa-git/qdl/tests/src/test/resources/arg_visibility_test.qdl";
+        String test_script = DebugUtil.getDevPath()+"/qdl/tests/src/test/resources/arg_visibility_test.qdl";
         StringBuffer script = new StringBuffer();
         addLine(script, "a:=3;");
         addLine(script, "ok:= 2 == script_load('" + test_script + "', 3*((x:=2)=:a));");

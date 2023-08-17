@@ -7,6 +7,7 @@ import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.variables.Constant;
+import edu.uiuc.ncsa.security.core.util.DebugUtil;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -44,7 +45,7 @@ public class IOFunctionTest extends AbstractQDLTester {
     }
 
     public void testIniFileRead() throws Throwable {
-        String file = "/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/sample.ini";
+        String file = DebugUtil.getDevPath()+"/qdl/language/src/main/resources/sample.ini";
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "out. := file_read('" + file + "', 2);"); // INIT files are type 2

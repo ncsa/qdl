@@ -14,6 +14,7 @@ import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.variables.*;
+import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -2624,7 +2625,7 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok42", state) : "failure processing a\\>[star(),[0,0,0]]";
     }
 
-    public static String BIG_JSON_OBJECT = "/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/test.json";
+    public static String BIG_JSON_OBJECT = DebugUtil.getDevPath()+"/qdl/language/src/main/resources/test.json";
 
     /**
      * This grabs a large randomly generated JSON object (which is stashed for reproducibility)
@@ -2690,7 +2691,7 @@ public class StemTest extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testJSONExtractions2() throws Throwable {
-        String jsonFile = "/home/ncsa/dev/ncsa-git/qdl/tests/src/test/resources/extract.json";
+        String jsonFile = DebugUtil.getDevPath()+"/qdl/tests/src/test/resources/extract.json";
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "x. := from_json(file_read('" + jsonFile + "'));");

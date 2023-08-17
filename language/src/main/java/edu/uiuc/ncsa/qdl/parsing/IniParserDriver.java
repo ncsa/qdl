@@ -3,6 +3,7 @@ package edu.uiuc.ncsa.qdl.parsing;
 import edu.uiuc.ncsa.qdl.ini_generated.iniLexer;
 import edu.uiuc.ncsa.qdl.ini_generated.iniParser;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
+import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ConsoleErrorListener;
@@ -49,7 +50,7 @@ public class IniParserDriver {
     }
     public static void main(String[] args) throws Throwable{
         IniParserDriver iniParserDriver = new IniParserDriver();
-        FileReader fileReader = new FileReader("/home/ncsa/dev/ncsa-git/qdl/language/src/main/antlr4/iniFile/test2.ini");
+        FileReader fileReader = new FileReader(DebugUtil.getDevPath()+"/qdl/language/src/main/antlr4/iniFile/test2.ini");
         QDLStem out = iniParserDriver.parse(fileReader);
         System.out.println(out);
 

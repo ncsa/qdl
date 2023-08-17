@@ -1,5 +1,7 @@
 package edu.uiuc.ncsa.qdl.vfs;
 
+import edu.uiuc.ncsa.security.core.util.DebugUtil;
+
 import java.io.File;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -315,7 +317,7 @@ public class VFSPaths {
         Nifty example where a jar is read using the usual machinery then a FileSystem is created
         and it is navigated like a regular File.
          */
-        String pathToJar = "/home/ncsa/dev/temp-deploy/cilogon-oa2/cilogon-oa2-cp.jar";
+        String pathToJar = DebugUtil.getDevOutput()+"/cilogon-oa2/cilogon-oa2-cp.jar";
         String pathInsideTheJar = "edu/uiuc/ncsa/oa4mp/oauth2/client";
         File testZip = new File(pathToJar);
         JarFile jarFile = new JarFile(testZip);

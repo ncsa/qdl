@@ -517,12 +517,12 @@ public class QDLConvert {
         QDLConvert QDLConvert = new QDLConvert();
         XMLImport xmlImport = QDLConvert.new XMLImport();
         // Test XML as configuration language
-        //       xmlImport.evaluate(new Object[]{"/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/xml/simple0.xml"}, null);
+        //       xmlImport.evaluate(new Object[]{DebugUtil.getDevPath()+"/qdl/language/src/main/resources/xml/simple0.xml"}, null);
         QDLStem cfg = new QDLStem();
         State state = new State();
         state.setServerMode(false);
-        //cfg.put("file", "/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/xml/planes.xml");
-        cfg.put("file", "/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/xml/simple0.xml");
+        //cfg.put("file", DebugUtil.getDevPath()+"/qdl/language/src/main/resources/xml/planes.xml");
+        cfg.put("file", DebugUtil.getDevPath()+"/qdl/language/src/main/resources/xml/simple0.xml");
         QDLStem stem = (QDLStem) xmlImport.evaluate(new Object[]{cfg}, state);
         XMLExport xmlExport = QDLConvert.new XMLExport();
         Object x = xmlExport.evaluate(new Object[]{stem}, state);
@@ -530,8 +530,8 @@ public class QDLConvert {
         HOCONExport hoconExport = QDLConvert.new HOCONExport();
 //        System.out.println(hoconExport.evaluate(new Object[]{stem}, null));
         // Next are for testing XML as a text markup language
-        //xmlImport.evaluate(new Object[]{"/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/func_help.xml"}, null);
-        //xmlImport.evaluate(new Object[]{"/home/ncsa/dev/ncsa-git/oa4mp/oa4mp-website/src/site/xhtml/server/manuals/authorized.xhtml"}, null);
+        //xmlImport.evaluate(new Object[]{DebugUtil.getDevPath()+"/qdl/language/src/main/resources/func_help.xml"}, null);
+        //xmlImport.evaluate(new Object[]{DebugUtil.getDevPath()+"/oa4mp/oa4mp-website/src/site/xhtml/server/manuals/authorized.xhtml"}, null);
 
     }
 
