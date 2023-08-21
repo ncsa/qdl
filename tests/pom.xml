@@ -8,7 +8,7 @@
         <version>1.5.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
+    <packaging>jar</packaging>
     <artifactId>tests</artifactId>
 
     <properties>
@@ -69,10 +69,10 @@
 
                 </configuration>
             </plugin>
-            <plugin>
+         <!--   <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.2</version>
+                <version>3.3.0</version>
 
                 <executions>
                     <execution>
@@ -81,7 +81,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>
 </project>
