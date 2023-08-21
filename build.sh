@@ -4,7 +4,7 @@
 # the qdl installer jar.
 
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-QDL_ROOT=$NCSA_DEV_ROOT/qdl
+QDL_ROOT=$NCSA_DEV_INPUT/qdl
 
 # Uncomment the next two lines if you want/need to regenerate all of the parser.
 # Generally, you should rarely need to do this  since  again, doing this implies a

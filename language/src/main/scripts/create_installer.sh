@@ -2,7 +2,7 @@
 # Be sure you have run the build scripts first so there is stuff to copy.
 #
 DEFAULT_QDL_ROOT=$NCSA_DEV_INPUT/qdl
-DEFAULT_TARGET_ROOT=$NCS_DEV_OUTPUT/qdl
+DEFAULT_TARGET_ROOT=$NCSA_DEV_OUTPUT/qdl
 DEFAULT_JAR_NAME="qdl-installer.jar"
 
 if [[  "$1" = "--help" ]];then
@@ -20,7 +20,7 @@ QDL_ROOT=${1:-$DEFAULT_QDL_ROOT}
 TARGET_ROOT=${2:-$DEFAULT_TARGET_ROOT}
 JAR_NAME=${3:-$DEFAULT_JAR_NAME}
 
-echo "cleaning out old deploy in " $DEPLOY_ROOT
+echo "cleaning out old deploy in " $TARGET_ROOT
 if [ ! -d "$TARGET_ROOT" ]; then
     mkdir "$TARGET_ROOT"
 fi
@@ -58,7 +58,7 @@ cp $QDL_ROOT/language/src/main/resources/modules/readme.txt etc/modules
 mkdir "examples"
 cp $QDL_ROOT/language/src/main/resources/examples/*.qdl examples/
 mkdir "lib"
-cp "$QDL_ROOT/target/qdl.jar" lib
+cp "$QDL_ROOT/language/target/qdl.jar" lib
 cd lib
 # Get the actual manifest so that build info is available.
 unzip qdl.jar "*.MF"
