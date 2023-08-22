@@ -62,7 +62,7 @@ you have set, so be sure they are correct!
 
 ## Output
 
-The output will be in `NCSA_DEV_OUTPUT` and will consist of the new directory, `qdl`
+The output will be in `NCSA_DEV_OUTPUT/qdl` and will consist of the new directory, `qdl`
 which contains the distribution _and_ the installer, qdl-installer.jar. You may
 just distribute the QDL installer (don't forget it has an upgrade option 
 for an existing install, invoke it as 
@@ -77,7 +77,11 @@ from the main branch and try to build against the snapshot release, but you shou
 be prepared to get other dependencies (such as the NCSA security library) and
 build those.
 
-## Updating the language
+# Updating the language
+
+By updating the language, we mean a change to the parser itself, such as the addition
+of new operators or behavior. It is _highly_ unlikely this needs to be done, however,
+we will describe how to do it. 
 
 QDL has the binaries for the parser already in place, so to update
 the langauge itself, you would need to regenerate all of these. 
@@ -102,9 +106,9 @@ in `$NCSA_DEV_INPUT/src/main/antl4/iniFile`
 # Deploying to Sonatype
 
 This is done at the command line. Be sure that you have registered with Sonatype
-as an administrator and have uploaded your signing keys. You will need to configure
-your maven repository correctly too (far outside the scope of this blurb). Once
-that is done, issue
+as an administrator and have uploaded your signing keys. You should enable GPG
+signing in `$DEV_NCSA_INPUT/qdl/pom.xml` and should comment out the website module.
+Once that is done, issue
 
 `mvn clean install deploy`
 
