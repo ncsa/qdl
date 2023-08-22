@@ -21,9 +21,12 @@ TARGET_ROOT=${2:-$DEFAULT_TARGET_ROOT}
 JAR_NAME=${3:-$DEFAULT_JAR_NAME}
 
 echo "cleaning out old deploy in " $TARGET_ROOT
-if [ ! -d "$TARGET_ROOT" ]; then
-    mkdir "$TARGET_ROOT"
+if [ ! -d "$TARGET_ROOT" ]
+then
+    echo "Directory $TARGET_DIR DOES NOT exists. Please create it."
+    exit 1
 fi
+
 cd $TARGET_ROOT
 rm -Rf *
 
