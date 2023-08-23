@@ -52,6 +52,7 @@ committed to GitHub such as your local database password etc.
 
 # How to build it
 
+By building it, I mean a complete recompile and the creation of artifacts suitable for release.
 Get the sources from [GitHub](https://github.com/ncsa/qdl) and clone to 'NCSA_DEV_INPUT'.
 You should then be able to build the system by issuing 
 
@@ -101,7 +102,8 @@ rebuild QDL from the ground up.
 ## Updating the ini file parser
 
 This is very similar indeed to updating the language, but the  files live
-in `$NCSA_DEV_INPUT/src/main/antl4/iniFile`
+in `$NCSA_DEV_INPUT/src/main/antl4/iniFile`. You should then rebuild everything
+once ANTLR is done.
 
 # Deploying to Sonatype
 
@@ -110,7 +112,13 @@ as an administrator and have uploaded your signing keys. You should enable GPG
 signing in `$DEV_NCSA_INPUT/qdl/pom.xml` and should comment out the website module.
 Once that is done, issue
 
-`mvn clean install deploy`
+`mvn clean install`
 
-and this will install it locally plus upload it to Sonatype. You will still have
+and this will install it locally. Then do the deploy as a separate step:
+
+`mvn deploy`
+
+which upload it to Sonatype. Two steps are needed since there is some complex
+jar building in the background and trying to do it all at once will result in some
+errors. Two stage deplyment just uploads the result. You will still have
 to log in there to close then release it.
