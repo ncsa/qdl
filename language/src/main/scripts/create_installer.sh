@@ -1,7 +1,11 @@
 # This will create the installer (an executable jar file).
+# It will take the source directories and create the distro tree,
+# If there is a source other than the current distro, it will take
+# those as overrides and add those files.
 # Be sure you have run the build scripts first so there is stuff to copy.
 #
 DEFAULT_QDL_ROOT=$NCSA_DEV_INPUT/qdl
+QDL_SOURCES=$NCSA_DEV_INPUT/qdl/language
 DEFAULT_TARGET_ROOT=$NCSA_DEV_OUTPUT/qdl
 DEFAULT_JAR_NAME="qdl-installer.jar"
 
@@ -20,11 +24,13 @@ QDL_ROOT=${1:-$DEFAULT_QDL_ROOT}
 TARGET_ROOT=${2:-$DEFAULT_TARGET_ROOT}
 JAR_NAME=${3:-$DEFAULT_JAR_NAME}
 
-echo "cleaning out old deploy in " $TARGET_ROOT
 if [ ! -d "$TARGET_ROOT" ]
-then
-    echo "Directory $TARGET_DIR DOES NOT exists. Please create it."
-    exit 1
+  then
+    mkdir "$TARGET_ROOT"
+   else
+    echo "$TARGET_ROOT exists, cleaning..."
+    cd $TARGET_ROOT
+    rm -Rf *
 fi
 
 cd $TARGET_ROOT
@@ -38,30 +44,30 @@ mkdir edu/uiuc/ncsa/qdl/install
 
 
 cd $TARGET_ROOT
-cp $QDL_ROOT/language/src/main/scripts/installer.mf .
-cp $QDL_ROOT/language/src/main/scripts/version.txt .
-cp $QDL_ROOT/language/target/classes/edu/uiuc/ncsa/qdl/install/Installer.class edu/uiuc/ncsa/qdl/install
+cp $QDL_SOURCES/src/main/scripts/installer.mf .
+cp $QDL_SOURCES/src/main/scripts/version.txt .
+cp $QDL_SOURCES/target/classes/edu/uiuc/ncsa/qdl/install/Installer.class edu/uiuc/ncsa/qdl/install
 
 # Now make the directories
 mkdir "bin"
-cp $QDL_ROOT/language/src/main/scripts/qdl bin
+cp $QDL_SOURCES/src/main/scripts/qdl bin
 mkdir "docs"
 cp $QDL_ROOT/docs/pdf/*.pdf docs
-cp $QDL_ROOT/language/src/main/docs/jsonpath.pdf docs
+cp $QDL_SOURCES/src/main/docs/jsonpath.pdf docs
 
 mkdir "etc"
-cp $QDL_ROOT/language/src/main/resources/min-cfg.xml etc/min-cfg.xml
-cp $QDL_ROOT/language/src/main/resources/nano/qdl.nanorc etc/qdl.nanorc
-cp $QDL_ROOT/language/src/main/resources/nano/qdl.nanorc-2.3.1 etc/qdl.nanorc-2.3.1
-cp $QDL_ROOT/language/src/main/resources/sample.ini etc/sample.ini
+cp $QDL_SOURCES/src/main/resources/min-cfg.xml etc/min-cfg.xml
+cp $QDL_SOURCES/src/main/resources/nano/qdl.nanorc etc/qdl.nanorc
+cp $QDL_SOURCES/src/main/resources/nano/qdl.nanorc-2.3.1 etc/qdl.nanorc-2.3.1
+cp $QDL_SOURCES/src/main/resources/sample.ini etc/sample.ini
 mkdir "etc/modules"
-cp $QDL_ROOT/language/src/main/resources/modules/math-x.mdl etc/modules
-cp $QDL_ROOT/language/src/main/resources/modules/ext.mdl etc/modules
-cp $QDL_ROOT/language/src/main/resources/modules/readme.txt etc/modules
+cp $QDL_SOURCES/src/main/resources/modules/math-x.mdl etc/modules
+cp $QDL_SOURCES/src/main/resources/modules/ext.mdl etc/modules
+cp $QDL_SOURCES/src/main/resources/modules/readme.txt etc/modules
 mkdir "examples"
-cp $QDL_ROOT/language/src/main/resources/examples/*.qdl examples/
+cp $QDL_SOURCES/src/main/resources/examples/*.qdl examples/
 mkdir "lib"
-cp "$QDL_ROOT/language/target/qdl.jar" lib
+cp "$QDL_SOURCES/target/qdl.jar" lib
 cd lib
 # Get the actual manifest so that build info is available.
 unzip qdl.jar "*.MF"
@@ -74,6 +80,4 @@ mkdir "log"
 mkdir "lib/cp"
 mkdir "var"
 mkdir "var/ws"
-# jar cmf manifest-file jar-file input-files
-#jar cmf installer.mf $JAR_NAME edu/uiuc/ncsa/qdl/install/Installer.class version.txt  build-info.txt bin docs etc lib log var examples
-jar cmf installer.mf $JAR_NAME edu/uiuc/ncsa/qdl/install/Installer.class version.txt  bin docs etc lib log var examples
+jar cmf installer.mf "$JAR_NAME" edu/uiuc/ncsa/qdl/install/Installer.class version.txt  bin docs etc lib log var examples

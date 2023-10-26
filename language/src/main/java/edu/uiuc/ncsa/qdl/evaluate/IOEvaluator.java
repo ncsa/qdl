@@ -290,8 +290,17 @@ public class IOEvaluator extends AbstractEvaluator {
                 throw new QDLServerModeException("File system operations not permitted in server mode.");
             }
             File f = new File(fileName);
-            if (!f.isFile()) {
-                throw new QDLIOException("the requested object '" + f + "' is not a file on this system.");
+            if (f.exists()) {
+                if (!f.isFile()) {
+                    throw new QDLIOException("the requested object '" + f + "' is not a file on this system.");
+                }
+            }else{
+                // Contract is that if it does not exist, return true.
+                polyad.setEvaluated(true);
+                polyad.setResult(rc);
+                polyad.setResultType(Constant.BOOLEAN_TYPE);
+                return;
+                // it exists and is not some sort of file, so an error is warranted.
             }
             rc = f.delete();
         }
@@ -400,7 +409,7 @@ public class IOEvaluator extends AbstractEvaluator {
         if (state.isVFSFile(fileName)) {
             try {
                 // Add in a final path separator if needed so it looks for a directory with this name.
-                vfs = state.getVFS(fileName+(fileName.endsWith(PATH_SEPARATOR)?"":PATH_SEPARATOR));
+                vfs = state.getVFS(fileName + (fileName.endsWith(PATH_SEPARATOR) ? "" : PATH_SEPARATOR));
                 if (vfs != null) {
                     DebugUtil.trace(this, "in " + DIR + " command: got a VFS=" + vfs);
 
@@ -425,11 +434,11 @@ public class IOEvaluator extends AbstractEvaluator {
             }
             File f = new File(fileName);
             entries = f.list();
-            for(int i = 0; i< entries.length; i++){
+            for (int i = 0; i < entries.length; i++) {
 
                 File ff = new File(f, entries[i]);
-                if(ff.isDirectory()){
-                      entries[i] = entries[i] + "/";
+                if (ff.isDirectory()) {
+                    entries[i] = entries[i] + "/";
                 }
             }
         }
@@ -809,7 +818,7 @@ public class IOEvaluator extends AbstractEvaluator {
                     if (hasVF) {
                         polyad.setResult(vfsEntry.convertToStem());// if this is binary, the contents are a single base64 encoded string.
                     } else {
-                        polyad.setResult(QDLFileUtil.readTextFileAsStem(state,fileName));
+                        polyad.setResult(QDLFileUtil.readTextFileAsStem(state, fileName));
                     }
                     // Read as lines, put in a stem
                     polyad.setResultType(Constant.STEM_TYPE);
@@ -821,7 +830,7 @@ public class IOEvaluator extends AbstractEvaluator {
                     if (hasVF) {
                         content = vfsEntry.getText();
                     } else {
-                        content = QDLFileUtil.readTextFile(state,fileName);
+                        content = QDLFileUtil.readTextFile(state, fileName);
                     }
                     if (StringUtils.isTrivial(content)) {
                         polyad.setResult(new QDLStem());

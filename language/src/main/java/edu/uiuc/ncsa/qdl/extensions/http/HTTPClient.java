@@ -140,7 +140,12 @@ public class HTTPClient implements QDLModuleMetaClass {
         String actualHost = host;
         QDLStem parameters = null;
         if (objects.length == 2) {
-            actualHost = actualHost + (actualHost.endsWith("/") ? "" : "/") + objects[0];
+            if(!(objects[0] instanceof String)){
+                 throw new IllegalArgumentException("uri_path must be a string ");
+            }
+            String uri_path = (String)objects[0];
+            // make sure the path doesn't have extra /'s
+            actualHost = actualHost + (actualHost.endsWith("/") ? "" : "/") + (uri_path.startsWith("/")?uri_path.substring(1):uri_path);
             parameters = (QDLStem) objects[1];
         }
         if (objects.length == 0) {
@@ -186,7 +191,7 @@ public class HTTPClient implements QDLModuleMetaClass {
                 if (objects[0] instanceof String) {
                     host = (String) objects[0];
                 } else {
-                    throw new IllegalArgumentException("the argument to " + getName() + " must be a string");
+                    throw new IllegalArgumentException("the argument to " + getName() + " must be a string, not a " + (objects[0]==null?"null":objects[0].getClass().getSimpleName()));
                 }
             }
             return oldHost == null ? "" : oldHost;
@@ -646,7 +651,9 @@ public class HTTPClient implements QDLModuleMetaClass {
         String body = "";
         String actualHost = host;
         if (0 < uriPath.length()) {
-            actualHost = (actualHost.endsWith("/") ? "" : "/");
+            actualHost = actualHost + (actualHost.endsWith("/") ? "" : "/");
+            // Fixes https://github.com/ncsa/qdl/issues/35
+            actualHost = actualHost + (uriPath.startsWith("/")?uriPath.substring(1):uriPath);
         }
         HttpEntityEnclosingRequest request;
         if (isPost) {
@@ -705,33 +712,6 @@ public class HTTPClient implements QDLModuleMetaClass {
                         body = stringPayload;
                     }
             }
-           /* switch (headers.getString(contentType)) {
-                case CONTENT_JSON:
-                    if (isStringArg) {
-                        body = stringPayload;
-                    } else {
-                        body = payload.toJSON().toString();
-                    }
-                    break;
-                case CONTENT_FORM:
-                    if (isStringArg) {
-                        throw new IllegalArgumentException("Cannot have " + contentType + " of " + CONTENT_FORM + " with a string. You must use a stem.");
-                    }
-                    boolean isFirst = true;
-                    for (Object key : payload.keySet()) {
-                        body = body + (isFirst ? "" : "&") + key + "=" + payload.get(key);
-                        if (isFirst) isFirst = false;
-                    }
-                    break;
-                default:
-                case CONTENT_TEXT:
-                case CONTENT_HTML:
-                    if (!isStringArg) {
-                        throw new IllegalArgumentException("Cannot have a stem argument for this content type.");
-                    }
-                    body = stringPayload;
-                    break;
-            }*/
         } else {
             if (StringUtils.isTrivial(stringPayload)) {
                 throw new IllegalArgumentException("Must specify " + contentType + " for payload stem.");

@@ -3,7 +3,6 @@
 # and the target directory specified in the create_installer.sh script will have
 # the qdl installer jar.
 
-export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 QDL_ROOT=$NCSA_DEV_INPUT/qdl
 
 # Uncomment the next two lines if you want/need to regenerate all of the parser.
@@ -14,7 +13,7 @@ QDL_ROOT=$NCSA_DEV_INPUT/qdl
 # cd $QDL_ROOT/language/src/main/antlr
 # ./build.sh
 
-# Uncoment the next two lines to regenerate the parser for the
+# Uncomment the next two lines to regenerate the parser for the
 # ini files. Again, doing this implies a change to the grammar
 # since the binary files are included in this distribution.
 

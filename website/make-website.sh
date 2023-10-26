@@ -1,12 +1,9 @@
 #
 # Run this AFTER build.sh or it will fail.
 #
-export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-QDL_ROOT=/home/ncsa/dev/ncsa-git/qdl
+QDL_ROOT=$NCSA_DEV_INPUT/qdl
 
-#GITHUB_ROOT=$QDL_ROOT/docs
-# OLD location for now so the website updates
-GITHUB_ROOT=/home/ncsa/dev/ncsa-git/qdl/docs
+GITHUB_ROOT=$QDL_ROOT/docs
 cd $GITHUB_ROOT/pdf
 echo "converting docs to PDF"
 
