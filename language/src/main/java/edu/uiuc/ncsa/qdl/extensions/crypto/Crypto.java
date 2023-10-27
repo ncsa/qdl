@@ -6,11 +6,11 @@ import edu.uiuc.ncsa.qdl.extensions.QDLModuleMetaClass;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
-import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.util.crypto.DecryptUtils;
 import edu.uiuc.ncsa.security.util.jwk.JSONWebKey;
 import edu.uiuc.ncsa.security.util.jwk.JSONWebKeyUtil;
 import edu.uiuc.ncsa.security.util.jwk.JSONWebKeys;
+import edu.uiuc.ncsa.security.util.jwk.JWKUtil2;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
@@ -26,13 +26,25 @@ import java.util.List;
  * on 8/16/22 at  1:34 PM
  */
 public class Crypto implements QDLModuleMetaClass {
+    public JWKUtil2 getJwkUtil() {
+        if (jwkUtil == null) {
+            jwkUtil = new JWKUtil2();
+        }
+        return jwkUtil;
+    }
 
-    public static final String RSA_CREATE_KEY_NAME = "rsa_create_key";
+    public void setJwkUtil(JWKUtil2 jwkUtil) {
+        this.jwkUtil = jwkUtil;
+    }
 
-    public class RSACreateKey implements QDLFunction {
+    JWKUtil2 jwkUtil;
+
+    public static final String CREATE_KEY_NAME = "create_key";
+
+    public class CreateKey implements QDLFunction {
         @Override
         public String getName() {
-            return RSA_CREATE_KEY_NAME;
+            return CREATE_KEY_NAME;
         }
 
         @Override
@@ -42,51 +54,74 @@ public class Crypto implements QDLModuleMetaClass {
 
         @Override
         public Object evaluate(Object[] objects, State state) throws Throwable {
-            int keySize = -1;
-            int count = 1;
-            if (0 < objects.length) {
-                if (!(objects[0] instanceof Long)) {
-                    throw new IllegalArgumentException("the first argument of " + getName() + " must be an integer if present. Got '" + objects[0] + "'");
-                }
-                Long arg0 = (Long) objects[0];
-                keySize = arg0.intValue();
-                if (keySize % 256 != 0) {
-                    throw new IllegalArgumentException("the key size of " + keySize + " must be a multiple of 256");
-                }
-                if (objects.length == 2) {
-                    if (!(objects[1] instanceof Long)) {
-                        throw new IllegalArgumentException("the second argument of " + getName() + " must be an integer if present. Got '" + objects[1] + "'");
+            // default is RSA key. 1024 bits, RS256 alg.
+            String type = "RSA";
+            int keyLength= 1024;
+            String alg = "RS256";
+            String curve = "P-256";
+            JSONWebKey webKey = null;
+            if(objects.length == 0){
+                 webKey = getJwkUtil().createRSAKey(keyLength,alg);
+            }
+            if(objects.length == 1){
+                if(objects[0] instanceof QDLStem){
+                    boolean unknownType = true;
+                    QDLStem stem = (QDLStem) objects[0];
+                    if(stem.containsKey("type")){
+                        type = stem.getString("type");
+                    } else{
+                        throw new IllegalArgumentException(getName() + " is missing the type of the key. Must be RSA or EC");
                     }
-                    count = ((Long) objects[1]).intValue();
-                    if (count <= 0) {
-                        return new QDLStem();
+                    if(type.equals("RSA")){
+                               unknownType = false;
+                        if(stem.containsKey("length")){
+                            keyLength = stem.getLong("length").intValue();
+                        }
+                        if (keyLength % 256 != 0) {
+                            throw new IllegalArgumentException("the key size of " + keyLength + " must be a multiple of 256");
+                        }
+                        if(stem.containsKey("alg")){
+                            alg = stem.getString("alg");
+                        }
+
+                        webKey = getJwkUtil().createRSAKey(keyLength, alg);
                     }
+                    if(type.equals("EC")){
+                        unknownType = false;
+                        if(stem.containsKey("curve")){
+                            curve = stem.getString("curve");
+                        }
+                        if(stem.containsKey("alg")){
+                            alg = stem.getString("alg");
+                        }else{
+                            alg = "ES256"; // default for elliptic curves.
+                        }
+                        webKey = getJwkUtil().createECKey(curve, alg);
+                    }
+
+                    if(unknownType){
+                        throw new IllegalArgumentException("unknown key type '" + stem.get("type") + "'");
+                    }
+                }else{
+                    if(!(objects[0] instanceof Long)){
+                        throw new IllegalArgumentException("single argument must be the length of the RSA key");
+
+                    }
+                    keyLength = ((Long)objects[0]).intValue();
+                    if (keyLength % 256 != 0) {
+                        throw new IllegalArgumentException("the key size of " + keyLength + " must be a multiple of 256");
+                    }
+                    webKey = getJwkUtil().createRSAKey(keyLength, alg);
                 }
+                // RSA key, gives size
             }
-            KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-            if (0 < keySize) {
-                kpg.initialize(keySize);
-            }
-            if (count == 1) {
-                // single key
-                KeyPair keyPair = kpg.generateKeyPair();
-                JSONWebKey webKey = JSONWebKeyUtil.create(keyPair);
-                JSONObject wk2 = JSONWebKeyUtil.toJSON(webKey);
-                QDLStem stem = new QDLStem();
-                stem.fromJSON(wk2);
-                return stem;
-            }
-            QDLStem outStem = new QDLStem();
-            for (int i = 0; i < count; i++) {
-                KeyPair keyPair = kpg.generateKeyPair();
-                JSONWebKey webKey = JSONWebKeyUtil.create(keyPair);
-                JSONObject wk2 = JSONWebKeyUtil.toJSON(webKey);
-                QDLStem stem = new QDLStem();
-                stem.fromJSON(wk2);
-                outStem.put(stem.getString(JSONWebKeyUtil.KEY_ID), stem);
-            }
-            return outStem;
+            JSONObject wk2 = JSONWebKeyUtil.toJSON(webKey);
+            QDLStem stem = new QDLStem();
+            stem.fromJSON(wk2);
+            return stem;
+
         }
+
 
         /*
        )ws set debug on
@@ -102,18 +137,19 @@ public class Crypto implements QDLModuleMetaClass {
                     dd.add(getName() + "() create an RSA key with the default key size of 1024");
                     break;
                 case 1:
-                    dd.add(getName() + "(key_size) create an RSA key with the given key_size > 1024.");
+                    dd.add(getName() + "(key_size | params.) create an RSA key with the given key_size > 1024.");
                     dd.add("Note that the key_size must be a multiple of 256.");
-                    break;
-                case 2:
-                    dd.add(getName() + "(key_size, count) create count RSA keys with the given key_size > 1024.");
-                    dd.add("Note that the index of each key is its kid or key id");
+                    dd.add("If a stem of parameters is passed, it is of the form");
+                    dd.add("  {'type' :'RSA'|'EC, 'alg':algorithm, 'length':rsa key length, 'curve' : elliptic curve.}");
+                    dd.add("E.g.");
+                    dd.add("    " + getName() + "({'type':'EC':'curve':'P-256', 'alg':'ES256'})");
+                    dd.add("would use the curve P-256 with the ES256 algorithm to create an ellitpci curve key.");
                     break;
             }
-            dd.add("One hears of 'RSA key pairs', though in point of fact, the public bits of a key");
-            dd.add("are always part of it, hence we do not explicitly create a public key, just an RSA key");
+            dd.add("One hears of 'key pairs', though in point of fact, the public bits of a key");
+            dd.add("are always part of it, hence we do not explicitly create a public key, just a key");
             dd.add("from which you may extract a public key with  " + GET_PUBLIC_KEY_NAME);
-            dd.add("Note that the algorithm (for consumers of the key) defaults to RS256.");
+            dd.add("Note that for RSA keys, the algorithm (for consumers of the key) defaults to RS256.");
             return dd;
         }
     }
@@ -140,7 +176,7 @@ public class Crypto implements QDLModuleMetaClass {
                 throw new IllegalArgumentException(getName() + " requires a file name as its first argument");
             }
             String out = QDLFileUtil.readTextFile(state, (String) objects[0]);
-            JSONWebKeys jsonWebKeys = JSONWebKeyUtil.fromJSON(out);
+            JSONWebKeys jsonWebKeys = getJwkUtil().fromJSON(out);
             QDLStem keys = new QDLStem();
             if (jsonWebKeys.size() == 1) {
                 return webKeyToStem(jsonWebKeys.getDefault());
@@ -205,7 +241,7 @@ public class Crypto implements QDLModuleMetaClass {
                     array.add(currentStem.toJSON());
                 }
             }
-            jsonObject.put(JSONWebKeyUtil.KEYS, array);
+            jsonObject.put(JWKUtil2.KEYS, array);
             QDLFileUtil.writeTextFile(state, filePath, jsonObject.toString(2));
             return Boolean.TRUE;
         }
@@ -253,7 +289,7 @@ public class Crypto implements QDLModuleMetaClass {
             }
             QDLStem inStem = (QDLStem) objects[0];
             if (isSingleKey(inStem)) {
-                JSONWebKey jsonWebKey = JSONWebKeyUtil.getJsonWebKey((JSONObject) inStem.toJSON());
+                JSONWebKey jsonWebKey = getJwkUtil().getJsonWebKey((JSONObject) inStem.toJSON());
                 JSONWebKey pKey = JSONWebKeyUtil.makePublic(jsonWebKey);
                 QDLStem outStem = new QDLStem();
                 outStem.fromJSON(JSONWebKeyUtil.toJSON(pKey));
@@ -263,7 +299,7 @@ public class Crypto implements QDLModuleMetaClass {
             // try to process each entry as a separate key
             for (Object kk : inStem.keySet()) {
                 QDLStem currentStem = (kk instanceof String) ? inStem.getStem((String) kk) : inStem.getStem((Long) kk);
-                JSONWebKey jsonWebKey = JSONWebKeyUtil.getJsonWebKey((JSONObject) currentStem.toJSON());
+                JSONWebKey jsonWebKey = getJwkUtil().getJsonWebKey((JSONObject) currentStem.toJSON());
                 JSONWebKey pKey = JSONWebKeyUtil.makePublic(jsonWebKey);
                 QDLStem tempStem = new QDLStem();
                 tempStem.fromJSON(JSONWebKeyUtil.toJSON(pKey));
@@ -289,10 +325,10 @@ public class Crypto implements QDLModuleMetaClass {
         }
     }
 
-    public static final String ENCRYPT_NAME = "rsa_encrypt";
+    public static final String ENCRYPT_NAME = "encrypt";
 
 
-    public class RSAEncrypt implements QDLFunction {
+    public class Encrypt implements QDLFunction {
         @Override
         public String getName() {
             return ENCRYPT_NAME;
@@ -347,12 +383,12 @@ public class Crypto implements QDLModuleMetaClass {
                         if (jsonWebKey.privateKey == null) {
                             throw new IllegalArgumentException("This is not a private key");
                         }
-                        result = DecryptUtils.encryptPrivate(jsonWebKey.privateKey, inString);
+                        result = DecryptUtils.encryptPrivate(jsonWebKey.type,jsonWebKey.privateKey, inString);
                     } else {
                         if (jsonWebKey.publicKey == null) {
                             throw new IllegalArgumentException("Invalid public key");
                         }
-                        result = DecryptUtils.encryptPublic(jsonWebKey.publicKey, inString);
+                        result = DecryptUtils.encryptPublic(jsonWebKey.type,jsonWebKey.publicKey, inString);
                     }
                     out.putLongOrString(key, result);
                 } catch (GeneralSecurityException gsx) {
@@ -401,9 +437,9 @@ public class Crypto implements QDLModuleMetaClass {
         }
     }
 
-    public static final String DECRYPT_NAME = "rsa_decrypt";
+    public static final String DECRYPT_NAME = "decrypt";
 
-    public class RSADecrypt implements QDLFunction {
+    public class Decrypt implements QDLFunction {
         @Override
         public String getName() {
             return DECRYPT_NAME;
@@ -458,12 +494,12 @@ public class Crypto implements QDLModuleMetaClass {
                         if (jsonWebKey.privateKey == null) {
                             throw new IllegalArgumentException("This is not a private key");
                         }
-                        result = DecryptUtils.decryptPrivate(jsonWebKey.privateKey, inString);
+                            result = DecryptUtils.decryptPrivate(jsonWebKey.type ,jsonWebKey.privateKey, inString);
                     } else {
                         if (jsonWebKey.publicKey == null) {
                             throw new IllegalArgumentException("Invalid public key");
                         }
-                        result = DecryptUtils.decryptPublic(jsonWebKey.publicKey, inString);
+                        result = DecryptUtils.decryptPublic(jsonWebKey.type,  jsonWebKey.publicKey, inString);
                     }
                     out.putLongOrString(key, result);
                 } catch (GeneralSecurityException | UnsupportedEncodingException gsx) {
@@ -515,14 +551,7 @@ public class Crypto implements QDLModuleMetaClass {
     }
 
     protected JSONWebKey getKeys(QDLStem keys) {
-        try {
-            return JSONWebKeyUtil.getJsonWebKey(keys.toJSON().toString());
-        } catch (GeneralSecurityException e) {
-            if (DebugUtil.isEnabled()) {
-                e.printStackTrace();
-            }
-            throw new IllegalArgumentException("error creating keys:" + e.getMessage(), e);
-        }
+        return JSONWebKeyUtil.getJsonWebKey(keys.toJSON().toString());
     }
 
     protected QDLStem webKeyToStem(JSONWebKey jsonWebKey) {
@@ -660,7 +689,7 @@ public class Crypto implements QDLModuleMetaClass {
      * @return
      */
     protected boolean isSingleKey(QDLStem stem) {
-        return stem.containsKey(JSONWebKeyUtil.KEY_TYPE);
+        return stem.containsKey(JWKUtil2.KEY_TYPE);
     }
 
 

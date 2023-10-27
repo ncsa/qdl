@@ -140,12 +140,10 @@ public class HTTPClient implements QDLModuleMetaClass {
         String actualHost = host;
         QDLStem parameters = null;
         if (objects.length == 2) {
-            if(!(objects[0] instanceof String)){
-                 throw new IllegalArgumentException("uri_path must be a string ");
+            if (!(objects[0] instanceof String)) {
+                throw new IllegalArgumentException("uri_path must be a string ");
             }
-            String uri_path = (String)objects[0];
-            // make sure the path doesn't have extra /'s
-            actualHost = actualHost + (actualHost.endsWith("/") ? "" : "/") + (uri_path.startsWith("/")?uri_path.substring(1):uri_path);
+            actualHost = getActualHost((String) objects[0]);
             parameters = (QDLStem) objects[1];
         }
         if (objects.length == 0) {
@@ -155,7 +153,7 @@ public class HTTPClient implements QDLModuleMetaClass {
             parameters = (QDLStem) objects[0];
         }
         // make the parameters.
-        if(parameters == null){
+        if (parameters == null) {
             return actualHost;
         }
         String p = parameters.size() == 0 ? "" : "?";
@@ -191,7 +189,7 @@ public class HTTPClient implements QDLModuleMetaClass {
                 if (objects[0] instanceof String) {
                     host = (String) objects[0];
                 } else {
-                    throw new IllegalArgumentException("the argument to " + getName() + " must be a string, not a " + (objects[0]==null?"null":objects[0].getClass().getSimpleName()));
+                    throw new IllegalArgumentException("the argument to " + getName() + " must be a string, not a " + (objects[0] == null ? "null" : objects[0].getClass().getSimpleName()));
                 }
             }
             return oldHost == null ? "" : oldHost;
@@ -649,12 +647,14 @@ public class HTTPClient implements QDLModuleMetaClass {
         String contentType = "Content-Type";
         boolean isStringArg = stringPayload != null;
         String body = "";
-        String actualHost = host;
+        String actualHost = getActualHost(uriPath);
+/*
         if (0 < uriPath.length()) {
             actualHost = actualHost + (actualHost.endsWith("/") ? "" : "/");
             // Fixes https://github.com/ncsa/qdl/issues/35
-            actualHost = actualHost + (uriPath.startsWith("/")?uriPath.substring(1):uriPath);
+            actualHost = actualHost + (uriPath.startsWith("/") ? uriPath.substring(1) : uriPath);
         }
+*/
         HttpEntityEnclosingRequest request;
         if (isPost) {
             request = new HttpPost(actualHost);
@@ -903,5 +903,21 @@ public class HTTPClient implements QDLModuleMetaClass {
             dd.add("This includes types like text, html, java, javascript etc.");
             return dd;
         }
+    }
+
+    /**
+     * Given a uriPath, return the actual path to the service. This does the nitpicky things
+     * to create the path.
+     * @param uriPath
+     * @return
+     */
+    protected String getActualHost(String uriPath) {
+        if (StringUtils.isTrivial(uriPath)) {
+            return host;
+        }
+        String actualHost = host;
+        actualHost = actualHost + (actualHost.endsWith("/") ? "" : "/");
+        // Fixes https://github.com/ncsa/qdl/issues/35
+        return actualHost + (uriPath.startsWith("/") ? uriPath.substring(1) : uriPath);
     }
 }

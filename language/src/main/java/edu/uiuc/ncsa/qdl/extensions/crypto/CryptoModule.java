@@ -26,9 +26,9 @@ public class CryptoModule extends JavaModule {
         Crypto crypto = new Crypto();
         funcs.add(crypto.new ImportJWKS());
         funcs.add(crypto.new ExportJWKS());
-        funcs.add(crypto.new RSAEncrypt());
-        funcs.add(crypto.new RSADecrypt());
-        funcs.add(crypto.new RSACreateKey());
+        funcs.add(crypto.new Encrypt());
+        funcs.add(crypto.new Decrypt());
+        funcs.add(crypto.new CreateKey());
         funcs.add(crypto.new GetPublicKey());
         funcs.add(crypto.new SymmetricEncrypt());
         funcs.add(crypto.new SymmetricDecrypt());
@@ -50,7 +50,7 @@ public class CryptoModule extends JavaModule {
             dd.add("and encrypt both strings and stems of strings using these or symmetric keys.");
             dd.add("Note that if you de/en-crypt with one RSA key, you en/de-crypt with the other:");
             dd.add("E.g.");
-            dd.add("key. := " + Crypto.RSA_CREATE_KEY_NAME + "(2048); // create 2048 bit key pair");
+            dd.add("key. := " + Crypto.CREATE_KEY_NAME + "(2048); // create 2048 bit key pair");
             dd.add("  " + Crypto.DECRYPT_NAME + "(key., " + Crypto.ENCRYPT_NAME + "(key., ['a','b']))\n" +
                     "[a,b]");
             dd.add("\nhere a stem of two strings are encrypted with a key");
