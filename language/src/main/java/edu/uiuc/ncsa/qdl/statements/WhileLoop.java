@@ -362,7 +362,16 @@ public class WhileLoop implements Statement {
             throw new IllegalArgumentException("Error: The command requires a variable ");
 
         }
-
+      /* Test -- oops should never print.
+      key_set := {'a','b','c','d'};
+      while[k∈key_set]
+      do[
+         if[k=='b'][continue();];
+         if[k=='b']
+         then[say('oops');]
+         else[say('ok');];
+      ];
+       */
         if (isSet) {
             for (Object element : qdlSet) {
                 localState.getVStack().localPut(new VThing(new XKey(loopVar), element));
@@ -373,6 +382,7 @@ public class WhileLoop implements Statement {
                         return Boolean.TRUE;
                     } catch (ContinueException cx) {
                         // just continue.
+                        break;
                     } catch (ReturnException rx) {
                         return Boolean.TRUE;
                     }

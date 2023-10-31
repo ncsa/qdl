@@ -415,7 +415,7 @@ public class Crypto implements QDLModuleMetaClass {
                     dd.add("   or use the public key if false. Default is true");
                     break;
             }
-            dd.add("key. - the RSA key to use");
+            dd.add("key. - the RSA key to use. Only RSA keys are supported at this time.");
             dd.add("arg|arg. - a string or a stem of strings");
             if (argCount == 3) {
 
@@ -523,7 +523,7 @@ public class Crypto implements QDLModuleMetaClass {
                     doxx.add(getName() + "(key., arg|arg., use_private) - decrypt the argument using the private key if use_private == true");
             }
             if (doxx.isEmpty()) {
-                doxx.add("key. - the RSA key you want to use");
+                doxx.add("key. - the RSA key you want to use. Only RSA keys are supported at this time.");
                 doxx.add("arg | arg. - the string or stem of strings you want to decrypt");
                 if (argCount == 3) {
                     doxx.add("use_private - if true, decrypt using the private key. Note that this implies " + ENCRYPT_NAME);

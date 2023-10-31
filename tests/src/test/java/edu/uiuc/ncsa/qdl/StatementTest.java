@@ -99,7 +99,8 @@ public class StatementTest extends AbstractQDLTester {
 
     public void testLoopWithTryAndContinue() throws Throwable {
         StringBuffer script = new StringBuffer();
-         addLine(script, "        i := 0;\n" +
+         addLine(script,
+                 "        i := 0;\n" +
                  "        while[\n" +
                  "          x∈[;5]\n" +
                  "        ][\n" +
@@ -114,7 +115,39 @@ public class StatementTest extends AbstractQDLTester {
         interpreter.execute(script.toString());
         assert getLongValue("i", state).equals(3L) : "continue() inside try..catch inside loop did not execute properly.";
     }
+    public void testLoopWithTryAndContinue2() throws Throwable {
+        StringBuffer script = new StringBuffer();
+         addLine(script,
+        "ok := true;                  "
+        +"i := 0;                      "
+        +"key_set := {'a','b','c','d'};"      // The test is that the continue statement
+        +"while[k∈key_set]             "      // skips the rest of the loop.
+        +"do[                          "      //  If it does not, then ok is reset
+        +"   if[k=='b'][continue();];  "      //  to false and the test fails
+        +"   if[k=='b']                "      // The i variable is just to do something.
+        +"   then[ok:=false;]          "
+        +"   else[i++;];               "
+        +"];                           "
+         );
+        State state = testUtils.getNewState();
 
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "continue() inside conditional did not execute properly.";
+    }
+
+     /*
+      ok := true;
+      i := 0;
+      key_set := {'a','b','c','d'};
+      while[k∈key_set]
+      do[
+         if[k=='b'][continue();];
+         if[k=='b']
+         then[ok:=false;]
+         else[i++;];
+      ];
+      */
     /*
     msg := 'fail';
     try[

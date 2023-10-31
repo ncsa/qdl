@@ -2306,7 +2306,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 }
                 throw qe;
             } catch (Throwable t) {
-                QDLExceptionWithTrace qq = new QDLExceptionWithTrace("in resource '" + resourceName + "'", t, polyad);
+                QDLExceptionWithTrace qq = new QDLExceptionWithTrace("in resource '" + resourceName + "':" + t.getMessage(), t, polyad);
                 qq.setScript(true);
                 qq.setScriptName(resourceName);
                 throw qq;
