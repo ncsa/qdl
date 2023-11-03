@@ -528,53 +528,68 @@ public class StringFunctionTests extends AbstractQDLTester {
         assert polyad.getResult().equals(expectedValue);
     }
 
-
-    public void testStemStringReplace() throws Exception {
+    public void testStringReplace() throws Throwable {
         State state = testUtils.getNewState();
-        VStack vStack = state.getVStack();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok := 'xxcyy' == replace('abcde',{'ab':'xx','de':'yy'});");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state);
+    }
 
-        QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "One Ring to rule them all");
-        sourceStem.put("find", "One Ring to find them");
-        sourceStem.put("bring", "One Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
-        QDLStem targetStem = new QDLStem();
-        targetStem.put("all", "all");
-        targetStem.put("One", "One");
-        targetStem.put("bind", "darkness");
-        targetStem.put("7", "seven");
-        vStack.put(new VThing(new XKey("snippets."), targetStem));
-        vStack.put(new VThing(new XKey("sourceStem."), sourceStem));
-        vStack.put(new VThing(new XKey("targetStem."), targetStem));
+    public void testStringReplace2() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "out. := replace(['abccc','pqr','wwdede'],{'ab':'xx','de':'yy'});");
+        addLine(script, "ok := reduce(@&&,['xxccc','pqr','wwyyyy']==out.);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state);
+    }
 
-        Polyad polyad = new Polyad(StringEvaluator.REPLACE);
-        VariableNode source = new VariableNode("sourceStem.");
-        VariableNode old = new VariableNode("targetStem.");
-        ConstantNode newValue = new ConstantNode("two", Constant.STRING_TYPE);
-        polyad.addArgument(source);
-        polyad.addArgument(old);
-        polyad.addArgument(newValue);
+    /**
+     * Tests replace with a regex that removes duplicate spaces.
+     *
+     * @throws Throwable
+     */
+    public void testStringReplaceWithRegex() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok := 'there are too many spaces' == replace('there   are too many   spaces', ' {2,}', ' ',true);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state);
+    }
 
-        polyad.evaluate(state);
-        String expectedValue = "and in the two bind them";
-        QDLStem outStem = (QDLStem) polyad.getResult();
-        assert outStem.getString("bind").equals(expectedValue);
+    /**
+     * Replace test to show subsetting. Only the corresponding keys of the stems ('bind' -- there is one) are
+     * processed.
+     * @throws Throwable
+     */
+    public void testStringReplace3() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        String source = "s.:={'bind':'and in the darkness bind them', 'bring':'One Ring to bring them all', 'find':'One Ring to find them', 'rule':'One Ring to rule them all'};";
+        String target = "t.:={7:'seven', 'One':'One', 'all':'All', 'bind':'darkness'};";
+        addLine(script, source);
+        addLine(script, target);
+
+        addLine(script, "out. :=  replace(s., t., 'foo');");
+        addLine(script, "ok := out.'bind' == 'and in the foo bind them';");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state);
     }
 
 
-    public void testInsertStringString() throws Exception {
-        State state = testUtils.getNewState();
 
-        Polyad polyad = new Polyad(StringEvaluator.INSERT);
-        ConstantNode left = new ConstantNode("abcdef", Constant.STRING_TYPE);
-        ConstantNode right = new ConstantNode("GAAH!", Constant.STRING_TYPE);
-        ConstantNode index = new ConstantNode(new Long(3L), Constant.LONG_TYPE);
-        String expectedResult = "abcGAAH!def";
-        polyad.addArgument(left);
-        polyad.addArgument(right);
-        polyad.addArgument(index);
-        polyad.evaluate(state);
-        assert polyad.getResult().equals(expectedResult);
+    public void testInsertStringString() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok := 'abcGAAH!def' == insert('abcdef','GAAH!',3);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state);
     }
 
     /**
@@ -814,11 +829,11 @@ public class StringFunctionTests extends AbstractQDLTester {
         //input_form(@encode∀[a,[0,1,16,32,64]])
         addLine(script, "v. := ['foo$20$26$26$2Abar$20baz$2E','foo%20%26%26*bar%20baz.','666f6f2026262a6261722062617a2e','MZXW6IBGEYVGEYLSEBRGC6RO','Zm9vICYmKmJhciBiYXou'];");
         addLine(script, "f(x,k)->encode(a,k)==x && decode(encode(a,k),k) == a;");
-        addLine(script,"ok0 := f(v.0, 0);");
-        addLine(script,"ok1 := f(v.1, 1);");
-        addLine(script,"ok16 := f(v.2, 16);");
-        addLine(script,"ok32 := f(v.3, 32);");
-        addLine(script,"ok64 := f(v.4, 64);");
+        addLine(script, "ok0 := f(v.0, 0);");
+        addLine(script, "ok1 := f(v.1, 1);");
+        addLine(script, "ok16 := f(v.2, 16);");
+        addLine(script, "ok32 := f(v.3, 32);");
+        addLine(script, "ok64 := f(v.4, 64);");
 /*        addLine(script, "ok1 ≔ encode(a,0) == v.0;");
         addLine(script, "ok4 ≔ decode(v.0, 0) == a;");
         addLine(script, "ok2 ≔ encode(a, 1) == v.1;"); // URL encode

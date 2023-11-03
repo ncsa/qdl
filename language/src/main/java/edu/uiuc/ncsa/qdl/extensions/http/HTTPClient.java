@@ -14,6 +14,8 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -23,6 +25,7 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
@@ -437,7 +440,10 @@ public class HTTPClient implements QDLModuleMetaClass {
                     throw new IllegalStateException("unable to create insecure http client: '" + ex.getMessage() + "'", ex);
                 }
             } else {
-                httpClient = HttpClients.createDefault();
+                RequestConfig.Builder requestBuilder = RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD);
+                HttpClientBuilder clientbuilder = HttpClients.custom();
+                clientbuilder.setDefaultRequestConfig(requestBuilder.build());
+                httpClient = clientbuilder.build();
             }
             return true;
         }
@@ -484,10 +490,13 @@ public class HTTPClient implements QDLModuleMetaClass {
                             .register("https", sslsf)
                             .register("http", new PlainConnectionSocketFactory())
                             .build();
+            RequestConfig.Builder requestBuilder = RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD);
+            HttpClientBuilder clientbuilder = HttpClients.custom();
+            clientbuilder.setDefaultRequestConfig(requestBuilder.build());
 
             BasicHttpClientConnectionManager connectionManager =
                     new BasicHttpClientConnectionManager(socketFactoryRegistry);
-            CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf)
+            CloseableHttpClient httpClient = clientbuilder.setSSLSocketFactory(sslsf)
                     .setConnectionManager(connectionManager).build();
             return httpClient;
         }

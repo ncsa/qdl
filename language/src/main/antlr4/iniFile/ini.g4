@@ -56,7 +56,7 @@ grammar ini;
 */
           ini : (section | EOL)*;
       section : sectionheader line* ;
-sectionheader : '[' Identifier ']' EOL;
+sectionheader : '[' Identifier  ']' EOL; // N.B. trying to get an integer id fails in the parser. Fix?
          line : (Identifier (Assign entries) EOL) | EOL ;
        entries: entry (',' entry?)*;
         entry : ConstantKeywords | Number | String;

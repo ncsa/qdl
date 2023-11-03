@@ -62,30 +62,29 @@ public class IniListenerImpl implements iniListener {
 
     @Override
     public void enterSectionheader(iniParser.SectionheaderContext ctx) {
-
+        currentSectionHeader = null; // Don't just leave this from the last one.
     }
 
     @Override
     public void exitSectionheader(iniParser.SectionheaderContext ctx) {
         checkLexer(ctx);
-        
         currentSectionHeader = ctx.Identifier().getText();
         if (currentSectionHeader.contains(".")) {
             StringTokenizer tokenizer = new StringTokenizer(currentSectionHeader, ".");
             QDLStem currentStem1 = output;
             while (tokenizer.hasMoreTokens()) {
                 String nextToken = tokenizer.nextToken();
-                if(!currentStem1.containsKey(nextToken)){
+                if (!currentStem1.containsKey(nextToken)) {
                     QDLStem nextStem = new QDLStem();
                     currentStem1.put(nextToken, nextStem);
                     currentStem1 = nextStem;
-                }else{
+                } else {
                     currentStem1 = currentStem1.getStem(nextToken);
                 }
             }
             //output = currentStem1;
             currentStem = currentStem1;
-        }else {
+        } else {
             output.put(currentSectionHeader, currentStem);
         }
 
@@ -194,8 +193,10 @@ public class IniListenerImpl implements iniListener {
     public void exitEveryRule(ParserRuleContext parserRuleContext) {
 
     }
+
     /**
      * First cut of catching lexer exceptions and handling them
+     *
      * @param pre
      */
     protected void checkLexer(ParserRuleContext pre) {

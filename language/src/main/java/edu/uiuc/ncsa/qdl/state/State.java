@@ -8,6 +8,7 @@ import edu.uiuc.ncsa.qdl.extensions.crypto.CryptoLoader;
 import edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader;
 import edu.uiuc.ncsa.qdl.extensions.http.QDLHTTPLoader;
 import edu.uiuc.ncsa.qdl.extensions.inputLine.QDLCLIToolsLoader;
+import edu.uiuc.ncsa.qdl.extensions.mail.QDLMailLoader;
 import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.functions.FTable;
@@ -317,7 +318,7 @@ public class State extends FunctionState implements QDLConstants {
     }
 
 
-    protected QDLStem getLibMap() {
+    public QDLStem getLibMap() {
         QDLStem map = new QDLStem();
         map.put("description", "System tools for http, conversions and other very useful things.");
         map.put("http", QDLHTTPLoader.class.getCanonicalName());
@@ -325,6 +326,7 @@ public class State extends FunctionState implements QDLConstants {
         map.put("crypto", CryptoLoader.class.getCanonicalName());
         map.put("convert", QDLConvertLoader.class.getCanonicalName());
         map.put("cli", QDLCLIToolsLoader.class.getCanonicalName());
+        map.put("mail", QDLMailLoader.class.getCanonicalName());
         return map;
     }
 

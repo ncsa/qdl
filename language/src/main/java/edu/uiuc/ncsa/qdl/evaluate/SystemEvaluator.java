@@ -557,7 +557,12 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     /**
      * This is just module_import(module_load(x, 'java')). It happens so much we need an idiom.
-     *
+     * this will try to look up the argument in the system lib table, so you can do things like
+     * <pre>
+     *     jload('http')
+     * http
+     * </pre>
+     *  and get the entire module loaded.
      * @param polyad
      * @param state
      */
@@ -568,8 +573,12 @@ public class SystemEvaluator extends AbstractEvaluator {
             return;
         }
         Object arg = polyad.evalArg(0, state);
+        String possibleName = arg.toString();
+        if(state.getLibMap().containsKey(possibleName)){
+            possibleName = state.getLibMap().getString(possibleName);
+        }
         Polyad module_load = new Polyad(MODULE_LOAD);
-        module_load.addArgument(new ConstantNode(arg));
+        module_load.addArgument(new ConstantNode(possibleName));
         module_load.addArgument(new ConstantNode(MODULE_TYPE_JAVA));
         module_load.evaluate(state);
         Polyad module_import = new Polyad(MODULE_IMPORT);

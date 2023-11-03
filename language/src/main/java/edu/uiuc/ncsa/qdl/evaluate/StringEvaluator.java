@@ -4,9 +4,9 @@ import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.Statement;
-import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLSet;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 
 import java.net.URI;
@@ -725,7 +725,7 @@ public class StringEvaluator extends AbstractEvaluator {
                     }
                     caseSensitive = (Boolean) objects[2];
                 }
-                    QDLStem outStem = new QDLStem();
+                QDLStem outStem = new QDLStem();
                 if (areAllStrings(objects[0], objects[1])) {
                     String haystack = (String) objects[0];
                     String needle = (String) objects[1];
@@ -737,15 +737,15 @@ public class StringEvaluator extends AbstractEvaluator {
                     int index = 0; // index in resulting list
                     outStem.put(index++, new Long(indexOf));
                     indexOf = indexOf + needle.length();
-                    while(-1 < indexOf){
+                    while (-1 < indexOf) {
                         indexOf = haystack.indexOf(needle, indexOf);
-                        if(-1 < indexOf){
+                        if (-1 < indexOf) {
                             outStem.put(index++, new Long(indexOf));
                             indexOf = indexOf + needle.length();
                         }
                     }
                     //pos = new Long(objects[0].toString().indexOf(objects[1].toString()));
-                }else{
+                } else {
                     outStem.put(0, -1L); // non-strings are never found. Default is always -1.
                 }
                 r.result = outStem;
@@ -756,10 +756,11 @@ public class StringEvaluator extends AbstractEvaluator {
         };
         process2(polyad, pointer, INDEX_OF, state, true);
     }
-     /*
-       subset((x)->index_of(x, 'x_').0==0, z.)
-  index_of(z., 'x_')
-      */
+
+    /*
+      subset((x)->index_of(x, 'x_').0==0, z.)
+ index_of(z., 'x_')
+     */
     protected void doContains(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{2, 3});
@@ -840,32 +841,39 @@ public class StringEvaluator extends AbstractEvaluator {
         process1(polyad, pointer, isLower ? TO_LOWER : TO_UPPER, state);
     }
 
-    protected void doReplace(Polyad polyad, State state) {
-        if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{3, 4});
-            polyad.setEvaluated(true);
-            return;
-        }
-        if (polyad.getArgCount() < 3) {
-            Statement s = polyad;
-            switch (polyad.getArgCount()) {
-                case 0:
-                    s = polyad;
-                    break;
-                case 1:
-                    s = polyad.getArgAt(0);
-                    break;
-                case 2:
-                    s = polyad.getArgAt(1);
-                    break;
+    protected QDLStem doReplace(Polyad polyad, QDLStem inStem, QDLStem replacements, boolean isRegex, State state) {
+        QDLStem outStem = new QDLStem();
+        for (Object key : inStem.keySet()) {
+            Object o = inStem.get(key);
+            if (o instanceof String) {
+                outStem.putLongOrString(key, doStringReplace((String) o, replacements, isRegex));
+            } else {
+                if (o instanceof QDLStem) {
+                    outStem.putLongOrString(key, doReplace(polyad, (QDLStem) o, replacements, isRegex, state));
+                } else {
+                    outStem.putLongOrString(key, o);// pass it back unchanged
+                }
             }
-            throw new MissingArgException(REPLACE + " requires at least 3 arguments", s);
         }
+        return outStem;
+    }
 
-        if (4 < polyad.getArgCount()) {
-            throw new ExtraArgException(REPLACE + " requires at most 4 arguments", polyad.getArgAt(4));
+    protected String doStringReplace(String s, QDLStem replacements, boolean isRegex) {
+        for (Object key : replacements.keySet()) {
+            if (key instanceof Long) {
+                continue;
+            }
+            if (isRegex) {
+                s = s.replaceAll((String) key, replacements.getString((String) key));
+            } else {
+                s = s.replace((String) key, replacements.getString((String) key));
+            }
         }
+        return s;
+    }
 
+    protected void doOldReplace(Polyad polyad, State state) {
+        // Keep since this acts like every other QDL function
         fPointer pointer = new fPointer() {
             @Override
             public fpResult process(Object... objects) {
@@ -873,7 +881,7 @@ public class StringEvaluator extends AbstractEvaluator {
                 boolean doregex = false;
                 if (objects.length == 4) {
                     if (!isBoolean(objects[3])) {
-                        throw new BadArgException("error. replace requires a boolean as its 4th argument", polyad.getArgAt(3));
+                        throw new BadArgException("replace requires a boolean as its 4th argument", polyad.getArgAt(3));
                     }
                     doregex = (Boolean) objects[3];
                 }
@@ -892,7 +900,66 @@ public class StringEvaluator extends AbstractEvaluator {
             }
         };
         process3(polyad, pointer, REPLACE, state, true);
+
     }
+
+    protected void doReplace(Polyad polyad, State state) {
+        if (polyad.isSizeQuery()) {
+            polyad.setResult(new int[]{2, 3, 4});
+            polyad.setEvaluated(true);
+            return;
+        }
+        if (polyad.getArgCount() == 4) {
+            doOldReplace(polyad, state);
+            return;
+        }
+        boolean isRegex = false;
+        boolean hasArg3 = false;
+        if (polyad.getArgCount() == 3) {
+            Object r2 = polyad.evalArg(2, state);
+            if (!(r2 instanceof Boolean)) {
+                doOldReplace(polyad, state);
+                return;
+            }
+            isRegex = (Boolean) r2;
+            hasArg3 = true;
+        }
+        Object r1 = polyad.evalArg(1, state);
+        if (!Constant.isStem(r1)) {
+            throw new BadArgException((hasArg3?"triadic":"dyadic") + " replace requires a stem as its second argument", polyad.getArgAt(1));
+        }
+        QDLStem inStem;
+        boolean isScalar = false;
+        Object r = polyad.evalArg(0, state);
+        if (r instanceof String) {
+            inStem = new QDLStem();
+            inStem.put(0L, r);
+            isScalar = true;
+        } else {
+            if (r instanceof QDLStem) {
+                isScalar = false;
+                inStem = (QDLStem) r;
+            } else {
+                // Not a string or a stem, so just return it.
+                polyad.setEvaluated(true);
+                polyad.setResult(r);
+                polyad.setResultType(Constant.getType(r));
+                return;
+            }
+        }
+
+        QDLStem outStem = doReplace(polyad, inStem, (QDLStem) r1, isRegex, state);
+        polyad.setEvaluated(true);
+        if (isScalar) {
+            polyad.setResult(outStem.get(0L));
+            polyad.setResultType(Constant.getType(polyad.getResult()));
+        } else {
+            polyad.setResult(outStem);
+            polyad.setResultType(Constant.STEM_TYPE);
+        }
+        return;
+    }
+
 
     protected void doInsert(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
