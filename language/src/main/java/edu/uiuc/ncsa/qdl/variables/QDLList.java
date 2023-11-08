@@ -647,6 +647,12 @@ subset(b., 3, 6)
         return stemKeys;
     }
 
+    /**
+     * Add every element in a collection to this list. It will <b>NOT</b> attempt to convert values, it
+     * just appends them.
+     * @param c
+     * @return
+     */
     @Override
     public boolean addAll(Collection c) {
 

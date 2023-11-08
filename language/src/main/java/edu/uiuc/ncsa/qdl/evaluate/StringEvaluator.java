@@ -841,15 +841,27 @@ public class StringEvaluator extends AbstractEvaluator {
         process1(polyad, pointer, isLower ? TO_LOWER : TO_UPPER, state);
     }
 
-    protected QDLStem doReplace(Polyad polyad, QDLStem inStem, QDLStem replacements, boolean isRegex, State state) {
+    /**
+     * Do replace where there is an arbitrary stem and a stem of replacements and regexes
+     * The keys for the replacements and regexes correspond, and the replacements happen
+     * to <i><b>every</b></i> elements if inStem, the target of the replacement.
+     *
+     * @param polyad
+     * @param inStem
+     * @param replacements
+     * @param regexStem
+     * @param state
+     * @return
+     */
+    protected QDLStem doReplace(Polyad polyad, QDLStem inStem, QDLStem replacements, QDLStem regexStem, State state) {
         QDLStem outStem = new QDLStem();
         for (Object key : inStem.keySet()) {
             Object o = inStem.get(key);
             if (o instanceof String) {
-                outStem.putLongOrString(key, doStringReplace((String) o, replacements, isRegex));
+                outStem.putLongOrString(key, doStringReplace((String) o, replacements, regexStem));
             } else {
                 if (o instanceof QDLStem) {
-                    outStem.putLongOrString(key, doReplace(polyad, (QDLStem) o, replacements, isRegex, state));
+                    outStem.putLongOrString(key, doReplace(polyad, (QDLStem) o, replacements, regexStem, state));
                 } else {
                     outStem.putLongOrString(key, o);// pass it back unchanged
                 }
@@ -858,10 +870,17 @@ public class StringEvaluator extends AbstractEvaluator {
         return outStem;
     }
 
-    protected String doStringReplace(String s, QDLStem replacements, boolean isRegex) {
+    protected String doStringReplace(String s, QDLStem replacements, QDLStem regexStem) {
         for (Object key : replacements.keySet()) {
             if (key instanceof Long) {
                 continue;
+            }
+            boolean isRegex = false; // default
+            if (regexStem.containsKey(key)) {
+                Object r = regexStem.get(key);
+                if (r instanceof Boolean) {
+                    isRegex = (Boolean) r;
+                }
             }
             if (isRegex) {
                 s = s.replaceAll((String) key, replacements.getString((String) key));
@@ -909,24 +928,39 @@ public class StringEvaluator extends AbstractEvaluator {
             polyad.setEvaluated(true);
             return;
         }
-        if (polyad.getArgCount() == 4) {
+        Object r1 = polyad.evalArg(1, state);
+        // Old version, replace(a., b., c.) had b. and c. as lists.
+        // new version allows for b. to be a general stem. If c. is present, then
+        // it is assumed to be a stem of booleans with true meaning to do regexes
+        if (r1 instanceof String || polyad.getArgCount() == 4) {
             doOldReplace(polyad, state);
             return;
         }
-        boolean isRegex = false;
-        boolean hasArg3 = false;
-        if (polyad.getArgCount() == 3) {
+
+        QDLStem arg1 = getReplaceArg1(polyad, state, r1);
+
+
+        // So we are now in the new case that the second argument should be a stem with
+        // keys that are old values.
+
+        // at most 3 arguments
+        QDLStem regexStem;
+        if (polyad.getArgCount() == 2) {
+            regexStem = new QDLStem();
+            regexStem.setDefaultValue(Boolean.FALSE);
+        } else {
+            // arg count can only be 3 if not 2
             Object r2 = polyad.evalArg(2, state);
-            if (!(r2 instanceof Boolean)) {
-                doOldReplace(polyad, state);
-                return;
+            if (r2 instanceof Boolean) {
+                regexStem = new QDLStem();
+                regexStem.setDefaultValue(r2);
+            } else {
+                if (r2 instanceof QDLStem) {
+                    regexStem = (QDLStem) r2;
+                } else {
+                    throw new BadArgException(REPLACE + " requires a boolean or stem of them as the final argument", polyad.getArgAt(2));
+                }
             }
-            isRegex = (Boolean) r2;
-            hasArg3 = true;
-        }
-        Object r1 = polyad.evalArg(1, state);
-        if (!Constant.isStem(r1)) {
-            throw new BadArgException((hasArg3?"triadic":"dyadic") + " replace requires a stem as its second argument", polyad.getArgAt(1));
         }
         QDLStem inStem;
         boolean isScalar = false;
@@ -948,7 +982,7 @@ public class StringEvaluator extends AbstractEvaluator {
             }
         }
 
-        QDLStem outStem = doReplace(polyad, inStem, (QDLStem) r1, isRegex, state);
+        QDLStem outStem = doReplace(polyad, inStem, arg1, regexStem, state);
         polyad.setEvaluated(true);
         if (isScalar) {
             polyad.setResult(outStem.get(0L));
@@ -958,6 +992,57 @@ public class StringEvaluator extends AbstractEvaluator {
             polyad.setResultType(Constant.STEM_TYPE);
         }
         return;
+    }
+
+    /**
+     * The logic of the replace calls for possibly lists or a stem and it all collides with arg 1.
+     * This keeps all the logic for this separate.
+     * @param polyad
+     * @param state
+     * @param r1
+     * @return
+     */
+    private  QDLStem getReplaceArg1(Polyad polyad, State state, Object r1) {
+        QDLStem arg1 = null;
+        if (r1 instanceof QDLStem) {
+            if (((QDLStem) r1).isList()) {
+                QDLStem a = (QDLStem) r1;
+                if (polyad.getArgCount() == 2) {
+                    throw new BadArgException("Missing argument. If you supply a list of replacements, you need a list of new values", polyad.getArgAt(1));
+                }
+                // case is that r1 is a list.
+                Object r2 = polyad.evalArg(2, state);
+                QDLStem b;
+                if (r2 instanceof String) {
+                    b = new QDLStem();
+                    b.setDefaultValue(r2);
+                } else {
+                    if (r2 instanceof QDLStem) {
+                        b = (QDLStem) r2;
+                        if (!b.isList()) {
+                            throw new BadArgException("The third argument must be a list", polyad.getArgAt(2));
+                        }
+                    } else {
+                        throw new BadArgException("The third argument must be a list", polyad.getArgAt(2));
+                    }
+                    arg1 = new QDLStem();
+                    for (Object key : a.keySet()) {
+                        Object newKey = a.get(key);
+                        if (newKey instanceof String) {
+                            if (b.hasDefaultValue() || b.containsKey(key)) {
+                                Object newValue = b.get(key);
+                                arg1.put((String) newKey, newValue);
+                            }
+                        }
+                    }
+                }
+
+
+            } else {
+                arg1 = (QDLStem) r1;
+            }
+        }
+        return arg1;
     }
 
 

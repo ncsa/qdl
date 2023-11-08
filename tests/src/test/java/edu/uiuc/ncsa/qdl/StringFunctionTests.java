@@ -512,20 +512,13 @@ public class StringFunctionTests extends AbstractQDLTester {
     }
 
 
-    public void testAllStringReplace() throws Exception {
+    public void testAllStringReplace() throws Throwable {
         State state = testUtils.getNewState();
-
-        Polyad polyad = new Polyad(StringEvaluator.REPLACE);
-        ConstantNode source = new ConstantNode("abcdef", Constant.STRING_TYPE);
-        ConstantNode oldValue = new ConstantNode("de", Constant.STRING_TYPE);
-        ConstantNode newValue = new ConstantNode("holy cow", Constant.STRING_TYPE);
-        String expectedValue = "abcholy cowf";
-
-        polyad.addArgument(source);
-        polyad.addArgument(oldValue);
-        polyad.addArgument(newValue);
-        polyad.evaluate(state);
-        assert polyad.getResult().equals(expectedValue);
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok := 'abcholy cowf' == replace('abcdef','de','holy cow');");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state);
     }
 
     public void testStringReplace() throws Throwable {
@@ -547,6 +540,16 @@ public class StringFunctionTests extends AbstractQDLTester {
         assert getBooleanValue("ok", state);
     }
 
+    public void testStringReplace2a() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "out. := replace(['abcde','pqrcde','ababcdcd'],['ab','cd'],['xx','yy']);");
+        addLine(script, "ok := reduce(@&&,['xxyye','pqryye','xxxxyyyy']==out.);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state);
+    }
+
     /**
      * Tests replace with a regex that removes duplicate spaces.
      *
@@ -562,8 +565,8 @@ public class StringFunctionTests extends AbstractQDLTester {
     }
 
     /**
-     * Replace test to show subsetting. Only the corresponding keys of the stems ('bind' -- there is one) are
-     * processed.
+     * Replace test to show application of replace to a general stem.
+     *
      * @throws Throwable
      */
     public void testStringReplace3() throws Throwable {
@@ -571,16 +574,16 @@ public class StringFunctionTests extends AbstractQDLTester {
         StringBuffer script = new StringBuffer();
         String source = "s.:={'bind':'and in the darkness bind them', 'bring':'One Ring to bring them all', 'find':'One Ring to find them', 'rule':'One Ring to rule them all'};";
         String target = "t.:={7:'seven', 'One':'One', 'all':'All', 'bind':'darkness'};";
+        String out = "u.:={'bind':'and in the darkness darkness them', 'bring':'One Ring to bring them All', 'find':'One Ring to find them', 'rule':'One Ring to rule them All'};";
         addLine(script, source);
         addLine(script, target);
+        addLine(script, out);
 
-        addLine(script, "out. :=  replace(s., t., 'foo');");
-        addLine(script, "ok := out.'bind' == 'and in the foo bind them';");
+        addLine(script, "ok := ⊗∧⊙u. == replace(s., t.);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);
     }
-
 
 
     public void testInsertStringString() throws Throwable {

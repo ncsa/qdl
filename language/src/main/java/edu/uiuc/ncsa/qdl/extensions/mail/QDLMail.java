@@ -5,12 +5,15 @@ import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
+import edu.uiuc.ncsa.security.core.util.StringUtils;
 import edu.uiuc.ncsa.security.util.configuration.TemplateUtil;
+import edu.uiuc.ncsa.security.util.mail.MailEnvironment;
 import edu.uiuc.ncsa.security.util.mail.MailUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 import static edu.uiuc.ncsa.security.core.util.StringUtils.RJustify;
 
@@ -72,45 +75,22 @@ public class QDLMail {
             }else{
                 newMessage = message;
             }
-            // Now we can send the message
-            String recipients = "";
-            if (getCfg().containsKey(MAIL_TO)) {
-                Object rr = getCfg().get(MAIL_TO);
-                if (rr instanceof String) {
-                    recipients = getCfg().getString(MAIL_TO);
-                } else {
-                    if (rr instanceof QDLStem) {
-                        QDLStem rawRR = (QDLStem) rr;
-                        boolean firstPass = true;
-                        for (Object key : rawRR.keySet()) {
-                            Object possibleRecipient = rawRR.get(key);
-                            if(possibleRecipient instanceof String){
-                                if (firstPass) {
-                                    recipients = (String)possibleRecipient;
-                                    firstPass = false;
-                                } else {
-                                    recipients = recipients + MailUtil.ADDRESS_SEPARATOR + possibleRecipient;
-                                }
-                            }
-                        }
-                    } else {
-                        throw new IllegalArgumentException(getName() + " the recipients of the message '" + rr + "'cannot be parsed");
-                    }
-                }
-            } else {
-                throw new IllegalStateException(getName() + " -- no recipients set for the message");
-            }
-
-            MailUtil.MailEnvironment mailEnvironment = new MailUtil.MailEnvironment(true,
-                    getCfg().getString(MAIL_SERVER),
-                    getCfg().getLong(MAIL_PORT).intValue(),
-                    getCfg().containsKey(MAIL_PASSWORD) ? getCfg().getString(MAIL_PASSWORD) : "",
-                    getCfg().getString(MAIL_FROM),
-                    recipients,
-                    null, // body sent below
-                    null, // subject sent below
-                    getCfg().containsKey(MAIL_USE_SSL) ? getCfg().getBoolean(MAIL_USE_SSL) : true,
-                    getCfg().containsKey(MAIL_START_TLS) ? getCfg().getBoolean(MAIL_START_TLS) : true);
+            // Now we can set up the environment for the message
+            MailEnvironment mailEnvironment = MailEnvironment.create()
+                    .setEnabled(true) // always for QDL Mail
+                    .setDebug(getCfg().containsKey("debug")?getCfg().getBoolean("debug"):false)
+                    .setBCC(getAddresses(getCfg().get(MAIL_BCC), MAIL_BCC))
+                    .setCC(getAddresses(getCfg().get(MAIL_CC), MAIL_CC))
+                    .setFrom(getCfg().getString(MAIL_FROM))
+                    .setRecipients(getAddresses(getCfg().get(MAIL_TO), MAIL_TO))
+                    .setContentType(getCfg().getString(MAIL_CONTENT_TYPE))
+                    .useSSL(getCfg().containsKey(MAIL_USE_SSL)?getCfg().getBoolean(MAIL_USE_SSL):false)
+                    .startTLS(getCfg().containsKey(MAIL_START_TLS)?getCfg().getBoolean(MAIL_START_TLS):false)
+                    .setPort(getCfg().containsKey(MAIL_PORT)?getCfg().getLong(MAIL_PORT).intValue():-1)
+                    .setServer(getCfg().getString(MAIL_SERVER))
+                    .setPassword(getCfg().getString(MAIL_PASSWORD))
+                    .setReplyTo(getCfg().getString(MAIL_REPLY_TO))
+                    .setUsername(getCfg().getString(MAIL_USERNAME));
             MailUtil mailUtil = new MailUtil(mailEnvironment);
             mailUtil.setMyLogger(state.getLogger());
 
@@ -168,6 +148,40 @@ public class QDLMail {
         }
     }
 
+    /**
+     * Convert QDL entry of addresses -- a string or a list of addresses -- to a Java
+     * list so it can be passed to the {@link MailEnvironment}
+     * @param rawAddresses
+     * @param typeName
+     * @return
+     */
+
+    private List<String> getAddresses(Object rawAddresses, String typeName) {
+        List<String> addresses = new ArrayList<>();
+        if(rawAddresses == null){
+            return addresses;
+        }
+            if (rawAddresses instanceof String) {
+                addresses.add( (String)rawAddresses);
+            } else {
+                if (rawAddresses instanceof QDLStem) {
+                    QDLStem rawRR = (QDLStem) rawAddresses;
+                    TreeSet<String> addressList = new TreeSet<>(); // re-order, keep unique
+
+                    for (Object key : rawRR.keySet()) {
+                        Object possibleRecipient = rawRR.get(key);
+                        if(possibleRecipient instanceof String){
+                            addressList.add((String)possibleRecipient);
+                        }
+                    }
+                    addresses.addAll(addressList);
+                } else {
+                    throw new IllegalArgumentException(typeName + " recipients of the message '" + rawAddresses + "'cannot be parsed");
+                }
+            }
+        return addresses;
+    }
+
     public static String CFG_METHOD_NAME = "cfg";
 
     public class SetCfg implements QDLFunction {
@@ -210,13 +224,18 @@ public class QDLMail {
             RJustify("", 12);
             d.add(RJustify(MAIL_BCC, width) + " : list of addresses for blind carbon copy");
             d.add(RJustify(MAIL_CC, width) + " : list of addresses for carbon copy");
+            d.add(RJustify(MAIL_CONTENT_TYPE, width) + " : content type of message. Default is plain text.");
+            d.add(RJustify(MAIL_DEBUG, width) + " : low level debugging of mail. Use with discretion.");
             d.add(RJustify(MAIL_FROM, width) + " : address of sender");
             d.add(RJustify(MAIL_PASSWORD, width) + " : password for the outgoing server");
             d.add(RJustify(MAIL_PORT, width) + " : integer for the port of the mail server");
+            d.add(RJustify(MAIL_REPLY_TO, width) + " : single address for the reply to field. Default is to use " + MAIL_FROM);
             d.add(RJustify(MAIL_SERVER, width) + " : address of the mail server");
             d.add(RJustify(MAIL_START_TLS, width) + " : boolean, use start TLS?");
             d.add(RJustify(MAIL_TO, width) + " : list of recipients");
             d.add(RJustify(MAIL_USE_SSL, width) + " : boolean, use SSL?");
+            d.add(RJustify(MAIL_USERNAME, width) + " : the user name to use for logging in to the mail server");
+            d.add(StringUtils.getBlanks(width) + "   If omitted, defaults to the " + MAIL_FROM + " value.");
             return d;
         }
         /*
@@ -239,13 +258,17 @@ public class QDLMail {
 
     public static String MAIL_BCC = "bcc";
     public static String MAIL_CC = "cc";
+    public static String MAIL_CONTENT_TYPE = "content_type";
     public static String MAIL_FROM = "from";
     public static String MAIL_PASSWORD = "password";
     public static String MAIL_PORT = "port";
     public static String MAIL_SERVER = "host";
     public static String MAIL_START_TLS = "start_tls";
     public static String MAIL_TO = "to";
+    public static String MAIL_DEBUG = "debug";
     public static String MAIL_USE_SSL = "use_ssl";
+    public static String MAIL_USERNAME = "username";
+    public static String MAIL_REPLY_TO = "reply_to";
 
     public QDLStem getCfg() {
         if (cfg == null) {
@@ -264,4 +287,53 @@ public class QDLMail {
 
     QDLStem cfg = null;
 
+    protected static QDLStem addAll(List<String> x){
+        if(x == null || x.isEmpty()){
+            return null;
+        }
+        QDLStem q = new QDLStem();
+        q.getQDLList().addAll(x);
+        return q;
+    }
+    /**
+     * Convert a {@link MailEnvironment} to a stem. This is not for the current configuration,
+     * but is a general utility that should go in this class.
+     * @param me
+     * @return
+     */
+     public static QDLStem convertMEToStem(MailEnvironment me){
+      QDLStem stem = new QDLStem();
+      if(me.carbonCopy!=null){
+          QDLStem q = addAll(me.carbonCopy);
+          if(q!=null){
+              stem.put(MAIL_CC, q);
+          }
+      }
+
+
+      if(me.blindCarbonCopy!=null){
+          QDLStem q = addAll(me.blindCarbonCopy);
+          if(q!=null){
+              stem.put(MAIL_BCC, q);
+          }
+      }
+      if(me.recipients!=null){
+          QDLStem q = addAll(me.recipients);
+          if(q!=null){
+              stem.put(MAIL_TO, q);
+          }
+      }
+
+      if(me.replyTo!=null)stem.put(MAIL_REPLY_TO, me.replyTo);
+      if(me.from!=null)stem.put(MAIL_FROM, me.from);
+      if(me.username!=null)stem.put(MAIL_USERNAME, me.username);
+      if(me.server!=null)stem.put(MAIL_SERVER, me.server);
+      if(me.password!=null)stem.put(MAIL_PASSWORD, me.password);
+      if(me.contentType!=null)stem.put(MAIL_CONTENT_TYPE, me.contentType);
+      stem.put(MAIL_USE_SSL, me.useSSL);
+      stem.put(MAIL_START_TLS, me.starttls);
+      stem.put(MAIL_PORT, (long)me.port);
+
+      return stem;
+     }
 }

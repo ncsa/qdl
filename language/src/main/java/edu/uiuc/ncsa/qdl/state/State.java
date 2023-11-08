@@ -20,10 +20,7 @@ import edu.uiuc.ncsa.qdl.scripting.Scripts;
 import edu.uiuc.ncsa.qdl.statements.TryCatch;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.util.QDLVersion;
-import edu.uiuc.ncsa.qdl.variables.Constant;
-import edu.uiuc.ncsa.qdl.variables.QDLCodec;
-import edu.uiuc.ncsa.qdl.variables.QDLStem;
-import edu.uiuc.ncsa.qdl.variables.VStack;
+import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.qdl.vfs.VFSEntry;
 import edu.uiuc.ncsa.qdl.vfs.VFSFileProvider;
 import edu.uiuc.ncsa.qdl.vfs.VFSPaths;
@@ -39,6 +36,7 @@ import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
 import edu.uiuc.ncsa.security.core.util.MetaDebugUtil;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
+import edu.uiuc.ncsa.security.core.util.StringUtils;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.commons.codec.binary.Base64;
@@ -49,12 +47,10 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
@@ -203,12 +199,27 @@ public class State extends FunctionState implements QDLConstants {
             os.put(SYS_INFO_OS_VERSION, System.getProperty("os.version"));
             os.put(SYS_INFO_OS_NAME, System.getProperty("os.name"));
             os.put(SYS_INFO_OS_ARCHITECTURE, System.getProperty("os.arch"));
+            // Take a stab at the class path. This usually works, but not as reliably as it once did
 
             systemInfo.put(SYS_INFO_OS, os);
             QDLStem system = new QDLStem();
             system.put(SYS_INFO_JVM_VERSION, System.getProperty("java.version"));
             system.put(SYS_INFO_INIT_MEMORY, (Runtime.getRuntime().totalMemory() / (1024 * 1024)) + " MB");
             system.put(SYS_INFO_SYSTEM_PROCESSORS, Runtime.getRuntime().availableProcessors());
+            QDLList classPath = new QDLList();
+            String ccp = System.getProperty("java.class.path");
+            if (StringUtils.isTrivial(ccp)) {
+                StringTokenizer st = new StringTokenizer(ccp, File.pathSeparator);
+                while (st.hasMoreTokens()) {
+                    classPath.add(st.nextToken());
+                }
+            }
+            // Only show the class path if there is something there.
+            // it can be hit or miss any more if this actually works.
+            if(!classPath.isEmpty()){
+                QDLStem cp = new QDLStem(classPath);
+                system.put(SYS_INFO_CLASS_PATH, cp);
+            }
             systemInfo.put(SYS_INFO_SYSTEM, system);
             QDLStem user = new QDLStem();
             user.put(SYS_INFO_USER_INVOCATION_DIR, System.getProperty("user.dir"));
@@ -562,6 +573,7 @@ public class State extends FunctionState implements QDLConstants {
     /**
      * In server mode, some IO for debugging with debugger is still be allowed. If this flag
      * is set true, then printing is not allowed nor is saving the workspace.
+     *
      * @return
      */
     public boolean isRestrictedIO() {
@@ -714,7 +726,7 @@ public class State extends FunctionState implements QDLConstants {
     }
 
     protected State newStateWithImportsNEW(State moduleState) {
-        return  newStateWithImportsNEW(moduleState, true);
+        return newStateWithImportsNEW(moduleState, true);
     }
 
     protected State newStateWithImportsNEW(State moduleState, boolean pushVariables) {
@@ -781,8 +793,8 @@ public class State extends FunctionState implements QDLConstants {
         newState.setIoInterface(getIoInterface());
         newState.systemInfo = systemInfo;
         newState.setDebugUtil(getDebugUtil()); // share the debugger.
-        if(moduleState!=null){
-             newState.setModuleState(moduleState.isModuleState());
+        if (moduleState != null) {
+            newState.setModuleState(moduleState.isModuleState());
         }
 
         return newState;
@@ -1297,6 +1309,7 @@ public class State extends FunctionState implements QDLConstants {
     /**
      * Flag this if it is used as the local state for a module. This is used to enforce
      * local resolutions at runtime.
+     *
      * @param moduleState
      */
     public void setModuleState(boolean moduleState) {
@@ -1311,13 +1324,15 @@ public class State extends FunctionState implements QDLConstants {
      * At system startup this is set to be the top-level state object for the system. It is
      * used, e.g. in resolving default namepsace requests everywhere and should be set
      * exactly once on startup by the system.
+     *
      * @return
      */
     // resolves https://github.com/ncsa/qdl/issues/24
-    public static State getRootState(){
-           return rootState;
+    public static State getRootState() {
+        return rootState;
     }
-    public static void setRootState(State newRoot){
+
+    public static void setRootState(State newRoot) {
         rootState = newRoot;
     }
 }

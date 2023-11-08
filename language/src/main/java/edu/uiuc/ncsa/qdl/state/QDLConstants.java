@@ -87,6 +87,7 @@ public interface QDLConstants {
     String SYS_INFO_SYSTEM_PROCESSORS = "processors";
     String SYS_INFO_INIT_MEMORY = "initial_memory";
     String SYS_INFO_JVM_VERSION = "jvm_version";
+    String SYS_INFO_CLASS_PATH = "class_path";
 
     String SYS_INFO_OS = "os.";
     String SYS_INFO_OS_ARCHITECTURE = "architecture";

@@ -1701,20 +1701,21 @@ See also: continue, break]]>
     <entry id="replace">
         <body>
  <![CDATA[
- replace(source, replacements.) - replaces all occurences in source (which may be a stem)
+ replace(source, replacements.) - replaces all occurrences in source (which may be a stem)
                             with the contents of replacements. a stem whose entries are
                             of the form
                             replacements.old)value := new_value
                             so that old_value (the key in replacements.) is the old value in
                             source and is replaced with new_value.
 
- replace(source, replacements., is_regex) - same as the dyadic case except that
-                            old_value is assumed to be a regular expression.
+ replace(source, replacements., is_regex{.}) - same as the dyadic case except that
+                            old_value is assumed to be a regular expression if is_regex
+                            is true (as a scalar) or as a stem if the corresponding key is true.
 
- replace(source, old, new) - replaces all occurences of old with new in the
-                            source. These may be various combinations of stems
-                            and strings. Note that old may be a list as may be
-                            new, in which case conformability holds.
+ replace(source, old{.}, new{.}) - replaces all occurences of old with new in the
+                            source.  Note that old is a list and a correspondence between
+                             keys of old and new is made. You may alternately combine the lists
+                             into a single stem, which is the dyadic case.
 
 replace(source, regex, new, is_regex) - when is_regex == true,
                             replaces all matching occurences with
@@ -1752,14 +1753,20 @@ E.g. Apply the replacements to every element in the first argument
    replace(['abcde','qqabcc'],{'ab':'xx','de':'yy'})
 [xxcyy,qqxxcc]
 
+E.g. an example where there are mixed regexes and simple replacements. Mutiple
+     blanks are replaced as is one word,
+  replace('teh   quick brown    fox       jumped', {'\\s+': ' ', 'teh':'the'}, {'\\s+':true, 'teh':false})
+the quick brown fox jumped
+
 E.g. Use lists. This then extends (as per conformability rule) to
      return a list of results
    replace('abcde',['ab','cd'],['xx','yy'])
 [xxcde,abyye]
 
-E.g. Last example showing conformability
-    replace(['abcde','pqrcde','ababcdcd'],['ab','cd'],['xx','yy'])
-[xxcde,pqryye]
+E.g. Last example showing conformability. The last argument has more
+     elements than the second, so only the corresponding elements are used
+    replace(['abcde','pqrcde','ababcdcd'],['ab','cd'],['xx','yy', 'pq', 'tt'])
+[xxyye,pqryye,xxxxyyyy]
 
 E.g. Apply changes to every element in the first argument
     replace(['abcde','pqrcde','ababcdcd'],{'ab':'xx','cd':'yy'})
