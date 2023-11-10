@@ -250,6 +250,7 @@
         <profile>
             <id>qdl</id>
             <build>
+                <finalName>qdl</finalName>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -289,7 +290,6 @@
                             <descriptorRefs>
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
-                            <finalName>qdl</finalName>
 
                         </configuration>
                         <executions>

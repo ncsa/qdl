@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.*;
 import java.util.logging.Level;
 
+import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
 import static edu.uiuc.ncsa.qdl.variables.StemUtility.axisWalker;
 import static edu.uiuc.ncsa.qdl.vfs.VFSPaths.SCHEME_DELIMITER;
 import static edu.uiuc.ncsa.security.core.util.DebugConstants.*;
@@ -574,8 +575,30 @@ public class SystemEvaluator extends AbstractEvaluator {
         }
         Object arg = polyad.evalArg(0, state);
         String possibleName = arg.toString();
-        if(state.getLibMap().containsKey(possibleName)){
+        // Meaning of next: if like .tools.oa2.woof, shave off leading .
+        // if there is an embedded ., process that.
+        possibleName = possibleName.indexOf(STEM_INDEX_MARKER) == 0?possibleName.substring(1):possibleName;
+        if(state.getLibMap().containsKey(possibleName)){ // look for it directly in tools
             possibleName = state.getLibMap().getString(possibleName);
+        }else{
+            // This looks in the extensions added to the lib element, e.g. oa2.woof in OA4MP
+            // These can be defined in extensions to QDL and can be arbitrarily complex.
+            // Do a path lookup
+            if(0<possibleName.indexOf(STEM_INDEX_MARKER)){
+                StringTokenizer stringTokenizer = new StringTokenizer(possibleName, ".");
+                ArrayList<String> toolPath = new ArrayList<>();
+                while(stringTokenizer.hasMoreTokens()){
+                    toolPath.add(stringTokenizer.nextToken());
+                }
+                QDLStem libStem = state.getSystemInfo().getStem("lib");
+
+                for(int i = 0; i < toolPath.size()-1 ; i++ ){
+                       libStem = libStem.getStem(toolPath.get(i));
+                }
+                if(libStem.containsKey(toolPath.get(toolPath.size()-1))){
+                    possibleName = libStem.getString(toolPath.get(toolPath.size()-1));
+                }
+            }
         }
         Polyad module_load = new Polyad(MODULE_LOAD);
         module_load.addArgument(new ConstantNode(possibleName));

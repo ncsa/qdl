@@ -27,4 +27,4 @@ mvn clean install
 cd $QDL_ROOT/language
 mvn -P qdl package
 mv target/qdl-jar-with-dependencies.jar target/qdl.jar
-$QDL_ROOT/language/src/main/scripts/create_installer.sh
+"$QDL_ROOT"/language/src/main/scripts/create_installer.sh

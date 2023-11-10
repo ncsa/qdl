@@ -49,6 +49,9 @@ Documentation
     interface, this is where to look. Note that since you can write modules in QDL, this would be for something
     much more exotic. Unless you have an articulated need for this, you probably don't need it.
 
+    *{{{./pdf/qdl_server_scripts.pdf}Running QDL Scripts on your server}} It is possible to use QDL to execute
+    scripts on a server (such as OA4MP). This describes the syntax that is needed to specify scripts and blocks
+    of code.
 
 User Interfaces to QDL
 

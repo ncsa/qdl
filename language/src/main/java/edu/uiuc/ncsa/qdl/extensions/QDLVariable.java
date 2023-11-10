@@ -1,6 +1,9 @@
 package edu.uiuc.ncsa.qdl.extensions;
 
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
+
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * this represents a QDL variable.  At load time, the name will be read and the value will be assigned in the
@@ -21,7 +24,7 @@ public interface QDLVariable extends Serializable {
 
     /**
      * The value. The basic Java types that QDL knows are {@link Boolean},
-     * {@link String}, {@link Long}, {@link java.math.BigDecimal},
+     * {@link String}, {@link Long}, {@link BigDecimal},
      * and {@link QDLStem}.
      *
      * @return

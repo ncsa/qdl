@@ -1758,13 +1758,17 @@ E.g. an example where there are mixed regexes and simple replacements. Mutiple
   replace('teh   quick brown    fox       jumped', {'\\s+': ' ', 'teh':'the'}, {'\\s+':true, 'teh':false})
 the quick brown fox jumped
 
+     Note that you also omit the regex flags that are false, since that is the default,
+     just issuing the following:
+  replace('teh   quick brown    fox       jumped', {'\\s+': ' ', 'teh':'the'}, {'\\s+':true})
+
 E.g. Use lists. This then extends (as per conformability rule) to
      return a list of results
    replace('abcde',['ab','cd'],['xx','yy'])
 [xxcde,abyye]
 
-E.g. Last example showing conformability. The last argument has more
-     elements than the second, so only the corresponding elements are used
+E.g. Last example showing conformability of replacement lists. The last argument has more
+     elements than the second, so only the corresponding elements are used.
     replace(['abcde','pqrcde','ababcdcd'],['ab','cd'],['xx','yy', 'pq', 'tt'])
 [xxyye,pqryye,xxxxyyyy]
 
@@ -5201,17 +5205,26 @@ See also: fork]]>
 
     <entry id="jload">
        <body>
-  <![CDATA[jload(class_name | moniker) - this is a convenience method to load a single
+  <![CDATA[jload(class_name | moniker | path) - this is a convenience method to load a single
 class with the default alias. The result is the name of the alias. It
 is equivalent to
   module_import(module_load(class_name,'java'))
 
-Optionally, you suppply the key in the info().'lib'.'tools' object,
+There are two special cases.
+1. suppply the key in the info().'lib'.'tools' object,
 E.g.
    jload('http');
 is equivalent to
    jload(info().'lib'.'tools'.'http');
-]]>
+
+2. supply a stem path to the module
+E.g.
+   jload('tools.cli');
+cli
+
+#2 is particularly useful if QDL has extensions to the library. For instance,
+in OA4MP  you might issue
+   jload('oa2.jwt')]]>
        </body>
        <example>
    <![CDATA[E.g. to load the db module
