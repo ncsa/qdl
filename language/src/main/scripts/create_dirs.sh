@@ -43,6 +43,7 @@ mkdir edu/uiuc/ncsa/qdl/install
 cd $TARGET_ROOT
 cp $QDL_SOURCES/src/main/scripts/installer.mf .
 cp $QDL_SOURCES/src/main/scripts/version.txt .
+# following class has to be installed here so it executes later.
 cp $QDL_SOURCES/target/classes/edu/uiuc/ncsa/qdl/install/Installer.class edu/uiuc/ncsa/qdl/install
 
 # Now make the directories

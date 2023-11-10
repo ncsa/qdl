@@ -216,7 +216,7 @@ public class State extends FunctionState implements QDLConstants {
             }
             // Only show the class path if there is something there.
             // it can be hit or miss any more if this actually works.
-            if(!classPath.isEmpty()){
+            if (!classPath.isEmpty()) {
                 QDLStem cp = new QDLStem(classPath);
                 system.put(SYS_INFO_CLASS_PATH, cp);
             }
@@ -498,9 +498,15 @@ public class State extends FunctionState implements QDLConstants {
         if (path == null) {
             return versionInfo;
         }
-        List<String> manifest = null;
+        ArrayList<String> manifest;
         try {
-            manifest = QDLFileUtil.readFileAsLines(path + (path.endsWith("/") ? "" : "/") + "lib/build-info.txt");
+            List<String> temp = QDLFileUtil.readFileAsLines(path + (path.endsWith("/") ? "" : "/") + "lib/build-info.txt");
+            if (temp instanceof ArrayList) {
+                manifest = (ArrayList<String>) temp;
+            } else {
+                manifest = new ArrayList<>();
+                manifest.addAll(temp);
+            }
         } catch (Throwable throwable) {
             if (getLogger() != null) {
                 getLogger().info("Could not find the build info file. Looked in " + path + (path.endsWith("/") ? "" : "/") + "lib/build-info.txt");
@@ -509,7 +515,9 @@ public class State extends FunctionState implements QDLConstants {
             return versionInfo;
         }
 
-        for (String linein : manifest) {
+        for (int i = 0; i < manifest.size(); i++) {
+            String linein = manifest.get(i);
+
             if (linein.startsWith("application-version:")) {
                 // e.g.  application-version: 1.0.1
                 versionInfo.put(SYS_QDL_BUILD_VERSION, truncateLine("application-version:", linein));
@@ -530,6 +538,23 @@ public class State extends FunctionState implements QDLConstants {
             if (linein.startsWith("Created-By:")) {
                 // e.g. Created-By: Apache Maven 3.6.0
                 versionInfo.put(SYS_QDL_VERSION_CREATED_BY, truncateLine("Created-By:", linein));
+            }
+
+            if (linein.startsWith("Class-Path:")) {
+                StringBuffer stringBuffer = new StringBuffer();
+                stringBuffer.append(truncateLine("Class-Path:", linein));
+                int j;
+
+                for( j = i ; j < manifest.size(); j++){
+                    String currentLine = manifest.get(j);
+                    if(currentLine.startsWith(" ")){
+                        stringBuffer.append(currentLine.trim());
+                    }else{
+                        i = j-1;
+                        break;
+                    }
+                }
+                versionInfo.put(SYS_QDL_BUILD_CLASS_PATH, stringBuffer.toString());
             }
             // There are some instances where this is munged. Only stick something there
             // if you can make sense of it.
@@ -553,6 +578,13 @@ public class State extends FunctionState implements QDLConstants {
         return versionInfo;
     }
 
+    /**
+     * Truncate the line by dropping the head from it.
+     *
+     * @param head
+     * @param line
+     * @return
+     */
     String truncateLine(String head, String line) {
         if (line.startsWith(head)) {
             return line.substring(head.length()).trim();

@@ -101,6 +101,7 @@ public interface QDLConstants {
     String SYS_QDL_VERSION_BUILD_JDK = "jdk";
     String SYS_QDL_VERSION_BUILD_TIME = "time";
     String SYS_QDL_VERSION_CREATED_BY = "created_by";
+    String SYS_QDL_BUILD_CLASS_PATH = "build_classpath";
     String SYS_QDL_VERSION_BUILD_NUMBER = "number";
 
     String SYS_BOOT = "boot.";
