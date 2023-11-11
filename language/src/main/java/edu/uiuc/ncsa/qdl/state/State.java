@@ -545,15 +545,16 @@ public class State extends FunctionState implements QDLConstants {
                 stringBuffer.append(truncateLine("Class-Path:", linein));
                 int j;
 
-                for( j = i ; j < manifest.size(); j++){
+                for( j = i+1 ; j < manifest.size(); j++){
                     String currentLine = manifest.get(j);
                     if(currentLine.startsWith(" ")){
-                        stringBuffer.append(currentLine.trim());
+                        stringBuffer.append(currentLine.substring(1)); // starts with a single added blank.
                     }else{
                         i = j-1;
                         break;
                     }
                 }
+                
                 versionInfo.put(SYS_QDL_BUILD_CLASS_PATH, stringBuffer.toString());
             }
             // There are some instances where this is munged. Only stick something there

@@ -25,7 +25,7 @@ if [ ! -d "$TARGET_ROOT" ]
   then
     mkdir "$TARGET_ROOT"
    else
-    echo "$TARGET_ROOT exists, cleaning..."
+    echo "  deploy target directory exists, cleaning..."
     cd $TARGET_ROOT
     rm -Rf *
 fi

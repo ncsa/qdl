@@ -12,14 +12,15 @@ TARGET_ROOT=$NCSA_DEV_OUTPUT/qdl
 DEFAULT_JAR_NAME="qdl-installer.jar"
 
 JAR_NAME=${1:-$DEFAULT_JAR_NAME}
-
+echo 'creating QDL installer'
 ./create_dirs.sh $QDL_ROOT $TARGET_ROOT
 
 cd $QDL_SOURCES
-mvn -P qdl package
+mvn -P qdl package > qdl-maven.log
 cp "$QDL_SOURCES/target/qdl-jar-with-dependencies.jar" $TARGET_ROOT/lib/qdl.jar
 unzip -p target/qdl-jar-with-dependencies.jar META-INF/MANIFEST.MF > $TARGET_ROOT/lib/build-info.txt
 
 cd $TARGET_ROOT
 # Get the actual manifest so that build info is available.
 jar cmf installer.mf "$JAR_NAME" edu/uiuc/ncsa/qdl/install/Installer.class version.txt  bin docs etc lib log var examples
+echo '     ... done!'

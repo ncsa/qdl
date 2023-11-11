@@ -21,11 +21,11 @@ QDL_ROOT=$NCSA_DEV_INPUT/qdl
 # ./build.sh
 
 # build qdl proper
+echo "building QDL from sources..."
 cd $QDL_ROOT
-mvn clean install
+mvn clean install > maven.log
+echo "     ... done!"
 
-cd $QDL_ROOT/language
-mvn -P qdl package
-mv target/qdl-jar-with-dependencies.jar target/qdl.jar
 cd "$QDL_ROOT"/language/src/main/scripts
 ./create_installer.sh
+

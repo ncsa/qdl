@@ -37,21 +37,21 @@
                     </execution>
                 </executions>
             </plugin>
-<!--
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+            <!--
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-jar-plugin</artifactId>
+                            <version>3.3.0</version>
 
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
--->
+                            <executions>
+                                <execution>
+                                    <goals>
+                                        <goal>test-jar</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -63,7 +63,7 @@
                     <includes>
                         <include>**/*Suite.java</include>
                     </includes>
-                  <!--  <forkMode>perTest</forkMode>-->
+                    <!--  <forkMode>perTest</forkMode>-->
                     <forkCount>1</forkCount>
                     <reuseForks>false</reuseForks>
 
@@ -141,13 +141,13 @@
             <scope>provided</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/jakarta.mail/jakarta.mail-api -->
-<!--
-        <dependency>
-            <groupId>jakarta.mail</groupId>
-            <artifactId>jakarta.mail-api</artifactId>
-            <version>2.1.2</version>
-        </dependency>
--->
+        <!--
+                <dependency>
+                    <groupId>jakarta.mail</groupId>
+                    <artifactId>jakarta.mail-api</artifactId>
+                    <version>2.1.2</version>
+                </dependency>
+        -->
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -229,10 +229,10 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-             <groupId>com.intellij</groupId>
-             <artifactId>forms_rt</artifactId>
-             <version>7.0.3</version>
-         </dependency>
+            <groupId>com.intellij</groupId>
+            <artifactId>forms_rt</artifactId>
+            <version>7.0.3</version>
+        </dependency>
         <dependency>
             <groupId>com.formdev</groupId>
             <artifactId>flatlaf</artifactId>
@@ -270,22 +270,22 @@
                         </executions>
                     </plugin>
                     <plugin>
-                                   <groupId>org.apache.maven.plugins</groupId>
-                                   <artifactId>maven-compiler-plugin</artifactId>
-                                   <version>3.8.1</version>
-                                   <configuration>
-                                       <source>${java.version}</source>
-                                       <target>${java.version}</target>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.10.1</version>
+                        <configuration>
+                            <source>${java.version}</source>
+                            <target>${java.version}</target>
 
-                                       <!-- JDK9+ Add Module MAGIC happens below...          -->
-                                       <!-- Add implicit default JDK9+ java.se explicitly    -->
-                                       <!-- Add explicit java.desktop for import java.awt.*; -->
-                                       <compilerArgs>
-                                           <arg>--add-modules</arg>
-                                           <arg>java.se,java.desktop</arg>
-                                       </compilerArgs>
-                                   </configuration>
-                               </plugin>
+                            <!-- JDK9+ Add Module MAGIC happens below...          -->
+                            <!-- Add implicit default JDK9+ java.se explicitly    -->
+                            <!-- Add explicit java.desktop for import java.awt.*; -->
+                            <compilerArgs>
+                                <arg>--add-modules</arg>
+                                <arg>java.se,java.desktop</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <artifactId>maven-assembly-plugin</artifactId>
                         <version>3.1.0</version>
