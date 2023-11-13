@@ -10,6 +10,7 @@ edu.uiuc.ncsa.qdl.extensions.database
 edu.uiuc.ncsa.qdl.extensions.example
 edu.uiuc.ncsa.qdl.extensions.http
 edu.uiuc.ncsa.qdl.extensions.inputLine
+edu.uiuc.ncsa.qdl.extensions.mail
 edu.uiuc.ncsa.qdl.functions
 edu.uiuc.ncsa.qdl.generated
 edu.uiuc.ncsa.qdl.gui
