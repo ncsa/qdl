@@ -115,6 +115,36 @@ public class StatementTest extends AbstractQDLTester {
         interpreter.execute(script.toString());
         assert getLongValue("i", state).equals(3L) : "continue() inside try..catch inside loop did not execute properly.";
     }
+    /*
+    v. := [1;7]
+    i :=1 ;
+    while[x∈v.]
+       do[
+          if[0==mod(x,2)][continue();];
+          i:=i*x;
+          ];
+    ok := i == 15;
+
+     */
+    public void testLoopWithTryAndContinue2a() throws Throwable {
+        StringBuffer script = new StringBuffer();
+         addLine(script,
+        "i := 1;                  "
+        +"v. := [;7];                      "
+        +"while[x∈v.]             "
+        +"   do[                          "
+        +"      if[0==mod(x,2)][continue();];  "
+        +"       i:=i*x;                "      
+        +"    ];          "
+        +" ok := i == 15;               "
+         );
+        State state = testUtils.getNewState();
+
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "continue() inside loop inside conditional did not execute properly.";
+    }
+
     public void testLoopWithTryAndContinue2() throws Throwable {
         StringBuffer script = new StringBuffer();
          addLine(script,

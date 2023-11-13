@@ -406,6 +406,7 @@ public class WhileLoop implements Statement {
                         return Boolean.TRUE;
                     } catch (ContinueException cx) {
                         // just continue.
+                        break;
                     } catch (ReturnException rx) {
                         return Boolean.TRUE;
                     }

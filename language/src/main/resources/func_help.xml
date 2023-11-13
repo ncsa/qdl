@@ -1701,23 +1701,23 @@ See also: continue, break]]>
     <entry id="replace">
         <body>
  <![CDATA[
- replace(source, replacements.) - replaces all occurrences in source (which may be a stem)
+ replace(source{.}, replacements.) - replaces all occurrences in source (which may be a stem)
                             with the contents of replacements. a stem whose entries are
                             of the form
-                            replacements.old)value := new_value
+                            replacements.old_value := new_value
                             so that old_value (the key in replacements.) is the old value in
                             source and is replaced with new_value.
 
- replace(source, replacements., is_regex{.}) - same as the dyadic case except that
+ replace(source{.}, replacements{.}, is_regex{.}) - same as the dyadic case except that
                             old_value is assumed to be a regular expression if is_regex
                             is true (as a scalar) or as a stem if the corresponding key is true.
 
- replace(source, old{.}, new{.}) - replaces all occurences of old with new in the
+ replace(source{.}., old{.}, new{.}) - replaces all occurences of old with new in the
                             source.  Note that old is a list and a correspondence between
                              keys of old and new is made. You may alternately combine the lists
                              into a single stem, which is the dyadic case.
 
-replace(source, regex, new, is_regex) - when is_regex == true,
+replace(source{.}, regex{.}, new{.}, is_regex{.}) - when is_regex == true,
                             replaces all matching occurences with
                             the regex with new in the source. These may be
                             various combinations of stems and strings.
@@ -1727,8 +1727,7 @@ as simple strings.
 
 The essential difference is that if a stem (vs. a list) is sent, then all
 replacements are made to the first argument. If lists are used, then
-conformability is in place.
-
+conformability between the replacement lists is used.
 
 See also: =~, tokenize]]>
         </body>
@@ -1755,7 +1754,9 @@ E.g. Apply the replacements to every element in the first argument
 
 E.g. an example where there are mixed regexes and simple replacements. Mutiple
      blanks are replaced as is one word,
-  replace('teh   quick brown    fox       jumped', {'\\s+': ' ', 'teh':'the'}, {'\\s+':true, 'teh':false})
+  replace('teh   quick brown    fox       jumped',
+           {'\\s+': ' ', 'teh':'the'},
+           {'\\s+':true, 'teh':false});
 the quick brown fox jumped
 
      Note that you also omit the regex flags that are false, since that is the default,
@@ -1891,6 +1892,15 @@ See also: tokenize, constants (which contains the option values for reference)]]
 Remember that the "-" operator will remove characters in the middle as well
 while trim() just removes from the ends.]]>
         </body>
+        <example>
+<![CDATA[E.g. contrast trim() and -
+   a := '  the quick    brown fox jumped  '
+   trim(a)
+the quick    brown fox jumped
+   a - ' '
+thequickbrownfoxjumped
+]]>
+        </example>
     </entry>
 
     <!--
@@ -5141,7 +5151,60 @@ set the short flag to true:
 // printed in their to_string format.
   print({'p':{'a':'x','b':'y'},'q':{'c':'z','d':'w'}})
 p : {a:x, b:y}
-q : {c:z, d:w}]]>
+q : {c:z, d:w}
+
+E.g. with some other attributes. First create a completely random stem
+   a. :=rename_keys(random_string(15,7), random_string(15,7))
+   print(a., {'string_output':true, 'indent':15})
+               SA7plKBBMFAbFkwXsOKS : 8GCwdh8sJYIWRsSIy9pM
+               UOeBkIi3gehAEGhP9G5p : QFtSzA-bM24jinQx0ItY
+               fK6pVZfuN2aOT2pFbsHs : sh7ssmDrjQDGlDDFvWyp
+               gHuD0MuYdaCUonNY3TDf : vGdbHwV-LOQu4tkGhvR-
+               h2QD9Wi7YxZ8pZOoxRx5 : w08zkuT1zKsxxY5HwgWM
+               pKlE2_UrSUegsOwK6AIu : X8i471-uj2WJJKvLuaLN
+               uWvgxqcZxjYQvierEA8O : rBvQSaHqeFxkRmUcHnbs
+
+The output is a string and the entire thing is not indented 15 spaces from
+the left.
+E.g. with longer elements
+   a. :=rename_keys(random_string(75,7), random_string(5,7))
+   print(a., {'width':55})
+
+EI_f674 : BaN7t9RLt5SpGVbqYg4e9W6N0U09bEB-RyflmBXVSEeXF
+          b_vWwyBI_nEasRxDY5A41ucQ1nWs5OdhJCFdWhxMZkfvp
+          DfwPT1YdKg
+JIJkogc : _YCc5UoegFovuIqH7bMemH20cQuRPygZ1y0jS0eGKcXNW
+          9Bj2uFsmv4QuZRobPq_ALbLi0EM-Qmnf9s7Uk_C9bz0la
+          9Un3V6C1Ny
+UOx6XRA : MmZd5_j5OIDPgVQyDQGpkmG-JmsxnSK1QyJU_17UA6r9o
+          iIQULIocNpU-d4Qu3dOamq9DANKtQyF4Y-t83hsooUfjo
+          FuLXNutGfj
+WZRzeEk : eY0HflCEmnb8I3q19Cgazi6kreCX_N5_wph0O6wkDo3iB
+          ccmbk6gW5MoRh23dvZ-NPqpnQVAdML2kHNzjCYpL13CCo
+          8-wyJBGP9Q
+YkjCLH0 : jU1J66FoCjcNaOtnWk0WIp-9_tutuzoCxKDhJATvyl5Pa
+          h4qdtxEf3SosmnFYvSYDTamfk84eHzMnHGXqtTS--WTWe
+          uSsQ2fwQkK
+shBbU14 : 3TzYWRLX0-t80K9wUcaXSpMEkXGzgCB3kCKNZ76MNIyy7
+          e2PgNOXmPx17iQyVWED851xasI0I8ekJpO2rimMNj1ilQ
+          3eVA_kHENu
+ziCgv98 : 3B4vTFmfhR7zW8FAFgvoAwitAgvq-ER_MUTtK4zDVWUuo
+          RBMU6vntvd1GjNPjq4egvcynZJbWTee07ml_R0_G0dGvd
+          bVizaXyfaw
+
+So the width means to keep the output within the margins and
+wrap as needed.
+   print(a., {'width':55, 'short':true, 'sort':true})
+   EI_f674 : BaN7t9RLt5SpGVbqYg4e9W6N0U09bEB-RyflmBXVSEeXFb_vW...
+   JIJkogc : _YCc5UoegFovuIqH7bMemH20cQuRPygZ1y0jS0eGKcXNW9Bj2...
+   UOx6XRA : MmZd5_j5OIDPgVQyDQGpkmG-JmsxnSK1QyJU_17UA6r9oiIQU...
+   WZRzeEk : eY0HflCEmnb8I3q19Cgazi6kreCX_N5_wph0O6wkDo3iBccmb...
+   YkjCLH0 : jU1J66FoCjcNaOtnWk0WIp-9_tutuzoCxKDhJATvyl5Pah4qd...
+   shBbU14 : 3TzYWRLX0-t80K9wUcaXSpMEkXGzgCB3kCKNZ76MNIyy7e2Pg...
+   ziCgv98 : 3B4vTFmfhR7zW8FAFgvoAwitAgvq-ER_MUTtK4zDVWUuoRBMU...
+
+This shortens the output, sorts the keys (caps then lower case)
+and puts down an ellipsis.]]>
           </example>
       </entry>
     <entry id="sleep">
@@ -5231,8 +5294,7 @@ in OA4MP  you might issue
    jload('db')
 versus
   module_import(module_load('edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader','java'))
-
-http]]>
+db]]>
         </example>
     </entry>
     <entry id="∃">
