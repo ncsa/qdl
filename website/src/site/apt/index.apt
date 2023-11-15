@@ -87,7 +87,7 @@ Standard Extensions
     *{{{./pdf/crypto.pdf}The RSA and symmetric key cryptography extension.}} A simple and well-aimed set of tools
     for working with RSA and symmetric key cryptography.
 
-    *{{{./pdf/qdl_mail.pdf} The QDL facility for simply sending emails from QDL.
+    *{{{./pdf/qdl_mail.pdf} QDL Mail extension}} The QDL facility for sending simple emails from QDL.
 
 
 Javadoc for QDL
