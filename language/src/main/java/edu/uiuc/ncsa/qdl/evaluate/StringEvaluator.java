@@ -863,11 +863,34 @@ public class StringEvaluator extends AbstractEvaluator {
                 if (o instanceof QDLStem) {
                     outStem.putLongOrString(key, doReplace(polyad, (QDLStem) o, replacements, regexStem, state));
                 } else {
-                    outStem.putLongOrString(key, o);// pass it back unchanged
+                    if(o instanceof QDLSet){
+                        outStem.putLongOrString(key, doReplace(polyad, (QDLSet) o, replacements, regexStem, state));
+                    } else {
+                        outStem.putLongOrString(key, o);// pass it back unchanged
+                    }
                 }
             }
         }
         return outStem;
+    }
+    protected QDLSet doReplace(Polyad polyad, QDLSet inSet, QDLStem replacements, QDLStem regexStem, State state) {
+        QDLSet outSet = new QDLSet();
+        for (Object o : inSet) {
+            if (o instanceof String) {
+                outSet.add(doStringReplace((String) o, replacements, regexStem));
+            } else {
+                if (o instanceof QDLStem) {
+                    outSet.add(doReplace(polyad, (QDLStem) o, replacements, regexStem, state));
+                } else {
+                    if(o instanceof QDLSet){
+                        outSet.add(doReplace(polyad, (QDLSet) o, replacements, regexStem, state));
+                    }else {
+                        outSet.add(o);// pass it back unchanged
+                    }
+                }
+            }
+        }
+        return outSet;
     }
 
     protected String doStringReplace(String s, QDLStem replacements, QDLStem regexStem) {
@@ -974,6 +997,12 @@ public class StringEvaluator extends AbstractEvaluator {
                 isScalar = false;
                 inStem = (QDLStem) r;
             } else {
+                if(r instanceof QDLSet){
+                    polyad.setResult(doReplace(polyad, (QDLSet) r, arg1, regexStem, state));
+                    polyad.setResultType(Constant.SET_TYPE);
+                    polyad.setEvaluated(true);
+                    return;
+                }
                 // Not a string or a stem, so just return it.
                 polyad.setEvaluated(true);
                 polyad.setResult(r);

@@ -1543,7 +1543,7 @@ public class StemEvaluator extends AbstractEvaluator {
         // Make a safe copy of the state to unpack this in case something bombs
         List<String> keys = new ArrayList<>();
         State localState = state.newCleanState();
-        QDLCodec codec = new QDLCodec();
+        MetaCodec codec = new MetaCodec();
 
         for (Object k : stem.keySet()) {
             // implicit in contract that all the keys are string, not integers

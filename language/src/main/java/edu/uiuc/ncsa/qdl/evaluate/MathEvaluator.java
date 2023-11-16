@@ -5,8 +5,10 @@ import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.Statement;
 import edu.uiuc.ncsa.qdl.variables.Constant;
-import edu.uiuc.ncsa.qdl.variables.QDLCodec;
+import edu.uiuc.ncsa.qdl.variables.MetaCodec;
+import edu.uiuc.ncsa.qdl.variables.QDLSet;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
+import edu.uiuc.ncsa.qdl.variables.codecs.AbstractCodec;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -187,6 +189,7 @@ public class MathEvaluator extends AbstractEvaluator {
         return false;
     }
 
+
     private void doCodec(Polyad polyad, State state, final boolean isEncode) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{1, 2});
@@ -200,32 +203,35 @@ public class MathEvaluator extends AbstractEvaluator {
         if (2 < polyad.getArgCount()) {
             throw new ExtraArgException((isEncode ? ENCODE : DECODE) + " requires at most 2 arguments", polyad.getArgAt(2));
         }
-        final int type; // default for base 64.
-        if (polyad.getArgCount() == 2) {
-            Object obj = polyad.evalArg(1, state);
-            if (!(obj instanceof Long)) {
-                throw new BadArgException("the second argument must be an integer", polyad.getArgAt(1));
-            }
-            long lll = (Long) obj;
-            type = (int) lll;
-        } else {
-            type = 64;
-        }
+        final int defaultAlgorithm = 64; // default for base 64.
+
         AbstractEvaluator.fPointer pointer = new AbstractEvaluator.fPointer() {
             @Override
             public AbstractEvaluator.fpResult process(Object... objects) {
                 AbstractEvaluator.fpResult r = new AbstractEvaluator.fpResult();
-                if (!(objects[0] instanceof String)) {
-                    r.result = objects[0];
-                    r.resultType = polyad.getArguments().get(0).getResultType();
-                    return r;
-                }
-                String arg = objects[0].toString();
-                QDLCodec codec = new QDLCodec(type);
-                if (isEncode) {
-                    r.result = codec.encode(arg);
+                AbstractCodec codec;
+                if (objects.length == 2) {
+                    try {
+                        codec = MetaCodec.createCodec(objects[1]);
+                    } catch (IllegalArgumentException iax) {
+                        throw new BadArgException(iax.getMessage(), polyad.getArgAt(1));
+                    }
                 } else {
-                    r.result = codec.decode(arg);
+                    codec = MetaCodec.createCodec(defaultAlgorithm);
+                }
+                if (objects[0] instanceof String) {
+                    String arg = objects[0].toString();
+                    r.result = applyCodec(codec, arg, isEncode);
+                }else{
+                    if(objects[0] instanceof QDLSet){
+                       r.result = doCodec(polyad, (QDLSet) objects[0], codec, isEncode);
+                    }else{
+                        if(objects[0] instanceof QDLStem){
+                            r.result = doCodec(polyad, (QDLStem) objects[0], codec, isEncode);
+                        }else{
+                            r.result = objects[0];
+                        }
+                    }
                 }
                 r.resultType = Constant.getType(r.result);
                 return r;
@@ -236,10 +242,64 @@ public class MathEvaluator extends AbstractEvaluator {
         } else {
             process2(polyad, pointer, isEncode ? ENCODE : DECODE, state, true);
         }
-
-
     }
 
+    /**
+     * Apply code to the string.
+     *
+     * @param codec
+     * @param arg
+     * @param isEncode
+     * @return
+     */
+    private String applyCodec(AbstractCodec codec, String arg, boolean isEncode) {
+        if (isEncode) {
+            return codec.encode(arg);
+        } else {
+            return codec.decode(arg);
+        }
+    }
+
+    protected QDLSet doCodec(Polyad polyad, QDLSet inSet, AbstractCodec codec, boolean isEncode) {
+        QDLSet outSet = new QDLSet();
+        for (Object object : inSet) {
+            if (object instanceof String) {
+                outSet.add(applyCodec(codec, (String) object, isEncode));
+            } else {
+                if (object instanceof QDLSet) {
+                    outSet.add(doCodec(polyad, (QDLSet) object, codec, isEncode));
+                } else {
+                    if (object instanceof QDLSet) {
+
+                    } else {
+                        outSet.add(object); // no change
+                    }
+                }
+            }
+        }
+        return outSet;
+    }
+
+    protected QDLStem doCodec(Polyad polyad, QDLStem inStem, AbstractCodec codec, boolean isEncode) {
+        QDLStem outStem = new QDLStem();
+        for (Object key : inStem.keySet()) {
+            Object value = inStem.get(key);
+            if (value instanceof String) {
+                outStem.putLongOrString(key, applyCodec(codec, (String) value, isEncode));
+            } else {
+                if (value instanceof QDLSet) {
+                    outStem.putLongOrString(key, doCodec(polyad, (QDLSet) value, codec, isEncode));
+                } else {
+                    if (value instanceof QDLStem) {
+                        outStem.putLongOrString(key, doCodec(polyad, (QDLStem) value, codec, isEncode));
+                    } else {
+                        outStem.putLongOrString(key, value); // no change
+                    }
+                }
+            }
+        }
+        return outStem;
+    }
 
     /**
      * The identity function returns its argument. Simple as that.
@@ -452,6 +512,7 @@ public class MathEvaluator extends AbstractEvaluator {
         return;
     }
 
+
     protected void doHash(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{1, 2});
@@ -466,14 +527,7 @@ public class MathEvaluator extends AbstractEvaluator {
             throw new ExtraArgException(HASH + " takes at most 2 arguments", polyad.getArgAt(2));
         }
 
-        String algorithm = "sha-1";
-        if (polyad.getArgCount() == 2) {
-            Object arg2 = polyad.evalArg(1, state);
-            if (!(arg2 instanceof String)) {
-                throw new BadArgException(HASH + " requires a string as the second argument", polyad.getArgAt(1));
-            }
-            algorithm = ((String) arg2).toLowerCase();
-        }
+
         AbstractEvaluator.fPointer pointer = new AbstractEvaluator.fPointer() {
             @Override
             public AbstractEvaluator.fpResult process(Object... objects) {
@@ -481,27 +535,32 @@ public class MathEvaluator extends AbstractEvaluator {
                 if (objects[0] instanceof String) {
                     String algorithm = "sha-1";
                     if (objects.length == 2) {
-                        algorithm = (String) objects[1];
+                        if (objects[1] instanceof String) {
+                            algorithm = (String) objects[1];
+                        } else {
+                            throw new BadArgException("hash algorithm name '" + objects[1] + "' must be a string", polyad.getArgAt(1));
+                        }
                     }
+                    String token = (String) objects[0];
                     switch (algorithm) {
                         case HASH_ALGORITHM_MD2:
-                            r.result = DigestUtils.md2Hex((String) objects[0]);
+                            r.result = DigestUtils.md2Hex(token);
                             break;
                         case HASH_ALGORITHM_MD5:
-                            r.result = DigestUtils.md5Hex((String) objects[0]);
+                            r.result = DigestUtils.md5Hex(token);
                             break;
                         case HASH_ALGORITHM_SHA1:
-                            r.result = DigestUtils.sha1Hex((String) objects[0]);
+                            r.result = DigestUtils.sha1Hex(token);
                             break;
                         case HASH_ALGORITHM_SHA2:
                         case HASH_ALGORITHM_SHA_256:
-                            r.result = DigestUtils.sha256Hex((String) objects[0]);
+                            r.result = DigestUtils.sha256Hex(token);
                             break;
                         case HASH_ALGORITHM_SHA_384:
-                            r.result = DigestUtils.sha384Hex((String) objects[0]);
+                            r.result = DigestUtils.sha384Hex(token);
                             break;
                         case HASH_ALGORITHM_SHA_512:
-                            r.result = DigestUtils.sha512Hex((String) objects[0]);
+                            r.result = DigestUtils.sha512Hex(token);
                             break;
                         default:
                             throw new BadArgException("unknown hash algorithm'" + algorithm + "'", polyad.getArgAt(1));
@@ -521,6 +580,28 @@ public class MathEvaluator extends AbstractEvaluator {
             process2(polyad, pointer, HASH, state);
         }
     }
+
+    protected String hashIt(String token, String algorithm) {
+        switch (algorithm) {
+            case HASH_ALGORITHM_MD2:
+                return DigestUtils.md2Hex(token);
+            case HASH_ALGORITHM_MD5:
+                return DigestUtils.md5Hex(token);
+            case HASH_ALGORITHM_SHA1:
+                return DigestUtils.sha1Hex(token);
+            case HASH_ALGORITHM_SHA2:
+            case HASH_ALGORITHM_SHA_256:
+                return DigestUtils.sha256Hex(token);
+            case HASH_ALGORITHM_SHA_384:
+                return DigestUtils.sha384Hex(token);
+            case HASH_ALGORITHM_SHA_512:
+                return DigestUtils.sha512Hex(token);
+            default:
+                return null;
+
+        }
+    }
+
     public static final String HASH_ALGORITHM_MD2 = "md2";
     public static final String HASH_ALGORITHM_MD5 = "md5";
     public static final String HASH_ALGORITHM_SHA1 = "sha-1";

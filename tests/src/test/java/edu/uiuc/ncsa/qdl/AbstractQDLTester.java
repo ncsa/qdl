@@ -3,7 +3,7 @@ package edu.uiuc.ncsa.qdl;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
-import edu.uiuc.ncsa.qdl.variables.QDLCodec;
+import edu.uiuc.ncsa.qdl.variables.MetaCodec;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.VThing;
 import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
@@ -157,7 +157,7 @@ public class AbstractQDLTester extends TestBase {
         return enc(getRandomString());
     }
 
-    QDLCodec codec = new QDLCodec();
+    MetaCodec codec = new MetaCodec();
 
     protected String enc(String x) {
         return codec.encode(x);

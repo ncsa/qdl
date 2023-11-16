@@ -34,6 +34,7 @@ public class MathFunctionsTest extends AbstractQDLTester {
 
     /**
      * Manually insert a stem into the symbol table and test that it can indeed be fully recovered.
+     *
      * @throws Exception
      */
     public void testAbsoluteValueStem() throws Exception {
@@ -107,27 +108,29 @@ public class MathFunctionsTest extends AbstractQDLTester {
 
     public void testHash() throws Throwable {
         State state = testUtils.getNewState();
-         StringBuffer script = new StringBuffer();
-         addLine(script, "ok0 := hash(3*'woof')=='f6bd2bb62f3f93165d8fc903a286f2eb21267b87';");
-         addLine(script, "ok1 := hash('The quick brown fox jumps over the lazy dog','sha-1')=='2fd4e1c67a2d28fced849ee1bb76e7391b93eb12';");
-         addLine(script, "ok2 := hash(3*'woof','md2')=='e2a822e69c905a067d3351635927ba29';");
-         addLine(script, "ok3 := hash(3*'woof','md5')=='0417584e92d7419ada979f982149507f';");
-         addLine(script, "ok4 := hash(3*'woof','sha-1')=='f6bd2bb62f3f93165d8fc903a286f2eb21267b87';");
-         addLine(script, "ok5 := hash(3*'woof','sha-2')=='ac1303206238621acf00a17e363a48d7ae3b30deb2d639520c9ae5bd38747a6c';");
-         addLine(script, "ok6 := hash(3*'woof','sha-256')=='ac1303206238621acf00a17e363a48d7ae3b30deb2d639520c9ae5bd38747a6c';");
-         addLine(script, "ok7 := hash(3*'woof','sha-384')=='86c77cb23bd700db8e98427e36253bc9c7d1f2be8446beb257ad549f15fe935dc776de421f34e80b675e5c51cb605b45';");
-         addLine(script, "ok8 := hash(3*'woof','sha-512')=='0612369c638261e0576b625290a6d8bfb53672b978f0a3920291767212364c0a10cd3cb1ec6c711ca35833b24a66ac11450966070769fe10e65964dffe912210';");
-         QDLInterpreter interpreter = new QDLInterpreter(null, state);
-         interpreter.execute(script.toString());
-         assert getBooleanValue("ok0", state) : "failed hash for default";
-         assert getBooleanValue("ok1", state) : "failed hash for sha-1";
-         assert getBooleanValue("ok2", state) : "failed hash for md2";
-         assert getBooleanValue("ok3", state) : "failed hash for md5";
-         assert getBooleanValue("ok4", state) : "failed hash for sha-1, test #2";
-         assert getBooleanValue("ok5", state) : "failed hash for sha-2";
-         assert getBooleanValue("ok6", state) : "failed hash for sha-256";
-         assert getBooleanValue("ok7", state) : "failed hash for sha-384";
-         assert getBooleanValue("ok8", state) : "failed hash for sha-512";
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok0 := hash(3*'woof')=='f6bd2bb62f3f93165d8fc903a286f2eb21267b87';");
+        addLine(script, "ok1 := hash('The quick brown fox jumps over the lazy dog','sha-1')=='2fd4e1c67a2d28fced849ee1bb76e7391b93eb12';");
+        addLine(script, "ok2 := hash(3*'woof','md2')=='e2a822e69c905a067d3351635927ba29';");
+        addLine(script, "ok3 := hash(3*'woof','md5')=='0417584e92d7419ada979f982149507f';");
+        addLine(script, "ok4 := hash(3*'woof','sha-1')=='f6bd2bb62f3f93165d8fc903a286f2eb21267b87';");
+        addLine(script, "ok5 := hash(3*'woof','sha-2')=='ac1303206238621acf00a17e363a48d7ae3b30deb2d639520c9ae5bd38747a6c';");
+        addLine(script, "ok6 := hash(3*'woof','sha-256')=='ac1303206238621acf00a17e363a48d7ae3b30deb2d639520c9ae5bd38747a6c';");
+        addLine(script, "ok7 := hash(3*'woof','sha-384')=='86c77cb23bd700db8e98427e36253bc9c7d1f2be8446beb257ad549f15fe935dc776de421f34e80b675e5c51cb605b45';");
+        addLine(script, "ok8 := hash(3*'woof','sha-512')=='0612369c638261e0576b625290a6d8bfb53672b978f0a3920291767212364c0a10cd3cb1ec6c711ca35833b24a66ac11450966070769fe10e65964dffe912210';");
+        addLine(script, "ok9 := ⊗∧⊙['19b58543c85b97c5498edfd89c11c3aa8cb5fe51','3da541559918a808c2402bba5012f6c60b27661c']∈hash({'qwert','asdf'});");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "failed hash for default";
+        assert getBooleanValue("ok1", state) : "failed hash for sha-1";
+        assert getBooleanValue("ok2", state) : "failed hash for md2";
+        assert getBooleanValue("ok3", state) : "failed hash for md5";
+        assert getBooleanValue("ok4", state) : "failed hash for sha-1, test #2";
+        assert getBooleanValue("ok5", state) : "failed hash for sha-2";
+        assert getBooleanValue("ok6", state) : "failed hash for sha-256";
+        assert getBooleanValue("ok7", state) : "failed hash for sha-384";
+        assert getBooleanValue("ok8", state) : "failed hash for sha-512";
+        assert getBooleanValue("ok9", state) : "failed to hash sets";
     }
 
 
@@ -157,31 +160,60 @@ public class MathFunctionsTest extends AbstractQDLTester {
             assert result.get(key).equals(expected.get(key));
         }
     }
+         /*
+         '<woof"ወንጌል  \n6%"$' == decode(encode('<woof"ወንጌል  \n6%"$',constants().codecs.string.), constants().codecs.int.)
 
+          */
 
-    public void testB64Encode() throws Exception {
+    /**
+     * Check that the full set of encode and decode works. Note that we have to special case XSI
+     * since that does not preserve linefeeds, all the others actuall allow for round-tripping.
+     *
+     * @throws Exception
+     */
+    public void testCodecStem() throws Throwable {
         State state = testUtils.getNewState();
-
-        String original = "The quick brown fox jumps over the lazy dog";
-        String expectedResult = "VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYXp5IGRvZw";
-        Polyad polyad = new Polyad(MathEvaluator.ENCODE);
-        ConstantNode arg = new ConstantNode(original, Constant.STRING_TYPE);
-        polyad.addArgument(arg);
-        polyad.evaluate(state);
-        assert polyad.getResult().equals(expectedResult);
+        StringBuffer script = new StringBuffer();
+        addLine(script, "x. := encode('<woof\"ወንጌል  \\n6%\"$',constants().codecs.string.);");
+        addLine(script, "check_xsi := x.'xsi'== '\\\\<woof\\\\\"ወንጌል\\\\ \\\\ 6\\\\%\\\\\"\\\\$';"); // lotsa slashes...
+        addLine(script, "remove(x.'xsi');");
+        // check that decoding with the integer codes works, so that the keys have not gotten out of whack.
+        addLine(script,"decoded. := decode(x., constants().codecs.int) == '<woof\"ወንጌል  \\n6%\"$';");
+        addLine(script,"check_size := size(decoded.)+1 == size(constants().codecs.int);"); // checks that no subsetting happened and we lost some
+        addLine(script, "ok := ⊗∧⊙decoded.;"); // actual check.
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "roundtrip with encode/decode did not work";
+        assert getBooleanValue("check_size", state) : "roundtrip with encode/decode missing some entries. Check that constants().codecs are in syncs";
+        assert getBooleanValue("check_xsi", state) : "round trip with XSI failed";
     }
 
 
-    public void testB64Decode() throws Exception {
+    public void testCodecSet() throws Throwable {
         State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok := 'PHdvb2YiIOGLiOGKleGMjOGIjSAKNiUk'∈encode({'<woof\" ወንጌል \\n6%$'});");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "encode on sets fails.";
+    }
+    public void testB64Encode() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok := 'VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYXp5IGRvZw'==encode('The quick brown fox jumps over the lazy dog');");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "base 64 encode fails.";
+    }
 
-        String expectedResult = "The quick brown fox jumps over the lazy dog";
-        String original = "VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYXp5IGRvZw";
-        Polyad polyad = new Polyad(MathEvaluator.DECODE);
-        ConstantNode arg = new ConstantNode(original, Constant.STRING_TYPE);
-        polyad.addArgument(arg);
-        polyad.evaluate(state);
-        assert polyad.getResult().equals(expectedResult);
+
+    public void testB64Decode() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok := 'The quick brown fox jumps over the lazy dog' ==decode('VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYXp5IGRvZw');");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "base 64 decode fails.";
     }
 
 
@@ -380,6 +412,7 @@ public class MathFunctionsTest extends AbstractQDLTester {
         testRecursion(false);
         testRecursion(true);
     }
+
     public void testRecursion(boolean testXML) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -389,7 +422,7 @@ public class MathFunctionsTest extends AbstractQDLTester {
         addLine(script, "    if[ n <= 2 ]then[ return(1);];");
         addLine(script, "    return( fib(n - 1) + fib(n - 2));");
         addLine(script, "];");
-        if(testXML){
+        if (testXML) {
             state = roundTripXMLSerialization(state, script);
             script = new StringBuffer();
         }
@@ -460,12 +493,13 @@ public class MathFunctionsTest extends AbstractQDLTester {
         testBigMod(false);
         testBigMod(true);
     }
+
     public void testBigMod(boolean testXML) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "ok := mod(494590348974597684,394874589745) == 53454241559;");
         addLine(script, "numeric_digits(100);");
-        if(testXML){
+        if (testXML) {
             // check that numeric digits this gets serialized correctly
             state = roundTripXMLSerialization(state, script);
             script = new StringBuffer();
@@ -491,9 +525,9 @@ public class MathFunctionsTest extends AbstractQDLTester {
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("okx", state) : MathEvaluator.MIN + " returns wrong numeric type, should be a long";
-        assert getBooleanValue("okx0", state) : MathEvaluator.MIN +" returns wrong value.";
-        assert getBooleanValue("oky", state) : MathEvaluator.MAX +" returns wrong numeric type, should be a decimal.";
-        assert getBooleanValue("oky0", state) : MathEvaluator.MAX  + " returns wrong value";
+        assert getBooleanValue("okx0", state) : MathEvaluator.MIN + " returns wrong value.";
+        assert getBooleanValue("oky", state) : MathEvaluator.MAX + " returns wrong numeric type, should be a decimal.";
+        assert getBooleanValue("oky0", state) : MathEvaluator.MAX + " returns wrong value";
     }
 }
 
