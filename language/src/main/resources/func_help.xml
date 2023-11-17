@@ -41,29 +41,56 @@ See also: encode]]>
 
     <entry id="encode">
         <body>
-<![CDATA[encode(arg{,type}) - encode a string or stem of strings. There are
+<![CDATA[encode(token{.},{,type{.}}) - encode a string or stem of strings. There are
  various types of encoding allowed.
-type  name   notes
- 0     v     Variable encode/decode that is QDL safe. Used in boxing, some JSON
- 1     url   RFC 3986,  percent encode/decode
- 16    hex   RFC 4648, character set is a-e0-9
- 32    b32   RFC 4648, character set is A-Z2-7
- 64    b64   RFC 4648, character set is  A-Za-z0-9-_
+type  name       notes
+ 0     qdl       Variable encode/decode that is QDL safe. Used in boxing, some JSON
+ 1     url       RFC 3986,  percent encode/decode
+ 16    hex       RFC 4648,  character set is a-e0-9
+ 32    b32       RFC 4648,  character set is A-Z2-7
+ 64    b64       RFC 4648,  character set is  A-Za-z0-9-_
+ 100   xml1.0    encode as per XML 1.0 standard
+ 101   xml       encode as per XML 1.1 standard
+ 110   json      encode as per JSON standard
+ 120   java      encode as per Java standard
+ 130   html3     encode as per html 3 standard
+ 131   html      encode as per html 4 standard
+ 140   csv       RFC 4180 comma separated values
+ 150   ecma      ECMA standard (includes, Java Script,
+                 Action Script and several others)
+ 160   xsi       Shell command escaping.
 
-these reside in constants().codecs.
-RFC 4648:
-   https://datatracker.ietf.org/doc/html/rfc4648
+The aim is to allow for escaping characters in a string in these
+specifications/languages. So if you are using QDL to write
+for one of these, you can always ensure that your strings are
+correct. The types reside in constants().codecs.
+in int and string resp.
 
-RFC 3986:
-  https://datatracker.ietf.org/doc/html/rfc3986
+RFC 3986 : https://datatracker.ietf.org/doc/html/rfc3986
+RFC 4180 : https://datatracker.ietf.org/doc/html/rfc4180
+RFC 4648 : https://datatracker.ietf.org/doc/html/rfc4648
+     XSI : https://pubs.opengroup.org/onlinepubs/7908799/xcu/chap2.html
 
-There is never any padding at the end of strings.
+
+NOTES:
+  (1) If both arguments are stems, subsetting is applied
+  (2) If the token is not a string, it is returned unaltered
+  (3) You pass in the type as either the integer or string value
+  (4) You may apply this to sets, but not  nested sets.
+  (5) To escape QDL strings, just get their input_form().
+  (6) For base 16, 32 and 64 there is never any padding at the end of strings.
+
 
 See also: decode]]>
         </body>
 <example>
-<![CDATA[  encode('foobar'); // base 64 default
+<![CDATA[E.g. These are all equivalent for base 64 encoding:
+  encode('foobar',64);
+  encode('foobar','b64');
+  encode('foobar'); // base 64 is default
 Zm9vYmFy
+
+E.g. Various simple examples
   encode('foobar', 32); // base 32
 MZXW6YTBOI
    encode('foobar', 16); // base 16 or hex encoding
@@ -75,7 +102,42 @@ $E4$BD$A0$E6$B5$A3
    decode('$E4$BD$A0$E6$B5$A3',0)
 你浣
 Note that the last two characters are preserved. This is a famous case that these two are not always encoded
-correctly, hence included to show functionality.]]>
+correctly, hence included to show functionality.
+
+E.g. If the token is a string, the result returned is conformable to
+     the right argument.
+   encode('<mairzy stoats "∆>', ['json', 'html'])
+[<mairzy stoats \"\u2206>,<mairzy stoats &quot;∆>]
+
+compare with using a stem:
+   encode('<mairzy \nstoats "∆>', {'JSON':'json', 'html4':'html', 'java':'java', 'base 64':64})
+{
+    java : <mairzy \nstoats \"\u2206>,
+ base 64 : PG1haXJ6eSAKc3RvYXRzICLiiIY-,
+   html4 : &lt;mairzy
+stoats &quot;∆&gt;,
+    JSON : <mairzy \nstoats \"\u2206>
+}
+
+Note that in the html4 case, the line feed is not escaped, as per the spec.,
+but preserved.
+
+E.g. One of everything (including some Amharic, just to show unicode support):
+   print(encode('<woof"ወንጌል  \n6%"$',constants().codecs.string.))
+   base_16 : 3c776f6f6622e18b88e18a95e18c8ce1888d20200a36252224
+   base_32 : HR3W633GELQYXCHBRKK6DDEM4GEI2IBABI3CKIRE
+   base_64 : PHdvb2Yi4YuI4YqV4YyM4YiNICAKNiUiJA
+       csv : "<woof""ወንጌል  6%""$"
+      ecma : <woof\"\u12C8\u1295\u130C\u120D  \n6%\"$
+      html : &lt;woof&quot;ወንጌል  6%&quot;$
+     html3 : &lt;woof&quot;ወንጌል  6%&quot;$
+      java : <woof\"\u12C8\u1295\u130C\u120D  \n6%\"$
+      json : <woof\"\u12C8\u1295\u130C\u120D  \n6%\"$
+       qdl : $3Cwoof$22$E1$8B$88$E1$8A$95$E1$8C$8C$E1$88$8D$20$20$0A6$25$22$24
+       url : %3Cwoof%22%E1%8B%88%E1%8A%95%E1%8C%8C%E1%88%8D%20%20%0A6%25%22%24
+       xml : &lt;woof&quot;ወንጌል  6%&quot;$
+    xml1.0 : &lt;woof&quot;ወንጌል  6%&quot;$
+       xsi : \<woof\"ወንጌል\ \ 6\%\"\$]]>
 </example>
     </entry>
 
@@ -209,7 +271,20 @@ f6bd2bb62f3f93165d8fc903a286f2eb21267b87
     hash(3*'woof', 'md2'); // Use the MD 2 digest (128 bits, different algorithm)
 e2a822e69c905a067d3351635927ba29
     hash(3*'woof', 'sha-256'); // (256 bits)
-ac1303206238621acf00a17e363a48d7ae3b30deb2d639520c9ae5bd38747a6c]]>
+ac1303206238621acf00a17e363a48d7ae3b30deb2d639520c9ae5bd38747a6c
+    print(hash('asd', constants().hashes))
+       md2 : cc470f0b5f04e543889629a01218291f
+       md5 : 7815696ecbf1c96e6894b779456d330e
+     sha-1 : f10e2821bbbea527ea02200352313bc059445190
+     sha-2 : 688787d8ff144c502c7f5cffaafe2cc588d86079f9de88304c26b0cb99ce91c6
+   sha-256 : 688787d8ff144c502c7f5cffaafe2cc588d86079f9de88304c26b0cb99ce91c6
+   sha-384 : 91389ee5448e9d7a00f2f250e3d83beff18f1177a04bd0a2019c27b0493bfa072130dfd1625c7b835d0bb008895272f8
+   sha-512 : e54ee7e285fbb0275279143abc4c554e5314e7b417ecac83a5984a964facbaad68866a2841c3e83ddf125a2985566261c4014f9f960ec60253aebcda9513a9b4
+E.g. hashes on a set
+   hash({'asd','qwee'})
+{228f90f03496d0d8903045f7af2a096cf14bda2b,
+ f10e2821bbbea527ea02200352313bc059445190}
+]]>
 </example>
     </entry>
     <entry id="mod">
@@ -1732,7 +1807,8 @@ conformability between the replacement lists is used.
 See also: =~, tokenize]]>
         </body>
 <example>
-<![CDATA[   replace('abcde', 'cd', '23');
+<![CDATA[E.g. simplest example. replace a couple of characters in a string
+   replace('abcde', 'cd', '23');
 ab23e
 
 E.g. Use a regex - replace all blanks with a single period.
@@ -1751,6 +1827,10 @@ xxcyy
 E.g. Apply the replacements to every element in the first argument
    replace(['abcde','qqabcc'],{'ab':'xx','de':'yy'})
 [xxcyy,qqxxcc]
+
+E.g. replace works in sets (and nested sets too)
+   replace({'abcde'}, {'ab':'qq', 'de':'yy'})
+{qqcyy}
 
 E.g. an example where there are mixed regexes and simple replacements. Mutiple
      blanks are replaced as is one word,
@@ -2676,11 +2756,22 @@ true
 [true,true,false]
     '[mM]i.....ft'≈['mifft', 'minecraft','Microsoft'];// Check for 9 char sequence
 [false,true,true]
-   // Check for common spammer spellings in emails, to flag:
+
+E.g. Check for common spammer spellings in emails, to flag:
   'v[i!1][a@]gr[a@]'≈['vi@gra','v1agra','v1@gra','v!@gr@'];
 [true,true,true,true]
-   // possible use for spam filter, with a function that rejects the message
-   if['.*v[i!1][a@]gr[a@].*'≈message][reject(message);];]]>
+
+A possible use for spam filter, with a function that rejects the message:
+   if['.*v[i!1][a@]gr[a@].*'≈message][reject(message);];
+
+E.g. Multiple regex tests can be done using regex's or (|)
+ permissions. := ~(!'write:/staging/.*|'+robot_caput+'.*'=~permissions.)⌆permissions.
+
+(N.B. that the regex start of line is implicit with each string.)
+This is preferred in some cases since it requires a single pass through the elements
+where as writing this as a couple of QDL statements requires a pass through the elements
+each time.
+]]>
                 </example>
 
     </entry>
@@ -3147,7 +3238,7 @@ including the endpoints.]]>
 
     <entry id="version">
         <body>
- <![CDATA[The current version of QDL is 1.5.4.1]]>
+ <![CDATA[The current version of QDL is 1.5-QDL-SNAPSHOT]]>
         </body>
     </entry>
     <entry id="if">

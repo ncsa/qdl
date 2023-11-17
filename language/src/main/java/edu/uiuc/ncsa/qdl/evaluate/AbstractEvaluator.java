@@ -223,7 +223,13 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         node.setEvaluated(true);
     }
 
-    // ToDO make a processN method from these. Just have to scratch head about certain bookkeeping.
+    /**
+     * Main workhorse for monadic system functions. See the note in {@link #process2(ExpressionImpl, fPointer, String, State, boolean)}!
+     * @param polyad
+     * @param pointer
+     * @param name
+     * @param state
+     */
     protected void process1(ExpressionImpl polyad,
                             fPointer pointer,
                             String name,
@@ -302,7 +308,13 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         }
     }
 
-
+    /**
+     * Main workhorse method of evaluating a QDL dyadic system function.
+     * @param polyad
+     * @param pointer
+     * @param name
+     * @param state
+     */
     protected void process2(ExpressionImpl polyad,
                             fPointer pointer,
                             String name,
@@ -314,7 +326,14 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     /**
      * NOTE optionalArguments means that the {@link fPointer} an take more than 2 arguments.
      * So the basic functionality requires 2 args and there may be more.
-     *
+     * <h2>Note</h2>
+     * This (and the other processN functions)
+     * do all the magic of figuring out sets, stems, subsetting etc. You simply write a
+     * function that implements {@link fPointer} that operates on a single pair of numbers.
+     * <br/><br/>
+     * <b>Tip</b>: You should check for arguments types in the fPointer, not before. Argument checks before
+     * invoking this are often a lot more work to unpack. Just let the method do the work. Besides, you can throw
+     * {@link BadArgException}s which are extremely exact at the point of failure.
      * @param polyad
      * @param pointer
      * @param name
@@ -488,7 +507,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     }
 
     /**
-     * Apply a scalar to ever element in a set.
+     * Apply a scalar to every element in a set.
      *
      * @param outSet
      * @param inSet
@@ -575,6 +594,15 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
 
     }
 
+    /**
+     * Main workhorse for evaluating QDL system valence 3 functions. See the note at
+     * {@link #process2(ExpressionImpl, fPointer, String, State, boolean)}!
+     * @param polyad
+     * @param pointer
+     * @param name
+     * @param state
+     * @param optionalArguments
+     */
     protected void process3(ExpressionImpl polyad,
                             fPointer pointer,
                             String name,

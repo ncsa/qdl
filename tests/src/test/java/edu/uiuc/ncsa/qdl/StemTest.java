@@ -202,7 +202,7 @@ public class StemTest extends AbstractQDLTester {
         QDLStem keys = new QDLStem();
         int count = 5;
         int j = 0;
-        QDLCodec codec = new QDLCodec();
+        MetaCodec codec = new MetaCodec();
         for (int i = 0; i < 2 * count; i++) {
             String key = geter();
             if (0 == i % 2) {

@@ -2031,7 +2031,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
 
         QDLStem env = new QDLStem();
-        QDLCodec codec = new QDLCodec();
+        MetaCodec codec = new MetaCodec();
 
         int argCount = polyad.getArgCount();
         if (argCount == 0) {

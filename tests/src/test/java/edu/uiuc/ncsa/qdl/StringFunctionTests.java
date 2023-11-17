@@ -530,6 +530,32 @@ public class StringFunctionTests extends AbstractQDLTester {
         assert getBooleanValue("ok", state);
     }
 
+    public void testStemSetReplace() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "x. := replace({'a':{'qweqwe'},'b':{'werwer'}},{'qw':'aa','rw':'bb'});");
+        addLine(script, "ok := ('aaeaae'∈x.'a') && ('webber'∈x.'b');");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to do replace in sets that are stem values.";
+    }
+
+    /*
+      replace({'a':{'qweqwe'},'b':{'werwer'}},{'qw':'aa','rw':'bb'})
+    {
+     a:{aaeaae},
+     b:{webber}
+    }
+     */
+    public void testSetReplace() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok := 'qqcyy'∈replace({'abcde'}, {'ab':'qq', 'de':'yy'});");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to do replace in sets";
+    }
+
     public void testStringReplace2() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();

@@ -35,7 +35,7 @@ public class StemPath<V extends StemPathEntry> extends ArrayList<V> {
     }
 
     public void parsePath(String path) {
-        QDLCodec codec = new QDLCodec();
+        MetaCodec codec = new MetaCodec();
         if(!isPath(path)){
             V stemPathEntry = (V) new StemPathEntry(path);
             add(stemPathEntry);

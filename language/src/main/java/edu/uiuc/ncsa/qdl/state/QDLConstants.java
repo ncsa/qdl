@@ -52,11 +52,22 @@ public interface QDLConstants {
 
     String SYS_HASH_ALGORITHMS = "hashes.";
     String SYS_CODEC_ALGORITHMS = "codecs.";
-    String SYS_CODEC_VENCODE = "var_encode";
-    String SYS_CODEC_URLCODE = "url_encode";
+    String SYS_CODEC_VENCODE = "qdl_var";
+    String SYS_CODEC_QDL_ENCODE = "qdl";
+    String SYS_CODEC_URLCODE = "url";
     String SYS_CODEC_B16CODE = "base_16";
     String SYS_CODEC_B32CODE = "base_32";
     String SYS_CODEC_B64CODE = "base_64";
+    String SYS_CODEC_HTML3 = "html3";
+    String SYS_CODEC_HTML4 = "html";
+    String SYS_CODEC_XML_1_0 = "xml1.0";
+    String SYS_CODEC_XML_1_1 = "xml";
+    String SYS_CODEC_JAVA = "java";
+    String SYS_CODEC_JSON = "json";
+    String SYS_CODEC_CSV = "csv";
+    String SYS_CODEC_ECMA = "ecma";
+    String SYS_CODEC_XSI = "xsi";
+
     String SYS_VAR_TYPES = "var_type.";
     String SYS_VAR_TYPE_DECIMAL = "decimal";
     String SYS_VAR_TYPE_INTEGER = "integer";

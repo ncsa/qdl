@@ -657,7 +657,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
         if (stemPath.isEmpty()) {
             return null;
         }
-        QDLCodec codec = new QDLCodec();
+        MetaCodec codec = new MetaCodec();
         Object currentObj = QDLNull.getInstance();
         QDLStem lastStem = this;
         for (StemPathEntry spe : stemPath) {
@@ -1210,7 +1210,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
 
 
     public JSON toJSON(boolean escapeNames, int type) {
-        QDLCodec codec = escapeNames?(new QDLCodec(type)):null;
+        MetaCodec codec = escapeNames?(new MetaCodec(type)):null;
 
         if (getQDLMap().size() == 0 && getQDLList().size() == 0) {
             // Empty stem corresponds to an empty JSON Object
@@ -1306,7 +1306,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
      * @param jsonObject return this object, populated
      */
     public QDLStem fromJSON(JSONObject jsonObject, boolean convertVars, int type) {
-        QDLCodec codec = convertVars?(new QDLCodec(type)):null;
+        MetaCodec codec = convertVars?(new MetaCodec(type)):null;
         for (Object k : jsonObject.keySet()) {
             String key = k.toString();
 

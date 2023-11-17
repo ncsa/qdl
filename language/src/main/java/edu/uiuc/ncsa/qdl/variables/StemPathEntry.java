@@ -54,7 +54,7 @@ public class StemPathEntry {
         return key != null;
     }
 
-    QDLCodec codec = new QDLCodec();
+    MetaCodec codec = new MetaCodec();
 
     public String decodePath() {
         if (key == null) {
