@@ -44,7 +44,7 @@ See also: encode]]>
 <![CDATA[encode(token{.},{,type{.}}) - encode a string or stem of strings. There are
  various types of encoding allowed.
 type  name       notes
- 0     qdl       Variable encode/decode that is QDL safe. Used in boxing, some JSON
+ 0     qdl_var   Variable encode/decode that is QDL safe. Used in boxing, some JSON
  1     url       RFC 3986,  percent encode/decode
  16    hex       RFC 4648,  character set is a-e0-9
  32    b32       RFC 4648,  character set is A-Z2-7
@@ -5359,10 +5359,11 @@ See also: fork]]>
 
     <entry id="jload">
        <body>
-  <![CDATA[jload(class_name | moniker | path) - this is a convenience method to load a single
-class with the default alias. The result is the name of the alias. It
+  <![CDATA[jload(class_name | moniker | path, {alias}) - this is a convenience method to load a single
+class with an alias. The result is the name of the alias. It
 is equivalent to
-  module_import(module_load(class_name,'java'))
+  module_import(module_load(class_name,'java'), alias)
+If the alias argument is missing, then the default for the module is used.
 
 There are two special cases.
 1. suppply the key in the info().'lib'.'tools' object,
@@ -5381,11 +5382,11 @@ in OA4MP  you might issue
    jload('oa2.jwt')]]>
        </body>
        <example>
-   <![CDATA[E.g. to load the db module
-   jload('db')
-versus
-  module_import(module_load('edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader','java'))
-db]]>
+   <![CDATA[E.g. to load the db module with the alias of mySQL
+   jload('db', 'mySQL')
+mySQL
+versus issuing the full
+  module_import(module_load('edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader','java'), 'mySQL')]]>
         </example>
     </entry>
     <entry id="∃">

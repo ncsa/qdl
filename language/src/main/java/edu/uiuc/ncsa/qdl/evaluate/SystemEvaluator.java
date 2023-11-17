@@ -569,11 +569,21 @@ public class SystemEvaluator extends AbstractEvaluator {
      */
     private void doJLoad(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setResult(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
         Object arg = polyad.evalArg(0, state);
+        boolean hasAlias = false;
+        String alias = null;
+        if(polyad.getArgCount() == 2){
+            Object object = polyad.evalArg(1, state);
+            if(!isString(object)){
+                throw new BadArgException(JAVA_MODULE_LOAD + " requires a string as its second argument if present", polyad.getArgAt(1));
+            }
+            alias = (String)object;
+            hasAlias = true;
+        }
         String possibleName = arg.toString();
         // Meaning of next: if like .tools.oa2.woof, shave off leading .
         // if there is an embedded ., process that.
@@ -606,6 +616,9 @@ public class SystemEvaluator extends AbstractEvaluator {
         module_load.evaluate(state);
         Polyad module_import = new Polyad(MODULE_IMPORT);
         module_import.addArgument(new ConstantNode(module_load.getResult()));
+        if(hasAlias){
+            module_import.addArgument(new ConstantNode(alias));
+        }
         module_import.evaluate(state);
         polyad.setEvaluated(true);
         polyad.setResult(module_import.getResult());

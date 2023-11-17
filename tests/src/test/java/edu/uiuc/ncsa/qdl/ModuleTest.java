@@ -1729,6 +1729,41 @@ a#n(0)
         assert getBooleanValue("ok", state);
 
     }
+    public void testPassingJavaFunctionArgument() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "z:='https://foo.bar.com';");
+        addLine(script,
+                "module[ 'A:X', 'X'][jload('http', 'http_client');];" +
+                "module_import('A:X');");
+        addLine(script, "X#http_client#host(z);"); // fails since the function references the default NS.
+        addLine(script, "ok := z == X#http_client#host();");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to pass along function argument to Java sub-module, (X#http_client#host() failed.)";
+
+    }
+
+    /**
+     * Checks if passing along a variable argument to a QDL module function works.
+     * @throws Throwable
+     */
+    public void testPassingFunctionArgument() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script,"module[ 'A:Y', 'Y']\n" +
+                "  body[\n" +
+                "      module['A:Z','Z'][f(x,y)->x+y;];\n" +
+                "       module_import('A:Z');\n" +
+                "    ]; //end module\n" +
+                "   module_import('A:Y');");
+        addLine(script, "z:='foo';"); // make this variable is not used, so no false positives
+        addLine(script, "ok := 'foobar' == Y#Z#f(z,'bar');");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to pass along function argument to QDL sub-module";
+
+    }
    /*
        module['a:/c','c'][
       n(x)->1;

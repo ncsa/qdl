@@ -135,7 +135,19 @@ public class ModuleExpression extends ExpressionImpl {
         } else {
             // Simple expressions like a#b must work within the scope of a
             getExpression().setAlias(getAlias());
-            result = getExpression().evaluate(getModuleState(state));
+            State moduleState = getModuleState(state); // clean state
+            // https://github.com/ncsa/qdl/issues/34 pass along variables
+            if(getExpression() instanceof Polyad){
+                Polyad f = (Polyad)getExpression();
+                for(int i = 0; i <f.getArgCount(); i++){
+                    if(f.getArgAt(i) instanceof VariableNode){
+                        VariableNode vNode = (VariableNode)f.getArgAt(i);
+                        Object v = f.evalArg(i,state);
+                        moduleState.setValue(vNode.getVariableReference(), v);
+                    }
+                }
+            }
+            result = getExpression().evaluate(moduleState);
         }
         setResult(result);
         setResultType(Constant.getType(result));
