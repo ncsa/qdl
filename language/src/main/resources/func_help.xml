@@ -107,7 +107,7 @@ correctly, hence included to show functionality.
 E.g. If the token is a string, the result returned is conformable to
      the right argument.
    encode('<mairzy stoats "∆>', ['json', 'html'])
-[<mairzy stoats \"\u2206>,<mairzy stoats &quot;∆>]
+[<mairzy stoats \"\u2206>,&lt;mairzy stoats &quot;∆&gt;]
 
 compare with using a stem:
    encode('<mairzy \nstoats "∆>', {'JSON':'json', 'html4':'html', 'java':'java', 'base 64':64})
@@ -123,18 +123,18 @@ Note that in the html4 case, the line feed is not escaped, as per the spec.,
 but preserved.
 
 E.g. One of everything (including some Amharic, just to show unicode support):
-   print(encode('<woof"ወንጌል  \n6%"$',constants().codecs.string.))
-   base_16 : 3c776f6f6622e18b88e18a95e18c8ce1888d20200a36252224
-   base_32 : HR3W633GELQYXCHBRKK6DDEM4GEI2IBABI3CKIRE
-   base_64 : PHdvb2Yi4YuI4YqV4YyM4YiNICAKNiUiJA
+  print(encode('<woof"ወንጌል  6%"$',constants().codecs.string.))
+   base_16 : 3c776f6f6622e18b88e18a95e18c8ce1888d202036252224
+   base_32 : HR3W633GELQYXCHBRKK6DDEM4GEI2IBAGYSSEJA
+   base_64 : PHdvb2Yi4YuI4YqV4YyM4YiNICA2JSIk
        csv : "<woof""ወንጌል  6%""$"
-      ecma : <woof\"\u12C8\u1295\u130C\u120D  \n6%\"$
+      ecma : <woof\"\u12C8\u1295\u130C\u120D  6%\"$
       html : &lt;woof&quot;ወንጌል  6%&quot;$
      html3 : &lt;woof&quot;ወንጌል  6%&quot;$
-      java : <woof\"\u12C8\u1295\u130C\u120D  \n6%\"$
-      json : <woof\"\u12C8\u1295\u130C\u120D  \n6%\"$
-       qdl : $3Cwoof$22$E1$8B$88$E1$8A$95$E1$8C$8C$E1$88$8D$20$20$0A6$25$22$24
-       url : %3Cwoof%22%E1%8B%88%E1%8A%95%E1%8C%8C%E1%88%8D%20%20%0A6%25%22%24
+      java : <woof\"\u12C8\u1295\u130C\u120D  6%\"$
+      json : <woof\"\u12C8\u1295\u130C\u120D  6%\"$
+   qdl_var : $3Cwoof$22$E1$8B$88$E1$8A$95$E1$8C$8C$E1$88$8D$20$206$25$22$24
+       url : %3Cwoof%22%E1%8B%88%E1%8A%95%E1%8C%8C%E1%88%8D%20%206%25%22%24
        xml : &lt;woof&quot;ወንጌል  6%&quot;$
     xml1.0 : &lt;woof&quot;ወንጌል  6%&quot;$
        xsi : \<woof\"ወንጌል\ \ 6\%\"\$]]>
@@ -1834,9 +1834,9 @@ E.g. replace works in sets (and nested sets too)
 
 E.g. an example where there are mixed regexes and simple replacements. Mutiple
      blanks are replaced as is one word,
-  replace('teh   quick brown    fox       jumped',
-           {'\\s+': ' ', 'teh':'the'},
-           {'\\s+':true, 'teh':false});
+  replace('teh   quick brown    fox       jumped', // line of text
+           {'\\s+': ' ', 'teh':'the'},             // the replacements
+           {'\\s+':true, 'teh':false});            // booleans for which are regexes
 the quick brown fox jumped
 
      Note that you also omit the regex flags that are false, since that is the default,

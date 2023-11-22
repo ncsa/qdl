@@ -10,17 +10,75 @@ This document is the most current thinking on types.
  type = type definition. This is like an interface in Java in that it has signatures of functions.
  forge = an factory to make types.
 
- Types may be added using the restriction operator: |
+Native/built-in types
+Integer
+Decimal
+Boolean
+String
+Stem
+List
+Set
+Module
+User defined
+Type (internal only? I.e. user can't do something like Type|x and have it work)
+
+wrap every value of a variable in a new QDLVariable object? That's a really
+big refactor, but we already have a VThing that wraps them, so the right
+call may be to make a Java object for the types QDLModule and QDLType
+which VThing manages. This also should mean QDList become a
+first order object, not just part of a QDLStem.
+
+ Types may be checked using the restriction operator: |
  Integer|x restricts x to integer values, so
 
- Integer | x := 3; // works
- Integer | x := 3/4; // raises type error
+* Scalars
+   Integer | x := 3; // works
+   Integer | x := 3/4; // raises type error
 
- Since stems have implicit type with trailing ".",
-    Integer | x.
- means to restrict all values of x. to being integers. Can also do
-    Integer | List | x.
-which restricts x. to being a list of integers.
+* Stems/Lists
+Allow for type maps:
+   {*:Integer} | x.
+means to restrict all values of x. to being integers.
+More generally,
+
+   z. := {key0:Type0, key1:Type1,...}
+Then
+   z. | a.
+would apply restrictions and throw a type error if an entry in
+a. were the wrong type. Allow for nested types too.
+
+   {*:Integer} | x. && List | x.
+means x. must be a list and every element must be an Integer.
+
+* Functions
+   f(Integer | n, Decimal | x) ->x^n
+
+would perform restriction on the fly as part of the argument resolution.
+This means no changes need to be made to the function machinery when adding types.
+
+Ponderings
+----------
+? (Type map) Allow for stem of types
+   z. := {key0:Type0, key1:Type1,...}
+Then
+   z. | a.
+would apply restrictions and throw a type error if an entry in
+a. were the wrong type.
+
+Fine, but what about z. + 3. Are any operations allowed on a type map?
+
+? Another type map, restricting elements of a list. Maybe
+     List.Integer | x.
+which restricts x. to being a list of integers? This might cause irreconcilable
+collisions when implemented... Or perhaps
+
+z. := {*:Integer} is type map
+   (z. | x.) && (List | x.) == {z. && List)|x.
+
+(uses stem and scalar behavior of QDL)
+
+----------
+
 
 | x (monadic) queries the type, so
    Integer == | x ? 0: "empty"

@@ -142,6 +142,7 @@ public class State extends FunctionState implements QDLConstants {
                 assertionsOn);
     }
 
+
     public State(
             VStack vStack,
             OpEvaluator opEvaluator,
@@ -573,16 +574,16 @@ public class State extends FunctionState implements QDLConstants {
                 stringBuffer.append(truncateLine("Class-Path:", linein));
                 int j;
 
-                for( j = i+1 ; j < manifest.size(); j++){
+                for (j = i + 1; j < manifest.size(); j++) {
                     String currentLine = manifest.get(j);
-                    if(currentLine.startsWith(" ")){
+                    if (currentLine.startsWith(" ")) {
                         stringBuffer.append(currentLine.substring(1)); // starts with a single added blank.
-                    }else{
-                        i = j-1;
+                    } else {
+                        i = j - 1;
                         break;
                     }
                 }
-                
+
                 versionInfo.put(SYS_QDL_BUILD_CLASS_PATH, stringBuffer.toString());
             }
             // There are some instances where this is munged. Only stick something there
@@ -783,56 +784,94 @@ public class State extends FunctionState implements QDLConstants {
      */
     public State newLocalState(State moduleState) {
         //   return newStateWithImportsOLD(moduleState);
-        return newStateWithImportsNEW(moduleState);
+        return newSelectiveState(moduleState);
     }
 
-    protected State newStateWithImportsNEW(State moduleState) {
-        return newStateWithImportsNEW(moduleState, true);
+    protected State newSelectiveState(State moduleState) {
+        return newSelectiveState(moduleState, true);
     }
 
-    protected State newStateWithImportsNEW(State moduleState, boolean pushVariables) {
+    /**
+     * Create a clean state, taking the old modules from moduleState, all the functions and allowing
+     * inheritance of the current variable stack
+     *
+     * @param moduleState
+     * @param inheritVariables
+     * @return
+     */
+    public State newSelectiveState(State moduleState, boolean inheritVariables) {
+        return newSelectiveState(moduleState, true, inheritVariables);
+    }
+
+    /**
+     * This will clone the current state and will add the modules (templates and instances -- old modules)
+     * from moduleState. If pushFunctions is
+     *
+     * @param moduleState
+     * @param inheritFunctions
+     * @param inheritVariables
+     * @return
+     */
+    public State newSelectiveState(State moduleState, boolean inheritFunctions, boolean inheritVariables) {
+        return newSelectiveState(moduleState, true, inheritFunctions, inheritVariables);
+    }
+
+    /**
+     * Create a new state based on the current state and choosing what to inherit. In this case, inherited
+     * objects come first, items in current state are appended. This allows for overrides in
+     * {@link edu.uiuc.ncsa.qdl.statements.ExpressionInterface#evaluate(State)} calls.
+     *
+     * @param moduleState
+     * @param inheritModules
+     * @param inheritFunctions
+     * @param inheritVariables
+     * @return
+     */
+    public State newSelectiveState(State moduleState, boolean inheritModules, boolean inheritFunctions, boolean inheritVariables) {
         VStack newStack = new VStack(); // always creates an empty symbol table, replace it
-        if (pushVariables) {
+        if (inheritVariables) {
             if (moduleState != null && !moduleState.vStack.isEmpty()) {
                 //newStack.addAll(moduleState.symbolStack.getParentTables());
                 newStack.appendTables(moduleState.vStack);
             }
-
-            if (!vStack.isEmpty()) {
-                //newStack.addAll(symbolStack.getParentTables());
-                newStack.appendTables(vStack);
-            }
+        }
+        if (!vStack.isEmpty()) {
+            newStack.appendTables(vStack);
         }
         FStack<? extends FTable<? extends FKey, ? extends FunctionRecord>> ftStack = new FStack();
-        if (moduleState != null && !moduleState.getFTStack().isEmpty()) {
-            ftStack.appendTables(moduleState.getFTStack());
+        if (inheritFunctions) {
+            if (moduleState != null && !moduleState.getFTStack().isEmpty()) {
+                ftStack.appendTables(moduleState.getFTStack());
+            }
         }
-
         if (!getFTStack().isEmpty()) {
             ftStack.appendTables(getFTStack()); // pushes elements in reverse order
         }
 
 
         MTStack mtStack = new MTStack();
-        if (moduleState != null && !moduleState.getMTemplates().isEmpty()) {
-            mtStack.appendTables(moduleState.getMTemplates());
-        }
-
-        if (!getMTemplates().isEmpty()) {
-            mtStack.appendTables(getMTemplates());
-        }
-
-        if (moduleState != null && !moduleState.getMTemplates().isEmpty()) {
-            mtStack.appendTables(moduleState.getMTemplates());
-        }
-
         MIStack miStack = new MIStack();
-        if (moduleState != null && !moduleState.getMInstances().isEmpty()) {
-            miStack.appendTables(moduleState.getMInstances());
-        }
 
-        if (!getMInstances().isEmpty()) {
-            miStack.appendTables(getMInstances());
+        if (inheritModules) {
+            if (moduleState != null && !moduleState.getMTemplates().isEmpty()) {
+                mtStack.appendTables(moduleState.getMTemplates());
+            }
+
+            if (!getMTemplates().isEmpty()) {
+                mtStack.appendTables(getMTemplates());
+            }
+
+            if (moduleState != null && !moduleState.getMTemplates().isEmpty()) {
+                mtStack.appendTables(moduleState.getMTemplates());
+            }
+
+            if (moduleState != null && !moduleState.getMInstances().isEmpty()) {
+                miStack.appendTables(moduleState.getMInstances());
+            }
+
+            if (!getMInstances().isEmpty()) {
+                miStack.appendTables(getMInstances());
+            }
         }
 
         State newState = newInstance(
@@ -930,7 +969,7 @@ public class State extends FunctionState implements QDLConstants {
      * @return
      */
     public State newFunctionState() {
-        return newStateWithImportsNEW(null, false);
+        return newSelectiveState(null, false);
     }
 
     /**

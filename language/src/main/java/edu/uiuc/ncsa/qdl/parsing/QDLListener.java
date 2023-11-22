@@ -1306,7 +1306,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
         ExpressionInterface exp = (ExpressionInterface) resolveChild(list.get(0));
         for (int i = 0; i < dotOpContext.getChildCount(); i++) {
             ParseTree p = dotOpContext.getChild(i);
-            // If it is a termminal node (a node consisting of just be the stem marker) skip it
+            // If it is a termminal node (a node consisting of just the stem marker) skip it
             if (!(p instanceof TerminalNodeImpl)) {
                 ExpressionInterface swri = (ExpressionInterface) resolveChild(p);
                 if (i == 0) {
@@ -2124,6 +2124,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
          * it, so X#__a, X#__f(3) will fail. 
          */
         Statement statement = resolveChild(ctx.expression());
+        //Statement statement = resolveChild(ctx.expression(1));
         if (statement instanceof FunctionDefinitionStatement) {
             throw new IntrinsicViolation("cannot define function in an existing module", statement);
         }
@@ -2149,6 +2150,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
             moduleExpression.setDefaultNamespace(true);
         } else {
             ExpressionInterface var = (ExpressionInterface) resolveChild(ctx.variable());
+            //ExpressionInterface var = (ExpressionInterface) resolveChild(ctx.expression(0));
             if (!(var instanceof VariableNode)) {
                 throw new IllegalArgumentException("unexpected argument for alias");
             }

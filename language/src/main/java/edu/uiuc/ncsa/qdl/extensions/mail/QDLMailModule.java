@@ -50,8 +50,7 @@ public class QDLMailModule extends JavaModule {
         d.add("");
         d.add("Basic operation is to set a configuration (a stem) and use the " + QDLMail.SEND_NAME + " function.");
         d.add("Example.");
-        d.add("   jload('mail');");
-        d.add("mail");
+        d.add("   mail:=jload('mail');");
         d.add("   mail#cfg(cfg.); // assuming cfg. has your mail account information.");
         d.add("   mail#send(['This is the subject','This is the body'];");
         return d;

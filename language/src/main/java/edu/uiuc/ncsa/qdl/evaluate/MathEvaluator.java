@@ -131,19 +131,7 @@ public class MathEvaluator extends AbstractEvaluator {
 
 
     @Override
-    public boolean evaluate(Polyad polyad, State state) {
-        try {
-            return evaluate2(polyad, state);
-        } catch (QDLException q) {
-            throw q;
-        } catch (Throwable t) {
-            QDLExceptionWithTrace qq = new QDLExceptionWithTrace(t, polyad);
-            throw qq;
-        }
-    }
-
-    public boolean evaluate2(Polyad polyad, State state) {
-
+    public boolean dispatch(Polyad polyad, State state) {
         switch (polyad.getName()) {
             case IDENTITY_FUNCTION:
             case LONG_IDENTITY_FUNCTION:

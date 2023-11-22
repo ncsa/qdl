@@ -274,18 +274,7 @@ public class StemEvaluator extends AbstractEvaluator {
 
 
     @Override
-    public boolean evaluate(Polyad polyad, State state) {
-        try {
-            return evaluate2(polyad, state);
-        } catch (QDLException q) {
-            throw q;
-        } catch (Throwable t) {
-            QDLExceptionWithTrace qq = new QDLExceptionWithTrace(t, polyad);
-            throw qq;
-        }
-    }
-
-    public boolean evaluate2(Polyad polyad, State state) {
+    public boolean dispatch(Polyad polyad, State state) {
         switch (polyad.getName()) {
             case HAS_KEYS:
                 doHasKeys(polyad, state);
@@ -684,43 +673,6 @@ public class StemEvaluator extends AbstractEvaluator {
 
         }
 
-
-/*
-        StemKeys stemKeys1 = stem1.keySet();
-        for (Object key : stem0.keySet()) {
-            Object lArg = stem0.get(key);
-            if (stem1.containsKey(key)) {
-                stemKeys1.remove(key);
-                Object rArg = stem1.get(key);
-                if (!lArg.equals(rArg)) {
-                    QDLStem x = new QDLStem();
-                    x.put(0L, lArg);
-                    x.put(1L, rArg);
-                    out.putLongOrString(key, x);
-                }
-            } else {
-                if (!subsettingOn) {
-                    QDLStem x = new QDLStem();
-                    x.put(0L, lArg);
-                    x.put(1L, QDLNull.getInstance());
-                    out.putLongOrString(key, x);
-                }
-            }
-        }
-*/
-        // So at this point we have everything in stem0 processed. It ispossible that there are
-        // elements in stem1 that are not in stem0 and if we are told to process them, stemKeys1
-        // contains a list of elements in stem1 not in stem0
-/*
-        if (!subsettingOn) {
-            for (Object key : stemKeys1) {
-                QDLStem x = new QDLStem();
-                x.put(0L, QDLNull.getInstance());
-                x.put(1L, stem1.get(key));
-                out.putLongOrString(key, x);
-            }
-        }
-*/
         polyad.setResult(out);
         polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
@@ -1414,12 +1366,6 @@ public class StemEvaluator extends AbstractEvaluator {
             Object arg1 = polyad.evalArg(1, state);
             checkNull(arg1, polyad.getArgAt(1));
 
-            /*boolean argOK = false; // got a valid input, boolean or long.
-            if (isBoolean(arg1)) {
-                argOK = true;
-                convertNames = (Boolean) arg1;
-            }*/
-
             if (isLong(arg1)) {
                 Long argL = (Long) arg1;
                 indent = argL.intValue(); // best we can do
@@ -1924,12 +1870,6 @@ public class StemEvaluator extends AbstractEvaluator {
             throw new QDLExceptionWithTrace(HAS_KEY + " requires a stem as its second argument", polyad.getArgAt(1));
         }
 
- /*       if (!isStem(arg2)) {
-            polyad.setResult(target.containsKey(arg2.toString()));
-            polyad.setResultType(BOOLEAN_TYPE);
-            polyad.setEvaluated(true);
-            return;
-        }*/
         if (isScalar) {
             polyad.setResult(argStem.containsKey(arg0));
             polyad.setResultType(BOOLEAN_TYPE);
@@ -2327,28 +2267,6 @@ public class StemEvaluator extends AbstractEvaluator {
                           polyad.setResult(esn2.remove(state));
                           break;
         }
-/*
-        if (polyad.getArgAt(0) instanceof VariableNode) {
-            VariableNode variableNode = (VariableNode) polyad.getArgAt(0);
-            // Don't evaluate this because it might not exist (that's what we are testing for). Just check
-            // if the name is defined.
-            var = variableNode.getVariableReference();
-            if (var == null) {
-                polyad.setResult(Boolean.FALSE);
-            } else {
-                state.remove(var);
-                polyad.setResult(Boolean.TRUE);
-            }
-        }
-        if (polyad.getArgAt(0) instanceof ConstantNode) {
-            throw new BadArgException(" cannot remove a constant", polyad.getArgAt(0));
-        }
-        if (polyad.getArgAt(0) instanceof ESN2) {
-            ESN2 esn2 = (ESN2) polyad.getArgAt(0);
-            polyad.setResult(esn2.remove(state));
-        }
-
-*/
         polyad.setResultType(BOOLEAN_TYPE);
         polyad.setEvaluated(true);
     }
@@ -3056,15 +2974,6 @@ z. :=  join3(q.,w.)
             sss.getQDLList().getArrayList().
         }*/
         QDLStem newIndices = oldIndices.getQDLList().permuteEntries(pStem0.getQDLList().getArrayList());
-/*
-        Polyad makeNew = new Polyad(FOR_EACH);
-        FunctionReferenceNode frn = new FunctionReferenceNode();
-        frn.setFunctionName(SHUFFLE);
-        makeNew.addArgument(frn);
-        makeNew.addArgument(new ConstantNode(oldIndices, STEM_TYPE));
-        makeNew.addArgument(new ConstantNode(pStem0, STEM_TYPE));
-        QDLStem newIndices = (QDLStem) makeNew.evaluate(state);
-*/
 
         // QDL to remap everything.
         Polyad subset = new Polyad(REMAP);

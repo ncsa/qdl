@@ -3,7 +3,7 @@ package edu.uiuc.ncsa.qdl;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 
-import static edu.uiuc.ncsa.qdl.ModuleTest.testModulePath;
+import static edu.uiuc.ncsa.qdl.OldModuleTests.testModulePath;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -51,7 +51,7 @@ public class SerializationTest extends AbstractQDLTester {
     }
 
     /**
-     * Repeat of {@link ModuleTest#testMultipleNestedModules} but doing serialization in the middle of it.
+     * Repeat of {@link OldModuleTests#testMultipleNestedModules} but doing serialization in the middle of it.
      * This should exercise all the capabilities of serialization version 2.
      *
      * @throws Throwable

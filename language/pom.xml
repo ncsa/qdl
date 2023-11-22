@@ -12,7 +12,6 @@
     <artifactId>language</artifactId>
     <name>QDL base language</name>
     <packaging>jar</packaging>
-    <version>1.5-QDL-SNAPSHOT</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <additionalparam>-Xdoclint:none</additionalparam>

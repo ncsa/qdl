@@ -12,7 +12,7 @@ import java.math.BigDecimal;
  * <p>Created by Jeff Gaynor<br>
  * on 9/23/21 at  2:20 PM
  */
-public class ModuleTest extends AbstractQDLTester {
+public class OldModuleTests extends AbstractQDLTester {
     /**
      * Shows that importing module functions g and h outside a function body but referencing them
      * inside it will work: This means that, global functions can be used.
@@ -1008,7 +1008,7 @@ cannot access '__a'
     (vs. running a module) and is special cased in the VariableState/FunctionState objects. Mostly this is to
     guard against a change that breaks this. Simple, basic and essentail regression checks.
      */
-    protected static String testModulePath = DebugUtil.getDevPath()+"/qdl/language/src/main/resources/modules/test.mdl";
+    protected static String testModulePath = DebugUtil.getDevPath() + "/qdl/language/src/main/resources/modules/test.mdl";
 
     // ML = module_load
     public void testMLIntrinsicFunction() throws Throwable {
@@ -1687,6 +1687,7 @@ a#n(0)
      * Test is that a module tries to access a function in the default namespace that has not been defined
      * when there is a like-named one in the module. The system should tell the user that the function is
      * not defined.
+     *
      * @throws Throwable
      */
     public void testDefaultNamespaceOK3() throws Throwable {
@@ -1729,13 +1730,14 @@ a#n(0)
         assert getBooleanValue("ok", state);
 
     }
+
     public void testPassingJavaFunctionArgument() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "z:='https://foo.bar.com';");
         addLine(script,
-                "module[ 'A:X', 'X'][jload('http', 'http_client');];" +
-                "module_import('A:X');");
+                "module[ 'A:X'][http_client := jload('http');];" +
+                        "X:=import('A:X');");
         addLine(script, "X#http_client#host(z);"); // fails since the function references the default NS.
         addLine(script, "ok := z == X#http_client#host();");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
@@ -1746,12 +1748,13 @@ a#n(0)
 
     /**
      * Checks if passing along a variable argument to a QDL module function works.
+     *
      * @throws Throwable
      */
     public void testPassingFunctionArgument() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script,"module[ 'A:Y', 'Y']\n" +
+        addLine(script, "module[ 'A:Y', 'Y']\n" +
                 "  body[\n" +
                 "      module['A:Z','Z'][f(x,y)->x+y;];\n" +
                 "       module_import('A:Z');\n" +
@@ -1764,23 +1767,5 @@ a#n(0)
         assert getBooleanValue("ok", state) : "failed to pass along function argument to QDL sub-module";
 
     }
-   /*
-       module['a:/c','c'][
-      n(x)->1;
-      module['a:/d','d'][n(x)->2;];
-      module_import('a:/d','d');
-      f(x)->n(3)+d#n(5);
-      nn(x)->#n(x)+n(x);
-      ];
-module_import('a:/c');
-c#n(4); //1
-c#d#n(4); //2
-c#f(4);//1+2 == 3
-    */
-    /*
-   module['a:/t','a']body[define[f(x)]body[return(x+1);];];
-   module['q:/z','w']body[module_import('a:/t');define[g(x)]body[return(a#f(x)+3);];];
-   module_import('q:/z');
-   is_function(w#a#f, 1)
-     */
+
 }

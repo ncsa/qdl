@@ -1647,6 +1647,11 @@ public class OpEvaluator extends AbstractEvaluator {
         return false;
     }
 
+    @Override
+    public boolean dispatch(Polyad polyad, State state) {
+        return false;
+    }
+
     public int[] getArgCount(Monad monad) {
         evaluate(monad, null);
         return (int[]) monad.getResult();

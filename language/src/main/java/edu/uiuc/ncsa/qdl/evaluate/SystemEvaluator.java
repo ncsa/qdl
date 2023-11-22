@@ -365,18 +365,7 @@ public class SystemEvaluator extends AbstractEvaluator {
     }
 
     @Override
-    public boolean evaluate(Polyad polyad, State state) {
-        try {
-            return evaluate2(polyad, state);
-        } catch (QDLException q) {
-            throw q;
-        } catch (Throwable t) {
-            QDLExceptionWithTrace qq = new QDLExceptionWithTrace(t, polyad);
-            throw qq;
-        }
-    }
-
-    public boolean evaluate2(Polyad polyad, State state) {
+    public boolean dispatch(Polyad polyad, State state) {
         // NOTE NOTE NOTE!!! The for_next, has_keys, check_after functions are NOT evaluated here. In
         // the WhileLoop class they are picked apart for their contents and the correct looping strategy is
         // done. Look at the WhileLoop's evaluate method. All this evaluator
@@ -610,16 +599,16 @@ public class SystemEvaluator extends AbstractEvaluator {
                 }
             }
         }
-        Polyad module_load = new Polyad(MODULE_LOAD);
+        Polyad module_load = new Polyad(ModuleEvaluator.LOAD);
         module_load.addArgument(new ConstantNode(possibleName));
         module_load.addArgument(new ConstantNode(MODULE_TYPE_JAVA));
         module_load.evaluate(state);
-        Polyad module_import = new Polyad(MODULE_IMPORT);
+        Polyad module_import = new Polyad(ModuleEvaluator.IMPORT);
         module_import.addArgument(new ConstantNode(module_load.getResult()));
         if(hasAlias){
             module_import.addArgument(new ConstantNode(alias));
         }
-        module_import.evaluate(state);
+        Object result = module_import.evaluate(state);
         polyad.setEvaluated(true);
         polyad.setResult(module_import.getResult());
         polyad.setResultType(module_import.getResultType());
@@ -2574,7 +2563,7 @@ public class SystemEvaluator extends AbstractEvaluator {
     }
 
     /**
-     * Load a the module(s) in a single resource.
+     * Load the module(s) in a single resource.
      *
      * @param state
      * @param resourceName
@@ -2767,69 +2756,6 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     }
 
-    /**
-     * Converts a couple of different arguments to the form
-     * [[a0{,b0}],[a1{,b1}],...,[an{,bn}] or (if a single argument that is
-     * a stem) can pass back:
-     * <p>
-     * {key0:[[a0{,b0}], key1:[a1{,b1}],...}
-     * <p>
-     * where the bk are optional. All ak, bk are strings.
-     * a,b -> [[a,b]] (pair of arguments, function is dyadic
-     * [a,b] ->[[a,b]] (simple list, convert to nested list
-     * [a0,a1,...] -> [[a0],[a1],...] allow for scalars
-     * Use in both module import and load for consistent arguments
-     *
-     * @param polyad
-     * @param state
-     * @param component
-     * @return
-     */
-    private QDLStem convertArgsToStem(Polyad polyad, Object arg, State state, String component) {
-        QDLStem argStem = null;
-
-        boolean gotOne = false;
-
-        switch (polyad.getArgCount()) {
-            case 0:
-                throw new MissingArgException(component + " requires an argument", polyad);
-            case 1:
-                // single string arguments
-                if (isString(arg)) {
-                    argStem = new QDLStem();
-                    argStem.listAdd(arg);
-                    gotOne = true;
-                }
-                if (isStem(arg)) {
-                    argStem = (QDLStem) arg;
-                    gotOne = true;
-                }
-                break;
-            case 2:
-                if (!isString(arg)) {
-                    throw new BadArgException("Dyadic " + component + " requires string arguments only", polyad.getArgAt(0));
-                }
-                Object arg2 = polyad.evalArg(1, state);
-                checkNull(arg2, polyad.getArgAt(1), state);
-                if (!isString(arg2)) {
-                    throw new BadArgException("Dyadic " + component + " requires string arguments only", polyad.getArgAt(1));
-                }
-
-                argStem = new QDLStem();
-                QDLStem innerStem = new QDLStem();
-                innerStem.listAdd(arg);
-                innerStem.listAdd(arg2);
-                argStem.put(0L, innerStem);
-                gotOne = true;
-                break;
-            default:
-                throw new ExtraArgException(component + ": too many arguments", polyad.getArgAt(2));
-        }
-        if (!gotOne) {
-            throw new BadArgException(component + ": unknown argument type", polyad);
-        }
-        return argStem;
-    }
 
     protected void doInterpret(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {

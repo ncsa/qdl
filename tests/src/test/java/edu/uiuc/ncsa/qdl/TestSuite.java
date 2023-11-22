@@ -12,6 +12,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         QDLVariableTest.class,
+        ModuleTests.class,
         TestMonadicOperations.class,
         TestDyadicOperations.class,
         SetTest.class,
@@ -22,7 +23,7 @@ import org.junit.runners.Suite;
         MathFunctionsTest.class,
         StemTest.class,
         ParserTest.class,
-        ModuleTest.class,
+        OldModuleTests.class,
         GlomTest.class,
         SerializationTest.class,
         // Without the VFS tests, all other tests (156 of them) take 1.532 s. (av. 9.82 ms per test)

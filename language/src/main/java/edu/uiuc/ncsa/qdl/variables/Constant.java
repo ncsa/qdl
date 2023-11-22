@@ -1,6 +1,7 @@
 package edu.uiuc.ncsa.qdl.variables;
 
 import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNode;
+import edu.uiuc.ncsa.qdl.module.Module;
 
 import java.math.BigDecimal;
 
@@ -19,6 +20,7 @@ public class Constant {
         if(object instanceof QDLStem) return STEM_TYPE;
         if(object instanceof BigDecimal) return DECIMAL_TYPE;
         if(object instanceof QDLSet) return SET_TYPE;
+        if(object instanceof Module) return MODULE_TYPE;
         if(object instanceof FunctionReferenceNode) return FUNCTION_TYPE;
         return UNKNOWN_TYPE;
     }
@@ -31,7 +33,7 @@ public class Constant {
     public static final int DECIMAL_TYPE = 5;
     public static final int FUNCTION_TYPE = 6;
     public static final int SET_TYPE = 10;
-    public static final int COMPLEX_TYPE = 7; // some day...
+    public static final int MODULE_TYPE = 7;
     Object value;
     int type = UNKNOWN_TYPE;
 
@@ -39,6 +41,7 @@ public class Constant {
         return key instanceof String;
     }
 
+    public static boolean isModule(Object key){return key instanceof Module;}
 
     public int getType() {
         return type;

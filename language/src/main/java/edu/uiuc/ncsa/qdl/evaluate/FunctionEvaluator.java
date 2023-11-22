@@ -4,6 +4,7 @@ import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.expressions.*;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunctionRecord;
 import edu.uiuc.ncsa.qdl.functions.*;
+import edu.uiuc.ncsa.qdl.state.AbstractState;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XThing;
@@ -254,10 +255,10 @@ public class FunctionEvaluator extends AbstractEvaluator {
      */
     @Override
     public boolean evaluate(Polyad polyad, State state) {
-        return evaluate2(polyad, state);
+        return dispatch(polyad, state);
     }
 
-    public boolean evaluate2(Polyad polyad, State state) {
+    public boolean dispatch(Polyad polyad, State state) {
         return evaluate(null, polyad, state);
     }
 
@@ -320,7 +321,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
     protected void figureOutEvaluation(Polyad polyad, State state, boolean checkForDuplicates) throws Throwable {
         FR_WithState frs;
         try {
-            if (state.isIntrinsic(polyad.getName()) && polyad.hasAlias()) {
+            if (AbstractState.isIntrinsic(polyad.getName()) && polyad.hasAlias()) {
                 // if it is in a module and at the top of the stack, then this is an access violation
                 if (state.getFTStack().localHas(new FKey(polyad.getName(), polyad.getArgCount()))) {
                     throw new IntrinsicViolation("cannot access intrinsic function directly.", polyad);
@@ -378,7 +379,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
         }
         localState.setWorkspaceCommands(state.getWorkspaceCommands());
         localState.setModuleState(state.isModuleState() || localState.isModuleState()); // it might have been set,
-        // we are going to write local variables here and the MUST get priority over already exiting ones
+        // we are going to write local variables here and they MUST get priority over already exiting ones
         // but without actually changing them (or e.g., recursion is impossible).
         for (int i = 0; i < polyad.getArgCount(); i++) {
             if (polyad.getArguments().get(i) instanceof LambdaDefinitionNode) {

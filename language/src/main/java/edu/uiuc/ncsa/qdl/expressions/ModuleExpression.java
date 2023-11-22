@@ -1,10 +1,10 @@
 package edu.uiuc.ncsa.qdl.expressions;
 
-import edu.uiuc.ncsa.qdl.exceptions.ImportException;
 import edu.uiuc.ncsa.qdl.exceptions.IntrinsicViolation;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.exceptions.UnknownSymbolException;
 import edu.uiuc.ncsa.qdl.functions.FKey;
+import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
@@ -47,7 +47,7 @@ public class ModuleExpression extends ExpressionImpl {
     String alias;
 
     @Override
-    public Object evaluate(State state) {
+    public Object evaluate(State ambientState) {
         // resolves https://github.com/ncsa/qdl/issues/24
         if (isDefaultNamespace()) {
             if (getExpression() instanceof ConstantNode) {
@@ -59,7 +59,7 @@ public class ModuleExpression extends ExpressionImpl {
             }
             if (getExpression() instanceof VariableNode) {
                 VariableNode vvv = (VariableNode) getExpression();
-                Object obj = state.getRootState().getValue(vvv.getVariableReference());
+                Object obj = ambientState.getRootState().getValue(vvv.getVariableReference());
                 if (obj == null) {
                     throw new UnknownSymbolException("'" + vvv.getVariableReference() + "'   not found", vvv);
                 } else {
@@ -72,8 +72,8 @@ public class ModuleExpression extends ExpressionImpl {
             if (getExpression() instanceof Polyad) {
                 // in this case, the user is explicitly telling us where to get the function from
                 Polyad polyad = (Polyad) getExpression();
-                if (null != state.getRootState().getFTStack().get(new FKey(polyad.getName(), polyad.getArgCount()))) {
-                    state.getRootState().getMetaEvaluator().getFunctionEvaluator().evaluate(polyad, state.getRootState());
+                if (null != ambientState.getRootState().getFTStack().get(new FKey(polyad.getName(), polyad.getArgCount()))) {
+                    ambientState.getRootState().getMetaEvaluator().getFunctionEvaluator().evaluate(polyad, ambientState.getRootState());
 
                 } else {
                     throw new QDLExceptionWithTrace("no such function " + polyad.getName() + "(" + polyad.getArgCount() + ")", polyad);
@@ -91,7 +91,7 @@ public class ModuleExpression extends ExpressionImpl {
             return getResult();
 
         }
-        if (state.getMetaEvaluator().isSystemNS(getAlias())) {
+        if (ambientState.getMetaEvaluator().isSystemNS(getAlias())) {
             // In this case, it is a built in function and there are no constants
             // or variables defined in those modules.
             if (getExpression() instanceof ConstantNode) {
@@ -106,7 +106,7 @@ public class ModuleExpression extends ExpressionImpl {
                 throw new UnknownSymbolException("'" + vvv.getVariableReference() + "'   not found", vvv);
             }
             if (getExpression() instanceof Polyad) {
-                state.getMetaEvaluator().evaluate(getAlias(), (Polyad) getExpression(), state);
+                ambientState.getMetaEvaluator().evaluate(getAlias(), (Polyad) getExpression(), ambientState);
             } else {
                 // Since this should not happen if the parser is working right, it implies
                 // that something in the parser changed and non-expressions are not
@@ -118,31 +118,55 @@ public class ModuleExpression extends ExpressionImpl {
             setEvaluated(true);
             return getResult();
         }
-        if (state.getMInstances().isEmpty()) {
+/*
+        if (state.getMTemplates().isEmpty()) {
             throw new ImportException("module '" + getAlias() + "' not found", this);
         }
-        Object result;
+*/
+        Object result = null;
         // no module state means to look at global state to find the module state.
         if (getExpression() instanceof ModuleExpression) {
             // Modules expression like a#b#c work within their scope, so b must be an imported module.
+            Object m = ambientState.getValue(getAlias());
             ModuleExpression nextME = (ModuleExpression) getExpression();
-            XKey xKey = new XKey(nextME.getAlias());
-            if (getModuleState(state).getMInstances().containsKey(xKey)) {
-                nextME.setModuleState(getModuleState(state).getMInstances().getModule(xKey).getState());
+            if(m == null){
+                // old module system
+                XKey xKey = new XKey(nextME.getAlias());
+                if (getModuleState(ambientState).getMInstances().containsKey(xKey)) {
+                    nextME.setModuleState(getModuleState(ambientState).getMInstances().getModule(xKey).getState());
+                }
+                getExpression().setAlias(getAlias());
+                result = getExpression().evaluate(getModuleState(ambientState));
+            }else{
+                if(m instanceof Module){
+                    Module module = (Module) m;
+                    result = nextME.evaluate(module.getState().newLocalState(ambientState));
+                }
             }
-            getExpression().setAlias(getAlias());
-            result = getExpression().evaluate(getModuleState(state));
         } else {
+            Object obj = ambientState.getValue(getAlias());
+            if(obj instanceof Module){
+                Module m= (Module) obj;
+                // create a new state object for function resolution. This should have the
+                // current variables in the ambient state, but the variables, imported modules and functions
+                // in the module (or encapsulation breaks!!)
+                State state1 = m.getState().newSelectiveState(ambientState, false, false, true);
+                Object r = getExpression().evaluate(state1);
+                setResult(r);
+                setResultType(Constant.getType(r));
+                setEvaluated(true);
+                return r;
+            }
             // Simple expressions like a#b must work within the scope of a
             getExpression().setAlias(getAlias());
-            State moduleState = getModuleState(state); // clean state
+            State moduleState = getModuleState(ambientState); // clean state
             // https://github.com/ncsa/qdl/issues/34 pass along variables
             if(getExpression() instanceof Polyad){
                 Polyad f = (Polyad)getExpression();
                 for(int i = 0; i <f.getArgCount(); i++){
                     if(f.getArgAt(i) instanceof VariableNode){
                         VariableNode vNode = (VariableNode)f.getArgAt(i);
-                        Object v = f.evalArg(i,state);
+                        Object v = f.evalArg(i,ambientState);
                         moduleState.setValue(vNode.getVariableReference(), v);
                     }
                 }

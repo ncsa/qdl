@@ -1,0 +1,64 @@
+This document is concerned with the change of modules to being a type.
+This will allow for storing them in variables and passing those around
+as arguments.
+
+Most important point is that modules allow for namespace qualification
+of sets of variables, functions etc. as well as a privacy
+mechanism. Types will eventually live in modules so that
+http#connect() and sql#connct() won't cause a collision.
+
+Sometimes though we want to import everything in a module into
+the current namespace, e.g. extended trig/mathx functions. So
+we need a way to do that, a forgetful import.
+
+we would also like the ability to pass around modules are first
+order objects, like any other variable.
+
+E.g.
+  z:=module#import('a:b'); // z is now a variable that has a module
+  z#... ;/ all usual operations are the same
+  f(x,y)->x#f(y); // pass in a module as a variable
+  f(z,3);// call the function passing in z.
+
+This will change a lot of the internal machinery for QDL w.r.t modules.
+There will be
+* A new variable type for modules, treated in the VStack
+* The MInstances stack goes away
+* assignment operators now become module aware
+* various operations may need updating. e.g. z+2 should bomb.
+* import_module either goes away or behaves differently? Might keep
+  for backwards compatibility
+
+Current contract
+* import grants an alias. All objects are available in WS if no name collision
+  (poor man's local import)
+* Working in module has local scope
+* #x accesses default  scope.
+* x (unqualified) accesses most local scope
+* __ prefix makes object private within module
+
+New contract
+* New namespace called module
+* import assigns to variable.
+* Lone import is undefined?   Or just dumps module to_string?
+  or dumps to current NS.
+  module#import(URI) leaves it all in current
+  z := module#import(URI) puts into variable
+* alternate to this? Make it explicit, so
+  module#import_local(URI)
+  will dump module into current NS
+* Built in functions are auto imported to local
+* No more default visibility for imported modules
+* __ prefix makes object private within module
+* Interogatives for vars and functions on a module supported.
+  Also for default WS
+  module#vars(z{,show_private})
+  module#funcs(z{,show_private})
+  module#import(URI)
+  module#import_local(URI)
+  module#load(path | URI{,type})
+* #x access default scope
+* no prefix accesses local scope.
+
+How to migrate?
+* Allow for current and new system side by side?
