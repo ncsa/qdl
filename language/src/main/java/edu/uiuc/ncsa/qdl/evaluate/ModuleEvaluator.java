@@ -6,6 +6,7 @@ import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.module.MTKey;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.qdl.state.StateUtils;
 import edu.uiuc.ncsa.qdl.util.ModuleUtils;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLList;
@@ -332,15 +333,73 @@ public class ModuleEvaluator extends AbstractEvaluator {
 
     private void doGetVariables(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setResult(new int[]{0, 1, 2});
             polyad.setEvaluated(true);
             return;
         }
+        if (polyad.getArgCount() == 0) {
+            QDLStem qdlStem = new QDLStem();
+            qdlStem.getQDLList().addAll(state.getVStack().listVariables());
+            polyad.setEvaluated(true);
+            polyad.setResult(qdlStem);
+            polyad.setResultType(Constant.getType(polyad.getResult()));
+            return;
+        }
+
+        Object arg0 = polyad.evalArg(0, state);
+
+        if (arg0 instanceof QDLNull) {
+            String regex = null;
+            if (polyad.getArgCount() == 2) {
+                Object arg1 = polyad.evalArg(1, state);
+                if (!isString(arg1)) {
+                    throw new BadArgException(GET_FUNCTIONS + " requires a string regexc as its second argument if the first is null", polyad.getArgAt(1));
+                }
+                regex = (String) arg1;
+            }
+            QDLStem qdlStem = new QDLStem();
+            TreeSet<String> v = state.getVStack().listVariables();
+            if (regex == null) {
+                qdlStem.getQDLList().addAll(state.getVStack().listVariables());
+            } else {
+                TreeSet<String> out = new TreeSet<>();
+                for (String x : v) {
+                    if (x.matches(regex)) {
+                        out.add(x);
+                    }
+                }
+                qdlStem.getQDLList().addAll(out);
+            }
+            polyad.setEvaluated(true);
+            polyad.setResult(qdlStem);
+            polyad.setResultType(Constant.getType(polyad.getResult()));
+            return;
+
+        }
         Module m = getMorT(polyad, state);
+        String regex = null;
+        if (polyad.getArgCount() == 2) {
+            Object arg2 = polyad.evalArg(1, state);
+            if (isString(arg2)) {
+                regex = (String) arg2;
+            } else {
+                throw new BadArgException(GET_FUNCTIONS + " second argument must be a string if present", polyad.getArgAt(1));
+            }
+        }
 
         QDLList outList = new QDLList();
         TreeSet<String> vars = m.getState().getVStack().listVariables();
-        outList.addAll(vars);
+        if (regex == null) {
+            outList.addAll(vars);
+        } else {
+            TreeSet<String> out = new TreeSet<>();
+            for (String x : vars) {
+                if (x.matches(regex)) {
+                    out.add(x);
+                }
+            }
+            outList.addAll(out);
+        }
         QDLStem outStem = new QDLStem();
         outStem.setQDLList(outList);
         polyad.setEvaluated(true);
@@ -349,10 +408,50 @@ public class ModuleEvaluator extends AbstractEvaluator {
 
     }
 
+    /**
+     * Contract is
+     * <ul>
+     *     <li>no arg = full set of ambient state</li>
+     *     <li>null = full set of ambient state</li>
+     *     <li>null, regex = full set from ambient state w/ regex applied</li>
+     *     <li>variable or string of module URI = all functions in module </li>
+     *     <li>variable or string of module URI, regex = all functions in module with regex applied </li>
+     * </ul>
+     *
+     * @param polyad
+     * @param state
+     */
     private void doGetFunctions(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setResult(new int[]{0, 1, 2});
             polyad.setEvaluated(true);
+            return;
+        }
+        if (polyad.getArgCount() == 0) {
+            QDLStem qdlStem = new QDLStem();
+            qdlStem.getQDLList().addAll(state.getFTStack().listFunctions(null));
+            polyad.setEvaluated(true);
+            polyad.setResult(qdlStem);
+            polyad.setResultType(Constant.getType(polyad.getResult()));
+            return;
+        }
+
+        Object arg0 = polyad.evalArg(0, state);
+
+        if (arg0 instanceof QDLNull) {
+            String regex = null;
+            if (polyad.getArgCount() == 2) {
+                Object arg1 = polyad.evalArg(1, state);
+                if (!isString(arg1)) {
+                    throw new BadArgException(GET_FUNCTIONS + " requires a string regexc as its second argument if the first is null", polyad.getArgAt(1));
+                }
+                regex = (String) arg1;
+            }
+            QDLStem qdlStem = new QDLStem();
+            qdlStem.getQDLList().addAll(state.getFTStack().listFunctions(regex));
+            polyad.setEvaluated(true);
+            polyad.setResult(qdlStem);
+            polyad.setResultType(Constant.getType(polyad.getResult()));
             return;
         }
         Module m = getMorT(polyad, state);
@@ -364,7 +463,6 @@ public class ModuleEvaluator extends AbstractEvaluator {
             } else {
                 throw new BadArgException(GET_FUNCTIONS + " second argument must be a string if present", polyad.getArgAt(1));
             }
-
         }
         QDLList outList = new QDLList();
         TreeSet<String> funcs = m.getState().getFTStack().listFunctions(regex);
@@ -566,10 +664,44 @@ public class ModuleEvaluator extends AbstractEvaluator {
         }
     }
 
+    /**
+     * Bais contract is
+     * <ul>
+     *     <li>URI - import loaded module</li>
+     *     <li>URI, state - import, using state that is inherited, none, extended</li>
+     * </ul>
+     * The state means that
+     * <ul>
+     *     <li>inherited - uses active live ambient state</li>
+     *     <li>extended - snapshot of current state</li>
+     *     <li>none - clean state, so nothing from ambient state</li>
+     * </ul>
+     * default is <b>none</b>.
+     *
+     * @param polyad
+     * @param state
+     */
+    /**
+     * Imported module has completey clean state, nothing from ambient state
+     */
+    public final static String IMPORT_STATE_NONE = "none";
+    /**
+     * Imported module gets snapshot of current ambient state, but is independent of it.
+     */
+    public final static String IMPORT_STATE_INHERIT = "inherit";
+    /**
+     * Imported module shares ambient state. Any changes to ambient state are reflected in module's state.
+     */
+    public final static String IMPORT_STATE_SHARE = "share";
+    public final static String IMPORT_STATE_ANY = "any"; // used in module definition
+    public final static int IMPORT_STATE_NONE_VALUE = 100;
+    public final static int IMPORT_STATE_INHERIT_VALUE = 101;
+    public final static int IMPORT_STATE_EXTEND_VALUE = 102;
+    public final static int IMPORT_STATE_ANY_VALUE = 110;
 
     protected void doImport(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setResult(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -585,6 +717,31 @@ public class ModuleEvaluator extends AbstractEvaluator {
             polyad.setEvaluated(true);
             return;
         }
+        int stateInherit = IMPORT_STATE_NONE_VALUE;
+        if (polyad.getArgCount() == 2) {
+            Object arg1 = polyad.evalArg(1, state);
+            if (isString(arg1)) {
+                String a = (String) arg1;
+                switch (a) {
+                    case IMPORT_STATE_NONE:
+                        stateInherit = IMPORT_STATE_NONE_VALUE;
+                        break;
+                    case IMPORT_STATE_SHARE:
+                        stateInherit = IMPORT_STATE_EXTEND_VALUE;
+                        break;
+                    case IMPORT_STATE_INHERIT:
+                        stateInherit = IMPORT_STATE_INHERIT_VALUE;
+                    default:
+                        throw new BadArgException(IMPORT + " unknown state inheritance mode", polyad.getArgAt(1));
+                }
+            } else {
+                if (isLong(arg1)) {
+                    stateInherit = ((Long) arg1).intValue();
+                } else {
+                    throw new BadArgException(IMPORT + " unknown state inheritance mode", polyad.getArgAt(1));
+                }
+            }
+        }
         if (!isString(arg)) {
             throw new BadArgException(IMPORT + " requires a string as its argument", polyad.getArgAt(0));
         }
@@ -598,10 +755,29 @@ public class ModuleEvaluator extends AbstractEvaluator {
         if (m == null) {
             throw new BadArgException(" the module '" + moduleNS + "' has not been loaded", polyad.getArgAt(0));
         }
+        State newState;
         try {
-            m = m.newInstance(state.newCleanState());
+            switch (stateInherit) {
+                case IMPORT_STATE_NONE_VALUE:
+                    newState = state.newCleanState();
+                    break;
+                case IMPORT_STATE_INHERIT_VALUE:
+                    newState = StateUtils.clone(state);
+                    // put tables and such in the right place so ambient state is not altered.
+                    newState = newState.newLocalState(newState);
+                    break;
+                case IMPORT_STATE_EXTEND_VALUE:
+                    newState = state;
+                    // put tables and such in the right place so ambient state is not altered.
+                    newState = newState.newLocalState(newState);
+                    break;
+                default:
+                    throw new BadArgException(IMPORT + " with unknown state inheritene mode", polyad.getArgAt(1));
+            }
+            m = m.newInstance(newState);
+            m.setInheritMode(stateInherit);
         } catch (Throwable t) {
-           new QDLExceptionWithTrace("there was an issue creating the state of the module:" + t.getMessage(), polyad);
+            new QDLExceptionWithTrace("there was an issue creating the state of the module:" + t.getMessage(), polyad);
         }
         polyad.setEvaluated(true);
         polyad.setResult(m);

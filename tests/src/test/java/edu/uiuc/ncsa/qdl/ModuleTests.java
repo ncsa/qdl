@@ -112,17 +112,23 @@ public class ModuleTests extends AbstractQDLTester {
         assert getBooleanValue("ok", state) : "function call passing module as a variable failed";
         assert getBooleanValue("ok1", state) : "function call accessing module variable failed";
     }
+
+    /**
+     * Shows that accessing a module inside a module works. Note that by default everything is
+     * visible unless hidden as intrinsic.
+     * @throws Throwable
+     */
     public void testBasicNesting() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "module['A:Y'][module['A:X'][f(x)->x;y:='foo';];z:=import('A:X');];");
+        addLine(script, "module['A:Y'][module['A:X'][y(y)->y;y:='foo';];z:=import('A:X');];");
         addLine(script, "y:=import('A:Y');");
-        addLine(script, "ok := 3 == y#z#f(3);");
-        addLine(script, "ok1 := 3 == y#z#y == 'foo';");
+        addLine(script, "ok := 3 == y#z#y(3);");
+        addLine(script, "ok1 := y#z#y == 'foo';");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
-        assert getBooleanValue("ok", state) : "function call accessing nested module function failed";
-        assert getBooleanValue("ok1", state) : "function call accessing nesting module variable failed";
+        assert getBooleanValue("ok", state) : "call accessing nested module function failed";
+        assert getBooleanValue("ok1", state) : "call accessing nesting module variable failed";
     }
 
     /** When modules are loaded there is NO access to the ambient space. They are completely
@@ -153,11 +159,13 @@ public class ModuleTests extends AbstractQDLTester {
         addLine(script, "a:=5;");
         addLine(script, "ok := 9 == z#f(3);"); // should fail since w is not visibile.
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        
         assert getBooleanValue("ok", state) : "function call with internal module state failed";
     }
 
     /**
-     * Creatingf amodule with an intrinsic variable should not allow access to the variable.
+     * Creating a module with an intrinsic variable should not allow access to the variable.
      * @throws Throwable
      */
     public void testIntrinsic1() throws Throwable {
@@ -165,18 +173,20 @@ public class ModuleTests extends AbstractQDLTester {
         StringBuffer script = new StringBuffer();
         addLine(script, "module['A:T'][__x:=null;name()->__x;name(y)->block[old:=__x;__x:=y;return(old);];];");
         addLine(script, "t := import('A:T');");
-        addLine(script, "t__x;");
+        addLine(script, "t#__x;");
+        boolean testOK = true;
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         try {
             interpreter.execute(script.toString());
-            assert false : "accessing an intrinsic variable in a module should fail.";
+            testOK = false;
         }catch(IntrinsicViolation intrinsicViolation){
-            assert true;
         }
+        assert testOK : "accessing an intrinsic variable in a module should fail.";
+
     }
 
     /**
-     * Baisc test of a module with a hidden state variable and mutators. The contract is that
+     * Basic test of a module with a hidden state variable and mutators. The contract is that
      * name() returns the name, name(new_name) sets the name, returns the old name.
      * @throws Throwable
      */
@@ -195,10 +205,23 @@ public class ModuleTests extends AbstractQDLTester {
         assert getBooleanValue("ok1", state) : "call to mutator failed, reset return wrong previous value";
         assert getBooleanValue("ok2", state) : "call to mutator failed, reset returned wrong previous value";
         assert getBooleanValue("ok3", state) : "call to mutator failed, query returned wrong current value";
+    }
+
+    public void testIntrinsicFunction1() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module['A:T'][__f(x)->x^2;];");
+        addLine(script, "t := import('A:T');");
+        addLine(script, "t#__f(3);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        boolean testOK = true;
+        try {
+            interpreter.execute(script.toString());
+            testOK = false;
+        }catch(IntrinsicViolation intrinsicViolation){
+        }
+        assert testOK : "accessing an intrinsic variable in a module should fail.";
 
     }
 
 }
-/*
-     module['A:T'][__x:=null;name()->__x;name(y)->block[old:=__x;__x:=y;return(old);];];
- */

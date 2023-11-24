@@ -6,9 +6,13 @@ import edu.uiuc.ncsa.qdl.exceptions.UnknownSymbolException;
 import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.qdl.state.StateUtils;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.variables.Constant;
+import edu.uiuc.ncsa.security.core.exceptions.NFWException;
+
+import java.io.IOException;
 
 /**
  * Models a single module expression of the form <b>A</b>#<i>expression</i> where <b>A</b>
@@ -45,6 +49,16 @@ public class ModuleExpression extends ExpressionImpl {
     }
 
     String alias;
+
+    public boolean isNewModuleVersion() {
+        return newModuleVersion;
+    }
+
+    public void setNewModuleVersion(boolean newModuleVersion) {
+        this.newModuleVersion = newModuleVersion;
+    }
+
+    boolean newModuleVersion = false;
 
     @Override
     public Object evaluate(State ambientState) {
@@ -118,55 +132,99 @@ public class ModuleExpression extends ExpressionImpl {
             setEvaluated(true);
             return getResult();
         }
-/*
-        if (state.getMTemplates().isEmpty()) {
-            throw new ImportException("module '" + getAlias() + "' not found", this);
+        Object mm = ambientState.getValue(getAlias());
+        if (mm != null && mm instanceof Module) {
+            setModule((Module) mm);
+            setNewModuleVersion(true);
+            /* The ambient state refers to the state in which the root module was called.
+             It is set with each module expression call, so if it is null, then this is the
+             first of a chain. E.g. in x#y#z#w#f(s) x is the root and the state passed to that
+             is the ambient state for everything else. Since in the new system, y is a variable
+             in the state of x, x's module state has to be passed along in addition to the
+             ambient state so that, eventually, f(s) can be evaluated (s is  in the ambient space
+             or it would be NS qualified)
+            */
+            if(getAmbientState() == null){
+                setAmbientState(ambientState);
+            }
+        } else {
+            XKey xKey = new XKey(getAlias());
+            if (!(alias.equals("this") || ambientState.getMInstances().containsKey(xKey))) {
+                throw new IllegalArgumentException("no module named '" + getAlias() + "' was  imported");
+            }
+            setModule(ambientState.getMInstances().getModule(xKey));
+            setNewModuleVersion(false);
         }
-*/
         Object result = null;
         // no module state means to look at global state to find the module state.
         if (getExpression() instanceof ModuleExpression) {
             // Modules expression like a#b#c work within their scope, so b must be an imported module.
-            Object m = ambientState.getValue(getAlias());
             ModuleExpression nextME = (ModuleExpression) getExpression();
-            if(m == null){
+            if (isNewModuleVersion()) {
+                //result = nextME.evaluate(module.getState().newLocalState(ambientState));
+                nextME.setAmbientState(getAmbientState());
+                result = nextME.evaluate(getModuleState());
+            } else {
                 // old module system
                 XKey xKey = new XKey(nextME.getAlias());
                 if (getModuleState(ambientState).getMInstances().containsKey(xKey)) {
                     nextME.setModuleState(getModuleState(ambientState).getMInstances().getModule(xKey).getState());
                 }
-                getExpression().setAlias(getAlias());
+                //getExpression().setAlias(getAlias());
+                getExpression().setAlias(nextME.getAlias());
                 result = getExpression().evaluate(getModuleState(ambientState));
-            }else{
-                if(m instanceof Module){
-                    Module module = (Module) m;
-                    result = nextME.evaluate(module.getState().newLocalState(ambientState));
-                }
             }
         } else {
-            Object obj = ambientState.getValue(getAlias());
-            if(obj instanceof Module){
-                Module m= (Module) obj;
+
+            if (isNewModuleVersion()) {
+
                 // create a new state object for function resolution. This should have the
                 // current variables in the ambient state, but the variables, imported modules and functions
                 // in the module (or encapsulation breaks!!)
-                State state1 = m.getState().newSelectiveState(ambientState, false, false, true);
-                Object r = getExpression().evaluate(state1);
+                   State newState = null;
+                try {
+                    newState = StateUtils.clone(getModuleState());
+                    newState.getVStack().appendTables(getAmbientState().getVStack());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+                Object r = null;
+                if (getExpression() instanceof Polyad) {
+                    ((Polyad) getExpression()).evaluatedArgs(newState);
+                    r = getExpression().evaluate(getModuleState());
+                }
+                if(getExpression() instanceof VariableNode){
+                    r = getExpression().evaluate(newState); // gets local overrides from ambient state
+
+                }
+                 if(r == null){
+                     throw new NFWException("unknown expression type");
+                 }
                 setResult(r);
                 setResultType(Constant.getType(r));
                 setEvaluated(true);
                 return r;
             }
+/*
+            if(obj instanceof FunctionReferenceNode){
+                setResult(obj);
+                setResultType(Constant.FUNCTION_TYPE);
+                setEvaluated(true);
+                return obj;
+            }
+*/
             // Simple expressions like a#b must work within the scope of a
             getExpression().setAlias(getAlias());
             State moduleState = getModuleState(ambientState); // clean state
             // https://github.com/ncsa/qdl/issues/34 pass along variables
-            if(getExpression() instanceof Polyad){
-                Polyad f = (Polyad)getExpression();
-                for(int i = 0; i <f.getArgCount(); i++){
-                    if(f.getArgAt(i) instanceof VariableNode){
-                        VariableNode vNode = (VariableNode)f.getArgAt(i);
-                        Object v = f.evalArg(i,ambientState);
+            if (getExpression() instanceof Polyad) {
+                Polyad f = (Polyad) getExpression();
+                for (int i = 0; i < f.getArgCount(); i++) {
+                    if (f.getArgAt(i) instanceof VariableNode) {
+                        VariableNode vNode = (VariableNode) f.getArgAt(i);
+                        Object v = f.evalArg(i, ambientState);
                         moduleState.setValue(vNode.getVariableReference(), v);
                     }
                 }
@@ -179,6 +237,18 @@ public class ModuleExpression extends ExpressionImpl {
         return result;
     }
 
+    /*
+       module['a:x'][g(x,y)->x*y;]
+  z:=import('a:x')
+  ⍺z#@g
+    [3,4]⍺z#@g
+
+       module['a:x'][g(x,y)->x*y;]
+       module['a:x'][module['a:y'][module['a:z'][module['a:w'][g(x,y)->x*y;foo:='bar';];w:=import('a:w');];z:=import('a:z');];y:=import('a:y');]
+       x:=import('a:x');
+       x#y#z#w#foo
+       x#y#z#w#g(2,3)
+     */
     public ExpressionInterface getExpression() {
         if (getArguments().isEmpty()) {
             throw new IllegalStateException("no expression set for module reference");
@@ -204,6 +274,25 @@ public class ModuleExpression extends ExpressionImpl {
     }
 
     /**
+     * The module associated with this expression.
+     *
+     * @return
+     */
+    public Module getModule() {
+        return module;
+    }
+
+    public void setModule(Module module) {
+        this.module = module;
+    }
+
+    Module module = null;
+
+    public State getModuleState() {
+        return getModule().getState();
+    }
+
+    /**
      * The state of the current module only. This is used to construct the local state.
      *
      * @return
@@ -212,7 +301,7 @@ public class ModuleExpression extends ExpressionImpl {
         if (state == null) {
             return null;
         }
-        if (moduleState == null) {
+           if (moduleState == null) {
             XKey xKey = new XKey(getAlias());
             if (!(alias.equals("this") || state.getMInstances().containsKey(xKey))) {
                 throw new IllegalArgumentException("no module named '" + getAlias() + "' was  imported");
@@ -267,8 +356,19 @@ public class ModuleExpression extends ExpressionImpl {
         }
         throw new IllegalArgumentException("unkown left assignment argument.");
     }
+
     @Override
-        public int getNodeType() {
-            return MODULE_NODE;
-        }
+    public int getNodeType() {
+        return MODULE_NODE;
+    }
+
+    public State getAmbientState() {
+        return ambientState;
+    }
+
+    public void setAmbientState(State ambientState) {
+        this.ambientState = ambientState;
+    }
+
+    State ambientState;
 }

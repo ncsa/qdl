@@ -4,13 +4,10 @@ import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.expressions.*;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunctionRecord;
 import edu.uiuc.ncsa.qdl.functions.*;
-import edu.uiuc.ncsa.qdl.state.AbstractState;
-import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.state.XKey;
-import edu.uiuc.ncsa.qdl.state.XThing;
+import edu.uiuc.ncsa.qdl.state.*;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.LocalBlockStatement;
 import edu.uiuc.ncsa.qdl.statements.Statement;
-import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.util.QDLVersion;
 import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
@@ -276,7 +273,11 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 // are functions or constants.
                 argList[i] = getFunctionReferenceNode(state, polyad.getArguments().get(i));
             } else {
-                argList[i] = polyad.getArguments().get(i).evaluate(state);
+                if(polyad.hasEvaluatedArgs()){
+                    argList[i] = polyad.getEvaluatedArgs().get(i);
+                }else{
+                    argList[i] = polyad.getArguments().get(i).evaluate(state);
+                }
             }
         }
         QDLFunctionRecord qfr = (QDLFunctionRecord) frs.functionRecord;
@@ -374,7 +375,8 @@ public class FunctionEvaluator extends AbstractEvaluator {
             if (functionRecord.isLambda()) {
                 localState = state.newLocalState(moduleState);
             } else {
-                localState = state.newFunctionState();
+
+                localState = StateUtils.clone(state).newFunctionState();
             }
         }
         localState.setWorkspaceCommands(state.getWorkspaceCommands());
@@ -485,7 +487,12 @@ public class FunctionEvaluator extends AbstractEvaluator {
         if (functionRecord.isFuncRef) {
             return paramList;// implicit parameter list since this is an operator or built in function.
         }
+         if(polyad.hasEvaluatedArgs()){
+      /*       for (int i = 0; i < functionRecord.getArgCount(); i++) {
 
+             }
+      */
+         }
         HashMap<UUID, UUID> localStateLookup = new HashMap<>();
         localStateLookup.put(state.getUuid(), localState.getUuid());
 
@@ -561,8 +568,13 @@ public class FunctionEvaluator extends AbstractEvaluator {
 
                 //    vThing = new VThing(new XKey(functionRecord.argNames.get(i)), polyad.getArguments().get(i).evaluate(localState));
                 //} else{
-
-                vThing = new VThing(new XKey(functionRecord.argNames.get(i)), polyad.getArguments().get(i).evaluate(state));
+                 if(polyad.hasEvaluatedArgs()){
+                     // in the case that the arguments were evaluated in some local context that cannot be
+                     // available to us.
+                     vThing = new VThing(new XKey(functionRecord.argNames.get(i)), polyad.getEvaluatedArgs().get(i));
+                 } else{
+                     vThing = new VThing(new XKey(functionRecord.argNames.get(i)), polyad.getArguments().get(i).evaluate(state));
+                 }
                 //}
                 paramList.add(vThing);
             }
@@ -624,3 +636,12 @@ public class FunctionEvaluator extends AbstractEvaluator {
         return x;
     }
 }
+
+/*
+Support for apply operator. Close to introspection...
+ 	U+237A ⍺
+ 	 ⍺f = return list of arg counts, e.g. [0,1,3]
+ 	 3⍺f = return list of arg names e.g., 2⍺f = ['x','pressure']
+ 	 list.⍺f = invoke f with arg list, e.g. [1/2, 14]⍺f <==> f(1/2, 14)
+ 	 stem.⍺f = invoke with named args, e.g. {'pressure':14,'x':1/2}⍺f <==> f(1/2, 14)
+ */

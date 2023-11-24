@@ -5,6 +5,8 @@ import edu.uiuc.ncsa.qdl.exceptions.BadArgException;
 import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.expressions.*;
+import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
+import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNode;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.types.Types;
 import edu.uiuc.ncsa.qdl.variables.*;
@@ -87,6 +89,7 @@ public class OpEvaluator extends AbstractEvaluator {
     public static final String TRANSPOSE_OP_KEY = "⦰"; //29b0
     public static final String REDUCE_OP_KEY = "⊙"; //2299
     public static final String EXPAND_OP_KEY = "⊕"; //2295
+    public static final String APPLY_OP_KEY = "⍺"; // 	U+237A
 
 
     public static final int ASSIGNMENT_VALUE = 10;
@@ -130,6 +133,7 @@ public class OpEvaluator extends AbstractEvaluator {
 
     public static final int REDUCE_OP_VALUE = 232; //2a00
     public static final int EXPAND_OP_VALUE = 233; //2a01
+    public static final int APPLY_OP_VALUE = 234; // 	U+237A
 
     /**
      * All Math operators. These are used in function references.
@@ -167,10 +171,11 @@ public class OpEvaluator extends AbstractEvaluator {
             MORE_THAN_EQUAL2,
             MORE_THAN_EQUAL3,
             NOT, NOT2,
-            REGEX_MATCH, REGEX_MATCH2};
+            REGEX_MATCH, REGEX_MATCH2,
+            APPLY_OP_KEY};
 
     public static ArrayList<String> ALL_MONADS = new ArrayList<>(Arrays.asList(new String[]{
-            NOT, NOT2, MINUS, MINUS2, PLUS, PLUS2, TILDE, PLUS_PLUS, MINUS_MINUS, IS_DEFINED, IS_NOT_DEFINED , TRANSPOSE_OP_KEY
+            NOT, NOT2, MINUS, MINUS2, PLUS, PLUS2, TILDE, PLUS_PLUS, MINUS_MINUS, IS_DEFINED, IS_NOT_DEFINED, TRANSPOSE_OP_KEY, APPLY_OP_KEY
     }));
     public static ArrayList<String> ONLY_MONADS = new ArrayList<>(Arrays.asList(new String[]{
             NOT, NOT2, PLUS_PLUS, MINUS_MINUS, FLOOR, CEILING, TO_SET, TO_SET2, IS_DEFINED, IS_NOT_DEFINED
@@ -353,6 +358,8 @@ public class OpEvaluator extends AbstractEvaluator {
             case REGEX_MATCH:
             case REGEX_MATCH2:
                 return REGEX_MATCH_VALUE;
+            case APPLY_OP_KEY:
+                return APPLY_OP_VALUE;
         }
         return UNKNOWN_VALUE;
     }
@@ -451,9 +458,61 @@ public class OpEvaluator extends AbstractEvaluator {
             case REGEX_MATCH_VALUE:
                 doRegexMatch(dyad, state);
                 return;
+            case APPLY_OP_VALUE:
+                doDyadicApply(dyad, state);
+                return;
             default:
                 throw new NotImplementedException("Unknown dyadic operator " + dyad.getOperatorType());
         }
+    }
+
+    private void doDyadicApply(Dyad dyad, State state) {
+        FunctionReferenceNode fNode = (FunctionReferenceNode) dyad.getRightArgument().evaluate(state);
+        Object lArg = dyad.getLeftArgument().evaluate(state);
+        if (lArg instanceof Long) {
+            int argCount = ((Long) lArg).intValue();
+            FunctionRecord fRec = fNode.getByArgCount(argCount);
+            QDLStem out = new QDLStem();
+            if (fRec != null) {
+                out.getQDLList().addAll(fRec.argNames);
+            }
+            dyad.setEvaluated(true);
+            dyad.setResult(out);
+            dyad.setResultType(STEM_TYPE);
+            return;
+        }
+        if (lArg instanceof QDLStem) {
+            QDLStem lStem = (QDLStem) lArg;
+            Polyad polyad = new Polyad(fNode.getFunctionName());
+            polyad.setBuiltIn(false);
+            if (lStem.isList()) {
+                for (Object key : lStem.keySet()) {
+                    polyad.addArgument(new ConstantNode(lStem.get(key)));
+                }
+
+            } else {
+                FunctionRecord fRec = fNode.getByArgCount(lStem.size());
+                if (fRec == null) {
+                    throw new BadArgException(APPLY_OP_KEY + " cannot resolve the function '" + fNode.getFunctionName() + "' with the argument count of " + lStem.size(), dyad.getRightArgument());
+                }
+
+                for (String name : fRec.argNames) {
+                    Object object = lStem.get(name);
+                    if (object == null) {
+                        throw new BadArgException(APPLY_OP_KEY + " '" + fNode.getFunctionName() + "' missing value for " + name, dyad.getLeftArgument());
+                    }
+                    polyad.addArgument(new ConstantNode(object));
+                }
+            }
+            Object result = polyad.evaluate(state);
+            dyad.setEvaluated(true);
+            dyad.setResult(result);
+            dyad.setResultType(Constant.getType(result));
+            return;
+            //[3,4]⍺f <==> f(3.4)
+        }
+
+
     }
 
     private void doFRefDyadicOperator(Dyad dyad, String expand, State state) {
@@ -473,10 +532,10 @@ public class OpEvaluator extends AbstractEvaluator {
         Polyad polyad = new Polyad(operatorKey);
         polyad.setTokenPosition(dyad.getTokenPosition());
         polyad.setSourceCode(dyad.getSourceCode());
-        if(swapArgs){ // a op B --> op(B,A)
+        if (swapArgs) { // a op B --> op(B,A)
             polyad.addArgument(dyad.getRightArgument());
             polyad.addArgument(dyad.getLeftArgument());
-        }else{ // a op B --> op(A,B)
+        } else { // a op B --> op(A,B)
             polyad.addArgument(dyad.getLeftArgument());
             polyad.addArgument(dyad.getRightArgument());
         }
@@ -485,11 +544,12 @@ public class OpEvaluator extends AbstractEvaluator {
         dyad.setResultType(polyad.getResultType());
         dyad.setEvaluated(polyad.isEvaluated());
     }
-      /*
-        a. := [true, false, false, true]
-  b. := [;4]
-  a.⌆b.
-       */
+
+    /*
+      a. := [true, false, false, true]
+b. := [;4]
+a.⌆b.
+     */
     private void doForAll(Dyad dyad, State state) {
         Polyad polyad = new Polyad(StemEvaluator.FOR_EACH);
         polyad.setTokenPosition(dyad.getTokenPosition());
@@ -544,7 +604,7 @@ public class OpEvaluator extends AbstractEvaluator {
         polyad.setSourceCode(dyad.getSourceCode());
         polyad.addArgument(dyad.getLeftArgument());
 //        if (dyad.getRightArgument().getNodeType() == ExpressionInterface.CONSTANT_NODE && dyad.getRightArgument().getResult() != QDLNull.getInstance()) {
-            polyad.addArgument(dyad.getRightArgument());
+        polyad.addArgument(dyad.getRightArgument());
 //        }
         if (!isDefined) {
             // The request is for !whatever, so wrap the whole thing in a negation.
@@ -1409,10 +1469,27 @@ public class OpEvaluator extends AbstractEvaluator {
             case TILDE_STILE_VALUE:
                 doMonadicTilde(monad, state, true);
                 return;
+            case APPLY_OP_VALUE:
+                doMonadicApply(monad, state);
+                return;
             default:
                 throw new NotImplementedException("Unknown monadic operator");
         }
 
+    }
+
+    private void doMonadicApply(Monad monad, State state) {
+        // parser restricts this being a function reference
+        FunctionReferenceNode fNode = (FunctionReferenceNode) monad.getArgument().evaluate(state);
+        //FunctionReferenceNode fNode = (FunctionReferenceNode) monad.getArgument();
+        QDLStem stem = new QDLStem();
+        for (FunctionRecord functionRecord : fNode.getFunctionRecords()) {
+            Long a = (long) functionRecord.getArgCount();
+            stem.getQDLList().add(a);
+        }
+        monad.setEvaluated(true);
+        monad.setResult(stem);
+        monad.setResultType(Constant.getType(monad.getResult()));
     }
 
     private void doMonadicTranspose(Monad monad, State state) {

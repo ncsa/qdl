@@ -340,6 +340,18 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitFunctions(QDLParserParser.FunctionsContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code unaryApplyExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterUnaryApplyExpression(QDLParserParser.UnaryApplyExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code unaryApplyExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitUnaryApplyExpression(QDLParserParser.UnaryApplyExpressionContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code keywords}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
@@ -555,6 +567,18 @@ public interface QDLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitSwitchExpression(QDLParserParser.SwitchExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code appliesOperator}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterAppliesOperator(QDLParserParser.AppliesOperatorContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code appliesOperator}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitAppliesOperator(QDLParserParser.AppliesOperatorContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code regexMatches}
 	 * labeled alternative in {@link QDLParserParser#expression}.
@@ -879,6 +903,18 @@ public interface QDLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitUnaryMinusExpression(QDLParserParser.UnaryMinusExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code functionReference}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterFunctionReference(QDLParserParser.FunctionReferenceContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code functionReference}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitFunctionReference(QDLParserParser.FunctionReferenceContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code unaryTransposeExpression}
 	 * labeled alternative in {@link QDLParserParser#expression}.

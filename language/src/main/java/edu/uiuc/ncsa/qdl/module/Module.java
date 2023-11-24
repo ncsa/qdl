@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl.module;
 
+import edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
@@ -429,4 +430,14 @@ public abstract class Module implements XThing, Serializable {
     }
 
     UUID id = UUID.randomUUID();
+
+    public int getInheritMode() {
+        return inheritMode;
+    }
+
+    public void setInheritMode(int inheritMode) {
+        this.inheritMode = inheritMode;
+    }
+
+    int inheritMode = ModuleEvaluator.IMPORT_STATE_ANY_VALUE;
 }
