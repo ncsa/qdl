@@ -63,6 +63,7 @@ syntax match qdlOperator "\v⊨"
 syntax match qdlOperator "\v¯"
 syntax match qdlOperator "\v⁺"
 syntax match qdlOperator "\v⊗"
+syntax match qdlOperator "\v⍺"
 
 
 

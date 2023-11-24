@@ -1463,7 +1463,6 @@ cannot access '__a'
         addLine(script, "module_import('a:a');");
         addLine(script, " n_copy(1,10);");
         addLine(script, "ok := 5 == j;");
-        addLine(script, "say('testModuleVisibility j='+j);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);

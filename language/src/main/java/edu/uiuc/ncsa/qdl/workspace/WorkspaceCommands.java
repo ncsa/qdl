@@ -6138,5 +6138,5 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
 
-    SwingTerminal swingTerminal;
+    transient SwingTerminal swingTerminal;
 }

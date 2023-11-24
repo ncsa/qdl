@@ -2729,9 +2729,12 @@ public class SystemEvaluator extends AbstractEvaluator {
                 e.printStackTrace();
             }
             // put tables and such in the right place so ambient state is not altered.
-            newModuleState = newModuleState.newLocalState(newModuleState);
+            if(newModuleState != null) {
+                // null possible on system load.
+                newModuleState = newModuleState.newLocalState(newModuleState);
+                newModuleState.setModuleState(true);
+            }
             //State newModuleState = StateUtils.clone(state).newLocalState(state);
-            newModuleState.setModuleState(true);
             Module newInstance ;// = m.newInstance((m instanceof JavaModule) ? null : state);
             //Module newInstance = m.newInstance(null);
             if (m instanceof JavaModule) {

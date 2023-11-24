@@ -382,7 +382,7 @@ public abstract class VariableState extends NamespaceAwareState {
         }
         if (!didIt) {
             v = (VThing) getVStack().get(xKey);
-            if (v == null) {
+            if (v == null && !(value instanceof Module)) { // only check old imports for clashes. Re-assingin
                 VThing vThing;
                 if (!(isImportMode() || getMInstances().isEmpty())) {
                     for (Object key : getMInstances().keySet()) {
