@@ -123,6 +123,8 @@ expression
  |  variable? Hash expression                                                  #moduleExpression
  | (function | '(' f_args* ')')
        LambdaConnector (expression | expressionBlock)                          #lambdaDef
+ | expression op=Apply expression                                                   #appliesOperator
+ | Apply expression                                                                 #unaryApplyExpression
  | stemVariable                                                                #stemVar
  | stemList                                                                    #stemLi
  | set                                                                         #setThing
@@ -165,12 +167,10 @@ expression
  // because the parser won't quite flag it right.
  | f_ref op=ForAll expression                                                  #forAll  // unicode 2200
  | expression op=Transpose expression                                          #transposeOperator
- | expression op=Apply expression                                                   #appliesOperator
  | expression op=ExprDyadicOps expression                                      #expressionDyadicOps
  | f_ref op=FRefDyadicOps expression                                           #frefDyadicOps
  | (Tilde | TildeRight) expression                                             #unaryTildeExpression
  | Transpose expression                                                        #unaryTransposeExpression
- | Apply expression                                                                 #unaryApplyExpression
  | STRING                                                                      #strings
  | f_ref                                                                       #functionReference
  | integer                                                                     #integers

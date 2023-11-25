@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl;
 
+import edu.uiuc.ncsa.qdl.evaluate.FunctionEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.IndexError;
 import edu.uiuc.ncsa.qdl.exceptions.ParsingException;
@@ -3017,5 +3018,42 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         assert getBooleanValue("ok7", state) : "switch fails for resolving variable cases";
     }
 
+    public void testBasicApply() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)->x;");
+        addLine(script, "out. := apply(@f);");
+        addLine(script, "ok := (size(out.) == 1) ∧ (1∈out.);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to get arg count list in " + FunctionEvaluator.APPLY;
+    }
+    public void testBasicApply1() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)->x;");
+        addLine(script, "ok := 2 == apply(@f, [2]);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to apply list argument to function with " + FunctionEvaluator.APPLY;
+    }
+
+    public void testBasicApply2() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)->x;");
+        addLine(script, "ok := 2 == apply(@f, {'x':2});");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed apply stem arguemnt to function with " + FunctionEvaluator.APPLY;
+    }
+
+/*
+  f(x)->x
+  apply(@f)
+[1]
+  apply([2],@f)
+2
+ */
 }
 

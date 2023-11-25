@@ -5641,6 +5641,51 @@ Here there is no such value equal to 11, so the default case value of -1 is retu
        </example>
     </entry>
 
+    <entry id="apply" alt="⍺">
+       <body>
+  <![CDATA[apply(@function) - returns a list of arg counts for this function
+  apply(@function. int) - return a list of variable names
+  apply(@function, stem. | list.) - apply the function to the arguments
+
+  This permits on the fly construction of argument lists to functions.
+
+  Note that for the operator version, which uses ⍺ (unicode 237A) which
+  is not the same as the Greek letter α, (unicode 03b1) that the arguments
+  are switched.
+  ⍺@f == apply(@f)
+  j⍺@f == apply(@f,j), integer query case
+  stem.⍺@f == apply(@f, stem.)
+
+
+  ]]>
+       </body>
+       <example>
+   <![CDATA[Complete use might be
+   f(x)->x^2; // the definition
+    // there is a single function, f that takes a single argument:
+   ⍺@f
+[1]
+    // The function list for f is the single variable x
+    1⍺@f
+[x]
+   // evaluate f(3)
+   [3]⍺@f
+9
+   // Evaluate f at 3, explicitly setting the variable x in the argument list.
+   {'x':3}⍺@f
+9
+   ]]>
+        </example>
+    </entry>
+    <entry id="⍺">
+       <body>
+  <![CDATA[The apply function as an operator.
+
+See also apply
+  ]]>
+       </body>
+    </entry>
+
     <!--
     <entry id="">
        <body>

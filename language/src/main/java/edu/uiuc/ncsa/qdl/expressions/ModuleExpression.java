@@ -144,7 +144,7 @@ public class ModuleExpression extends ExpressionImpl {
              ambient state so that, eventually, f(s) can be evaluated (s is  in the ambient space
              or it would be NS qualified)
             */
-            if(getAmbientState() == null){
+            if (getAmbientState() == null) {
                 setAmbientState(ambientState);
             }
         } else {
@@ -181,7 +181,7 @@ public class ModuleExpression extends ExpressionImpl {
                 // create a new state object for function resolution. This should have the
                 // current variables in the ambient state, but the variables, imported modules and functions
                 // in the module (or encapsulation breaks!!)
-                   State newState = null;
+                State newState = null;
                 try {
                     newState = StateUtils.clone(getModuleState());
                     newState.getVStack().appendTables(getAmbientState().getVStack());
@@ -193,15 +193,18 @@ public class ModuleExpression extends ExpressionImpl {
                 Object r = null;
                 if (getExpression() instanceof Polyad) {
                     ((Polyad) getExpression()).evaluatedArgs(newState);
+                }
+                if (getExpression() instanceof Polyad) {
+                    // send along evaluated args with ambient state, but do not allow
+                    // ambient state to override internal module state for functions, loaded modules etc.
                     r = getExpression().evaluate(getModuleState());
-                }
-                if(getExpression() instanceof VariableNode){
+                } else {
                     r = getExpression().evaluate(newState); // gets local overrides from ambient state
-
                 }
-                 if(r == null){
-                     throw new NFWException("unknown expression type");
-                 }
+
+                if (r == null) {
+                    throw new NFWException("unknown expression type");
+                }
                 setResult(r);
                 setResultType(Constant.getType(r));
                 setEvaluated(true);
@@ -237,7 +240,14 @@ public class ModuleExpression extends ExpressionImpl {
         return result;
     }
 
-    /*
+    /* test apply operator on module.
+
+       module['a:x'][module['a:y'][f(x)->x;];y:=import('a:y');]
+       x:=import('a:x');
+       x#y#f(3)
+       ⍺x#y#@f
+
+
        module['a:x'][g(x,y)->x*y;]
   z:=import('a:x')
   ⍺z#@g
@@ -301,7 +311,7 @@ public class ModuleExpression extends ExpressionImpl {
         if (state == null) {
             return null;
         }
-           if (moduleState == null) {
+        if (moduleState == null) {
             XKey xKey = new XKey(getAlias());
             if (!(alias.equals("this") || state.getMInstances().containsKey(xKey))) {
                 throw new IllegalArgumentException("no module named '" + getAlias() + "' was  imported");

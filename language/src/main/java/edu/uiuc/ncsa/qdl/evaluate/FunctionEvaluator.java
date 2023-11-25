@@ -38,9 +38,17 @@ public class FunctionEvaluator extends AbstractEvaluator {
     public static final String IS_FUNCTION = "is_function";
     public static final int IS_FUNCTION_TYPE = 1 + BASE_FUNCTION_VALUE;
 
+    public static final String APPLY = "apply";
+    public static final int APPLY_TYPE = 2 + BASE_FUNCTION_VALUE;
+
     @Override
     public int getType(String name) {
-        if (name.equals(IS_FUNCTION)) return IS_FUNCTION_TYPE;
+        switch (name){
+            case IS_FUNCTION:
+                return IS_FUNCTION_TYPE;
+            case APPLY:
+                return APPLY_TYPE;
+        }
         // At parsing time, the function definition class sets the value manually,
         // so call to this should ever get anything other than unknown value.
         return UNKNOWN_VALUE;
@@ -50,7 +58,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
     @Override
     public String[] getFunctionNames() {
         if (fNames == null) {
-            fNames = new String[]{IS_FUNCTION};
+            fNames = new String[]{IS_FUNCTION, APPLY};
         }
         return fNames;
     }
@@ -60,6 +68,9 @@ public class FunctionEvaluator extends AbstractEvaluator {
         switch (polyad.getName()) {
             case IS_FUNCTION:
                 doIsFunction(polyad, state);
+                return true;
+            case APPLY:
+                doApply(polyad, state);
                 return true;
         }
         try {
@@ -76,6 +87,31 @@ public class FunctionEvaluator extends AbstractEvaluator {
             throw qq;
         }
     }
+
+    private void doApply(Polyad polyad, State state) {
+        if (polyad.isSizeQuery()) {
+            polyad.setResult(new int[]{1, 2});
+            polyad.setEvaluated(true);
+            return;
+        }
+        ExpressionImpl newPoly;
+        if(polyad.getArgCount() == 1){
+            Monad monad= new Monad(OpEvaluator.APPLY_OP_VALUE, false);
+            monad.setArgument(polyad.getArgAt(0));
+            newPoly = monad;
+        }else{
+            // The arguments swap when in function notation.
+            Dyad dyad= new Dyad(OpEvaluator.APPLY_OP_VALUE);
+            dyad.setLeftArgument(polyad.getArgAt(1));;
+            dyad.setRightArgument(polyad.getArgAt(0));;
+            newPoly = dyad;
+        }
+        Object result = newPoly.evaluate(state);
+        polyad.setEvaluated(true);
+        polyad.setResult(result);
+        polyad.setResultType(Constant.getType(result));
+    }
+
 
     protected void doIsFunction(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {

@@ -468,7 +468,11 @@ public class OpEvaluator extends AbstractEvaluator {
 
     private void doDyadicApply(Dyad dyad, State state) {
         FunctionReferenceNode fNode = (FunctionReferenceNode) dyad.getRightArgument().evaluate(state);
-        Object lArg = dyad.getLeftArgument().evaluate(state);
+        if(fNode == null){
+            throw new BadArgException("no such function", dyad.getArgAt(1));
+        }
+        State actualState = fNode.hasModuleState()?fNode.getModuleState():state;
+        Object lArg = dyad.getLeftArgument().evaluate(actualState);
         if (lArg instanceof Long) {
             int argCount = ((Long) lArg).intValue();
             FunctionRecord fRec = fNode.getByArgCount(argCount);
@@ -504,7 +508,7 @@ public class OpEvaluator extends AbstractEvaluator {
                     polyad.addArgument(new ConstantNode(object));
                 }
             }
-            Object result = polyad.evaluate(state);
+            Object result = polyad.evaluate(actualState);
             dyad.setEvaluated(true);
             dyad.setResult(result);
             dyad.setResultType(Constant.getType(result));
@@ -1481,7 +1485,9 @@ a.⌆b.
     private void doMonadicApply(Monad monad, State state) {
         // parser restricts this being a function reference
         FunctionReferenceNode fNode = (FunctionReferenceNode) monad.getArgument().evaluate(state);
-        //FunctionReferenceNode fNode = (FunctionReferenceNode) monad.getArgument();
+        if(fNode == null){
+            throw new BadArgException("no such function", monad.getArgument());
+        }
         QDLStem stem = new QDLStem();
         for (FunctionRecord functionRecord : fNode.getFunctionRecords()) {
             Long a = (long) functionRecord.getArgCount();

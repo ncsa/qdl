@@ -97,6 +97,7 @@ public class ModuleTests extends AbstractQDLTester {
 
     /**
      * this test passes a module in as a variable and executes a method.
+     *
      * @throws Throwable
      */
     public void testPassingModule() throws Throwable {
@@ -116,6 +117,7 @@ public class ModuleTests extends AbstractQDLTester {
     /**
      * Shows that accessing a module inside a module works. Note that by default everything is
      * visible unless hidden as intrinsic.
+     *
      * @throws Throwable
      */
     public void testBasicNesting() throws Throwable {
@@ -131,7 +133,8 @@ public class ModuleTests extends AbstractQDLTester {
         assert getBooleanValue("ok1", state) : "call accessing nesting module variable failed";
     }
 
-    /** When modules are loaded there is NO access to the ambient space. They are completely
+    /**
+     * When modules are loaded there is NO access to the ambient space. They are completely
      * blank slates.
      *
      * @throws Throwable
@@ -147,10 +150,11 @@ public class ModuleTests extends AbstractQDLTester {
         try {
             interpreter.execute(script.toString());
             assert false : "executing a function out of scope succeeded when it should fail.";
-        }catch(QDLException qdlException){
+        } catch (QDLException qdlException) {
             assert qdlException.getCause() instanceof UndefinedFunctionException : " visibility test failed for unknown reasons:" + qdlException.getMessage();
         }
     }
+
     public void testBasicVisibility2() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -160,12 +164,13 @@ public class ModuleTests extends AbstractQDLTester {
         addLine(script, "ok := 9 == z#f(3);"); // should fail since w is not visibile.
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
-        
+
         assert getBooleanValue("ok", state) : "function call with internal module state failed";
     }
 
     /**
      * Creating a module with an intrinsic variable should not allow access to the variable.
+     *
      * @throws Throwable
      */
     public void testIntrinsic1() throws Throwable {
@@ -179,7 +184,7 @@ public class ModuleTests extends AbstractQDLTester {
         try {
             interpreter.execute(script.toString());
             testOK = false;
-        }catch(IntrinsicViolation intrinsicViolation){
+        } catch (IntrinsicViolation intrinsicViolation) {
         }
         assert testOK : "accessing an intrinsic variable in a module should fail.";
 
@@ -188,6 +193,7 @@ public class ModuleTests extends AbstractQDLTester {
     /**
      * Basic test of a module with a hidden state variable and mutators. The contract is that
      * name() returns the name, name(new_name) sets the name, returns the old name.
+     *
      * @throws Throwable
      */
     public void testIntrinsic2() throws Throwable {
@@ -200,7 +206,7 @@ public class ModuleTests extends AbstractQDLTester {
         addLine(script, "ok2 := t#name('dick') == 'bob';"); // previous value
         addLine(script, "ok3 := t#name() == 'dick';"); // current value
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
-            interpreter.execute(script.toString());
+        interpreter.execute(script.toString());
         assert getBooleanValue("ok0", state) : "call to mutator failed, wrong initial value";
         assert getBooleanValue("ok1", state) : "call to mutator failed, reset return wrong previous value";
         assert getBooleanValue("ok2", state) : "call to mutator failed, reset returned wrong previous value";
@@ -218,10 +224,88 @@ public class ModuleTests extends AbstractQDLTester {
         try {
             interpreter.execute(script.toString());
             testOK = false;
-        }catch(IntrinsicViolation intrinsicViolation){
+        } catch (IntrinsicViolation intrinsicViolation) {
         }
         assert testOK : "accessing an intrinsic variable in a module should fail.";
-
     }
 
+    public void testBasicMonadicApplyForModule() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module['a:y'][f(x)->x^2;];y:=import('a:y');");
+        addLine(script, "out.:= ⍺y#@f;");
+        addLine(script, "ok := (1 ∈ out.) && (size(out.)==1);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "calling applies to module function failed.";
+    }
+
+    public void testBasicDyadicApplyForModule1() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module['a:y'][f(x)->x^2;];y:=import('a:y');");
+        addLine(script, "f(x)->x^3; x:=10;"); // make sure that module state is used right
+        addLine(script, "ok := 4 == [2]⍺y#@f;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "calling applies to module function failed.";
+    }
+
+    public void testBasicDyadicApplyForModule2() throws Throwable {
+         State state = testUtils.getNewState();
+         StringBuffer script = new StringBuffer();
+         addLine(script, "module['a:y'][f(x)->x^2;];y:=import('a:y');");
+         addLine(script, "f(x)->x^3; x:=10;"); // make sure that module state is used right
+         addLine(script, "ok := 4 == {'x':2}⍺y#@f;");
+         QDLInterpreter interpreter = new QDLInterpreter(null, state);
+         interpreter.execute(script.toString());
+         assert getBooleanValue("ok", state) : "calling applies to module function failed.";
+     }
+
+    public void testBasicMonadicApplyForNestedModule() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module['a:x'][module['a:y'][f(x)->x^2+1;f(x,y)->x*y;];y:=import('a:y');];");
+        addLine(script, "x:=import('a:x');");
+        addLine(script, "out.:= ⍺x#y#@f;");
+        addLine(script, "ok := (⊗∧⊙[1,2] ∈ out.) && (size(out.)==2);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "calling applies to module function failed.";
+    }
+    public void testBasicDyadicApplyForNestedModule1() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module['a:x'][module['a:y'][f(x)->x^2+1;f(x,y)->x*y;];y:=import('a:y');];");
+        addLine(script, "x:=import('a:x');");
+        addLine(script, "f(x)->x^3;"); // make sure that module state is used right
+        addLine(script, "f(x,y)->x/y; y:=11;");
+        addLine(script, "okf := 5 == [2]⍺x#y#@f;");
+        addLine(script, "okg := 6 == [2,3]⍺x#y#@f;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("okf", state) : "calling applies to module function failed.";
+        assert getBooleanValue("okg", state) : "calling applies to module function failed.";
+    }
+    public void testBasicDyadicApplyForNestedModule2() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module['a:x'][module['a:y'][f(x)->x^2+1;f(x,y)->x*y;];y:=import('a:y');];");
+        addLine(script, "x:=import('a:x');");
+        addLine(script, "f(x)->x^3;"); // make sure that module state is used right
+        addLine(script, "f(x,y)->x/y; y:=11;");
+        addLine(script, "okf := 5 == {'x':2}⍺x#y#@f;");
+        addLine(script, "okg := 6 == {'y':3,'x':2}⍺x#y#@f;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("okf", state) : "calling applies to module function failed.";
+        assert getBooleanValue("okg", state) : "calling applies to module function failed.";
+    }
+       /*
+          module['a:x'][module['a:y'][f(x)->x;];y:=import('a:y');]
+       x:=import('a:x');
+       x#y#f(3)
+       ⍺x#y#@f
+  [3]⍺x#y#@f
+        */
 }

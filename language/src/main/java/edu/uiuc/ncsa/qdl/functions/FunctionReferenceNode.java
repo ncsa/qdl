@@ -5,6 +5,7 @@ import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,10 +48,29 @@ public class FunctionReferenceNode extends ExpressionImpl {
     @Override
     public Object evaluate(State state) {
         setFunctionRecords(state.getFTStack().getByAllName(getFunctionName()));
+        // if this was e.g. in a module, it might have an arbitraily complex path to get here.
+        // set the state that was finally constructed elsewhere for this specific call.
+        if(state.isModuleState()) {
+            setModuleState(state);
+        }
         setResult(this);
         setResultType(Constant.getType(this));
         setEvaluated(true);
         return this;
+    }
+
+    public State getModuleState() {
+        return moduleState;
+    }
+
+    public void setModuleState(State moduleState) {
+        this.moduleState = moduleState;
+    }
+
+    State moduleState = null;
+
+    public boolean hasModuleState(){
+        return moduleState != null;
     }
 
     public FunctionRecord getByArgCount(int argCount){
@@ -80,9 +100,17 @@ public class FunctionReferenceNode extends ExpressionImpl {
 
     @Override
     public String toString() {
-        return "FunctionReferenceNode{" +
-                "functionName='" + functionName + '\'' +
-                ", anonymous=" + anonymous +
-                '}';
+        if(!isEvaluated()){
+            return "FunctionReferenceNode{" +
+                    "functionName='" + functionName + '\'' +
+                    ", anonymous=" + anonymous +
+                    ", evaluated=" + isEvaluated() +
+                    '}';
+        }
+        List<Integer> argCounts = new ArrayList();
+        for(FunctionRecord functionRecord:getFunctionRecords()){
+            argCounts.add(functionRecord.argCount);
+        }
+           return "@" + (isAnonymous()?"anon":getFunctionName()) + "(" + argCounts + ")";
     }
 }
