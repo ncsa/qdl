@@ -14,15 +14,22 @@ public interface XMLConstants {
     String STEM_KEY_TAG = "key";
     String STEM_ENTRY_TAG = "entry";
     String LIST_INDEX_ATTR = "index";
+    String TYPE_TAG = "type";
+    String QDL_TYPE_TAG = "qdl";
 
     String MODULE_TAG = "module";
     String MODULE_NS_ATTR = "namespace";
     String MODULE_ALIAS_ATTR = "alias";
     String MODULE_TYPE_TAG = "type";
+    String MODULE_TYPE_TAG2 = "module_type";
     String MODULE_TYPE_JAVA_TAG = "java";
+    String MODULE_TYPE_QDL_TAG = "qdl";
     String MODULE_CLASS_NAME_TAG = "class_name";
     String MODULE_SOURCE_TAG = "source";
     String MODULE_DOCUMENTATION_TAG = "documentation";
+    String MODULE_STATE_TAG = "state";
+    String MODULE_INHERITANCE_MODE_TAG = "inheritance_mode";
+    String MODULE_INPUT_FORM_TAG = "input_form";
 
     String WORKSPACE_TAG = "workspace";
     String WS_ENV_TAG = "env";
@@ -113,11 +120,13 @@ public interface XMLConstants {
     String STATE_SERVER_MODE_TAG = "server_mode";
     String TEMPLATE_REFERENCE_TAG = "template_reference";
     String PARENT_INSTANCE_UUID_TAG = "parent_instance_uuid";
-    String PARENT_INSTANCE_ALIAS_TAG = "parent_instance_uuid";
+    String PARENT_TEMPLATE_UUID_TAG = "parent_template_uuid";
+    String PARENT_INSTANCE_ALIAS_TAG = "parent_instance_alias";
     String TEMPLATE_STACK = "template_stack";
     String UUID_TAG = "uuid";
     String VARIABLES_TAG = "variables";
     String VARIABLE_STACK = "variable_stack";
     String VERSION_2_0_TAG = "2.0";
+    String VERSION_2_1_TAG = "2.1";
 
 }

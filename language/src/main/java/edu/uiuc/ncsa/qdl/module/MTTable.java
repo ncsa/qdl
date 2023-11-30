@@ -116,10 +116,15 @@ public class MTTable<K extends MTKey, V extends Module>  extends   XTable<K, V> 
 
     @Override
     public String toJSONEntry(V xThing, XMLSerializationState xmlSerializationState) {
+        xmlSerializationState.templateMap.put(xThing.getId(), xThing);
+        return serializeToJSON(xThing, xmlSerializationState).toString();
+    }
+
+    @Override
+    public JSONObject serializeToJSON(V xThing, XMLSerializationState serializationState) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put(XMLConstants.UUID_TAG, xThing.getId().toString());
-        xmlSerializationState.templateMap.put(xThing.getId(), xThing);
-        return jsonObject.toString();
+        return jsonObject;
     }
 
     @Override
@@ -129,5 +134,10 @@ public class MTTable<K extends MTKey, V extends Module>  extends   XTable<K, V> 
         V m = deserializeElement(moduleAttributes, xmlSerializationState);
         put(new MTKey(m.getNamespace()), m);
         return null;
+    }
+
+    @Override
+    public void deserializeFromJSON(JSONObject json, QDLInterpreter qi) {
+
     }
 }

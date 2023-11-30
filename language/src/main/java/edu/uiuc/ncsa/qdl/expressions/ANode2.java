@@ -165,6 +165,10 @@ public class ANode2 extends ExpressionImpl {
         if (realLeftArg instanceof VariableNode) {
             // https://github.com/ncsa/qdl/issues/20
             state.getTargetState().setValue(((VariableNode) realLeftArg).getVariableReference(), getResult());
+            // last detail that cannot be done until this point is to set the alias if it is a module assigned to the variable.
+            if(getResult() instanceof edu.uiuc.ncsa.qdl.module.Module){
+                ((edu.uiuc.ncsa.qdl.module.Module)getResult()).setAlias(((VariableNode) realLeftArg).getVariableReference());
+            }
             return getResult();
         }
         if (realLeftArg instanceof ConstantNode) {

@@ -23,8 +23,9 @@ import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
  * on 2/2/20 at  6:42 AM
  */
 public abstract class VariableState extends NamespaceAwareState {
-   public static String var_regex = "^[a-zA-Z0-9_$]+[a-zA-Z0-9_$\\.]*";
+    public static String var_regex = "^[a-zA-Z0-9_$]+[a-zA-Z0-9_$\\.]*";
     public static String int_regex = "[1-9][0-9]*";
+
     public VariableState(VStack vStack,
                          OpEvaluator opEvaluator,
                          MetaEvaluator metaEvaluator,
@@ -94,8 +95,8 @@ public abstract class VariableState extends NamespaceAwareState {
             StemMultiIndex w = new StemMultiIndex(variableName);
             // Don't allow assignments of wrong type, but do let them set a stem to null.
             if (w.isStem()) {
-                if(value instanceof QDLSet){
-                    if(((QDLSet)value).isEmpty()){
+                if (value instanceof QDLSet) {
+                    if (((QDLSet) value).isEmpty()) {
                         // Fix for https://github.com/ncsa/qdl/issues/5
                         // Issue is that input_form would wrongly serialize an empty stem as {},
                         // then deserialization would bomb since that is the empty set.
@@ -109,14 +110,14 @@ public abstract class VariableState extends NamespaceAwareState {
                 }
             } else {
                 if (value instanceof QDLStem) {
-                    throw new IndexError("Error: You cannot set the scalar variable '" + variableName + "' to the stem value '" + value +"'", null);
+                    throw new IndexError("Error: You cannot set the scalar variable '" + variableName + "' to the stem value '" + value + "'", null);
                 }
             }
             gsrNSStemOp(w, OP_SET, value, new HashSet<>());
             return;
         }
         if (value instanceof QDLStem) {
-            throw new IndexError("Error: You cannot set the scalar variable '" + variableName + "' to the stem value '" + value + "'",null);
+            throw new IndexError("Error: You cannot set the scalar variable '" + variableName + "' to the stem value '" + value + "'", null);
         }
 
         gsrNSScalarOp(variableName, OP_SET, value, checkedAliases);
@@ -245,6 +246,8 @@ public abstract class VariableState extends NamespaceAwareState {
                     stem = oooo.getStemValue();
                 }
             }
+            boolean gotOne = false;
+            VThing v;
             // most likely place for it was in the main symbol table. But since there is
             // no name clash, look for it in the modules.
             if (stem == null && !isQDLNull) {
@@ -256,15 +259,28 @@ public abstract class VariableState extends NamespaceAwareState {
                         }
                         Module m = getMInstances().getModule((XKey) key);
                         if (m != null) {
-                            checkInstances.add(xKey);
+                            for (Object kk : m.getState().getVStack().keySet()) {
+                                XKey xx = (XKey) kk;
+                                if (variableName.equals(xx.getKey())) {
+                                    if (gotOne) {
+                                        throw new NamespaceException("multiple modules found for '" + variableName + "', Please qualify the name.");
+                                    } else {
+                                        gotOne = true;
+                                        stem = ((VThing) m.getState().getVStack().get(xx)).getStemValue();
 
+                                    }
+                                }
+                            }
+                           /* checkInstances.add(xKey);
+                           // The orgin
                             Object obj = m.getState().getValue(variableName, checkInstances);
+                            //Object obj = m.getState().getValue(variableName, new HashSet<>());
                             checkInstances.add(xKey);
                             if (obj != null && (obj instanceof QDLStem)) {
                                 stem = (QDLStem) obj;
                                 break;
                             }
-
+*/
                         }
                     }
                 }
@@ -304,7 +320,7 @@ public abstract class VariableState extends NamespaceAwareState {
                     throw new UnknownSymbolException("error: The stem variable \"" + variableName + "\" does not exist, so cannot remove a value from it.", null);
                 }
                 if (w.isEmpty()) {
-                    if(isExtrinsic(variableName)){
+                    if (isExtrinsic(variableName)) {
                         getExtrinsicVars().remove(vKey);
                     } else {
                         getVStack().remove(vKey);
@@ -335,7 +351,6 @@ public abstract class VariableState extends NamespaceAwareState {
             st.setValue(variableName, value);
         }
     }*/
-
     private void setValueImportAware(String variableName, Object value) {
         VThing vThing = new VThing(new XKey(variableName), value);
         if (isExtrinsic(variableName)) {
@@ -384,16 +399,41 @@ public abstract class VariableState extends NamespaceAwareState {
             v = (VThing) getVStack().get(xKey);
             if (v == null && !(value instanceof Module)) { // only check old imports for clashes. Re-assingin
                 VThing vThing;
+                boolean gotOne = false;
                 if (!(isImportMode() || getMInstances().isEmpty())) {
                     for (Object key : getMInstances().keySet()) {
                         XKey xkey = (XKey) key;
                         if (checkedAliases.contains(xkey)) {
                             return null;
                         }
+
                         Module m = getMInstances().getModule((XKey) key);
                         if (m != null) {
-                            checkedAliases.add(xkey);
+                            // New module stuff. The next block will look for name collisions
+                            // in old style modules.  The aim is
+                            // to grab an unqualified existing entry if it exists or blow up.
+                            // The previous code for old modules
+                            // could not cope with improvements to the module system.
+                            // It is deprecated and should be considered fragile.
+                            // Old code was also pretty slow. New code does not look deeply, but
+                            // for old modules, nesting didn't really work right anyway, so was not used.
+                            for (Object kk : m.getState().getVStack().keySet()) {
+                                XKey xx = (XKey) kk;
+                                if (variableName.equals(xx.getKey())) {
+                                    if (gotOne) {
+                                        throw new NamespaceException("multiple modules found for '" + variableName + "', Please qualify the name.");
+                                    } else {
+                                        gotOne = true;
+                                        v = (VThing) m.getState().getVStack().get(xx);
+
+                                    }
+                                }
+                            }
+
+
+                         /*   checkedAliases.add(xkey);
                             Object obj = m.getState().getValue(variableName, checkedAliases);
+                          //  Object obj = m.getState().getValue(variableName, new HashSet<>());
                             if (obj != null) {
                                 if (v != null) {
                                     // uniqueness. Only get an unqualified name if it is unique within
@@ -403,6 +443,7 @@ public abstract class VariableState extends NamespaceAwareState {
                                 //v = obj;
                                 v = new VThing(xKey, obj);
                             }
+*/
 
                         }
                     }

@@ -114,10 +114,10 @@ public class SetTest extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testDifference() throws Throwable {
-        testDifference(0);
-        testDifference(1);
-        testDifference(2);
-        testDifference(3);
+        testDifference(ROUNDTRIP_NONE);
+        testDifference(ROUNDTRIP_XML);
+        testDifference(ROUNDTRIP_QDL);
+        testDifference(ROUNDTRIP_JAVA);
     }
 
     protected void testDifference(int testCase) throws Throwable {
@@ -125,30 +125,11 @@ public class SetTest extends AbstractQDLTester {
         StringBuffer script = new StringBuffer();
         addLine(script, "a := {0,1,2,3,4};");
         addLine(script, "b := {2,4,6};");
-        QDLInterpreter interpreter;
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
-
+        state = rountripState(state, script, testCase);
         addLine(script, "ok := {0,1,3}==(a/b);");
         addLine(script, "ok1 := {6}==(b/a);");
 
+        QDLInterpreter interpreter;
         interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);
@@ -272,10 +253,10 @@ public class SetTest extends AbstractQDLTester {
 
 
     public void testNested() throws Throwable {
-        testNested(0);
-        testNested(1);
-        testNested(2);
-        testNested(3);
+        testNested(ROUNDTRIP_NONE);
+        testNested(ROUNDTRIP_XML);
+        testNested(ROUNDTRIP_QDL);
+        testNested(ROUNDTRIP_JAVA);
     }
 
     /**
@@ -295,26 +276,7 @@ public class SetTest extends AbstractQDLTester {
         addLine(script, "ok1 := a==b;"); //false
         addLine(script, "ok2 := a != b;"); //true
         addLine(script, "ok3 := {{1,2}} == (a/b);");
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
-
+        state = rountripState(state, script, testCase);
         addLine(script, "ok4 := {{1,3},{2,4}} == (b/a);");
         addLine(script, "ok5 := {{1,2},{1,3},{2,4}} == a%b;");//true
         addLine(script, "ok5a := {{1,2},{1,3},{2,4}} < a%b;");//false -- inclusion is strict
@@ -350,19 +312,19 @@ public class SetTest extends AbstractQDLTester {
         String B = makeSuperSet(A);
         String C = makeSuperSet(A);
 
-        testIdentities(0, A, B, C);
-        testIdentities(1, A, B, C);
-        testIdentities(2, A, B, C);
-        testIdentities(3, A, B, C);
+        testIdentities(ROUNDTRIP_NONE, A, B, C);
+        testIdentities(ROUNDTRIP_XML, A, B, C);
+        testIdentities(ROUNDTRIP_QDL, A, B, C);
+        testIdentities(ROUNDTRIP_JAVA, A, B, C);
 
         //nested sets
         A = makeNestedTestSet(12, 3);
         B = makeSuperSet(A);
         C = makeSuperSet(A);
-        testIdentities(0, A, B, C);
-        testIdentities(1, A, B, C);
-        testIdentities(2, A, B, C);
-        testIdentities(3, A, B, C);
+        testIdentities(ROUNDTRIP_NONE, A, B, C);
+        testIdentities(ROUNDTRIP_XML, A, B, C);
+        testIdentities(ROUNDTRIP_QDL, A, B, C);
+        testIdentities(ROUNDTRIP_JAVA, A, B, C);
     }
 
     protected void testIdentities(int testCase,
@@ -378,27 +340,7 @@ public class SetTest extends AbstractQDLTester {
         addLine(script, "A0 := sublist(A1, 3);");
 
         //boatload of standard set identities.
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
-
-
+        state = rountripState(state, script, testCase);
         addLine(script, "ok0 := A0 < A1 < A;");
         addLine(script, "ok1 := (A/B)/(B/C) == A/B;");
         addLine(script, "ok2 := A∆B == B∆A;");

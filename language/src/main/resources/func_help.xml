@@ -4615,7 +4615,12 @@ Implictly:
    pick((x)->x<4, {2,-1,3,5,6})
  {-1,2,3}
 
-In the implicit case, the function is anonymous and the reference is passed.]]>
+In the implicit case, the function is anonymous and the reference is passed.
+N.B. to access a function in a module, you need to use @ on the function:
+   x#y#z#@f
+gets the function reference to the function f, that is nested in modules. This
+is because module paths may be arbitrarily complex and an expression like
+@x#y#z#f (what if z is a function??) would be in general unresolvable.]]>
        </body>
     </entry>
     <entry id="comparisons">
@@ -5356,6 +5361,20 @@ See also: fork]]>
  true]]>
          </example>
      </entry>
+    <entry id="jUse">
+        <body>
+<![CDATA[Identical to jLoad in semantics, except that it issues
+a use() command to place the desired module in the current scope,
+so it may be used without namespace qualification.
+
+See also: jLoad, namespace
+]]>
+     </body>
+     <example>
+ <![CDATA[
+ ]]>
+      </example>
+  </entry>
 
     <entry id="jload">
        <body>
@@ -5379,7 +5398,9 @@ cli
 
 #2 is particularly useful if QDL has extensions to the library. For instance,
 in OA4MP  you might issue
-   jload('oa2.jwt')]]>
+   jload('oa2.jwt')
+
+See also: jUse]]>
        </body>
        <example>
    <![CDATA[E.g. to load the db module with the alias of mySQL
@@ -5656,6 +5677,12 @@ Here there is no such value equal to 11, so the default case value of -1 is retu
   j⍺@f == apply(@f,j), integer query case
   stem.⍺@f == apply(@f, stem.)
 
+Note especially the application to a module function. To If the function
+f is nested in modules x, y and z, then
+   ⍺x#y#z#@f
+would access the function proper and
+   [2,3,4]⍺@x#y#z#@f
+would evaluate it.
 
   ]]>
        </body>
@@ -5674,6 +5701,7 @@ Here there is no such value equal to 11, so the default case value of -1 is retu
    // Evaluate f at 3, explicitly setting the variable x in the argument list.
    {'x':3}⍺@f
 9
+
    ]]>
         </example>
     </entry>
@@ -5684,6 +5712,52 @@ Here there is no such value equal to 11, so the default case value of -1 is retu
 See also apply
   ]]>
        </body>
+    </entry>
+    <entry id="namespace">
+       <body>
+  <![CDATA[(From the reference manual)
+  A namespace is a set of names that refer to a set of objects. Using a
+  namespace ensures that all objects have unique names with respect to
+  that namespace. A very common example is a file system, where every
+  file within a directory has a unique name. In QDL this is accomplished
+  through modules. Each module has its own namespace and every object in
+  the workspace is associated with a namespace. The namespace qualifier
+  is a URN.  It is profitable to think of namepsaces as a dictionary
+  of resources.
+
+E.g.
+In QDL, we use modules and a typical example might be
+   module['my:test'][f(x)->x^2;q:=4;];
+   z:=import('my_test');
+   z#f(4)
+18
+   z#q
+4
+   z#q:=11
+   z#q
+11
+
+In this case, the namespace is 'my:test' and the variable z points to
+an instance of this. Every access to elements in the namespace requires
+qualification. You may also dump a module into the current namespace,
+so that calls to it do not require qualification.
+E.g.
+   load('/path/to/mathx.mdl')
+   use('qdl:/ext/math')
+   coth(pi()/7)
+2.375797798863473
+
+Note that use() means there is exactly one instance of the module currently
+active, so re-issuing the call just reloads the module into the current scope.
+
+(In the old module system, loading a module would allow you to use it without
+qualification as lon as there were no name clashes. This is now deprecated. )
+]]>
+       </body>
+<!--       <example>
+   <![CDATA[
+   ]]>
+        </example>-->
     </entry>
 
     <!--

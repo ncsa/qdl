@@ -3,7 +3,9 @@ package edu.uiuc.ncsa.qdl.state;
 import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
+import edu.uiuc.ncsa.qdl.module.QDLModule;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
+import edu.uiuc.ncsa.qdl.statements.ModuleStatement;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.VStack;
 import edu.uiuc.ncsa.qdl.variables.VThing;
@@ -11,6 +13,7 @@ import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLUtilsV2;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
@@ -18,6 +21,7 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.XMLEvent;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.*;
 
 /**
@@ -205,7 +209,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
         }
         return list;
     }
- 
+
     /**
      * Since all new tables are added at 0, the initial one, called the root, is last. This gets
      * the root {@link XTable}.
@@ -424,19 +428,28 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
     public abstract XStack getStateStack(State state);
 
 
+    /**
+     * Processes the array of arrays. Each table is turned into an array of entries.
+     * The stack is then an array of these (so we have order of the tables).
+     * This will take the entire set of items and recreate the stack structure.
+     *
+     * @param array
+     * @param xmlSerializationState
+     */
     public void fromJSON(JSONArray array, XMLSerializationState xmlSerializationState) {
         // To recreate the various states, we still need to use the parser and essentially
         // create local state repeatedly. The aim is to be as faithful as possible to
         // recreating the serialized stack.
         getStack().clear();
         XStack scratch = newInstance();
-        State state = new State();
+        State state = State.getRootState().newCleanState();
         setStateStack(state, scratch);
 
+        // remember that we just need an interpreter to operate on the state, so any will do.
         QDLInterpreter qi = new QDLInterpreter(state);
 
         for (int i = 0; i < array.size(); i++) {
-            // these were put in in reverse order, so have to pop them out.
+            // these were put in, in reverse order, so have to pop them out.
             scratch.getStack().clear();
             XTable currentST = newTableInstance();
             scratch.push(currentST);
@@ -445,7 +458,6 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
             for (int k = 0; k < jsonArray.size(); k++) {
                 try {
                     String xx = jsonArray.getString(k);
-
                     qi.execute(currentST.fromJSONEntry(xx, xmlSerializationState));
                 } catch (Throwable e) {
                     // For now
@@ -455,15 +467,14 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
             // since this is the stack in the interpreter state, this pushes a new table there
             getStack().add(currentST);
         }
-
-        return;
     }
 
     protected void fromXMLNEW(XMLEventReader xer, XMLSerializationState xmlSerializationState) throws XMLStreamException {
         // points to stacks tag
         JSONArray jsonArray = getJSON(xer);
         fromJSON(jsonArray, xmlSerializationState);
-        //XMLEvent xe = xer.nextEvent(); // moves off the stacks tag.
+        // All the work is done in the previous call. Now advance the cursor (should only be whitespace
+        // left) until you can exit for the next element.
         // no attributes or such with the stacks tag.
         while (xer.hasNext()) {
             XMLEvent xe = xer.peek();
@@ -489,15 +500,31 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
     }
 
     protected void toXMLNEW(XMLStreamWriter xsw, XMLSerializationState xmlSerializationState) throws XMLStreamException {
+        if (isEmpty()) return;
         xsw.writeStartElement(getXMLStackTag());
-        xsw.writeCData(toJSON(xmlSerializationState).toString());
+        serializeContent(xsw, xmlSerializationState);
         xsw.writeEndElement();
+    }
+
+    /**
+     * Very simple (and simple-minded) way to do it. Hand off the serialization so that the tables
+     * are converted to JSON arrays with base64 encoded QDL as the entries.. Deserialization then is
+     * just interpreting that back. This allows for serializing enormously complex stems and such
+     * without having to try and get some XML format for them.
+     *
+     * @param xsw
+     * @param xmlSerializationState
+     * @throws XMLStreamException
+     */
+    protected void serializeContent(XMLStreamWriter xsw, XMLSerializationState xmlSerializationState) throws XMLStreamException {
+        xsw.writeCData(toJSON(xmlSerializationState).toString());
     }
 
     public static void main(String[] args) throws Throwable {
         // Roundtrip test for JSON serialization. Should populate a stack, print it out, deserialize it, then
         // print out the exact same stack.
-        testFStack();
+        testVStack();
+        // testFStack2();
     }
 
     static void testFStack() {
@@ -518,6 +545,24 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
 
     }
 
+    static void testFStack2() {
+        FStack fStack = new FStack();
+        fStack.put(new FunctionRecord(new FKey("f", 1), Arrays.asList("f(x)->x^2;")));
+        fStack.put(new FunctionRecord(new FKey("g", 1), Arrays.asList("g(x)->x^3;")));
+        fStack.put(new FunctionRecord(new FKey("h", 2), Arrays.asList("h(x,y)->x*y;")));
+        fStack.pushNewTable();
+        fStack.localPut(new FunctionRecord(new FKey("f", 1), Arrays.asList("f(x)->x^4;")));
+        fStack.localPut(new FunctionRecord(new FKey("h", 1), Arrays.asList("h(x)->x+1;")));
+        fStack.pushNewTable();
+        JSONObject serialized = fStack.serializeToJSON(null);
+        System.out.println(serialized.toString(2));
+
+        FStack fStack1 = new FStack();
+        fStack1.deserializeFromJSON(serialized, null, null);
+        System.out.println(fStack1.toJSON(null).toString(2));
+
+    }
+
     static void testVStack() {
         // Roundtrip test for JSON serialization. Should populate a stack, print it out, deserialize it, then
         // print out the exact same stack.
@@ -533,14 +578,105 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
         vStack.pushNewTable();
         vStack.localPut(new VThing(new XKey("a"), Boolean.FALSE));
         vStack.localPut(new VThing(new XKey("x"), new BigDecimal("9.87654321")));
+        QDLModule qdlModule = new QDLModule();
+        State state = new State();
+        qdlModule.setState(state);
+        qdlModule.setNamespace(URI.create("a:x"));
+        qdlModule.setAlias("zzz");
+        qdlModule.getSource();
+        ModuleStatement moduleStatement = new ModuleStatement();
+        List<String> source = new ArrayList<>();
+        source.add("module['a:x'][f(x)->x^2;zzz:=foo;];");
+        moduleStatement.setSourceCode(source);
+        qdlModule.setModuleStatement(moduleStatement);
+        qdlModule.getState().getVStack().put(new VThing(new XKey("m_x"), "module string"));
+        vStack.localPut(new VThing(new XKey("zzz"), qdlModule));
+
         vStack.pushNewTable();
 
         // One reason to use VStack here is that the xmlSerializationState can be null, since it is not used
-        System.out.println(vStack.toJSON(null).toString(2));
-        JSONArray serialized = vStack.toJSON(null);
+        JSONObject serialized = vStack.serializeToJSON(null);
+        System.out.println(serialized.toString(2));
         VStack vStack1 = new VStack();
-        vStack1.fromJSON(serialized, null);
+        vStack1.deserializeFromJSON(serialized, null, state);
         System.out.println(vStack1.toJSON(null).toString(2));
 
+    }
+
+    public JSONObject serializeToJSON(XMLSerializationState serializationState) {
+        JSONObject jsonObject = new JSONObject();
+        JSONArray array = new JSONArray();
+        for (XTable xTable : getStack()) {
+            JSONArray array1 = xTable.serializeToJSON(serializationState);
+            if (array1 != null) {
+                array.add(array1);
+            }
+        }
+        if (array.isEmpty()) {
+            return null;
+        }
+        jsonObject.put("stack", array);
+        return jsonObject;
+    }
+
+    public void deserializeFromJSON(JSONObject jsonObject, XMLSerializationState serializationState, State state) {
+        deserializeFromJSONNEW(jsonObject, serializationState, state);
+    }
+
+    public void deserializeFromJSONNEW(JSONObject jsonObject, XMLSerializationState serializationState, State state) {
+        JSONArray array = jsonObject.getJSONArray("stack");
+        // remember that we just need an interpreter to operate on the state, so any will do.
+        QDLInterpreter qi = new QDLInterpreter(state);
+        XTable currentST = getStack().get(0);// start at root
+        for (int i = 0; i < array.size(); i++) {
+            // these were put in, in reverse order, so have to pop them out.
+            if (0 < i) {
+                currentST = newTableInstance();
+                getStack().add(currentST);
+            }
+
+            JSONArray jsonArray = array.getJSONArray(i);
+            for (int k = 0; k < jsonArray.size(); k++) {
+                try {
+                    currentST.deserializeFromJSON(jsonArray.getJSONObject(k), qi);
+                } catch (Throwable e) {
+                    // For now
+                    e.printStackTrace();
+                }
+            }
+            // since this is the stack in the interpreter state, this pushes a new table there
+        }
+
+    }
+
+    public void deserializeFromJSONOLD(JSONObject jsonObject, XMLSerializationState serializationState, State state) {
+        getStack().clear();
+        XStack scratch = newInstance();
+        if (state == null) {
+            state = State.getRootState().newCleanState();
+        }
+        setStateStack(state, scratch);
+        JSONArray array = jsonObject.getJSONArray("stack");
+        // remember that we just need an interpreter to operate on the state, so any will do.
+        QDLInterpreter qi = new QDLInterpreter(state);
+
+        for (int i = 0; i < array.size(); i++) {
+            // these were put in, in reverse order, so have to pop them out.
+            scratch.getStack().clear();
+            XTable currentST = newTableInstance();
+            scratch.push(currentST);
+
+            JSONArray jsonArray = array.getJSONArray(i);
+            for (int k = 0; k < jsonArray.size(); k++) {
+                try {
+                    currentST.deserializeFromJSON(jsonArray.getJSONObject(k), qi);
+                } catch (Throwable e) {
+                    // For now
+                    e.printStackTrace();
+                }
+            }
+            // since this is the stack in the interpreter state, this pushes a new table there
+            getStack().add(currentST);
+        }
     }
 }

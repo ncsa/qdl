@@ -339,6 +339,15 @@ public class ModuleExpression extends ExpressionImpl {
      */
     public void set(State state, Object newValue) {
         if (getExpression() instanceof VariableNode) {
+            Object mm = state.getValue(getAlias());
+            if (mm != null && mm instanceof Module) {
+                setModule((Module) mm);
+                setNewModuleVersion(true);
+                VariableNode vNode = (VariableNode) getExpression();
+                String variableName = vNode.getVariableReference();
+                ((Module) mm).getState().setValue(variableName, newValue);
+                return;
+            }
             VariableNode vNode = (VariableNode) getExpression();
             String variableName = vNode.getVariableReference();
             if (state.isIntrinsic(variableName) && !getModuleState(state).isDefined(variableName)) {
@@ -364,7 +373,7 @@ public class ModuleExpression extends ExpressionImpl {
             ((ModuleExpression) getExpression()).set(state, newValue);
             return;
         }
-        throw new IllegalArgumentException("unkown left assignment argument.");
+        throw new IllegalArgumentException("unknown left assignment argument.");
     }
 
     @Override

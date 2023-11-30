@@ -40,7 +40,7 @@ public class XMLSerializationState {
         return processedInstances.containsKey(uuid);
     }
 
-    public MIWrapper getInstance(UUID uuid){
+    public MIWrapper getInstance(UUID uuid) {
         return processedInstances.get(uuid);
     }
 
@@ -127,12 +127,13 @@ public class XMLSerializationState {
         this.version = version;
     }
 
-    public boolean isVersion2_0(){
-        if(StringUtils.isTrivial(getVersion())){
+    public boolean isVersion2_0() {
+        if (StringUtils.isTrivial(getVersion())) {
             return false;
         }
         return getVersion().equals(XMLConstants.VERSION_2_0_TAG);
     }
+
     String version;
 
     public boolean isFailOnMissingModules() {
@@ -144,4 +145,18 @@ public class XMLSerializationState {
     }
 
     boolean failOnMissingModules = false;
+
+    public String getVariablesSerializationVersion() {
+        return variablesSerializationVersion;
+    }
+
+    public void setVariablesSerializationVersion(String variablesSerializationVersion) {
+        this.variablesSerializationVersion = variablesSerializationVersion;
+    }
+
+    String variablesSerializationVersion = null;
+
+    public boolean hasVariablesSerializationVersion() {
+        return variablesSerializationVersion != null;
+    }
 }

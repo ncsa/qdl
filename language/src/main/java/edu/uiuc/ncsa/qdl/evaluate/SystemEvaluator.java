@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.*;
 import java.util.logging.Level;
 
-import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
 import static edu.uiuc.ncsa.qdl.variables.StemUtility.axisWalker;
 import static edu.uiuc.ncsa.qdl.vfs.VFSPaths.SCHEME_DELIMITER;
 import static edu.uiuc.ncsa.security.core.util.DebugConstants.*;
@@ -142,8 +141,6 @@ public class SystemEvaluator extends AbstractEvaluator {
     public static final String MODULE_LOAD = "module_load";
     public static final int LOAD_MODULE_TYPE = 205 + SYSTEM_BASE_VALUE;
 
-    public static final String JAVA_MODULE_LOAD = "jload";
-    public static final int JAVA_MODULE_LOAD_TYPE = 214 + SYSTEM_BASE_VALUE;
 
     public static final String MODULE_PATH = "module_path";
     public static final int MODULE_PATH_TYPE = 211 + SYSTEM_BASE_VALUE;
@@ -221,7 +218,6 @@ public class SystemEvaluator extends AbstractEvaluator {
         if (fNames == null) {
             fNames = new String[]{
                     SCRIPT_NAME_COMMAND,
-                    JAVA_MODULE_LOAD,
                     KILL_PROCESS,
                     FORK,
                     SLEEP,
@@ -273,8 +269,6 @@ public class SystemEvaluator extends AbstractEvaluator {
         switch (name) {
             case SCRIPT_NAME_COMMAND:
                 return SCRIPT_NAME_COMMAND_TYPE;
-            case JAVA_MODULE_LOAD:
-                return JAVA_MODULE_LOAD_TYPE;
             case KILL_PROCESS:
                 return KILL_PROCESS_TYPE;
             case FORK:
@@ -375,9 +369,6 @@ public class SystemEvaluator extends AbstractEvaluator {
         switch (polyad.getName()) {
             case SCRIPT_NAME_COMMAND:
                 doScriptName(polyad, state);
-                return true;
-            case JAVA_MODULE_LOAD:
-                doJLoad(polyad, state);
                 return true;
             case KILL_PROCESS:
                 doKillProcess(polyad, state);
@@ -545,77 +536,6 @@ public class SystemEvaluator extends AbstractEvaluator {
         polyad.setEvaluated(true);
     }
 
-    /**
-     * This is just module_import(module_load(x, 'java')). It happens so much we need an idiom.
-     * this will try to look up the argument in the system lib table, so you can do things like
-     * <pre>
-     *     jload('http')
-     * http
-     * </pre>
-     * and get the entire module loaded.
-     *
-     * @param polyad
-     * @param state
-     */
-    private void doJLoad(Polyad polyad, State state) {
-        if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
-            polyad.setEvaluated(true);
-            return;
-        }
-        Object arg = polyad.evalArg(0, state);
-        boolean hasAlias = false;
-        String alias = null;
-        if (polyad.getArgCount() == 2) {
-            Object object = polyad.evalArg(1, state);
-            if (!isString(object)) {
-                throw new BadArgException(JAVA_MODULE_LOAD + " requires a string as its second argument if present", polyad.getArgAt(1));
-            }
-            alias = (String) object;
-            hasAlias = true;
-        }
-        String possibleName = arg.toString();
-        // Meaning of next: if like .tools.oa2.woof, shave off leading .
-        // if there is an embedded ., process that.
-        possibleName = possibleName.indexOf(STEM_INDEX_MARKER) == 0 ? possibleName.substring(1) : possibleName;
-        if (state.getLibMap().containsKey(possibleName)) { // look for it directly in tools
-            possibleName = state.getLibMap().getString(possibleName);
-        } else {
-            // This looks in the extensions added to the lib element, e.g. oa2.woof in OA4MP
-            // These can be defined in extensions to QDL and can be arbitrarily complex.
-            // Do a path lookup
-            if (0 < possibleName.indexOf(STEM_INDEX_MARKER)) {
-                StringTokenizer stringTokenizer = new StringTokenizer(possibleName, ".");
-                ArrayList<String> toolPath = new ArrayList<>();
-                while (stringTokenizer.hasMoreTokens()) {
-                    toolPath.add(stringTokenizer.nextToken());
-                }
-                QDLStem libStem = state.getSystemInfo().getStem("lib");
-
-                for (int i = 0; i < toolPath.size() - 1; i++) {
-                    libStem = libStem.getStem(toolPath.get(i));
-                }
-                if (libStem.containsKey(toolPath.get(toolPath.size() - 1))) {
-                    possibleName = libStem.getString(toolPath.get(toolPath.size() - 1));
-                }
-            }
-        }
-        Polyad module_load = new Polyad(ModuleEvaluator.LOAD);
-        module_load.addArgument(new ConstantNode(possibleName));
-        module_load.addArgument(new ConstantNode(MODULE_TYPE_JAVA));
-        module_load.evaluate(state);
-        Polyad module_import = new Polyad(ModuleEvaluator.IMPORT);
-        module_import.addArgument(new ConstantNode(module_load.getResult()));
-        if (hasAlias) {
-            module_import.addArgument(new ConstantNode(alias));
-        }
-        Object result = module_import.evaluate(state);
-        polyad.setEvaluated(true);
-        polyad.setResult(module_import.getResult());
-        polyad.setResultType(module_import.getResultType());
-        return;
-
-    }
 
     protected void doKillProcess(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
@@ -2744,7 +2664,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             }else{
                  newInstance = m.newInstance(newModuleState);
             }
-            newInstance.setInheritMode(ModuleEvaluator.IMPORT_STATE_EXTEND_VALUE); // default for old system
+            newInstance.setInheritanceMode(ModuleEvaluator.IMPORT_STATE_SHARE_VALUE); // default for old system
             if (alias == null) {
                 alias = m.getAlias();
             }

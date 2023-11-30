@@ -86,10 +86,10 @@ public class OldModuleTests extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testFunctionAndModules_Good() throws Throwable {
-        testFunctionAndModules_Good(0);
-        testFunctionAndModules_Good(1);
-        testFunctionAndModules_Good(2);
-        testFunctionAndModules_Good(3);
+        testFunctionAndModules_Good(ROUNDTRIP_NONE);
+        testFunctionAndModules_Good(ROUNDTRIP_XML);
+        testFunctionAndModules_Good(ROUNDTRIP_QDL);
+        testFunctionAndModules_Good(ROUNDTRIP_JAVA);
     }
 
     protected void testFunctionAndModules_Good(int testCase) throws Throwable {
@@ -122,26 +122,8 @@ public class OldModuleTests extends AbstractQDLTester {
         addLine(script, h_module);
         addLine(script, f_xy);
         QDLInterpreter interpreter;
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
-        //addLine(script, "ok := !is_function(g,1);");// imported into f means not in session
+        state = rountripState(state, script, testCase);
+
         addLine(script, "ok := g∄1;");// imported into f means not in session
         //addLine(script, "ok2 := !is_function(h,1);");// imported into f means not in session
         addLine(script, "ok2 := h∄1;");// imported into f means not in session
@@ -174,10 +156,10 @@ public class OldModuleTests extends AbstractQDLTester {
      */
 
     public void testMultipleModuleImport() throws Throwable {
-        testMultipleModuleImport(0);
-        testMultipleModuleImport(1);
-        testMultipleModuleImport(2);
-        testMultipleModuleImport(3);
+        testMultipleModuleImport(ROUNDTRIP_NONE);
+        testMultipleModuleImport(ROUNDTRIP_XML);
+        testMultipleModuleImport(ROUNDTRIP_QDL);
+        testMultipleModuleImport(ROUNDTRIP_JAVA);
     }
 
     protected void testMultipleModuleImport(int testCase) throws Throwable {
@@ -191,25 +173,7 @@ public class OldModuleTests extends AbstractQDLTester {
         addLine(script, g_module);
         addLine(script, import_g);
         addLine(script, import_g1);
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
+        state = rountripState(state, script, testCase);
 
         addLine(script, "a#q:=10;");
         addLine(script, "b#q:=11;");
@@ -231,10 +195,10 @@ public class OldModuleTests extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testNSAndStem() throws Throwable {
-        testNSAndStem(0);
-        testNSAndStem(1);
-        testNSAndStem(2);
-        testNSAndStem(3);
+        testNSAndStem(ROUNDTRIP_NONE);
+        testNSAndStem(ROUNDTRIP_XML);
+        testNSAndStem(ROUNDTRIP_QDL);
+        testNSAndStem(ROUNDTRIP_JAVA);
     }
 
     protected void testNSAndStem(int testCase) throws Throwable {
@@ -246,25 +210,8 @@ public class OldModuleTests extends AbstractQDLTester {
         addLine(script, "i:=0;");
         addLine(script, "j:=5;");
         addLine(script, "list. := n(10);");
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
+        state = rountripState(state, script, testCase);
+
         addLine(script, "module_import('a:a');");
         addLine(script, "module_import('a:b');");
         addLine(script, "d := (a#list.).(b#i);");// Should resolve (a#list).(b#i) so index of b#i to 1.
@@ -286,10 +233,10 @@ public class OldModuleTests extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testNSAndVariableResolution() throws Throwable {
-        testNSAndVariableResolution(0);
-        testNSAndVariableResolution(1);
-        testNSAndVariableResolution(2);
-        testNSAndVariableResolution(3);
+        testNSAndVariableResolution(ROUNDTRIP_NONE);
+        testNSAndVariableResolution(ROUNDTRIP_XML);
+        testNSAndVariableResolution(ROUNDTRIP_QDL);
+        testNSAndVariableResolution(ROUNDTRIP_JAVA);
     }
 
     protected void testNSAndVariableResolution(int testCase) throws Throwable {
@@ -300,26 +247,7 @@ public class OldModuleTests extends AbstractQDLTester {
         addLine(script, "module['a:b','b']body[j:=4;list2. := -20 + n(5);];");
         addLine(script, "module_import('a:a');");
         addLine(script, "module_import('a:b');");
-
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
+        state = rountripState(state, script, testCase);
 
         addLine(script, "p := i;");
         addLine(script, "q := list.0;");
@@ -349,10 +277,10 @@ public class OldModuleTests extends AbstractQDLTester {
      */
 
     public void testImportAndAlias() throws Throwable {
-        testImportAndAlias(0);
-        testImportAndAlias(1);
-        testImportAndAlias(2);
-        testImportAndAlias(3);
+        testImportAndAlias(ROUNDTRIP_NONE);
+        testImportAndAlias(ROUNDTRIP_XML);
+        testImportAndAlias(ROUNDTRIP_QDL);
+        testImportAndAlias(ROUNDTRIP_JAVA);
     }
 
     public void testImportAndAlias(int testCase) throws Throwable {
@@ -365,25 +293,7 @@ public class OldModuleTests extends AbstractQDLTester {
         addLine(script, "i:=0;");
         addLine(script, "j:=5;");
         addLine(script, "list. := n(10);");
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
+        state = rountripState(state, script, testCase);
 
         addLine(script, "module_import('a:a');");
         addLine(script, "module_import('b:b');");
@@ -447,10 +357,10 @@ public class OldModuleTests extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testModuleFunctionVisibility() throws Throwable {
-        testModuleFunctionVisibility(0);
-        testModuleFunctionVisibility(1);
-        testModuleFunctionVisibility(2);
-        testModuleFunctionVisibility(3);
+        testModuleFunctionVisibility(ROUNDTRIP_NONE);
+        testModuleFunctionVisibility(ROUNDTRIP_XML);
+        testModuleFunctionVisibility(ROUNDTRIP_QDL);
+        testModuleFunctionVisibility(ROUNDTRIP_JAVA);
     }
 
     public void testModuleFunctionVisibility(int testCase) throws Throwable {
@@ -458,26 +368,7 @@ public class OldModuleTests extends AbstractQDLTester {
         StringBuffer script = new StringBuffer();
         addLine(script, " module['a:a','a'][f(x)->x^2;g(x)->f(x+1);];");
         addLine(script, "module_import('a:a');");
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
-
+        state = rountripState(state, script, testCase);
         addLine(script, "ok := is_function(f,1);"); // f didn't end up outside the module
         addLine(script, "ok1 := 4 == g(1);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
@@ -512,10 +403,10 @@ public class OldModuleTests extends AbstractQDLTester {
      */
 
     public void testFunctionVisibility() throws Throwable {
-        testFunctionVisibility(0);
-        testFunctionVisibility(1);
-        testFunctionVisibility(2);
-        testFunctionVisibility(3);
+        testFunctionVisibility(ROUNDTRIP_NONE);
+        testFunctionVisibility(ROUNDTRIP_XML);
+        testFunctionVisibility(ROUNDTRIP_QDL);
+        testFunctionVisibility(ROUNDTRIP_JAVA);
     }
 
     public void testFunctionVisibility(int testCase) throws Throwable {
@@ -523,26 +414,7 @@ public class OldModuleTests extends AbstractQDLTester {
         StringBuffer script = new StringBuffer();
         addLine(script, "f(x)->x;");
         addLine(script, " module['a:a','a'][f(x)->x^2;g(x)->f(x+1);];");
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
-
+        state = rountripState(state, script, testCase);
         addLine(script, "module_import('a:a');");
         addLine(script, "ok := 16 == g(3);"); // uses f inside the module
         addLine(script, "g3 := g(3);"); // uses f inside the module
@@ -634,36 +506,17 @@ public class OldModuleTests extends AbstractQDLTester {
         -11 =:  A#B#u;
      */
     public void testNestedModule() throws Throwable {
-        testNestedModule(0);
-        testNestedModule(1);
-        testNestedModule(2);
-        testNestedModule(3);
+        testNestedModule(ROUNDTRIP_NONE);
+        testNestedModule(ROUNDTRIP_XML);
+        testNestedModule(ROUNDTRIP_QDL);
+        testNestedModule(ROUNDTRIP_JAVA);
     }
 
     public void testNestedModule(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "module['a:a','A'][module['b:b','B'][u:=2;f(x)->x+1;];module_import('b:b');];");
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
-
+        state = rountripState(state, script, testCase);
         addLine(script, "module_import('a:a');");
         addLine(script, "-11 =:  A#B#u;");
         addLine(script, "ok := -11 == A#B#u;"); // pull it out of the local state so we can test the value easily.
@@ -688,16 +541,16 @@ public class OldModuleTests extends AbstractQDLTester {
   b#q
      */
     public void testNestedVariableImport() throws Throwable {
-        testNestedVariableImport(0);
-        testNestedVariableImport(1);
+        testNestedVariableImport(ROUNDTRIP_NONE);
+        testNestedVariableImport(ROUNDTRIP_XML);
         /*
         No QDL test. The issue is that the test checks that importing a module then
         changing a value internal to it is preserved. This implies order (load module
         then alter things) and a dump only spits out the final state of the workspace,
         so such a pattern cannot be preserved..
          */
-//        testNestedVariableImport(2);
-        testNestedVariableImport(3);
+//        testNestedVariableImport(ROUNDTRIP_QDL);
+        testNestedVariableImport(ROUNDTRIP_JAVA);
     }
 
     public void testNestedVariableImport(int testCase) throws Throwable {
@@ -713,26 +566,7 @@ public class OldModuleTests extends AbstractQDLTester {
         addLine(script, "a#q:=10;");
         addLine(script, "b#q:=11;");
         // Make sure that some of the state has changed to detect state management issues.
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
-
+        state = rountripState(state, script, testCase);
         addLine(script, "module_import('q:/q');");
         addLine(script, "w#a#q:=3;");
         addLine(script, "waq := w#a#q;");
@@ -1051,10 +885,10 @@ cannot access '__a'
      * @throws Throwable
      */
     public void testMLSetVariableFromGlobal() throws Throwable {
-        testMLSetVariableFromGlobal(0);
-        testMLSetVariableFromGlobal(1);
-        testMLSetVariableFromGlobal(2);
-        testMLSetVariableFromGlobal(3);
+        testMLSetVariableFromGlobal(ROUNDTRIP_NONE);
+        testMLSetVariableFromGlobal(ROUNDTRIP_XML);
+        testMLSetVariableFromGlobal(ROUNDTRIP_QDL);
+        testMLSetVariableFromGlobal(ROUNDTRIP_JAVA);
     }
 
     protected void testMLSetVariableFromGlobal(int testCase) throws Throwable {
@@ -1064,26 +898,7 @@ cannot access '__a'
         addLine(script, "zz := -1;");
         addLine(script, "module_import(q,'X');");
         QDLInterpreter interpreter;
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
-
+        state = rountripState(state, script, testCase);
         addLine(script, "ok := zz == X#get_private();");
         interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
@@ -1242,10 +1057,10 @@ cannot access '__a'
      * @throws Throwable
      */
     public void testJavaFQAccessTest() throws Throwable {
-        testJavaFQAccessTest(0);
-        testJavaFQAccessTest(1);
-        testJavaFQAccessTest(2);
-        testJavaFQAccessTest(3);
+        testJavaFQAccessTest(ROUNDTRIP_NONE);
+        testJavaFQAccessTest(ROUNDTRIP_XML);
+        testJavaFQAccessTest(ROUNDTRIP_QDL);
+        testJavaFQAccessTest(ROUNDTRIP_JAVA);
     }
 
     protected void testJavaFQAccessTest(int testCase) throws Throwable {
@@ -1254,26 +1069,7 @@ cannot access '__a'
         StringBuffer script = new StringBuffer();
         addLine(script, "module_load('" + javaTestModule + "', 'java') =: q;");
         addLine(script, "module_import(q,'X');");
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
-
+        state = rountripState(state, script, testCase);
         addLine(script, "ok := 'ab' == X#concat('a','b');");
         addLine(script, "ok1 := var_type(X#eg.)==constants().var_type.stem;");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
@@ -1398,10 +1194,10 @@ cannot access '__a'
   h(@w#a#f, 3); // == w#a#f(3)
      */
     public void testNestedModuleFunctionReference2() throws Throwable {
-        testNestedModuleFunctionReference2(0);
-        testNestedModuleFunctionReference2(1);
-        testNestedModuleFunctionReference2(2);
-        testNestedModuleFunctionReference2(3);
+        testNestedModuleFunctionReference2(ROUNDTRIP_NONE);
+        testNestedModuleFunctionReference2(ROUNDTRIP_XML);
+        testNestedModuleFunctionReference2(ROUNDTRIP_QDL);
+        testNestedModuleFunctionReference2(ROUNDTRIP_JAVA);
     }
 
     /**
@@ -1417,26 +1213,7 @@ cannot access '__a'
         addLine(script, "module['q:/z','w']body[zz:=17;module_import('a:/t');g(x)->a#f(x)+zz;];");
         addLine(script, "module_import('q:/z');");
         QDLInterpreter interpreter;
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
-
+        state = rountripState(state, script, testCase);
         addLine(script, "h(@g, @f, x)->g(x)*f(x);"); // reuse names in different order to test if they are kept straight
         addLine(script, "ok := w#a#f(3) * w#g(3) == h(@w#a#f, @w#g,3);");
         interpreter = new QDLInterpreter(null, state);
@@ -1469,10 +1246,10 @@ cannot access '__a'
     }
 
     public void testExtrinsic() throws Throwable {
-        testExtrinsic(0); // no serialization
-        testExtrinsic(1); // make sure serialization of extrinsics is done in XML
-        testExtrinsic(2); // make sure serialization of extrinsics is done in QDL
-        testExtrinsic(3); // make sure serialization of extrinsics is done in Java
+        testExtrinsic(ROUNDTRIP_NONE); // no serialization
+        testExtrinsic(ROUNDTRIP_XML); // make sure serialization of extrinsics is done in XML
+        testExtrinsic(ROUNDTRIP_QDL); // make sure serialization of extrinsics is done in QDL
+        testExtrinsic(ROUNDTRIP_JAVA); // make sure serialization of extrinsics is done in Java
     }
 
     protected void testExtrinsic(int testCase) throws Throwable {
@@ -1481,26 +1258,7 @@ cannot access '__a'
         addLine(script, VariableState.EXTRINSIC_MARKER + "j := 5;");
         addLine(script, "module['a:a','A'][define[f(s)][return(s*" + VariableState.EXTRINSIC_MARKER + "j);];];");
         QDLInterpreter interpreter;
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
-
+        state = rountripState(state, script, testCase);
         addLine(script, "module_import('a:a');");
         addLine(script, "ok := 50 == A#f(10);");
         interpreter = new QDLInterpreter(null, state);
@@ -1510,10 +1268,10 @@ cannot access '__a'
 
 
     public void testIsFunction() throws Throwable {
-        testIsFunction(0);
-        testIsFunction(1);
-        testIsFunction(2);
-        testIsFunction(3);
+        testIsFunction(ROUNDTRIP_NONE);
+        testIsFunction(ROUNDTRIP_XML);
+        testIsFunction(ROUNDTRIP_QDL);
+        testIsFunction(ROUNDTRIP_JAVA);
     }
 
     protected void testIsFunction(int testCase) throws Throwable {
@@ -1523,26 +1281,7 @@ cannot access '__a'
         addLine(script, "module['q:/z','w']body[module_import('a:/t');define[g(x)]body[return(a#f(x)+3);];];");
         addLine(script, "module_import('q:/z');");
         QDLInterpreter interpreter;
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
-
+        state = rountripState(state, script, testCase);
         addLine(script, "ok  := is_function(w#a#f, 1);"); // specific f in module with 1 arg
         addLine(script, "ok0  := is_function(w#a#f);"); // any f a function in the module?
         addLine(script, "ok1  := !is_function(f, 1);"); // specific f in module with 1 arg

@@ -9,17 +9,18 @@ import edu.uiuc.ncsa.qdl.xml.XMLMissingCloseTagException;
 import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
+import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.XMLEvent;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static edu.uiuc.ncsa.qdl.xml.XMLConstants.FUNCTIONS_TAG;
 import static edu.uiuc.ncsa.qdl.xml.XMLConstants.FUNCTION_TAG;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -340,9 +341,35 @@ public class FTable<K extends FKey, V extends FunctionRecord> extends XTable<K, 
     @Override
     public String toJSONEntry(V xThing, XMLSerializationState xmlSerializationState) {
         String src = StringUtils.listToString(xThing.sourceCode);
-        return Base64.encodeBase64URLSafeString(src.getBytes(StandardCharsets.UTF_8));
+        return Base64.encodeBase64URLSafeString(src.getBytes(UTF_8));
     }
 
+    @Override
+    public JSONObject serializeToJSON(V xThing, XMLSerializationState serializationState) {
+        JSONObject jsonObject = new JSONObject();
+        String src = StringUtils.listToString(xThing.sourceCode);
+        if(StringUtils.isTrivial(src)) {
+            return null;
+        }else{
+            jsonObject.put("entry", Base64.encodeBase64URLSafeString(src.getBytes(UTF_8)));
+        }
+        return jsonObject;
+    }
+
+
+    @Override
+    public void deserializeFromJSON(JSONObject json, QDLInterpreter qi) {
+          String raw = new String(Base64.decodeBase64(json.getString("entry")), UTF_8);
+          if(!StringUtils.isTrivial(raw)){
+              try {
+                  qi.execute(raw);
+              } catch (Throwable t) {
+                  // should do something else??
+                  System.err.println("Error deserializing function '" + raw + "': " + t.getMessage());
+              }
+
+          }
+    }
 
     @Override
     public String fromJSONEntry(String x, XMLSerializationState xmlSerializationState) {
@@ -352,5 +379,6 @@ public class FTable<K extends FKey, V extends FunctionRecord> extends XTable<K, 
         x = FDOC_CONVERT ? convertFDOC(x) : x;
         return x;
     }
+
 }
 

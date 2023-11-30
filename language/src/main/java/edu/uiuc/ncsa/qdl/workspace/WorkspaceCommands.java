@@ -53,6 +53,7 @@ import edu.uiuc.ncsa.security.util.configuration.ConfigUtil;
 import edu.uiuc.ncsa.security.util.configuration.TemplateUtil;
 import edu.uiuc.ncsa.security.util.terminal.ISO6429IO;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.apache.commons.configuration.tree.ConfigurationNode;
 import org.w3c.dom.CharacterData;
@@ -180,7 +181,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     protected void splashScreen() {
         if (showBanner) {
             say(logo);
-            switch(logoName){
+            switch (logoName) {
                 case TIMES_STYLE:
                 case ROMAN_STYLE:
                 case OS2_STYLE:
@@ -194,7 +195,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             say("Welcome to the QDL Workspace");
             say("Version " + QDLVersion.VERSION);
             say("Type " + HELP_COMMAND + " for help.");
-            switch(logoName){
+            switch (logoName) {
                 case OS2_STYLE:
                     say("¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯");
                     break;
@@ -206,6 +207,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             }
         }
     }
+
     String logoName;
     boolean showBanner = true;
 
@@ -2595,7 +2597,9 @@ public class WorkspaceCommands implements Logable, Serializable {
                 }
             }
             rc = printList(inputLine, funcs2);
-            say(funcs2.size() + " total functions");
+            if(0 < funcs2.size()) {
+                say(funcs2.size() + " total functions");
+            }
 
         }
         return rc;
@@ -4372,6 +4376,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     String COMPRESS_FLAG = "-compress";
     String SHOW_FLAG = "-show";
     String QDL_DUMP_FLAG = "-qdl";
+    String JSON_FLAG = "-json";
     public static String SILENT_SAVE_FLAG = "-silent";
 
     /*
@@ -4403,6 +4408,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         boolean silentMode = inputLine.hasArg(SILENT_SAVE_FLAG);
         boolean qdlDump = inputLine.hasArg(QDL_DUMP_FLAG);
         boolean compressionOn = true;
+        boolean doJSON = inputLine.hasArg(JSON_FLAG);
 
         if (inputLine.hasArg(COMPRESS_FLAG)) {
             compressionOn = inputLine.getNextArgFor(COMPRESS_FLAG).equalsIgnoreCase("on");
@@ -4413,10 +4419,11 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         inputLine.removeSwitch(SHOW_FLAG);
         inputLine.removeSwitch(COMPRESS_FLAG);
-        inputLine.removeSwitchAndValue(SAVE_AS_JAVA_FLAG);
+        inputLine.removeSwitch(SAVE_AS_JAVA_FLAG);
         inputLine.removeSwitch(KEEP_WSF);
         inputLine.removeSwitch(SILENT_SAVE_FLAG);
         inputLine.removeSwitch(QDL_DUMP_FLAG);
+        inputLine.removeSwitch(JSON_FLAG);
 
 
         // Remove switches before looking at positional arguments.
@@ -4424,6 +4431,12 @@ public class WorkspaceCommands implements Logable, Serializable {
         String fName = null;
         if (showFile) {
             try {
+                if (doJSON) {
+                    WSJSONSerializer wsjsonSerializer = new WSJSONSerializer();
+                    JSONObject json = wsjsonSerializer.toJSON(this);
+                    System.out.println(json.toString(2));
+                    return RC_CONTINUE;
+                }
                 long[] sizes = _xmlSave(null, compressionOn, showFile);
                 say("size: " + sizes[UNCOMPRESSED_INDEX] + "\n  elapsed time:" + ((System.currentTimeMillis() - startTime) / 1000.0D) + " sec.");
                 return RC_CONTINUE;
@@ -4523,10 +4536,15 @@ public class WorkspaceCommands implements Logable, Serializable {
                 return RC_CONTINUE;
             }
             long[] sizes = new long[]{-1L, -1L};
+
             if (doJava) {
                 sizes = _xmlWSJavaSave(fullPath);
             } else {
-                sizes = _xmlSave(fullPath, compressionOn, showFile);
+                if (doJSON) {
+                    sizes = _jsonWSSave(fullPath);
+                } else {
+                    sizes = _xmlSave(fullPath, compressionOn, showFile);
+                }
             }
             if (!silentMode) {
                 String out = "saved: '" + fullPath + "'" +
@@ -4553,6 +4571,30 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_NO_OP;
     }
 
+    private long[] _jsonWSSave(String path) throws Throwable {
+        long[] sizes = new long[]{-1L, -1L};
+        boolean isVFS = VFSPaths.isVFSPath(path);
+        WSJSONSerializer wsjsonSerializer = new WSJSONSerializer();
+        JSONObject json = wsjsonSerializer.toJSON(this);
+        String raw = json.toString(1);
+
+        if (isVFS) {
+            StringWriter stringWriter = new StringWriter();
+            writeTextVFS(getState(), path, raw);
+            sizes[UNCOMPRESSED_INDEX] = raw.length();
+        } else {
+            File f = new File(path);
+            FileWriter fileWriter = new FileWriter(f);
+            fileWriter.write(raw);
+            fileWriter.flush();
+            fileWriter.close();
+            sizes[UNCOMPRESSED_INDEX] = f.length();
+        }
+        return sizes;
+    }
+     private void _jsonWSSLoad(String path) throws Throwable{
+
+     }
     public static final String DEFAULT_QDL_DUMP_FILE_EXTENSION = ".qdl";
     public static final String DEFAULT_XML_SAVE_FILE_EXTENSION = ".ws";
     public static final String ALTERNATE_XML_SAVE_FILE_EXTENSION = ".zml"; // for reads
@@ -5002,7 +5044,8 @@ public class WorkspaceCommands implements Logable, Serializable {
         inputLine.removeSwitch(JAVA_FLAG);
         boolean skipBadModules = inputLine.hasArg(SKIP_BAD_MODULES_FLAG);
         inputLine.removeSwitch(SKIP_BAD_MODULES_FLAG);
-
+         boolean doJSON = inputLine.hasArg(JSON_FLAG);
+         inputLine.removeSwitch(JSON_FLAG);
         if (inputLine.hasArgAt(FIRST_ARG_INDEX)) {
             fName = inputLine.getArg(FIRST_ARG_INDEX);
         } else {
@@ -5116,6 +5159,14 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("sorry, could not load QDL \"" + fullPath + "\": " + throwable.getMessage());
                 return RC_NO_OP;
             }
+        }
+        if(doJSON){
+            String raw = QDLFileUtil.readFileAsString( fullPath);
+            JSONObject jsonObject = JSONObject.fromObject(raw);
+            WSJSONSerializer wsJSONSerializer = new WSJSONSerializer();
+            WorkspaceCommands newCommands = wsJSONSerializer.fromJSON(jsonObject);
+            updateWSState(newCommands);
+            return RC_CONTINUE;
         }
         loadOK = _xmlWSJavaLoad(fullPath);
         if (!loadOK) {
@@ -5234,6 +5285,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     /**
      * Creates the top-level state object for the system. All other state objects are dervied from it.
+     *
      * @return
      */
     public State getState() {
@@ -5340,10 +5392,10 @@ public class WorkspaceCommands implements Logable, Serializable {
     public void fromConfigFile(InputLine inputLine) throws Throwable {
         String cfgname = inputLine.hasArg(CONFIG_NAME_FLAG) ? inputLine.getNextArgFor(CONFIG_NAME_FLAG) : "default";
         if (inputLine.hasArg(CLA_LOGO)) {
-             String logoName = inputLine.getNextArgFor(CLA_LOGO).toLowerCase();
-             logo = getLogo(logoName);
-             inputLine.removeSwitchAndValue(CLA_LOGO);
-         }
+            String logoName = inputLine.getNextArgFor(CLA_LOGO).toLowerCase();
+            logo = getLogo(logoName);
+            inputLine.removeSwitchAndValue(CLA_LOGO);
+        }
 //      Old style -- single inheritance
 /*
         ConfigurationNode node = ConfigUtil.findConfiguration(
@@ -5351,7 +5403,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 cfgname, CONFIG_TAG_NAME);
 */
         // New style -- multi-inheritance.
-        ConfigurationNode node = ConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgname, CONFIG_TAG_NAME );
+        ConfigurationNode node = ConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgname, CONFIG_TAG_NAME);
 
         fromConfigFile(inputLine, node);
     }
@@ -5555,7 +5607,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         Writer w = null;
         if (doFile) {
             if (isTrivial(filename)) {
-                filename = DebugUtil.getDevPath()+"/qdl/language/src/main/resources/ws-test.xml";
+                filename = DebugUtil.getDevPath() + "/qdl/language/src/main/resources/ws-test.xml";
             }
             File file = new File(filename);
             w = new FileWriter(file);
@@ -5685,7 +5737,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         showBanner = !inputLine.hasArg(CLA_NO_BANNER);
         inputLine.removeSwitch(CLA_NO_BANNER);
-        logoName="default";
+        logoName = "default";
         if (inputLine.hasArg(CLA_LOGO)) {
             logoName = inputLine.getNextArgFor(CLA_LOGO).toLowerCase();
             logo = getLogo(logoName);
@@ -5999,14 +6051,25 @@ public class WorkspaceCommands implements Logable, Serializable {
         WSXMLSerializer serializer = new WSXMLSerializer();
         serializer.toXML(this, xsw);
     }
-
-    public boolean fromXML(XMLEventReader xer, boolean skipBadModules) throws XMLStreamException {
-        WSXMLSerializer serializer = new WSXMLSerializer();
-        WorkspaceCommands newCommands = null;
-
+     public JSONObject toJSON(){
+        WSJSONSerializer serializer = new WSJSONSerializer();
+        return serializer.toJSON(this);
+     }
+     public WorkspaceCommands fromJSON(JSONObject jsonObject) throws Throwable {
+         WSJSONSerializer serializer = new WSJSONSerializer();
+          return serializer.fromJSON(jsonObject);
+     }
+    /**
+     * This takes an updated {@link WorkspaceCommands} object and updates the currently
+     * active workspace. When this is done, there is new state and all the values
+     * ofr newCommnads have been migrated. This takes care to get the {@link IOInterface}
+     * right since if that is not handled correctly, the entire workspace hangs unrecoverably.
+     * @param newCommands
+     * @return
+     */
+    protected boolean updateWSState(WorkspaceCommands newCommands){
         try {
             IOInterface ioInterface = getIoInterface();
-            newCommands = serializer.fromXML(xer, skipBadModules);
             State oldState = getState();
             newCommands.getState().injectTransientFields(oldState);
             // later this is injected into the state. Set it here or custom IO fails later.
@@ -6060,7 +6123,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         } catch (Throwable t) {
             // This should return a nice message to display.
             // It is possible that the workspace cannot even pick itself off the floor in which case
-            // the state or even the logger might not exist. 
+            // the state or even the logger might not exist.
             if (getState() != null && getState().getLogger() != null) {
                 getState().getLogger().error("Could not deserialize workspace:" + t.getMessage(), t);
             }
@@ -6070,7 +6133,12 @@ public class WorkspaceCommands implements Logable, Serializable {
             //return false;
             throw t;
         }
-
+    }
+    public boolean fromXML(XMLEventReader xer, boolean skipBadModules) throws XMLStreamException {
+        WSXMLSerializer serializer = new WSXMLSerializer();
+        WorkspaceCommands newCommands = null;
+        newCommands = serializer.fromXML(xer, skipBadModules);
+       return updateWSState(newCommands);
     }
 
     public boolean isAutosaveOn() {
@@ -6112,7 +6180,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         getState().setAssertionsOn(assertionsOn);
     }
 
-    boolean assertionsOn =true;
+    boolean assertionsOn = true;
 
     public boolean isAnsiModeOn() {
         return ansiModeOn;

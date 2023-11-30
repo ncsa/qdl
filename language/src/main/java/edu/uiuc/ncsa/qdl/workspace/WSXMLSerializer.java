@@ -42,7 +42,14 @@ public class WSXMLSerializer {
     public WSXMLSerializer() {
     }
 
-
+    /**
+     * Top-level serializer for workspace. This adds in all the workspace state too, such as
+     * ws variables and the any loaded environment variables.
+     *
+     * @param workspaceCommands
+     * @param xsw
+     * @throws XMLStreamException
+     */
     public void toXML(WorkspaceCommands workspaceCommands, XMLStreamWriter xsw) throws XMLStreamException {
         XMLSerializationState xmlSerializationState = new XMLSerializationState();
         xmlSerializationState.setVersion(VERSION_2_0_TAG);
@@ -71,7 +78,7 @@ public class WSXMLSerializer {
 
         // Do the workspace proper. This comes first since it is basically a header and when listing
         // the workspace, the system will jump out at the end of the header and not process the
-        // templates or states. If you move things aorund it will work, but it will slow
+        // templates or states. If you move things around it will work, but it will slow
         // listing workspaces quite a bit since it will deserialize the entire workspace before moving
         // on to the next.
         xsw.writeStartElement(WS_ENV_TAG);
@@ -95,17 +102,6 @@ public class WSXMLSerializer {
             xsw.writeStartElement(ENV_PROPERTIES);
             xsw.writeCData(encodeBase64String(jsonObject.toString().getBytes(StandardCharsets.UTF_8)));
             xsw.writeEndElement();
-
-            /*
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try {
-                xsw.writeStartElement(ENV_PROPERTIES);
-                workspaceCommands.env.storeToXML(baos, "workspace serialization");
-                xsw.writeCData(encodeBase64String(baos.toByteArray()));
-                xsw.writeEndElement();
-            } catch (IOException e) {
-                workspaceCommands.logger.warn("Could not serialize environment to XML:\"" + e.getMessage() + "\".");
-            }*/
         }
         saveWSList(xsw, workspaceCommands.commandHistory, COMMAND_HISTORY, xmlSerializationState);
         saveWSList(xsw, workspaceCommands.getState().getScriptPaths(), SCRIPT_PATH, xmlSerializationState);
@@ -171,18 +167,53 @@ public class WSXMLSerializer {
         xsw.writeCData(encodeBase64String(jsonArray.toString().getBytes(StandardCharsets.UTF_8)));
     }
 
-    private void processWSEnvNEW(WorkspaceCommands workspaceCommands, XMLStreamWriter xsw) throws XMLStreamException {
+    public static void envFromJSON(WorkspaceCommands workspaceCommands, JSONObject json) throws Throwable{
+        if (json.containsKey(BUFFER_DEFAULT_SAVE_PATH))
+            workspaceCommands.bufferDefaultSavePath = json.getString(BUFFER_DEFAULT_SAVE_PATH);
+        if (json.containsKey(ECHO_MODE)) workspaceCommands.echoModeOn = json.getBoolean(ECHO_MODE);
+        if (json.containsKey(DEBUG_MODE)) workspaceCommands.debugOn = json.getBoolean(DEBUG_MODE);
+        if (json.containsKey(DEBUG_UTIL)) {
+            MetaDebugUtil debugUtil = new MetaDebugUtil();
+            debugUtil.fromJSON(json.getJSONObject(DEBUG_UTIL));
+            workspaceCommands.getState().setDebugUtil(debugUtil);
+        }
+        if(json.containsKey(AUTOSAVE_ON)) workspaceCommands.setAutosaveOn(json.getBoolean(AUTOSAVE_ON));
+        if(json.containsKey(RUN_INIT_ON_LOAD)) workspaceCommands.runInitOnLoad = json.getBoolean(RUN_INIT_ON_LOAD);
+        if(json.containsKey(AUTOSAVE_MESSAGES_ON)) workspaceCommands.setAutosaveMessagesOn(json.getBoolean(AUTOSAVE_MESSAGES_ON));
+        if(json.containsKey(COMPRESS_XML)) workspaceCommands.setCompressXML(json.getBoolean(COMPRESS_XML));
+        if(json.containsKey(USE_EXTERNAL_EDITOR)) workspaceCommands.setUseExternalEditor(json.getBoolean(USE_EXTERNAL_EDITOR));
+        if(json.containsKey(ASSERTIONS_ON)) workspaceCommands.setAssertionsOn(json.getBoolean(ASSERTIONS_ON));
+        if(json.containsKey(PRETTY_PRINT)) workspaceCommands.setPrettyPrint(json.getBoolean(PRETTY_PRINT));
+        if(json.containsKey(ENABLE_LIBRARY_SUPPORT)) workspaceCommands.getState().setEnableLibrarySupport(json.getBoolean(ENABLE_LIBRARY_SUPPORT));
+        if(json.containsKey(OVERWRITE_BASE_FUNCTIONS)) workspaceCommands.getState().setAllowBaseFunctionOverrides(json.getBoolean(OVERWRITE_BASE_FUNCTIONS));
+// ints
+        if(json.containsKey(CURRENT_PID)) workspaceCommands.currentPID = json.getInt(CURRENT_PID);
+// longs
+        if(json.containsKey(AUTOSAVE_INTERVAL)) workspaceCommands.setAutosaveInterval(json.getLong(AUTOSAVE_INTERVAL));
+// dates
+        if(json.containsKey(START_TS)) workspaceCommands.startTimeStamp = Iso8601.string2Date(json.getString(START_TS)).getTime();
+        if(json.containsKey(EXTERNAL_EDITOR_NAME)) workspaceCommands.setExternalEditorName(json.getString(EXTERNAL_EDITOR_NAME));
+        if(json.containsKey(WS_ID)) workspaceCommands.setWSID(json.getString(WS_ID));
+        if(json.containsKey(ENV_FILE)) workspaceCommands.envFile = new File(json.getString(ENV_FILE));
+        if(json.containsKey(CURRENT_WORKSPACE)) workspaceCommands.currentWorkspace = json.getString(CURRENT_WORKSPACE);
+        if(json.containsKey(ROOT_DIR)) workspaceCommands.rootDir = json.getString(ROOT_DIR);
+        if(json.containsKey(SAVE_DIR)) workspaceCommands.saveDir = json.getString(SAVE_DIR);
+        if(json.containsKey(DESCRIPTION)) workspaceCommands.setDescription(json.getString(DESCRIPTION));
+
+    }
+
+    public static JSONObject envToJSON(WorkspaceCommands workspaceCommands) {
         JSONObject json = new JSONObject();
-        // json.put(PRETTY_PRINT, Boolean.toString(workspaceCommands.prettyPrint));
+// json.put(PRETTY_PRINT, Boolean.toString(workspaceCommands.prettyPrint));
         String zzz = workspaceCommands.getBufferDefaultSavePath();
         if (zzz != null) {
             json.put(BUFFER_DEFAULT_SAVE_PATH, zzz);
         }
-        // booleans
+// booleans
         json.put(ECHO_MODE, workspaceCommands.echoModeOn);
         json.put(DEBUG_MODE, workspaceCommands.debugOn);
-        // Fixed https://github.com/ncsa/qdl/issues/29
-        json.put(DEBUG_UTIL, Base64.encodeBase64URLSafeString(workspaceCommands.getState().getDebugUtil().toJSON().toString().getBytes(StandardCharsets.UTF_8)));
+// Fixed https://github.com/ncsa/qdl/issues/29
+        json.put(DEBUG_UTIL, workspaceCommands.getState().getDebugUtil().toJSON());
         json.put(AUTOSAVE_ON, workspaceCommands.isAutosaveOn());
         json.put(RUN_INIT_ON_LOAD, workspaceCommands.runInitOnLoad);
         json.put(AUTOSAVE_MESSAGES_ON, workspaceCommands.isAutosaveMessagesOn());
@@ -192,13 +223,13 @@ public class WSXMLSerializer {
         json.put(PRETTY_PRINT, workspaceCommands.isPrettyPrint());
         json.put(ENABLE_LIBRARY_SUPPORT, workspaceCommands.getState().isEnableLibrarySupport());
         json.put(OVERWRITE_BASE_FUNCTIONS, workspaceCommands.getState().isAllowBaseFunctionOverrides());
-        // ints
+// ints
         json.put(CURRENT_PID, Integer.toString(workspaceCommands.currentPID));
-        // longs
+// longs
         json.put(AUTOSAVE_INTERVAL, workspaceCommands.getAutosaveInterval());
-        // dates
+// dates
         json.put(START_TS, Iso8601.date2String(workspaceCommands.startTimeStamp));
-        // strings
+// strings
 
         if (!isTrivial(workspaceCommands.getExternalEditorName())) {
             json.put(EXTERNAL_EDITOR_NAME, workspaceCommands.getExternalEditorName());
@@ -227,7 +258,11 @@ public class WSXMLSerializer {
             json.put(DESCRIPTION, workspaceCommands.description);
         }
 
-        xsw.writeCData(encodeBase64String(json.toString().getBytes(StandardCharsets.UTF_8)));
+        return json;
+    }
+
+    private void processWSEnvNEW(WorkspaceCommands workspaceCommands, XMLStreamWriter xsw) throws XMLStreamException {
+        xsw.writeCData(encodeBase64String(envToJSON(workspaceCommands).toString().getBytes(StandardCharsets.UTF_8)));
     }
 
     private void processWSEnvOLD(WorkspaceCommands workspaceCommands, XMLStreamWriter xsw) throws XMLStreamException {

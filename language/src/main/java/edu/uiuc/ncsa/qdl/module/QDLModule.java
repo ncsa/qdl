@@ -1,9 +1,15 @@
 package edu.uiuc.ncsa.qdl.module;
 
 import edu.uiuc.ncsa.qdl.exceptions.ModuleInstantiationException;
+import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.ModuleStatement;
+import edu.uiuc.ncsa.qdl.util.InputFormUtil;
+import edu.uiuc.ncsa.qdl.xml.XMLConstants;
+import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
+import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
+import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.xml.stream.XMLEventReader;
@@ -14,7 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.MODULE_SOURCE_TAG;
+import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -88,6 +94,39 @@ public class QDLModule extends Module {
             xsw.writeCData(Base64.encodeBase64URLSafeString(StringUtils.listToString(getSource()).getBytes(StandardCharsets.UTF_8)));
             xsw.writeEndElement();
         }
+    }
+     @Override
+    public JSONObject serializeToJSON(XMLSerializationState serializationState) {
+     JSONObject json = super.serializeToJSON(serializationState);
+     json.put(XMLConstants.MODULE_TYPE_TAG2, XMLConstants.MODULE_TYPE_QDL_TAG);
+        json.put(MODULE_INPUT_FORM_TAG, Base64.encodeBase64URLSafeString(InputFormUtil.inputForm(this).getBytes()));
+     return json;
+    }
+
+    @Override
+    public void deserializeFromJSON(JSONObject json, XMLSerializationState serializationState) {
+        super.deserializeFromJSON(json, serializationState);
+        if(!json.containsKey(MODULE_INPUT_FORM_TAG)){
+            throw new NFWException("missing input form for module.");
+        }
+        String source = new String(Base64.decodeBase64(json.getString(MODULE_INPUT_FORM_TAG)),StandardCharsets.UTF_8);
+        State newState = State.getRootState().newCleanState(); // remember that State can be overridden, so this is the right type
+        QDLInterpreter qdlInterpreter = new QDLInterpreter(newState);
+        try {
+            // recreating the module statement is generally very hard, involving parsing QDL,
+            // so let QDL do it, then harvest it.
+            qdlInterpreter.execute(source);
+            QDLModule tempM = (QDLModule) newState.getMTemplates().getAll().get(0);
+            setModuleStatement(tempM.getModuleStatement());
+            setDocumentation(tempM.getModuleStatement().getDocumentation());
+
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+      if(json.containsKey(MODULE_STATE_TAG)){
+          newState.deserializeFromJSON(json.getJSONObject(MODULE_STATE_TAG),serializationState);
+      }
+      setState(newState);
     }
 
     @Override

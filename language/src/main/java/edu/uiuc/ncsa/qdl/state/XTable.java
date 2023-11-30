@@ -3,6 +3,8 @@ package edu.uiuc.ncsa.qdl.state;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLMissingCloseTagException;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
@@ -20,7 +22,8 @@ import java.util.UUID;
  */
 public abstract class XTable<K extends XKey, V extends XThing> extends HashMap<K, V> implements Cloneable, Serializable {
     protected boolean FDOC_CONVERT = true; // allows for older workspaces to be read. Remove this later
-    protected String convertFDOC(String x){
+
+    protected String convertFDOC(String x) {
         return x.replace(">>", "»");
     }
 
@@ -30,30 +33,33 @@ public abstract class XTable<K extends XKey, V extends XThing> extends HashMap<K
      * @param value
      * @return
      */
-        public V put(XThing value) {
-            return put((K) value.getKey(), (V) value);
-        }
+    public V put(XThing value) {
+        return put((K) value.getKey(), (V) value);
+    }
 
     /**
-     * @deprecated
      * @param xsw
      * @param XMLSerializationState
      * @throws XMLStreamException
+     * @deprecated
      */
     public abstract void toXML(XMLStreamWriter xsw, XMLSerializationState XMLSerializationState) throws XMLStreamException;
 
     public abstract String toJSONEntry(V xThing, XMLSerializationState xmlSerializationState);
+
     public abstract String fromJSONEntry(String x, XMLSerializationState xmlSerializationState);
 
     /**
-     * @deprecated
      * @param xer
      * @param qi
      * @throws XMLStreamException
+     * @deprecated
      */
     public abstract void fromXML(XMLEventReader xer, QDLInterpreter qi) throws XMLStreamException;
+
     /**
      * Version 2.0 serialization
+     *
      * @param xer
      * @param XMLSerializationState
      * @throws XMLStreamException
@@ -80,24 +86,24 @@ public abstract class XTable<K extends XKey, V extends XThing> extends HashMap<K
     }
 
     /**
-     * @deprecated
      * @return
+     * @deprecated
      */
     public abstract String getXMLTableTag();
 
     /**
-     * @deprecated 
      * @return
+     * @deprecated
      */
     public abstract String getXMLElementTag();
 
     /**
-     * @deprecated 
      * @param xer
      * @param XMLSerializationState
      * @param qi
      * @return
      * @throws XMLStreamException
+     * @deprecated
      */
     public abstract V deserializeElement(XMLEventReader xer, XMLSerializationState XMLSerializationState, QDLInterpreter qi) throws XMLStreamException;
 
@@ -115,4 +121,20 @@ public abstract class XTable<K extends XKey, V extends XThing> extends HashMap<K
                 "size=" + size() +
                 '}';
     }
+
+    public JSONArray serializeToJSON(XMLSerializationState serializationState) {
+        if(isEmpty()){return null;}
+        JSONArray array = new JSONArray();
+        for (XKey xKey : keySet()) {
+            V v = get(xKey);
+            // in some cases there is nothing to serialize (e.g. java module functions). Skip them
+            JSONObject x = serializeToJSON(v, serializationState);
+            if(x!=null)array.add(x);
+        }
+        if(array.isEmpty()) return null;
+        return array;
+    }
+
+    public abstract JSONObject serializeToJSON(V xThing, XMLSerializationState serializationState) ;
+    public abstract void deserializeFromJSON(JSONObject json,  QDLInterpreter qi) ;
 }

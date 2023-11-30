@@ -4,6 +4,8 @@ import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.xml.XMLConstants;
+import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
+import net.sf.json.JSONObject;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -14,6 +16,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import static edu.uiuc.ncsa.qdl.state.VariableState.var_regex;
+import static edu.uiuc.ncsa.qdl.xml.XMLConstants.MODULE_STATE_TAG;
 
 /**
  * This will let you create your own extensions to QDL in Java. Simply implement the interfaces
@@ -133,6 +136,24 @@ public abstract class JavaModule extends Module {
         xsw.writeAttribute(XMLConstants.MODULE_CLASS_NAME_TAG, getClassname());
     }
 
+    @Override
+    public JSONObject serializeToJSON(XMLSerializationState serializationState) {
+        JSONObject json = super.serializeToJSON(serializationState);
+        json.put(XMLConstants.MODULE_TYPE_TAG2, XMLConstants.MODULE_TYPE_JAVA_TAG);
+        json.put(XMLConstants.MODULE_CLASS_NAME_TAG, getClassname());
+        return json;
+    }
+
+    @Override
+    public void deserializeFromJSON(JSONObject json, XMLSerializationState serializationState) {
+        super.deserializeFromJSON(json, serializationState);
+        State newState = State.getRootState().newCleanState(); // remember that State can be overridden, so this is the right type
+        if (json.containsKey(MODULE_STATE_TAG)) {
+            newState.deserializeFromJSON(json.getJSONObject(MODULE_STATE_TAG),serializationState);
+        }
+        // Unlike QDLModule, there is no source code to interpret, so just reset the state.
+        init(newState, false); // don't force the defined variables to overwrite the stored ones.
+    }
 
     /**
      * Creates the documentation from the first of each line of every function. Use this or

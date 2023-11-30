@@ -148,19 +148,18 @@ public class QDLVariableTest extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testIsDefined() throws Throwable {
-        testIsDefined(false);
-        testIsDefined(true);
+        testIsDefined(ROUNDTRIP_NONE);
+        testIsDefined(ROUNDTRIP_XML);
+        testIsDefined(ROUNDTRIP_QDL);
+        testIsDefined(ROUNDTRIP_JAVA);
     }
 
-    public void testIsDefined(boolean testXML) throws Throwable {
+    public void testIsDefined(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "a.epe. := {'a':'b','b':'c'};");
         addLine(script, "b := 'foo';");
-        if (testXML) {
-            state = roundTripXMLSerialization(state, script);
-            script = new StringBuffer();
-        }
+        state = rountripState(state, script, testCase);
         addLine(script, "ok0 := ∃a.epe ∧ ∃a.epe.;"); // should handle both cases of trailing . or not
         addLine(script, "ok1 := is_defined(b);"); // most basic test
         addLine(script, "ok2 := !is_defined(a.ZZZ);"); // check that missing elements in stems
@@ -179,19 +178,18 @@ public class QDLVariableTest extends AbstractQDLTester {
     }
 
     public void testIsFunction() throws Throwable {
-        testIsFunction(false);
-        testIsFunction(true);
+        testIsFunction(ROUNDTRIP_NONE);
+        testIsFunction(ROUNDTRIP_XML);
+        testIsFunction(ROUNDTRIP_QDL);
+        testIsFunction(ROUNDTRIP_JAVA);
     }
-    public void testIsFunction(boolean testXML) throws Throwable {
+    public void testIsFunction(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "f(x)->x^2;");
         addLine(script, "f(x,y,z)->x+y+z;");
         addLine(script, "g(x,y)->x*y;");
-        if (testXML) {
-            state = roundTripXMLSerialization(state, script);
-            script = new StringBuffer();
-        }
+        state = rountripState(state, script, testCase);
         addLine(script, "ok0 := f∃null;");
         addLine(script, "ok1 := f∃1;");
         addLine(script, "ok2 := !(f∃2);");

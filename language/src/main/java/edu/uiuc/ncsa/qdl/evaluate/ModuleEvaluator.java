@@ -2,6 +2,7 @@ package edu.uiuc.ncsa.qdl.evaluate;
 
 import edu.uiuc.ncsa.qdl.exceptions.BadArgException;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
+import edu.uiuc.ncsa.qdl.expressions.ConstantNode;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.module.MTKey;
 import edu.uiuc.ncsa.qdl.module.Module;
@@ -14,10 +15,13 @@ import edu.uiuc.ncsa.qdl.variables.QDLNull;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import static edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.MODULE_TYPE_JAVA;
+import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -43,7 +47,9 @@ public class ModuleEvaluator extends AbstractEvaluator {
                     RENAME,
                     GET_FUNCTIONS,
                     GET_VARIABLES,
-                    GET_DOCUMENTATION
+                    GET_DOCUMENTATION,
+                    JAVA_MODULE_LOAD,
+                    JAVA_MODULE_USE
             };
         }
         return fNames;
@@ -69,6 +75,10 @@ public class ModuleEvaluator extends AbstractEvaluator {
                 return GET_DOCUMENTATION_TYPE;
             case LOADED:
                 return LOADED_TYPE;
+            case JAVA_MODULE_LOAD:
+                return JAVA_MODULE_LOAD_TYPE;
+            case JAVA_MODULE_USE:
+                return JAVA_MODULE_USE_TYPE;
         }
         return EvaluatorInterface.UNKNOWN_VALUE;
     }
@@ -95,6 +105,13 @@ public class ModuleEvaluator extends AbstractEvaluator {
     public static final int GET_DOCUMENTATION_TYPE = 7 + MODULE_FUNCTION_BASE_VALUE;
     public static final String LOADED = "loaded";
     public static final int LOADED_TYPE = 8 + MODULE_FUNCTION_BASE_VALUE;
+
+    public static final String JAVA_MODULE_LOAD = "jload";
+    public static final int JAVA_MODULE_LOAD_TYPE = 9 + MODULE_FUNCTION_BASE_VALUE;
+
+    public static final String JAVA_MODULE_USE = "jUse";
+    public static final int JAVA_MODULE_USE_TYPE = 10 + MODULE_FUNCTION_BASE_VALUE;
+
 
     public boolean dispatch(Polyad polyad, State state) {
         switch (polyad.getName()) {
@@ -124,6 +141,12 @@ public class ModuleEvaluator extends AbstractEvaluator {
                 return true;
             case LOADED:
                 doLoaded(polyad, state);
+                return true;
+            case JAVA_MODULE_LOAD:
+                doJLoad(polyad, state, true);
+                return true;
+            case JAVA_MODULE_USE:
+                doJLoad(polyad, state, false);
                 return true;
         }
         return false;
@@ -688,17 +711,44 @@ public class ModuleEvaluator extends AbstractEvaluator {
     /**
      * Imported module gets snapshot of current ambient state, but is independent of it.
      */
-    public final static String IMPORT_STATE_INHERIT = "inherit";
+    public final static String IMPORT_STATE_SNAPSHOT = "inherit";
     /**
      * Imported module shares ambient state. Any changes to ambient state are reflected in module's state.
      */
     public final static String IMPORT_STATE_SHARE = "share";
     public final static String IMPORT_STATE_ANY = "any"; // used in module definition
     public final static int IMPORT_STATE_NONE_VALUE = 100;
-    public final static int IMPORT_STATE_INHERIT_VALUE = 101;
-    public final static int IMPORT_STATE_EXTEND_VALUE = 102;
+    public final static int IMPORT_STATE_SNAPSHOT_VALUE = 101;
+    public final static int IMPORT_STATE_SHARE_VALUE = 102;
     public final static int IMPORT_STATE_ANY_VALUE = 110;
+    public static String getInheritanceMode(int x){
+        switch (x){
 
+            case IMPORT_STATE_SHARE_VALUE:
+                return IMPORT_STATE_SHARE;
+            case IMPORT_STATE_SNAPSHOT_VALUE:
+                return IMPORT_STATE_SNAPSHOT;
+            case IMPORT_STATE_ANY_VALUE:
+                return IMPORT_STATE_ANY;
+            default:
+            case  IMPORT_STATE_NONE_VALUE:
+              return IMPORT_STATE_NONE;
+        }
+    }
+    public static int getInheritanceMode(String x){
+        switch (x){
+            default:
+            case IMPORT_STATE_NONE:
+                return IMPORT_STATE_NONE_VALUE;
+            case IMPORT_STATE_ANY:
+                return IMPORT_STATE_ANY_VALUE;
+            case IMPORT_STATE_SHARE:
+                return IMPORT_STATE_SHARE_VALUE;
+            case IMPORT_STATE_SNAPSHOT:
+                return IMPORT_STATE_SNAPSHOT_VALUE;
+        }
+
+    }
     protected void doImport(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{1, 2});
@@ -717,26 +767,26 @@ public class ModuleEvaluator extends AbstractEvaluator {
             polyad.setEvaluated(true);
             return;
         }
-        int stateInherit = IMPORT_STATE_NONE_VALUE;
+        int inhertianceMode = IMPORT_STATE_NONE_VALUE;
         if (polyad.getArgCount() == 2) {
             Object arg1 = polyad.evalArg(1, state);
             if (isString(arg1)) {
                 String a = (String) arg1;
                 switch (a) {
                     case IMPORT_STATE_NONE:
-                        stateInherit = IMPORT_STATE_NONE_VALUE;
+                        inhertianceMode = IMPORT_STATE_NONE_VALUE;
                         break;
                     case IMPORT_STATE_SHARE:
-                        stateInherit = IMPORT_STATE_EXTEND_VALUE;
+                        inhertianceMode = IMPORT_STATE_SHARE_VALUE;
                         break;
-                    case IMPORT_STATE_INHERIT:
-                        stateInherit = IMPORT_STATE_INHERIT_VALUE;
+                    case IMPORT_STATE_SNAPSHOT:
+                        inhertianceMode = IMPORT_STATE_SNAPSHOT_VALUE;
                     default:
                         throw new BadArgException(IMPORT + " unknown state inheritance mode", polyad.getArgAt(1));
                 }
             } else {
                 if (isLong(arg1)) {
-                    stateInherit = ((Long) arg1).intValue();
+                    inhertianceMode = ((Long) arg1).intValue();
                 } else {
                     throw new BadArgException(IMPORT + " unknown state inheritance mode", polyad.getArgAt(1));
                 }
@@ -757,16 +807,16 @@ public class ModuleEvaluator extends AbstractEvaluator {
         }
         State newState;
         try {
-            switch (stateInherit) {
+            switch (inhertianceMode) {
                 case IMPORT_STATE_NONE_VALUE:
                     newState = state.newCleanState();
                     break;
-                case IMPORT_STATE_INHERIT_VALUE:
+                case IMPORT_STATE_SNAPSHOT_VALUE:
                     newState = StateUtils.clone(state);
                     // put tables and such in the right place so ambient state is not altered.
                     newState = newState.newLocalState(newState);
                     break;
-                case IMPORT_STATE_EXTEND_VALUE:
+                case IMPORT_STATE_SHARE_VALUE:
                     newState = state;
                     // put tables and such in the right place so ambient state is not altered.
                     newState = newState.newLocalState(newState);
@@ -775,13 +825,89 @@ public class ModuleEvaluator extends AbstractEvaluator {
                     throw new BadArgException(IMPORT + " with unknown state inheritene mode", polyad.getArgAt(1));
             }
             m = m.newInstance(newState);
-            m.setInheritMode(stateInherit);
+            m.setInheritanceMode(inhertianceMode);
         } catch (Throwable t) {
             new QDLExceptionWithTrace("there was an issue creating the state of the module:" + t.getMessage(), polyad);
         }
         polyad.setEvaluated(true);
         polyad.setResult(m);
         polyad.setResultType(Constant.MODULE_TYPE);
+    }
+
+    /**
+     * This is just module_import(module_load(x, 'java')). It happens so much we need an idiom.
+     * this will try to look up the argument in the system lib table, so you can do things like
+     * <pre>
+     *     jload('http')
+     * http
+     * </pre>
+     * and get the entire module loaded.
+     *
+     * @param polyad
+     * @param state
+     */
+    private void doJLoad(Polyad polyad, State state, boolean isLoad) {
+        if (polyad.isSizeQuery()) {
+            polyad.setResult(new int[]{1, 2});
+            polyad.setEvaluated(true);
+            return;
+        }
+        Object arg = polyad.evalArg(0, state);
+        boolean hasAlias = false;
+        String alias = null;
+        if (polyad.getArgCount() == 2) {
+            Object object = polyad.evalArg(1, state);
+            if (!isString(object)) {
+                throw new BadArgException((isLoad?JAVA_MODULE_LOAD:JAVA_MODULE_USE) + " requires a string as its second argument if present", polyad.getArgAt(1));
+            }
+            alias = (String) object;
+            hasAlias = true;
+        }
+        String possibleName = arg.toString();
+        // Meaning of next: if like .tools.oa2.woof, shave off leading .
+        // if there is an embedded ., process that.
+        possibleName = possibleName.indexOf(STEM_INDEX_MARKER) == 0 ? possibleName.substring(1) : possibleName;
+        if (state.getLibMap().containsKey(possibleName)) { // look for it directly in tools
+            possibleName = state.getLibMap().getString(possibleName);
+        } else {
+            // This looks in the extensions added to the lib element, e.g. oa2.woof in OA4MP
+            // These can be defined in extensions to QDL and can be arbitrarily complex.
+            // Do a path lookup
+            if (0 < possibleName.indexOf(STEM_INDEX_MARKER)) {
+                StringTokenizer stringTokenizer = new StringTokenizer(possibleName, ".");
+                ArrayList<String> toolPath = new ArrayList<>();
+                while (stringTokenizer.hasMoreTokens()) {
+                    toolPath.add(stringTokenizer.nextToken());
+                }
+                QDLStem libStem = state.getSystemInfo().getStem("lib");
+                try {
+                    for (int i = 0; i < toolPath.size() - 1; i++) {
+                        libStem = libStem.getStem(toolPath.get(i));
+                    }
+                    if (libStem.containsKey(toolPath.get(toolPath.size() - 1))) {
+                        possibleName = libStem.getString(toolPath.get(toolPath.size() - 1));
+                    }
+                }catch(Throwable t){
+                    // ok, so parsing the path failed. This probably means they passed in the actual
+                    // full java path, so try to process what they sent.
+                }
+            }
+        }
+        Polyad module_load = new Polyad(ModuleEvaluator.LOAD);
+        module_load.addArgument(new ConstantNode(possibleName));
+        module_load.addArgument(new ConstantNode(MODULE_TYPE_JAVA));
+        module_load.evaluate(state);
+        Polyad module_import = new Polyad(isLoad?ModuleEvaluator.IMPORT:ModuleEvaluator.USE);
+        module_import.addArgument(new ConstantNode(module_load.getResult()));
+        if (hasAlias) {
+            module_import.addArgument(new ConstantNode(alias));
+        }
+        module_import.evaluate(state);
+        polyad.setEvaluated(true);
+        polyad.setResult(module_import.getResult());
+        polyad.setResultType(module_import.getResultType());
+        return;
+
     }
 
     /*

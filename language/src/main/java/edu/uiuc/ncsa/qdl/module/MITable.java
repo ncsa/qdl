@@ -13,6 +13,7 @@ import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
+import net.sf.json.JSONObject;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
@@ -145,6 +146,11 @@ public class MITable<K extends XKey, V extends MIWrapper> extends XTable<K, V> i
 
     @Override
     public String toJSONEntry(V wrapper, XMLSerializationState xmlSerializationState) {
+        return serializeToJSON(wrapper, xmlSerializationState).toString();
+    }
+
+    @Override
+    public JSONObject serializeToJSON(V wrapper, XMLSerializationState serializationState) {
         Module module = wrapper.getModule();
         K key = (K) wrapper.getKey();
         XMLUtils.ModuleAttributes moduleAttributes = new XMLUtils.ModuleAttributes();
@@ -153,9 +159,8 @@ public class MITable<K extends XKey, V extends MIWrapper> extends XTable<K, V> i
         moduleAttributes.templateReference = module.parentTemplateID;
         moduleAttributes.stateReference = module.getState().getUuid();
 
-        return moduleAttributes.toJSON().toString();
+        return moduleAttributes.toJSON();
     }
-
 
     @Override
     public String fromJSONEntry(String x, XMLSerializationState xmlSerializationState) {
@@ -167,5 +172,10 @@ public class MITable<K extends XKey, V extends MIWrapper> extends XTable<K, V> i
             ((JavaModule)m.getModule()).init(m.getModule().getState(), false);
         }
         return null; // this returns what the interpreter should process. Nothing in this case.
+    }
+
+    @Override
+    public void deserializeFromJSON(JSONObject json, QDLInterpreter qi) {
+
     }
 }

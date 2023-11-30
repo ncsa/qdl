@@ -5,12 +5,14 @@ import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XThing;
+import edu.uiuc.ncsa.qdl.util.InputFormUtil;
 import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.qdl.xml.XMLMissingCloseTagException;
 import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.xml.stream.XMLEventReader;
@@ -38,16 +40,16 @@ public abstract class Module implements XThing, Serializable {
 
     @Override
     public XKey getKey() {
-        if(key == null){
-           if(StringUtils.isTrivial(getAlias())){
-               if(isTemplate()){
-                   key = getMTKey();
-               }else{
-                   throw new IllegalStateException("No alias for module '" + getNamespace() + "'");
-               }
-           } else{
-               key = new XKey(getName()); // for instances, stash with the alias
-           }
+        if (key == null) {
+            if (StringUtils.isTrivial(getAlias())) {
+                if (isTemplate()) {
+                    key = getMTKey();
+                } else {
+                    throw new IllegalStateException("No alias for module '" + getNamespace() + "'");
+                }
+            } else {
+                key = new XKey(getName()); // for instances, stash with the alias
+            }
         }
         return key;
     }
@@ -164,13 +166,77 @@ public abstract class Module implements XThing, Serializable {
      * Called in {@link #newInstance(State)} to finish setting up the module for things like
      * serialization. When you write {@link #newInstance(State)} the very last thing you should
      * do is invoke this on your new module.
+     *
      * @param module
      */
-    protected void setupModule(Module module){
+    protected void setupModule(Module module) {
         module.setParentTemplateID(getId());
     }
 
     public void toXML(XMLStreamWriter xsw, String alias) throws XMLStreamException {
+
+    }
+
+    public void toXML2(XMLStreamWriter xsw,
+                       String alias,
+                       boolean fullSerialization,
+                       XMLSerializationState XMLSerializationState) throws XMLStreamException {
+        xsw.writeStartElement(MODULE_TAG);
+        xsw.writeAttribute(XMLConstants.MODULE_NS_ATTR, getNamespace().toString());
+        if (!(getAlias() == null && alias == null)) {
+            xsw.writeAttribute(XMLConstants.MODULE_ALIAS_ATTR, StringUtils.isTrivial(alias) ? getAlias() : alias);
+        }
+        xsw.writeAttribute(XMLConstants.UUID_TAG, getId().toString());
+        writeExtraXMLAttributes(xsw);
+        xsw.writeStartElement("inputForm");
+        xsw.writeCData(Base64.encodeBase64URLSafeString(InputFormUtil.inputForm(this).getBytes()));
+        xsw.writeEndElement();
+        if (getState() != null) {
+            state.toXML(xsw);
+        }
+        writeExtraXMLElements(xsw); // Do this first so they get read first later on deserialization
+        xsw.writeEndElement();
+    }
+
+    /**
+     * The result of this is a json object
+     * @param serializationState
+     * @return
+     */
+    public JSONObject serializeToJSON(XMLSerializationState serializationState) {
+        JSONObject json = new JSONObject();
+        json.put(MODULE_NS_ATTR, getNamespace().toString());
+        if (!StringUtils.isTrivial(getAlias())) json.put(MODULE_ALIAS_ATTR, getAlias());
+        json.put(UUID_TAG, getId().toString());
+        if (getParentInstanceID() != null) json.put(PARENT_INSTANCE_UUID_TAG, getParentInstanceID().toString());
+        if (getParentTemplateID() != null) json.put(PARENT_TEMPLATE_UUID_TAG, getParentTemplateID().toString());
+        if (!StringUtils.isTrivial(getParentInstanceAlias()))
+            json.put(PARENT_INSTANCE_ALIAS_TAG, getParentInstanceAlias());
+        json.put(MODULE_INHERITANCE_MODE_TAG, ModuleEvaluator.getInheritanceMode(getInheritMode()));
+        if (!getDocumentation().isEmpty()) {
+            JSONArray array;
+            if (getDocumentation() instanceof JSONArray) {
+                array = (JSONArray) getDocumentation();
+            } else {
+                array = new JSONArray();
+                array.addAll(getDocumentation());
+            }
+            json.put(MODULE_DOCUMENTATION_TAG, array);
+        }
+        if (getState() != null) json.put(MODULE_STATE_TAG, getState().serializeToJSON(serializationState));
+        return json;
+    }
+
+    public void deserializeFromJSON(JSONObject json, XMLSerializationState serializationState) {
+        setNamespace(URI.create(json.getString(MODULE_NS_ATTR)));
+        if (json.containsKey(MODULE_ALIAS_ATTR)) setAlias(json.getString(MODULE_ALIAS_ATTR));
+        setId(UUID.fromString(json.getString(UUID_TAG)));
+        if (json.containsKey(MODULE_DOCUMENTATION_TAG)) setDocumentation(json.getJSONArray(MODULE_DOCUMENTATION_TAG));
+        if (json.containsKey(PARENT_INSTANCE_ALIAS_TAG)) setParentInstanceAlias(json.getString(PARENT_INSTANCE_ALIAS_TAG));
+        if (json.containsKey(PARENT_TEMPLATE_UUID_TAG)) setParentTemplateID(UUID.fromString(json.getString(PARENT_TEMPLATE_UUID_TAG)));
+        if (json.containsKey(PARENT_INSTANCE_UUID_TAG)) setParentTemplateID(UUID.fromString(json.getString(PARENT_INSTANCE_UUID_TAG)));
+
+        setInheritanceMode(ModuleEvaluator.getInheritanceMode(json.getString(MODULE_INHERITANCE_MODE_TAG)));
 
     }
 
@@ -182,7 +248,9 @@ public abstract class Module implements XThing, Serializable {
 
         if (fullSerialization) {
             xsw.writeAttribute(XMLConstants.MODULE_NS_ATTR, getNamespace().toString());
-            xsw.writeAttribute(XMLConstants.MODULE_ALIAS_ATTR, StringUtils.isTrivial(alias) ? getAlias() : alias);
+            if (!(getAlias() == null && alias == null)) {
+                xsw.writeAttribute(XMLConstants.MODULE_ALIAS_ATTR, StringUtils.isTrivial(alias) ? getAlias() : alias);
+            }
             xsw.writeAttribute(XMLConstants.UUID_TAG, getId().toString());
             writeExtraXMLAttributes(xsw);
             State state = getState();
@@ -216,7 +284,7 @@ public abstract class Module implements XThing, Serializable {
      * @throws XMLStreamException
      */
     public void writeExtraXMLAttributes(XMLStreamWriter xsw) throws XMLStreamException {
-
+        xsw.writeAttribute("inheritanceMode", ModuleEvaluator.getInheritanceMode(getInheritMode()));
     }
 
     /**
@@ -230,6 +298,7 @@ public abstract class Module implements XThing, Serializable {
     }
 
     public boolean FDOC_CONVERT = true;
+
     /**
      * Used in version 2,0 serialization
      *
@@ -253,7 +322,7 @@ public abstract class Module implements XThing, Serializable {
                         case MODULE_SOURCE_TAG:
                             QDLModule qdlModule = (QDLModule) this;
                             List<String> source = getListByTag(xer, MODULE_SOURCE_TAG);
-                            // Version 2: The source is stored. In order to recoder this module
+                            // Version 2: The source is stored. In order to recover this module
                             // the only reliable way is to re-interpret the source and pilfer the
                             // ModuleStatement which contains the documentation, executable statements etc.
                             // Again, this is because any QDL module statement can be quite complex and
@@ -263,12 +332,12 @@ public abstract class Module implements XThing, Serializable {
                             QDLInterpreter qdlInterpreter = new QDLInterpreter(state);
                             try {
                                 String x = StringUtils.listToString(source);
-                                x = FDOC_CONVERT?x.replace(">>","»"):x;
+                                x = FDOC_CONVERT ? x.replace(">>", "»") : x;
                                 qdlInterpreter.execute(x);
-                                if(state.getMTemplates().isEmpty()) {
+                                if (state.getMTemplates().isEmpty()) {
                                     // fall through case -- nothing resulted.
                                     throw new IllegalStateException("no module found");
-                                }else{
+                                } else {
                                     // Get the actual interpreted ModuleStatement
                                     QDLModule tempM = (QDLModule) state.getMTemplates().getAll().get(0);
                                     qdlModule.setModuleStatement(tempM.getModuleStatement());
@@ -394,6 +463,7 @@ public abstract class Module implements XThing, Serializable {
     public UUID getParentTemplateID() {
         return parentTemplateID;
     }
+
     public void setParentTemplateID(UUID parentTemplateID) {
         this.parentTemplateID = parentTemplateID;
     }
@@ -408,7 +478,7 @@ public abstract class Module implements XThing, Serializable {
         this.parentInstanceID = parentInstanceID;
     }
 
-    UUID parentInstanceID=null;
+    UUID parentInstanceID = null;
 
     public String getParentInstanceAlias() {
         return parentInstanceAlias;
@@ -418,7 +488,7 @@ public abstract class Module implements XThing, Serializable {
         this.parentInstanceAlias = parentInstanceAlias;
     }
 
-    String parentInstanceAlias=null;
+    String parentInstanceAlias = null;
 
 
     public UUID getId() {
@@ -435,7 +505,7 @@ public abstract class Module implements XThing, Serializable {
         return inheritMode;
     }
 
-    public void setInheritMode(int inheritMode) {
+    public void setInheritanceMode(int inheritMode) {
         this.inheritMode = inheritMode;
     }
 

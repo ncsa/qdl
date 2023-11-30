@@ -1,35 +1,45 @@
 package edu.uiuc.ncsa.qdl.util;
 
 import edu.uiuc.ncsa.qdl.config.QDLConfigurationLoaderUtils;
+import edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator;
+import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.*;
+import edu.uiuc.ncsa.qdl.expressions.ConstantNode;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.extensions.JavaModule;
 import edu.uiuc.ncsa.qdl.extensions.QDLLoader;
 import edu.uiuc.ncsa.qdl.module.MTKey;
 import edu.uiuc.ncsa.qdl.module.Module;
+import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.parsing.QDLParserDriver;
 import edu.uiuc.ncsa.qdl.parsing.QDLRunner;
 import edu.uiuc.ncsa.qdl.scripting.QDLScript;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
+import edu.uiuc.ncsa.qdl.variables.VTable;
+import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
+import net.sf.json.JSONObject;
+import org.apache.commons.codec.binary.Base64;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import static edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.checkNull;
-import static edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.MODULE_DEFAULT_EXTENSION;
-import static edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.resolveScript;
+import static edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.*;
 import static edu.uiuc.ncsa.qdl.variables.Constant.isString;
+import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * <p>Created by Jeff Gaynor<br>
  * on 11/21/23 at  7:55 AM
  */
-public class ModuleUtils {
+public class ModuleUtils implements Serializable {
     /**
      * Converts a couple of different arguments to the form
      * [[a0{,b0}],[a1{,b1}],...,[an{,bn}] or (if a single argument that is
@@ -192,4 +202,54 @@ public class ModuleUtils {
         return null;
     }
 
+    /**
+     * This starts the load from the JSON since which type of module to instantiate is needed, so
+     * the right module has to exist before {@link Module#deserializeFromJSON(JSONObject, XMLSerializationState)} can be called.
+     *
+     * @param state
+     * @param json
+     * @return
+     */
+    public Module deserializeFromJSON(State state, JSONObject json) {
+        Module m = null;
+        QDLInterpreter qi = new QDLInterpreter(state);
+        Polyad polyad;
+        polyad = new Polyad(ModuleEvaluator.LOAD);
+        if (json.getString(MODULE_TYPE_TAG2).equals(MODULE_TYPE_JAVA)) {
+            polyad.addArgument(new ConstantNode(json.getString(MODULE_CLASS_NAME_TAG)));
+            polyad.addArgument(new ConstantNode("java"));
+            polyad.evaluate(state);
+        }
+        if (json.getString(MODULE_TYPE_TAG2).equals(QDL_TYPE_TAG)) {
+            // This is a module[] statement and needs to be loaded directly.
+            String source = new String(Base64.decodeBase64(json.getString(MODULE_INPUT_FORM_TAG)), UTF_8);
+            try {
+                qi.execute(source);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+        String varName = json.getString(VTable.KEY_KEY);
+        String inheritanceMode = ModuleEvaluator.IMPORT_STATE_NONE;
+        inheritanceMode = json.containsKey(MODULE_INHERITANCE_MODE_TAG) ? json.getString(MODULE_INHERITANCE_MODE_TAG) : inheritanceMode;
+        String y = varName + OpEvaluator.ASSIGNMENT + "import('" + json.getString(MODULE_NS_ATTR) + "', '" + inheritanceMode + "');";
+        try {
+            // Note that if there are embedded modules, this will create a network of them
+            qi.execute(y);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        m = (Module)qi.getState().getValue(varName);
+        return m;
+    }
+
+    /**
+     * For modules <b>only</b>. Applies the serialized module state. If the module was created with the
+     * shared state, then only the local tables are updated.
+     * @param module
+     * @param serializedState
+     */
+    protected void applyState(Module module, JSONObject serializedState){
+
+    }
 }

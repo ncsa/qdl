@@ -4,6 +4,7 @@ import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +12,7 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 2/28/23 at  7:53 AM
  */
-public class QDLCLITools {
+public class QDLCLITools implements Serializable {
     public static String TO_STEM_NAME = "to_stem";
     public static String DEFAULT_SWITCH_MARKER = "-";
 
