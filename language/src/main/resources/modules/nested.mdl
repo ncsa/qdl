@@ -1,0 +1,22 @@
+/*
+   This is used for debugging and consists of nested modules.
+*/
+module['a:x'][
+    module['a:y'][
+       module['a:z'][
+        f(z)->z^3;
+        qz:=5;
+       ]; //end a:z
+       z:=import('a:z');
+       f(y)->y^2;
+       qy:=3;
+    ]; //end a:y
+    y:=import('a:y');
+    f(x)->x;
+    qx:=1;
+]; //end a:x
+x:=import('a:x');
+x#qx:=7;
+x#y#qy:=11;
+x#y#z#qz:=15;
+  //          script_load('/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/nested.mdl')

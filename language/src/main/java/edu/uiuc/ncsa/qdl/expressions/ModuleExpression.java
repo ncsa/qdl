@@ -10,6 +10,7 @@ import edu.uiuc.ncsa.qdl.state.StateUtils;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.variables.Constant;
+import edu.uiuc.ncsa.qdl.variables.VThing;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 
 import java.io.IOException;
@@ -299,6 +300,9 @@ public class ModuleExpression extends ExpressionImpl {
     Module module = null;
 
     public State getModuleState() {
+        if(module == null){
+            return null;
+        }
         return getModule().getState();
     }
 
@@ -313,10 +317,23 @@ public class ModuleExpression extends ExpressionImpl {
         }
         if (moduleState == null) {
             XKey xKey = new XKey(getAlias());
-            if (!(alias.equals("this") || state.getMInstances().containsKey(xKey))) {
-                throw new IllegalArgumentException("no module named '" + getAlias() + "' was  imported");
+            if (state.getVStack().containsKey(xKey)) {
+                VThing vThing = (VThing) state.getVStack().get(xKey);
+                if (vThing.getValue() instanceof Module) {
+                    Module m = (Module) vThing.getValue();
+                    setModule(m);
+                    moduleState = m.getState();
+
+                } else {
+                    throw new NFWException("expected module for key " + xKey + ", but got a " + vThing.getValue().getClass().getSimpleName());
+                }
+            } else {
+                if (!(alias.equals("this") || state.getMInstances().containsKey(xKey))) {
+                    throw new IllegalArgumentException("no module named '" + getAlias() + "' was  imported");
+                }
+
+                moduleState = state.newLocalState(state.getMInstances().getModule(xKey).getState());
             }
-            moduleState = state.newLocalState(state.getMInstances().getModule(xKey).getState());
         }
         return moduleState;
     }
@@ -365,10 +382,24 @@ public class ModuleExpression extends ExpressionImpl {
             throw new IllegalArgumentException("cannot assign a constant a value.");
         }
         if (getExpression() instanceof ModuleExpression) {
+            getModuleState(state); // sets the state for *this* module
             ModuleExpression nextME = (ModuleExpression) getExpression();
             XKey xKey = new XKey(nextME.getAlias());
-            if (getModuleState(state).getMInstances().containsKey(xKey)) {
-                nextME.setModuleState(getModuleState(state).getMInstances().getModule(xKey).getState());
+            setNewModuleVersion(getModuleState()!=null);
+            if (isNewModuleVersion() && getModuleState().getVStack().containsKey(xKey)) {
+                    VThing vThing = (VThing) getModuleState().getVStack().get(xKey);
+                    if (vThing.getValue() instanceof Module) {
+                        Module m = (Module) vThing.getValue();
+                        nextME.setModule(m);
+                        nextME.setModuleState(m.getState()); //sets the next one in the chain.
+                    } else {
+                        throw new NFWException("expected module for " + xKey + " not found");
+                    }
+            } else {
+                if (getModuleState(state).getMInstances().containsKey(xKey)) {
+                    nextME.setModuleState(getModuleState(state).getMInstances().getModule(xKey).getState());
+                }
+
             }
             ((ModuleExpression) getExpression()).set(state, newValue);
             return;

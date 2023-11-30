@@ -4431,13 +4431,26 @@ public class WorkspaceCommands implements Logable, Serializable {
         String fName = null;
         if (showFile) {
             try {
+                long[] sizes = new long[]{-1L,-1L};
                 if (doJSON) {
                     WSJSONSerializer wsjsonSerializer = new WSJSONSerializer();
                     JSONObject json = wsjsonSerializer.toJSON(this);
-                    System.out.println(json.toString(2));
-                    return RC_CONTINUE;
+                    String out = json.toString(1);
+                    System.out.println(out);
+                    sizes[UNCOMPRESSED_INDEX] = out.length();
+
+                }else{
+                    if(qdlDump){
+                        StringWriter stringWriter = new StringWriter();
+                        _xmlWSQDLSave(stringWriter);
+                        System.out.println(stringWriter.getBuffer());
+                        sizes[UNCOMPRESSED_INDEX] = stringWriter.getBuffer().length();
+                    }else{
+                        // defaults to XML
+                        sizes = _xmlSave(null, compressionOn, showFile);
+                    }
+
                 }
-                long[] sizes = _xmlSave(null, compressionOn, showFile);
                 say("size: " + sizes[UNCOMPRESSED_INDEX] + "\n  elapsed time:" + ((System.currentTimeMillis() - startTime) / 1000.0D) + " sec.");
                 return RC_CONTINUE;
             } catch (Throwable throwable) {

@@ -152,6 +152,7 @@ public class QDLVariableTest extends AbstractQDLTester {
         testIsDefined(ROUNDTRIP_XML);
         testIsDefined(ROUNDTRIP_QDL);
         testIsDefined(ROUNDTRIP_JAVA);
+        testIsDefined(ROUNDTRIP_JSON);
     }
 
     public void testIsDefined(int testCase) throws Throwable {
@@ -182,6 +183,7 @@ public class QDLVariableTest extends AbstractQDLTester {
         testIsFunction(ROUNDTRIP_XML);
         testIsFunction(ROUNDTRIP_QDL);
         testIsFunction(ROUNDTRIP_JAVA);
+        testIsFunction(ROUNDTRIP_JSON);
     }
     public void testIsFunction(int testCase) throws Throwable {
         State state = testUtils.getNewState();

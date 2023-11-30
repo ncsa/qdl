@@ -272,9 +272,8 @@ public class AbstractQDLTester extends TestBase {
         WorkspaceCommands workspaceCommands = new WorkspaceCommands();
         workspaceCommands.setState(state);
         JSONObject json = workspaceCommands.toJSON();
-
         // Deserialize the workspace
-        return workspaceCommands.fromJSON(json).getInterpreter().getState();
+        return workspaceCommands.fromJSON(json).getState();
     }
 
     protected State pickleJavaState(State state) throws Throwable {
@@ -308,7 +307,7 @@ public class AbstractQDLTester extends TestBase {
         WorkspaceCommands workspaceCommands = new WorkspaceCommands();
         workspaceCommands.setState(state);
         workspaceCommands._xmlWSQDLSave(osw);
-        //   System.out.println(new String(baos.toByteArray()));
+       //System.out.println(new String(baos.toByteArray()));
 
         // Deserialize the workspace
         // Need pretty print. This takes the place or writing it to a file, then reading it.

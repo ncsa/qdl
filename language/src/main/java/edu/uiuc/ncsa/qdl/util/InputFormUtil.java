@@ -1,6 +1,7 @@
 package edu.uiuc.ncsa.qdl.util;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
+import edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.extensions.JavaModule;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
@@ -289,7 +290,14 @@ public class InputFormUtil {
         if (object instanceof QDLStem && 0 <= indentFactor) {
             return inputForm((QDLStem) object, indentFactor);
         }
+        if(object instanceof Module){
+            Module m = (Module) object;
+            if(m instanceof QDLModule){
+                return ModuleEvaluator.IMPORT + "('" + m.getNamespace() + "')";
+            }
+        }
         return inputForm(object);
+
     }
 
     public static String inputFormVar(String varName, State state) {

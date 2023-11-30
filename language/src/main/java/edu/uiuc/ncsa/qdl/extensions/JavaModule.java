@@ -139,6 +139,11 @@ public abstract class JavaModule extends Module {
     @Override
     public JSONObject serializeToJSON(XMLSerializationState serializationState) {
         JSONObject json = super.serializeToJSON(serializationState);
+        if (hasMetaClass()) {
+            if (null != getMetaClass().serializeToJSON()) {
+                json.put(MODULE_STATE_TAG, getMetaClass().serializeToJSON());
+            }
+        }
         json.put(XMLConstants.MODULE_TYPE_TAG2, XMLConstants.MODULE_TYPE_JAVA_TAG);
         json.put(XMLConstants.MODULE_CLASS_NAME_TAG, getClassname());
         return json;
@@ -148,11 +153,14 @@ public abstract class JavaModule extends Module {
     public void deserializeFromJSON(JSONObject json, XMLSerializationState serializationState) {
         super.deserializeFromJSON(json, serializationState);
         State newState = State.getRootState().newCleanState(); // remember that State can be overridden, so this is the right type
+        init(newState, false); // don't force the defined variables to overwrite the stored ones.
         if (json.containsKey(MODULE_STATE_TAG)) {
-            newState.deserializeFromJSON(json.getJSONObject(MODULE_STATE_TAG),serializationState);
+            if (hasMetaClass()) {
+                getMetaClass().deserializeFromJSON(json.getJSONObject(MODULE_STATE_TAG));
+            }
+            //     newState.deserializeFromJSON(json.getJSONObject(MODULE_STATE_TAG),serializationState);
         }
         // Unlike QDLModule, there is no source code to interpret, so just reset the state.
-        init(newState, false); // don't force the defined variables to overwrite the stored ones.
     }
 
     /**
@@ -222,5 +230,29 @@ public abstract class JavaModule extends Module {
     @Override
     public List<String> getDocumentation() {
         return documentation;
+    }
+
+    public QDLModuleMetaClass getMetaClass() {
+        return metaClass;
+    }
+
+    public void setMetaClass(QDLModuleMetaClass metaClass) {
+        this.metaClass = metaClass;
+    }
+
+    QDLModuleMetaClass metaClass = null;
+
+    public boolean hasMetaClass() {
+        return metaClass != null;
+    }
+
+    @Override
+    public void updateSerializedState(JSONObject json, XMLSerializationState serializationState) {
+        if (json.containsKey(MODULE_STATE_TAG)) {
+            if (hasMetaClass()) {
+                getMetaClass().deserializeFromJSON(json.getJSONObject(MODULE_STATE_TAG));
+            }
+            //     newState.deserializeFromJSON(json.getJSONObject(MODULE_STATE_TAG),serializationState);
+        }
     }
 }

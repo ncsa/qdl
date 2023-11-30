@@ -694,4 +694,14 @@ public class Crypto implements QDLModuleMetaClass {
 
 
     SecureRandom secureRandom = new SecureRandom();
+
+    @Override
+    public JSONObject serializeToJSON() {
+        return null;
+    }
+
+    @Override
+    public void deserializeFromJSON(JSONObject json) {
+
+    }
 }

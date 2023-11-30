@@ -118,6 +118,7 @@ public class SetTest extends AbstractQDLTester {
         testDifference(ROUNDTRIP_XML);
         testDifference(ROUNDTRIP_QDL);
         testDifference(ROUNDTRIP_JAVA);
+        testDifference(ROUNDTRIP_JSON);
     }
 
     protected void testDifference(int testCase) throws Throwable {
@@ -257,6 +258,7 @@ public class SetTest extends AbstractQDLTester {
         testNested(ROUNDTRIP_XML);
         testNested(ROUNDTRIP_QDL);
         testNested(ROUNDTRIP_JAVA);
+        testNested(ROUNDTRIP_JSON);
     }
 
     /**

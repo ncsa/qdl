@@ -24,6 +24,8 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.util.*;
 
+import static edu.uiuc.ncsa.qdl.xml.XMLConstants.STACK_TAG;
+
 /**
  * A stateful stack of things, such as functions. This is the method by which local state
  * is preserved. The zero-th element is the current local table. It is used for functions,
@@ -160,14 +162,21 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
         if (getStack().isEmpty()) {
             return null;
         }
-        return getStack().get(0).get(key);
+        return getLocal().get(key);
     }
 
+    /**
+     * Get the local table for this stack.
+     * @return
+     */
+    public XTable<? extends XKey, ? extends XThing> getLocal(){
+        return getStack().get(0);
+    }
     public boolean localHas(XKey xkey) {
         if (getStack().isEmpty()) {
             return false;
         }
-        return getStack().get(0).get(xkey) != null;
+        return getLocal().get(xkey) != null;
 
     }
 
@@ -624,7 +633,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
     }
 
     public void deserializeFromJSONNEW(JSONObject jsonObject, XMLSerializationState serializationState, State state) {
-        JSONArray array = jsonObject.getJSONArray("stack");
+        JSONArray array = jsonObject.getJSONArray(STACK_TAG);
         // remember that we just need an interpreter to operate on the state, so any will do.
         QDLInterpreter qi = new QDLInterpreter(state);
         XTable currentST = getStack().get(0);// start at root
@@ -656,7 +665,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
             state = State.getRootState().newCleanState();
         }
         setStateStack(state, scratch);
-        JSONArray array = jsonObject.getJSONArray("stack");
+        JSONArray array = jsonObject.getJSONArray(STACK_TAG);
         // remember that we just need an interpreter to operate on the state, so any will do.
         QDLInterpreter qi = new QDLInterpreter(state);
 

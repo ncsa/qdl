@@ -1488,6 +1488,29 @@ public class State extends FunctionState implements QDLConstants {
         rootState = newRoot;
     }
 
+    /**
+     * Only serialize the local part of the state. This is used by e.g., modules that
+     * have shared state and should never overwrite shared state on deserialization.
+     * @param serializationState
+     * @return
+     */
+    public JSONObject serializeLocalStateToJSON(XMLSerializationState serializationState) {
+        JSONObject jsonObject = new JSONObject();
+        doLocalSerialization(getMTemplates(), MODULE_TEMPLATE_TAG, jsonObject, serializationState);
+        doLocalSerialization(getMInstances(), MODULE_INSTANCES_TAG, jsonObject, serializationState);
+        doLocalSerialization(getFTStack(), FUNCTION_TABLE_STACK_TAG, jsonObject, serializationState);
+        doLocalSerialization(getVStack(), VARIABLE_STACK, jsonObject, serializationState);
+        return jsonObject;
+    }
+    protected void doLocalSerialization(
+                                        XStack oldStack,
+                                        String tag,
+                                        JSONObject jsonObject,
+                                        XMLSerializationState serializationState){
+        XStack newStack = oldStack.newInstance();
+        newStack.push(oldStack.getLocal());
+        addJSONtoState(jsonObject, tag, newStack, serializationState);
+    }
     public JSONObject serializeToJSON(XMLSerializationState serializationState) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put(STATE_CONSTANTS_TAG, createConstants());
@@ -1511,13 +1534,7 @@ public class State extends FunctionState implements QDLConstants {
         if (jsonObject.containsKey(STATE_CONSTANTS_TAG)) {
             readConstantsFromJSON(jsonObject.getJSONObject(STATE_CONSTANTS_TAG));
         }
-/*
-        setMInstances((MIStack) makeStack(new MIStack(), jsonObject, MODULE_INSTANCES_TAG, serializationState));
-        setMTemplates((MTStack) makeStack(new MTStack(), jsonObject, MODULE_TEMPLATE_TAG, serializationState));
-        setFTStack((FStack) makeStack(new FStack(), jsonObject, FUNCTION_TABLE_STACK_TAG, serializationState));
-        setvStack((VStack) makeStack(new VStack(), jsonObject, VARIABLE_STACK, serializationState));
-*/
-        makeStack(getMInstances(), jsonObject, MODULE_INSTANCES_TAG, serializationState);
+     makeStack(getMInstances(), jsonObject, MODULE_INSTANCES_TAG, serializationState);
         makeStack(getMTemplates(), jsonObject, MODULE_TEMPLATE_TAG, serializationState);
         makeStack(getFTStack(), jsonObject, FUNCTION_TABLE_STACK_TAG, serializationState);
         makeStack(getVStack(), jsonObject, VARIABLE_STACK, serializationState);

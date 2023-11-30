@@ -45,25 +45,60 @@ public class ModuleTests extends AbstractQDLTester {
       is_function(w#a#f, 1)
         */
     public void testPassingJavaArguments() throws Throwable {
+        testPassingJavaArguments(ROUNDTRIP_NONE);
+        testPassingJavaArguments(ROUNDTRIP_JSON);
+        //      testPassingJavaArguments(ROUNDTRIP_QDL);
+    }
+
+    protected void testPassingJavaArguments(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "z:='https://foo.bar.com';");
         addLine(script,
-                "module['A:X'][http_client := jload('http');];" +
-                        "X:=import('A:X');");
+                "module['A:X'][http_client := jload('http');];X:=import('A:X');");
         addLine(script, "X#http_client#host(z);"); // fails since the function references the default NS.
+        state = rountripState(state, script, testCase); // tests that state in a module is handled on serialization.
+
         addLine(script, "ok := z == X#http_client#host();");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "failed to pass along function argument to Java sub-module, (X#http_client#host() failed.)";
     }
 
+    public void testSerializingJavaArguments() throws Throwable {
+        testSerializingJavaArguments(ROUNDTRIP_NONE);
+        testSerializingJavaArguments(ROUNDTRIP_JSON);
+
+    }
+    protected void testSerializingJavaArguments(int testCase) throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "z:='https://foo.bar.com';");
+        addLine(script,"X:=jload('http');");
+        addLine(script, "X#host(z);"); // fails since the function references the default NS.
+        state = rountripState(state, script, testCase); // tests that state in a module is handled on serialization.
+
+        addLine(script, "ok := z == X#host();");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to pass along function argument to Java sub-module, (X#http_client#host() failed.)";
+    }
+
     public void testBasicLoad() throws Throwable {
+        testBasicLoad(ROUNDTRIP_NONE);
+        testBasicLoad(ROUNDTRIP_JSON);
+        testBasicLoad(ROUNDTRIP_QDL);
+        // testBasicLoad(ROUNDTRIP_JAVA);
+        // testBasicLoad(ROUNDTRIP_XML);
+    }
+
+    public void testBasicLoad(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script,
                 "module['A:X'][f(x)->x;foo:='bar';];" +
                         "X:=import('A:X');");
+        state = rountripState(state, script, testCase); // tests that symbol table handles modules on serialization
         addLine(script, "ok0 :=  X#f(2) == 2;");
         addLine(script, "ok1 :=  X#foo == 'bar';");
         addLine(script, "ok2 := 'A:X' ∈ loaded();");
@@ -121,10 +156,17 @@ public class ModuleTests extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testBasicNesting() throws Throwable {
+        testBasicNesting(ROUNDTRIP_NONE);
+        testBasicNesting(ROUNDTRIP_JSON);
+        testBasicNesting(ROUNDTRIP_QDL);
+    }
+    public void testBasicNesting(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "module['A:Y'][module['A:X'][y(y)->y;y:='foo';];z:=import('A:X');];");
         addLine(script, "y:=import('A:Y');");
+        state = rountripState(state, script, testCase); // tests that symbol table handles modules on serialization
+
         addLine(script, "ok := 3 == y#z#y(3);");
         addLine(script, "ok1 := y#z#y == 'foo';");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
@@ -252,15 +294,15 @@ public class ModuleTests extends AbstractQDLTester {
     }
 
     public void testBasicDyadicApplyForModule2() throws Throwable {
-         State state = testUtils.getNewState();
-         StringBuffer script = new StringBuffer();
-         addLine(script, "module['a:y'][f(x)->x^2;];y:=import('a:y');");
-         addLine(script, "f(x)->x^3; x:=10;"); // make sure that module state is used right
-         addLine(script, "ok := 4 == {'x':2}⍺y#@f;");
-         QDLInterpreter interpreter = new QDLInterpreter(null, state);
-         interpreter.execute(script.toString());
-         assert getBooleanValue("ok", state) : "calling applies to module function failed.";
-     }
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module['a:y'][f(x)->x^2;];y:=import('a:y');");
+        addLine(script, "f(x)->x^3; x:=10;"); // make sure that module state is used right
+        addLine(script, "ok := 4 == {'x':2}⍺y#@f;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "calling applies to module function failed.";
+    }
 
     public void testBasicMonadicApplyForNestedModule() throws Throwable {
         State state = testUtils.getNewState();
@@ -273,6 +315,7 @@ public class ModuleTests extends AbstractQDLTester {
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "calling applies to module function failed.";
     }
+
     public void testBasicDyadicApplyForNestedModule1() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -287,6 +330,7 @@ public class ModuleTests extends AbstractQDLTester {
         assert getBooleanValue("okf", state) : "calling applies to module function failed.";
         assert getBooleanValue("okg", state) : "calling applies to module function failed.";
     }
+
     public void testBasicDyadicApplyForNestedModule2() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();

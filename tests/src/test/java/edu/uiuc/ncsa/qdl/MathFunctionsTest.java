@@ -493,6 +493,7 @@ public class MathFunctionsTest extends AbstractQDLTester {
         testBigMod(ROUNDTRIP_XML);
         testBigMod(ROUNDTRIP_JAVA);
         testBigMod(ROUNDTRIP_QDL);
+        testBigMod(ROUNDTRIP_JSON);
     }
 
     public void testBigMod(int testCase) throws Throwable {

@@ -24,6 +24,7 @@ public class QDLMailModule extends JavaModule {
     public Module newInstance(State state) {
         QDLMailModule mailModule = new QDLMailModule(URI.create("qdl:/tools/email"), "mail");
         QDLMail qdlMail = new QDLMail();
+        mailModule.setMetaClass(qdlMail);
         funcs.add(qdlMail.new Send());
         funcs.add(qdlMail.new SetCfg());
         mailModule.addFunctions(funcs);

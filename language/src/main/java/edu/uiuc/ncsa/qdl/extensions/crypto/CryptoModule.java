@@ -24,6 +24,7 @@ public class CryptoModule extends JavaModule {
     public Module newInstance(State state) {
         CryptoModule cryptoModule = new CryptoModule(URI.create("qdl:/tools/crypto"), "crypto");
         Crypto crypto = new Crypto();
+        cryptoModule.setMetaClass(crypto);
         funcs.add(crypto.new ImportJWKS());
         funcs.add(crypto.new ExportJWKS());
         funcs.add(crypto.new Encrypt());

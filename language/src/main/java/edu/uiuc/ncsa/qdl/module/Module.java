@@ -10,6 +10,7 @@ import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.qdl.xml.XMLMissingCloseTagException;
 import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
+import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -24,6 +25,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+import static edu.uiuc.ncsa.qdl.variables.VTable.KEY_KEY;
 import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
 
 /**
@@ -142,7 +144,7 @@ public abstract class Module implements XThing, Serializable {
     @Override
     public String toString() {
         return "Module{" +
-                ", namespace=" + namespace +
+                "namespace=" + namespace +
                 ", alias='" + alias + '\'' +
                 (isExternal() ? ", isJava" : "") +
                 '}';
@@ -200,6 +202,7 @@ public abstract class Module implements XThing, Serializable {
 
     /**
      * The result of this is a json object
+     *
      * @param serializationState
      * @return
      */
@@ -213,17 +216,6 @@ public abstract class Module implements XThing, Serializable {
         if (!StringUtils.isTrivial(getParentInstanceAlias()))
             json.put(PARENT_INSTANCE_ALIAS_TAG, getParentInstanceAlias());
         json.put(MODULE_INHERITANCE_MODE_TAG, ModuleEvaluator.getInheritanceMode(getInheritMode()));
-        if (!getDocumentation().isEmpty()) {
-            JSONArray array;
-            if (getDocumentation() instanceof JSONArray) {
-                array = (JSONArray) getDocumentation();
-            } else {
-                array = new JSONArray();
-                array.addAll(getDocumentation());
-            }
-            json.put(MODULE_DOCUMENTATION_TAG, array);
-        }
-        if (getState() != null) json.put(MODULE_STATE_TAG, getState().serializeToJSON(serializationState));
         return json;
     }
 
@@ -232,13 +224,56 @@ public abstract class Module implements XThing, Serializable {
         if (json.containsKey(MODULE_ALIAS_ATTR)) setAlias(json.getString(MODULE_ALIAS_ATTR));
         setId(UUID.fromString(json.getString(UUID_TAG)));
         if (json.containsKey(MODULE_DOCUMENTATION_TAG)) setDocumentation(json.getJSONArray(MODULE_DOCUMENTATION_TAG));
-        if (json.containsKey(PARENT_INSTANCE_ALIAS_TAG)) setParentInstanceAlias(json.getString(PARENT_INSTANCE_ALIAS_TAG));
-        if (json.containsKey(PARENT_TEMPLATE_UUID_TAG)) setParentTemplateID(UUID.fromString(json.getString(PARENT_TEMPLATE_UUID_TAG)));
-        if (json.containsKey(PARENT_INSTANCE_UUID_TAG)) setParentTemplateID(UUID.fromString(json.getString(PARENT_INSTANCE_UUID_TAG)));
+        if (json.containsKey(PARENT_INSTANCE_ALIAS_TAG))
+            setParentInstanceAlias(json.getString(PARENT_INSTANCE_ALIAS_TAG));
+        if (json.containsKey(PARENT_TEMPLATE_UUID_TAG))
+            setParentTemplateID(UUID.fromString(json.getString(PARENT_TEMPLATE_UUID_TAG)));
+        if (json.containsKey(PARENT_INSTANCE_UUID_TAG))
+            setParentTemplateID(UUID.fromString(json.getString(PARENT_INSTANCE_UUID_TAG)));
 
         setInheritanceMode(ModuleEvaluator.getInheritanceMode(json.getString(MODULE_INHERITANCE_MODE_TAG)));
 
     }
+
+    /**
+     * There are two steps to deserialzing a workspace. First, run the QDL which sets up the
+     * (arbitrarily complex) network of objects. Then make a second pass with any state
+     * objects that have been updated.
+     *
+     * @param jsonObject
+     * @param serializationState
+     */
+    public void updateSerializedState(JSONObject jsonObject, XMLSerializationState serializationState) {
+        if (!jsonObject.containsKey(MODULE_STATE_TAG)) return;
+        JSONObject jState = jsonObject.getJSONObject(MODULE_STATE_TAG);
+        getState().deserializeFromJSON(jsonObject.getJSONObject(MODULE_STATE_TAG), serializationState);
+        if(jState.containsKey(VARIABLE_STACK)){
+            JSONArray varStack = jState.getJSONObject(VARIABLE_STACK).getJSONArray(STACK_TAG);
+            for(int i = 0; i < varStack.size(); i++){
+                JSONArray table = varStack.getJSONArray(i);
+                for(int j = 0; j < table.size(); j++){
+                    JSONObject var = table.getJSONObject(j);
+                    if(var.getString(TYPE_TAG).equals(MODULE_TAG)){
+                        // This means we have a module, get the corresponding instance
+                        Object obj = getState().getValue(var.getString(KEY_KEY));
+                          if(!(obj instanceof Module)){
+                              throw new NFWException("expected object of type module for variable " + var.getString(KEY_KEY) + " not found");
+                        }
+                          Module m = (Module)obj;
+                          // now we can set the state of that.
+                        m.updateSerializedState(var, serializationState);
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+       setMInstances((MIStack) makeStack(new MIStack(), jsonObject, MODULE_INSTANCES_TAG, serializationState));
+       setMTemplates((MTStack) makeStack(new MTStack(), jsonObject, MODULE_TEMPLATE_TAG, serializationState));
+       setFTStack((FStack) makeStack(new FStack(), jsonObject, FUNCTION_TABLE_STACK_TAG, serializationState));
+       setvStack((VStack) makeStack(new VStack(), jsonObject, VARIABLE_STACK, serializationState));
+*/
 
     public void toXML(XMLStreamWriter xsw,
                       String alias,

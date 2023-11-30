@@ -1,5 +1,7 @@
 package edu.uiuc.ncsa.qdl.extensions;
 
+import net.sf.json.JSONObject;
+
 import java.io.Serializable;
 
 /**
@@ -12,4 +14,14 @@ import java.io.Serializable;
  * on 10/4/21 at  6:58 AM
  */
 public interface QDLModuleMetaClass extends Serializable {
+    /**
+     * Send back a serialization of state for this object. This allows for the state
+     * you choose to be serialized and then reloaded.
+     * <h3>NOTE</h3>
+     * There is no canonical form for this. Set it how you will and deserialize it
+     * accordingly.
+     * @return
+     */
+    JSONObject serializeToJSON();
+    void deserializeFromJSON(JSONObject json);
 }

@@ -929,4 +929,26 @@ public class HTTPClient implements QDLModuleMetaClass {
         // Fixes https://github.com/ncsa/qdl/issues/35
         return actualHost + (uriPath.startsWith("/") ? uriPath.substring(1) : uriPath);
     }
+
+    @Override
+    public JSONObject serializeToJSON() {
+        JSONObject json = new JSONObject();
+        if(!StringUtils.isTrivial(host)){
+            json.put("host", host);
+        }
+        if(headers!=null){
+            json.put("headers", headers);
+        }
+        return json;
+    }
+
+    @Override
+    public void deserializeFromJSON(JSONObject json) {
+         if(json.containsKey("host")){
+             host = json.getString("host");
+         }
+         if(json.containsKey("headers")){
+             headers = json.getJSONObject("headers");
+         }
+    }
 }

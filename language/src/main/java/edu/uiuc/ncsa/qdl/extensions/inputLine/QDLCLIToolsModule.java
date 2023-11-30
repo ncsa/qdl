@@ -24,6 +24,7 @@ public class QDLCLIToolsModule extends JavaModule {
     public Module newInstance(State state) {
         QDLCLIToolsModule ilm = new QDLCLIToolsModule(URI.create("qdl:/tools/cli"), "cli");
         QDLCLITools il = new QDLCLITools();
+        ilm.setMetaClass(il);
         funcs.add(il.new ToStem());
         ilm.addFunctions(funcs);
         if (state != null) {

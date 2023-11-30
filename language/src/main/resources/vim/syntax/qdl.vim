@@ -204,6 +204,11 @@ syntax keyword qdlKeyword vencode
 syntax keyword qdlKeyword vfs_mount
 syntax keyword qdlKeyword vfs_unmount
 syntax keyword qdlKeyword ws_macro
+syntax keyword qdlKeyword import
+syntax keyword qdlKeyword load
+syntax keyword qdlKeyword use
+syntax keyword qdlKeyword jUse
+syntax keyword qdlKeyword jLoad
 
 highlight link qdlOperator Operator
 

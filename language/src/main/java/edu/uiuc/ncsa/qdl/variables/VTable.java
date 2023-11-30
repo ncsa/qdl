@@ -134,6 +134,7 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
             Module module = moduleUtils.deserializeFromJSON(qi.getState(), json);
             // now we have to apply the stored state changes.
             module.setId(UUID.fromString(json.getString(UUID_TAG)));
+            module.updateSerializedState(json, null);
         }
     }
 

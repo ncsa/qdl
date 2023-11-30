@@ -24,6 +24,7 @@ public class QDLHTTPModule extends JavaModule {
     public Module newInstance(State state) {
         QDLHTTPModule qdlhttp = new QDLHTTPModule(URI.create("qdl:/tools/http_client"), "http");
         HTTPClient httpModule = new HTTPClient();
+        qdlhttp.setMetaClass(httpModule);
         funcs.add(httpModule.new Close());
         funcs.add(httpModule.new CreateCredentials());
         funcs.add(httpModule.new Delete());

@@ -41,6 +41,7 @@ public class ParserTest extends AbstractQDLTester {
         testRational1(ROUNDTRIP_XML);
         testRational1(ROUNDTRIP_QDL);
         testRational1(ROUNDTRIP_JAVA);
+        testRational1(ROUNDTRIP_JSON);
     }
 
     public void testRational1(int testCase) throws Throwable {
@@ -248,6 +249,7 @@ public class ParserTest extends AbstractQDLTester {
         testContinuedFraction1(ROUNDTRIP_XML);
         testContinuedFraction1(ROUNDTRIP_QDL);
         testContinuedFraction1(ROUNDTRIP_JAVA);
+        testContinuedFraction1(ROUNDTRIP_JSON);
     }
 
     public void testContinuedFraction1(int testCase) throws Throwable {
@@ -333,6 +335,7 @@ public class ParserTest extends AbstractQDLTester {
         testCalledFunctions(ROUNDTRIP_XML);
         testCalledFunctions(ROUNDTRIP_QDL);
         testCalledFunctions(ROUNDTRIP_JAVA);
+        testCalledFunctions(ROUNDTRIP_JSON);
     }
 
     public void testCalledFunctions(int testCase) throws Throwable {
@@ -905,6 +908,7 @@ public class ParserTest extends AbstractQDLTester {
         testComparisons(ROUNDTRIP_XML);
         testComparisons(ROUNDTRIP_QDL);
         testComparisons(ROUNDTRIP_JAVA);
+        testComparisons(ROUNDTRIP_JSON);
     }
 
     public void testComparisons(int testCase) throws Throwable {

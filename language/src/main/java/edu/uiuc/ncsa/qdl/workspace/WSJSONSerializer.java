@@ -137,12 +137,18 @@ public class WSJSONSerializer {
   string:='mairzy doats'
   module['a:x'][f(x)->x^2;q:=3;]
   z:=import('a:x')
+  w:=import('a:x','share')
+  w#q := 7
   z#q := 11
   cli := jload('cli')
 
   )save -json /tmp/ws.json
+  )save -json -show
 
   )load -json /tmp/ws.json
-{
+
+    module['a:x'][f(x)->x;q:=1;module['a:y'][f(x)->x^3;q:=3;];y:=import('a:y');]
+
+
      */
 }
