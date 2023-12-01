@@ -8,6 +8,7 @@ import edu.uiuc.ncsa.qdl.expressions.ConstantNode;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.extensions.JavaModule;
 import edu.uiuc.ncsa.qdl.extensions.QDLLoader;
+import edu.uiuc.ncsa.qdl.functions.FTable;
 import edu.uiuc.ncsa.qdl.module.MTKey;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
@@ -15,11 +16,15 @@ import edu.uiuc.ncsa.qdl.parsing.QDLParserDriver;
 import edu.uiuc.ncsa.qdl.parsing.QDLRunner;
 import edu.uiuc.ncsa.qdl.scripting.QDLScript;
 import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.VTable;
-import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
+import edu.uiuc.ncsa.qdl.variables.VThing;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
+import edu.uiuc.ncsa.security.core.exceptions.NFWException;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
@@ -28,10 +33,13 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.checkNull;
 import static edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.*;
 import static edu.uiuc.ncsa.qdl.variables.Constant.isString;
+import static edu.uiuc.ncsa.qdl.variables.VTable.KEY_KEY;
+import static edu.uiuc.ncsa.qdl.variables.VTable.VALUE_KEY;
 import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -125,6 +133,8 @@ public class ModuleUtils implements Serializable {
                         State newState = state.newCleanState();
                         javaModule = (JavaModule) javaModule.newInstance(newState);
                         javaModule.init(newState); // set it up
+                        javaModule.setTemplate(true);
+
                         m.add(javaModule);
                         return m;
                     }
@@ -192,7 +202,9 @@ public class ModuleUtils implements Serializable {
             }
             List<String> afterLoad = new ArrayList<>();
             for (Object k : state.getMTemplates().getChangeList()) {
-                afterLoad.add(((MTKey) k).getKey());
+                MTKey mtKey = (MTKey) k;
+                state.getMTemplates().getModule(mtKey).setTemplate(true);
+                afterLoad.add(mtKey.getKey());
             }
             state.getMTemplates().clearChangeList();
             return afterLoad;
@@ -204,13 +216,13 @@ public class ModuleUtils implements Serializable {
 
     /**
      * This starts the load from the JSON since which type of module to instantiate is needed, so
-     * the right module has to exist before {@link Module#deserializeFromJSON(JSONObject, XMLSerializationState)} can be called.
+     * the right module has to exist before {@link Module#deserializeFromJSON(JSONObject, SerializationState)} can be called.
      *
      * @param state
      * @param json
      * @return
      */
-    public Module deserializeFromJSON(State state, JSONObject json) {
+    public Module deserializeFromJSON(State state, JSONObject json, SerializationState serializationState) throws Throwable {
         Module m = null;
         QDLInterpreter qi = new QDLInterpreter(state);
         Polyad polyad;
@@ -239,17 +251,97 @@ public class ModuleUtils implements Serializable {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-        m = (Module)qi.getState().getValue(varName);
+        m = (Module) qi.getState().getValue(varName);
+        m.setId(UUID.fromString(json.getString(UUID_TAG)));
+
+        updateSerializedState(json, m.getState(), serializationState);
         return m;
     }
 
     /**
+     * There are two steps to deserialzing a workspace. First, run the QDL which sets up the
+     * (arbitrarily complex) network of objects. Then make a second pass with any state
+     * objects that have been updated.
+     *
+     * @param jsonObject
+     * @param serializationState
+     */
+    public void updateSerializedState(JSONObject jsonObject, State state, SerializationState serializationState) throws Throwable {
+        if (!jsonObject.containsKey(MODULE_STATE_TAG)) return;
+        // special case single module that is Java only.
+        if (jsonObject.getString(TYPE_TAG).equals(MODULE_TAG) && jsonObject.containsKey(MODULE_TYPE_TAG2)) {
+            if (jsonObject.getString(MODULE_TYPE_TAG2).equals(MODULE_TYPE_JAVA)) {
+                // Then this is straight up a java module and the state is the entire content
+                Module module = state.getModule();
+                jsonObject.getJSONObject(MODULE_STATE_TAG);
+                if ((module == null) || !(module instanceof JavaModule)) {
+                    throw new NFWException("serialization error. Expected a java module");
+                }
+                JavaModule javaModule = (JavaModule) module;
+                if (javaModule.hasMetaClass()) {
+                    javaModule.getMetaClass().deserializeFromJSON(jsonObject.getJSONObject(MODULE_STATE_TAG));
+                }
+                return;
+            }
+        }
+        JSONObject jState = jsonObject.getJSONObject(MODULE_STATE_TAG);
+        QDLInterpreter qi = new QDLInterpreter(state);
+        JSONArray funcs = getStack(jState, FUNCTION_TABLE_STACK_TAG);
+        for (int i = 0; i < funcs.size(); i++) {
+            String source = new String(Base64.decodeBase64(funcs.getJSONObject(i).getString(FTable.FUNCTION_ENTRY_KEY)), UTF_8);
+            qi.execute(source);
+        }
+        JSONArray vars = getStack(jState, VARIABLE_STACK);
+        for (int i = 0; i < vars.size(); i++) {
+            JSONObject var = vars.getJSONObject(i);
+            if (var.getString(TYPE_TAG).equals(QDL_TYPE_TAG)) {
+                String source = new String(Base64.decodeBase64(vars.getJSONObject(i).getString(VALUE_KEY)), UTF_8);
+                qi.execute(source);
+            }
+            if (var.getString(TYPE_TAG).equals(MODULE_TAG)) {
+                String key = var.getString(KEY_KEY);
+                VThing vThing = (VThing) state.getVStack().get(new XKey(key));
+                if (!(vThing.getValue() instanceof Module)) {
+                    throw new NFWException("Incorrect serialization. Expected a module for variable " + key + " but got a " + vThing.getValue().getClass().getSimpleName());
+                }
+                Module module = (Module) vThing.getValue();
+                if (module instanceof JavaModule) {
+                    JavaModule javaModule = (JavaModule) module;
+                    if (javaModule.hasMetaClass()) {
+                        javaModule.getMetaClass().deserializeFromJSON(var.getJSONObject(MODULE_STATE_TAG));
+                    }
+                } else {
+                    updateSerializedState(var, module.getState(), serializationState);
+                }
+            }
+        }
+
+    }
+
+    JSONArray emptyArray = new JSONArray(); // just have one of these so we don't keep creating empty ones
+
+    // This
+    protected JSONArray getStack(JSONObject state, String tag) {
+        if (!state.containsKey(tag)) {
+            return emptyArray;
+        }
+        return state.getJSONObject(tag).getJSONArray(STACK_TAG).getJSONArray(0);
+    }
+      /*
+         setMInstances((MIStack) makeStack(new MIStack(), jsonObject, MODULE_INSTANCES_TAG, serializationState));
+         setMTemplates((MTStack) makeStack(new MTStack(), jsonObject, MODULE_TEMPLATE_TAG, serializationState));
+         setFTStack((FStack) makeStack(new FStack(), jsonObject, FUNCTION_TABLE_STACK_TAG, serializationState));
+         setvStack((VStack) makeStack(new VStack(), jsonObject, VARIABLE_STACK, serializationState));
+  */
+
+    /**
      * For modules <b>only</b>. Applies the serialized module state. If the module was created with the
      * shared state, then only the local tables are updated.
+     *
      * @param module
      * @param serializedState
      */
-    protected void applyState(Module module, JSONObject serializedState){
+    protected void applyState(Module module, JSONObject serializedState) {
 
     }
 }

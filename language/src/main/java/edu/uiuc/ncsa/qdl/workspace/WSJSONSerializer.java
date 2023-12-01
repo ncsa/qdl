@@ -4,8 +4,8 @@ import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.module.QDLModule;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.variables.VStack;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLConstants;
-import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
@@ -29,7 +29,7 @@ public class WSJSONSerializer {
         if (state == null) {
             state = State.getFactory().newInstance();
         }
-        XMLSerializationState serializationState = new XMLSerializationState();
+        SerializationState serializationState = new SerializationState();
         if (json.containsKey(STATE_TAG)) {
             JSONObject s = json.getJSONObject(STATE_TAG);
             state.deserializeFromJSON(s, serializationState);
@@ -57,18 +57,19 @@ public class WSJSONSerializer {
 
     public JSONObject toJSON(WorkspaceCommands workspaceCommands) {
         JSONObject jsonObject = new JSONObject();
-        XMLSerializationState serializationState = new XMLSerializationState();
-        serializationState.setVersion(XMLConstants.VERSION_2_1_TAG);
+        SerializationState serializationState = new SerializationState();
+        serializationState.setVersion(XMLConstants.VERSION_2_1_TAG); // critical!
         String comment = "";
-        String indent = "   ";
+        String indent = " --->>";
+        JSONArray comments = new JSONArray();
         if (!isTrivial(workspaceCommands.getWSID())) {
-            comment = "\n" + indent + "workspace id: " + workspaceCommands.getWSID();
+            comments.add( indent + "workspace id: " + workspaceCommands.getWSID());
         }
         if (!isTrivial(workspaceCommands.getDescription())) {
-            comment = comment + indent + workspaceCommands.getDescription();
+            comments.add(indent + "description:" + workspaceCommands.getDescription());
         }
-        comment = comment + indent + "serialized on " + Iso8601.date2String(System.currentTimeMillis());
-        jsonObject.put("comment", comment);
+        comments.add(indent + "serialized on " + Iso8601.date2String(System.currentTimeMillis()));
+        jsonObject.put("comment", comments);
         State state = workspaceCommands.getState();
         state.buildSO(serializationState);
 

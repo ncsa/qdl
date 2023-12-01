@@ -7,8 +7,8 @@ import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XTable;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
 import edu.uiuc.ncsa.qdl.util.ModuleUtils;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLConstants;
-import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
@@ -28,10 +28,10 @@ import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
  * on 2/20/22 at  6:12 AM
  */
 public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
-    public void toXML2(XMLStreamWriter xsw, XMLSerializationState xmlSerializationState) throws XMLStreamException {
+    public void toXML2(XMLStreamWriter xsw, SerializationState serializationState) throws XMLStreamException {
         xsw.writeStartElement("table");
         for (K key : keySet()) {
-            toXMLEntry(get(key), xsw, xmlSerializationState);
+            toXMLEntry(get(key), xsw, serializationState);
         }
         xsw.writeEndElement();
     }
@@ -53,10 +53,10 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
      *
      * @param vThing
      * @param xsw
-     * @param xmlSerializationState
+     * @param serializationState
      * @throws XMLStreamException
      */
-    protected void toXMLEntry(V vThing, XMLStreamWriter xsw, XMLSerializationState xmlSerializationState) throws XMLStreamException {
+    protected void toXMLEntry(V vThing, XMLStreamWriter xsw, SerializationState serializationState) throws XMLStreamException {
         xsw.writeStartElement("e");
         xsw.writeAttribute("k", vThing.getKey().getKey());
         Module m = null;
@@ -74,10 +74,10 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
 
         }
         xsw.writeStartElement("v");
-        xsw.writeCData(toJSONEntry(vThing, xmlSerializationState));
+        xsw.writeCData(toJSONEntry(vThing, serializationState));
         if (m != null) {
             if (m.getState() != null) {
-                m.getState().toXML(xsw, xmlSerializationState);
+                m.getState().toXML(xsw, serializationState);
             }
         }
         xsw.writeEndElement(); // end the value entry
@@ -95,7 +95,7 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
      * @return
      */
     @Override
-    public JSONObject serializeToJSON(V xThing, XMLSerializationState serializationState) {
+    public JSONObject serializeToJSON(V xThing, SerializationState serializationState) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put(KEY_KEY, xThing.getKey().getKey());
         String raw;
@@ -120,7 +120,7 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
     ModuleUtils moduleUtils = new ModuleUtils();
 
     @Override
-    public void deserializeFromJSON(JSONObject json, QDLInterpreter qi) {
+    public void deserializeFromJSON(JSONObject json, QDLInterpreter qi, SerializationState serializationState) throws Throwable {
 
         if (json.getString(TYPE_TAG).equals(QDL_TYPE_TAG)) {
             try {
@@ -131,10 +131,9 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
             }
         }
         if (json.getString(TYPE_TAG).equals(MODULE_TAG)) {
-            Module module = moduleUtils.deserializeFromJSON(qi.getState(), json);
+            Module module = moduleUtils.deserializeFromJSON(qi.getState(), json, serializationState);
             // now we have to apply the stored state changes.
             module.setId(UUID.fromString(json.getString(UUID_TAG)));
-            module.updateSerializedState(json, null);
         }
     }
 
@@ -152,7 +151,7 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
     }
 
     @Override
-    public void toXML(XMLStreamWriter xsw, XMLSerializationState XMLSerializationState) throws XMLStreamException {
+    public void toXML(XMLStreamWriter xsw, SerializationState SerializationState) throws XMLStreamException {
 
     }
 
@@ -174,12 +173,12 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
     }
 
     @Override
-    public V deserializeElement(XMLEventReader xer, XMLSerializationState XMLSerializationState, QDLInterpreter qi) throws XMLStreamException {
+    public V deserializeElement(XMLEventReader xer, SerializationState SerializationState, QDLInterpreter qi) throws XMLStreamException {
         return null;
     }
 
     @Override
-    public String toJSONEntry(V xThing, XMLSerializationState xmlSerializationState) {
+    public String toJSONEntry(V xThing, SerializationState serializationState) {
         String raw;
         if (xThing.getValue() instanceof Module) {
             raw = InputFormUtil.inputForm(xThing.getValue()) + ";";
@@ -190,8 +189,8 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
     }
 
     @Override
-    public String fromJSONEntry(String x, XMLSerializationState xmlSerializationState) {
-        if (xmlSerializationState == null) {
+    public String fromJSONEntry(String x, SerializationState serializationState) {
+        if (serializationState == null) {
             // old form
             return x;
         }

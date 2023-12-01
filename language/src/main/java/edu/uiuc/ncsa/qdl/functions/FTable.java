@@ -4,9 +4,9 @@ import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XTable;
 import edu.uiuc.ncsa.qdl.statements.Documentable;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.qdl.xml.XMLMissingCloseTagException;
-import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import net.sf.json.JSONObject;
@@ -197,10 +197,10 @@ public class FTable<K extends FKey, V extends FunctionRecord> extends XTable<K, 
 
     /**
      * Writes every function in no particular order by its source code. Look at
-     * {@link FStack#toXML(XMLStreamWriter, XMLSerializationState)} for top level of functions
+     * {@link FStack#toXML(XMLStreamWriter, SerializationState)} for top level of functions
      */
     @Override
-    public void toXML(XMLStreamWriter xsw, XMLSerializationState XMLSerializationState) throws XMLStreamException {
+    public void toXML(XMLStreamWriter xsw, SerializationState SerializationState) throws XMLStreamException {
         for (XKey key : keySet()) {
             if (get(key).sourceCode.isEmpty()) {
                 // No source code usually means it is from some external function
@@ -256,7 +256,7 @@ public class FTable<K extends FKey, V extends FunctionRecord> extends XTable<K, 
     }
 
     @Override
-    public V deserializeElement(XMLEventReader xer, XMLSerializationState XMLSerializationState, QDLInterpreter qi) throws XMLStreamException {
+    public V deserializeElement(XMLEventReader xer, SerializationState SerializationState, QDLInterpreter qi) throws XMLStreamException {
         XMLEvent xe = xer.nextEvent();
         //Since this requires parsing from the source which can get extremely complex (that's why we have a parser)
         // about the only way to do this is to black box it, viz., look at the state (set of functions) beforehand
@@ -339,27 +339,27 @@ public class FTable<K extends FKey, V extends FunctionRecord> extends XTable<K, 
      there and are immutable. 
      */
     @Override
-    public String toJSONEntry(V xThing, XMLSerializationState xmlSerializationState) {
+    public String toJSONEntry(V xThing, SerializationState serializationState) {
         String src = StringUtils.listToString(xThing.sourceCode);
         return Base64.encodeBase64URLSafeString(src.getBytes(UTF_8));
     }
-
+    public static final String FUNCTION_ENTRY_KEY = "entry";
     @Override
-    public JSONObject serializeToJSON(V xThing, XMLSerializationState serializationState) {
+    public JSONObject serializeToJSON(V xThing, SerializationState serializationState) {
         JSONObject jsonObject = new JSONObject();
         String src = StringUtils.listToString(xThing.sourceCode);
         if(StringUtils.isTrivial(src)) {
             return null;
         }else{
-            jsonObject.put("entry", Base64.encodeBase64URLSafeString(src.getBytes(UTF_8)));
+            jsonObject.put(FUNCTION_ENTRY_KEY, Base64.encodeBase64URLSafeString(src.getBytes(UTF_8)));
         }
         return jsonObject;
     }
 
 
     @Override
-    public void deserializeFromJSON(JSONObject json, QDLInterpreter qi) {
-          String raw = new String(Base64.decodeBase64(json.getString("entry")), UTF_8);
+    public void deserializeFromJSON(JSONObject json, QDLInterpreter qi, SerializationState serializationState) {
+          String raw = new String(Base64.decodeBase64(json.getString(FUNCTION_ENTRY_KEY)), UTF_8);
           if(!StringUtils.isTrivial(raw)){
               try {
                   qi.execute(raw);
@@ -372,7 +372,7 @@ public class FTable<K extends FKey, V extends FunctionRecord> extends XTable<K, 
     }
 
     @Override
-    public String fromJSONEntry(String x, XMLSerializationState xmlSerializationState) {
+    public String fromJSONEntry(String x, SerializationState serializationState) {
         // Conversion away from >> in function documentation. This allows for converting older
         // workspaces
         x = new String(Base64.decodeBase64(x));

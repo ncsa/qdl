@@ -6,7 +6,7 @@ import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XStack;
 import edu.uiuc.ncsa.qdl.state.XTable;
 import edu.uiuc.ncsa.qdl.xml.XMLConstants;
-import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import net.sf.json.JSONObject;
 
 import javax.xml.stream.XMLEventReader;
@@ -75,9 +75,9 @@ public class VStack<V extends VTable<? extends XKey, ? extends VThing>> extends 
 
 
     @Override
-    protected void fromXMLNEW(XMLEventReader xer, XMLSerializationState xmlSerializationState) throws XMLStreamException {
-        if (!VSTACK_SERIALIZATION_VERSION_2_1.equals(xmlSerializationState.getVariablesSerializationVersion())) {
-            super.fromXMLNEW(xer, xmlSerializationState);
+    protected void fromXMLNEW(XMLEventReader xer, SerializationState serializationState) throws XMLStreamException {
+        if (!VSTACK_SERIALIZATION_VERSION_2_1.equals(serializationState.getVariablesSerializationVersion())) {
+            super.fromXMLNEW(xer, serializationState);
             return;
         }
         getStack().clear();
@@ -110,7 +110,7 @@ public class VStack<V extends VTable<? extends XKey, ? extends VThing>> extends 
     }
 
     @Override
-    public JSONObject serializeToJSON(XMLSerializationState serializationState) {
+    public JSONObject serializeToJSON(SerializationState serializationState) {
         JSONObject json = super.serializeToJSON(serializationState);
         json.put(VSTACK_VERSION_TAG, VSTACK_SERIALIZATION_VERSION_2_1);
         return json;

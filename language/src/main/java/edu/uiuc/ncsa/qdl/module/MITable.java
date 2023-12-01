@@ -8,8 +8,8 @@ import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XTable;
 import edu.uiuc.ncsa.qdl.state.XThing;
 import edu.uiuc.ncsa.qdl.statements.Documentable;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLConstants;
-import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
@@ -39,7 +39,7 @@ public class MITable<K extends XKey, V extends MIWrapper> extends XTable<K, V> i
     }
 
     @Override
-    public void toXML(XMLStreamWriter xsw, XMLSerializationState xmlSerializationState) throws XMLStreamException {
+    public void toXML(XMLStreamWriter xsw, SerializationState serializationState) throws XMLStreamException {
         for (XKey key : keySet()) {
             xsw.writeStartElement(getXMLElementTag());
             MIWrapper wrapper = get(key);
@@ -68,38 +68,38 @@ public class MITable<K extends XKey, V extends MIWrapper> extends XTable<K, V> i
         return MODULE_TAG;
     }
 
-    public V deserializeElement(XMLUtils.ModuleAttributes moduleAttributes, XMLSerializationState xmlSerializationState) {
-        if (xmlSerializationState.processedInstance(moduleAttributes.uuid)) {
-            return (V) xmlSerializationState.getInstance(moduleAttributes.uuid);
+    public V deserializeElement(XMLUtils.ModuleAttributes moduleAttributes, SerializationState serializationState) {
+        if (serializationState.processedInstance(moduleAttributes.uuid)) {
+            return (V) serializationState.getInstance(moduleAttributes.uuid);
         }
-        if (!xmlSerializationState.processedTemplate(moduleAttributes.templateReference)) {
+        if (!serializationState.processedTemplate(moduleAttributes.templateReference)) {
             throw new IllegalStateException("template '" + moduleAttributes.uuid + "' not found");
         }
-        Module template = xmlSerializationState.getTemplate(moduleAttributes.templateReference);
+        Module template = serializationState.getTemplate(moduleAttributes.templateReference);
         Module newInstance = template.newInstance(null);
         State state;
-        if (xmlSerializationState.processedState(moduleAttributes.stateReference)) {
-            state = xmlSerializationState.getState(moduleAttributes.stateReference);
+        if (serializationState.processedState(moduleAttributes.stateReference)) {
+            state = serializationState.getState(moduleAttributes.stateReference);
         } else {
             // edge case that the state does not yet exist, so create a new one, assuming that it
             // will get populated later.
             state = new State();
             state.setUuid(moduleAttributes.stateReference);
-            xmlSerializationState.addState(state);
+            serializationState.addState(state);
         }
         newInstance.setState(state);
         newInstance.setId(moduleAttributes.uuid);
         // now stash it with whatever it was stashed with
         MIWrapper miWrapper = new MIWrapper(new XKey(moduleAttributes.alias), newInstance);
-        xmlSerializationState.addInstance(miWrapper);
+        serializationState.addInstance(miWrapper);
         return (V) miWrapper;
     }
 
     @Override
-    public V deserializeElement(XMLEventReader xer, XMLSerializationState xmlSerializationState, QDLInterpreter qi) throws XMLStreamException {
+    public V deserializeElement(XMLEventReader xer, SerializationState serializationState, QDLInterpreter qi) throws XMLStreamException {
         XMLEvent xe = xer.peek();
         XMLUtils.ModuleAttributes moduleAttributes = XMLUtils.getModuleAttributes(xe);
-        return deserializeElement(moduleAttributes, xmlSerializationState);
+        return deserializeElement(moduleAttributes, serializationState);
     }
 
 
@@ -145,28 +145,30 @@ public class MITable<K extends XKey, V extends MIWrapper> extends XTable<K, V> i
     }
 
     @Override
-    public String toJSONEntry(V wrapper, XMLSerializationState xmlSerializationState) {
-        return serializeToJSON(wrapper, xmlSerializationState).toString();
+    public String toJSONEntry(V wrapper, SerializationState serializationState) {
+        return serializeToJSON(wrapper, serializationState).toString();
     }
 
     @Override
-    public JSONObject serializeToJSON(V wrapper, XMLSerializationState serializationState) {
+    public JSONObject serializeToJSON(V wrapper, SerializationState serializationState) {
         Module module = wrapper.getModule();
-        K key = (K) wrapper.getKey();
-        XMLUtils.ModuleAttributes moduleAttributes = new XMLUtils.ModuleAttributes();
-        moduleAttributes.uuid = module.getId();
-        moduleAttributes.alias = key.getKey();
-        moduleAttributes.templateReference = module.parentTemplateID;
-        moduleAttributes.stateReference = module.getState().getUuid();
-
-        return moduleAttributes.toJSON();
+        if(serializationState.getVersion().equals(XMLConstants.VERSION_2_0_TAG)){
+            K key = (K) wrapper.getKey();
+            XMLUtils.ModuleAttributes moduleAttributes = new XMLUtils.ModuleAttributes();
+            moduleAttributes.uuid = module.getId();
+            moduleAttributes.alias = key.getKey();
+            moduleAttributes.templateReference = module.parentTemplateID;
+            moduleAttributes.stateReference = module.getState().getUuid();
+            return moduleAttributes.toJSON();
+        }
+        return module.serializeToJSON(serializationState);
     }
 
     @Override
-    public String fromJSONEntry(String x, XMLSerializationState xmlSerializationState) {
+    public String fromJSONEntry(String x, SerializationState serializationState) {
         XMLUtils.ModuleAttributes moduleAttributes = new XMLUtils.ModuleAttributes();
         moduleAttributes.fromJSON(x);
-        V m = deserializeElement(moduleAttributes, xmlSerializationState);
+        V m = deserializeElement(moduleAttributes, serializationState);
         put(new XKey(moduleAttributes.alias), m);
         if(m.getModule() instanceof JavaModule){
             ((JavaModule)m.getModule()).init(m.getModule().getState(), false);
@@ -175,7 +177,7 @@ public class MITable<K extends XKey, V extends MIWrapper> extends XTable<K, V> i
     }
 
     @Override
-    public void deserializeFromJSON(JSONObject json, QDLInterpreter qi) {
+    public void deserializeFromJSON(JSONObject json, QDLInterpreter qi, SerializationState serializationState) {
 
     }
 }

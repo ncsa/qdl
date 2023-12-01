@@ -93,7 +93,6 @@ import static edu.uiuc.ncsa.security.util.cli.CLIDriver.HELP_SWITCH;
  */
 public class WorkspaceCommands implements Logable, Serializable {
 
-
     public WorkspaceCommands() {
     }
 
@@ -4412,13 +4411,13 @@ public class WorkspaceCommands implements Logable, Serializable {
 
         if (inputLine.hasArg(COMPRESS_FLAG)) {
             compressionOn = inputLine.getNextArgFor(COMPRESS_FLAG).equalsIgnoreCase("on");
+            inputLine.removeSwitchAndValue(COMPRESS_FLAG);
         }
 
         if (qdlDump) {
             doJava = false; // QDL has preference, so if the user provides both, use QDL
         }
         inputLine.removeSwitch(SHOW_FLAG);
-        inputLine.removeSwitch(COMPRESS_FLAG);
         inputLine.removeSwitch(SAVE_AS_JAVA_FLAG);
         inputLine.removeSwitch(KEEP_WSF);
         inputLine.removeSwitch(SILENT_SAVE_FLAG);
@@ -4554,7 +4553,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 sizes = _xmlWSJavaSave(fullPath);
             } else {
                 if (doJSON) {
-                    sizes = _jsonWSSave(fullPath);
+                    sizes = _jsonWSSave(fullPath, compressionOn);
                 } else {
                     sizes = _xmlSave(fullPath, compressionOn, showFile);
                 }
@@ -4584,14 +4583,15 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_NO_OP;
     }
 
-    private long[] _jsonWSSave(String path) throws Throwable {
+    private long[] _jsonWSSave(String path, boolean compressionOn) throws Throwable {
         long[] sizes = new long[]{-1L, -1L};
         boolean isVFS = VFSPaths.isVFSPath(path);
         WSJSONSerializer wsjsonSerializer = new WSJSONSerializer();
         JSONObject json = wsjsonSerializer.toJSON(this);
         String raw = json.toString(1);
+        sizes[COMPRESSED_INDEX] = writeFile(path, raw, compressionOn || isCompressXML());
 
-        if (isVFS) {
+  /*      if (isVFS) {
             StringWriter stringWriter = new StringWriter();
             writeTextVFS(getState(), path, raw);
             sizes[UNCOMPRESSED_INDEX] = raw.length();
@@ -4602,7 +4602,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             fileWriter.flush();
             fileWriter.close();
             sizes[UNCOMPRESSED_INDEX] = f.length();
-        }
+        }*/
         return sizes;
     }
      private void _jsonWSSLoad(String path) throws Throwable{

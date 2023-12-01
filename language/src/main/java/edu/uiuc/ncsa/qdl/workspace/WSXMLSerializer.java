@@ -6,8 +6,8 @@ import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.StateUtils;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLMissingCloseTagException;
-import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
 import edu.uiuc.ncsa.qdl.xml.XMLUtilsV2;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
@@ -51,8 +51,8 @@ public class WSXMLSerializer {
      * @throws XMLStreamException
      */
     public void toXML(WorkspaceCommands workspaceCommands, XMLStreamWriter xsw) throws XMLStreamException {
-        XMLSerializationState xmlSerializationState = new XMLSerializationState();
-        xmlSerializationState.setVersion(VERSION_2_0_TAG);
+        SerializationState serializationState = new SerializationState();
+        serializationState.setVersion(VERSION_2_0_TAG);
         xsw.writeStartDocument();
 
         xsw.writeStartElement(WORKSPACE_TAG);
@@ -70,10 +70,10 @@ public class WSXMLSerializer {
         // Lay in the object store for templates then states. Since we use an event driven XML parser
         // order matters for deserialization.
         State state = workspaceCommands.getState();
-        xmlSerializationState.addState(state);
+        serializationState.addState(state);
         xsw.writeComment("Top-level state object for the workspace.");
         // Serialize main workspace state. This kicks off all the other serializations.
-        state.buildSO(xmlSerializationState);
+        state.buildSO(serializationState);
 
 
         // Do the workspace proper. This comes first since it is basically a header and when listing
@@ -82,7 +82,7 @@ public class WSXMLSerializer {
         // listing workspaces quite a bit since it will deserialize the entire workspace before moving
         // on to the next.
         xsw.writeStartElement(WS_ENV_TAG);
-        if (xmlSerializationState.isVersion2_0()) {
+        if (serializationState.isVersion2_0()) {
             processWSEnvNEW(workspaceCommands, xsw);
         } else {
             processWSEnvOLD(workspaceCommands, xsw);
@@ -103,17 +103,17 @@ public class WSXMLSerializer {
             xsw.writeCData(encodeBase64String(jsonObject.toString().getBytes(StandardCharsets.UTF_8)));
             xsw.writeEndElement();
         }
-        saveWSList(xsw, workspaceCommands.commandHistory, COMMAND_HISTORY, xmlSerializationState);
-        saveWSList(xsw, workspaceCommands.getState().getScriptPaths(), SCRIPT_PATH, xmlSerializationState);
-        saveWSList(xsw, workspaceCommands.getState().getModulePaths(), MODULE_PATH, xmlSerializationState);
-        saveWSList(xsw, workspaceCommands.editorClipboard, EDITOR_CLIPBOARD, xmlSerializationState);
+        saveWSList(xsw, workspaceCommands.commandHistory, COMMAND_HISTORY, serializationState);
+        saveWSList(xsw, workspaceCommands.getState().getScriptPaths(), SCRIPT_PATH, serializationState);
+        saveWSList(xsw, workspaceCommands.getState().getModulePaths(), MODULE_PATH, serializationState);
+        saveWSList(xsw, workspaceCommands.editorClipboard, EDITOR_CLIPBOARD, serializationState);
 
         // Global list of templates
         xsw.writeStartElement(MODULE_TEMPLATE_TAG);
         xsw.writeComment("templates for all modules");
-        for (UUID key : xmlSerializationState.templateMap.keySet()) {
-            Module module = xmlSerializationState.getTemplate(key);
-            module.toXML(xsw, null, true, xmlSerializationState);
+        for (UUID key : serializationState.templateMap.keySet()) {
+            Module module = serializationState.getTemplate(key);
+            module.toXML(xsw, null, true, serializationState);
         }
         xsw.writeEndElement(); // end module templates
 
@@ -125,20 +125,20 @@ public class WSXMLSerializer {
          * At this point we have a flat list of states. Serialize all of them.
          */
         Set<UUID> currentKeys = new HashSet<>();
-        currentKeys.addAll(xmlSerializationState.stateMap.keySet());
+        currentKeys.addAll(serializationState.stateMap.keySet());
         for (UUID key : currentKeys) {
             if (!key.equals(state.getUuid()))
-                xmlSerializationState.getState(key).toXML(xsw, xmlSerializationState);
+                serializationState.getState(key).toXML(xsw, serializationState);
         }
 
 
         xsw.writeEndElement(); // end states reference
 
         // Absolute last thing to write is the actual state object for the workspace.
-        state.toXML(xsw, xmlSerializationState);
+        state.toXML(xsw, serializationState);
         if (!state.getExtrinsicVars().isEmpty()) {
             xsw.writeStartElement(EXTRINSIC_VARIABLES_TAG);
-            state.getExtrinsicVars().toXML(xsw, xmlSerializationState);
+            state.getExtrinsicVars().toXML(xsw, serializationState);
             xsw.writeEndElement();
         }
         xsw.writeEndElement(); // end workspace tag
@@ -147,10 +147,10 @@ public class WSXMLSerializer {
     private void saveWSList(XMLStreamWriter xsw,
                             List<String> s,
                             String tag,
-                            XMLSerializationState xmlSerializationState) throws XMLStreamException {
+                            SerializationState serializationState) throws XMLStreamException {
         if (s != null && !s.isEmpty()) {
             xsw.writeStartElement(tag);
-            if (xmlSerializationState.isVersion2_0()) {
+            if (serializationState.isVersion2_0()) {
                 toCDataB64(xsw, s);
             } else {
                 QDLStem stemVariable = new QDLStem();
@@ -351,8 +351,8 @@ public class WSXMLSerializer {
         }
         // search for first workspace tag
         boolean hasWorkspaceTag = false;
-        XMLSerializationState xmlSerializationState = new XMLSerializationState();
-        xmlSerializationState.skipBadModules = skipBadModules;
+        SerializationState serializationState = new SerializationState();
+        serializationState.skipBadModules = skipBadModules;
         while (xer.hasNext()) {
             xe = xer.nextEvent(); // SHOULD be the workspace tag but there can be comments, DTDs etc.
             if (xe.isStartElement() && xe.asStartElement().getName().getLocalPart().equals(WORKSPACE_TAG)) {
@@ -369,7 +369,7 @@ public class WSXMLSerializer {
             Attribute a = (Attribute) iterator.next();
             switch (a.getName().getLocalPart()) {
                 case SERIALIZATION_VERSION_TAG:
-                    xmlSerializationState.setVersion(a.getValue());
+                    serializationState.setVersion(a.getValue());
             }
         }
 
@@ -383,28 +383,28 @@ public class WSXMLSerializer {
                     case XMLEvent.START_ELEMENT:
                         switch (xe.asStartElement().getName().getLocalPart()) {
                             case WS_ENV_TAG:
-                                if (xmlSerializationState.isVersion2_0()) {
+                                if (serializationState.isVersion2_0()) {
                                     processJSONAttr(xer, testCommands);
                                 } else {
                                     processAttr(testCommands, xe);
                                 }
                                 break;
                             case SCRIPT_PATH:
-                                if (xmlSerializationState.isVersion2_0()) {
+                                if (serializationState.isVersion2_0()) {
                                     testCommands.state.setScriptPaths(getStringsFromJSON(xer, SCRIPT_PATH));
                                 } else {
                                     testCommands.state.setScriptPaths(getStemAsListFromXML(SCRIPT_PATH, xer));
                                 }
                                 break;
                             case COMMAND_HISTORY:
-                                if (xmlSerializationState.isVersion2_0()) {
+                                if (serializationState.isVersion2_0()) {
                                     testCommands.commandHistory = getStringsFromJSON(xer, COMMAND_HISTORY);
                                 } else {
                                     testCommands.commandHistory = getStemAsListFromXML(COMMAND_HISTORY, xer);
                                 }
                                 break;
                             case MODULE_PATH:
-                                if (xmlSerializationState.isVersion2_0()) {
+                                if (serializationState.isVersion2_0()) {
                                     testCommands.state.setModulePaths(getStringsFromJSON(xer, MODULE_PATH));
                                 } else {
                                     testCommands.state.setModulePaths(getStemAsListFromXML(MODULE_PATH, xer));
@@ -415,7 +415,7 @@ public class WSXMLSerializer {
                                 break;
                             case EDITOR_CLIPBOARD:
                                 if (!workspaceAttributesOnly) {
-                                    if (xmlSerializationState.isVersion2_0()) {
+                                    if (serializationState.isVersion2_0()) {
                                         testCommands.editorClipboard = getStringsFromJSON(xer, EDITOR_CLIPBOARD);
                                     } else {
                                         testCommands.editorClipboard = getStemAsListFromXML(EDITOR_CLIPBOARD, xer);
@@ -423,15 +423,15 @@ public class WSXMLSerializer {
                                 }
                                 break;
                             case STATES_TAG:
-                                XMLUtilsV2.deserializeStateStore(xer, xmlSerializationState);
+                                XMLUtilsV2.deserializeStateStore(xer, serializationState);
                                 break;
                             case MODULE_TEMPLATE_TAG:
-                                XMLUtilsV2.deserializeTemplateStore(xer, xmlSerializationState);
+                                XMLUtilsV2.deserializeTemplateStore(xer, serializationState);
                                 break;
                             case STATE_TAG:
                                 if (!workspaceAttributesOnly) {
-                                    if (xmlSerializationState.isVersion2_0()) {
-                                        testCommands.state = StateUtils.load(testCommands.state, xmlSerializationState, xer);
+                                    if (serializationState.isVersion2_0()) {
+                                        testCommands.state = StateUtils.load(testCommands.state, serializationState, xer);
                                     } else {
                                         testCommands.state = StateUtils.load(testCommands.state, xer);
                                     }
@@ -441,7 +441,7 @@ public class WSXMLSerializer {
                                 // Actually, there is exactly one of these. So this populates whatever is current.
                                 // Clear it, then re-populate it.
                                 testCommands.state.getExtrinsicVars().clear();
-                                XMLUtilsV2.deserializeExtrinsicVariables(xer, testCommands.state, xmlSerializationState);
+                                XMLUtilsV2.deserializeExtrinsicVariables(xer, testCommands.state, serializationState);
                                 break;
                             case BUFFER_MANAGER:
                                 if (!workspaceAttributesOnly) {
@@ -451,7 +451,7 @@ public class WSXMLSerializer {
                                 break;
                             case ENV_PROPERTIES:
                                 if (!workspaceAttributesOnly) {
-                                    if (xmlSerializationState.isVersion2_0()) {
+                                    if (serializationState.isVersion2_0()) {
                                         String text = XMLUtilsV2.getText(xer, ENV_PROPERTIES);
                                         String raw = new String(Base64.decodeBase64(text));
                                         JSONObject jsonObject = JSONObject.fromObject(raw);

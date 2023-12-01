@@ -72,4 +72,33 @@ public abstract class ModuleState extends AbstractState {
     public void setImportMode(boolean importMode) {
         this.importMode = importMode;
     }
+    public boolean isModuleState() {
+        return moduleState;
+    }
+
+    /**
+     * Flag this if it is used as the local state for a module. This is used to enforce
+     * local resolutions at runtime.
+     *
+     * @param moduleState
+     */
+    public void setModuleState(boolean moduleState) {
+        this.moduleState = moduleState;
+    }
+
+    boolean moduleState = false;
+
+    public boolean hasModule(){
+        return module!=null;
+    }
+    public Module getModule() {
+        return module;
+    }
+
+    public void setModule(Module module) {
+        this.module = module;
+    }
+
+    Module module = null;
+
 }

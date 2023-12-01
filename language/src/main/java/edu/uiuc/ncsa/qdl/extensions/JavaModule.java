@@ -3,8 +3,8 @@ package edu.uiuc.ncsa.qdl.extensions;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.variables.Constant;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLConstants;
-import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import net.sf.json.JSONObject;
 
 import javax.xml.stream.XMLStreamException;
@@ -137,7 +137,7 @@ public abstract class JavaModule extends Module {
     }
 
     @Override
-    public JSONObject serializeToJSON(XMLSerializationState serializationState) {
+    public JSONObject serializeToJSON(SerializationState serializationState) {
         JSONObject json = super.serializeToJSON(serializationState);
         if (hasMetaClass()) {
             if (null != getMetaClass().serializeToJSON()) {
@@ -150,7 +150,7 @@ public abstract class JavaModule extends Module {
     }
 
     @Override
-    public void deserializeFromJSON(JSONObject json, XMLSerializationState serializationState) {
+    public void deserializeFromJSON(JSONObject json, SerializationState serializationState) {
         super.deserializeFromJSON(json, serializationState);
         State newState = State.getRootState().newCleanState(); // remember that State can be overridden, so this is the right type
         init(newState, false); // don't force the defined variables to overwrite the stored ones.
@@ -246,13 +246,5 @@ public abstract class JavaModule extends Module {
         return metaClass != null;
     }
 
-    @Override
-    public void updateSerializedState(JSONObject json, XMLSerializationState serializationState) {
-        if (json.containsKey(MODULE_STATE_TAG)) {
-            if (hasMetaClass()) {
-                getMetaClass().deserializeFromJSON(json.getJSONObject(MODULE_STATE_TAG));
-            }
-            //     newState.deserializeFromJSON(json.getJSONObject(MODULE_STATE_TAG),serializationState);
-        }
-    }
+
 }

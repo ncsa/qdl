@@ -1,7 +1,7 @@
 package edu.uiuc.ncsa.qdl.state;
 
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
-import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLMissingCloseTagException;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -39,15 +39,15 @@ public abstract class XTable<K extends XKey, V extends XThing> extends HashMap<K
 
     /**
      * @param xsw
-     * @param XMLSerializationState
+     * @param SerializationState
      * @throws XMLStreamException
      * @deprecated
      */
-    public abstract void toXML(XMLStreamWriter xsw, XMLSerializationState XMLSerializationState) throws XMLStreamException;
+    public abstract void toXML(XMLStreamWriter xsw, SerializationState SerializationState) throws XMLStreamException;
 
-    public abstract String toJSONEntry(V xThing, XMLSerializationState xmlSerializationState);
+    public abstract String toJSONEntry(V xThing, SerializationState serializationState);
 
-    public abstract String fromJSONEntry(String x, XMLSerializationState xmlSerializationState);
+    public abstract String fromJSONEntry(String x, SerializationState serializationState);
 
     /**
      * @param xer
@@ -61,18 +61,18 @@ public abstract class XTable<K extends XKey, V extends XThing> extends HashMap<K
      * Version 2.0 serialization
      *
      * @param xer
-     * @param XMLSerializationState
+     * @param SerializationState
      * @throws XMLStreamException
      */
 
-    public void fromXML(XMLEventReader xer, XMLSerializationState XMLSerializationState) throws XMLStreamException {
+    public void fromXML(XMLEventReader xer, SerializationState SerializationState) throws XMLStreamException {
         XMLEvent xe = xer.nextEvent();
         while (xer.hasNext()) {
             xe = xer.peek();
             switch (xe.getEventType()) {
                 case XMLEvent.START_ELEMENT:
                     if (xe.asStartElement().getName().getLocalPart().equals(getXMLElementTag())) {
-                        put(deserializeElement(xer, XMLSerializationState, null)); // no interpreter needed
+                        put(deserializeElement(xer, SerializationState, null)); // no interpreter needed
                     }
                     break;
                 case XMLEvent.END_ELEMENT:
@@ -99,13 +99,13 @@ public abstract class XTable<K extends XKey, V extends XThing> extends HashMap<K
 
     /**
      * @param xer
-     * @param XMLSerializationState
+     * @param SerializationState
      * @param qi
      * @return
      * @throws XMLStreamException
      * @deprecated
      */
-    public abstract V deserializeElement(XMLEventReader xer, XMLSerializationState XMLSerializationState, QDLInterpreter qi) throws XMLStreamException;
+    public abstract V deserializeElement(XMLEventReader xer, SerializationState SerializationState, QDLInterpreter qi) throws XMLStreamException;
 
 
     UUID uuid = UUID.randomUUID();
@@ -122,7 +122,7 @@ public abstract class XTable<K extends XKey, V extends XThing> extends HashMap<K
                 '}';
     }
 
-    public JSONArray serializeToJSON(XMLSerializationState serializationState) {
+    public JSONArray serializeToJSON(SerializationState serializationState) {
         if(isEmpty()){return null;}
         JSONArray array = new JSONArray();
         for (XKey xKey : keySet()) {
@@ -135,6 +135,6 @@ public abstract class XTable<K extends XKey, V extends XThing> extends HashMap<K
         return array;
     }
 
-    public abstract JSONObject serializeToJSON(V xThing, XMLSerializationState serializationState) ;
-    public abstract void deserializeFromJSON(JSONObject json,  QDLInterpreter qi) ;
+    public abstract JSONObject serializeToJSON(V xThing, SerializationState serializationState) ;
+    public abstract void deserializeFromJSON(JSONObject json,  QDLInterpreter qi, SerializationState serializationState) throws Throwable;
 }

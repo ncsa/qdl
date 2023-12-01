@@ -6,11 +6,10 @@ import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XThing;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.qdl.xml.XMLMissingCloseTagException;
-import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
-import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -25,7 +24,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
-import static edu.uiuc.ncsa.qdl.variables.VTable.KEY_KEY;
 import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
 
 /**
@@ -182,7 +180,7 @@ public abstract class Module implements XThing, Serializable {
     public void toXML2(XMLStreamWriter xsw,
                        String alias,
                        boolean fullSerialization,
-                       XMLSerializationState XMLSerializationState) throws XMLStreamException {
+                       SerializationState SerializationState) throws XMLStreamException {
         xsw.writeStartElement(MODULE_TAG);
         xsw.writeAttribute(XMLConstants.MODULE_NS_ATTR, getNamespace().toString());
         if (!(getAlias() == null && alias == null)) {
@@ -206,7 +204,7 @@ public abstract class Module implements XThing, Serializable {
      * @param serializationState
      * @return
      */
-    public JSONObject serializeToJSON(XMLSerializationState serializationState) {
+    public JSONObject serializeToJSON(SerializationState serializationState) {
         JSONObject json = new JSONObject();
         json.put(MODULE_NS_ATTR, getNamespace().toString());
         if (!StringUtils.isTrivial(getAlias())) json.put(MODULE_ALIAS_ATTR, getAlias());
@@ -216,10 +214,11 @@ public abstract class Module implements XThing, Serializable {
         if (!StringUtils.isTrivial(getParentInstanceAlias()))
             json.put(PARENT_INSTANCE_ALIAS_TAG, getParentInstanceAlias());
         json.put(MODULE_INHERITANCE_MODE_TAG, ModuleEvaluator.getInheritanceMode(getInheritMode()));
+        json.put(MODULE_IS_TEMPLATE_TAG, isTemplate());
         return json;
     }
 
-    public void deserializeFromJSON(JSONObject json, XMLSerializationState serializationState) {
+    public void deserializeFromJSON(JSONObject json, SerializationState serializationState) {
         setNamespace(URI.create(json.getString(MODULE_NS_ATTR)));
         if (json.containsKey(MODULE_ALIAS_ATTR)) setAlias(json.getString(MODULE_ALIAS_ATTR));
         setId(UUID.fromString(json.getString(UUID_TAG)));
@@ -230,55 +229,15 @@ public abstract class Module implements XThing, Serializable {
             setParentTemplateID(UUID.fromString(json.getString(PARENT_TEMPLATE_UUID_TAG)));
         if (json.containsKey(PARENT_INSTANCE_UUID_TAG))
             setParentTemplateID(UUID.fromString(json.getString(PARENT_INSTANCE_UUID_TAG)));
-
+        setTemplate(json.getBoolean(MODULE_IS_TEMPLATE_TAG));
         setInheritanceMode(ModuleEvaluator.getInheritanceMode(json.getString(MODULE_INHERITANCE_MODE_TAG)));
-
     }
 
-    /**
-     * There are two steps to deserialzing a workspace. First, run the QDL which sets up the
-     * (arbitrarily complex) network of objects. Then make a second pass with any state
-     * objects that have been updated.
-     *
-     * @param jsonObject
-     * @param serializationState
-     */
-    public void updateSerializedState(JSONObject jsonObject, XMLSerializationState serializationState) {
-        if (!jsonObject.containsKey(MODULE_STATE_TAG)) return;
-        JSONObject jState = jsonObject.getJSONObject(MODULE_STATE_TAG);
-        getState().deserializeFromJSON(jsonObject.getJSONObject(MODULE_STATE_TAG), serializationState);
-        if(jState.containsKey(VARIABLE_STACK)){
-            JSONArray varStack = jState.getJSONObject(VARIABLE_STACK).getJSONArray(STACK_TAG);
-            for(int i = 0; i < varStack.size(); i++){
-                JSONArray table = varStack.getJSONArray(i);
-                for(int j = 0; j < table.size(); j++){
-                    JSONObject var = table.getJSONObject(j);
-                    if(var.getString(TYPE_TAG).equals(MODULE_TAG)){
-                        // This means we have a module, get the corresponding instance
-                        Object obj = getState().getValue(var.getString(KEY_KEY));
-                          if(!(obj instanceof Module)){
-                              throw new NFWException("expected object of type module for variable " + var.getString(KEY_KEY) + " not found");
-                        }
-                          Module m = (Module)obj;
-                          // now we can set the state of that.
-                        m.updateSerializedState(var, serializationState);
-                    }
-                }
-            }
-        }
-    }
-
-    /*
-       setMInstances((MIStack) makeStack(new MIStack(), jsonObject, MODULE_INSTANCES_TAG, serializationState));
-       setMTemplates((MTStack) makeStack(new MTStack(), jsonObject, MODULE_TEMPLATE_TAG, serializationState));
-       setFTStack((FStack) makeStack(new FStack(), jsonObject, FUNCTION_TABLE_STACK_TAG, serializationState));
-       setvStack((VStack) makeStack(new VStack(), jsonObject, VARIABLE_STACK, serializationState));
-*/
 
     public void toXML(XMLStreamWriter xsw,
                       String alias,
                       boolean fullSerialization,
-                      XMLSerializationState XMLSerializationState) throws XMLStreamException {
+                      SerializationState SerializationState) throws XMLStreamException {
         xsw.writeStartElement(MODULE_TAG);
 
         if (fullSerialization) {
@@ -291,8 +250,8 @@ public abstract class Module implements XThing, Serializable {
             State state = getState();
             // if(state != null) {
             if (!(isTemplate() || state == null)) {
-                if (XMLSerializationState.addState(state)) {
-                    state.toXML(xsw, XMLSerializationState);
+                if (SerializationState.addState(state)) {
+                    state.toXML(xsw, SerializationState);
                 }
                 //serializationObjects.stateMap.put(state.getUuid(), state);
             }
@@ -301,7 +260,7 @@ public abstract class Module implements XThing, Serializable {
             xsw.writeAttribute(XMLConstants.UUID_TAG, getId().toString());
             if (!(isTemplate() || state == null)) {
                 xsw.writeAttribute(XMLConstants.STATE_REFERENCE_TAG, getState().getUuid().toString());
-                XMLSerializationState.stateMap.put(getState().getUuid(), getState());
+                SerializationState.stateMap.put(getState().getUuid(), getState());
             }
 
         }
@@ -338,11 +297,11 @@ public abstract class Module implements XThing, Serializable {
      * Used in version 2,0 serialization
      *
      * @param xer
-     * @param XMLSerializationState
+     * @param SerializationState
      * @param isTemplate
      * @throws XMLStreamException
      */
-    public void fromXML(XMLEventReader xer, XMLSerializationState XMLSerializationState, boolean isTemplate) throws XMLStreamException {
+    public void fromXML(XMLEventReader xer, SerializationState SerializationState, boolean isTemplate) throws XMLStreamException {
         readExtraXMLAttributes(xer.peek());
         XMLEvent xe = xer.nextEvent();
         while (xer.hasNext()) {

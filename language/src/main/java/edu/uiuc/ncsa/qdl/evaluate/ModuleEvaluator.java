@@ -607,7 +607,8 @@ public class ModuleEvaluator extends AbstractEvaluator {
     //module['A:X'][f(x)->x;y:='foo';];
 
     /**
-     * Contract is that the type is no longer required. Assumption is that a file is
+     * Contract is that the type as an explicit argument is no longer required.
+     * Assumption is that a file is
      * being loaded and if that fails, then the request is for a Java class.
      * This accepts a single value or stem of them.
      *
@@ -801,8 +802,8 @@ public class ModuleEvaluator extends AbstractEvaluator {
         } catch (Throwable t) {
             throw new BadArgException(IMPORT + " requires a valid URI as its argument:'" + t.getMessage() + "'", polyad.getArgAt(0));
         }
-        Module m = state.getMTemplates().getModule(new MTKey(moduleNS));
-        if (m == null) {
+        Module template = state.getMTemplates().getModule(new MTKey(moduleNS));
+        if (template == null) {
             throw new BadArgException(" the module '" + moduleNS + "' has not been loaded", polyad.getArgAt(0));
         }
         State newState;
@@ -824,14 +825,22 @@ public class ModuleEvaluator extends AbstractEvaluator {
                 default:
                     throw new BadArgException(IMPORT + " with unknown state inheritene mode", polyad.getArgAt(1));
             }
-            m = m.newInstance(newState);
-            m.setInheritanceMode(inhertianceMode);
+            Module module = template.newInstance(newState);
+            module.setInheritanceMode(inhertianceMode);
+            newState.setModule(module);
+            module.setTemplate(false);
+            module.setParentTemplateID(template.getId());
+            if(state.hasModule()){
+                module.setParentInstanceID(state.getModule().getId());
+                module.setParentInstanceAlias(state.getModule().getAlias());
+            }
+            polyad.setEvaluated(true);
+            polyad.setResult(module);
+            polyad.setResultType(Constant.MODULE_TYPE);
         } catch (Throwable t) {
-            new QDLExceptionWithTrace("there was an issue creating the state of the module:" + t.getMessage(), polyad);
+           throw new QDLExceptionWithTrace("there was an issue creating the state of the module:" + t.getMessage(), polyad);
         }
-        polyad.setEvaluated(true);
-        polyad.setResult(m);
-        polyad.setResultType(Constant.MODULE_TYPE);
+
     }
 
     /**

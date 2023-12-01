@@ -4,8 +4,8 @@ import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XTable;
 import edu.uiuc.ncsa.qdl.state.XThing;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLConstants;
-import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
 import net.sf.json.JSONObject;
 
@@ -49,12 +49,12 @@ public class MTTable<K extends MTKey, V extends Module>  extends   XTable<K, V> 
     }
 
     @Override
-    public void toXML(XMLStreamWriter xsw, XMLSerializationState XMLSerializationState) throws XMLStreamException {
+    public void toXML(XMLStreamWriter xsw, SerializationState SerializationState) throws XMLStreamException {
           for(XKey key : keySet()){
               xsw.writeStartElement(getXMLElementTag());
               Module module = get(key);
               xsw.writeAttribute(XMLConstants.UUID_TAG, module.getId().toString());
-              XMLSerializationState.templateMap.put(module.getId(), module);
+              SerializationState.templateMap.put(module.getId(), module);
               xsw.writeEndElement(); // end module tag
           }
     }
@@ -64,19 +64,19 @@ public class MTTable<K extends MTKey, V extends Module>  extends   XTable<K, V> 
 
     }
 
-    public V deserializeElement(XMLUtils.ModuleAttributes moduleAttributes, XMLSerializationState XMLSerializationState)  {
-        if(!XMLSerializationState.processedTemplate(moduleAttributes.uuid)){
+    public V deserializeElement(XMLUtils.ModuleAttributes moduleAttributes, SerializationState SerializationState)  {
+        if(!SerializationState.processedTemplate(moduleAttributes.uuid)){
             throw new IllegalStateException("template '" + moduleAttributes.uuid + "' not found");
         }
-        return (V) XMLSerializationState.getTemplate(moduleAttributes.uuid);
+        return (V) SerializationState.getTemplate(moduleAttributes.uuid);
     }
 
 
     @Override
-    public V deserializeElement(XMLEventReader xer, XMLSerializationState XMLSerializationState, QDLInterpreter qi) throws XMLStreamException {
+    public V deserializeElement(XMLEventReader xer, SerializationState SerializationState, QDLInterpreter qi) throws XMLStreamException {
         XMLEvent xe = xer.peek();
         XMLUtils.ModuleAttributes moduleAttributes = XMLUtils.getModuleAttributes(xe);
-        return deserializeElement(moduleAttributes, XMLSerializationState);
+        return deserializeElement(moduleAttributes, SerializationState);
     }
 
     public void clearChangeList(){
@@ -115,29 +115,32 @@ public class MTTable<K extends MTKey, V extends Module>  extends   XTable<K, V> 
     }
 
     @Override
-    public String toJSONEntry(V xThing, XMLSerializationState xmlSerializationState) {
-        xmlSerializationState.templateMap.put(xThing.getId(), xThing);
-        return serializeToJSON(xThing, xmlSerializationState).toString();
+    public String toJSONEntry(V xThing, SerializationState serializationState) {
+        serializationState.templateMap.put(xThing.getId(), xThing);
+        return serializeToJSON(xThing, serializationState).toString();
     }
 
     @Override
-    public JSONObject serializeToJSON(V xThing, XMLSerializationState serializationState) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put(XMLConstants.UUID_TAG, xThing.getId().toString());
-        return jsonObject;
+    public JSONObject serializeToJSON(V xThing, SerializationState serializationState) {
+        if(serializationState.getVersion().equals(XMLConstants.VERSION_2_0_TAG)){
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put(XMLConstants.UUID_TAG, xThing.getId().toString());
+            return jsonObject;
+        }
+        return xThing.serializeToJSON(serializationState);
     }
 
     @Override
-    public String fromJSONEntry(String x, XMLSerializationState xmlSerializationState) {
+    public String fromJSONEntry(String x, SerializationState serializationState) {
         XMLUtils.ModuleAttributes moduleAttributes = new XMLUtils.ModuleAttributes();
         moduleAttributes.fromJSON(x);
-        V m = deserializeElement(moduleAttributes, xmlSerializationState);
+        V m = deserializeElement(moduleAttributes, serializationState);
         put(new MTKey(m.getNamespace()), m);
         return null;
     }
 
     @Override
-    public void deserializeFromJSON(JSONObject json, QDLInterpreter qi) {
+    public void deserializeFromJSON(JSONObject json, QDLInterpreter qi, SerializationState serializationState) {
 
     }
 }

@@ -9,9 +9,8 @@ import edu.uiuc.ncsa.qdl.statements.ModuleStatement;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.VStack;
 import edu.uiuc.ncsa.qdl.variables.VThing;
-import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLUtilsV2;
-import edu.uiuc.ncsa.security.core.util.StringUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -349,19 +348,19 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
 
     /**
      * Does the grunt work of writing the stack in the right order. You write the start tag,
-     * any comments, invoke this, then the end tag. See {@link edu.uiuc.ncsa.qdl.functions.FStack#toXML(XMLStreamWriter, XMLSerializationState)}
+     * any comments, invoke this, then the end tag. See {@link edu.uiuc.ncsa.qdl.functions.FStack#toXML(XMLStreamWriter, SerializationState)}
      * for a canonical example.
      *
      * @param xsw
      * @throws XMLStreamException
      */
-    public void toXML(XMLStreamWriter xsw, XMLSerializationState xmlSerializationState) throws XMLStreamException {
-        toXMLNEW(xsw, xmlSerializationState);
+    public void toXML(XMLStreamWriter xsw, SerializationState serializationState) throws XMLStreamException {
+        toXMLNEW(xsw, serializationState);
     }
 
 
-    public void fromXML(XMLEventReader xer, XMLSerializationState XMLSerializationState) throws XMLStreamException {
-        fromXMLNEW(xer, XMLSerializationState);
+    public void fromXML(XMLEventReader xer, SerializationState SerializationState) throws XMLStreamException {
+        fromXMLNEW(xer, SerializationState);
     }
 
 
@@ -401,16 +400,14 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
         return arrayList;
     }
 
-    public JSONArray toJSON(XMLSerializationState xmlSerializationState) {
+    public JSONArray toJSON(SerializationState serializationState) {
         JSONArray array = new JSONArray();
         for (XTable xTable : getStack()) {
             JSONArray jsonArray = new JSONArray();
             for (Object key : xTable.keySet()) {
                 XThing xThing = (XThing) xTable.get(key);
-                String x = xTable.toJSONEntry(xThing, xmlSerializationState);
-                if (!StringUtils.isTrivial(x)) {
+                String x = xTable.toJSONEntry(xThing, serializationState);
                     jsonArray.add(x);
-                }
             }
             array.add(jsonArray);
         }
@@ -443,9 +440,9 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
      * This will take the entire set of items and recreate the stack structure.
      *
      * @param array
-     * @param xmlSerializationState
+     * @param serializationState
      */
-    public void fromJSON(JSONArray array, XMLSerializationState xmlSerializationState) {
+    public void fromJSON(JSONArray array, SerializationState serializationState) {
         // To recreate the various states, we still need to use the parser and essentially
         // create local state repeatedly. The aim is to be as faithful as possible to
         // recreating the serialized stack.
@@ -467,7 +464,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
             for (int k = 0; k < jsonArray.size(); k++) {
                 try {
                     String xx = jsonArray.getString(k);
-                    qi.execute(currentST.fromJSONEntry(xx, xmlSerializationState));
+                    qi.execute(currentST.fromJSONEntry(xx, serializationState));
                 } catch (Throwable e) {
                     // For now
                     e.printStackTrace();
@@ -478,10 +475,10 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
         }
     }
 
-    protected void fromXMLNEW(XMLEventReader xer, XMLSerializationState xmlSerializationState) throws XMLStreamException {
+    protected void fromXMLNEW(XMLEventReader xer, SerializationState serializationState) throws XMLStreamException {
         // points to stacks tag
         JSONArray jsonArray = getJSON(xer);
-        fromJSON(jsonArray, xmlSerializationState);
+        fromJSON(jsonArray, serializationState);
         // All the work is done in the previous call. Now advance the cursor (should only be whitespace
         // left) until you can exit for the next element.
         // no attributes or such with the stacks tag.
@@ -508,10 +505,10 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
         return JSONArray.fromObject(XMLUtilsV2.getText(xer, getXMLStackTag()));
     }
 
-    protected void toXMLNEW(XMLStreamWriter xsw, XMLSerializationState xmlSerializationState) throws XMLStreamException {
+    protected void toXMLNEW(XMLStreamWriter xsw, SerializationState serializationState) throws XMLStreamException {
         if (isEmpty()) return;
         xsw.writeStartElement(getXMLStackTag());
-        serializeContent(xsw, xmlSerializationState);
+        serializeContent(xsw, serializationState);
         xsw.writeEndElement();
     }
 
@@ -522,11 +519,11 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
      * without having to try and get some XML format for them.
      *
      * @param xsw
-     * @param xmlSerializationState
+     * @param serializationState
      * @throws XMLStreamException
      */
-    protected void serializeContent(XMLStreamWriter xsw, XMLSerializationState xmlSerializationState) throws XMLStreamException {
-        xsw.writeCData(toJSON(xmlSerializationState).toString());
+    protected void serializeContent(XMLStreamWriter xsw, SerializationState serializationState) throws XMLStreamException {
+        xsw.writeCData(toJSON(serializationState).toString());
     }
 
     public static void main(String[] args) throws Throwable {
@@ -612,7 +609,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
 
     }
 
-    public JSONObject serializeToJSON(XMLSerializationState serializationState) {
+    public JSONObject serializeToJSON(SerializationState serializationState) {
         JSONObject jsonObject = new JSONObject();
         JSONArray array = new JSONArray();
         for (XTable xTable : getStack()) {
@@ -628,11 +625,11 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
         return jsonObject;
     }
 
-    public void deserializeFromJSON(JSONObject jsonObject, XMLSerializationState serializationState, State state) {
+    public void deserializeFromJSON(JSONObject jsonObject, SerializationState serializationState, State state) {
         deserializeFromJSONNEW(jsonObject, serializationState, state);
     }
 
-    public void deserializeFromJSONNEW(JSONObject jsonObject, XMLSerializationState serializationState, State state) {
+    public void deserializeFromJSONNEW(JSONObject jsonObject, SerializationState serializationState, State state) {
         JSONArray array = jsonObject.getJSONArray(STACK_TAG);
         // remember that we just need an interpreter to operate on the state, so any will do.
         QDLInterpreter qi = new QDLInterpreter(state);
@@ -647,7 +644,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
             JSONArray jsonArray = array.getJSONArray(i);
             for (int k = 0; k < jsonArray.size(); k++) {
                 try {
-                    currentST.deserializeFromJSON(jsonArray.getJSONObject(k), qi);
+                    currentST.deserializeFromJSON(jsonArray.getJSONObject(k), qi, serializationState);
                 } catch (Throwable e) {
                     // For now
                     e.printStackTrace();
@@ -658,7 +655,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
 
     }
 
-    public void deserializeFromJSONOLD(JSONObject jsonObject, XMLSerializationState serializationState, State state) {
+    public void deserializeFromJSONOLD(JSONObject jsonObject, SerializationState serializationState, State state) {
         getStack().clear();
         XStack scratch = newInstance();
         if (state == null) {
@@ -678,7 +675,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
             JSONArray jsonArray = array.getJSONArray(i);
             for (int k = 0; k < jsonArray.size(); k++) {
                 try {
-                    currentST.deserializeFromJSON(jsonArray.getJSONObject(k), qi);
+                    currentST.deserializeFromJSON(jsonArray.getJSONObject(k), qi, serializationState);
                 } catch (Throwable e) {
                     // For now
                     e.printStackTrace();

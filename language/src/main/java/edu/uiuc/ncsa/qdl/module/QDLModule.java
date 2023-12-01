@@ -6,8 +6,8 @@ import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.ModuleStatement;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLConstants;
-import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import net.sf.json.JSONObject;
@@ -98,7 +98,7 @@ public class QDLModule extends Module {
     }
 
     @Override
-    public JSONObject serializeToJSON(XMLSerializationState serializationState) {
+    public JSONObject serializeToJSON(SerializationState serializationState) {
         JSONObject json = super.serializeToJSON(serializationState);
         json.put(XMLConstants.MODULE_TYPE_TAG2, XMLConstants.MODULE_TYPE_QDL_TAG);
         json.put(MODULE_INPUT_FORM_TAG, Base64.encodeBase64URLSafeString(InputFormUtil.inputForm(this).getBytes()));
@@ -113,7 +113,7 @@ public class QDLModule extends Module {
     }
 
     @Override
-    public void deserializeFromJSON(JSONObject json, XMLSerializationState serializationState) {
+    public void deserializeFromJSON(JSONObject json, SerializationState serializationState) {
         super.deserializeFromJSON(json, serializationState);
         if (!json.containsKey(MODULE_INPUT_FORM_TAG)) {
             throw new NFWException("missing input form for module.");

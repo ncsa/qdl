@@ -15,7 +15,7 @@ import java.util.*;
  * <p>Created by Jeff Gaynor<br>
  * on 2/10/22 at  4:52 PM
  */
-public class XMLSerializationState {
+public class SerializationState {
     public boolean processedState(UUID uuid) {
         return stateMap.containsKey(uuid);
     }
