@@ -31,6 +31,7 @@ import org.apache.commons.codec.binary.Base64;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -241,19 +242,34 @@ public class ModuleUtils implements Serializable {
                 e.printStackTrace();
             }
         }
-        String varName = json.getString(VTable.KEY_KEY);
-        String inheritanceMode = ModuleEvaluator.IMPORT_STATE_NONE;
-        inheritanceMode = json.containsKey(MODULE_INHERITANCE_MODE_TAG) ? json.getString(MODULE_INHERITANCE_MODE_TAG) : inheritanceMode;
-        String y = varName + OpEvaluator.ASSIGNMENT + "import('" + json.getString(MODULE_NS_ATTR) + "', '" + inheritanceMode + "');";
+        if (json.getBoolean(MODULE_IS_TEMPLATE_TAG)) {
+            return (Module) qi.getState().getMTemplates().get(new MTKey(URI.create(json.getString(MODULE_NS_ATTR))));
+
+        }
+        String y;
+        String varName = null;
+        boolean isOldInstance = json.containsKey(MODULE_IS_INSTANCE_TAG) && json.getBoolean(MODULE_IS_INSTANCE_TAG);
+        if (isOldInstance) {
+            y = MODULE_IMPORT + "('" + json.getString(MODULE_NS_ATTR) + "', '" + json.getString(MODULE_ALIAS_ATTR) + "');";
+
+        } else {
+            varName = json.getString(VTable.KEY_KEY);
+            String inheritanceMode = ModuleEvaluator.IMPORT_STATE_NONE;
+            inheritanceMode = json.containsKey(MODULE_INHERITANCE_MODE_TAG) ? json.getString(MODULE_INHERITANCE_MODE_TAG) : inheritanceMode;
+            y = varName + OpEvaluator.ASSIGNMENT + "import('" + json.getString(MODULE_NS_ATTR) + "', '" + inheritanceMode + "');";
+        }
         try {
             // Note that if there are embedded modules, this will create a network of them
             qi.execute(y);
         } catch (Throwable e) {
             e.printStackTrace();
         }
-        m = (Module) qi.getState().getValue(varName);
+        if(isOldInstance){
+             m = qi.getState().getMInstances().getModule(new XKey(json.getString(MODULE_ALIAS_ATTR)));
+        }else{
+            m = (Module) qi.getState().getValue(varName);
+        }
         m.setId(UUID.fromString(json.getString(UUID_TAG)));
-
         updateSerializedState(json, m.getState(), serializationState);
         return m;
     }
@@ -269,7 +285,8 @@ public class ModuleUtils implements Serializable {
     public void updateSerializedState(JSONObject jsonObject, State state, SerializationState serializationState) throws Throwable {
         if (!jsonObject.containsKey(MODULE_STATE_TAG)) return;
         // special case single module that is Java only.
-        if (jsonObject.getString(TYPE_TAG).equals(MODULE_TAG) && jsonObject.containsKey(MODULE_TYPE_TAG2)) {
+        //if (jsonObject.getString(TYPE_TAG).equals(MODULE_TAG) && jsonObject.containsKey(MODULE_TYPE_TAG2)) {
+        if (jsonObject.containsKey(MODULE_TYPE_TAG2)) {
             if (jsonObject.getString(MODULE_TYPE_TAG2).equals(MODULE_TYPE_JAVA)) {
                 // Then this is straight up a java module and the state is the entire content
                 Module module = state.getModule();

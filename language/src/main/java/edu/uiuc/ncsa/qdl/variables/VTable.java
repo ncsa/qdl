@@ -6,7 +6,6 @@ import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XTable;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
-import edu.uiuc.ncsa.qdl.util.ModuleUtils;
 import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import net.sf.json.JSONObject;
@@ -19,7 +18,6 @@ import javax.xml.stream.events.XMLEvent;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
 
@@ -117,7 +115,6 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
         return jsonObject;
     }
 
-    ModuleUtils moduleUtils = new ModuleUtils();
 
     @Override
     public void deserializeFromJSON(JSONObject json, QDLInterpreter qi, SerializationState serializationState) throws Throwable {
@@ -131,9 +128,7 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
             }
         }
         if (json.getString(TYPE_TAG).equals(MODULE_TAG)) {
-            Module module = moduleUtils.deserializeFromJSON(qi.getState(), json, serializationState);
-            // now we have to apply the stored state changes.
-            module.setId(UUID.fromString(json.getString(UUID_TAG)));
+            getModuleUtils().deserializeFromJSON(qi.getState(), json, serializationState);
         }
     }
 

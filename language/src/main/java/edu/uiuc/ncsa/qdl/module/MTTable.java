@@ -140,7 +140,8 @@ public class MTTable<K extends MTKey, V extends Module>  extends   XTable<K, V> 
     }
 
     @Override
-    public void deserializeFromJSON(JSONObject json, QDLInterpreter qi, SerializationState serializationState) {
+    public void deserializeFromJSON(JSONObject json, QDLInterpreter qi, SerializationState serializationState) throws Throwable {
+        getModuleUtils().deserializeFromJSON(qi.getState(), json, serializationState);
 
     }
 }

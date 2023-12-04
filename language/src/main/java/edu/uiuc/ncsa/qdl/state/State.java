@@ -1520,8 +1520,8 @@ public class State extends FunctionState implements QDLConstants {
         if (jsonObject.containsKey(STATE_CONSTANTS_TAG)) {
             readConstantsFromJSON(jsonObject.getJSONObject(STATE_CONSTANTS_TAG));
         }
-     makeStack(getMInstances(), jsonObject, MODULE_INSTANCES_TAG, serializationState);
         makeStack(getMTemplates(), jsonObject, MODULE_TEMPLATE_TAG, serializationState);
+        makeStack(getMInstances(), jsonObject, MODULE_INSTANCES_TAG, serializationState);
         makeStack(getFTStack(), jsonObject, FUNCTION_TABLE_STACK_TAG, serializationState);
         makeStack(getVStack(), jsonObject, VARIABLE_STACK, serializationState);
 

@@ -1,6 +1,7 @@
 package edu.uiuc.ncsa.qdl.state;
 
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
+import edu.uiuc.ncsa.qdl.util.ModuleUtils;
 import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLMissingCloseTagException;
 import net.sf.json.JSONArray;
@@ -135,6 +136,14 @@ public abstract class XTable<K extends XKey, V extends XThing> extends HashMap<K
         return array;
     }
 
+    public ModuleUtils getModuleUtils() {
+        if(moduleUtils == null){
+            moduleUtils = new ModuleUtils();
+        }
+        return moduleUtils;
+    }
+
+    ModuleUtils moduleUtils = null;
     public abstract JSONObject serializeToJSON(V xThing, SerializationState serializationState) ;
     public abstract void deserializeFromJSON(JSONObject json,  QDLInterpreter qi, SerializationState serializationState) throws Throwable;
 }

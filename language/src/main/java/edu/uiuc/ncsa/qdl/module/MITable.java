@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.MODULE_TAG;
+import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
 
 /**
  * Table of modules keyed by <b>alias</b>.
@@ -46,10 +46,10 @@ public class MITable<K extends XKey, V extends MIWrapper> extends XTable<K, V> i
             Module module = wrapper.getModule();
             xsw.writeAttribute(XMLConstants.UUID_TAG, module.getId().toString());
             xsw.writeAttribute(XMLConstants.TEMPLATE_REFERENCE_TAG, module.getParentTemplateID().toString());
-            if(module.getParentInstanceID()!=null) {
+            if (module.getParentInstanceID() != null) {
                 xsw.writeAttribute(XMLConstants.PARENT_INSTANCE_ALIAS_TAG, module.getParentInstanceID().toString());
             }
-            if(!StringUtils.isTrivial(module.getParentInstanceAlias())) {
+            if (!StringUtils.isTrivial(module.getParentInstanceAlias())) {
                 xsw.writeAttribute(XMLConstants.PARENT_INSTANCE_ALIAS_TAG, module.getParentInstanceAlias());
             }
             xsw.writeAttribute(XMLConstants.MODULE_ALIAS_ATTR, key.getKey()); // What this was imported as
@@ -152,8 +152,8 @@ public class MITable<K extends XKey, V extends MIWrapper> extends XTable<K, V> i
     @Override
     public JSONObject serializeToJSON(V wrapper, SerializationState serializationState) {
         Module module = wrapper.getModule();
-        if(serializationState.getVersion().equals(XMLConstants.VERSION_2_0_TAG)){
-            K key = (K) wrapper.getKey();
+        K key = (K) wrapper.getKey();
+        if (serializationState.getVersion().equals(XMLConstants.VERSION_2_0_TAG)) {
             XMLUtils.ModuleAttributes moduleAttributes = new XMLUtils.ModuleAttributes();
             moduleAttributes.uuid = module.getId();
             moduleAttributes.alias = key.getKey();
@@ -161,23 +161,30 @@ public class MITable<K extends XKey, V extends MIWrapper> extends XTable<K, V> i
             moduleAttributes.stateReference = module.getState().getUuid();
             return moduleAttributes.toJSON();
         }
-        return module.serializeToJSON(serializationState);
+        JSONObject m = module.serializeToJSON(serializationState);
+        m.put(MODULE_IS_INSTANCE_TAG, true);
+        m.put(MODULE_IS_TEMPLATE_TAG, false);
+        m.put(MODULE_ALIAS_ATTR,key.getKey() );
+        return m;
     }
 
     @Override
     public String fromJSONEntry(String x, SerializationState serializationState) {
-        XMLUtils.ModuleAttributes moduleAttributes = new XMLUtils.ModuleAttributes();
-        moduleAttributes.fromJSON(x);
-        V m = deserializeElement(moduleAttributes, serializationState);
-        put(new XKey(moduleAttributes.alias), m);
-        if(m.getModule() instanceof JavaModule){
-            ((JavaModule)m.getModule()).init(m.getModule().getState(), false);
+        if (serializationState.getVersion().equals(XMLConstants.VERSION_2_0_TAG)) {
+            XMLUtils.ModuleAttributes moduleAttributes = new XMLUtils.ModuleAttributes();
+            moduleAttributes.fromJSON(x);
+            V m = deserializeElement(moduleAttributes, serializationState);
+            put(new XKey(moduleAttributes.alias), m);
+            if (m.getModule() instanceof JavaModule) {
+                ((JavaModule) m.getModule()).init(m.getModule().getState(), false);
+            }
+            return null; // this returns what the interpreter should process. Nothing in this case.
         }
-        return null; // this returns what the interpreter should process. Nothing in this case.
+        return null;
     }
 
     @Override
-    public void deserializeFromJSON(JSONObject json, QDLInterpreter qi, SerializationState serializationState) {
-
+    public void deserializeFromJSON(JSONObject json, QDLInterpreter qi, SerializationState serializationState) throws Throwable {
+        getModuleUtils().deserializeFromJSON(qi.getState(), json, serializationState);
     }
 }

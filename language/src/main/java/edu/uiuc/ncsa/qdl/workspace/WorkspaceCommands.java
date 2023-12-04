@@ -74,6 +74,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static edu.uiuc.ncsa.qdl.config.QDLConfigurationConstants.*;
@@ -4392,7 +4393,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             sayi(QDL_DUMP_FLAG + " = dump the contents of the workspace to a QDL file. You can just reload it using " + SystemEvaluator.LOAD_COMMAND);
             sayi(JAVA_FLAG + " = save using Java serialization format. The default is XML.");
             sayi(SHOW_FLAG + " = (XML format only) dump the (uncompressed) result to the console instead. No file is needed.");
-            sayi(COMPRESS_FLAG + " = compress the output. The resulting file will be a binary file. This overrides the configuration file setting.");
+            sayi(COMPRESS_FLAG + " = use to override compression setting of workspace. The resulting file will be a binary file.");
             sayi(KEEP_WSF + " = keep the current " + CURRENT_WORKSPACE_FILE + " rather than automatically updating it");
             sayi(SILENT_SAVE_FLAG + " = print no messages when saving.");
             sayi("Note that a dump does not save any of the current workspace state, just the variables, functions and modules.");
@@ -4406,7 +4407,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         boolean keepCurrentWS = inputLine.hasArg(KEEP_WSF);
         boolean silentMode = inputLine.hasArg(SILENT_SAVE_FLAG);
         boolean qdlDump = inputLine.hasArg(QDL_DUMP_FLAG);
-        boolean compressionOn = true;
+        boolean compressionOn = isCompressXML();
         boolean doJSON = inputLine.hasArg(JSON_FLAG);
 
         if (inputLine.hasArg(COMPRESS_FLAG)) {
@@ -4589,7 +4590,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         WSJSONSerializer wsjsonSerializer = new WSJSONSerializer();
         JSONObject json = wsjsonSerializer.toJSON(this);
         String raw = json.toString(1);
-        sizes[COMPRESSED_INDEX] = writeFile(path, raw, compressionOn || isCompressXML());
+        sizes[COMPRESSED_INDEX] = writeFile(path, raw, compressionOn );
 
   /*      if (isVFS) {
             StringWriter stringWriter = new StringWriter();
@@ -4752,7 +4753,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             say(payload);
             return sizes;
         } else {
-            sizes[COMPRESSED_INDEX] = writeFile(fullPath, payload, compressSerialization || isCompressXML());
+            sizes[COMPRESSED_INDEX] = writeFile(fullPath, payload, compressSerialization );
         }
         return sizes;
     }
@@ -5034,6 +5035,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             sayi(KEEP_WSF + " = keep the current " + CURRENT_WORKSPACE_FILE + " rather than automatically updating it");
             sayi(QDL_DUMP_FLAG + " = the format of the file is QDL. This loads it into the current workspace.");
             sayi(JAVA_FLAG + " = the format of the file is serialized java. default is XML");
+            sayi(COMPRESS_FLAG + " = override compression settings with this");
             sayi(SKIP_BAD_MODULES_FLAG + " = (xml only) if a module is missing or fails to load, continue, otherwise abort the entire load.");
             sayi("   Note that skipping modules will cause many errors later and result in an not fully functional workspace." +
                     "\n   As such it should only be done except in dire cases.");
@@ -5059,6 +5061,11 @@ public class WorkspaceCommands implements Logable, Serializable {
         inputLine.removeSwitch(SKIP_BAD_MODULES_FLAG);
          boolean doJSON = inputLine.hasArg(JSON_FLAG);
          inputLine.removeSwitch(JSON_FLAG);
+         boolean compressionOn = isCompressXML();
+         if(inputLine.hasArg(COMPRESS_FLAG)){
+                       compressionOn = inputLine.getNextArgFor(COMPRESS_FLAG).equals("on");
+                       inputLine.removeSwitchAndValue(COMPRESS_FLAG);
+         }
         if (inputLine.hasArgAt(FIRST_ARG_INDEX)) {
             fName = inputLine.getArg(FIRST_ARG_INDEX);
         } else {
@@ -5174,8 +5181,27 @@ public class WorkspaceCommands implements Logable, Serializable {
             }
         }
         if(doJSON){
-            String raw = QDLFileUtil.readFileAsString( fullPath);
-            JSONObject jsonObject = JSONObject.fromObject(raw);
+            JSONObject jsonObject;
+            if(compressionOn){
+                byte[] bytes = readBinaryVFS(getState(), fullPath);
+                ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+                GZIPInputStream gzipInputStream = new GZIPInputStream(bais, 65536);
+                Reader r = new InputStreamReader(gzipInputStream);
+                BufferedReader bufferedReader = new BufferedReader(r);
+                StringBuffer stringBuffer = new StringBuffer();
+                String s = bufferedReader.readLine();
+                while(s!=null){
+                    stringBuffer.append(s+"\n");
+                     s = bufferedReader.readLine();
+                }
+                bufferedReader.close();
+                jsonObject = JSONObject.fromObject(stringBuffer.toString());
+            }else{
+                String raw = QDLFileUtil.readFileAsString( fullPath);
+
+                // Reconstruct the XML as a string, preserving whitespace.
+                 jsonObject = JSONObject.fromObject(raw);
+            }
             WSJSONSerializer wsJSONSerializer = new WSJSONSerializer();
             WorkspaceCommands newCommands = wsJSONSerializer.fromJSON(jsonObject);
             updateWSState(newCommands);

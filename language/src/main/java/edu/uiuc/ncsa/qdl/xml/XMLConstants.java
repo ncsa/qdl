@@ -31,6 +31,10 @@ public interface XMLConstants {
     String MODULE_INHERITANCE_MODE_TAG = "inheritance_mode";
     String MODULE_INPUT_FORM_TAG = "input_form";
     String MODULE_IS_TEMPLATE_TAG = "is_template";
+    /**
+     * Flags the module as being an instance in the old system.
+     */
+    String MODULE_IS_INSTANCE_TAG = "is_instance";
 
     String WORKSPACE_TAG = "workspace";
     String WS_ENV_TAG = "env";

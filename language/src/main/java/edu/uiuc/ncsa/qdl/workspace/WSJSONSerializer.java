@@ -150,6 +150,13 @@ public class WSJSONSerializer {
 
     module['a:x'][f(x)->x;q:=1;module['a:y'][f(x)->x^3;q:=3;];y:=import('a:y');]
 
+// for testing old module
+  module['a:a','a'][g(x)->x+1;h(x)->x-1;q:=4;]
+  module_import('a:a')
+  module_import('a:a', 'b')
+  )save -json -show
+  )save -json -compress off /tmp/ws.json
 
+  )load -json -compress off /tmp/ws.json
      */
 }

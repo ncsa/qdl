@@ -90,6 +90,7 @@ public class OldModuleTests extends AbstractQDLTester {
         testFunctionAndModules_Good(ROUNDTRIP_XML);
         testFunctionAndModules_Good(ROUNDTRIP_QDL);
         testFunctionAndModules_Good(ROUNDTRIP_JAVA);
+        testFunctionAndModules_Good(ROUNDTRIP_JSON);
     }
 
     protected void testFunctionAndModules_Good(int testCase) throws Throwable {
@@ -160,6 +161,7 @@ public class OldModuleTests extends AbstractQDLTester {
         testMultipleModuleImport(ROUNDTRIP_XML);
         testMultipleModuleImport(ROUNDTRIP_QDL);
         testMultipleModuleImport(ROUNDTRIP_JAVA);
+        testMultipleModuleImport(ROUNDTRIP_JSON);
     }
 
     protected void testMultipleModuleImport(int testCase) throws Throwable {
@@ -199,6 +201,7 @@ public class OldModuleTests extends AbstractQDLTester {
         testNSAndStem(ROUNDTRIP_XML);
         testNSAndStem(ROUNDTRIP_QDL);
         testNSAndStem(ROUNDTRIP_JAVA);
+        testNSAndStem(ROUNDTRIP_JSON);
     }
 
     protected void testNSAndStem(int testCase) throws Throwable {
@@ -237,6 +240,7 @@ public class OldModuleTests extends AbstractQDLTester {
         testNSAndVariableResolution(ROUNDTRIP_XML);
         testNSAndVariableResolution(ROUNDTRIP_QDL);
         testNSAndVariableResolution(ROUNDTRIP_JAVA);
+        testNSAndVariableResolution(ROUNDTRIP_JSON);
     }
 
     protected void testNSAndVariableResolution(int testCase) throws Throwable {
@@ -281,6 +285,7 @@ public class OldModuleTests extends AbstractQDLTester {
         testImportAndAlias(ROUNDTRIP_XML);
         testImportAndAlias(ROUNDTRIP_QDL);
         testImportAndAlias(ROUNDTRIP_JAVA);
+        testImportAndAlias(ROUNDTRIP_JSON);
     }
 
     public void testImportAndAlias(int testCase) throws Throwable {
@@ -361,6 +366,7 @@ public class OldModuleTests extends AbstractQDLTester {
         testModuleFunctionVisibility(ROUNDTRIP_XML);
         testModuleFunctionVisibility(ROUNDTRIP_QDL);
         testModuleFunctionVisibility(ROUNDTRIP_JAVA);
+        testModuleFunctionVisibility(ROUNDTRIP_JSON);
     }
 
     public void testModuleFunctionVisibility(int testCase) throws Throwable {
@@ -407,6 +413,7 @@ public class OldModuleTests extends AbstractQDLTester {
         testFunctionVisibility(ROUNDTRIP_XML);
         testFunctionVisibility(ROUNDTRIP_QDL);
         testFunctionVisibility(ROUNDTRIP_JAVA);
+        testFunctionVisibility(ROUNDTRIP_JSON);
     }
 
     public void testFunctionVisibility(int testCase) throws Throwable {
@@ -510,6 +517,7 @@ public class OldModuleTests extends AbstractQDLTester {
         testNestedModule(ROUNDTRIP_XML);
         testNestedModule(ROUNDTRIP_QDL);
         testNestedModule(ROUNDTRIP_JAVA);
+        testNestedModule(ROUNDTRIP_JSON);
     }
 
     public void testNestedModule(int testCase) throws Throwable {
@@ -551,6 +559,7 @@ public class OldModuleTests extends AbstractQDLTester {
          */
 //        testNestedVariableImport(ROUNDTRIP_QDL);
         testNestedVariableImport(ROUNDTRIP_JAVA);
+        testNestedVariableImport(ROUNDTRIP_JSON);
     }
 
     public void testNestedVariableImport(int testCase) throws Throwable {
@@ -889,6 +898,7 @@ cannot access '__a'
         testMLSetVariableFromGlobal(ROUNDTRIP_XML);
         testMLSetVariableFromGlobal(ROUNDTRIP_QDL);
         testMLSetVariableFromGlobal(ROUNDTRIP_JAVA);
+        testMLSetVariableFromGlobal(ROUNDTRIP_JSON);
     }
 
     protected void testMLSetVariableFromGlobal(int testCase) throws Throwable {
@@ -1061,6 +1071,7 @@ cannot access '__a'
         testJavaFQAccessTest(ROUNDTRIP_XML);
         testJavaFQAccessTest(ROUNDTRIP_QDL);
         testJavaFQAccessTest(ROUNDTRIP_JAVA);
+        testJavaFQAccessTest(ROUNDTRIP_JSON);
     }
 
     protected void testJavaFQAccessTest(int testCase) throws Throwable {
@@ -1198,6 +1209,7 @@ cannot access '__a'
         testNestedModuleFunctionReference2(ROUNDTRIP_XML);
         testNestedModuleFunctionReference2(ROUNDTRIP_QDL);
         testNestedModuleFunctionReference2(ROUNDTRIP_JAVA);
+        testNestedModuleFunctionReference2(ROUNDTRIP_JSON);
     }
 
     /**
@@ -1250,6 +1262,7 @@ cannot access '__a'
         testExtrinsic(ROUNDTRIP_XML); // make sure serialization of extrinsics is done in XML
         testExtrinsic(ROUNDTRIP_QDL); // make sure serialization of extrinsics is done in QDL
         testExtrinsic(ROUNDTRIP_JAVA); // make sure serialization of extrinsics is done in Java
+        testExtrinsic(ROUNDTRIP_JSON); // make sure serialization of extrinsics is done in Java
     }
 
     protected void testExtrinsic(int testCase) throws Throwable {
@@ -1272,6 +1285,7 @@ cannot access '__a'
         testIsFunction(ROUNDTRIP_XML);
         testIsFunction(ROUNDTRIP_QDL);
         testIsFunction(ROUNDTRIP_JAVA);
+        testIsFunction(ROUNDTRIP_JSON);
     }
 
     protected void testIsFunction(int testCase) throws Throwable {
