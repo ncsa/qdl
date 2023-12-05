@@ -46,7 +46,7 @@ public abstract class XTable<K extends XKey, V extends XThing> extends HashMap<K
      */
     public abstract void toXML(XMLStreamWriter xsw, SerializationState SerializationState) throws XMLStreamException;
 
-    public abstract String toJSONEntry(V xThing, SerializationState serializationState);
+    public abstract String toJSONEntry(V xThing, SerializationState serializationState) throws Throwable;
 
     public abstract String fromJSONEntry(String x, SerializationState serializationState);
 
@@ -123,7 +123,7 @@ public abstract class XTable<K extends XKey, V extends XThing> extends HashMap<K
                 '}';
     }
 
-    public JSONArray serializeToJSON(SerializationState serializationState) {
+    public JSONArray serializeToJSON(SerializationState serializationState) throws Throwable {
         if(isEmpty()){return null;}
         JSONArray array = new JSONArray();
         for (XKey xKey : keySet()) {
@@ -144,6 +144,6 @@ public abstract class XTable<K extends XKey, V extends XThing> extends HashMap<K
     }
 
     ModuleUtils moduleUtils = null;
-    public abstract JSONObject serializeToJSON(V xThing, SerializationState serializationState) ;
+    public abstract JSONObject serializeToJSON(V xThing, SerializationState serializationState) throws Throwable;
     public abstract void deserializeFromJSON(JSONObject json,  QDLInterpreter qi, SerializationState serializationState) throws Throwable;
 }

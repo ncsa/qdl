@@ -414,4 +414,26 @@ public class AbstractQDLTester extends TestBase {
     protected XMLEventReader createXER(Reader reader) throws XMLStreamException {
         return XMLInputFactory.newInstance().createXMLEventReader(reader);
     }
+    /**
+      * Gets a file from the distro source for testing. The environment variable NCSA_DEV_INPUT
+      * <b>must</b> be set for this to work.
+      * <h3>E.g.</h3>
+      * getSourcePath("qdl/language/src/main/resources/modules/math-x.mdl") <br/><br/>
+      * returns <br/><br/>
+      * /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/math-x.mdl
+      * <br/><br/>
+      * on my system.
+      *
+      * @param path
+      * @return
+      */
+     protected String getSourcePath(String path) {
+         String devRoot = System.getenv("NCSA_DEV_INPUT");
+         if (devRoot == null) {
+             throw new IllegalStateException("NCSA_DEV_INPUT variable not set, cannot run test");
+         }
+         devRoot = devRoot.endsWith("/") ? devRoot.substring(0, devRoot.length() - 1) : devRoot;
+         path = path.startsWith("/") ? path.substring(1) : path;
+         return devRoot + "/" + path;
+     }
 }

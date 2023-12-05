@@ -1,11 +1,14 @@
 package edu.uiuc.ncsa.qdl.xml;
 
 import edu.uiuc.ncsa.qdl.module.MIWrapper;
+import edu.uiuc.ncsa.qdl.module.MTStack;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * This is for things like {@link edu.uiuc.ncsa.qdl.state.State} and {@link edu.uiuc.ncsa.qdl.module.Module}
@@ -88,7 +91,12 @@ public class SerializationState {
         }
         return false;
     }
-
+      public void addTemplates(MTStack templates){
+        for(Object xThing : templates.getAll()){
+            Module m = (Module) xThing;
+              templateMap.put(m.getId(), m);
+        }
+      }
     public boolean addInstance(MIWrapper miWrapper) {
         if (miWrapper == null) {
             throw new IllegalArgumentException("null instance");
@@ -104,6 +112,14 @@ public class SerializationState {
     }
 
     public Map<UUID, State> stateMap = new HashMap<>();
+
+    public Map<UUID, Module> getTemplateMap() {
+        return templateMap;
+    }
+
+    public boolean hasTemplates(){
+        return !templateMap.isEmpty();
+    }
     public Map<UUID, Module> templateMap = new HashMap<>();
     /**
      * Note that the processed instances work in two ways. During serialization, this list

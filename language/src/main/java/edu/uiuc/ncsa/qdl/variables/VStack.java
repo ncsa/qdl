@@ -110,7 +110,7 @@ public class VStack<V extends VTable<? extends XKey, ? extends VThing>> extends 
     }
 
     @Override
-    public JSONObject serializeToJSON(SerializationState serializationState) {
+    public JSONObject serializeToJSON(SerializationState serializationState) throws Throwable {
         JSONObject json = super.serializeToJSON(serializationState);
         json.put(VSTACK_VERSION_TAG, VSTACK_SERIALIZATION_VERSION_2_1);
         return json;

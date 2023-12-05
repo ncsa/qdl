@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl.util;
 
+import edu.uiuc.ncsa.qdl.config.JavaModuleConfig;
 import edu.uiuc.ncsa.qdl.config.QDLConfigurationLoaderUtils;
 import edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
@@ -119,7 +120,7 @@ public class ModuleUtils implements Serializable {
      * @param state
      * @param resourceName
      */
-    public List<String> doJavaModuleLoad(State state, String resourceName) {
+    public List<String> doJavaModuleLoad(State state, String resourceName, JavaModuleConfig javaModuleConfig) {
         try {
             Class klasse = state.getClass().forName(resourceName);
             Object newThingy = klasse.newInstance();
@@ -146,7 +147,7 @@ public class ModuleUtils implements Serializable {
                 }
                 qdlLoader = (QDLLoader) newThingy;
             }
-            List<String> names = QDLConfigurationLoaderUtils.setupJavaModule(state, qdlLoader, false);
+            List<String> names = QDLConfigurationLoaderUtils.setupJavaModule(state, qdlLoader, javaModuleConfig);
             if (names.isEmpty()) {
                 return null;
             }
@@ -198,8 +199,12 @@ public class ModuleUtils implements Serializable {
                 QDLRunner runner = new QDLRunner(parserDriver.parse(reader));
                 runner.setState(state);
                 runner.run();
+
             } else {
+                boolean importMode = state.isImportMode();
+                state.setImportMode(false);
                 script.execute(state);
+                state.setImportMode(importMode);
             }
             List<String> afterLoad = new ArrayList<>();
             for (Object k : state.getMTemplates().getChangeList()) {
@@ -224,6 +229,21 @@ public class ModuleUtils implements Serializable {
      * @return
      */
     public Module deserializeFromJSON(State state, JSONObject json, SerializationState serializationState) throws Throwable {
+        return deserializeFromJSON(state, json, false, serializationState);
+    }
+
+    /**
+     * @param state
+     * @param json
+     * @param useModule          if this module is used (i.e. imported to current scope) vs. imported
+     * @param serializationState
+     * @return
+     * @throws Throwable
+     */
+    public Module deserializeFromJSON(State state,
+                                      JSONObject json,
+                                      boolean useModule,
+                                      SerializationState serializationState) throws Throwable {
         Module m = null;
         QDLInterpreter qi = new QDLInterpreter(state);
         Polyad polyad;
@@ -233,30 +253,49 @@ public class ModuleUtils implements Serializable {
             polyad.addArgument(new ConstantNode("java"));
             polyad.evaluate(state);
         }
+        boolean isTemplate = json.getBoolean(MODULE_IS_TEMPLATE_TAG);
+        String source = null;
         if (json.getString(MODULE_TYPE_TAG2).equals(QDL_TYPE_TAG)) {
             // This is a module[] statement and needs to be loaded directly.
-            String source = new String(Base64.decodeBase64(json.getString(MODULE_INPUT_FORM_TAG)), UTF_8);
+            if(json.containsKey(MODULE_INPUT_FORM_TAG)) {
+                 source = new String(Base64.decodeBase64(json.getString(MODULE_INPUT_FORM_TAG)), UTF_8);
+            }else{
+                 if(serializationState.hasTemplates()){
+                     UUID templateUUID = UUID.fromString(json.getString(PARENT_TEMPLATE_UUID_TAG));
+                     Module template = serializationState.getTemplate(templateUUID);
+                     if(template != null){
+                         source = InputFormUtil.inputForm(template);
+                     }
+                 }
+            }
+            if(source == null){
+                throw new IllegalStateException("missing source for module");
+            }
             try {
                 qi.execute(source);
             } catch (Throwable e) {
                 e.printStackTrace();
             }
         }
-        if (json.getBoolean(MODULE_IS_TEMPLATE_TAG)) {
-            return (Module) qi.getState().getMTemplates().get(new MTKey(URI.create(json.getString(MODULE_NS_ATTR))));
-
+        if (isTemplate) {
+            Module t = (Module) qi.getState().getMTemplates().get(new MTKey(URI.create(json.getString(MODULE_NS_ATTR))));
+            t.setId(UUID.fromString(json.getString(UUID_TAG)));
+            return t;
         }
         String y;
         String varName = null;
         boolean isOldInstance = json.containsKey(MODULE_IS_INSTANCE_TAG) && json.getBoolean(MODULE_IS_INSTANCE_TAG);
         if (isOldInstance) {
             y = MODULE_IMPORT + "('" + json.getString(MODULE_NS_ATTR) + "', '" + json.getString(MODULE_ALIAS_ATTR) + "');";
-
         } else {
-            varName = json.getString(VTable.KEY_KEY);
             String inheritanceMode = ModuleEvaluator.IMPORT_STATE_NONE;
             inheritanceMode = json.containsKey(MODULE_INHERITANCE_MODE_TAG) ? json.getString(MODULE_INHERITANCE_MODE_TAG) : inheritanceMode;
-            y = varName + OpEvaluator.ASSIGNMENT + "import('" + json.getString(MODULE_NS_ATTR) + "', '" + inheritanceMode + "');";
+            if (useModule) {
+                y = ModuleEvaluator.USE + "('" + json.getString(MODULE_NS_ATTR) + "', '" + inheritanceMode + "');";
+            } else {
+                varName = json.getString(VTable.KEY_KEY);
+                y = varName + OpEvaluator.ASSIGNMENT + ModuleEvaluator.IMPORT + "('" + json.getString(MODULE_NS_ATTR) + "', '" + inheritanceMode + "');";
+            }
         }
         try {
             // Note that if there are embedded modules, this will create a network of them
@@ -264,14 +303,31 @@ public class ModuleUtils implements Serializable {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-        if(isOldInstance){
-             m = qi.getState().getMInstances().getModule(new XKey(json.getString(MODULE_ALIAS_ATTR)));
-        }else{
+        if (useModule) {
+            updateUsedModuleState(json, state, serializationState);
+            return null;
+        }
+        if (isOldInstance) {
+            m = qi.getState().getMInstances().getModule(new XKey(json.getString(MODULE_ALIAS_ATTR)));
+        } else {
+
             m = (Module) qi.getState().getValue(varName);
         }
         m.setId(UUID.fromString(json.getString(UUID_TAG)));
         updateSerializedState(json, m.getState(), serializationState);
         return m;
+    }
+
+    public void updateUsedModuleState(JSONObject jsonObject, State state, SerializationState serializationState) throws Throwable {
+        if (!jsonObject.containsKey(MODULE_STATE_TAG)) return; // just in case
+        // at this point, QDL has recreated the system and the state of the stored module needs to be adpated.
+        Module m = state.getUsedModules().get(URI.create(jsonObject.getString(MODULE_NS_ATTR)));
+        if(m instanceof JavaModule){
+            JavaModule javaModule = (JavaModule) m;
+            if (javaModule.hasMetaClass()) {
+                javaModule.getMetaClass().deserializeFromJSON(jsonObject.getJSONObject(MODULE_STATE_TAG));
+            }
+        }
     }
 
     /**
@@ -333,6 +389,30 @@ public class ModuleUtils implements Serializable {
             }
         }
 
+    }
+
+    public JSONArray serializeUsedModules(State state,
+                                          SerializationState serializationState
+    ) throws Throwable {
+        if (state.getUsedModules().isEmpty()) {
+            return null;
+        }
+        JSONArray array = new JSONArray();
+        for (URI key : state.getUsedModules().keySet()) {
+            Module m = state.getUsedModules().get(key);
+            array.add(m.serializeToJSON(serializationState));
+        }
+        return array;
+    }
+
+    public void deserializeUsedModules(State state, JSONArray jsonArray, SerializationState serializationState) throws Throwable {
+        if (jsonArray == null || jsonArray.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JSONObject json = jsonArray.getJSONObject(i);
+            deserializeFromJSON(state, json, true, serializationState); // should be added to ambient state
+        }
     }
 
     JSONArray emptyArray = new JSONArray(); // just have one of these so we don't keep creating empty ones

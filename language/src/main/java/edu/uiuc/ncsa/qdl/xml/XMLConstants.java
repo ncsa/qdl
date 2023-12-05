@@ -131,6 +131,10 @@ public interface XMLConstants {
     String UUID_TAG = "uuid";
     String VARIABLES_TAG = "variables";
     String VARIABLE_STACK = "variable_stack";
+    /**
+     * List of modules imported to local scope with QDL's use or jUse commands.
+     */
+    String USED_MODULES = "used_modules";
     String VERSION_2_0_TAG = "2.0";
     String VERSION_2_1_TAG = "2.1";
 

@@ -14,6 +14,8 @@ import edu.uiuc.ncsa.qdl.variables.VThing;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Models a single module expression of the form <b>A</b>#<i>expression</i> where <b>A</b>
@@ -204,7 +206,7 @@ public class ModuleExpression extends ExpressionImpl {
                 }
 
                 if (r == null) {
-                    throw new NFWException("unknown expression type");
+                    throw new IllegalArgumentException("no such value or unknown expression type");
                 }
                 setResult(r);
                 setResultType(Constant.getType(r));
@@ -223,17 +225,18 @@ public class ModuleExpression extends ExpressionImpl {
             getExpression().setAlias(getAlias());
             State moduleState = getModuleState(ambientState); // clean state
             // https://github.com/ncsa/qdl/issues/34 pass along variables
+            // short-circuit the function evaluation here so we don't have to
+            // muck around with the implied vs. actual state in complex expressions.
             if (getExpression() instanceof Polyad) {
                 Polyad f = (Polyad) getExpression();
+                List evaluatedArgs = new ArrayList();
                 for (int i = 0; i < f.getArgCount(); i++) {
-                    if (f.getArgAt(i) instanceof VariableNode) {
-                        VariableNode vNode = (VariableNode) f.getArgAt(i);
-                        Object v = f.evalArg(i, ambientState);
-                        moduleState.setValue(vNode.getVariableReference(), v);
-                    }
+                    evaluatedArgs.add( f.evalArg(i, ambientState));
                 }
+                f.setEvaluatedArgs(evaluatedArgs);
             }
             result = getExpression().evaluate(moduleState);
+
         }
         setResult(result);
         setResultType(Constant.getType(result));
@@ -241,6 +244,15 @@ public class ModuleExpression extends ExpressionImpl {
         return result;
     }
 
+    /*
+          q := module_load('edu.uiuc.ncsa.qdl.extensions.http.QDLHTTPLoader','java');
+q := module_import(q);
+suite := size(args()) == 1 ? args(0):'cm_local';//which test to run. Default is cm for local test
+ini. := file_read('/home/ncsa/dev/csd/config/ini/cm-test.ini',2).suite;
+http#host(ini.'address') ;
+qqq(x)->x
+http#host(qqq('https://foo'))
+     */
     /* test apply operator on module.
 
        module['a:x'][module['a:y'][f(x)->x;];y:=import('a:y');]
@@ -300,7 +312,7 @@ public class ModuleExpression extends ExpressionImpl {
     Module module = null;
 
     public State getModuleState() {
-        if(module == null){
+        if (module == null) {
             return null;
         }
         return getModule().getState();
@@ -385,16 +397,16 @@ public class ModuleExpression extends ExpressionImpl {
             getModuleState(state); // sets the state for *this* module
             ModuleExpression nextME = (ModuleExpression) getExpression();
             XKey xKey = new XKey(nextME.getAlias());
-            setNewModuleVersion(getModuleState()!=null);
+            setNewModuleVersion(getModuleState() != null);
             if (isNewModuleVersion() && getModuleState().getVStack().containsKey(xKey)) {
-                    VThing vThing = (VThing) getModuleState().getVStack().get(xKey);
-                    if (vThing.getValue() instanceof Module) {
-                        Module m = (Module) vThing.getValue();
-                        nextME.setModule(m);
-                        nextME.setModuleState(m.getState()); //sets the next one in the chain.
-                    } else {
-                        throw new NFWException("expected module for " + xKey + " not found");
-                    }
+                VThing vThing = (VThing) getModuleState().getVStack().get(xKey);
+                if (vThing.getValue() instanceof Module) {
+                    Module m = (Module) vThing.getValue();
+                    nextME.setModule(m);
+                    nextME.setModuleState(m.getState()); //sets the next one in the chain.
+                } else {
+                    throw new NFWException("expected module for " + xKey + " not found");
+                }
             } else {
                 if (getModuleState(state).getMInstances().containsKey(xKey)) {
                     nextME.setModuleState(getModuleState(state).getMInstances().getModule(xKey).getState());

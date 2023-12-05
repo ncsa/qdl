@@ -24,8 +24,20 @@ QDL_ROOT=$NCSA_DEV_INPUT/qdl
 echo "building QDL from sources..."
 cd $QDL_ROOT
 mvn clean install > maven.log
+if [ $? -ne 0 ]
+then
+  echo "error running maven. Check maven.log" >&2
+  exit 1;
+fi
+echo "     ... done!"
+echo "  creating installer"
+cd "$QDL_ROOT"/language/src/main/scripts
+./create_installer.sh > installer.log
+if [ $? -ne 0 ]
+then
+  echo "error running installer creation. Check installer.log" >&2
+  exit 1;
+fi
 echo "     ... done!"
 
-cd "$QDL_ROOT"/language/src/main/scripts
-./create_installer.sh
 

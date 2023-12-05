@@ -145,12 +145,12 @@ public class MITable<K extends XKey, V extends MIWrapper> extends XTable<K, V> i
     }
 
     @Override
-    public String toJSONEntry(V wrapper, SerializationState serializationState) {
+    public String toJSONEntry(V wrapper, SerializationState serializationState) throws Throwable {
         return serializeToJSON(wrapper, serializationState).toString();
     }
 
     @Override
-    public JSONObject serializeToJSON(V wrapper, SerializationState serializationState) {
+    public JSONObject serializeToJSON(V wrapper, SerializationState serializationState) throws Throwable {
         Module module = wrapper.getModule();
         K key = (K) wrapper.getKey();
         if (serializationState.getVersion().equals(XMLConstants.VERSION_2_0_TAG)) {
@@ -187,4 +187,5 @@ public class MITable<K extends XKey, V extends MIWrapper> extends XTable<K, V> i
     public void deserializeFromJSON(JSONObject json, QDLInterpreter qi, SerializationState serializationState) throws Throwable {
         getModuleUtils().deserializeFromJSON(qi.getState(), json, serializationState);
     }
+
 }

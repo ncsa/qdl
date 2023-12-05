@@ -5,6 +5,7 @@ import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.state.LibLoader;
 import edu.uiuc.ncsa.qdl.util.QDLVersion;
 import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
+import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.security.core.configuration.StorageConfigurationTags;
 import edu.uiuc.ncsa.security.core.util.*;
 import edu.uiuc.ncsa.security.util.cli.editing.EditorEntry;
@@ -119,7 +120,8 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
     }
 
     Boolean ansiModeOn = null;
-    protected Boolean isAnsiModeOn(){
+
+    protected Boolean isAnsiModeOn() {
         ConfigurationNode node = getFirstNode(cn, WS_TAG);
         return getFirstBooleanValue(node, WS_ATTR_ANSI_MODE_ON, false);
     }
@@ -132,14 +134,15 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
         }
         return x;
     }
+
     protected String getSaveDir() {
-         ConfigurationNode node = getFirstNode(cn, WS_TAG);
-         String x = getFirstAttribute(node, WS_SAVE_DIR);
-         if (isTrivial(x)) {
-             return null; // means none set.
-         }
-         return x;
-     }
+        ConfigurationNode node = getFirstNode(cn, WS_TAG);
+        String x = getFirstAttribute(node, WS_SAVE_DIR);
+        if (isTrivial(x)) {
+            return null; // means none set.
+        }
+        return x;
+    }
 
     protected Editors getEditors() {
         Editors editors = EditorUtils.getEditors(cn); // never null
@@ -168,11 +171,12 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
     }
 
     protected String useLogo() {
-           ConfigurationNode node = getFirstNode(cn, WS_TAG);
-           String logo = getFirstAttribute(node, WS_ATTR_logo);
-           if(StringUtils.isTrivial(logo)) return "default";
-           return logo;
-       }
+        ConfigurationNode node = getFirstNode(cn, WS_TAG);
+        String logo = getFirstAttribute(node, WS_ATTR_logo);
+        if (StringUtils.isTrivial(logo)) return "default";
+        return logo;
+    }
+
     protected boolean isEnabled() {
         return getFirstBooleanValue(cn, CONFG_ATTR_ENABLED, true);
     }
@@ -199,7 +203,6 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
     }
 
 
-
     protected String getDebugLevel() {
         String level = getFirstAttribute(cn, CONFG_ATTR_DEBUG);
         if (level == null) {
@@ -212,6 +215,7 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
         ConfigurationNode node = getFirstNode(cn, WS_TAG);
         return getFirstBooleanValue(node, WS_ATTR_ECHO_MODE_ON, true);
     }
+
     protected boolean areAssertionsEnabled() {
         ConfigurationNode node = getFirstNode(cn, WS_TAG);
         return getFirstBooleanValue(node, WS_ATTR_ASSERTIONS_ON, true);
@@ -245,11 +249,13 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
     protected boolean isEnableLibrarySupport() {
         return getFirstBooleanValue(cn, ENABLE_LIBRARY_SUPPORT, true);
     }
-      protected boolean isRunInitOnLoad(){
-          ConfigurationNode node = getFirstNode(cn, WS_TAG);
-          return getFirstBooleanValue(cn, RUN_INIT_ON_LOAD, true);
 
-      }
+    protected boolean isRunInitOnLoad() {
+        ConfigurationNode node = getFirstNode(cn, WS_TAG);
+        return getFirstBooleanValue(cn, RUN_INIT_ON_LOAD, true);
+
+    }
+
     protected int getNumericDigits() {
         String raw = getFirstAttribute(cn, CONFG_ATTR_NUMERIC_DIGITS);
         if (isTrivial(raw)) {
@@ -327,38 +333,75 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
         return libLoader;
     }
 
-    LibLoader libLoader= null;
+    LibLoader libLoader = null;
+
     protected List<ModuleConfig> getModuleConfigs() {
         ArrayList<ModuleConfig> configs = new ArrayList<>();
         ConfigurationNode vNode = getFirstNode(cn, MODULES_TAG_NAME);
         if (vNode == null) {
             return new ArrayList<>();
         }
-        String libLoaderName =getFirstAttribute(vNode, MODULE_ATTR_LIB_LOADER);
-        if(!StringUtils.isTrivial(libLoaderName)){
-             try{
-                 Class<?> clazz = Class.forName(libLoaderName);
-                 libLoader = (LibLoader) clazz.getConstructor().newInstance();
-             }catch(Throwable t){
-                  if(myLogger!=null){
-                      myLogger.warn("could not find library loader '" + libLoaderName + "'" + t.getMessage());
-                  }else{
-                      DebugUtil.trace(this, "could not find library loader'" + libLoaderName + "':" + t.getMessage());
-                  }
-             }
+        String defaultVersion = XMLConstants.VERSION_2_0_TAG;
+        boolean defaultFailOnError = false;
+        boolean defaultImportOnStart = true;
+        if (getFirstAttribute(vNode, MODULE_ATTR_VERSION) != null) {
+            defaultVersion = getFirstAttribute(vNode, MODULE_ATTR_VERSION);
+        }
+        if (getFirstAttribute(vNode, MODULE_FAIL_ON_ERRORS) != null) {
+            defaultFailOnError = getFirstBooleanValue(vNode, MODULE_FAIL_ON_ERRORS, defaultFailOnError);
+        }
+        if (getFirstAttribute(vNode, MODULE_ATTR_IMPORT_ON_START) != null) {
+            defaultImportOnStart = getFirstBooleanValue(vNode, MODULE_ATTR_IMPORT_ON_START, defaultImportOnStart);
+        }
+        String libLoaderName = getFirstAttribute(vNode, MODULE_ATTR_LIB_LOADER);
+        if (!StringUtils.isTrivial(libLoaderName)) {
+            try {
+                Class<?> clazz = Class.forName(libLoaderName);
+                libLoader = (LibLoader) clazz.getConstructor().newInstance();
+            } catch (Throwable t) {
+                if (myLogger != null) {
+                    myLogger.warn("could not find library loader '" + libLoaderName + "'" + t.getMessage());
+                } else {
+                    DebugUtil.trace(this, "could not find library loader'" + libLoaderName + "':" + t.getMessage());
+                }
+            }
         }
         // need to snoop through children and create VFSEntries.
         for (ConfigurationNode kid : vNode.getChildren()) {
+            boolean gotOne = false;
+            ModuleConfigImpl v = null;
             if (getFirstAttribute(kid, MODULE_ATTR_TYPE).equals(MODULE_TYPE_JAVA)) {
-                JavaModuleConfig v = new JavaModuleConfig();
-                v.loadOnStart = getFirstBooleanValue(kid, MODULE_ATTR_IMPORT_ON_START, false);
-                v.className = getNodeValue(kid, MODULE_CLASS_NAME_TAG);
-                configs.add(v);
+                gotOne = true;
+                JavaModuleConfig vv = new JavaModuleConfig();
+                vv.setClassName(getNodeValue(kid, MODULE_CLASS_NAME_TAG));
+                v = vv;
             }
             if (getFirstAttribute(kid, MODULE_ATTR_TYPE).equals(MODULE_TYPE_QDL)) {
-                QDLModuleConfig v = new QDLModuleConfig();
-                v.importOnStart = getFirstBooleanValue(kid, MODULE_ATTR_IMPORT_ON_START, false);
-                v.path = getNodeValue(kid, QDL_MODULE_PATH_TAG);
+                gotOne = true;
+                QDLModuleConfig vv = new QDLModuleConfig();
+                vv.setPath(getNodeValue(kid, QDL_MODULE_PATH_TAG));
+                v = vv;
+            }
+            if (gotOne) {
+                if (getFirstAttribute(kid, MODULE_ATTR_IMPORT_ON_START) == null) {
+                    v.setImportOnStart(defaultImportOnStart);
+                } else {
+                    v.setImportOnStart(getFirstBooleanValue(kid, MODULE_ATTR_IMPORT_ON_START, defaultImportOnStart));
+                }
+                v.setUse(getFirstBooleanValue(kid, MODULE_ATTR_USE_MODULE, false));
+                if (!v.isUse()) {
+                    v.setVarName(getFirstAttribute(kid, MODULE_ATTR_ASSIGN_VARIABLE));
+                }
+                if (null == getFirstAttribute(kid, MODULE_ATTR_VERSION)) {
+                    v.setVersion(defaultVersion);
+                } else {
+                    v.setVersion(getFirstAttribute(kid, MODULE_ATTR_VERSION));
+                }
+                if (getFirstAttribute(kid, MODULE_FAIL_ON_ERRORS) == null) {
+                    v.setFailOnError(defaultFailOnError);
+                } else {
+                    v.setFailOnError(getFirstBooleanValue(kid, MODULE_FAIL_ON_ERRORS, defaultFailOnError));
+                }
                 configs.add(v);
             }
         }
@@ -412,7 +455,7 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
 
 
     public static void main(String[] args) {
-        String path = DebugUtil.getDevPath()+"/qdl/language/src/main/resources/qdl-cfg.xml";
+        String path = DebugUtil.getDevPath() + "/qdl/language/src/main/resources/qdl-cfg.xml";
         ConfigurationNode node = ConfigUtil.findConfiguration(path, "test", QDLConfigurationConstants.CONFIG_TAG_NAME);
 
         QDLConfigurationLoader loader = new QDLConfigurationLoader(path, node);

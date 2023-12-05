@@ -93,7 +93,7 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
      * @return
      */
     @Override
-    public JSONObject serializeToJSON(V xThing, SerializationState serializationState) {
+    public JSONObject serializeToJSON(V xThing, SerializationState serializationState) throws Throwable {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put(KEY_KEY, xThing.getKey().getKey());
         String raw;

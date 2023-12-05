@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl;
 
+import edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.IntrinsicViolation;
 import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.exceptions.UndefinedFunctionException;
@@ -47,7 +48,6 @@ public class ModuleTests extends AbstractQDLTester {
     public void testPassingJavaArguments() throws Throwable {
         testPassingJavaArguments(ROUNDTRIP_NONE);
         testPassingJavaArguments(ROUNDTRIP_JSON);
-        //      testPassingJavaArguments(ROUNDTRIP_QDL);
     }
 
     protected void testPassingJavaArguments(int testCase) throws Throwable {
@@ -55,7 +55,7 @@ public class ModuleTests extends AbstractQDLTester {
         StringBuffer script = new StringBuffer();
         addLine(script, "z:='https://foo.bar.com';");
         addLine(script,
-                "module['A:X'][http_client := jload('http');];X:=import('A:X');");
+                "module['A:X'][http_client := j_load('http');];X:=import('A:X');");
         addLine(script, "X#http_client#host(z);"); // fails since the function references the default NS.
         state = rountripState(state, script, testCase); // tests that state in a module is handled on serialization.
 
@@ -70,11 +70,12 @@ public class ModuleTests extends AbstractQDLTester {
         testSerializingJavaArguments(ROUNDTRIP_JSON);
 
     }
+
     protected void testSerializingJavaArguments(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "z:='https://foo.bar.com';");
-        addLine(script,"X:=jload('http');");
+        addLine(script, "X:=j_load('http');");
         addLine(script, "X#host(z);"); // fails since the function references the default NS.
         state = rountripState(state, script, testCase); // tests that state in a module is handled on serialization.
 
@@ -160,6 +161,7 @@ public class ModuleTests extends AbstractQDLTester {
         testBasicNesting(ROUNDTRIP_JSON);
         testBasicNesting(ROUNDTRIP_QDL);
     }
+
     public void testBasicNesting(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -173,6 +175,25 @@ public class ModuleTests extends AbstractQDLTester {
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "call accessing nested module function failed";
         assert getBooleanValue("ok1", state) : "call accessing nesting module variable failed";
+    }
+
+
+    /**
+     * Tests that using a java module, setting state, the serializing it preserves that stored state.
+     *
+     * @throws Throwable
+     */
+    public void testUseSerialzation() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, ModuleEvaluator.JAVA_MODULE_USE + "('http');");
+        addLine(script, "host('https://foo.com');");
+        state = rountripState(state, script, ROUNDTRIP_JSON); // tests that symbol table handles modules on serialization
+
+        addLine(script, "ok := 'https://foo.com' == host();");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "roundtripping state of a used java module failed";
     }
 
     /**
@@ -317,12 +338,18 @@ public class ModuleTests extends AbstractQDLTester {
     }
 
     public void testBasicDyadicApplyForNestedModule1() throws Throwable {
+        testBasicDyadicApplyForNestedModule1(ROUNDTRIP_NONE);
+        testBasicDyadicApplyForNestedModule1(ROUNDTRIP_JSON);
+    }
+
+    public void testBasicDyadicApplyForNestedModule1(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "module['a:x'][module['a:y'][f(x)->x^2+1;f(x,y)->x*y;];y:=import('a:y');];");
         addLine(script, "x:=import('a:x');");
         addLine(script, "f(x)->x^3;"); // make sure that module state is used right
         addLine(script, "f(x,y)->x/y; y:=11;");
+        state = rountripState(state, script, testCase);
         addLine(script, "okf := 5 == [2]⍺x#y#@f;");
         addLine(script, "okg := 6 == [2,3]⍺x#y#@f;");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
@@ -345,11 +372,175 @@ public class ModuleTests extends AbstractQDLTester {
         assert getBooleanValue("okf", state) : "calling applies to module function failed.";
         assert getBooleanValue("okg", state) : "calling applies to module function failed.";
     }
+
+    public void testDeepNesting() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "z:=import(load('" + getSourcePath("qdl/language/src/main/resources/modules/nested.mdl") + "'));");
+        state = rountripState(state, script, ROUNDTRIP_JSON);
+        // tests that various assignments and calls at various levels in the modules just work.
+        addLine(script, "ok0 :=            x#qx==7;");
+        addLine(script, "ok1 :=          x#y#qy==11;");
+        addLine(script, "ok2 :=        x#y#z#qz==15;");
+        addLine(script, "ok3 :=        x#y#f(3)==9;");
+        addLine(script, "ok4 :=     x#y#f(x#qx)==49;");
+        addLine(script, "ok5 :=   x#y#f(x#y#qy)==121;");
+        addLine(script, "ok6 := x#y#f(x#y#z#qz)==225;");
+        addLine(script, "ok7 :=   x#y#z#f(x#qx)==343;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "failed to assign module variable";
+        assert getBooleanValue("ok1", state) : "failed to assign sub-module variable";
+        assert getBooleanValue("ok2", state) : "failed to assign sub-sub-module variable";
+        assert getBooleanValue("ok3", state) : "failed to evaluate module function";
+        assert getBooleanValue("ok4", state) : "failed to evaluate module function";
+        assert getBooleanValue("ok5", state) : "failed to evaluate module function";
+        assert getBooleanValue("ok6", state) : "failed to evaluate module function";
+        assert getBooleanValue("ok7", state) : "failed to evaluate module function";
+
+    }
+
+    public void testSharedModuleState() throws Throwable {
+        testSharedModuleState(ROUNDTRIP_NONE);
+        testSharedModuleState(ROUNDTRIP_JSON);
+    }
+
+    public void testSharedModuleState(int testCase) throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)->x^2;");
+        addLine(script, "s:=5;");
+        addLine(script, "module['p:q'][g(x)->3+f(x);q:=3*s;];");
+        addLine(script, "z:=import('p:q','share');"); // import shared mode.
+        addLine(script, "ok0 := z#g(5) == 28;");
+        addLine(script, "ok1:= z#q == 15;");
+        state = rountripState(state, script, testCase);
+        addLine(script, "f(x)->x^3;"); // test is to change the function which is then updated
+        addLine(script, "ok2 := z#g(4) == 67;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "failed to share function definition in module";
+        assert getBooleanValue("ok1", state) : "failed to share variable in module";
+        assert getBooleanValue("ok2", state) : "failed to share updated function in module with shared state";
+    }
+
+    public void testSnapshotModuleState() throws Throwable {
+        testSnapshotModuleState(ROUNDTRIP_NONE);
+        testSnapshotModuleState(ROUNDTRIP_JSON);
+    }
+
+    /**
+     * In this mode, the current ambient state is cloned then copied. Changes to it should not be reflected
+     *
+     * @param testCase
+     * @throws Throwable
+     */
+    public void testSnapshotModuleState(int testCase) throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)->x^2;");
+        addLine(script, "s:=5;");
+        addLine(script, "module['p:q'][g(x)->3+f(x);q:=3*s;];");
+        addLine(script, "z:=import('p:q','inherit');"); // import inherit mode.
+        addLine(script, "ok0 := z#g(5) == 28;");
+        addLine(script, "ok1:= z#q == 15;");
+        state = rountripState(state, script, testCase);
+        addLine(script, "f(x)->x^3;"); // test is to change the function which is NOT updated
+        addLine(script, "ok2 := z#g(5) == 28;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "failed to share function definition in module";
+        assert getBooleanValue("ok1", state) : "failed to share variable in module";
+        assert getBooleanValue("ok2", state) : "inherit mode for module failed ";
+    }
+
+    /**
+     * Identical to the like-named old module test, just using import instead of module_import.
+     *
+     * @throws Throwable
+     */
+    public void testPassingFunctionArgument() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module[ 'A:Y', 'Y']\n" +
+                "  body[\n" +
+                "      module['A:Z','Z'][f(x,y)->x+y;];\n" +
+                "       Z:=import('A:Z');\n" +
+                "    ]; //end module\n" +
+                "   Y:=import('A:Y');");
+        addLine(script, "z:='foo';"); // make this variable is not used, so no false positives
+        addLine(script, "ok := 'foobar' == Y#Z#f(z,'bar');");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to pass along function argument to QDL sub-module";
+    }
+
+    public void testLocalUseInModule() throws Throwable {
+        testLocalUseInModule(ROUNDTRIP_NONE);
+        testLocalUseInModule(ROUNDTRIP_JSON);
+    }
+
+    /**
+     * Tests that a module with an embedded use() keeps the state straight and loads. This also
+     * is a test for the load call.
+     * @param testCase
+     * @throws Throwable
+     */
+    public void testLocalUseInModule(int testCase) throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "  module['my:/ext/math']\n" +
+                "         [load('" + getSourcePath("qdl/language/src/main/resources/modules/math-x.mdl")+"');\n" +
+                "          use('qdl:/ext/math');\n" +
+                "          versinh(x)→ 2*sinh(x/2)^2; // hyperbolic versine\n" +
+                "         ];");
+        addLine(script, "h := import('my:/ext/math');"); // make this variable is not used, so no false positives
+        state = rountripState(state, script, testCase);
+        addLine(script, "ok := 0<h#versinh(1)-0.54308063;"); // trick. Mostly if this runs at all we are ok.
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to use() a loaded QDL module in another module";
+
+    }
+
+
+    /*
+    f(x)->x^2
+    s:=5;
+     module['p:q'][g(x)->3+f(x);q:=3*s;]
+  z:=import('p:q','share')
+  z:=import('p:q','inherit')
+  z#g(5)
+  z#q;
+     */
        /*
           module['a:x'][module['a:y'][f(x)->x;];y:=import('a:y');]
        x:=import('a:x');
        x#y#f(3)
        ⍺x#y#@f
   [3]⍺x#y#@f
+
+
+       module['p:q'][f(x)->x^2;q:=3;]
+       z:= import('p:q')
+    )save -json -show
+
+    )load -json -compress off /tmp/ws.json
+
+
+p:='/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/math-x.mdl';
+   module['my:/ext/math']
+         [load(p);
+          use('qdl:/ext/math');
+          versinh(x)→ 2*sinh(x/2)^2; // hyperbolic versine
+         ];
+    h := import('my:/ext/math');
+    h#versinh(1/2)
+
+   String devRoot = System.getenv("NCSA_DEV_INPUT");
+        if (devRoot == null) {
+            throw new IllegalStateException("NCSA_DEV_INPUT variable not set, cannot run test");
+        }
+        String file = devRoot + "/qdl/language/src/main/resources/modules/nested.mdl";
         */
 }

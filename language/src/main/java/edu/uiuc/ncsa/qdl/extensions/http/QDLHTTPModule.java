@@ -62,6 +62,7 @@ public class QDLHTTPModule extends JavaModule {
             descr.add("\nThere are many ways of sending such requests. Generally here you may");
             descr.add("supply a uri path, which is appened to the host and parameters (in get or delete)");
             descr.add("You should read the individual requirements for the methods.");
+            descr.add("Note that if you save a workspace with an open connection, \nthe connection is lost and must be re-opened before use.");
         }
         return descr;
     }

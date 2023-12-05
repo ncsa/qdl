@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl.evaluate;
 
+import edu.uiuc.ncsa.qdl.config.JavaModuleConfig;
 import edu.uiuc.ncsa.qdl.config.QDLConfigurationLoaderUtils;
 import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.expressions.*;
@@ -26,6 +27,7 @@ import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.qdl.vfs.VFSPaths;
 import edu.uiuc.ncsa.qdl.workspace.QDLWorkspace;
+import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
@@ -2469,7 +2471,11 @@ public class SystemEvaluator extends AbstractEvaluator {
                 }
                 qdlLoader = (QDLLoader) newThingy;
             }
-            List<String> names = QDLConfigurationLoaderUtils.setupJavaModule(state, qdlLoader, false);
+            JavaModuleConfig jmc = new JavaModuleConfig();
+            jmc.setImportOnStart(false);
+            jmc.setVersion(XMLConstants.VERSION_2_0_TAG);
+
+            List<String> names = QDLConfigurationLoaderUtils.setupJavaModule(state, qdlLoader, jmc);
             if (names.isEmpty()) {
                 return null;
             }
@@ -2641,6 +2647,10 @@ public class SystemEvaluator extends AbstractEvaluator {
             // QDLModules create the local state, java modules assume the state is exactly the local state.
             // Get a new instance and then set the state to the local state later for Java modules.
             State newModuleState = null;
+            newModuleState = state.newSelectiveState(null,true,true,true);
+            newModuleState.setModuleState(true);
+
+/*
             try {
                 newModuleState = StateUtils.clone(state);
             } catch (IOException e) {
@@ -2648,12 +2658,13 @@ public class SystemEvaluator extends AbstractEvaluator {
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
+*/
             // put tables and such in the right place so ambient state is not altered.
-            if(newModuleState != null) {
+  /*          if(newModuleState != null) {
                 // null possible on system load.
-                newModuleState = newModuleState.newLocalState(newModuleState);
+//                newModuleState = newModuleState.newLocalState(newModuleState);
                 newModuleState.setModuleState(true);
-            }
+            }*/
             //State newModuleState = StateUtils.clone(state).newLocalState(state);
             Module newInstance ;// = m.newInstance((m instanceof JavaModule) ? null : state);
             //Module newInstance = m.newInstance(null);

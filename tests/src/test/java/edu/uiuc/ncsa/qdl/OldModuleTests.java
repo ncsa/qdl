@@ -1489,7 +1489,7 @@ a#n(0)
         StringBuffer script = new StringBuffer();
         addLine(script, "z:='https://foo.bar.com';");
         addLine(script,
-                "module[ 'A:X'][http_client := jload('http');];" +
+                "module[ 'A:X'][http_client := j_load('http');];" +
                         "X:=import('A:X');");
         addLine(script, "X#http_client#host(z);"); // fails since the function references the default NS.
         addLine(script, "ok := z == X#http_client#host();");
@@ -1498,6 +1498,33 @@ a#n(0)
         assert getBooleanValue("ok", state) : "failed to pass along function argument to Java sub-module, (X#http_client#host() failed.)";
 
     }
+    public void testPassingJavaFunctionArgumentStem() throws Throwable {
+          State state = testUtils.getNewState();
+          StringBuffer script = new StringBuffer();
+          addLine(script, "ini.:={'address':'https://localhost:9443/oauth2/oidc-cm', 'caput':'cm-local:client_id', 'id':'admin:cm-test'};");
+          addLine(script,
+                  "module[ 'A:X'][http_client := j_load('http');];" +
+                          "X:=import('A:X');");
+          addLine(script, "X#http_client#host(ini.'address');"); // fails since the function references the default NS.
+          addLine(script, "ok := ini.'address' == X#http_client#host();");
+          QDLInterpreter interpreter = new QDLInterpreter(null, state);
+          interpreter.execute(script.toString());
+          assert getBooleanValue("ok", state) : "failed to pass along function argument to Java sub-module, (X#http_client#host() failed.)";
+
+      }
+    public void testPassingJavaFunctionArgumentStem2() throws Throwable {
+          State state = testUtils.getNewState();
+          StringBuffer script = new StringBuffer();
+          addLine(script, "ini.:={'address':'https://localhost:9443/oauth2/oidc-cm', 'caput':'cm-local:client_id', 'id':'admin:cm-test'};");
+          addLine(script,"q := module_load('edu.uiuc.ncsa.qdl.extensions.http.QDLHTTPLoader','java');");
+          addLine(script, "q := module_import(q);");
+          addLine(script, "http#host(ini.'address');"); // fails since the function references the default NS.
+          addLine(script, "ok :=  ini.'address' == http#host();");
+          QDLInterpreter interpreter = new QDLInterpreter(null, state);
+          interpreter.execute(script.toString());
+          assert getBooleanValue("ok", state) : "failed to pass along function argument to Java sub-module, (X#http_client#host() failed.)";
+
+      }
 
     /**
      * Checks if passing along a variable argument to a QDL module function works.

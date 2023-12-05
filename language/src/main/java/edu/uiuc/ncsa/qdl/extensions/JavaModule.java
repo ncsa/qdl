@@ -137,7 +137,7 @@ public abstract class JavaModule extends Module {
     }
 
     @Override
-    public JSONObject serializeToJSON(SerializationState serializationState) {
+    public JSONObject serializeToJSON(SerializationState serializationState) throws Throwable {
         JSONObject json = super.serializeToJSON(serializationState);
         if (hasMetaClass()) {
             if (null != getMetaClass().serializeToJSON()) {
@@ -150,7 +150,7 @@ public abstract class JavaModule extends Module {
     }
 
     @Override
-    public void deserializeFromJSON(JSONObject json, SerializationState serializationState) {
+    public void deserializeFromJSON(JSONObject json, SerializationState serializationState) throws Throwable {
         super.deserializeFromJSON(json, serializationState);
         State newState = State.getRootState().newCleanState(); // remember that State can be overridden, so this is the right type
         init(newState, false); // don't force the defined variables to overwrite the stored ones.

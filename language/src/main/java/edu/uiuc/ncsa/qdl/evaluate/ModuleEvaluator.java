@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl.evaluate;
 
+import edu.uiuc.ncsa.qdl.config.JavaModuleConfig;
 import edu.uiuc.ncsa.qdl.exceptions.BadArgException;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.expressions.ConstantNode;
@@ -13,6 +14,7 @@ import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLList;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
+import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -106,10 +108,10 @@ public class ModuleEvaluator extends AbstractEvaluator {
     public static final String LOADED = "loaded";
     public static final int LOADED_TYPE = 8 + MODULE_FUNCTION_BASE_VALUE;
 
-    public static final String JAVA_MODULE_LOAD = "jload";
+    public static final String JAVA_MODULE_LOAD = "j_load";
     public static final int JAVA_MODULE_LOAD_TYPE = 9 + MODULE_FUNCTION_BASE_VALUE;
 
-    public static final String JAVA_MODULE_USE = "jUse";
+    public static final String JAVA_MODULE_USE = "j_use";
     public static final int JAVA_MODULE_USE_TYPE = 10 + MODULE_FUNCTION_BASE_VALUE;
 
 
@@ -600,6 +602,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
         State moduleState = m.getState();
         state.getVStack().appendTables(moduleState.getVStack());
         state.getFTStack().appendTables(moduleState.getFTStack());
+        state.getUsedModules().put(m.getNamespace(), m);
         polyad.setEvaluated(true);
         polyad.setResult(Boolean.TRUE);
         polyad.setResultType(Constant.getType(polyad.getResult()));
@@ -650,9 +653,13 @@ public class ModuleEvaluator extends AbstractEvaluator {
             }
             List<String> loadedQNames = null;
             // if they force the issue, do that and fail
+            JavaModuleConfig jmc = new JavaModuleConfig();
+            jmc.setImportOnStart(false);
+            jmc.setUse(false);
+            jmc.setVersion(XMLConstants.VERSION_2_1_TAG);
             switch (loadTarget) {
                 case LOAD_JAVA:
-                    loadedQNames = moduleUtils.doJavaModuleLoad(state, resourceName);
+                    loadedQNames = moduleUtils.doJavaModuleLoad(state, resourceName, jmc);
                     break;
                 case LOAD_FILE:
                     loadedQNames = moduleUtils.doQDLModuleLoad(state, resourceName);
@@ -660,7 +667,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
                 case LOAD_UNKNOWN:
                     loadedQNames = moduleUtils.doQDLModuleLoad(state, resourceName);
                     if (loadedQNames == null) {
-                        loadedQNames = moduleUtils.doJavaModuleLoad(state, resourceName);
+                        loadedQNames = moduleUtils.doJavaModuleLoad(state, resourceName, jmc);
                     }
                     break;
             }
@@ -782,6 +789,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
                         break;
                     case IMPORT_STATE_SNAPSHOT:
                         inhertianceMode = IMPORT_STATE_SNAPSHOT_VALUE;
+                        break;
                     default:
                         throw new BadArgException(IMPORT + " unknown state inheritance mode", polyad.getArgAt(1));
                 }
@@ -815,12 +823,12 @@ public class ModuleEvaluator extends AbstractEvaluator {
                 case IMPORT_STATE_SNAPSHOT_VALUE:
                     newState = StateUtils.clone(state);
                     // put tables and such in the right place so ambient state is not altered.
-                    newState = newState.newLocalState(newState);
+                    newState = newState.newSelectiveState(newState,false,true,true);
                     break;
                 case IMPORT_STATE_SHARE_VALUE:
                     newState = state;
                     // put tables and such in the right place so ambient state is not altered.
-                    newState = newState.newLocalState(newState);
+                    newState = newState.newSelectiveState(newState,false,true,true);
                     break;
                 default:
                     throw new BadArgException(IMPORT + " with unknown state inheritene mode", polyad.getArgAt(1));

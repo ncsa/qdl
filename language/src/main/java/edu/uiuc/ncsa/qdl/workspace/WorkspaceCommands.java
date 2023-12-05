@@ -67,6 +67,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.*;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -2597,7 +2599,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 }
             }
             rc = printList(inputLine, funcs2);
-            if(0 < funcs2.size()) {
+            if (0 < funcs2.size()) {
                 say(funcs2.size() + " total functions");
             }
 
@@ -4431,7 +4433,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         String fName = null;
         if (showFile) {
             try {
-                long[] sizes = new long[]{-1L,-1L};
+                long[] sizes = new long[]{-1L, -1L};
                 if (doJSON) {
                     WSJSONSerializer wsjsonSerializer = new WSJSONSerializer();
                     JSONObject json = wsjsonSerializer.toJSON(this);
@@ -4439,13 +4441,13 @@ public class WorkspaceCommands implements Logable, Serializable {
                     System.out.println(out);
                     sizes[UNCOMPRESSED_INDEX] = out.length();
 
-                }else{
-                    if(qdlDump){
+                } else {
+                    if (qdlDump) {
                         StringWriter stringWriter = new StringWriter();
                         _xmlWSQDLSave(stringWriter);
                         System.out.println(stringWriter.getBuffer());
                         sizes[UNCOMPRESSED_INDEX] = stringWriter.getBuffer().length();
-                    }else{
+                    } else {
                         // defaults to XML
                         sizes = _xmlSave(null, compressionOn, showFile);
                     }
@@ -4590,7 +4592,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         WSJSONSerializer wsjsonSerializer = new WSJSONSerializer();
         JSONObject json = wsjsonSerializer.toJSON(this);
         String raw = json.toString(1);
-        sizes[COMPRESSED_INDEX] = writeFile(path, raw, compressionOn );
+        sizes[COMPRESSED_INDEX] = writeFile(path, raw, compressionOn);
 
   /*      if (isVFS) {
             StringWriter stringWriter = new StringWriter();
@@ -4606,9 +4608,49 @@ public class WorkspaceCommands implements Logable, Serializable {
         }*/
         return sizes;
     }
-     private void _jsonWSSLoad(String path) throws Throwable{
 
-     }
+    private Object _jsonWSSLoad(String path, boolean compressionOn) throws Throwable {
+        JSONObject jsonObject;
+        byte[] bytes = null;
+        String raw = null;
+        if (VFSPaths.isVFSPath(path)) {
+            if (compressionOn) {
+                bytes = readBinaryVFS(getState(), path);
+            } else {
+                raw = readFileAsString(path);
+            }
+        } else {
+            if (getState().isServerMode()) {
+                throw new QDLServerModeException();
+            }
+            if (compressionOn) {
+                bytes = Files.readAllBytes(Paths.get(path));
+            } else {
+                raw = Files.readString(Paths.get(path));
+            }
+        }
+
+        if (compressionOn) {
+            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+            GZIPInputStream gzipInputStream = new GZIPInputStream(bais, 65536);
+            Reader r = new InputStreamReader(gzipInputStream);
+            BufferedReader bufferedReader = new BufferedReader(r);
+            StringBuffer stringBuffer = new StringBuffer();
+            String s = bufferedReader.readLine();
+            while (s != null) {
+                stringBuffer.append(s + "\n");
+                s = bufferedReader.readLine();
+            }
+            bufferedReader.close();
+            raw = stringBuffer.toString();
+        }
+        jsonObject = JSONObject.fromObject(raw);
+        WSJSONSerializer wsJSONSerializer = new WSJSONSerializer();
+        WorkspaceCommands newCommands = wsJSONSerializer.fromJSON(jsonObject);
+        updateWSState(newCommands);
+        return RC_CONTINUE;
+    }
+
     public static final String DEFAULT_QDL_DUMP_FILE_EXTENSION = ".qdl";
     public static final String DEFAULT_XML_SAVE_FILE_EXTENSION = ".ws";
     public static final String ALTERNATE_XML_SAVE_FILE_EXTENSION = ".zml"; // for reads
@@ -4753,7 +4795,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             say(payload);
             return sizes;
         } else {
-            sizes[COMPRESSED_INDEX] = writeFile(fullPath, payload, compressSerialization );
+            sizes[COMPRESSED_INDEX] = writeFile(fullPath, payload, compressSerialization);
         }
         return sizes;
     }
@@ -5059,13 +5101,13 @@ public class WorkspaceCommands implements Logable, Serializable {
         inputLine.removeSwitch(JAVA_FLAG);
         boolean skipBadModules = inputLine.hasArg(SKIP_BAD_MODULES_FLAG);
         inputLine.removeSwitch(SKIP_BAD_MODULES_FLAG);
-         boolean doJSON = inputLine.hasArg(JSON_FLAG);
-         inputLine.removeSwitch(JSON_FLAG);
-         boolean compressionOn = isCompressXML();
-         if(inputLine.hasArg(COMPRESS_FLAG)){
-                       compressionOn = inputLine.getNextArgFor(COMPRESS_FLAG).equals("on");
-                       inputLine.removeSwitchAndValue(COMPRESS_FLAG);
-         }
+        boolean doJSON = inputLine.hasArg(JSON_FLAG);
+        inputLine.removeSwitch(JSON_FLAG);
+        boolean compressionOn = isCompressXML();
+        if (inputLine.hasArg(COMPRESS_FLAG)) {
+            compressionOn = inputLine.getNextArgFor(COMPRESS_FLAG).equals("on");
+            inputLine.removeSwitchAndValue(COMPRESS_FLAG);
+        }
         if (inputLine.hasArgAt(FIRST_ARG_INDEX)) {
             fName = inputLine.getArg(FIRST_ARG_INDEX);
         } else {
@@ -5180,32 +5222,8 @@ public class WorkspaceCommands implements Logable, Serializable {
                 return RC_NO_OP;
             }
         }
-        if(doJSON){
-            JSONObject jsonObject;
-            if(compressionOn){
-                byte[] bytes = readBinaryVFS(getState(), fullPath);
-                ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-                GZIPInputStream gzipInputStream = new GZIPInputStream(bais, 65536);
-                Reader r = new InputStreamReader(gzipInputStream);
-                BufferedReader bufferedReader = new BufferedReader(r);
-                StringBuffer stringBuffer = new StringBuffer();
-                String s = bufferedReader.readLine();
-                while(s!=null){
-                    stringBuffer.append(s+"\n");
-                     s = bufferedReader.readLine();
-                }
-                bufferedReader.close();
-                jsonObject = JSONObject.fromObject(stringBuffer.toString());
-            }else{
-                String raw = QDLFileUtil.readFileAsString( fullPath);
-
-                // Reconstruct the XML as a string, preserving whitespace.
-                 jsonObject = JSONObject.fromObject(raw);
-            }
-            WSJSONSerializer wsJSONSerializer = new WSJSONSerializer();
-            WorkspaceCommands newCommands = wsJSONSerializer.fromJSON(jsonObject);
-            updateWSState(newCommands);
-            return RC_CONTINUE;
+        if (doJSON) {
+           return _jsonWSSLoad(fullPath, compressionOn);
         }
         loadOK = _xmlWSJavaLoad(fullPath);
         if (!loadOK) {
@@ -6090,23 +6108,27 @@ public class WorkspaceCommands implements Logable, Serializable {
         WSXMLSerializer serializer = new WSXMLSerializer();
         serializer.toXML(this, xsw);
     }
-     public JSONObject toJSON(){
+
+    public JSONObject toJSON() throws Throwable {
         WSJSONSerializer serializer = new WSJSONSerializer();
         return serializer.toJSON(this);
-     }
-     public WorkspaceCommands fromJSON(JSONObject jsonObject) throws Throwable {
-         WSJSONSerializer serializer = new WSJSONSerializer();
-          return serializer.fromJSON(jsonObject);
-     }
+    }
+
+    public WorkspaceCommands fromJSON(JSONObject jsonObject) throws Throwable {
+        WSJSONSerializer serializer = new WSJSONSerializer();
+        return serializer.fromJSON(jsonObject);
+    }
+
     /**
      * This takes an updated {@link WorkspaceCommands} object and updates the currently
      * active workspace. When this is done, there is new state and all the values
      * ofr newCommnads have been migrated. This takes care to get the {@link IOInterface}
      * right since if that is not handled correctly, the entire workspace hangs unrecoverably.
+     *
      * @param newCommands
      * @return
      */
-    protected boolean updateWSState(WorkspaceCommands newCommands){
+    protected boolean updateWSState(WorkspaceCommands newCommands) {
         try {
             IOInterface ioInterface = getIoInterface();
             State oldState = getState();
@@ -6173,11 +6195,12 @@ public class WorkspaceCommands implements Logable, Serializable {
             throw t;
         }
     }
+
     public boolean fromXML(XMLEventReader xer, boolean skipBadModules) throws XMLStreamException {
         WSXMLSerializer serializer = new WSXMLSerializer();
         WorkspaceCommands newCommands = null;
         newCommands = serializer.fromXML(xer, skipBadModules);
-       return updateWSState(newCommands);
+        return updateWSState(newCommands);
     }
 
     public boolean isAutosaveOn() {

@@ -55,7 +55,7 @@ public class WSJSONSerializer {
         return workspaceCommands;
     }
 
-    public JSONObject toJSON(WorkspaceCommands workspaceCommands) {
+    public JSONObject toJSON(WorkspaceCommands workspaceCommands) throws Throwable {
         JSONObject jsonObject = new JSONObject();
         SerializationState serializationState = new SerializationState();
         serializationState.setVersion(XMLConstants.VERSION_2_1_TAG); // critical!

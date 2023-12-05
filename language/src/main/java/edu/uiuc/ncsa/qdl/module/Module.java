@@ -204,7 +204,7 @@ public abstract class Module implements XThing, Serializable {
      * @param serializationState
      * @return
      */
-    public JSONObject serializeToJSON(SerializationState serializationState) {
+    public JSONObject serializeToJSON(SerializationState serializationState) throws Throwable {
         JSONObject json = new JSONObject();
         json.put(MODULE_NS_ATTR, getNamespace().toString());
         if (!StringUtils.isTrivial(getAlias())) json.put(MODULE_ALIAS_ATTR, getAlias());
@@ -218,7 +218,8 @@ public abstract class Module implements XThing, Serializable {
         return json;
     }
 
-    public void deserializeFromJSON(JSONObject json, SerializationState serializationState) {
+    public void deserializeFromJSON(JSONObject json,
+                                    SerializationState serializationState) throws Throwable {
         setNamespace(URI.create(json.getString(MODULE_NS_ATTR)));
         if (json.containsKey(MODULE_ALIAS_ATTR)) setAlias(json.getString(MODULE_ALIAS_ATTR));
         setId(UUID.fromString(json.getString(UUID_TAG)));

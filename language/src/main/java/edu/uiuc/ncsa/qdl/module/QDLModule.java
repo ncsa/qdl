@@ -98,10 +98,26 @@ public class QDLModule extends Module {
     }
 
     @Override
-    public JSONObject serializeToJSON(SerializationState serializationState) {
+    public JSONObject serializeToJSON(SerializationState serializationState) throws Throwable {
         JSONObject json = super.serializeToJSON(serializationState);
         json.put(XMLConstants.MODULE_TYPE_TAG2, XMLConstants.MODULE_TYPE_QDL_TAG);
-        json.put(MODULE_INPUT_FORM_TAG, Base64.encodeBase64URLSafeString(InputFormUtil.inputForm(this).getBytes()));
+        /*
+            Only save the source code for this if the template is missing. The reason is
+            that every loaded module has a URI and a random unique UUID. It is possible
+            that the user reloads the module with an update, leaving the instance with a
+            different content. Preserve the loaded content. However, always preserving it
+            means a huge explosion in the size of the serialization. Only save it if there
+            was a bonda fide change.
+         */
+        if(isTemplate()){
+            json.put(MODULE_INPUT_FORM_TAG, Base64.encodeBase64URLSafeString(InputFormUtil.inputForm(this).getBytes()));
+        }else{
+            // not a template. be sure there is a template
+            Module template = serializationState.getTemplate(getParentTemplateID());
+            if(template == null){
+                json.put(MODULE_INPUT_FORM_TAG, Base64.encodeBase64URLSafeString(InputFormUtil.inputForm(this).getBytes()));
+            }
+        }
         if (getState() != null) {
             if (inheritMode == ModuleEvaluator.IMPORT_STATE_SHARE_VALUE) {
                 json.put(MODULE_STATE_TAG, getState().serializeLocalStateToJSON(serializationState));
@@ -113,12 +129,42 @@ public class QDLModule extends Module {
     }
 
     @Override
-    public void deserializeFromJSON(JSONObject json, SerializationState serializationState) {
+    public void deserializeFromJSON(JSONObject json, SerializationState serializationState) throws Throwable {
         super.deserializeFromJSON(json, serializationState);
-        if (!json.containsKey(MODULE_INPUT_FORM_TAG)) {
-            throw new NFWException("missing input form for module.");
+        String source = null;
+        if(isTemplate()){
+            if (!json.containsKey(MODULE_INPUT_FORM_TAG)) {
+                throw new NFWException("missing input form for module.");
+            }
+            source = new String(Base64.decodeBase64(json.getString(MODULE_INPUT_FORM_TAG)), StandardCharsets.UTF_8);
+        }else{
+            // so we are deserializing an instance. Now we check if there is template
+            Module template = serializationState.getTemplate(getParentTemplateID());
+            if (template != null) {
+                source = InputFormUtil.inputForm(template);
+            }else{
+                // last resort. No template by UUID, so the
+                if (!json.containsKey(MODULE_INPUT_FORM_TAG)) {
+                    throw new NFWException("missing input form for module.");
+                }
+                source = new String(Base64.decodeBase64(json.getString(MODULE_INPUT_FORM_TAG)), StandardCharsets.UTF_8);
+            }
         }
-        String source = new String(Base64.decodeBase64(json.getString(MODULE_INPUT_FORM_TAG)), StandardCharsets.UTF_8);
+/*
+        if (!isTemplate() && serializationState.hasTemplates()) {
+            Module template = serializationState.getTemplate(getParentTemplateID());
+            if (template != null) {
+                source = InputFormUtil.inputForm(template);
+            }
+        }
+*/
+        if (source == null) {
+            // Plan B, see if it was serialized
+            if (!json.containsKey(MODULE_INPUT_FORM_TAG)) {
+                throw new NFWException("missing input form for module.");
+            }
+//            source = new String(Base64.decodeBase64(json.getString(MODULE_INPUT_FORM_TAG)), StandardCharsets.UTF_8);
+        }
         State newState = State.getRootState().newCleanState(); // remember that State can be overridden, so this is the right type
         QDLInterpreter qdlInterpreter = new QDLInterpreter(newState);
         try {

@@ -8,6 +8,10 @@ import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.variables.VStack;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
 
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Handles all the module related operations for the state.
  * <p>Created by Jeff Gaynor<br>
@@ -100,5 +104,25 @@ public abstract class ModuleState extends AbstractState {
     }
 
     Module module = null;
+
+    /**
+     * Modules that the user has imported to the current scope. Note that
+     * this is mostly used for serializing a workspace: In particular,
+     * for Java modules, there is no other way than to serialize the module
+     * then re-use it on deserialization.
+     * @return
+     */
+    public Map<URI,Module> getUsedModules() {
+        if(usedModules == null)         {
+            usedModules = new HashMap<>();
+        }
+        return usedModules;
+    }
+
+    public void setUsedModules(Map<URI,Module> usedModules) {
+        this.usedModules = usedModules;
+    }
+
+    Map<URI, Module> usedModules;
 
 }

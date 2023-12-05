@@ -115,13 +115,13 @@ public class MTTable<K extends MTKey, V extends Module>  extends   XTable<K, V> 
     }
 
     @Override
-    public String toJSONEntry(V xThing, SerializationState serializationState) {
+    public String toJSONEntry(V xThing, SerializationState serializationState) throws Throwable {
         serializationState.templateMap.put(xThing.getId(), xThing);
         return serializeToJSON(xThing, serializationState).toString();
     }
 
     @Override
-    public JSONObject serializeToJSON(V xThing, SerializationState serializationState) {
+    public JSONObject serializeToJSON(V xThing, SerializationState serializationState) throws Throwable {
         if(serializationState.getVersion().equals(XMLConstants.VERSION_2_0_TAG)){
             JSONObject jsonObject = new JSONObject();
             jsonObject.put(XMLConstants.UUID_TAG, xThing.getId().toString());

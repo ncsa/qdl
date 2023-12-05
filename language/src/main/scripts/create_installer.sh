@@ -14,9 +14,20 @@ DEFAULT_JAR_NAME="qdl-installer.jar"
 JAR_NAME=${1:-$DEFAULT_JAR_NAME}
 echo 'creating QDL installer'
 ./create_dirs.sh $QDL_ROOT $TARGET_ROOT
+if [ $? -ne 0 ]
+then
+  echo "error running create dirs. " >&2
+  exit 1;
+fi
 
 cd $QDL_SOURCES
 mvn -P qdl package > qdl-maven.log
+if [ $? -ne 0 ]
+then
+  echo "error running maven. Check maven.log" >&2
+  exit 1;
+fi
+
 cp "$QDL_SOURCES/target/qdl-jar-with-dependencies.jar" $TARGET_ROOT/lib/qdl.jar
 unzip -p target/qdl-jar-with-dependencies.jar META-INF/MANIFEST.MF > $TARGET_ROOT/lib/build-info.txt
 

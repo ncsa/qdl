@@ -11,6 +11,7 @@ import edu.uiuc.ncsa.qdl.variables.VStack;
 import edu.uiuc.ncsa.qdl.variables.VThing;
 import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLUtilsV2;
+import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -400,7 +401,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
         return arrayList;
     }
 
-    public JSONArray toJSON(SerializationState serializationState) {
+    public JSONArray toJSON(SerializationState serializationState) throws Throwable {
         JSONArray array = new JSONArray();
         for (XTable xTable : getStack()) {
             JSONArray jsonArray = new JSONArray();
@@ -523,7 +524,15 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
      * @throws XMLStreamException
      */
     protected void serializeContent(XMLStreamWriter xsw, SerializationState serializationState) throws XMLStreamException {
-        xsw.writeCData(toJSON(serializationState).toString());
+        try {
+            xsw.writeCData(toJSON(serializationState).toString());
+        }catch (Throwable t){
+            if(t instanceof XMLStreamException){
+                throw (XMLStreamException) t;
+            }
+            throw new NFWException("problem serializing string", t);
+        }
+
     }
 
     public static void main(String[] args) throws Throwable {
@@ -533,7 +542,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
         // testFStack2();
     }
 
-    static void testFStack() {
+    static void testFStack() throws Throwable {
         FStack fStack = new FStack();
         fStack.put(new FunctionRecord(new FKey("f", 1), Arrays.asList("f(x)->x^2;")));
         fStack.put(new FunctionRecord(new FKey("g", 1), Arrays.asList("g(x)->x^3;")));
@@ -551,7 +560,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
 
     }
 
-    static void testFStack2() {
+    static void testFStack2() throws Throwable {
         FStack fStack = new FStack();
         fStack.put(new FunctionRecord(new FKey("f", 1), Arrays.asList("f(x)->x^2;")));
         fStack.put(new FunctionRecord(new FKey("g", 1), Arrays.asList("g(x)->x^3;")));
@@ -569,7 +578,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
 
     }
 
-    static void testVStack() {
+    static void testVStack() throws Throwable {
         // Roundtrip test for JSON serialization. Should populate a stack, print it out, deserialize it, then
         // print out the exact same stack.
         VStack vStack = new VStack();
@@ -609,7 +618,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
 
     }
 
-    public JSONObject serializeToJSON(SerializationState serializationState) {
+    public JSONObject serializeToJSON(SerializationState serializationState) throws Throwable {
         JSONObject jsonObject = new JSONObject();
         JSONArray array = new JSONArray();
         for (XTable xTable : getStack()) {
