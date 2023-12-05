@@ -202,4 +202,20 @@ public abstract class JavaModule extends Module {
     public List<String> getDocumentation() {
         return documentation;
     }
+
+    public QDLModuleMetaClass getMetaClass() {
+        return metaClass;
+    }
+
+    public void setMetaClass(QDLModuleMetaClass metaClass) {
+        this.metaClass = metaClass;
+    }
+
+    QDLModuleMetaClass metaClass = null;
+
+    public boolean hasMetaClass() {
+        return metaClass != null;
+    }
+
+
 }

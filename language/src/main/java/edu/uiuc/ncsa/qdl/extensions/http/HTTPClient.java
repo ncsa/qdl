@@ -85,7 +85,7 @@ q := module_load('edu.uiuc.ncsa.qdl.extensions.http.QDLHTTPLoader','java') ;
   Which returns a status of 0 (so all ok), the client_id and the current base 32 encoded grant.
   */
 public class HTTPClient implements QDLModuleMetaClass {
-    CloseableHttpClient httpClient = null;
+   transient CloseableHttpClient httpClient = null;
     String host = null;
     public String HOST_METHOD = "host";
     public String GET_METHOD = "get";
@@ -426,7 +426,7 @@ public class HTTPClient implements QDLModuleMetaClass {
             boolean doInsecure = false;
             if (objects.length == 1) {
                 if (!(objects[0] instanceof Boolean)) {
-                    throw new IllegalArgumentException(getName() + " retuires a boolean argument if present");
+                    throw new IllegalArgumentException(getName() + " requires a boolean argument if present");
                 }
                 doInsecure = (Boolean) objects[0];
             }
@@ -466,6 +466,7 @@ public class HTTPClient implements QDLModuleMetaClass {
                     doxx.add("This boosts neither speed nor performance and turns off essential security.");
                     break;
             }
+            doxx.add("NOTE that if you serialize this workspace, you must re-open the connection on loading");
             return doxx;
         }
 
@@ -928,5 +929,27 @@ public class HTTPClient implements QDLModuleMetaClass {
         actualHost = actualHost + (actualHost.endsWith("/") ? "" : "/");
         // Fixes https://github.com/ncsa/qdl/issues/35
         return actualHost + (uriPath.startsWith("/") ? uriPath.substring(1) : uriPath);
+    }
+
+    @Override
+    public JSONObject serializeToJSON() {
+        JSONObject json = new JSONObject();
+        if(!StringUtils.isTrivial(host)){
+            json.put("host", host);
+        }
+        if(headers!=null){
+            json.put("headers", headers);
+        }
+        return json;
+    }
+
+    @Override
+    public void deserializeFromJSON(JSONObject json) {
+         if(json.containsKey("host")){
+             host = json.getString("host");
+         }
+         if(json.containsKey("headers")){
+             headers = json.getJSONObject("headers");
+         }
     }
 }

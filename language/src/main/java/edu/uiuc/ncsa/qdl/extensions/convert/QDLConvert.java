@@ -8,6 +8,7 @@ import edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator;
 import edu.uiuc.ncsa.qdl.expressions.ConstantNode;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
+import edu.uiuc.ncsa.qdl.extensions.QDLModuleMetaClass;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
@@ -37,7 +38,7 @@ import java.util.regex.Pattern;
  * <p>Created by Jeff Gaynor<br>
  * on 2/13/23 at  7:33 AM
  */
-public class QDLConvert {
+public class QDLConvert implements QDLModuleMetaClass {
     public static final String XML_IMPORT_NAME = "xml_in";
     public static final String XML_EXPORT_NAME = "xml_out";
     public static final int XML_IMPORT_LEVEL_FLATTEN = 0; // no @'s, ignore most structures, attributes flattened to properties
@@ -1129,6 +1130,16 @@ public class QDLConvert {
         public List<String> getDocumentation(int argCount) {
             return null;
         }
+    }
+
+    @Override
+    public JSONObject serializeToJSON() {
+        return null;
+    }
+
+    @Override
+    public void deserializeFromJSON(JSONObject json) {
+
     }
 }
 /*

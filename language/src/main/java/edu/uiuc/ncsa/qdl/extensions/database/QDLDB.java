@@ -550,7 +550,16 @@ public class QDLDB implements QDLModuleMetaClass {
         return argStatement;
     }
 
-    /* Handy dandy table of SQL types and calls.
+    @Override
+    public JSONObject serializeToJSON() {
+        return null;
+    }
+
+    @Override
+    public void deserializeFromJSON(JSONObject json) {
+
+    }
+/* Handy dandy table of SQL types and calls.
     SQL 	        JDBC/Java 	            setXXX 	        updateXXX
     VARCHAR 	    java.lang.String 	    setString 	    updateString
     CHAR 	        java.lang.String 	    setString 	    updateString
