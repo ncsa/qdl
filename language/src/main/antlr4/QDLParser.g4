@@ -114,16 +114,17 @@ assertStatement2:
 expression
  :
    function                                                                    #functions
-  | expression StemDot+ expression                                             #dotOp
-  | expression postfix=StemDot                                                 #dotOp2
- // | me                                                                          #moduleExpression
-   | expression Backslash  expression                                         #extract
-   | expression postfix=Backslash2                                            #extract2
-   | expression Backslash3  expression                                        #extract3
-   | expression postfix=Backslash4                                            #extract4
- |  variable? Hash expression                                                 #moduleExpression
-  | (function | '(' f_args* ')')
+ | expression StemDot+ expression                                              #dotOp
+ | expression postfix=StemDot                                                  #dotOp2
+ | expression Backslash  expression                                            #extract
+ | expression postfix=Backslash2                                               #extract2
+ | expression Backslash3  expression                                           #extract3
+ | expression postfix=Backslash4                                               #extract4
+ |  variable? Hash expression                                                  #moduleExpression
+ | (function | '(' f_args* ')')
        LambdaConnector (expression | expressionBlock)                          #lambdaDef
+ | expression op=Apply expression                                                   #appliesOperator
+ | Apply expression                                                                 #unaryApplyExpression
  | stemVariable                                                                #stemVar
  | stemList                                                                    #stemLi
  | set                                                                         #setThing
@@ -150,7 +151,7 @@ expression
  | expression And expression                                                   #andExpression
  | expression Or expression                                                    #orExpression
  //| LogicalNot expression                                                       #notExpression
- | ('!'  | '¬') expression                                                       #notExpression
+ | ('!'  | '¬') expression                                                     #notExpression
 // | expression '<<' typeList                                                    #is_a
  | '(' expression ')'                                                          #association
  | expression AltIfMarker expression (':' expression)?                            #altIFExpression
@@ -171,6 +172,7 @@ expression
  | (Tilde | TildeRight) expression                                             #unaryTildeExpression
  | Transpose expression                                                        #unaryTransposeExpression
  | STRING                                                                      #strings
+ | f_ref                                                                       #functionReference
  | integer                                                                     #integers
  | number                                                                      #numbers
  | variable                                                                    #variables

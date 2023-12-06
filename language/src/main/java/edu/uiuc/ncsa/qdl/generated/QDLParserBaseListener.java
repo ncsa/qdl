@@ -412,6 +412,18 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterUnaryApplyExpression(QDLParserParser.UnaryApplyExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitUnaryApplyExpression(QDLParserParser.UnaryApplyExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterKeywords(QDLParserParser.KeywordsContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -623,6 +635,18 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitSwitchExpression(QDLParserParser.SwitchExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterAppliesOperator(QDLParserParser.AppliesOperatorContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitAppliesOperator(QDLParserParser.AppliesOperatorContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -947,6 +971,18 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitUnaryMinusExpression(QDLParserParser.UnaryMinusExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterFunctionReference(QDLParserParser.FunctionReferenceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFunctionReference(QDLParserParser.FunctionReferenceContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

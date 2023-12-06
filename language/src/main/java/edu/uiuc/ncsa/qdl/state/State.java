@@ -18,6 +18,7 @@ import edu.uiuc.ncsa.qdl.module.*;
 import edu.uiuc.ncsa.qdl.scripting.QDLScript;
 import edu.uiuc.ncsa.qdl.scripting.Scripts;
 import edu.uiuc.ncsa.qdl.statements.TryCatch;
+import edu.uiuc.ncsa.qdl.util.ModuleUtils;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.util.QDLVersion;
 import edu.uiuc.ncsa.qdl.variables.*;
@@ -26,8 +27,8 @@ import edu.uiuc.ncsa.qdl.vfs.VFSFileProvider;
 import edu.uiuc.ncsa.qdl.vfs.VFSPaths;
 import edu.uiuc.ncsa.qdl.workspace.QDLWorkspace;
 import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLMissingCloseTagException;
-import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
 import edu.uiuc.ncsa.qdl.xml.XMLUtilsV2;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
@@ -37,6 +38,7 @@ import edu.uiuc.ncsa.security.core.util.Iso8601;
 import edu.uiuc.ncsa.security.core.util.MetaDebugUtil;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.commons.codec.binary.Base64;
@@ -45,6 +47,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import java.io.File;
@@ -106,8 +109,40 @@ public class State extends FunctionState implements QDLConstants {
     Map<Integer, QDLThreadRecord> threadTable = new HashMap<>();
 
     /**
+     * A new instance with the default components.
+     *
+     * @return
+     */
+    public State newInstance() {
+        return newInstance(new VStack(),
+                new OpEvaluator(),
+                MetaEvaluator.getInstance(),
+                new FStack(),
+                new MTStack(),
+                new MIStack(),
+                new MyLoggingFacade((Logger) null),
+                false,
+                false,
+                true);
+
+    }
+
+    public static State getFactory() {
+        if (factory == null) {
+            factory = new State(); // just take it with the defaults
+        }
+        return factory;
+    }
+
+    public static void setFactory(State factory) {
+        State.factory = factory;
+    }
+
+    static State factory = null;
+
+    /**
      * If you extend this class, you must override this method to return a new instance
-     * of your state with everything in it you want or need.
+     * of your state with everything in it you want or need. Then set your {@link #setFactory(State)}
      *
      * @param opEvaluator
      * @param metaEvaluator
@@ -141,6 +176,7 @@ public class State extends FunctionState implements QDLConstants {
                 isRestrictedIO,
                 assertionsOn);
     }
+
 
     public State(
             VStack vStack,
@@ -390,6 +426,7 @@ public class State extends FunctionState implements QDLConstants {
         characters.put("220c", "∌");
         characters.put("2200", "∀");
         characters.put("21d2", "⇒");
+        characters.put("237a", OpEvaluator.APPLY_OP_KEY);
 
 
         systemConstants.put(SYS_VAR_TYPE_CHARACTERS, characters);
@@ -573,16 +610,16 @@ public class State extends FunctionState implements QDLConstants {
                 stringBuffer.append(truncateLine("Class-Path:", linein));
                 int j;
 
-                for( j = i+1 ; j < manifest.size(); j++){
+                for (j = i + 1; j < manifest.size(); j++) {
                     String currentLine = manifest.get(j);
-                    if(currentLine.startsWith(" ")){
+                    if (currentLine.startsWith(" ")) {
                         stringBuffer.append(currentLine.substring(1)); // starts with a single added blank.
-                    }else{
-                        i = j-1;
+                    } else {
+                        i = j - 1;
                         break;
                     }
                 }
-                
+
                 versionInfo.put(SYS_QDL_BUILD_CLASS_PATH, stringBuffer.toString());
             }
             // There are some instances where this is munged. Only stick something there
@@ -783,56 +820,94 @@ public class State extends FunctionState implements QDLConstants {
      */
     public State newLocalState(State moduleState) {
         //   return newStateWithImportsOLD(moduleState);
-        return newStateWithImportsNEW(moduleState);
+        return newSelectiveState(moduleState);
     }
 
-    protected State newStateWithImportsNEW(State moduleState) {
-        return newStateWithImportsNEW(moduleState, true);
+    public State newSelectiveState(State moduleState) {
+        return newSelectiveState(moduleState, true);
     }
 
-    protected State newStateWithImportsNEW(State moduleState, boolean pushVariables) {
+    /**
+     * Create a clean state, taking the old modules from moduleState, all the functions and allowing
+     * inheritance of the current variable stack
+     *
+     * @param moduleState
+     * @param inheritVariables
+     * @return
+     */
+    public State newSelectiveState(State moduleState, boolean inheritVariables) {
+        return newSelectiveState(moduleState, true, inheritVariables);
+    }
+
+    /**
+     * This will clone the current state and will add the modules (templates and instances -- old modules)
+     * from moduleState. If pushFunctions is
+     *
+     * @param moduleState
+     * @param inheritFunctions
+     * @param inheritVariables
+     * @return
+     */
+    public State newSelectiveState(State moduleState, boolean inheritFunctions, boolean inheritVariables) {
+        return newSelectiveState(moduleState, true, inheritFunctions, inheritVariables);
+    }
+
+    /**
+     * Create a new state based on the current state and choosing what to inherit. In this case, inherited
+     * objects come first, items in current state are appended. This allows for overrides in
+     * {@link edu.uiuc.ncsa.qdl.statements.ExpressionInterface#evaluate(State)} calls.
+     *
+     * @param moduleState
+     * @param inheritModules
+     * @param inheritFunctions
+     * @param inheritVariables
+     * @return
+     */
+    public State newSelectiveState(State moduleState, boolean inheritModules, boolean inheritFunctions, boolean inheritVariables) {
         VStack newStack = new VStack(); // always creates an empty symbol table, replace it
-        if (pushVariables) {
+        if (inheritVariables) {
             if (moduleState != null && !moduleState.vStack.isEmpty()) {
                 //newStack.addAll(moduleState.symbolStack.getParentTables());
                 newStack.appendTables(moduleState.vStack);
             }
-
-            if (!vStack.isEmpty()) {
-                //newStack.addAll(symbolStack.getParentTables());
-                newStack.appendTables(vStack);
-            }
+        }
+        if (!vStack.isEmpty()) {
+            newStack.appendTables(vStack);
         }
         FStack<? extends FTable<? extends FKey, ? extends FunctionRecord>> ftStack = new FStack();
-        if (moduleState != null && !moduleState.getFTStack().isEmpty()) {
-            ftStack.appendTables(moduleState.getFTStack());
+        if (inheritFunctions) {
+            if (moduleState != null && !moduleState.getFTStack().isEmpty()) {
+                ftStack.appendTables(moduleState.getFTStack());
+            }
         }
-
         if (!getFTStack().isEmpty()) {
             ftStack.appendTables(getFTStack()); // pushes elements in reverse order
         }
 
 
         MTStack mtStack = new MTStack();
-        if (moduleState != null && !moduleState.getMTemplates().isEmpty()) {
-            mtStack.appendTables(moduleState.getMTemplates());
-        }
-
-        if (!getMTemplates().isEmpty()) {
-            mtStack.appendTables(getMTemplates());
-        }
-
-        if (moduleState != null && !moduleState.getMTemplates().isEmpty()) {
-            mtStack.appendTables(moduleState.getMTemplates());
-        }
-
         MIStack miStack = new MIStack();
-        if (moduleState != null && !moduleState.getMInstances().isEmpty()) {
-            miStack.appendTables(moduleState.getMInstances());
-        }
 
-        if (!getMInstances().isEmpty()) {
-            miStack.appendTables(getMInstances());
+        if (inheritModules) {
+            if (moduleState != null && !moduleState.getMTemplates().isEmpty()) {
+                mtStack.appendTables(moduleState.getMTemplates());
+            }
+
+            if (!getMTemplates().isEmpty()) {
+                mtStack.appendTables(getMTemplates());
+            }
+
+            if (moduleState != null && !moduleState.getMTemplates().isEmpty()) {
+                mtStack.appendTables(moduleState.getMTemplates());
+            }
+
+            if (moduleState != null && !moduleState.getMInstances().isEmpty()) {
+                miStack.appendTables(moduleState.getMInstances());
+            }
+
+            if (!getMInstances().isEmpty()) {
+                miStack.appendTables(getMInstances());
+            }
         }
 
         State newState = newInstance(
@@ -930,7 +1005,7 @@ public class State extends FunctionState implements QDLConstants {
      * @return
      */
     public State newFunctionState() {
-        return newStateWithImportsNEW(null, false);
+        return newSelectiveState(null, false);
     }
 
     /**
@@ -957,15 +1032,15 @@ public class State extends FunctionState implements QDLConstants {
         return getVStack().size();
     }
 
-    public void toXML(XMLStreamWriter xsw, XMLSerializationState xmlSerializationState) throws XMLStreamException {
+    public void toXML(XMLStreamWriter xsw, SerializationState serializationState) throws XMLStreamException {
         xsw.writeStartElement(STATE_TAG);
         xsw.writeAttribute(UUID_TAG, getInternalID());
         writeExtraXMLAttributes(xsw);
         //getSymbolStack().toXML(xsw);
-        getVStack().toXML(xsw, xmlSerializationState);
-        getFTStack().toXML(xsw, xmlSerializationState);
-        getMTemplates().toXML(xsw, xmlSerializationState);
-        getMInstances().toXML(xsw, xmlSerializationState);
+        getVStack().toXML(xsw, serializationState);
+        getFTStack().toXML(xsw, serializationState);
+        getMTemplates().toXML(xsw, serializationState);
+        getMInstances().toXML(xsw, serializationState);
         writeExtraXMLElements(xsw);
         xsw.writeEndElement(); // end state tag
 
@@ -1005,7 +1080,7 @@ public class State extends FunctionState implements QDLConstants {
         xsw.writeEndElement(); // end state tag
     }
 
-    public void fromXML(XMLEventReader xer, XProperties xp, XMLSerializationState xmlSerializationState) throws XMLStreamException {
+    public void fromXML(XMLEventReader xer, XProperties xp, SerializationState serializationState) throws XMLStreamException {
         // At this point, caller peeked and knows this is the right type of event,
         // so we know where in the stream we are starting automatically.
 
@@ -1020,8 +1095,15 @@ public class State extends FunctionState implements QDLConstants {
                 case XMLEvent.START_ELEMENT:
                     switch (xe.asStartElement().getName().getLocalPart()) {
                         case VARIABLE_STACK:
-                            if (xmlSerializationState.getVersion().equals(VERSION_2_0_TAG)) {
-                                XMLUtilsV2.deserializeVariables(xer, this, xmlSerializationState);
+                            if (serializationState.getVersion().equals(VERSION_2_0_TAG)) {
+                                Iterator<Attribute> attr = xe.asStartElement().getAttributes();
+                                while (attr.hasNext()) {
+                                    Attribute attribute = attr.next();
+                                    if (attribute.getName().getLocalPart().equals(VStack.VSTACK_VERSION_TAG)) {
+                                        serializationState.setVariablesSerializationVersion(attribute.getValue());
+                                    }
+                                }
+                                XMLUtilsV2.deserializeVariables(xer, this, serializationState);
                             } else {
                                 // Legacy.
                                 throw new NotImplementedException("Legacy viable state storage no longer supported.");
@@ -1034,22 +1116,22 @@ public class State extends FunctionState implements QDLConstants {
                             }
                             break;
                         case FUNCTION_TABLE_STACK_TAG:
-                            if (xmlSerializationState.getVersion().equals(VERSION_2_0_TAG)) {
-                                XMLUtilsV2.deserializeFunctions(xer, this, xmlSerializationState);
+                            if (serializationState.getVersion().equals(VERSION_2_0_TAG)) {
+                                XMLUtilsV2.deserializeFunctions(xer, this, serializationState);
                             } else {
                                 XMLUtils.deserializeFunctions(xer, xp, this);
                             }
                             break;
                         case INSTANCE_STACK:
-                            if (xmlSerializationState.getVersion().equals(VERSION_2_0_TAG)) {
-                                XMLUtilsV2.deserializeInstances(xer, this, xmlSerializationState);
+                            if (serializationState.getVersion().equals(VERSION_2_0_TAG)) {
+                                XMLUtilsV2.deserializeInstances(xer, this, serializationState);
                             } else {
                                 XMLUtils.deserializeImports(xer, xp, this);
                             }
                             break;
                         case TEMPLATE_STACK:
-                            if (xmlSerializationState.getVersion().equals(VERSION_2_0_TAG)) {
-                                XMLUtilsV2.deserializeTemplates(xer, this, xmlSerializationState);
+                            if (serializationState.getVersion().equals(VERSION_2_0_TAG)) {
+                                XMLUtilsV2.deserializeTemplates(xer, this, serializationState);
                             } else {
                                 XMLUtils.deserializeTemplates(xer, xp, this);
                             }
@@ -1179,6 +1261,11 @@ public class State extends FunctionState implements QDLConstants {
      */
     public void writeExtraXMLElements(XMLStreamWriter xsr) throws XMLStreamException {
         xsr.writeStartElement(STATE_CONSTANTS_TAG);
+        xsr.writeCData(Base64.encodeBase64URLSafeString(createConstants().toString().getBytes(StandardCharsets.UTF_8)));
+        xsr.writeEndElement();
+    }
+
+    protected JSONObject createConstants() {
         JSONObject json = new JSONObject();
         json.put(STATE_ASSERTIONS_ENABLED_TAG, isAssertionsOn());
         json.put(DEBUG_LEVEL, getDebugUtil().getDebugLevel());
@@ -1190,8 +1277,7 @@ public class State extends FunctionState implements QDLConstants {
         // The top-level state is the last read, so it wil always end up getting set
         // correctly at the end. Best we can do without a ton of machinery...
         json.put(STATE_NUMERIC_DIGITS_TAG, OpEvaluator.getNumericDigits());
-        xsr.writeCData(Base64.encodeBase64URLSafeString(json.toString().getBytes(StandardCharsets.UTF_8)));
-        xsr.writeEndElement();
+        return json;
     }
 
     /**
@@ -1219,19 +1305,22 @@ public class State extends FunctionState implements QDLConstants {
             // only process the tag if it is the right one
             String text = XMLUtilsV2.getText(xer, STATE_CONSTANTS_TAG);
             text = new String(Base64.decodeBase64(text));
-            JSONObject json = JSONObject.fromObject(text);
-            setAssertionsOn(json.getBoolean(STATE_ASSERTIONS_ENABLED_TAG));
-            if (json.containsKey(STATE_ID_TAG)) {
-                setStateID(json.getInt(STATE_ID_TAG));
-            } else {
-                setStateID(0);
-            }
-            setServerMode(json.getBoolean(STATE_SERVER_MODE_TAG));
-            setRestrictedIO(json.getBoolean(STATE_RESTRICTED_IO_TAG));
-            OpEvaluator.setNumericDigits(json.getInt(STATE_NUMERIC_DIGITS_TAG));
-            if (json.containsKey(DEBUG_LEVEL)) {
-                getDebugUtil().setDebugLevel(json.getInt(DEBUG_LEVEL));
-            }
+            readConstantsFromJSON(JSONObject.fromObject(text));
+        }
+    }
+
+    protected void readConstantsFromJSON(JSONObject json) {
+        setAssertionsOn(json.getBoolean(STATE_ASSERTIONS_ENABLED_TAG));
+        if (json.containsKey(STATE_ID_TAG)) {
+            setStateID(json.getInt(STATE_ID_TAG));
+        } else {
+            setStateID(0);
+        }
+        setServerMode(json.getBoolean(STATE_SERVER_MODE_TAG));
+        setRestrictedIO(json.getBoolean(STATE_RESTRICTED_IO_TAG));
+        OpEvaluator.setNumericDigits(json.getInt(STATE_NUMERIC_DIGITS_TAG));
+        if (json.containsKey(DEBUG_LEVEL)) {
+            getDebugUtil().setDebugLevel(json.getInt(DEBUG_LEVEL));
         }
     }
 
@@ -1291,35 +1380,40 @@ public class State extends FunctionState implements QDLConstants {
     WorkspaceCommands workspaceCommands;
 
     /**
-     * Recurse through thst modules and collects templates and state objects from instances.
+     * Recurse through the modules and collects templates and state objects from instances.
      * Now that templates and instances are handled as stacks with local state, old form of
      * serialization fails due to recursion.<br/><br/>
-     * These are serialized into a flat list and references to them are used.
+     * These are serialized into a flat list and references to them are used. This also
+     * checks for cycles.
      *
-     * @param XMLSerializationState
+     * @param SerializationState
      */
-    public void buildSO(XMLSerializationState XMLSerializationState) {
+    public void buildSO(SerializationState SerializationState) {
         for (Object key : getMTemplates().keySet()) {
             MTKey mtKey = (MTKey) key;
             Module module = getMTemplates().getModule(mtKey);
-            if (!XMLSerializationState.processedTemplate(module)) {
-                XMLSerializationState.addTemplate(module);
+            if (!SerializationState.processedTemplate(module)) {
+                SerializationState.addTemplate(module);
             }
         }
         for (Object key : getMInstances().keySet()) {
             XKey xKey = (XKey) key;
             MIWrapper wrapper = (MIWrapper) getMInstances().get(xKey);
             Module module = wrapper.getModule();
-            if (!XMLSerializationState.processedInstance(module)) {
-                XMLSerializationState.addInstance(wrapper);
-                if (!XMLSerializationState.processedState(module.getState())) {
-                    XMLSerializationState.addState(module.getState());
-                    module.getState().buildSO(XMLSerializationState);
+            if (!SerializationState.processedInstance(module)) {
+                SerializationState.addInstance(wrapper);
+                if (!SerializationState.processedState(module.getState())) {
+                    SerializationState.addState(module.getState());
+                    module.getState().buildSO(SerializationState);
                 }
             }
 
         }
 
+    }
+
+    public void setExtrinsicVars(VStack extrinsicVars) {
+        this.extrinsicVars = extrinsicVars;
     }
 
     public VStack getExtrinsicVars() {
@@ -1363,21 +1457,6 @@ public class State extends FunctionState implements QDLConstants {
         this.targetState = targetState;
     }
 
-    public boolean isModuleState() {
-        return moduleState;
-    }
-
-    /**
-     * Flag this if it is used as the local state for a module. This is used to enforce
-     * local resolutions at runtime.
-     *
-     * @param moduleState
-     */
-    public void setModuleState(boolean moduleState) {
-        this.moduleState = moduleState;
-    }
-
-    boolean moduleState = false;
 
     static State rootState = null;
 
@@ -1395,5 +1474,88 @@ public class State extends FunctionState implements QDLConstants {
 
     public static void setRootState(State newRoot) {
         rootState = newRoot;
+    }
+
+    /**
+     * Only serialize the local part of the state. This is used by e.g., modules that
+     * have shared state and should never overwrite shared state on deserialization.
+     *
+     * @param serializationState
+     * @return
+     */
+    public JSONObject serializeLocalStateToJSON(SerializationState serializationState) throws Throwable {
+        JSONObject jsonObject = new JSONObject();
+        doLocalSerialization(getMTemplates(), MODULE_TEMPLATE_TAG, jsonObject, serializationState);
+        doLocalSerialization(getMInstances(), MODULE_INSTANCES_TAG, jsonObject, serializationState);
+        doLocalSerialization(getFTStack(), FUNCTION_TABLE_STACK_TAG, jsonObject, serializationState);
+        doLocalSerialization(getVStack(), VARIABLE_STACK, jsonObject, serializationState);
+        return jsonObject;
+    }
+
+    protected void doLocalSerialization(
+            XStack oldStack,
+            String tag,
+            JSONObject jsonObject,
+            SerializationState serializationState) throws Throwable {
+        XStack newStack = oldStack.newInstance();
+        newStack.push(oldStack.getLocal());
+        addJSONtoState(jsonObject, tag, newStack, serializationState);
+    }
+
+    public JSONObject serializeToJSON(SerializationState s) throws Throwable {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put(STATE_CONSTANTS_TAG, createConstants());
+        SerializationState serializationState = new SerializationState();
+        serializationState.setVersion(s.getVersion());
+        serializationState.setVariablesSerializationVersion(s.getVariablesSerializationVersion());
+        serializationState.addTemplates(getMTemplates());
+        addJSONtoState(jsonObject, MODULE_TEMPLATE_TAG, getMTemplates(), serializationState);
+        addJSONtoState(jsonObject, MODULE_INSTANCES_TAG, getMInstances(), serializationState);
+        addJSONtoState(jsonObject, FUNCTION_TABLE_STACK_TAG, getFTStack(), serializationState);
+        addJSONtoState(jsonObject, VARIABLE_STACK, getVStack(), s);
+        if (!getUsedModules().isEmpty()) {
+            ModuleUtils moduleUtils = new ModuleUtils();
+            JSONArray array = moduleUtils.serializeUsedModules(this, serializationState );
+            if (array != null && !array.isEmpty()) {
+                jsonObject.put(USED_MODULES, array);
+            }
+        }
+        return jsonObject;
+    }
+
+    protected void addJSONtoState(JSONObject jsonObject, String tag, XStack xStack, SerializationState serializationState) throws Throwable {
+        if (!(xStack == null || xStack.isEmpty())) {
+            JSONObject j = xStack.serializeToJSON(serializationState);
+            if (j != null) {
+                jsonObject.put(tag, j);
+            }
+        }
+    }
+
+    public void deserializeFromJSON(JSONObject jsonObject, SerializationState s) throws Throwable {
+        if (jsonObject.containsKey(STATE_CONSTANTS_TAG)) {
+            readConstantsFromJSON(jsonObject.getJSONObject(STATE_CONSTANTS_TAG));
+        }
+        SerializationState serializationState = new SerializationState();
+        serializationState.setVersion(s.getVersion());
+        serializationState.setVariablesSerializationVersion(s.getVariablesSerializationVersion());
+        makeStack(getMTemplates(), jsonObject, MODULE_TEMPLATE_TAG, serializationState);
+        serializationState.addTemplates(getMTemplates());
+        makeStack(getMInstances(), jsonObject, MODULE_INSTANCES_TAG, serializationState);
+        makeStack(getFTStack(), jsonObject, FUNCTION_TABLE_STACK_TAG, serializationState);
+        makeStack(getVStack(), jsonObject, VARIABLE_STACK, serializationState);
+        if (jsonObject.containsKey(USED_MODULES)) {
+            ModuleUtils moduleUtils = new ModuleUtils();
+            moduleUtils.deserializeUsedModules(this,
+                    jsonObject.getJSONArray(USED_MODULES),
+                    serializationState);
+        }
+    }
+
+    XStack makeStack(XStack xStack, JSONObject jsonObject, String tag, SerializationState serializationState) {
+        if (jsonObject.containsKey(tag)) {
+            xStack.deserializeFromJSON(jsonObject.getJSONObject(tag), serializationState, this);
+        }
+        return xStack;
     }
 }

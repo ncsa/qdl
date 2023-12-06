@@ -33,7 +33,7 @@ import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
  */
 public class XMLUtilsV2 {
 
-    public static void deserializeTemplateStore(XMLEventReader xer, XMLSerializationState XMLSerializationState) throws XMLStreamException {
+    public static void deserializeTemplateStore(XMLEventReader xer, SerializationState SerializationState) throws XMLStreamException {
         XMLEvent xe = xer.nextEvent();
 
         while (xer.hasNext()) {
@@ -44,9 +44,9 @@ public class XMLUtilsV2 {
                         // Have to get the attributes first because they are needed to determine which
                         // type of module to create.
                         XMLUtils.ModuleAttributes moduleAttributes = XMLUtils.getModuleAttributes(xe);
-                        Module module = deserializeTemplate(xer, moduleAttributes, XMLSerializationState);
+                        Module module = deserializeTemplate(xer, moduleAttributes, SerializationState);
                         if(module != null) {
-                            XMLSerializationState.addTemplate(module);
+                            SerializationState.addTemplate(module);
                         }
                     }
                     break;
@@ -60,7 +60,7 @@ public class XMLUtilsV2 {
         throw new XMLMissingCloseTagException(TEMPLATE_STACK);
     }
 
-    public static void deserializeStateStore(XMLEventReader xer, XMLSerializationState XMLSerializationState) throws XMLStreamException {
+    public static void deserializeStateStore(XMLEventReader xer, SerializationState SerializationState) throws XMLStreamException {
         XMLEvent xe = xer.nextEvent();
 
         while (xer.hasNext()) {
@@ -72,14 +72,14 @@ public class XMLUtilsV2 {
                         // type of module to create.
                         StateAttributes stateAttributes = getStateAttributes(xe);
                         State state;
-                        if (XMLSerializationState.processedState(stateAttributes.uuid)) {
-                            state = XMLSerializationState.getState(stateAttributes.uuid);
+                        if (SerializationState.processedState(stateAttributes.uuid)) {
+                            state = SerializationState.getState(stateAttributes.uuid);
                         } else {
                             state = StateUtils.newInstance();
                             state.setUuid(stateAttributes.uuid);
-                            XMLSerializationState.addState(state);
+                            SerializationState.addState(state);
                         }
-                        StateUtils.load(state, XMLSerializationState, xer);
+                        StateUtils.load(state, SerializationState, xer);
                     }
                     break;
                 case XMLEvent.END_ELEMENT:
@@ -97,10 +97,10 @@ public class XMLUtilsV2 {
      *
      * @param xer
      * @param moduleAttributes
-     * @param xmlSerializationState
+     * @param serializationState
      * @return
      */
-    public static Module deserializeTemplate(XMLEventReader xer, XMLUtils.ModuleAttributes moduleAttributes, XMLSerializationState xmlSerializationState) throws XMLStreamException {
+    public static Module deserializeTemplate(XMLEventReader xer, XMLUtils.ModuleAttributes moduleAttributes, SerializationState serializationState) throws XMLStreamException {
         Module module = null;
 
         if (moduleAttributes.isJavaModule()) {
@@ -113,7 +113,7 @@ public class XMLUtilsV2 {
                 ((JavaModule) module).setClassName(moduleAttributes.className);
             } catch (Throwable t) {
                 DebugUtil.trace(XMLUtilsV2.class, "Warn: cannot deserialize class \"" + moduleAttributes.className + "\". Skipping. '" + t.getMessage() + "' (" + t.getClass().getName() + ")");
-                if(!xmlSerializationState.skipBadModules) {
+                if(!serializationState.skipBadModules) {
                     throw new DeserializationException("cannot deserialize class \"" + moduleAttributes.className + "\".", t);
                 }
                 return null;
@@ -122,7 +122,7 @@ public class XMLUtilsV2 {
         } else {
             module = new QDLModule();
         }
-        module.fromXML(xer, xmlSerializationState, true);
+        module.fromXML(xer, serializationState, true);
         module.setId(moduleAttributes.uuid);
         module.setAlias(moduleAttributes.alias);
         module.setNamespace(moduleAttributes.ns);
@@ -143,34 +143,34 @@ public class XMLUtilsV2 {
      * Deserializes a template stack of references.
      *
      * @param xer
-     * @param xmlSerializationState
+     * @param serializationState
      * @throws XMLStreamException
      */
-    public static void deserializeTemplates(XMLEventReader xer, State state, XMLSerializationState xmlSerializationState) throws XMLStreamException {
-        deserializeXStack(xer, new MTStack(), state, xmlSerializationState);
+    public static void deserializeTemplates(XMLEventReader xer, State state, SerializationState serializationState) throws XMLStreamException {
+        deserializeXStack(xer, new MTStack(), state, serializationState);
     }
 
-    public static void deserializeVariables(XMLEventReader xer, State state, XMLSerializationState xmlSerializationState) throws XMLStreamException {
-        deserializeXStack(xer, new VStack(), state, xmlSerializationState);
+    public static void deserializeVariables(XMLEventReader xer, State state, SerializationState serializationState) throws XMLStreamException {
+        deserializeXStack(xer, new VStack(), state, serializationState);
     }
-    public static void deserializeFunctions(XMLEventReader xer, State state, XMLSerializationState xmlSerializationState) throws XMLStreamException {
-        deserializeXStack(xer, new FStack(), state, xmlSerializationState);
-    }
-
-    public static void deserializeInstances(XMLEventReader xer, State state, XMLSerializationState xmlSerializationState) throws XMLStreamException {
-        deserializeXStack(xer, new MIStack(), state, xmlSerializationState);
+    public static void deserializeFunctions(XMLEventReader xer, State state, SerializationState serializationState) throws XMLStreamException {
+        deserializeXStack(xer, new FStack(), state, serializationState);
     }
 
-    public static void deserializeExtrinsicVariables(XMLEventReader xer, State state, XMLSerializationState xmlSerializationState) throws XMLStreamException{
+    public static void deserializeInstances(XMLEventReader xer, State state, SerializationState serializationState) throws XMLStreamException {
+        deserializeXStack(xer, new MIStack(), state, serializationState);
+    }
+
+    public static void deserializeExtrinsicVariables(XMLEventReader xer, State state, SerializationState serializationState) throws XMLStreamException{
         xer.nextEvent();// advance cursor
         VStack exx = new VStack();
-        exx.fromXML(xer, xmlSerializationState);
+        exx.fromXML(xer, serializationState);
     //    state.setExtrinsicVars(exx);
 
     }
-    protected static void deserializeXStack(XMLEventReader xer, XStack xStack, State state, XMLSerializationState xmlSerializationState) throws XMLStreamException {
+    protected static void deserializeXStack(XMLEventReader xer, XStack xStack, State state, SerializationState serializationState) throws XMLStreamException {
         xer.nextEvent();// advance cursor
-        xStack.fromXML(xer, xmlSerializationState);
+        xStack.fromXML(xer, serializationState);
         xStack.setStateStack(state, xStack);
     }
 

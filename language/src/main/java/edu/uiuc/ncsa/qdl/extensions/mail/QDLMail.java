@@ -2,6 +2,7 @@ package edu.uiuc.ncsa.qdl.extensions.mail;
 
 import edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
+import edu.uiuc.ncsa.qdl.extensions.QDLModuleMetaClass;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
@@ -9,6 +10,7 @@ import edu.uiuc.ncsa.security.core.util.StringUtils;
 import edu.uiuc.ncsa.security.util.configuration.TemplateUtil;
 import edu.uiuc.ncsa.security.util.mail.MailEnvironment;
 import edu.uiuc.ncsa.security.util.mail.MailUtil;
+import net.sf.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +23,7 @@ import static edu.uiuc.ncsa.security.core.util.StringUtils.RJustify;
  * <p>Created by Jeff Gaynor<br>
  * on 11/2/23 at  11:17 AM
  */
-public class QDLMail {
+public class QDLMail implements QDLModuleMetaClass {
     public static String SEND_NAME = "send";
 
     public class Send implements QDLFunction {
@@ -336,4 +338,14 @@ public class QDLMail {
 
       return stem;
      }
+
+    @Override
+    public JSONObject serializeToJSON() {
+        return null;
+    }
+
+    @Override
+    public void deserializeFromJSON(JSONObject json) {
+
+    }
 }

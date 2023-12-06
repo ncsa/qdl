@@ -423,8 +423,7 @@ public class MathFunctionsTest extends AbstractQDLTester {
         addLine(script, "    return( fib(n - 1) + fib(n - 2));");
         addLine(script, "];");
         if (testXML) {
-            state = roundTripXMLSerialization(state, script);
-            script = new StringBuffer();
+            state = rountripState(state, script, testXML?ROUNDTRIP_XML:ROUNDTRIP_NONE);
         }
         addLine(script, "x := fib(20);"); // should return 6765
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
@@ -490,20 +489,19 @@ public class MathFunctionsTest extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testBigMod() throws Throwable {
-        testBigMod(false);
-        testBigMod(true);
+        testBigMod(ROUNDTRIP_NONE);
+        testBigMod(ROUNDTRIP_XML);
+        testBigMod(ROUNDTRIP_JAVA);
+        testBigMod(ROUNDTRIP_QDL);
+        testBigMod(ROUNDTRIP_JSON);
     }
 
-    public void testBigMod(boolean testXML) throws Throwable {
+    public void testBigMod(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "ok := mod(494590348974597684,394874589745) == 53454241559;");
         addLine(script, "numeric_digits(100);");
-        if (testXML) {
-            // check that numeric digits this gets serialized correctly
-            state = roundTripXMLSerialization(state, script);
-            script = new StringBuffer();
-        }
+        state = rountripState(state, script, testCase);
         addLine(script, "ok1 := mod(498723987945689378498579456, 1009) == 556;");
         addLine(script, "ok2 := numeric_digits()==100;");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);

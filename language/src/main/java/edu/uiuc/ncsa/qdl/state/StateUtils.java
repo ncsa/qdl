@@ -6,7 +6,7 @@ import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.module.MIStack;
 import edu.uiuc.ncsa.qdl.module.MTStack;
 import edu.uiuc.ncsa.qdl.variables.VStack;
-import edu.uiuc.ncsa.qdl.xml.XMLSerializationState;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
 import org.apache.commons.codec.binary.Base64;
@@ -144,8 +144,8 @@ public abstract class StateUtils {
         return state;
     }
 
-    public static State load(State state, XMLSerializationState XMLSerializationState, XMLEventReader xer) throws XMLStreamException {
-        state.fromXML(xer,null, XMLSerializationState);
+    public static State load(State state, SerializationState SerializationState, XMLEventReader xer) throws XMLStreamException {
+        state.fromXML(xer,null, SerializationState);
         return state;
     }
 

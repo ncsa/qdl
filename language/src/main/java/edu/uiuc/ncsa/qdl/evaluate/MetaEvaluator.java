@@ -35,7 +35,7 @@ public class MetaEvaluator extends AbstractEvaluator {
         if (metaEvaluator == null) {
             metaEvaluator = new MetaEvaluator();
             // NS base value. Must be distinct for new evaluators
-            addE(new StringEvaluator());
+            addE(new ModuleEvaluator());  // 12000
             addE(new StringEvaluator());  //  3000
             addE(new StemEvaluator());    //  2000
             addE(new ListEvaluator());    // 10000
@@ -43,17 +43,34 @@ public class MetaEvaluator extends AbstractEvaluator {
             addE(new SystemEvaluator());  //  5000
             addE(new MathEvaluator());    //  1000
             addE(new TMathEvaluator());   //  7000
-            // addE(new FunctionEvaluator()); // 6000*//*
+            addE(new FunctionEvaluator()); // 6000*//*
+/*
             FunctionEvaluator functionEvaluator = new FunctionEvaluator();
-            metaEvaluator.addEvaluator(functionEvaluator); // 6000*//*
+            metaEvaluator.addEvaluator(functionEvaluator);
             systemNamespaces.add(functionEvaluator.FUNCTION_NAMESPACE);
             lookupByNS.put(functionEvaluator.getNamespace(), functionEvaluator);
+*/
         }
         return metaEvaluator;
     }
 
+    /**
+     * Add evaluator at a given index in the list
+     * @param index
+     * @param evaluator
+     */
+    static protected void addE(int index, AbstractEvaluator evaluator) {
+        metaEvaluator.addEvaluator(index, evaluator);  //  3000
+        lookupByNS.put(evaluator.getNamespace(), evaluator);
+        systemNamespaces.add(evaluator.getNamespace());
+    }
+
+    /**
+     * Add evaluator to the end of the list.
+     * @param evaluator
+     */
     static protected void addE(AbstractEvaluator evaluator) {
-        metaEvaluator.addEvaluator(0, evaluator);  //  3000
+        metaEvaluator.addEvaluator(evaluator);  //  3000
         lookupByNS.put(evaluator.getNamespace(), evaluator);
         systemNamespaces.add(evaluator.getNamespace());
     }
@@ -148,6 +165,12 @@ public class MetaEvaluator extends AbstractEvaluator {
             return evaluateOLD(polyad, state);
         }
         return evaluateNEW(polyad, state);
+    }
+
+    @Override
+    public boolean dispatch(Polyad polyad, State state) {
+        // Unused in this implementation
+        return false;
     }
 
     /**

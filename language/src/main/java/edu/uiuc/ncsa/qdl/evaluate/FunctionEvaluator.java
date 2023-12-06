@@ -4,12 +4,10 @@ import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.expressions.*;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunctionRecord;
 import edu.uiuc.ncsa.qdl.functions.*;
-import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.state.XKey;
-import edu.uiuc.ncsa.qdl.state.XThing;
+import edu.uiuc.ncsa.qdl.state.*;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.LocalBlockStatement;
 import edu.uiuc.ncsa.qdl.statements.Statement;
-import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.util.QDLVersion;
 import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
@@ -40,9 +38,17 @@ public class FunctionEvaluator extends AbstractEvaluator {
     public static final String IS_FUNCTION = "is_function";
     public static final int IS_FUNCTION_TYPE = 1 + BASE_FUNCTION_VALUE;
 
+    public static final String APPLY = "apply";
+    public static final int APPLY_TYPE = 2 + BASE_FUNCTION_VALUE;
+
     @Override
     public int getType(String name) {
-        if (name.equals(IS_FUNCTION)) return IS_FUNCTION_TYPE;
+        switch (name){
+            case IS_FUNCTION:
+                return IS_FUNCTION_TYPE;
+            case APPLY:
+                return APPLY_TYPE;
+        }
         // At parsing time, the function definition class sets the value manually,
         // so call to this should ever get anything other than unknown value.
         return UNKNOWN_VALUE;
@@ -52,7 +58,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
     @Override
     public String[] getFunctionNames() {
         if (fNames == null) {
-            fNames = new String[]{IS_FUNCTION};
+            fNames = new String[]{IS_FUNCTION, APPLY};
         }
         return fNames;
     }
@@ -62,6 +68,9 @@ public class FunctionEvaluator extends AbstractEvaluator {
         switch (polyad.getName()) {
             case IS_FUNCTION:
                 doIsFunction(polyad, state);
+                return true;
+            case APPLY:
+                doApply(polyad, state);
                 return true;
         }
         try {
@@ -78,6 +87,31 @@ public class FunctionEvaluator extends AbstractEvaluator {
             throw qq;
         }
     }
+
+    private void doApply(Polyad polyad, State state) {
+        if (polyad.isSizeQuery()) {
+            polyad.setResult(new int[]{1, 2});
+            polyad.setEvaluated(true);
+            return;
+        }
+        ExpressionImpl newPoly;
+        if(polyad.getArgCount() == 1){
+            Monad monad= new Monad(OpEvaluator.APPLY_OP_VALUE, false);
+            monad.setArgument(polyad.getArgAt(0));
+            newPoly = monad;
+        }else{
+            // The arguments swap when in function notation.
+            Dyad dyad= new Dyad(OpEvaluator.APPLY_OP_VALUE);
+            dyad.setLeftArgument(polyad.getArgAt(1));;
+            dyad.setRightArgument(polyad.getArgAt(0));;
+            newPoly = dyad;
+        }
+        Object result = newPoly.evaluate(state);
+        polyad.setEvaluated(true);
+        polyad.setResult(result);
+        polyad.setResultType(Constant.getType(result));
+    }
+
 
     protected void doIsFunction(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
@@ -254,10 +288,10 @@ public class FunctionEvaluator extends AbstractEvaluator {
      */
     @Override
     public boolean evaluate(Polyad polyad, State state) {
-        return evaluate2(polyad, state);
+        return dispatch(polyad, state);
     }
 
-    public boolean evaluate2(Polyad polyad, State state) {
+    public boolean dispatch(Polyad polyad, State state) {
         return evaluate(null, polyad, state);
     }
 
@@ -275,7 +309,11 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 // are functions or constants.
                 argList[i] = getFunctionReferenceNode(state, polyad.getArguments().get(i));
             } else {
-                argList[i] = polyad.getArguments().get(i).evaluate(state);
+                if(polyad.hasEvaluatedArgs()){
+                    argList[i] = polyad.getEvaluatedArgs().get(i);
+                }else{
+                    argList[i] = polyad.getArguments().get(i).evaluate(state);
+                }
             }
         }
         QDLFunctionRecord qfr = (QDLFunctionRecord) frs.functionRecord;
@@ -320,7 +358,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
     protected void figureOutEvaluation(Polyad polyad, State state, boolean checkForDuplicates) throws Throwable {
         FR_WithState frs;
         try {
-            if (state.isIntrinsic(polyad.getName()) && polyad.hasAlias()) {
+            if (AbstractState.isIntrinsic(polyad.getName()) && polyad.hasAlias()) {
                 // if it is in a module and at the top of the stack, then this is an access violation
                 if (state.getFTStack().localHas(new FKey(polyad.getName(), polyad.getArgCount()))) {
                     throw new IntrinsicViolation("cannot access intrinsic function directly.", polyad);
@@ -373,12 +411,13 @@ public class FunctionEvaluator extends AbstractEvaluator {
             if (functionRecord.isLambda()) {
                 localState = state.newLocalState(moduleState);
             } else {
-                localState = state.newFunctionState();
+
+                localState = StateUtils.clone(state).newFunctionState();
             }
         }
         localState.setWorkspaceCommands(state.getWorkspaceCommands());
         localState.setModuleState(state.isModuleState() || localState.isModuleState()); // it might have been set,
-        // we are going to write local variables here and the MUST get priority over already exiting ones
+        // we are going to write local variables here and they MUST get priority over already exiting ones
         // but without actually changing them (or e.g., recursion is impossible).
         for (int i = 0; i < polyad.getArgCount(); i++) {
             if (polyad.getArguments().get(i) instanceof LambdaDefinitionNode) {
@@ -484,7 +523,12 @@ public class FunctionEvaluator extends AbstractEvaluator {
         if (functionRecord.isFuncRef) {
             return paramList;// implicit parameter list since this is an operator or built in function.
         }
+         if(polyad.hasEvaluatedArgs()){
+      /*       for (int i = 0; i < functionRecord.getArgCount(); i++) {
 
+             }
+      */
+         }
         HashMap<UUID, UUID> localStateLookup = new HashMap<>();
         localStateLookup.put(state.getUuid(), localState.getUuid());
 
@@ -560,8 +604,13 @@ public class FunctionEvaluator extends AbstractEvaluator {
 
                 //    vThing = new VThing(new XKey(functionRecord.argNames.get(i)), polyad.getArguments().get(i).evaluate(localState));
                 //} else{
-
-                vThing = new VThing(new XKey(functionRecord.argNames.get(i)), polyad.getArguments().get(i).evaluate(state));
+                 if(polyad.hasEvaluatedArgs()){
+                     // in the case that the arguments were evaluated in some local context that cannot be
+                     // available to us.
+                     vThing = new VThing(new XKey(functionRecord.argNames.get(i)), polyad.getEvaluatedArgs().get(i));
+                 } else{
+                     vThing = new VThing(new XKey(functionRecord.argNames.get(i)), polyad.getArguments().get(i).evaluate(state));
+                 }
                 //}
                 paramList.add(vThing);
             }
@@ -623,3 +672,12 @@ public class FunctionEvaluator extends AbstractEvaluator {
         return x;
     }
 }
+
+/*
+Support for apply operator. Close to introspection...
+ 	U+237A ⍺
+ 	 ⍺f = return list of arg counts, e.g. [0,1,3]
+ 	 3⍺f = return list of arg names e.g., 2⍺f = ['x','pressure']
+ 	 list.⍺f = invoke f with arg list, e.g. [1/2, 14]⍺f <==> f(1/2, 14)
+ 	 stem.⍺f = invoke with named args, e.g. {'pressure':14,'x':1/2}⍺f <==> f(1/2, 14)
+ */

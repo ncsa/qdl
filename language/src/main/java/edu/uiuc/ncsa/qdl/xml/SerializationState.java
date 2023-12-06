@@ -1,11 +1,14 @@
 package edu.uiuc.ncsa.qdl.xml;
 
 import edu.uiuc.ncsa.qdl.module.MIWrapper;
+import edu.uiuc.ncsa.qdl.module.MTStack;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * This is for things like {@link edu.uiuc.ncsa.qdl.state.State} and {@link edu.uiuc.ncsa.qdl.module.Module}
@@ -15,7 +18,7 @@ import java.util.*;
  * <p>Created by Jeff Gaynor<br>
  * on 2/10/22 at  4:52 PM
  */
-public class XMLSerializationState {
+public class SerializationState {
     public boolean processedState(UUID uuid) {
         return stateMap.containsKey(uuid);
     }
@@ -40,7 +43,7 @@ public class XMLSerializationState {
         return processedInstances.containsKey(uuid);
     }
 
-    public MIWrapper getInstance(UUID uuid){
+    public MIWrapper getInstance(UUID uuid) {
         return processedInstances.get(uuid);
     }
 
@@ -88,7 +91,12 @@ public class XMLSerializationState {
         }
         return false;
     }
-
+      public void addTemplates(MTStack templates){
+        for(Object xThing : templates.getAll()){
+            Module m = (Module) xThing;
+              templateMap.put(m.getId(), m);
+        }
+      }
     public boolean addInstance(MIWrapper miWrapper) {
         if (miWrapper == null) {
             throw new IllegalArgumentException("null instance");
@@ -104,6 +112,14 @@ public class XMLSerializationState {
     }
 
     public Map<UUID, State> stateMap = new HashMap<>();
+
+    public Map<UUID, Module> getTemplateMap() {
+        return templateMap;
+    }
+
+    public boolean hasTemplates(){
+        return !templateMap.isEmpty();
+    }
     public Map<UUID, Module> templateMap = new HashMap<>();
     /**
      * Note that the processed instances work in two ways. During serialization, this list
@@ -127,12 +143,13 @@ public class XMLSerializationState {
         this.version = version;
     }
 
-    public boolean isVersion2_0(){
-        if(StringUtils.isTrivial(getVersion())){
+    public boolean isVersion2_0() {
+        if (StringUtils.isTrivial(getVersion())) {
             return false;
         }
         return getVersion().equals(XMLConstants.VERSION_2_0_TAG);
     }
+
     String version;
 
     public boolean isFailOnMissingModules() {
@@ -144,4 +161,18 @@ public class XMLSerializationState {
     }
 
     boolean failOnMissingModules = false;
+
+    public String getVariablesSerializationVersion() {
+        return variablesSerializationVersion;
+    }
+
+    public void setVariablesSerializationVersion(String variablesSerializationVersion) {
+        this.variablesSerializationVersion = variablesSerializationVersion;
+    }
+
+    String variablesSerializationVersion = null;
+
+    public boolean hasVariablesSerializationVersion() {
+        return variablesSerializationVersion != null;
+    }
 }

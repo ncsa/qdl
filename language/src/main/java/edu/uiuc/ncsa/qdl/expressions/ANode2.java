@@ -6,11 +6,7 @@ import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
-import edu.uiuc.ncsa.qdl.variables.QDLNull;
 import edu.uiuc.ncsa.qdl.variables.StemListNode;
-
-import static edu.uiuc.ncsa.qdl.variables.Constant.*;
-import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
 
 /**
  * Very much improved way to handle assignments. Use this
@@ -169,6 +165,10 @@ public class ANode2 extends ExpressionImpl {
         if (realLeftArg instanceof VariableNode) {
             // https://github.com/ncsa/qdl/issues/20
             state.getTargetState().setValue(((VariableNode) realLeftArg).getVariableReference(), getResult());
+            // last detail that cannot be done until this point is to set the alias if it is a module assigned to the variable.
+            if(getResult() instanceof edu.uiuc.ncsa.qdl.module.Module){
+                ((edu.uiuc.ncsa.qdl.module.Module)getResult()).setAlias(((VariableNode) realLeftArg).getVariableReference());
+            }
             return getResult();
         }
         if (realLeftArg instanceof ConstantNode) {
@@ -225,11 +225,11 @@ public class ANode2 extends ExpressionImpl {
         return OpEvaluator.UNKNOWN_VALUE;
     }
 
-    protected Object setExpValue(State state, ExpressionStemNode esn, int resultType, Object result) {
+  /*  protected Object setExpValue(State state, ExpressionStemNode esn, int resultType, Object result) {
         return esn.setValue(state, result);
-    }
+    }*/
 
-    protected Object setVariableValue(State state, String variableReference, int resultType, Object result) {
+  /*  protected Object setVariableValue(State state, String variableReference, int resultType, Object result) {
         // Now the real work -- set the value of the variable in the symbol table.
         // Mostly this just throws an exception if some how we get an unknown type, but this is the
         // right place to do it, before it gets in to the symbol table.
@@ -263,7 +263,7 @@ public class ANode2 extends ExpressionImpl {
 
         }
         return result;
-    }
+    }*/
 
     @Override
     public String toString() {

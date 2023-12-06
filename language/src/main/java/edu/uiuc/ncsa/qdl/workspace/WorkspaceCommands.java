@@ -53,6 +53,7 @@ import edu.uiuc.ncsa.security.util.configuration.ConfigUtil;
 import edu.uiuc.ncsa.security.util.configuration.TemplateUtil;
 import edu.uiuc.ncsa.security.util.terminal.ISO6429IO;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.apache.commons.configuration.tree.ConfigurationNode;
 import org.w3c.dom.CharacterData;
@@ -66,6 +67,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.*;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -73,6 +76,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static edu.uiuc.ncsa.qdl.config.QDLConfigurationConstants.*;
@@ -91,7 +95,6 @@ import static edu.uiuc.ncsa.security.util.cli.CLIDriver.HELP_SWITCH;
  * on 1/30/20 at  9:21 AM
  */
 public class WorkspaceCommands implements Logable, Serializable {
-
 
     public WorkspaceCommands() {
     }
@@ -180,7 +183,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     protected void splashScreen() {
         if (showBanner) {
             say(logo);
-            switch(logoName){
+            switch (logoName) {
                 case TIMES_STYLE:
                 case ROMAN_STYLE:
                 case OS2_STYLE:
@@ -194,7 +197,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             say("Welcome to the QDL Workspace");
             say("Version " + QDLVersion.VERSION);
             say("Type " + HELP_COMMAND + " for help.");
-            switch(logoName){
+            switch (logoName) {
                 case OS2_STYLE:
                     say("¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯");
                     break;
@@ -206,6 +209,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             }
         }
     }
+
     String logoName;
     boolean showBanner = true;
 
@@ -2595,7 +2599,9 @@ public class WorkspaceCommands implements Logable, Serializable {
                 }
             }
             rc = printList(inputLine, funcs2);
-            say(funcs2.size() + " total functions");
+            if (0 < funcs2.size()) {
+                say(funcs2.size() + " total functions");
+            }
 
         }
         return rc;
@@ -4372,6 +4378,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     String COMPRESS_FLAG = "-compress";
     String SHOW_FLAG = "-show";
     String QDL_DUMP_FLAG = "-qdl";
+    String JSON_FLAG = "-json";
     public static String SILENT_SAVE_FLAG = "-silent";
 
     /*
@@ -4388,7 +4395,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             sayi(QDL_DUMP_FLAG + " = dump the contents of the workspace to a QDL file. You can just reload it using " + SystemEvaluator.LOAD_COMMAND);
             sayi(JAVA_FLAG + " = save using Java serialization format. The default is XML.");
             sayi(SHOW_FLAG + " = (XML format only) dump the (uncompressed) result to the console instead. No file is needed.");
-            sayi(COMPRESS_FLAG + " = compress the output. The resulting file will be a binary file. This overrides the configuration file setting.");
+            sayi(COMPRESS_FLAG + " = use to override compression setting of workspace. The resulting file will be a binary file.");
             sayi(KEEP_WSF + " = keep the current " + CURRENT_WORKSPACE_FILE + " rather than automatically updating it");
             sayi(SILENT_SAVE_FLAG + " = print no messages when saving.");
             sayi("Note that a dump does not save any of the current workspace state, just the variables, functions and modules.");
@@ -4402,21 +4409,23 @@ public class WorkspaceCommands implements Logable, Serializable {
         boolean keepCurrentWS = inputLine.hasArg(KEEP_WSF);
         boolean silentMode = inputLine.hasArg(SILENT_SAVE_FLAG);
         boolean qdlDump = inputLine.hasArg(QDL_DUMP_FLAG);
-        boolean compressionOn = true;
+        boolean compressionOn = isCompressXML();
+        boolean doJSON = inputLine.hasArg(JSON_FLAG);
 
         if (inputLine.hasArg(COMPRESS_FLAG)) {
             compressionOn = inputLine.getNextArgFor(COMPRESS_FLAG).equalsIgnoreCase("on");
+            inputLine.removeSwitchAndValue(COMPRESS_FLAG);
         }
 
         if (qdlDump) {
             doJava = false; // QDL has preference, so if the user provides both, use QDL
         }
         inputLine.removeSwitch(SHOW_FLAG);
-        inputLine.removeSwitch(COMPRESS_FLAG);
-        inputLine.removeSwitchAndValue(SAVE_AS_JAVA_FLAG);
+        inputLine.removeSwitch(SAVE_AS_JAVA_FLAG);
         inputLine.removeSwitch(KEEP_WSF);
         inputLine.removeSwitch(SILENT_SAVE_FLAG);
         inputLine.removeSwitch(QDL_DUMP_FLAG);
+        inputLine.removeSwitch(JSON_FLAG);
 
 
         // Remove switches before looking at positional arguments.
@@ -4424,7 +4433,26 @@ public class WorkspaceCommands implements Logable, Serializable {
         String fName = null;
         if (showFile) {
             try {
-                long[] sizes = _xmlSave(null, compressionOn, showFile);
+                long[] sizes = new long[]{-1L, -1L};
+                if (doJSON) {
+                    WSJSONSerializer wsjsonSerializer = new WSJSONSerializer();
+                    JSONObject json = wsjsonSerializer.toJSON(this);
+                    String out = json.toString(1);
+                    System.out.println(out);
+                    sizes[UNCOMPRESSED_INDEX] = out.length();
+
+                } else {
+                    if (qdlDump) {
+                        StringWriter stringWriter = new StringWriter();
+                        _xmlWSQDLSave(stringWriter);
+                        System.out.println(stringWriter.getBuffer());
+                        sizes[UNCOMPRESSED_INDEX] = stringWriter.getBuffer().length();
+                    } else {
+                        // defaults to XML
+                        sizes = _xmlSave(null, compressionOn, showFile);
+                    }
+
+                }
                 say("size: " + sizes[UNCOMPRESSED_INDEX] + "\n  elapsed time:" + ((System.currentTimeMillis() - startTime) / 1000.0D) + " sec.");
                 return RC_CONTINUE;
             } catch (Throwable throwable) {
@@ -4523,10 +4551,15 @@ public class WorkspaceCommands implements Logable, Serializable {
                 return RC_CONTINUE;
             }
             long[] sizes = new long[]{-1L, -1L};
+
             if (doJava) {
                 sizes = _xmlWSJavaSave(fullPath);
             } else {
-                sizes = _xmlSave(fullPath, compressionOn, showFile);
+                if (doJSON) {
+                    sizes = _jsonWSSave(fullPath, compressionOn);
+                } else {
+                    sizes = _xmlSave(fullPath, compressionOn, showFile);
+                }
             }
             if (!silentMode) {
                 String out = "saved: '" + fullPath + "'" +
@@ -4551,6 +4584,71 @@ public class WorkspaceCommands implements Logable, Serializable {
             say("could not save the workspace:" + t.getMessage());
         }
         return RC_NO_OP;
+    }
+
+    private long[] _jsonWSSave(String path, boolean compressionOn) throws Throwable {
+        long[] sizes = new long[]{-1L, -1L};
+        boolean isVFS = VFSPaths.isVFSPath(path);
+        WSJSONSerializer wsjsonSerializer = new WSJSONSerializer();
+        JSONObject json = wsjsonSerializer.toJSON(this);
+        String raw = json.toString(1);
+        sizes[COMPRESSED_INDEX] = writeFile(path, raw, compressionOn);
+
+  /*      if (isVFS) {
+            StringWriter stringWriter = new StringWriter();
+            writeTextVFS(getState(), path, raw);
+            sizes[UNCOMPRESSED_INDEX] = raw.length();
+        } else {
+            File f = new File(path);
+            FileWriter fileWriter = new FileWriter(f);
+            fileWriter.write(raw);
+            fileWriter.flush();
+            fileWriter.close();
+            sizes[UNCOMPRESSED_INDEX] = f.length();
+        }*/
+        return sizes;
+    }
+
+    private Object _jsonWSSLoad(String path, boolean compressionOn) throws Throwable {
+        JSONObject jsonObject;
+        byte[] bytes = null;
+        String raw = null;
+        if (VFSPaths.isVFSPath(path)) {
+            if (compressionOn) {
+                bytes = readBinaryVFS(getState(), path);
+            } else {
+                raw = readFileAsString(path);
+            }
+        } else {
+            if (getState().isServerMode()) {
+                throw new QDLServerModeException();
+            }
+            if (compressionOn) {
+                bytes = Files.readAllBytes(Paths.get(path));
+            } else {
+                raw = Files.readString(Paths.get(path));
+            }
+        }
+
+        if (compressionOn) {
+            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+            GZIPInputStream gzipInputStream = new GZIPInputStream(bais, 65536);
+            Reader r = new InputStreamReader(gzipInputStream);
+            BufferedReader bufferedReader = new BufferedReader(r);
+            StringBuffer stringBuffer = new StringBuffer();
+            String s = bufferedReader.readLine();
+            while (s != null) {
+                stringBuffer.append(s + "\n");
+                s = bufferedReader.readLine();
+            }
+            bufferedReader.close();
+            raw = stringBuffer.toString();
+        }
+        jsonObject = JSONObject.fromObject(raw);
+        WSJSONSerializer wsJSONSerializer = new WSJSONSerializer();
+        WorkspaceCommands newCommands = wsJSONSerializer.fromJSON(jsonObject);
+        updateWSState(newCommands);
+        return RC_CONTINUE;
     }
 
     public static final String DEFAULT_QDL_DUMP_FILE_EXTENSION = ".qdl";
@@ -4697,7 +4795,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             say(payload);
             return sizes;
         } else {
-            sizes[COMPRESSED_INDEX] = writeFile(fullPath, payload, compressSerialization || isCompressXML());
+            sizes[COMPRESSED_INDEX] = writeFile(fullPath, payload, compressSerialization);
         }
         return sizes;
     }
@@ -4979,6 +5077,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             sayi(KEEP_WSF + " = keep the current " + CURRENT_WORKSPACE_FILE + " rather than automatically updating it");
             sayi(QDL_DUMP_FLAG + " = the format of the file is QDL. This loads it into the current workspace.");
             sayi(JAVA_FLAG + " = the format of the file is serialized java. default is XML");
+            sayi(COMPRESS_FLAG + " = override compression settings with this");
             sayi(SKIP_BAD_MODULES_FLAG + " = (xml only) if a module is missing or fails to load, continue, otherwise abort the entire load.");
             sayi("   Note that skipping modules will cause many errors later and result in an not fully functional workspace." +
                     "\n   As such it should only be done except in dire cases.");
@@ -5002,7 +5101,13 @@ public class WorkspaceCommands implements Logable, Serializable {
         inputLine.removeSwitch(JAVA_FLAG);
         boolean skipBadModules = inputLine.hasArg(SKIP_BAD_MODULES_FLAG);
         inputLine.removeSwitch(SKIP_BAD_MODULES_FLAG);
-
+        boolean doJSON = inputLine.hasArg(JSON_FLAG);
+        inputLine.removeSwitch(JSON_FLAG);
+        boolean compressionOn = isCompressXML();
+        if (inputLine.hasArg(COMPRESS_FLAG)) {
+            compressionOn = inputLine.getNextArgFor(COMPRESS_FLAG).equals("on");
+            inputLine.removeSwitchAndValue(COMPRESS_FLAG);
+        }
         if (inputLine.hasArgAt(FIRST_ARG_INDEX)) {
             fName = inputLine.getArg(FIRST_ARG_INDEX);
         } else {
@@ -5116,6 +5221,9 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("sorry, could not load QDL \"" + fullPath + "\": " + throwable.getMessage());
                 return RC_NO_OP;
             }
+        }
+        if (doJSON) {
+           return _jsonWSSLoad(fullPath, compressionOn);
         }
         loadOK = _xmlWSJavaLoad(fullPath);
         if (!loadOK) {
@@ -5234,6 +5342,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     /**
      * Creates the top-level state object for the system. All other state objects are dervied from it.
+     *
      * @return
      */
     public State getState() {
@@ -5340,10 +5449,10 @@ public class WorkspaceCommands implements Logable, Serializable {
     public void fromConfigFile(InputLine inputLine) throws Throwable {
         String cfgname = inputLine.hasArg(CONFIG_NAME_FLAG) ? inputLine.getNextArgFor(CONFIG_NAME_FLAG) : "default";
         if (inputLine.hasArg(CLA_LOGO)) {
-             String logoName = inputLine.getNextArgFor(CLA_LOGO).toLowerCase();
-             logo = getLogo(logoName);
-             inputLine.removeSwitchAndValue(CLA_LOGO);
-         }
+            String logoName = inputLine.getNextArgFor(CLA_LOGO).toLowerCase();
+            logo = getLogo(logoName);
+            inputLine.removeSwitchAndValue(CLA_LOGO);
+        }
 //      Old style -- single inheritance
 /*
         ConfigurationNode node = ConfigUtil.findConfiguration(
@@ -5351,7 +5460,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 cfgname, CONFIG_TAG_NAME);
 */
         // New style -- multi-inheritance.
-        ConfigurationNode node = ConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgname, CONFIG_TAG_NAME );
+        ConfigurationNode node = ConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgname, CONFIG_TAG_NAME);
 
         fromConfigFile(inputLine, node);
     }
@@ -5555,7 +5664,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         Writer w = null;
         if (doFile) {
             if (isTrivial(filename)) {
-                filename = DebugUtil.getDevPath()+"/qdl/language/src/main/resources/ws-test.xml";
+                filename = DebugUtil.getDevPath() + "/qdl/language/src/main/resources/ws-test.xml";
             }
             File file = new File(filename);
             w = new FileWriter(file);
@@ -5685,7 +5794,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         showBanner = !inputLine.hasArg(CLA_NO_BANNER);
         inputLine.removeSwitch(CLA_NO_BANNER);
-        logoName="default";
+        logoName = "default";
         if (inputLine.hasArg(CLA_LOGO)) {
             logoName = inputLine.getNextArgFor(CLA_LOGO).toLowerCase();
             logo = getLogo(logoName);
@@ -6000,13 +6109,28 @@ public class WorkspaceCommands implements Logable, Serializable {
         serializer.toXML(this, xsw);
     }
 
-    public boolean fromXML(XMLEventReader xer, boolean skipBadModules) throws XMLStreamException {
-        WSXMLSerializer serializer = new WSXMLSerializer();
-        WorkspaceCommands newCommands = null;
+    public JSONObject toJSON() throws Throwable {
+        WSJSONSerializer serializer = new WSJSONSerializer();
+        return serializer.toJSON(this);
+    }
 
+    public WorkspaceCommands fromJSON(JSONObject jsonObject) throws Throwable {
+        WSJSONSerializer serializer = new WSJSONSerializer();
+        return serializer.fromJSON(jsonObject);
+    }
+
+    /**
+     * This takes an updated {@link WorkspaceCommands} object and updates the currently
+     * active workspace. When this is done, there is new state and all the values
+     * ofr newCommnads have been migrated. This takes care to get the {@link IOInterface}
+     * right since if that is not handled correctly, the entire workspace hangs unrecoverably.
+     *
+     * @param newCommands
+     * @return
+     */
+    protected boolean updateWSState(WorkspaceCommands newCommands) {
         try {
             IOInterface ioInterface = getIoInterface();
-            newCommands = serializer.fromXML(xer, skipBadModules);
             State oldState = getState();
             newCommands.getState().injectTransientFields(oldState);
             // later this is injected into the state. Set it here or custom IO fails later.
@@ -6060,7 +6184,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         } catch (Throwable t) {
             // This should return a nice message to display.
             // It is possible that the workspace cannot even pick itself off the floor in which case
-            // the state or even the logger might not exist. 
+            // the state or even the logger might not exist.
             if (getState() != null && getState().getLogger() != null) {
                 getState().getLogger().error("Could not deserialize workspace:" + t.getMessage(), t);
             }
@@ -6070,7 +6194,13 @@ public class WorkspaceCommands implements Logable, Serializable {
             //return false;
             throw t;
         }
+    }
 
+    public boolean fromXML(XMLEventReader xer, boolean skipBadModules) throws XMLStreamException {
+        WSXMLSerializer serializer = new WSXMLSerializer();
+        WorkspaceCommands newCommands = null;
+        newCommands = serializer.fromXML(xer, skipBadModules);
+        return updateWSState(newCommands);
     }
 
     public boolean isAutosaveOn() {
@@ -6112,7 +6242,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         getState().setAssertionsOn(assertionsOn);
     }
 
-    boolean assertionsOn =true;
+    boolean assertionsOn = true;
 
     public boolean isAnsiModeOn() {
         return ansiModeOn;
@@ -6138,5 +6268,5 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
 
-    SwingTerminal swingTerminal;
+    transient SwingTerminal swingTerminal;
 }

@@ -6,6 +6,7 @@ import edu.uiuc.ncsa.qdl.vfs.VFSPaths;
 import edu.uiuc.ncsa.qdl.xml.XMLUtilsV2;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.xml.stream.XMLEventReader;
@@ -15,13 +16,13 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.XMLEvent;
 import java.io.File;
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * This manages buffers, i.e., things that may be edited and run.
@@ -76,7 +77,42 @@ public class BufferManager implements Serializable {
             return x;
         }
 
+        public JSONObject toJSON() {
+            JSONObject jsonObject = new JSONObject();
+            JSONObject bufferRecord = new JSONObject();
+            if (!StringUtils.isTrivial(alias)) bufferRecord.put(BR_ALIAS, alias);
+            if (!StringUtils.isTrivial(src)) bufferRecord.put(BR_SOURCE, src);
+            if (!StringUtils.isTrivial(link)) bufferRecord.put(BR_LINK, link);
+            bufferRecord.put(BR_EDITED, edited);
+            bufferRecord.put(BR_DELETED, deleted);
+            bufferRecord.put(BR_MEMORY_ONLY, memoryOnly);
+            if (srcSavePath != null) bufferRecord.put(BR_SOURCE_SAVE_PATH, srcSavePath);
+            if (linkSavePath != null) bufferRecord.put(BR_LINK_SAVE_PATH, linkSavePath);
+            if (content != null && !content.isEmpty()) {
+                JSONArray jsonArray = new JSONArray();
+                jsonArray.addAll(content);
+                bufferRecord.put(BR_CONTENT, Base64.encodeBase64URLSafeString(jsonArray.toString().getBytes(UTF_8)));
+            }
+            jsonObject.put(BUFFER_RECORD, bufferRecord);
+            return jsonObject;
+        }
+
+        public void fromJSON(JSONObject json) {
+            if (json.containsKey(BR_ALIAS)) alias = json.getString(BR_ALIAS);
+            if (json.containsKey(BR_SOURCE)) src = json.getString(BR_SOURCE);
+            if (json.containsKey(BR_LINK)) link = json.getString(BR_LINK);
+            edited = json.getBoolean(BR_EDITED);
+            deleted = json.getBoolean(BR_DELETED);
+            memoryOnly = json.getBoolean(BR_MEMORY_ONLY);
+            if (json.containsKey(BR_SOURCE_SAVE_PATH)) srcSavePath = json.getString(BR_SOURCE_SAVE_PATH);
+            if (json.containsKey(BR_LINK_SAVE_PATH)) linkSavePath = json.getString(BR_LINK_SAVE_PATH);
+            if (json.containsKey(BR_CONTENT)) {
+                content = JSONArray.fromObject(new String(Base64.decodeBase64(json.getString(BR_CONTENT)), UTF_8));
+            }
+        }
+
         public void toXML(XMLStreamWriter xsw) throws XMLStreamException {
+
             xsw.writeStartElement(BUFFER_RECORD);
             if (!StringUtils.isTrivial(alias)) {
                 xsw.writeAttribute(BR_ALIAS, alias);
@@ -101,7 +137,7 @@ public class BufferManager implements Serializable {
                 xsw.writeStartElement(BR_CONTENT);
                 JSONArray jsonArray = new JSONArray();
                 jsonArray.addAll(content);
-                xsw.writeCData(Base64.encodeBase64URLSafeString(jsonArray.toString().getBytes(StandardCharsets.UTF_8)));
+                xsw.writeCData(Base64.encodeBase64URLSafeString(jsonArray.toString().getBytes(UTF_8)));
                 xsw.writeEndElement(); //end content tag
             }
             xsw.writeEndElement(); //end BR tag
@@ -350,6 +386,28 @@ public class BufferManager implements Serializable {
         }
         xsw.writeEndElement(); // records
         xsw.writeEndElement(); // buffer manager
+    }
+
+    public JSONObject toJSON() {
+        JSONObject jsonObject = new JSONObject();
+        JSONArray array = new JSONArray();
+        for (BufferRecord br : bufferRecords) {
+            array.add(br.toJSON());
+        }
+        jsonObject.put(BUFFER_RECORDS, array);
+        return jsonObject;
+    }
+
+    public void fromJSON(JSONObject json) {
+        if (json.containsKey(BUFFER_RECORDS)) {
+            JSONArray array = json.getJSONArray(BUFFER_RECORDS);
+            for (int i = 0; i < array.size(); i++) {
+                BufferRecord br = new BufferRecord();
+                br.fromJSON(array.getJSONObject(i));
+                bufferRecords.add(br);
+                brMap.put(br.src, br);
+            }
+        }
     }
 
     public void fromXML(XMLEventReader xer) throws XMLStreamException {

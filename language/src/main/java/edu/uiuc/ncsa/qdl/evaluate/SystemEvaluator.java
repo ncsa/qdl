@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl.evaluate;
 
+import edu.uiuc.ncsa.qdl.config.JavaModuleConfig;
 import edu.uiuc.ncsa.qdl.config.QDLConfigurationLoaderUtils;
 import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.expressions.*;
@@ -26,6 +27,7 @@ import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.qdl.vfs.VFSPaths;
 import edu.uiuc.ncsa.qdl.workspace.QDLWorkspace;
+import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
@@ -47,7 +49,6 @@ import java.util.List;
 import java.util.*;
 import java.util.logging.Level;
 
-import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
 import static edu.uiuc.ncsa.qdl.variables.StemUtility.axisWalker;
 import static edu.uiuc.ncsa.qdl.vfs.VFSPaths.SCHEME_DELIMITER;
 import static edu.uiuc.ncsa.security.core.util.DebugConstants.*;
@@ -142,8 +143,6 @@ public class SystemEvaluator extends AbstractEvaluator {
     public static final String MODULE_LOAD = "module_load";
     public static final int LOAD_MODULE_TYPE = 205 + SYSTEM_BASE_VALUE;
 
-    public static final String JAVA_MODULE_LOAD = "jload";
-    public static final int JAVA_MODULE_LOAD_TYPE = 214 + SYSTEM_BASE_VALUE;
 
     public static final String MODULE_PATH = "module_path";
     public static final int MODULE_PATH_TYPE = 211 + SYSTEM_BASE_VALUE;
@@ -221,7 +220,6 @@ public class SystemEvaluator extends AbstractEvaluator {
         if (fNames == null) {
             fNames = new String[]{
                     SCRIPT_NAME_COMMAND,
-                    JAVA_MODULE_LOAD,
                     KILL_PROCESS,
                     FORK,
                     SLEEP,
@@ -273,8 +271,6 @@ public class SystemEvaluator extends AbstractEvaluator {
         switch (name) {
             case SCRIPT_NAME_COMMAND:
                 return SCRIPT_NAME_COMMAND_TYPE;
-            case JAVA_MODULE_LOAD:
-                return JAVA_MODULE_LOAD_TYPE;
             case KILL_PROCESS:
                 return KILL_PROCESS_TYPE;
             case FORK:
@@ -365,18 +361,7 @@ public class SystemEvaluator extends AbstractEvaluator {
     }
 
     @Override
-    public boolean evaluate(Polyad polyad, State state) {
-        try {
-            return evaluate2(polyad, state);
-        } catch (QDLException q) {
-            throw q;
-        } catch (Throwable t) {
-            QDLExceptionWithTrace qq = new QDLExceptionWithTrace(t, polyad);
-            throw qq;
-        }
-    }
-
-    public boolean evaluate2(Polyad polyad, State state) {
+    public boolean dispatch(Polyad polyad, State state) {
         // NOTE NOTE NOTE!!! The for_next, has_keys, check_after functions are NOT evaluated here. In
         // the WhileLoop class they are picked apart for their contents and the correct looping strategy is
         // done. Look at the WhileLoop's evaluate method. All this evaluator
@@ -386,9 +371,6 @@ public class SystemEvaluator extends AbstractEvaluator {
         switch (polyad.getName()) {
             case SCRIPT_NAME_COMMAND:
                 doScriptName(polyad, state);
-                return true;
-            case JAVA_MODULE_LOAD:
-                doJLoad(polyad, state);
                 return true;
             case KILL_PROCESS:
                 doKillProcess(polyad, state);
@@ -556,76 +538,6 @@ public class SystemEvaluator extends AbstractEvaluator {
         polyad.setEvaluated(true);
     }
 
-    /**
-     * This is just module_import(module_load(x, 'java')). It happens so much we need an idiom.
-     * this will try to look up the argument in the system lib table, so you can do things like
-     * <pre>
-     *     jload('http')
-     * http
-     * </pre>
-     *  and get the entire module loaded.
-     * @param polyad
-     * @param state
-     */
-    private void doJLoad(Polyad polyad, State state) {
-        if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
-            polyad.setEvaluated(true);
-            return;
-        }
-        Object arg = polyad.evalArg(0, state);
-        boolean hasAlias = false;
-        String alias = null;
-        if(polyad.getArgCount() == 2){
-            Object object = polyad.evalArg(1, state);
-            if(!isString(object)){
-                throw new BadArgException(JAVA_MODULE_LOAD + " requires a string as its second argument if present", polyad.getArgAt(1));
-            }
-            alias = (String)object;
-            hasAlias = true;
-        }
-        String possibleName = arg.toString();
-        // Meaning of next: if like .tools.oa2.woof, shave off leading .
-        // if there is an embedded ., process that.
-        possibleName = possibleName.indexOf(STEM_INDEX_MARKER) == 0?possibleName.substring(1):possibleName;
-        if(state.getLibMap().containsKey(possibleName)){ // look for it directly in tools
-            possibleName = state.getLibMap().getString(possibleName);
-        }else{
-            // This looks in the extensions added to the lib element, e.g. oa2.woof in OA4MP
-            // These can be defined in extensions to QDL and can be arbitrarily complex.
-            // Do a path lookup
-            if(0<possibleName.indexOf(STEM_INDEX_MARKER)){
-                StringTokenizer stringTokenizer = new StringTokenizer(possibleName, ".");
-                ArrayList<String> toolPath = new ArrayList<>();
-                while(stringTokenizer.hasMoreTokens()){
-                    toolPath.add(stringTokenizer.nextToken());
-                }
-                QDLStem libStem = state.getSystemInfo().getStem("lib");
-
-                for(int i = 0; i < toolPath.size()-1 ; i++ ){
-                       libStem = libStem.getStem(toolPath.get(i));
-                }
-                if(libStem.containsKey(toolPath.get(toolPath.size()-1))){
-                    possibleName = libStem.getString(toolPath.get(toolPath.size()-1));
-                }
-            }
-        }
-        Polyad module_load = new Polyad(MODULE_LOAD);
-        module_load.addArgument(new ConstantNode(possibleName));
-        module_load.addArgument(new ConstantNode(MODULE_TYPE_JAVA));
-        module_load.evaluate(state);
-        Polyad module_import = new Polyad(MODULE_IMPORT);
-        module_import.addArgument(new ConstantNode(module_load.getResult()));
-        if(hasAlias){
-            module_import.addArgument(new ConstantNode(alias));
-        }
-        module_import.evaluate(state);
-        polyad.setEvaluated(true);
-        polyad.setResult(module_import.getResult());
-        polyad.setResultType(module_import.getResultType());
-        return;
-
-    }
 
     protected void doKillProcess(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
@@ -2559,7 +2471,11 @@ public class SystemEvaluator extends AbstractEvaluator {
                 }
                 qdlLoader = (QDLLoader) newThingy;
             }
-            List<String> names = QDLConfigurationLoaderUtils.setupJavaModule(state, qdlLoader, false);
+            JavaModuleConfig jmc = new JavaModuleConfig();
+            jmc.setImportOnStart(false);
+            jmc.setVersion(XMLConstants.VERSION_2_0_TAG);
+
+            List<String> names = QDLConfigurationLoaderUtils.setupJavaModule(state, qdlLoader, jmc);
             if (names.isEmpty()) {
                 return null;
             }
@@ -2574,7 +2490,7 @@ public class SystemEvaluator extends AbstractEvaluator {
     }
 
     /**
-     * Load a the module(s) in a single resource.
+     * Load the module(s) in a single resource.
      *
      * @param state
      * @param resourceName
@@ -2730,14 +2646,36 @@ public class SystemEvaluator extends AbstractEvaluator {
             }
             // QDLModules create the local state, java modules assume the state is exactly the local state.
             // Get a new instance and then set the state to the local state later for Java modules.
-            Module newInstance = m.newInstance((m instanceof JavaModule) ? null : state);
-            //Module newInstance = m.newInstance(null);
-            if (newInstance instanceof JavaModule) {
-                State newModuleState = state.newLocalState(state);
-                newModuleState.setModuleState(true);
-                ((JavaModule) newInstance).init(newModuleState);
-            }
+            State newModuleState = null;
+            newModuleState = state.newSelectiveState(null,true,true,true);
+            newModuleState.setModuleState(true);
 
+/*
+            try {
+                newModuleState = StateUtils.clone(state);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+*/
+            // put tables and such in the right place so ambient state is not altered.
+  /*          if(newModuleState != null) {
+                // null possible on system load.
+//                newModuleState = newModuleState.newLocalState(newModuleState);
+                newModuleState.setModuleState(true);
+            }*/
+            //State newModuleState = StateUtils.clone(state).newLocalState(state);
+            Module newInstance ;// = m.newInstance((m instanceof JavaModule) ? null : state);
+            //Module newInstance = m.newInstance(null);
+            if (m instanceof JavaModule) {
+                //State newModuleState = state.newLocalState(state);
+                newInstance = m.newInstance(null);
+                ((JavaModule) newInstance).init(newModuleState);
+            }else{
+                 newInstance = m.newInstance(newModuleState);
+            }
+            newInstance.setInheritanceMode(ModuleEvaluator.IMPORT_STATE_SHARE_VALUE); // default for old system
             if (alias == null) {
                 alias = m.getAlias();
             }
@@ -2767,69 +2705,6 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     }
 
-    /**
-     * Converts a couple of different arguments to the form
-     * [[a0{,b0}],[a1{,b1}],...,[an{,bn}] or (if a single argument that is
-     * a stem) can pass back:
-     * <p>
-     * {key0:[[a0{,b0}], key1:[a1{,b1}],...}
-     * <p>
-     * where the bk are optional. All ak, bk are strings.
-     * a,b -> [[a,b]] (pair of arguments, function is dyadic
-     * [a,b] ->[[a,b]] (simple list, convert to nested list
-     * [a0,a1,...] -> [[a0],[a1],...] allow for scalars
-     * Use in both module import and load for consistent arguments
-     *
-     * @param polyad
-     * @param state
-     * @param component
-     * @return
-     */
-    private QDLStem convertArgsToStem(Polyad polyad, Object arg, State state, String component) {
-        QDLStem argStem = null;
-
-        boolean gotOne = false;
-
-        switch (polyad.getArgCount()) {
-            case 0:
-                throw new MissingArgException(component + " requires an argument", polyad);
-            case 1:
-                // single string arguments
-                if (isString(arg)) {
-                    argStem = new QDLStem();
-                    argStem.listAdd(arg);
-                    gotOne = true;
-                }
-                if (isStem(arg)) {
-                    argStem = (QDLStem) arg;
-                    gotOne = true;
-                }
-                break;
-            case 2:
-                if (!isString(arg)) {
-                    throw new BadArgException("Dyadic " + component + " requires string arguments only", polyad.getArgAt(0));
-                }
-                Object arg2 = polyad.evalArg(1, state);
-                checkNull(arg2, polyad.getArgAt(1), state);
-                if (!isString(arg2)) {
-                    throw new BadArgException("Dyadic " + component + " requires string arguments only", polyad.getArgAt(1));
-                }
-
-                argStem = new QDLStem();
-                QDLStem innerStem = new QDLStem();
-                innerStem.listAdd(arg);
-                innerStem.listAdd(arg2);
-                argStem.put(0L, innerStem);
-                gotOne = true;
-                break;
-            default:
-                throw new ExtraArgException(component + ": too many arguments", polyad.getArgAt(2));
-        }
-        if (!gotOne) {
-            throw new BadArgException(component + ": unknown argument type", polyad);
-        }
-        return argStem;
-    }
 
     protected void doInterpret(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
@@ -3171,25 +3046,25 @@ public class SystemEvaluator extends AbstractEvaluator {
             // check each node.
             QDLList list = new QDLList();
             for (int i = 0; i < stemListNode.getStatements().size(); i++) {
-                  list.add(checkDefined(stemListNode.getStatements().get(i), state ));
+                list.add(checkDefined(stemListNode.getStatements().get(i), state));
             }
             QDLStem stem = new QDLStem(list);
             polyad.setResult(stem);
             polyad.setResultType(Constant.STEM_TYPE);
             polyad.setEvaluated(true);
-            return ;
+            return;
         }
         if (polyad.getArguments().get(0) instanceof StemVariableNode) {
             StemVariableNode stemVariableNode = (StemVariableNode) polyad.getArguments().get(0);
             // check each node.
             QDLStem stem = new QDLStem();
-            for(StemEntryNode sem : stemVariableNode.getStatements()){
+            for (StemEntryNode sem : stemVariableNode.getStatements()) {
                 stem.putLongOrString(sem.getKey().evaluate(state), checkDefined((ExpressionInterface) sem.getValue(), state));
             }
             polyad.setResult(stem);
             polyad.setResultType(Constant.STEM_TYPE);
             polyad.setEvaluated(true);
-            return ;
+            return;
         }
         try {
             polyad.evalArg(0, state);
@@ -3245,7 +3120,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             if (x == null) {
                 isDef = false; // oddball edge case
             } else {
-               // isDef = state.isDefined(x.toString());
+                // isDef = state.isDefined(x.toString());
                 isDef = true; // constants are always defined, actually.
             }
         }

@@ -7,4 +7,13 @@ package edu.uiuc.ncsa.qdl.config;
 public interface ModuleConfig {
     String getType();
     boolean isImportOnStart();
+    void setImportOnStart(boolean importOnStart);
+    boolean isUse();
+    String getVarName();
+    void setUse(boolean useModule);
+    void setVarName(String varName);
+    String getVersion();
+    void setVersion(String version);
+    boolean isFailOnError();
+    void setFailOnError(boolean failOnError);
 }

@@ -24,6 +24,7 @@ public class QDLConvertModule extends JavaModule {
     public Module newInstance(State state) {
         QDLConvertModule qdlxml = new QDLConvertModule(URI.create("qdl:/tools/convert"), "convert");
         QDLConvert xml = new QDLConvert();
+        qdlxml.setMetaClass(xml);
         funcs.add(xml.new XMLImport());
         funcs.add(xml.new XMLExport());
         funcs.add(xml.new GetAttributes());

@@ -1,9 +1,16 @@
 package edu.uiuc.ncsa.qdl.module;
 
+import edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.ModuleInstantiationException;
+import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.ModuleStatement;
+import edu.uiuc.ncsa.qdl.util.InputFormUtil;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
+import edu.uiuc.ncsa.qdl.xml.XMLConstants;
+import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
+import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.xml.stream.XMLEventReader;
@@ -14,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.MODULE_SOURCE_TAG;
+import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -51,7 +58,7 @@ public class QDLModule extends Module {
 
     @Override
     public Module newInstance(State state) {
-        if(state == null){
+        if (state == null) {
             // return a barebones module -- everything that does not depend on the state that
             // the template has
             QDLModule qdlModule = new QDLModule();
@@ -67,7 +74,7 @@ public class QDLModule extends Module {
             //p.execute(getModuleStatement().getSourceCode());
             localState.setImportMode(true);
             getModuleStatement().evaluate(localState);
-            Module m  = getModuleStatement().getmInstance();
+            Module m = getModuleStatement().getmInstance();
             getModuleStatement().clearInstance();
             localState.setImportMode(false);
             setupModule(m);
@@ -88,6 +95,93 @@ public class QDLModule extends Module {
             xsw.writeCData(Base64.encodeBase64URLSafeString(StringUtils.listToString(getSource()).getBytes(StandardCharsets.UTF_8)));
             xsw.writeEndElement();
         }
+    }
+
+    @Override
+    public JSONObject serializeToJSON(SerializationState serializationState) throws Throwable {
+        JSONObject json = super.serializeToJSON(serializationState);
+        json.put(XMLConstants.MODULE_TYPE_TAG2, XMLConstants.MODULE_TYPE_QDL_TAG);
+        /*
+            Only save the source code for this if the template is missing. The reason is
+            that every loaded module has a URI and a random unique UUID. It is possible
+            that the user reloads the module with an update, leaving the instance with a
+            different content. Preserve the loaded content. However, always preserving it
+            means a huge explosion in the size of the serialization. Only save it if there
+            was a bonda fide change.
+         */
+        if(isTemplate()){
+            json.put(MODULE_INPUT_FORM_TAG, Base64.encodeBase64URLSafeString(InputFormUtil.inputForm(this).getBytes()));
+        }else{
+            // not a template. be sure there is a template
+            Module template = serializationState.getTemplate(getParentTemplateID());
+            if(template == null){
+                json.put(MODULE_INPUT_FORM_TAG, Base64.encodeBase64URLSafeString(InputFormUtil.inputForm(this).getBytes()));
+            }
+        }
+        if (getState() != null) {
+            if (inheritMode == ModuleEvaluator.IMPORT_STATE_SHARE_VALUE) {
+                json.put(MODULE_STATE_TAG, getState().serializeLocalStateToJSON(serializationState));
+            } else {
+                json.put(MODULE_STATE_TAG, getState().serializeToJSON(serializationState));
+            }
+        }
+        return json;
+    }
+
+    @Override
+    public void deserializeFromJSON(JSONObject json, SerializationState serializationState) throws Throwable {
+        super.deserializeFromJSON(json, serializationState);
+        String source = null;
+        if(isTemplate()){
+            if (!json.containsKey(MODULE_INPUT_FORM_TAG)) {
+                throw new NFWException("missing input form for module.");
+            }
+            source = new String(Base64.decodeBase64(json.getString(MODULE_INPUT_FORM_TAG)), StandardCharsets.UTF_8);
+        }else{
+            // so we are deserializing an instance. Now we check if there is template
+            Module template = serializationState.getTemplate(getParentTemplateID());
+            if (template != null) {
+                source = InputFormUtil.inputForm(template);
+            }else{
+                // last resort. No template by UUID, so the
+                if (!json.containsKey(MODULE_INPUT_FORM_TAG)) {
+                    throw new NFWException("missing input form for module.");
+                }
+                source = new String(Base64.decodeBase64(json.getString(MODULE_INPUT_FORM_TAG)), StandardCharsets.UTF_8);
+            }
+        }
+/*
+        if (!isTemplate() && serializationState.hasTemplates()) {
+            Module template = serializationState.getTemplate(getParentTemplateID());
+            if (template != null) {
+                source = InputFormUtil.inputForm(template);
+            }
+        }
+*/
+        if (source == null) {
+            // Plan B, see if it was serialized
+            if (!json.containsKey(MODULE_INPUT_FORM_TAG)) {
+                throw new NFWException("missing input form for module.");
+            }
+//            source = new String(Base64.decodeBase64(json.getString(MODULE_INPUT_FORM_TAG)), StandardCharsets.UTF_8);
+        }
+        State newState = State.getRootState().newCleanState(); // remember that State can be overridden, so this is the right type
+        QDLInterpreter qdlInterpreter = new QDLInterpreter(newState);
+        try {
+            // recreating the module statement is generally very hard, involving parsing QDL,
+            // so let QDL do it, then harvest it.
+            qdlInterpreter.execute(source);
+            QDLModule tempM = (QDLModule) newState.getMTemplates().getAll().get(0);
+            setModuleStatement(tempM.getModuleStatement());
+            setDocumentation(tempM.getModuleStatement().getDocumentation());
+
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        if (json.containsKey(MODULE_STATE_TAG)) {
+            newState.deserializeFromJSON(json.getJSONObject(MODULE_STATE_TAG), serializationState);
+        }
+        setState(newState);
     }
 
     @Override

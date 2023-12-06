@@ -1,14 +1,21 @@
 package edu.uiuc.ncsa.qdl.expressions;
 
-import edu.uiuc.ncsa.qdl.exceptions.ImportException;
 import edu.uiuc.ncsa.qdl.exceptions.IntrinsicViolation;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.exceptions.UnknownSymbolException;
 import edu.uiuc.ncsa.qdl.functions.FKey;
+import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.qdl.state.StateUtils;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.variables.Constant;
+import edu.uiuc.ncsa.qdl.variables.VThing;
+import edu.uiuc.ncsa.security.core.exceptions.NFWException;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Models a single module expression of the form <b>A</b>#<i>expression</i> where <b>A</b>
@@ -46,8 +53,18 @@ public class ModuleExpression extends ExpressionImpl {
 
     String alias;
 
+    public boolean isNewModuleVersion() {
+        return newModuleVersion;
+    }
+
+    public void setNewModuleVersion(boolean newModuleVersion) {
+        this.newModuleVersion = newModuleVersion;
+    }
+
+    boolean newModuleVersion = false;
+
     @Override
-    public Object evaluate(State state) {
+    public Object evaluate(State ambientState) {
         // resolves https://github.com/ncsa/qdl/issues/24
         if (isDefaultNamespace()) {
             if (getExpression() instanceof ConstantNode) {
@@ -59,7 +76,7 @@ public class ModuleExpression extends ExpressionImpl {
             }
             if (getExpression() instanceof VariableNode) {
                 VariableNode vvv = (VariableNode) getExpression();
-                Object obj = state.getRootState().getValue(vvv.getVariableReference());
+                Object obj = ambientState.getRootState().getValue(vvv.getVariableReference());
                 if (obj == null) {
                     throw new UnknownSymbolException("'" + vvv.getVariableReference() + "'   not found", vvv);
                 } else {
@@ -72,8 +89,8 @@ public class ModuleExpression extends ExpressionImpl {
             if (getExpression() instanceof Polyad) {
                 // in this case, the user is explicitly telling us where to get the function from
                 Polyad polyad = (Polyad) getExpression();
-                if (null != state.getRootState().getFTStack().get(new FKey(polyad.getName(), polyad.getArgCount()))) {
-                    state.getRootState().getMetaEvaluator().getFunctionEvaluator().evaluate(polyad, state.getRootState());
+                if (null != ambientState.getRootState().getFTStack().get(new FKey(polyad.getName(), polyad.getArgCount()))) {
+                    ambientState.getRootState().getMetaEvaluator().getFunctionEvaluator().evaluate(polyad, ambientState.getRootState());
 
                 } else {
                     throw new QDLExceptionWithTrace("no such function " + polyad.getName() + "(" + polyad.getArgCount() + ")", polyad);
@@ -91,7 +108,7 @@ public class ModuleExpression extends ExpressionImpl {
             return getResult();
 
         }
-        if (state.getMetaEvaluator().isSystemNS(getAlias())) {
+        if (ambientState.getMetaEvaluator().isSystemNS(getAlias())) {
             // In this case, it is a built in function and there are no constants
             // or variables defined in those modules.
             if (getExpression() instanceof ConstantNode) {
@@ -106,7 +123,7 @@ public class ModuleExpression extends ExpressionImpl {
                 throw new UnknownSymbolException("'" + vvv.getVariableReference() + "'   not found", vvv);
             }
             if (getExpression() instanceof Polyad) {
-                state.getMetaEvaluator().evaluate(getAlias(), (Polyad) getExpression(), state);
+                ambientState.getMetaEvaluator().evaluate(getAlias(), (Polyad) getExpression(), ambientState);
             } else {
                 // Since this should not happen if the parser is working right, it implies
                 // that something in the parser changed and non-expressions are not
@@ -118,36 +135,108 @@ public class ModuleExpression extends ExpressionImpl {
             setEvaluated(true);
             return getResult();
         }
-        if (state.getMInstances().isEmpty()) {
-            throw new ImportException("module '" + getAlias() + "' not found", this);
+        Object mm = ambientState.getValue(getAlias());
+        if (mm != null && mm instanceof Module) {
+            setModule((Module) mm);
+            setNewModuleVersion(true);
+            /* The ambient state refers to the state in which the root module was called.
+             It is set with each module expression call, so if it is null, then this is the
+             first of a chain. E.g. in x#y#z#w#f(s) x is the root and the state passed to that
+             is the ambient state for everything else. Since in the new system, y is a variable
+             in the state of x, x's module state has to be passed along in addition to the
+             ambient state so that, eventually, f(s) can be evaluated (s is  in the ambient space
+             or it would be NS qualified)
+            */
+            if (getAmbientState() == null) {
+                setAmbientState(ambientState);
+            }
+        } else {
+            XKey xKey = new XKey(getAlias());
+            if (!(alias.equals("this") || ambientState.getMInstances().containsKey(xKey))) {
+                throw new IllegalArgumentException("no module named '" + getAlias() + "' was  imported");
+            }
+            setModule(ambientState.getMInstances().getModule(xKey));
+            setNewModuleVersion(false);
         }
-        Object result;
+        Object result = null;
         // no module state means to look at global state to find the module state.
         if (getExpression() instanceof ModuleExpression) {
             // Modules expression like a#b#c work within their scope, so b must be an imported module.
             ModuleExpression nextME = (ModuleExpression) getExpression();
-            XKey xKey = new XKey(nextME.getAlias());
-            if (getModuleState(state).getMInstances().containsKey(xKey)) {
-                nextME.setModuleState(getModuleState(state).getMInstances().getModule(xKey).getState());
+            if (isNewModuleVersion()) {
+                //result = nextME.evaluate(module.getState().newLocalState(ambientState));
+                nextME.setAmbientState(getAmbientState());
+                result = nextME.evaluate(getModuleState());
+            } else {
+                // old module system
+                XKey xKey = new XKey(nextME.getAlias());
+                if (getModuleState(ambientState).getMInstances().containsKey(xKey)) {
+                    nextME.setModuleState(getModuleState(ambientState).getMInstances().getModule(xKey).getState());
+                }
+                //getExpression().setAlias(getAlias());
+                getExpression().setAlias(nextME.getAlias());
+                result = getExpression().evaluate(getModuleState(ambientState));
             }
-            getExpression().setAlias(getAlias());
-            result = getExpression().evaluate(getModuleState(state));
         } else {
+
+            if (isNewModuleVersion()) {
+
+                // create a new state object for function resolution. This should have the
+                // current variables in the ambient state, but the variables, imported modules and functions
+                // in the module (or encapsulation breaks!!)
+                State newState = null;
+                try {
+                    newState = StateUtils.clone(getModuleState());
+                    newState.getVStack().appendTables(getAmbientState().getVStack());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+                Object r = null;
+                if (getExpression() instanceof Polyad) {
+                    ((Polyad) getExpression()).evaluatedArgs(newState);
+                }
+                if (getExpression() instanceof Polyad) {
+                    // send along evaluated args with ambient state, but do not allow
+                    // ambient state to override internal module state for functions, loaded modules etc.
+                    r = getExpression().evaluate(getModuleState());
+                } else {
+                    r = getExpression().evaluate(newState); // gets local overrides from ambient state
+                }
+
+                if (r == null) {
+                    throw new IllegalArgumentException("no such value or unknown expression type");
+                }
+                setResult(r);
+                setResultType(Constant.getType(r));
+                setEvaluated(true);
+                return r;
+            }
+/*
+            if(obj instanceof FunctionReferenceNode){
+                setResult(obj);
+                setResultType(Constant.FUNCTION_TYPE);
+                setEvaluated(true);
+                return obj;
+            }
+*/
             // Simple expressions like a#b must work within the scope of a
             getExpression().setAlias(getAlias());
-            State moduleState = getModuleState(state); // clean state
+            State moduleState = getModuleState(ambientState); // clean state
             // https://github.com/ncsa/qdl/issues/34 pass along variables
-            if(getExpression() instanceof Polyad){
-                Polyad f = (Polyad)getExpression();
-                for(int i = 0; i <f.getArgCount(); i++){
-                    if(f.getArgAt(i) instanceof VariableNode){
-                        VariableNode vNode = (VariableNode)f.getArgAt(i);
-                        Object v = f.evalArg(i,state);
-                        moduleState.setValue(vNode.getVariableReference(), v);
-                    }
+            // short-circuit the function evaluation here so we don't have to
+            // muck around with the implied vs. actual state in complex expressions.
+            if (getExpression() instanceof Polyad) {
+                Polyad f = (Polyad) getExpression();
+                List evaluatedArgs = new ArrayList();
+                for (int i = 0; i < f.getArgCount(); i++) {
+                    evaluatedArgs.add( f.evalArg(i, ambientState));
                 }
+                f.setEvaluatedArgs(evaluatedArgs);
             }
             result = getExpression().evaluate(moduleState);
+
         }
         setResult(result);
         setResultType(Constant.getType(result));
@@ -155,6 +244,34 @@ public class ModuleExpression extends ExpressionImpl {
         return result;
     }
 
+    /*
+          q := module_load('edu.uiuc.ncsa.qdl.extensions.http.QDLHTTPLoader','java');
+q := module_import(q);
+suite := size(args()) == 1 ? args(0):'cm_local';//which test to run. Default is cm for local test
+ini. := file_read('/home/ncsa/dev/csd/config/ini/cm-test.ini',2).suite;
+http#host(ini.'address') ;
+qqq(x)->x
+http#host(qqq('https://foo'))
+     */
+    /* test apply operator on module.
+
+       module['a:x'][module['a:y'][f(x)->x;];y:=import('a:y');]
+       x:=import('a:x');
+       x#y#f(3)
+       ⍺x#y#@f
+
+
+       module['a:x'][g(x,y)->x*y;]
+  z:=import('a:x')
+  ⍺z#@g
+    [3,4]⍺z#@g
+
+       module['a:x'][g(x,y)->x*y;]
+       module['a:x'][module['a:y'][module['a:z'][module['a:w'][g(x,y)->x*y;foo:='bar';];w:=import('a:w');];z:=import('a:z');];y:=import('a:y');]
+       x:=import('a:x');
+       x#y#z#w#foo
+       x#y#z#w#g(2,3)
+     */
     public ExpressionInterface getExpression() {
         if (getArguments().isEmpty()) {
             throw new IllegalStateException("no expression set for module reference");
@@ -180,6 +297,28 @@ public class ModuleExpression extends ExpressionImpl {
     }
 
     /**
+     * The module associated with this expression.
+     *
+     * @return
+     */
+    public Module getModule() {
+        return module;
+    }
+
+    public void setModule(Module module) {
+        this.module = module;
+    }
+
+    Module module = null;
+
+    public State getModuleState() {
+        if (module == null) {
+            return null;
+        }
+        return getModule().getState();
+    }
+
+    /**
      * The state of the current module only. This is used to construct the local state.
      *
      * @return
@@ -190,10 +329,23 @@ public class ModuleExpression extends ExpressionImpl {
         }
         if (moduleState == null) {
             XKey xKey = new XKey(getAlias());
-            if (!(alias.equals("this") || state.getMInstances().containsKey(xKey))) {
-                throw new IllegalArgumentException("no module named '" + getAlias() + "' was  imported");
+            if (state.getVStack().containsKey(xKey)) {
+                VThing vThing = (VThing) state.getVStack().get(xKey);
+                if (vThing.getValue() instanceof Module) {
+                    Module m = (Module) vThing.getValue();
+                    setModule(m);
+                    moduleState = m.getState();
+
+                } else {
+                    throw new NFWException("expected module for key " + xKey + ", but got a " + vThing.getValue().getClass().getSimpleName());
+                }
+            } else {
+                if (!(alias.equals("this") || state.getMInstances().containsKey(xKey))) {
+                    throw new IllegalArgumentException("no module named '" + getAlias() + "' was  imported");
+                }
+
+                moduleState = state.newLocalState(state.getMInstances().getModule(xKey).getState());
             }
-            moduleState = state.newLocalState(state.getMInstances().getModule(xKey).getState());
         }
         return moduleState;
     }
@@ -216,6 +368,15 @@ public class ModuleExpression extends ExpressionImpl {
      */
     public void set(State state, Object newValue) {
         if (getExpression() instanceof VariableNode) {
+            Object mm = state.getValue(getAlias());
+            if (mm != null && mm instanceof Module) {
+                setModule((Module) mm);
+                setNewModuleVersion(true);
+                VariableNode vNode = (VariableNode) getExpression();
+                String variableName = vNode.getVariableReference();
+                ((Module) mm).getState().setValue(variableName, newValue);
+                return;
+            }
             VariableNode vNode = (VariableNode) getExpression();
             String variableName = vNode.getVariableReference();
             if (state.isIntrinsic(variableName) && !getModuleState(state).isDefined(variableName)) {
@@ -233,18 +394,43 @@ public class ModuleExpression extends ExpressionImpl {
             throw new IllegalArgumentException("cannot assign a constant a value.");
         }
         if (getExpression() instanceof ModuleExpression) {
+            getModuleState(state); // sets the state for *this* module
             ModuleExpression nextME = (ModuleExpression) getExpression();
             XKey xKey = new XKey(nextME.getAlias());
-            if (getModuleState(state).getMInstances().containsKey(xKey)) {
-                nextME.setModuleState(getModuleState(state).getMInstances().getModule(xKey).getState());
+            setNewModuleVersion(getModuleState() != null);
+            if (isNewModuleVersion() && getModuleState().getVStack().containsKey(xKey)) {
+                VThing vThing = (VThing) getModuleState().getVStack().get(xKey);
+                if (vThing.getValue() instanceof Module) {
+                    Module m = (Module) vThing.getValue();
+                    nextME.setModule(m);
+                    nextME.setModuleState(m.getState()); //sets the next one in the chain.
+                } else {
+                    throw new NFWException("expected module for " + xKey + " not found");
+                }
+            } else {
+                if (getModuleState(state).getMInstances().containsKey(xKey)) {
+                    nextME.setModuleState(getModuleState(state).getMInstances().getModule(xKey).getState());
+                }
+
             }
             ((ModuleExpression) getExpression()).set(state, newValue);
             return;
         }
-        throw new IllegalArgumentException("unkown left assignment argument.");
+        throw new IllegalArgumentException("unknown left assignment argument.");
     }
+
     @Override
-        public int getNodeType() {
-            return MODULE_NODE;
-        }
+    public int getNodeType() {
+        return MODULE_NODE;
+    }
+
+    public State getAmbientState() {
+        return ambientState;
+    }
+
+    public void setAmbientState(State ambientState) {
+        this.ambientState = ambientState;
+    }
+
+    State ambientState;
 }

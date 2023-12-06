@@ -25,6 +25,7 @@ public class QDLDBModule extends JavaModule {
         QDLDBModule module = new QDLDBModule(URI.create("qdl:/tools/db"), "db");
 
         QDLDB qdldb = new QDLDB();
+        module.setMetaClass(qdldb);
         funcs.add(qdldb.new Connect());
         funcs.add(qdldb.new Read());
         funcs.add(qdldb.new Update());

@@ -193,7 +193,7 @@ public abstract class ExpressionImpl implements ExpressionNode {
     int operatorType = OpEvaluator.UNKNOWN_VALUE;
 
     /**
-     * If the is the operator equiavalent of a function. {@link OpEvaluator#UNKNOWN_VALUE} is the default.
+     * This is the operator equiavalent of a function. {@link OpEvaluator#UNKNOWN_VALUE} is the default.
      *
      * @return
      */
@@ -221,4 +221,43 @@ public abstract class ExpressionImpl implements ExpressionNode {
         return "source=" +
                 "\"" + sourceCode + '\"';
     }
+
+    /**
+     * The arguments to this polyad that have been evaluated vis a vis a specific state.
+     * The intent is that this is used in evaluating functions sent via a module, where the
+     * arguments are evaluated in the ambient state and forwarded to the module for
+     * later evaluation. This has to be done since there is no way to figure out the state
+     * in general where these evaluate except at exactly the point where they are called.
+     *
+     * @return
+     */
+    public List<Object> getEvaluatedArgs() {
+        return evaluatedArgs;
+    }
+
+    /**
+     * Evaluate the arguments using the given state and set the {@link #setEvaluatedArgs(List)}
+     * Calling this evaluates the args.
+     * @param state
+     * @return
+     */
+    public List<Object> evaluatedArgs(State state) {
+        evaluatedArgs = new ArrayList<>(getArgCount());
+        for (int i = 0; i < getArgCount(); i++) {
+            evaluatedArgs.add(evalArg(i, state));
+        }
+        return evaluatedArgs;
+    }
+
+
+    public void setEvaluatedArgs(List<Object> evaluatedArgs) {
+        this.evaluatedArgs = evaluatedArgs;
+    }
+
+    List<Object> evaluatedArgs = null;
+
+    public boolean hasEvaluatedArgs() {
+        return evaluatedArgs != null;
+    }
+
 }

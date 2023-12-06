@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl.config;
 
+import edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator;
 import edu.uiuc.ncsa.qdl.extensions.JavaModule;
 import edu.uiuc.ncsa.qdl.extensions.QDLLoader;
@@ -10,6 +11,7 @@ import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.vfs.*;
+import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.security.core.configuration.StorageConfigurationTags;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
@@ -141,7 +143,7 @@ public class QDLConfigurationLoaderUtils {
 
     public static String[] setupModules(QDLEnvironment config, State state) throws Throwable {
         String[] x = new String[MODULE_LOAD_MESSAGES_SIZE];
-         // At some point, start putting in ResourceModules that are automatically loaded.
+        // At some point, start putting in ResourceModules that are automatically loaded.
         // This will slightly change the logic here, since there will always be something to load.
         // the big question though is this: Do we let users load modules that are in the distro
         // this way, or is that a 'system thing' which we control?
@@ -159,15 +161,21 @@ public class QDLConfigurationLoaderUtils {
                     JavaModuleConfig jmc = (JavaModuleConfig) moduleConfig;
                     String className = jmc.getClassName();
                     try {
+                   
 
                         Class klasse = state.getClass().forName(className);
+                        // Next bit involves some trickery: we might want to import the
+                        // module on start, but cannot get the actual namespace or alias
+                        // until after the modules is loaded. So this makes the loader
+                        // and pulls it off that
                         QDLLoader qdlLoader = (QDLLoader) klasse.newInstance();
-                        setupJavaModule(state, qdlLoader, jmc.isImportOnStart());
+                        setupJavaModule(state, qdlLoader, jmc);
+
 
                     /*
                     Next stuff just makes the entry for the environment
                      */
-                        config.getMyLogger().info("loaded module:" + klasse.getSimpleName());
+                        config.getMyLogger().info("loaded module:" + className);
                         if (isFirstJavaModules) {
                             isFirstJavaModules = false;
                             foundClasses = className;
@@ -175,6 +183,9 @@ public class QDLConfigurationLoaderUtils {
                             foundClasses = foundClasses + "," + className;
                         }
                     } catch (Throwable t) {
+                        if(moduleConfig.isFailOnError()){
+                            throw t;
+                        }
                         DebugUtil.printStackTrace(t);
                         config.getMyLogger().error(
                                 "WARNING: module \"" + className + "\" could not be loaded:" + t.getMessage(),
@@ -184,21 +195,21 @@ public class QDLConfigurationLoaderUtils {
                 if (moduleConfig.getType().equals(MODULE_TYPE_QDL)) {
                     QDLModuleConfig qmc = null;
                     String module = null; // actual code in the module
-                    if(moduleConfig instanceof QDLModuleConfig){
-                         qmc = (QDLModuleConfig) moduleConfig;
-                         module = QDLFileUtil.readFileAsString(qmc.getPath());
+                    if (moduleConfig instanceof QDLModuleConfig) {
+                        qmc = (QDLModuleConfig) moduleConfig;
+                        module = QDLFileUtil.readFileAsString(qmc.getPath());
                     }
-                    if(moduleConfig instanceof ResourceModule){
+                    if (moduleConfig instanceof ResourceModule) {
                         // read it from a resource in the distro, not from a file.
-                        qmc = (ResourceModule)moduleConfig;
+                        qmc = (ResourceModule) moduleConfig;
                         InputStream textStream = QDLModuleConfig.class.getResourceAsStream(qmc.getPath());
                         InputStreamReader reader = new InputStreamReader(textStream);
                         BufferedReader br = new BufferedReader(reader);
                         StringBuilder stringBuilder = new StringBuilder();
                         String inputLine = br.readLine();
-                        while(inputLine != null){
-                          stringBuilder.append(inputLine + "\n");
-                          inputLine = br.readLine();
+                        while (inputLine != null) {
+                            stringBuilder.append(inputLine + "\n");
+                            inputLine = br.readLine();
                         }
                         br.close();
                         module = stringBuilder.toString();
@@ -214,7 +225,10 @@ public class QDLConfigurationLoaderUtils {
                         config.getMyLogger().error(
                                 "WARNING: QDL module \"" + module.substring(0, Math.min(50, module.length())) + "\" could not be loaded:" + t.getMessage(),
                                 t);
-                        failedModules = failedModules + (failedModules.length()==0?"":",") + qmc.getPath();
+                        failedModules = failedModules + (failedModules.length() == 0 ? "" : ",") + qmc.getPath();
+                        if (moduleConfig.isFailOnError()) {
+                            throw t; // end of story
+                        }
                         continue;
                     }
                     Set<MTKey> newImports = interpreter.getState().getMTemplates().keySet();
@@ -223,14 +237,35 @@ public class QDLConfigurationLoaderUtils {
                     }
                     for (MTKey uri : newImports) {
                         if (!oldImports.contains(uri)) {
+                            String y = null;
                             if (qmc.isImportOnStart()) {
-//                                try {
-                                    // also easy is to have QDL do the import rather than doing brain surgery on its state.
-                                    interpreter.execute(SystemEvaluator.MODULE_IMPORT + "('" + uri.getKey() + "');");
-  //                              }catch (Throwable t){
-    //                                  failedModules = failedModules + (failedModules.length()==0?"":",") + uri.toString();
-      //                          }
+                                if (moduleConfig.getVersion().equals(XMLConstants.VERSION_2_0_TAG)) {
+                                    y = SystemEvaluator.MODULE_IMPORT + "('" + uri.getKey() + "');";
+                                }
+                                if (moduleConfig.getVersion().equals(XMLConstants.VERSION_2_1_TAG)) {
+                                    if (moduleConfig.isUse()) {
+                                        y = ModuleEvaluator.USE + "('" + uri.getKey() + "');";
+                                    } else {
+                                        Module m = interpreter.getState().getMTemplates().getModule(uri);
+                                        String varName = m.getAlias();
+                                        String configVarName = moduleConfig.getVarName();
+
+                                        if (varName == null && configVarName == null) {
+                                            if (((ModuleConfigImpl) moduleConfig).failOnError) {
+                                                throw new IllegalArgumentException("no name for the imported variable was given and there is no alias for module '" + uri + "'");
+                                            } else {
+                                                interpreter.getState().getLogger().warn("no name for the imported variable was given and there is no alias for module '" + uri + "'");
+                                                continue;
+                                            }
+                                        }
+                                        varName = configVarName == null ? varName : configVarName;
+                                        y = varName + ":=" + ModuleEvaluator.IMPORT + "('" + uri.getKey() + "');";
+
+                                    }
+                                }
                             }
+                            interpreter.execute(y);
+
                             break;
                         }
                     }
@@ -249,29 +284,60 @@ public class QDLConfigurationLoaderUtils {
             if (!foundModules.isEmpty()) {
                 x[QDL_MODULE_INDEX] = foundModules;
             }
-            if(!failedModules.isEmpty()){
+            if (!failedModules.isEmpty()) {
                 x[MODULE_FAILURES_INDEX] = failedModules;
             }
         } // end if loop
         return x;
     }
 
-    public static List<String> setupJavaModule(State state, QDLLoader loader, boolean importASAP) {
-         List<String> importedFQNames = new ArrayList<>();
-        for (Module m : loader.load()) {
-            m.setTemplate(true);
-            state.addModule(m); // done!
-            importedFQNames.add(m.getNamespace().toString());
-            if (importASAP) {
-               // state.getMInstances().put(m);
+    public static List<String> setupJavaModule(State state, QDLLoader loader, JavaModuleConfig jmc) {
+        List<String> importedFQNames = new ArrayList<>();
+        for (Module template : loader.load()) {
+            template.setTemplate(true);
+            state.addModule(template); // done!
+            importedFQNames.add(template.getNamespace().toString());
+            if (jmc.isImportOnStart()) {
+                // state.getMInstances().put(m);
                 State state1 = state.newLocalState();
-                Module mm = m.newInstance(state1);
-                ((JavaModule) mm).init(state1);
-                state.getMInstances().put(new MIWrapper(m.getKey(), mm));// puts it in the table with default alias.
+                Module instance = template.newInstance(state1);
+                ((JavaModule) instance).init(state1);
+                if (jmc.getVersion().equals(XMLConstants.VERSION_2_0_TAG)) {
+                    state.getMInstances().put(new MIWrapper(template.getKey(), instance));// puts it in the table with default alias.
+                }else{
+                    if(jmc.isUse()){
+                        state.getVStack().appendTables(instance.getState().getVStack());
+                        state.getFTStack().appendTables(instance.getState().getFTStack());
+                        state.getUsedModules().put(instance.getNamespace(), instance);
+                    }else{
+                        String varName = template.getAlias();
+                        if(jmc.getVarName()!=null){
+                            varName = jmc.getVarName();
+                        }
+                        if(varName == null){
+                            throw new IllegalArgumentException("no alias or variable name for import was set for the module " + template.getNamespace());
+                        }
+                        state.setValue(varName, instance);
+
+                    }
+                }
             }
         }
         return importedFQNames;
     }
+
+    /*
+    /*     String exec;
+                            if (moduleConfig.getVersion().equals(XMLConstants.VERSION_2_0_TAG)) {
+                                exec = SystemEvaluator.MODULE_LOAD;
+                            } else {
+                                exec = ModuleEvaluator.LOAD;
+                            }
+                            exec = exec + "('" + className + "','java');";
+                            interpreter.execute(exec);
+                            if(jmc.isImportOnStart()){
+                                exec = SystemEvaluator.MODULE_IMPORT + "('"
+                            }*/
 
     public static String runBootScript(QDLEnvironment config, State state) {
         if (config.hasBootScript()) {

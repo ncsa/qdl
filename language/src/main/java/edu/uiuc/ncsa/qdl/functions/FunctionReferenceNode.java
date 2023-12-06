@@ -1,10 +1,11 @@
 package edu.uiuc.ncsa.qdl.functions;
 
+import edu.uiuc.ncsa.qdl.expressions.ExpressionImpl;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
-import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 import edu.uiuc.ncsa.qdl.variables.Constant;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,40 +13,7 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 3/14/21 at  3:26 PM
  */
-public class FunctionReferenceNode implements ExpressionInterface {
-    TokenPosition tokenPosition = null;
-
-    @Override
-    public void setTokenPosition(TokenPosition tokenPosition) {
-        this.tokenPosition = tokenPosition;
-    }
-
-    @Override
-    public TokenPosition getTokenPosition() {
-        return tokenPosition;
-    }
-
-    @Override
-    public boolean hasTokenPosition() {
-        return tokenPosition != null;
-    }
-
-    @Override
-    public boolean hasAlias() {
-        return alias != null;
-    }
-
-    String alias = null;
-
-    @Override
-    public String getAlias() {
-        return alias;
-    }
-
-    @Override
-    public void setAlias(String alias) {
-        this.alias = alias;
-    }
+public class FunctionReferenceNode extends ExpressionImpl {
 
     public String getFunctionName() {
         return functionName;
@@ -66,65 +34,83 @@ public class FunctionReferenceNode implements ExpressionInterface {
     boolean anonymous = false;
 
     String functionName;
-    Object result;
 
-    @Override
-    public Object getResult() {
-        return result;
+
+    public List<FunctionRecord> getFunctionRecords() {
+        return functionRecords;
     }
 
-    @Override
-    public void setResult(Object object) {
-        this.result = object;
+    public void setFunctionRecords(List<FunctionRecord> functionRecords) {
+        this.functionRecords = functionRecords;
     }
 
-    int resultType = Constant.UNKNOWN_TYPE;
-
-    @Override
-    public int getResultType() {
-        return resultType;
-    }
-
-    @Override
-    public void setResultType(int type) {
-        this.resultType = type;
-    }
-
-    boolean evaluated = false;
-
-    @Override
-    public boolean isEvaluated() {
-        return evaluated;
-    }
-
-    @Override
-    public void setEvaluated(boolean evaluated) {
-        this.evaluated = evaluated;
-    }
-
+    List<FunctionRecord> functionRecords= null;
     @Override
     public Object evaluate(State state) {
-        return null;
+        setFunctionRecords(state.getFTStack().getByAllName(getFunctionName()));
+        // if this was e.g. in a module, it might have an arbitraily complex path to get here.
+        // set the state that was finally constructed elsewhere for this specific call.
+        if(state.isModuleState()) {
+            setModuleState(state);
+        }
+        setResult(this);
+        setResultType(Constant.getType(this));
+        setEvaluated(true);
+        return this;
     }
 
-    List<String> source;
-
-    @Override
-    public List<String> getSourceCode() {
-        return null;
+    public State getModuleState() {
+        return moduleState;
     }
 
-    @Override
-    public void setSourceCode(List<String> sourceCode) {
-
+    public void setModuleState(State moduleState) {
+        this.moduleState = moduleState;
     }
 
-    @Override
-    public ExpressionInterface makeCopy() {
+    State moduleState = null;
+
+    public boolean hasModuleState(){
+        return moduleState != null;
+    }
+
+    public FunctionRecord getByArgCount(int argCount){
+        if(getFunctionRecords() == null){
+            return null;
+        }
+        for(FunctionRecord functionRecord : getFunctionRecords()){
+            if(functionRecord.getArgCount() == argCount){
+                return functionRecord;
+            }
+        }
         return null;
     }
     @Override
         public int getNodeType() {
             return FUNCTION_REFERENCE_NODE;
         }
+
+    @Override
+    public ExpressionInterface makeCopy() {
+        FunctionReferenceNode functionReferenceNode = new FunctionReferenceNode();
+        functionReferenceNode.setFunctionName(getFunctionName());
+        functionReferenceNode.setAnonymous(isAnonymous());
+        functionReferenceNode.setOperatorType(getOperatorType());
+        return functionReferenceNode;
+    }
+
+    @Override
+    public String toString() {
+        if(!isEvaluated()){
+            return "FunctionReferenceNode{" +
+                    "functionName='" + functionName + '\'' +
+                    ", anonymous=" + anonymous +
+                    ", evaluated=" + isEvaluated() +
+                    '}';
+        }
+        List<Integer> argCounts = new ArrayList();
+        for(FunctionRecord functionRecord:getFunctionRecords()){
+            argCounts.add(functionRecord.argCount);
+        }
+           return "@" + (isAnonymous()?"anon":getFunctionName()) + "(" + argCounts + ")";
+    }
 }

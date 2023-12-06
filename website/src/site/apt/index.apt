@@ -53,6 +53,10 @@ Documentation
     scripts on a server (such as OA4MP). This describes the syntax that is needed to specify scripts and blocks
     of code.
 
+    *{{{./pdf/old-module-reference.pdf}Old module documentation}} Modules have gotten an overhaul but the old
+    machinery still works. The documentation has been moved fom the main refernce to here if you need it. Generally
+    you should use the module machinery that is current. (So load, import, use etc., not module_load, module_import, etc.)
+
 User Interfaces to QDL
 
     *{{{./pdf/qdl_workspace.pdf}QDL Workspace Reference Manual}}  The basic command line way to quiddle.

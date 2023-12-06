@@ -69,13 +69,34 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         return false;
     }
 
+
     /**
-     * This takes and expression (with an operator type) and returns true if is handled in this evaluator
-     * and false otherwise.
+     * Decides if a {@link Polyad} is evaluated by this evaluator and if not, returns false,
+     * if so, it evaluates it and returns true. This function actually just dispatches it
+     * to {@link #dispatch(Polyad, State)} where the work is done and manages putting better
+     * trace information in if there is a failure.
+     * @param polyad
+     * @param state
+     * @return
      */
+    public boolean evaluate(Polyad polyad, State state) {
+        try {
+            return dispatch(polyad, state);
+        } catch (QDLException q) {
+            throw q;
+        } catch (Throwable t) {
+            QDLExceptionWithTrace qq = new QDLExceptionWithTrace(t, polyad);
+            throw qq;
+        }
+    }
 
-
-    public abstract boolean evaluate(Polyad polyad, State state);
+    /**
+     * Does the actual evaluation of the {@link Polyad}.
+     * @param polyad
+     * @param state
+     * @return
+     */
+    public abstract boolean dispatch(Polyad polyad, State state);
 
     public boolean evaluate(String alias, Polyad polyad, State state) {
         if (alias.equals(getNamespace())) {
@@ -225,6 +246,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
 
     /**
      * Main workhorse for monadic system functions. See the note in {@link #process2(ExpressionImpl, fPointer, String, State, boolean)}!
+     *
      * @param polyad
      * @param pointer
      * @param name
@@ -310,6 +332,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
 
     /**
      * Main workhorse method of evaluating a QDL dyadic system function.
+     *
      * @param polyad
      * @param pointer
      * @param name
@@ -334,6 +357,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * <b>Tip</b>: You should check for arguments types in the fPointer, not before. Argument checks before
      * invoking this are often a lot more work to unpack. Just let the method do the work. Besides, you can throw
      * {@link BadArgException}s which are extremely exact at the point of failure.
+     *
      * @param polyad
      * @param pointer
      * @param name
@@ -354,7 +378,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         //UnknownSymbolException usx = null;
         QDLException usx = null;
         try {
-            if(!name.equals(OpEvaluator.IS_A)){ // special case is_a operator
+            if (!name.equals(OpEvaluator.IS_A)) { // special case is_a operator
                 arg2 = polyad.evalArg(1, state);
                 checkNull(arg2, polyad.getArgAt(1), state);
             }
@@ -597,6 +621,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     /**
      * Main workhorse for evaluating QDL system valence 3 functions. See the note at
      * {@link #process2(ExpressionImpl, fPointer, String, State, boolean)}!
+     *
      * @param polyad
      * @param pointer
      * @param name
@@ -717,14 +742,14 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         @Override
         public boolean hasNext() {
             if (iterator == null) {
-                if(smallestKeys == null){
+                if (smallestKeys == null) {
                     return false;
                 }
                 iterator = smallestKeys.iterator();
             }
             while (iterator.hasNext()) {
                 Object v = iterator.next();
-                if(allHaveValue(v)){
+                if (allHaveValue(v)) {
                     nextValue = v;
                     return true;
                 }
@@ -753,12 +778,12 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             if (stem.hasDefaultValue()) {
                 continue;
             }
-            if(!stem.isEmpty()){
+            if (!stem.isEmpty()) {
                 iterator.add(stem.keySet());
             }
         }
         // edge case. E.g. all the stems are empty
-        if(iterator.smallestKeys == null){
+        if (iterator.smallestKeys == null) {
             iterator.smallestKeys = new StemKeys();
         }
         return iterator;
@@ -907,7 +932,8 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         throw new IllegalStateException("cannot create anonymous function");
 
     }
-          //  pick((k)->3<k<10, |>mod(random(20),11))
+    //  pick((k)->3<k<10, |>mod(random(20),11))
+
     /**
      * Checks if the argument is some form of a function reference. This lets you test for
      * overloading before invoking one of {@link #getFunctionReferenceNode(State, ExpressionInterface)}
@@ -1028,7 +1054,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     }
 
     /**
-     * Check for nulls but log any error
+     * Check for Java nulls and logs any errors
      *
      * @param arg1
      * @param swri
@@ -1087,6 +1113,70 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             }
         }
         return bigArgList0;
+    }
+
+    /**
+     * Converts a couple of different arguments to the form
+     * [[a0{,b0}],[a1{,b1}],...,[an{,bn}] or (if a single argument that is
+     * a stem) can pass back:
+     * <p>
+     * {key0:[[a0{,b0}], key1:[a1{,b1}],...}
+     * <p>
+     * where the bk are optional. All ak, bk are strings.
+     * a,b -> [[a,b]] (pair of arguments, function is dyadic
+     * [a,b] ->[[a,b]] (simple list, convert to nested list
+     * [a0,a1,...] -> [[a0],[a1],...] allow for scalars
+     * Use in both module import and load for consistent arguments
+     *
+     * @param polyad
+     * @param state
+     * @param component
+     * @return
+     */
+    protected QDLStem convertArgsToStem(Polyad polyad, Object arg, State state, String component) {
+        QDLStem argStem = null;
+
+        boolean gotOne = false;
+
+        switch (polyad.getArgCount()) {
+            case 0:
+                throw new MissingArgException(component + " requires an argument", polyad);
+            case 1:
+                // single string arguments
+                if (isString(arg)) {
+                    argStem = new QDLStem();
+                    argStem.listAdd(arg);
+                    gotOne = true;
+                }
+                if (isStem(arg)) {
+                    argStem = (QDLStem) arg;
+                    gotOne = true;
+                }
+                break;
+            case 2:
+                if (!isString(arg)) {
+                    throw new BadArgException("Dyadic " + component + " requires string arguments only", polyad.getArgAt(0));
+                }
+                Object arg2 = polyad.evalArg(1, state);
+                checkNull(arg2, polyad.getArgAt(1), state);
+                if (!isString(arg2)) {
+                    throw new BadArgException("Dyadic " + component + " requires string arguments only", polyad.getArgAt(1));
+                }
+
+                argStem = new QDLStem();
+                QDLStem innerStem = new QDLStem();
+                innerStem.listAdd(arg);
+                innerStem.listAdd(arg2);
+                argStem.put(0L, innerStem);
+                gotOne = true;
+                break;
+            default:
+                throw new ExtraArgException(component + ": too many arguments", polyad.getArgAt(2));
+        }
+        if (!gotOne) {
+            throw new BadArgException(component + ": unknown argument type", polyad);
+        }
+        return argStem;
     }
 
 }

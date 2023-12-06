@@ -1,6 +1,7 @@
 package edu.uiuc.ncsa.qdl.util;
 
 import ch.obermuhlner.math.big.BigDecimalMath;
+import edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.extensions.JavaModule;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
@@ -24,7 +25,10 @@ import java.text.DecimalFormat;
 
 
 /**
- * Utility that converts variosu objects to their input form.
+ * Utility that converts various objects to their input form. Input form
+ * is defined as the statement to create the object. This might
+ * not reflect the current state of the object for modules since
+ * that is highly mutable.
  * <p>Created by Jeff Gaynor<br>
  * on 3/10/21 at  8:38 AM
  */
@@ -39,6 +43,7 @@ public class InputFormUtil {
         if (obj instanceof QDLStem) return inputForm((QDLStem) obj);
         if (obj instanceof QDLNull) return inputForm((QDLNull) obj);
         if(obj instanceof QDLSet) return inputForm((QDLSet)obj);
+        if(obj instanceof Module) return inputForm((Module) obj);
         return "";
     }
 
@@ -237,22 +242,28 @@ public class InputFormUtil {
      * @return
      */
     public static String inputFormModule(URI moduleNS, State state) {
-        // Cases:
-
-        Module m = state.getMTemplates().getModule(new MTKey(moduleNS));
-        if (m == null) {
-            return null;
-        }
-        if (m instanceof JavaModule) {
-            return JAVA_CLASS_MARKER + ((JavaModule) m).getClassname();
-        }
-        if (m instanceof QDLModule) {
-            return StringUtils.listToString(((QDLModule) m).getSource());
-        }
-        return null;
+        return inputForm(state.getMTemplates().getModule(new MTKey(moduleNS)));
     }
+    public static String inputForm(Module m) {
+           if (m == null) {
+               return null;
+           }
+           if (m instanceof JavaModule) {
+               return JAVA_CLASS_MARKER + ((JavaModule) m).getClassname();
+           }
+           if (m instanceof QDLModule) {
+               return StringUtils.listToString(((QDLModule) m).getSource());
+           }
+           return null;
+       }
 
     public static String inputFormModule(String moduleName, State state) {
+        // new way: get from symbol table
+        Object obj = state.getValue(moduleName);
+        if(obj instanceof Module){
+            return inputForm((Module)obj);
+        }
+        // Old way: look up in MInstances
         URI moduleNS;
 
         if (moduleName.endsWith(State.NS_DELIMITER)) {
@@ -279,7 +290,14 @@ public class InputFormUtil {
         if (object instanceof QDLStem && 0 <= indentFactor) {
             return inputForm((QDLStem) object, indentFactor);
         }
+        if(object instanceof Module){
+            Module m = (Module) object;
+            if(m instanceof QDLModule){
+                return ModuleEvaluator.IMPORT + "('" + m.getNamespace() + "')";
+            }
+        }
         return inputForm(object);
+
     }
 
     public static String inputFormVar(String varName, State state) {

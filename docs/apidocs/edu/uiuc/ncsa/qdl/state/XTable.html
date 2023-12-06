@@ -257,8 +257,8 @@ implements <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>abstract <a href="XTable.html" title="type parameter in XTable">V</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#deserializeElement(javax.xml.stream.XMLEventReader,edu.uiuc.ncsa.qdl.xml.XMLSerializationState,edu.uiuc.ncsa.qdl.parsing.QDLInterpreter)">deserializeElement</a></span>&#8203;(<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.xml/javax/xml/stream/XMLEventReader.html?is-external=true" title="class or interface in javax.xml.stream" class="externalLink">XMLEventReader</a>&nbsp;xer,
-                  <a href="../xml/XMLSerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">XMLSerializationState</a>&nbsp;XMLSerializationState,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#deserializeElement(javax.xml.stream.XMLEventReader,edu.uiuc.ncsa.qdl.xml.SerializationStateu.uiuc.ncsa.qdl.parsing.QDLInterpreter)">deserializeElement</a></span>&#8203;(<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.xml/javax/xml/stream/XMLEventReader.html?is-external=true" title="class or interface in javax.xml.stream" class="externalLink">XMLEventReader</a>&nbsp;xer,
+                  <a href="../xml/SerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">SerializationState</a>&nbsp;SerializationState,
                   <a href="../parsing/QDLInterpreter.html" title="class in edu.uiuc.ncsa.qdl.parsing">QDLInterpreter</a>&nbsp;qi)</code></th>
 <td class="colLast">
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
@@ -266,8 +266,8 @@ implements <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>abstract <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#fromJSONEntry(java.lang.String,edu.uiuc.ncsa.qdl.xml.XMLSerializationState)">fromJSONEntry</a></span>&#8203;(<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a>&nbsp;x,
-             <a href="../xml/XMLSerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">XMLSerializationState</a>&nbsp;xmlSerializationState)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#fromJSONEntry(java.lang.String,edu.uiuc.ncsa.qdl.xml.SerializationStatefromJSONEntry</a></span>&#8203;(<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a>&nbsp;x,
+             <a href="../xml/SerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">SerializationState</a>&nbsp;serializationState)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i3" class="rowColor">
@@ -280,8 +280,8 @@ implements <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#fromXML(javax.xml.stream.XMLEventReader,edu.uiuc.ncsa.qdl.xml.XMLSerializationState)">fromXML</a></span>&#8203;(<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.xml/javax/xml/stream/XMLEventReader.html?is-external=true" title="class or interface in javax.xml.stream" class="externalLink">XMLEventReader</a>&nbsp;xer,
-       <a href="../xml/XMLSerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">XMLSerializationState</a>&nbsp;XMLSerializationState)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#fromXML(javax.xml.stream.XMLEventReader,edu.uiuc.ncsa.qdl.xml.SerializationStatefromXML</a></span>&#8203;(<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.xml/javax/xml/stream/XMLEventReader.html?is-external=true" title="class or interface in javax.xml.stream" class="externalLink">XMLEventReader</a>&nbsp;xer,
+       <a href="../xml/SerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">SerializationState</a>&nbsp;SerializationState)</code></th>
 <td class="colLast">
 <div class="block">Version 2.0 serialization</div>
 </td>
@@ -314,8 +314,8 @@ implements <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base
 </tr>
 <tr id="i9" class="rowColor">
 <td class="colFirst"><code>abstract <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#toJSONEntry(V,edu.uiuc.ncsa.qdl.xml.XMLSerializationState)">toJSONEntry</a></span>&#8203;(<a href="XTable.html" title="type parameter in XTable">V</a>&nbsp;xThing,
-           <a href="../xml/XMLSerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">XMLSerializationState</a>&nbsp;xmlSerializationState)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#toJSONEntry(V,edu.uiuc.ncsa.qdl.xml.SerializationStatetoJSONEntry</a></span>&#8203;(<a href="XTable.html" title="type parameter in XTable">V</a>&nbsp;xThing,
+           <a href="../xml/SerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">SerializationState</a>&nbsp;serializationState)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i10" class="altColor">
@@ -325,8 +325,8 @@ implements <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base
 </tr>
 <tr id="i11" class="rowColor">
 <td class="colFirst"><code>abstract void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#toXML(javax.xml.stream.XMLStreamWriter,edu.uiuc.ncsa.qdl.xml.XMLSerializationState)">toXML</a></span>&#8203;(<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.xml/javax/xml/stream/XMLStreamWriter.html?is-external=true" title="class or interface in javax.xml.stream" class="externalLink">XMLStreamWriter</a>&nbsp;xsw,
-     <a href="../xml/XMLSerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">XMLSerializationState</a>&nbsp;XMLSerializationState)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#toXML(javax.xml.stream.XMLStreamWriter,edu.uiuc.ncsa.qdl.xml.SerializationStatetoXML</a></span>&#8203;(<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.xml/javax/xml/stream/XMLStreamWriter.html?is-external=true" title="class or interface in javax.xml.stream" class="externalLink">XMLStreamWriter</a>&nbsp;xsw,
+     <a href="../xml/SerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">SerializationState</a>&nbsp;SerializationState)</code></th>
 <td class="colLast">
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
 </td>
@@ -438,45 +438,45 @@ implements <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base
 </dl>
 </li>
 </ul>
-<a id="toXML(javax.xml.stream.XMLStreamWriter,edu.uiuc.ncsa.qdl.xml.XMLSerializationState)">
+<a id="toXML(javax.xml.stream.XMLStreamWriter,edu.uiuc.ncsa.qdl.xml.SerializationState
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>toXML</h4>
 <pre class="methodSignature">public abstract&nbsp;void&nbsp;toXML&#8203;(<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.xml/javax/xml/stream/XMLStreamWriter.html?is-external=true" title="class or interface in javax.xml.stream" class="externalLink">XMLStreamWriter</a>&nbsp;xsw,
-                           <a href="../xml/XMLSerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">XMLSerializationState</a>&nbsp;XMLSerializationState)
+                           <a href="../xml/SerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">SerializationState</a>&nbsp;SerializationState)
                     throws <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.xml/javax/xml/stream/XMLStreamException.html?is-external=true" title="class or interface in javax.xml.stream" class="externalLink">XMLStreamException</a></pre>
 <div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>xsw</code> - </dd>
-<dd><code>XMLSerializationState</code> - </dd>
+<dd><code>SerializationState</code> - </dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.xml/javax/xml/stream/XMLStreamException.html?is-external=true" title="class or interface in javax.xml.stream" class="externalLink">XMLStreamException</a></code></dd>
 </dl>
 </li>
 </ul>
-<a id="toJSONEntry(edu.uiuc.ncsa.qdl.state.XThing,edu.uiuc.ncsa.qdl.xml.XMLSerializationState)">
+<a id="toJSONEntry(edu.uiuc.ncsa.qdl.state.XThing,edu.uiuc.ncsa.qdl.xml.SerializationState
 <!--   -->
-</a><a id="toJSONEntry(V,edu.uiuc.ncsa.qdl.xml.XMLSerializationState)">
+</a><a id="toJSONEntry(V,edu.uiuc.ncsa.qdl.xml.SerializationState
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>toJSONEntry</h4>
 <pre class="methodSignature">public abstract&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a>&nbsp;toJSONEntry&#8203;(<a href="XTable.html" title="type parameter in XTable">V</a>&nbsp;xThing,
-                                   <a href="../xml/XMLSerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">XMLSerializationState</a>&nbsp;xmlSerializationState)</pre>
+                                   <a href="../xml/SerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">SerializationState</a>&nbsp;serializationState)</pre>
 </li>
 </ul>
-<a id="fromJSONEntry(java.lang.String,edu.uiuc.ncsa.qdl.xml.XMLSerializationState)">
+<a id="fromJSONEntry(java.lang.String,edu.uiuc.ncsa.qdl.xml.SerializationState
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>fromJSONEntry</h4>
 <pre class="methodSignature">public abstract&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a>&nbsp;fromJSONEntry&#8203;(<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a>&nbsp;x,
-                                     <a href="../xml/XMLSerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">XMLSerializationState</a>&nbsp;xmlSerializationState)</pre>
+                                     <a href="../xml/SerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">SerializationState</a>&nbsp;serializationState)</pre>
 </li>
 </ul>
 <a id="fromXML(javax.xml.stream.XMLEventReader,edu.uiuc.ncsa.qdl.parsing.QDLInterpreter)">
@@ -498,20 +498,20 @@ implements <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base
 </dl>
 </li>
 </ul>
-<a id="fromXML(javax.xml.stream.XMLEventReader,edu.uiuc.ncsa.qdl.xml.XMLSerializationState)">
+<a id="fromXML(javax.xml.stream.XMLEventReader,edu.uiuc.ncsa.qdl.xml.SerializationState
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>fromXML</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;fromXML&#8203;(<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.xml/javax/xml/stream/XMLEventReader.html?is-external=true" title="class or interface in javax.xml.stream" class="externalLink">XMLEventReader</a>&nbsp;xer,
-                    <a href="../xml/XMLSerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">XMLSerializationState</a>&nbsp;XMLSerializationState)
+                    <a href="../xml/SerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">SerializationState</a>&nbsp;SerializationState)
              throws <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.xml/javax/xml/stream/XMLStreamException.html?is-external=true" title="class or interface in javax.xml.stream" class="externalLink">XMLStreamException</a></pre>
 <div class="block">Version 2.0 serialization</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>xer</code> - </dd>
-<dd><code>XMLSerializationState</code> - </dd>
+<dd><code>SerializationState</code> - </dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.xml/javax/xml/stream/XMLStreamException.html?is-external=true" title="class or interface in javax.xml.stream" class="externalLink">XMLStreamException</a></code></dd>
 </dl>
@@ -543,21 +543,21 @@ implements <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base
 </dl>
 </li>
 </ul>
-<a id="deserializeElement(javax.xml.stream.XMLEventReader,edu.uiuc.ncsa.qdl.xml.XMLSerializationState,edu.uiuc.ncsa.qdl.parsing.QDLInterpreter)">
+<a id="deserializeElement(javax.xml.stream.XMLEventReader,edu.uiuc.ncsa.qdl.xml.SerializationStateu.uiuc.ncsa.qdl.parsing.QDLInterpreter)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>deserializeElement</h4>
 <pre class="methodSignature">public abstract&nbsp;<a href="XTable.html" title="type parameter in XTable">V</a>&nbsp;deserializeElement&#8203;(<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.xml/javax/xml/stream/XMLEventReader.html?is-external=true" title="class or interface in javax.xml.stream" class="externalLink">XMLEventReader</a>&nbsp;xer,
-                                     <a href="../xml/XMLSerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">XMLSerializationState</a>&nbsp;XMLSerializationState,
+                                     <a href="../xml/SerializationState.html" title="class in edu.uiuc.ncsa.qdl.xml">SerializationState</a>&nbsp;SerializationState,
                                      <a href="../parsing/QDLInterpreter.html" title="class in edu.uiuc.ncsa.qdl.parsing">QDLInterpreter</a>&nbsp;qi)
                               throws <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.xml/javax/xml/stream/XMLStreamException.html?is-external=true" title="class or interface in javax.xml.stream" class="externalLink">XMLStreamException</a></pre>
 <div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>xer</code> - </dd>
-<dd><code>XMLSerializationState</code> - </dd>
+<dd><code>SerializationState</code> - </dd>
 <dd><code>qi</code> - </dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dt><span class="throwsLabel">Throws:</span></dt>

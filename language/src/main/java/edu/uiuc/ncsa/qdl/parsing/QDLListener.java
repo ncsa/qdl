@@ -1306,7 +1306,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
         ExpressionInterface exp = (ExpressionInterface) resolveChild(list.get(0));
         for (int i = 0; i < dotOpContext.getChildCount(); i++) {
             ParseTree p = dotOpContext.getChild(i);
-            // If it is a termminal node (a node consisting of just be the stem marker) skip it
+            // If it is a termminal node (a node consisting of just the stem marker) skip it
             if (!(p instanceof TerminalNodeImpl)) {
                 ExpressionInterface swri = (ExpressionInterface) resolveChild(p);
                 if (i == 0) {
@@ -1416,10 +1416,11 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
     @Override
     public void exitF_ref(QDLParserParser.F_refContext ctx) {
-        //      System.out.println("exit F_REF");
-        // FunctionReferenceNode frn = new FunctionReferenceNode();
         FunctionReferenceNode frn = (FunctionReferenceNode) parsingMap.getStatementFromContext(ctx);
         String name = ctx.getText();
+        if (StringUtils.isTrivial(name)) {
+            throw new ParsingException("could not resolve function reference name in this scope");
+        }
         frn.setTokenPosition(tp(ctx));
         frn.setSourceCode(getSource(ctx));
         if (name.contains(QDLConstants.FUNCTION_REFERENCE_MARKER2)) {
@@ -1427,7 +1428,9 @@ illegal argument:no module named "b" was  imported at (1, 67)
         } else {
             name = name.substring(QDLConstants.FUNCTION_REFERENCE_MARKER.length());
         }
-        //frn.setFunctionName(name); // if we allow function references to not end in ()
+    /*    if(name.contains(NS_DELIMITER)){
+            name = name.substring(1+name.lastIndexOf(NS_DELIMITER));
+        }*/
         int parenIndex = name.indexOf("(");
         if (-1 < parenIndex) {
             // whack off any dangling parenthese
@@ -1487,9 +1490,9 @@ illegal argument:no module named "b" was  imported at (1, 67)
         //#0 is if[ // #1 is conditional, #2 is ]then[. #3 starts the statements
         altIfExpressionNode.setIF((ExpressionNode) resolveChild(ctx.getChild(0)));
         altIfExpressionNode.setTHEN((ExpressionInterface) resolveChild(ctx.getChild(2)));
-        if(3<ctx.getChildCount()){
+        if (3 < ctx.getChildCount()) {
             altIfExpressionNode.setELSE((ExpressionInterface) resolveChild(ctx.getChild(4)));
-        }else{
+        } else {
             altIfExpressionNode.setELSE(QDLNull.getInstance());
         }
         altIfExpressionNode.setTokenPosition(tp(ctx));
@@ -2124,6 +2127,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
          * it, so X#__a, X#__f(3) will fail. 
          */
         Statement statement = resolveChild(ctx.expression());
+        //Statement statement = resolveChild(ctx.expression(1));
         if (statement instanceof FunctionDefinitionStatement) {
             throw new IntrinsicViolation("cannot define function in an existing module", statement);
         }
@@ -2149,6 +2153,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
             moduleExpression.setDefaultNamespace(true);
         } else {
             ExpressionInterface var = (ExpressionInterface) resolveChild(ctx.variable());
+            //ExpressionInterface var = (ExpressionInterface) resolveChild(ctx.expression(0));
             if (!(var instanceof VariableNode)) {
                 throw new IllegalArgumentException("unexpected argument for alias");
             }
@@ -2463,26 +2468,95 @@ illegal argument:no module named "b" was  imported at (1, 67)
     }
 
     OpEvaluator opEvaluator = new OpEvaluator();
+
     @Override
     public void enterSwitchExpression(QDLParserParser.SwitchExpressionContext ctx) {
-     SelectExpressionNode s = new SelectExpressionNode();
-     stash(ctx, s);
+        SelectExpressionNode s = new SelectExpressionNode();
+        stash(ctx, s);
     }
 
     @Override
     public void exitSwitchExpression(QDLParserParser.SwitchExpressionContext ctx) {
-         SelectExpressionNode selectExpressionNode = (SelectExpressionNode) parsingMap.getStatementFromContext(ctx);
-         selectExpressionNode.setSWITCH((ExpressionInterface) resolveChild(ctx.getChild(0)));
-         selectExpressionNode.setCASE((ExpressionInterface) resolveChild(ctx.getChild(2)));
-         if(3 < ctx.getChildCount()){
-             selectExpressionNode.setDEFAULT((ExpressionInterface) resolveChild(ctx.getChild(4)));
-         }else{
-             selectExpressionNode.setDEFAULT(QDLNull.getInstance());
-         }
-         selectExpressionNode.setTokenPosition(tp(ctx));
-         selectExpressionNode.setSourceCode(getSource(ctx));
+        SelectExpressionNode selectExpressionNode = (SelectExpressionNode) parsingMap.getStatementFromContext(ctx);
+        selectExpressionNode.setSWITCH((ExpressionInterface) resolveChild(ctx.getChild(0)));
+        selectExpressionNode.setCASE((ExpressionInterface) resolveChild(ctx.getChild(2)));
+        if (3 < ctx.getChildCount()) {
+            selectExpressionNode.setDEFAULT((ExpressionInterface) resolveChild(ctx.getChild(4)));
+        } else {
+            selectExpressionNode.setDEFAULT(QDLNull.getInstance());
+        }
+        selectExpressionNode.setTokenPosition(tp(ctx));
+        selectExpressionNode.setSourceCode(getSource(ctx));
     }
 
+    @Override
+    public void enterUnaryApplyExpression(QDLParserParser.UnaryApplyExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void exitUnaryApplyExpression(QDLParserParser.UnaryApplyExpressionContext ctx) {
+        Monad monad;
+        monad = new Monad(OpEvaluator.APPLY_OP_VALUE, false);
+        //monad.setUnary(true);
+        monad.setTokenPosition(tp(ctx));
+        stash(ctx, monad);
+        finish(monad, ctx);
+    }
+
+
+    @Override
+    public void enterAppliesOperator(QDLParserParser.AppliesOperatorContext ctx) {
+
+    }
+
+    @Override
+    public void exitAppliesOperator(QDLParserParser.AppliesOperatorContext ctx) {
+        exitDyadicOps(ctx);
+    }
+
+    @Override
+    public void enterFunctionReference(QDLParserParser.FunctionReferenceContext ctx) {
+
+    }
+
+    @Override
+    public void exitFunctionReference(QDLParserParser.FunctionReferenceContext ctx) {
+        FunctionReferenceNode fNode = null;
+        fNode = new FunctionReferenceNode();
+        // The symbol always includes the @ or ⊗ for the function reference. Strip it.
+        String symbol = ctx.f_ref().F_REF().getSymbol().getText();
+        symbol = (symbol.startsWith("@") || symbol.startsWith("⊗")) ? symbol.substring(1) : symbol;
+        //  symbol = symbol.substring(1+symbol.lastIndexOf(NS_DELIMITER));
+        int parenIndex = symbol.indexOf("(");
+        if (-1 < parenIndex) {
+            // whack off any dangling parenthese
+            symbol = symbol.substring(0, symbol.indexOf("("));
+        }
+        fNode.setFunctionName(symbol);
+        fNode.setTokenPosition(tp(ctx));
+        fNode.setSourceCode(getSource(ctx));
+        stash(ctx, fNode);
+    }
+    /*
+      module['a:x'][g(x,y)->x*y;]
+  z:=import('a:x')
+  ⍺z#@g
+     */
+    /*
+           ConstantNode constantNode = null;
+        Object value;
+        try {
+            value = Long.parseLong(ctx.getChild(0).getText());
+        } catch (NumberFormatException nfx) {
+            // it is possible the user is entering a simply huge number, try plan B
+            value = new BigDecimal(ctx.getChild(0).getText());
+        }
+        constantNode = new ConstantNode(value);
+        constantNode.setTokenPosition(tp(ctx));
+        constantNode.setSourceCode(getSource(ctx));
+        stash(ctx, constantNode);
+     */
 }
 
 

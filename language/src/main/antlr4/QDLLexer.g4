@@ -124,6 +124,7 @@ SCIENTIFIC_NUMBER : Decimal (E SIGN? Integer)?;
        ContainsKey : '∋' | '∌';  // unicode 220B, 220C
     Exponentiation : '^';
          Transpose : '⦰';  // 29b0
+             Apply : '⍺'; //237A
  //    ExprDyadicOps : '∈' | '∉' | '∋' | '∌' | '⌆' | '⦰'; // 2306 29b0 operations that require expressions left and right
      ExprDyadicOps :  '⌆' ; // 2306 29b0 operations that require expressions left and right
  //    FRefDyadicOps :  '∀' | '⨀' | '⨁' ; //  2a00 2a01 29b0 ops that have a function ref for LHS
@@ -182,7 +183,7 @@ fragment AllOps :
      Times | Divide | Plus | Minus | LessThan | LessEquals | GreaterThan | Exponentiation |
      LessEquals | MoreEquals | Equals | NotEquals | And | Or | Percent | Tilde | TildeRight |
      LogicalNot | RegexMatches | Floor | Ceiling | Membership | To_Set | IsA | IsDefined |
-     ContainsKey | ForAll;
+     ContainsKey | ForAll | Apply;
 
 fragment FUNCTION_NAME :
      [a-zA-Z_$\u03b1-\u03c9\u0391-\u03a9\u03d1\u03d6\u03f0\u03f1][a-zA-Z_$0-9\u03b1-\u03c9\u0391-\u03a9\u03d1]*;

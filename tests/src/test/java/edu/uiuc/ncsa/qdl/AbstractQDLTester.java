@@ -8,6 +8,7 @@ import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.VThing;
 import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
+import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.xml.stream.*;
@@ -88,7 +89,7 @@ public class AbstractQDLTester extends TestBase {
             Object v1 = null;
             Object v2 = null;
             if (key1 instanceof Long) {
-                Long k1 = (Long)key1;
+                Long k1 = (Long) key1;
                 if (!stem2.containsKey(k1)) return false;
                 v1 = stem1.get(k1);
                 v2 = stem2.get(k1);
@@ -266,6 +267,15 @@ public class AbstractQDLTester extends TestBase {
         return workspaceCommands.getInterpreter().getState();
     }
 
+    protected State pickleJSONState(State state) throws Throwable {
+        // Serialize the workspace
+        WorkspaceCommands workspaceCommands = new WorkspaceCommands();
+        workspaceCommands.setState(state);
+        JSONObject json = workspaceCommands.toJSON();
+        // Deserialize the workspace
+        return workspaceCommands.fromJSON(json).getState();
+    }
+
     protected State pickleJavaState(State state) throws Throwable {
         // Serialize the workspace
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -285,6 +295,7 @@ public class AbstractQDLTester extends TestBase {
      * Sort of a test for QDL dump. Note that a dump is <b>not</b> a full save
      * of a workspace. This test is for simple cases mostly for regression
      * in common use cases (simple workspace, pickle it, reload later).
+     *
      * @param state
      * @return
      * @throws Throwable
@@ -296,14 +307,14 @@ public class AbstractQDLTester extends TestBase {
         WorkspaceCommands workspaceCommands = new WorkspaceCommands();
         workspaceCommands.setState(state);
         workspaceCommands._xmlWSQDLSave(osw);
-     //   System.out.println(new String(baos.toByteArray()));
+       //System.out.println(new String(baos.toByteArray()));
 
         // Deserialize the workspace
         // Need pretty print. This takes the place or writing it to a file, then reading it.
         //  System.out.println("XML:\n" + pp);
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         InputStreamReader inputStreamReader = new InputStreamReader(bais);
-        QDLInterpreter qdlInterpreter  = new QDLInterpreter(null, state.newCleanState());
+        QDLInterpreter qdlInterpreter = new QDLInterpreter(null, state.newCleanState());
         workspaceCommands._xmlWSQDLLoad(qdlInterpreter, inputStreamReader);
         return qdlInterpreter.getState();
     }
@@ -314,7 +325,7 @@ public class AbstractQDLTester extends TestBase {
      * returned.
      * <h3>Usage</h3>
      * A typical use is to fork a test into a serialization test and nonserialization test
-     * by passing in the doRountrip. Then before the tests you want to run inser
+     * by passing in the doRoundtrip. Then before the tests you want to run inser
      * <pre>
      *     State = ...
      *     StringBuffer script; // <i>setup whatever state you need for your test</i>
@@ -349,6 +360,46 @@ public class AbstractQDLTester extends TestBase {
         return pickleJavaState(oldState);
     }
 
+    protected State roundTripJSONSerialization(State oldState, StringBuffer script) throws Throwable {
+        QDLInterpreter interpreter = new QDLInterpreter(null, oldState);
+        interpreter.execute(script.toString());
+        return pickleJSONState(oldState);
+    }
+
+    public static final int ROUNDTRIP_NONE = 0;
+    public static final int ROUNDTRIP_XML = 1;
+    public static final int ROUNDTRIP_QDL = 2;
+    public static final int ROUNDTRIP_JAVA = 3;
+    public static final int ROUNDTRIP_JSON = 4;
+
+    public State rountripState(State state, StringBuffer script, int testCase) throws Throwable {
+        switch (testCase) {
+            case ROUNDTRIP_XML:
+                // XML
+                state = roundTripXMLSerialization(state, script);
+                script.delete(0,script.length());
+                break;
+            case ROUNDTRIP_QDL:
+                //QDL
+                state = roundTripQDLSerialization(state, script);
+                script.delete(0,script.length());
+                break;
+            case ROUNDTRIP_JAVA:
+                //java
+                state = roundTripJavaSerialization(state, script);
+                script.delete(0,script.length());
+                break;
+            case ROUNDTRIP_JSON:
+                state = roundTripJSONSerialization(state, script);
+                script.delete(0,script.length());
+               break;
+            default:
+            case ROUNDTRIP_NONE:
+                // Do no serialization.
+        }
+        return state;
+    }
+
     /**
      * Create the {@link XMLStreamWriter}
      *
@@ -363,4 +414,26 @@ public class AbstractQDLTester extends TestBase {
     protected XMLEventReader createXER(Reader reader) throws XMLStreamException {
         return XMLInputFactory.newInstance().createXMLEventReader(reader);
     }
+    /**
+      * Gets a file from the distro source for testing. The environment variable NCSA_DEV_INPUT
+      * <b>must</b> be set for this to work.
+      * <h3>E.g.</h3>
+      * getSourcePath("qdl/language/src/main/resources/modules/math-x.mdl") <br/><br/>
+      * returns <br/><br/>
+      * /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/math-x.mdl
+      * <br/><br/>
+      * on my system.
+      *
+      * @param path
+      * @return
+      */
+     protected String getSourcePath(String path) {
+         String devRoot = System.getenv("NCSA_DEV_INPUT");
+         if (devRoot == null) {
+             throw new IllegalStateException("NCSA_DEV_INPUT variable not set, cannot run test");
+         }
+         devRoot = devRoot.endsWith("/") ? devRoot.substring(0, devRoot.length() - 1) : devRoot;
+         path = path.startsWith("/") ? path.substring(1) : path;
+         return devRoot + "/" + path;
+     }
 }

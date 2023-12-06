@@ -107,7 +107,7 @@ correctly, hence included to show functionality.
 E.g. If the token is a string, the result returned is conformable to
      the right argument.
    encode('<mairzy stoats "∆>', ['json', 'html'])
-[<mairzy stoats \"\u2206>,<mairzy stoats &quot;∆>]
+[<mairzy stoats \"\u2206>,&lt;mairzy stoats &quot;∆&gt;]
 
 compare with using a stem:
    encode('<mairzy \nstoats "∆>', {'JSON':'json', 'html4':'html', 'java':'java', 'base 64':64})
@@ -123,18 +123,18 @@ Note that in the html4 case, the line feed is not escaped, as per the spec.,
 but preserved.
 
 E.g. One of everything (including some Amharic, just to show unicode support):
-   print(encode('<woof"ወንጌል  \n6%"$',constants().codecs.string.))
-   base_16 : 3c776f6f6622e18b88e18a95e18c8ce1888d20200a36252224
-   base_32 : HR3W633GELQYXCHBRKK6DDEM4GEI2IBABI3CKIRE
-   base_64 : PHdvb2Yi4YuI4YqV4YyM4YiNICAKNiUiJA
+  print(encode('<woof"ወንጌል  6%"$',constants().codecs.string.))
+   base_16 : 3c776f6f6622e18b88e18a95e18c8ce1888d202036252224
+   base_32 : HR3W633GELQYXCHBRKK6DDEM4GEI2IBAGYSSEJA
+   base_64 : PHdvb2Yi4YuI4YqV4YyM4YiNICA2JSIk
        csv : "<woof""ወንጌል  6%""$"
-      ecma : <woof\"\u12C8\u1295\u130C\u120D  \n6%\"$
+      ecma : <woof\"\u12C8\u1295\u130C\u120D  6%\"$
       html : &lt;woof&quot;ወንጌል  6%&quot;$
      html3 : &lt;woof&quot;ወንጌል  6%&quot;$
-      java : <woof\"\u12C8\u1295\u130C\u120D  \n6%\"$
-      json : <woof\"\u12C8\u1295\u130C\u120D  \n6%\"$
-       qdl : $3Cwoof$22$E1$8B$88$E1$8A$95$E1$8C$8C$E1$88$8D$20$20$0A6$25$22$24
-       url : %3Cwoof%22%E1%8B%88%E1%8A%95%E1%8C%8C%E1%88%8D%20%20%0A6%25%22%24
+      java : <woof\"\u12C8\u1295\u130C\u120D  6%\"$
+      json : <woof\"\u12C8\u1295\u130C\u120D  6%\"$
+   qdl_var : $3Cwoof$22$E1$8B$88$E1$8A$95$E1$8C$8C$E1$88$8D$20$206$25$22$24
+       url : %3Cwoof%22%E1%8B%88%E1%8A%95%E1%8C%8C%E1%88%8D%20%206%25%22%24
        xml : &lt;woof&quot;ወንጌል  6%&quot;$
     xml1.0 : &lt;woof&quot;ወንጌል  6%&quot;$
        xsi : \<woof\"ወንጌል\ \ 6\%\"\$]]>
@@ -1834,9 +1834,9 @@ E.g. replace works in sets (and nested sets too)
 
 E.g. an example where there are mixed regexes and simple replacements. Mutiple
      blanks are replaced as is one word,
-  replace('teh   quick brown    fox       jumped',
-           {'\\s+': ' ', 'teh':'the'},
-           {'\\s+':true, 'teh':false});
+  replace('teh   quick brown    fox       jumped', // line of text
+           {'\\s+': ' ', 'teh':'the'},             // the replacements
+           {'\\s+':true, 'teh':false});            // booleans for which are regexes
 the quick brown fox jumped
 
      Note that you also omit the regex flags that are false, since that is the default,
@@ -4615,7 +4615,12 @@ Implictly:
    pick((x)->x<4, {2,-1,3,5,6})
  {-1,2,3}
 
-In the implicit case, the function is anonymous and the reference is passed.]]>
+In the implicit case, the function is anonymous and the reference is passed.
+N.B. to access a function in a module, you need to use @ on the function:
+   x#y#z#@f
+gets the function reference to the function f, that is nested in modules. This
+is because module paths may be arbitrarily complex and an expression like
+@x#y#z#f (what if z is a function??) would be in general unresolvable.]]>
        </body>
     </entry>
     <entry id="comparisons">
@@ -4694,9 +4699,9 @@ q   |w   |e    |r   |t   |y   |u   |i   |o   |p   |[   |]   |\   |
     |    |∈    |≈   |⦰   |    |∪   |∃   |    |π   |    |   | ≠  |
 
   A |  S |  D |  F |  G |  H |  J |  K |  L |  : |  " |
-  ∀ |    |  ∆ |    |    |  ∌ |    |    |    |  ≔ |  ≕ |
+  ∀ |  ⊨ |  ∆ |    |    |  ∌ |    |    |    |  ≔ |  ≕ |
 a   |s   |d   |f   |g   |h   |j   |k   |l   |;   |'   |
-⊨   |⊢   |→   |    |    |∋   |    |⌈   |⌊   |    | »  |
+⍺   |⊢   |→   |    |    |∋   |    |⌈   |⌊   |    | »  |
 
   Z |  X |  C |  V |  B |  N |  M |  < |  > |  ? |
     |  ⊕ |    |    |    |    |    |  ≤ |  ≥ |  ⇒ |
@@ -5356,6 +5361,20 @@ See also: fork]]>
  true]]>
          </example>
      </entry>
+    <entry id="jUse">
+        <body>
+<![CDATA[Identical to jLoad in semantics, except that it issues
+a use() command to place the desired module in the current scope,
+so it may be used without namespace qualification.
+
+See also: jLoad, namespace
+]]>
+     </body>
+     <example>
+ <![CDATA[
+ ]]>
+      </example>
+  </entry>
 
     <entry id="jload">
        <body>
@@ -5379,7 +5398,9 @@ cli
 
 #2 is particularly useful if QDL has extensions to the library. For instance,
 in OA4MP  you might issue
-   jload('oa2.jwt')]]>
+   jload('oa2.jwt')
+
+See also: jUse]]>
        </body>
        <example>
    <![CDATA[E.g. to load the db module with the alias of mySQL
@@ -5639,6 +5660,104 @@ exactly one true value in the left argument:
 Here there is no such value equal to 11, so the default case value of -1 is returned.
 ]]>
        </example>
+    </entry>
+
+    <entry id="apply" alt="⍺">
+       <body>
+  <![CDATA[apply(@function) - returns a list of arg counts for this function
+  apply(@function. int) - return a list of variable names
+  apply(@function, stem. | list.) - apply the function to the arguments
+
+  This permits on the fly construction of argument lists to functions.
+
+  Note that for the operator version, which uses ⍺ (unicode 237A) which
+  is not the same as the Greek letter α, (unicode 03b1) that the arguments
+  are switched.
+  ⍺@f == apply(@f)
+  j⍺@f == apply(@f,j), integer query case
+  stem.⍺@f == apply(@f, stem.)
+
+Note especially the application to a module function. To If the function
+f is nested in modules x, y and z, then
+   ⍺x#y#z#@f
+would access the function proper and
+   [2,3,4]⍺@x#y#z#@f
+would evaluate it.
+
+  ]]>
+       </body>
+       <example>
+   <![CDATA[Complete use might be
+   f(x)->x^2; // the definition
+    // there is a single function, f that takes a single argument:
+   ⍺@f
+[1]
+    // The function list for f is the single variable x
+    1⍺@f
+[x]
+   // evaluate f(3)
+   [3]⍺@f
+9
+   // Evaluate f at 3, explicitly setting the variable x in the argument list.
+   {'x':3}⍺@f
+9
+
+   ]]>
+        </example>
+    </entry>
+    <entry id="⍺">
+       <body>
+  <![CDATA[The apply function as an operator.
+
+See also apply
+  ]]>
+       </body>
+    </entry>
+    <entry id="namespace">
+       <body>
+  <![CDATA[(From the reference manual)
+  A namespace is a set of names that refer to a set of objects. Using a
+  namespace ensures that all objects have unique names with respect to
+  that namespace. A very common example is a file system, where every
+  file within a directory has a unique name. In QDL this is accomplished
+  through modules. Each module has its own namespace and every object in
+  the workspace is associated with a namespace. The namespace qualifier
+  is a URN.  It is profitable to think of namepsaces as a dictionary
+  of resources.
+
+E.g.
+In QDL, we use modules and a typical example might be
+   module['my:test'][f(x)->x^2;q:=4;];
+   z:=import('my_test');
+   z#f(4)
+18
+   z#q
+4
+   z#q:=11
+   z#q
+11
+
+In this case, the namespace is 'my:test' and the variable z points to
+an instance of this. Every access to elements in the namespace requires
+qualification. You may also dump a module into the current namespace,
+so that calls to it do not require qualification.
+E.g.
+   load('/path/to/mathx.mdl')
+   use('qdl:/ext/math')
+   coth(pi()/7)
+2.375797798863473
+
+Note that use() means there is exactly one instance of the module currently
+active, so re-issuing the call just reloads the module into the current scope.
+
+(In the old module system, loading a module would allow you to use it without
+qualification as lon as there were no name clashes. This is now deprecated. )
+]]>
+       </body>
+<!--       <example>
+   <![CDATA[
+   ]]>
+        </example>-->
     </entry>
 
     <!--

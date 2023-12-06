@@ -42,7 +42,8 @@ public abstract class NamespaceAwareState extends ModuleState {
             IOEvaluator.IO_NAMESPACE,
             StemEvaluator.STEM_NAMESPACE,
             StringEvaluator.STRING_NAMESPACE,
-            ListEvaluator.LIST_NAMESPACE);
+            ListEvaluator.LIST_NAMESPACE,
+            ModuleEvaluator.MODULE_NAMESPACE);
 
     /**
      * Checks if the alias  is in fact a reserved namespace. E.g. if the user tries to create an alias of

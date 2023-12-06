@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl;
 
+import edu.uiuc.ncsa.qdl.evaluate.FunctionEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.IndexError;
 import edu.uiuc.ncsa.qdl.exceptions.ParsingException;
@@ -36,11 +37,14 @@ public class ParserTest extends AbstractQDLTester {
      */
 
     public void testRational1() throws Throwable {
-        testRational1(false);
-        testRational1(true);
+        testRational1(ROUNDTRIP_NONE);
+        testRational1(ROUNDTRIP_XML);
+        testRational1(ROUNDTRIP_QDL);
+        testRational1(ROUNDTRIP_JAVA);
+        testRational1(ROUNDTRIP_JSON);
     }
 
-    public void testRational1(boolean testXML) throws Throwable {
+    public void testRational1(int testCase) throws Throwable {
         BigDecimal[] results = {                new BigDecimal("1.37037037037037"),
                 new BigDecimal("1.87793427230047"),
                 new BigDecimal("1.69230769230769"),
@@ -55,6 +59,8 @@ public class ParserTest extends AbstractQDLTester {
         addLine(script, "return(v);");
         addLine(script, "];");
         QDLInterpreter interpreter;
+        //state = rountripState(state, script, testCase);
+/*
         if (testXML) {
             state = roundTripXMLSerialization(state, script);
             interpreter = new QDLInterpreter(null, state); // round trip the state, create local interpret for check
@@ -62,8 +68,13 @@ public class ParserTest extends AbstractQDLTester {
             interpreter = new QDLInterpreter(null, state);
             interpreter.execute(script.toString());
         }
+*/
 
         for (int i = 1; i < 1 + results.length; i++) {
+            state = rountripState(state, script, testCase);
+            interpreter = new QDLInterpreter(null, state); // round trip the state, create local interpret for check
+
+/*
             if (testXML) {
                 // test to really beat the daylights out of serialization -- each instance of the loop tests it,
                 // so if there are odd artifacts or some such that are creeping in, these get caught.
@@ -72,6 +83,7 @@ public class ParserTest extends AbstractQDLTester {
                 interpreter = new QDLInterpreter(null, state); // round trip the state, create local interpret for check
             }
             script = new StringBuffer();
+*/
             addLine(script, "a:=3/" + i + ";");
             addLine(script, "b := -5/" + i + ";");
             addLine(script, "c := f(a,b);");
@@ -233,11 +245,14 @@ public class ParserTest extends AbstractQDLTester {
      */
 
     public void testContinuedFraction1() throws Throwable {
-        testContinuedFraction1(false);
-        testContinuedFraction1(true);
+        testContinuedFraction1(ROUNDTRIP_NONE);
+        testContinuedFraction1(ROUNDTRIP_XML);
+        testContinuedFraction1(ROUNDTRIP_QDL);
+        testContinuedFraction1(ROUNDTRIP_JAVA);
+        testContinuedFraction1(ROUNDTRIP_JSON);
     }
 
-    public void testContinuedFraction1(boolean testXML) throws Throwable {
+    public void testContinuedFraction1(int testCase) throws Throwable {
         String cf = "1/(2*x+3*y/(4*x+5*y/(6*x+7*y/(8*x+9*y/(x^2+y^2+1)))))";
         String cf2 = "  (192*x^3 + 192*x^5 + 68*x*y + 216*x^2*y + 68*x^3*y + 45*y^2 + " +
                 "     192*x^3*y^2 + 68*x*y^3)/" +
@@ -249,23 +264,14 @@ public class ParserTest extends AbstractQDLTester {
 
         addLine(script, "f(x,y)->" + cf);
         addLine(script, "-" + cf2 + ";"); // so f should be zero.
+      //  state = rountripState(state, script, testCase);
         QDLInterpreter interpreter;
-        if (testXML) {
-            state = roundTripXMLSerialization(state, script);
-            interpreter = new QDLInterpreter(null, state); // round trip the state, create local interpret for check
-        } else {
-            interpreter = new QDLInterpreter(null, state);
-            interpreter.execute(script.toString());
-        }
 
         // That was to make sure the function ended up in the state, so let's be sure it
         // really works
         for (int i = 1; i < 11; i++) {
-            if (testXML) {
-                state = roundTripXMLSerialization(state, script);
-                interpreter = new QDLInterpreter(null, state); // round trip the state, create local interpret for check
-            }
-            script = new StringBuffer();
+            state = rountripState(state, script, testCase);
+            interpreter = new QDLInterpreter(null, state); // round trip the state, create local interpret for check
             addLine(script, "x:=-5/" + i + ";");
             addLine(script, "y := 8/(" + i + "+3);");
             addLine(script, "z := f(x,y);");
@@ -325,10 +331,11 @@ public class ParserTest extends AbstractQDLTester {
      */
 
     public void testCalledFunctions() throws Throwable {
-        testCalledFunctions(0);
-        testCalledFunctions(1);
-        testCalledFunctions(2);
-        testCalledFunctions(3);
+        testCalledFunctions(ROUNDTRIP_NONE);
+        testCalledFunctions(ROUNDTRIP_XML);
+        testCalledFunctions(ROUNDTRIP_QDL);
+        testCalledFunctions(ROUNDTRIP_JAVA);
+        testCalledFunctions(ROUNDTRIP_JSON);
     }
 
     public void testCalledFunctions(int testCase) throws Throwable {
@@ -356,25 +363,7 @@ public class ParserTest extends AbstractQDLTester {
 
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
+        state = rountripState(state, script, testCase);
         // now verify the results
          interpreter = new QDLInterpreter(null, state);
 
@@ -915,10 +904,11 @@ public class ParserTest extends AbstractQDLTester {
      */
 
     public void testComparisons() throws Throwable {
-        testComparisons(0);
-        testComparisons(1);
-        testComparisons(2);
-        testComparisons(3);
+        testComparisons(ROUNDTRIP_NONE);
+        testComparisons(ROUNDTRIP_XML);
+        testComparisons(ROUNDTRIP_QDL);
+        testComparisons(ROUNDTRIP_JAVA);
+        testComparisons(ROUNDTRIP_JSON);
     }
 
     public void testComparisons(int testCase) throws Throwable {
@@ -940,26 +930,7 @@ public class ParserTest extends AbstractQDLTester {
         addLine(script, "a.18 := a" + OpEvaluator.EQUALS2 + "a;"); //T
         addLine(script, "a.9 := a!=a;"); //F
         addLine(script, "a.19 := a" + OpEvaluator.NOT_EQUAL2 + "a;"); //F
-        switch (testCase) {
-            case 1:
-                // XML
-                state = roundTripXMLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 2:
-                //QDL
-                state = roundTripQDLSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            case 3:
-                //java
-                state = roundTripJavaSerialization(state, script);
-                script = new StringBuffer();
-                break;
-            default:
-                // Do no serialization.
-        }
-
+        state = rountripState(state, script, testCase);
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("a.1", state);
@@ -1040,7 +1011,7 @@ public class ParserTest extends AbstractQDLTester {
         String slash = "\\";
         addLine(script, "a:='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\\n" + //alphanumeric
                 "  ~`!@#$%^&*()[]{}<>\\\\/\\'\"-_=+|;:,.?\\n" + // other ASCII symbols
-                "  ¬¿¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧≁⊕⊗⊙⌆⦰⊢∈∉∀∋∌∃∄∩∪∆\\n" + // unicode
+                "  ¬¿¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧≁⊕⊗⊙⌆⦰⊢∈∉∀∋∌∃∄∩∪∆⍺\\n" + // unicode
                 "  ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω';" // Greek
         );
         addLine(script, "say('\\nprinting all base characters with say:');");
@@ -3017,5 +2988,42 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         assert getBooleanValue("ok7", state) : "switch fails for resolving variable cases";
     }
 
+    public void testBasicApply() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)->x;");
+        addLine(script, "out. := apply(@f);");
+        addLine(script, "ok := (size(out.) == 1) ∧ (1∈out.);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to get arg count list in " + FunctionEvaluator.APPLY;
+    }
+    public void testBasicApply1() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)->x;");
+        addLine(script, "ok := 2 == apply(@f, [2]);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to apply list argument to function with " + FunctionEvaluator.APPLY;
+    }
+
+    public void testBasicApply2() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)->x;");
+        addLine(script, "ok := 2 == apply(@f, {'x':2});");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed apply stem arguemnt to function with " + FunctionEvaluator.APPLY;
+    }
+
+/*
+  f(x)->x
+  apply(@f)
+[1]
+  apply([2],@f)
+2
+ */
 }
 
