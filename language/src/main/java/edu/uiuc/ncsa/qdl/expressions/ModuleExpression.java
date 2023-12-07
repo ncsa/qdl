@@ -13,7 +13,6 @@ import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.VThing;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -185,14 +184,15 @@ public class ModuleExpression extends ExpressionImpl {
                 // current variables in the ambient state, but the variables, imported modules and functions
                 // in the module (or encapsulation breaks!!)
                 State newState = null;
-                try {
+              //  try {
                     newState = StateUtils.clone(getModuleState());
                     newState.getVStack().appendTables(getAmbientState().getVStack());
-                } catch (IOException e) {
+                    newState.setModuleState(true);
+                /*} catch (IOException e) {
                     e.printStackTrace();
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
-                }
+                }*/
                 Object r = null;
                 if (getExpression() instanceof Polyad) {
                     ((Polyad) getExpression()).evaluatedArgs(newState);

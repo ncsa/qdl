@@ -962,7 +962,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         if (arg0 instanceof LambdaDefinitionNode) {
             LambdaDefinitionNode lds = (LambdaDefinitionNode) arg0;
             if (!lds.hasName()) {
-                lds.getFunctionRecord().name = tempFname(state);
+                lds.getFunctionRecord().setName(tempFname(state));
                 lds.getFunctionRecord().setAnonymous(true);
             }
             if (pushNewState) {
@@ -973,14 +973,14 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
                 lds.evaluate(state);
             }
             frn = new FunctionReferenceNode();
-            frn.setFunctionName(lds.getFunctionRecord().name);
+            frn.setFunctionName(lds.getFunctionRecord().getName());
             frn.setAnonymous(lds.getFunctionRecord().isAnonymous());
         }
 
         if ((arg0 instanceof FunctionDefinitionStatement)) {
             LambdaDefinitionNode lds = new LambdaDefinitionNode(((FunctionDefinitionStatement) arg0));
             if (!lds.hasName()) {
-                lds.getFunctionRecord().name = tempFname(state);
+                lds.getFunctionRecord().setName(tempFname(state));
                 lds.getFunctionRecord().setAnonymous(true);
             }
             if (pushNewState) {
@@ -999,7 +999,19 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         if (arg0 instanceof FunctionReferenceNode) {
             frn = (FunctionReferenceNode) arg0;
         }
+        if(arg0 instanceof ModuleExpression){
+            ModuleExpression moduleExpression = (ModuleExpression)  arg0;
+            Object r = arg0.evaluate(state);
+            while(!(r instanceof FunctionReferenceNode)){
+               if(r instanceof ModuleExpression){
+                   r = ((ModuleExpression)r).getExpression();
+               }
+            }
+            if(r instanceof FunctionReferenceNode){
+                frn = (FunctionReferenceNode) r;
+            }
 
+        }
         if (frn == null) {
             throw new IllegalArgumentException("the argument is not a function reference or lambda");
 
@@ -1086,7 +1098,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     /**
      * Used in arg count queries. Returns [1,2,... {@link #MAX_ARG_COUNT}].
      * Note that this does not limit argument lists, but it used in dereferencing
-     * function references. See {@link FunctionEvaluator#resolveArguments(FunctionRecord, Polyad, State, State)}.
+     * function references. See {@link FunctionEvaluator#resolveArguments(FunctionRecordInterface, Polyad, State, State)}.
      *
      * @return
      */

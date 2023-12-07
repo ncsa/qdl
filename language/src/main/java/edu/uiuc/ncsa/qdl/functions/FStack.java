@@ -45,8 +45,8 @@ public class FStack<V extends FTable<? extends FKey, ? extends FunctionRecord>> 
      * @param name
      * @return
      */
-    public List<FunctionRecord> getByAllName(String name) {
-        List<FunctionRecord> all = new ArrayList<>();
+    public List<FunctionRecordInterface> getByAllName(String name) {
+        List<FunctionRecordInterface> all = new ArrayList<>();
         // Note this walks backwards through the stack.
         for (int i = getStack().size() - 1; 0 <= i; i--) {
             all.addAll(((FTable)getStack().get(i)).getByAllName(name));
@@ -199,7 +199,7 @@ public class FStack<V extends FTable<? extends FKey, ? extends FunctionRecord>> 
 
     @Override
     public void setStateStack(State state, XStack xStack) {
-         state.setFTStack((FStack<? extends FTable<? extends FKey,? extends FunctionRecord>>) xStack);
+         state.setFTStack((FStack<? extends FTable<? extends FKey,? extends FunctionRecordInterface>>) xStack);
     }
 
     @Override

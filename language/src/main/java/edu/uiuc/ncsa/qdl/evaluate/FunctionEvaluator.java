@@ -382,7 +382,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
     }
 
     protected void doFunctionEvaluation(Polyad polyad, State state, FR_WithState frs) throws Throwable {
-        FunctionRecord functionRecord = frs.functionRecord;
+        FunctionRecordInterface functionRecord = frs.functionRecord;
         State moduleState = null;
         if (frs.isModule) {
             moduleState = (State) frs.state;
@@ -395,13 +395,14 @@ public class FunctionEvaluator extends AbstractEvaluator {
                         + polyad.getArgCount() + " arguments was not found.", polyad);
             }
         }
-        if (!functionRecord.isFuncRef) {
-            functionRecord = functionRecord.newInstance();
+        if (!functionRecord.isFuncRef()) {
+            //functionRecord = functionRecord.newInstance();
+            functionRecord = functionRecord.clone();
         }
         State localState;
         if (moduleState == null) {
 
-            if (functionRecord.isLambda() || functionRecord.isFuncRef) {
+            if (functionRecord.isLambda() || functionRecord.isFuncRef()) {
                 localState = state.newLocalState();
             } else {
                 localState = state.newFunctionState();
@@ -411,8 +412,25 @@ public class FunctionEvaluator extends AbstractEvaluator {
             if (functionRecord.isLambda()) {
                 localState = state.newLocalState(moduleState);
             } else {
+                /*
+                 At this point there is not much of a chance to avoid java serialization here.
+                 The reason is that the state at this point may have function references with state
+                 (as arguments to functions) which contain the full set of executable statements
+                 and the local state it should run over. It takes a lot fo work to figure out the
+                 right scope, state object and funcion reference and that is why it is captured.
+                 However, evaluating it means that it may be used repeatedly (e.g. in an embedded loop
+                 or a recursive function that needs its own stack)
+                 and we cannot have the original state altered, hence we need a local copy for
+                 local operations.
 
-                localState = StateUtils.clone(state).newFunctionState();
+                 These statements are the body of the function parsed from QDL and therefore are
+                 an arbitrary network of arbitrary complexity. To get another
+                 way of serializing them would involve essentially writing a complete implementation
+                 of a parser to handle all possible edge cases -- at least as complex as writing the
+                 QDL parser by hand. And that would of course break the next time the parser
+                 gets updated.
+                 */
+                localState = StateUtils.javaClone(state).newFunctionState();
             }
         }
         localState.setWorkspaceCommands(state.getWorkspaceCommands());
@@ -440,8 +458,8 @@ public class FunctionEvaluator extends AbstractEvaluator {
         ArrayList<XThing> foundParameters = resolveArguments(functionRecord, polyad, state, localState);
 
 
-        if (functionRecord.isFuncRef) {
-            String realName = functionRecord.fRefName;
+        if (functionRecord.isFuncRef()) {
+            String realName = functionRecord.getfRefName();
             if (state.getOpEvaluator().isMathOperator(realName)) {
                 // Monads and Dyads are reserved for math operations and are smart enough
                 // to grab the OpEvaluator and invoke it, so if the user is sending along
@@ -477,7 +495,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 return;
             }
         }
-        for (Statement statement : functionRecord.statements) {
+        for (Statement statement : functionRecord.getStatements()) {
             if (statement instanceof ExpressionInterface) {
                 ((ExpressionInterface) statement).setAlias(polyad.getAlias());
             }
@@ -492,7 +510,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 polyad.setResultType(rx.resultType);
                 polyad.setEvaluated(true);
                 for (int i = 0; i < functionRecord.getArgCount(); i++) {
-                    localState.getVStack().localRemove(new XKey(functionRecord.argNames.get(i)));
+                    localState.getVStack().localRemove(new XKey(functionRecord.getArgNames().get(i)));
                 }
                 return;
             } catch (java.lang.StackOverflowError sx) {
@@ -515,18 +533,29 @@ public class FunctionEvaluator extends AbstractEvaluator {
      * @param state
      * @param localState
      */
-    protected ArrayList<XThing> resolveArguments(FunctionRecord functionRecord,
+    protected ArrayList<XThing> resolveArguments(FunctionRecordInterface functionRecord,
                                                  Polyad polyad,
                                                  State state,
                                                  State localState) {
         ArrayList<XThing> paramList = new ArrayList<>();
-        if (functionRecord.isFuncRef) {
+        if (functionRecord.isFuncRef()) {
             return paramList;// implicit parameter list since this is an operator or built in function.
         }
          if(polyad.hasEvaluatedArgs()){
-      /*       for (int i = 0; i < functionRecord.getArgCount(); i++) {
+      /*
+      module['a:b'][module['a:a'][f(x)->x^2;];w:=import('a:a');]
+      z:=import('a:b');
+  h(@g, x)->g(x)
+     h(z#w#@f)
 
-             }
+        module['a:a','A'][f(x)->x^2;];
+  z:=import('a:a')
+  h(@g, x)->g(x)
+  h(z#@f, 4)
+  h((x)->x^2, 4)
+  q(x)->x^3
+  h(@q, 4)
+    h(z#@f, 4)
       */
          }
         HashMap<UUID, UUID> localStateLookup = new HashMap<>();
@@ -538,7 +567,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
         for (int i = 0; i < functionRecord.getArgCount(); i++) {
             // note that the call evaluates the state in the non-local environment as per contract,
             // but the named result goes in to the localState.
-            String localName = functionRecord.argNames.get(i);
+            String localName = functionRecord.getArgNames().get(i);
 
             if (isFunctionReference(localName)) {
                 localName = dereferenceFunctionName(localName);
@@ -560,10 +589,10 @@ public class FunctionEvaluator extends AbstractEvaluator {
                     }
                     for (int j = 0; j < airity.length; j++) {
                         FunctionRecord functionRecord1 = new FunctionRecord();
-                        functionRecord1.name = localName;
-                        functionRecord1.fRefName = xname;
-                        functionRecord1.isFuncRef = true;
-                        functionRecord1.isOperator = isOp;
+                        functionRecord1.setName( localName);
+                        functionRecord1.setfRefName(xname);
+                        functionRecord1.setFuncRef(true);
+                        functionRecord1.setOperator(isOp);
                         functionRecord1.setArgCount(airity[j]);
                         FR_WithState frs0 = new FR_WithState();
                         frs0.functionRecord = functionRecord1;
@@ -573,7 +602,30 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 } else {
                     try {
                         // function records come back cloned
-                        functionRecordList = localState.getAllFunctionsByName(xname);
+                        if(frn.hasModuleState()){
+                         // so we're getting the function from a module
+                            functionRecordList = frn.getModuleState().getAllFunctionsByName(xname);
+                            /* surgery. The current variable state is
+                               table0,table1,... <- from ambient state
+                               localTable         <- added when local state created.
+
+                               The local table contains the overrides for things like function and
+                               function arguments. If there is a module, we need to have its state
+                               found before the ambient state.  Table should look like
+                               table0,table1,... <- from ambient state
+                               moduleTable       <- from module state.
+                               localTable        <- added when local state created.
+
+
+                            */
+                            List<XTable> vStack =  localState.getVStack().getStack();
+                            if(!frn.getModuleState().getVStack().isEmpty()) {
+                                vStack.add(vStack.size() - 1, frn.getModuleState().getVStack().getLocal());
+                            }
+                            //localState.getVStack().push(frn.getModuleState().getVStack().getLocal());
+                        } else {
+                            functionRecordList = localState.getAllFunctionsByName(xname);
+                        }
                     } catch (CloneNotSupportedException e) {
                         e.printStackTrace();
                         throw new NFWException("Somehow function records are no longer clonable. Check signatures.");
@@ -584,7 +636,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 // The next block only gets used if there are references to function in modules
                 // E.g. @w#z#f
                 for (FR_WithState fr_withState : functionRecordList) {
-                    fr_withState.functionRecord.name = localName;
+                    fr_withState.functionRecord.setName( localName);
                     paramList.add(fr_withState);
                     if (fr_withState.hasState()) {
                         State s = (State) fr_withState.state;
@@ -607,9 +659,9 @@ public class FunctionEvaluator extends AbstractEvaluator {
                  if(polyad.hasEvaluatedArgs()){
                      // in the case that the arguments were evaluated in some local context that cannot be
                      // available to us.
-                     vThing = new VThing(new XKey(functionRecord.argNames.get(i)), polyad.getEvaluatedArgs().get(i));
+                     vThing = new VThing(new XKey(functionRecord.getArgNames().get(i)), polyad.getEvaluatedArgs().get(i));
                  } else{
-                     vThing = new VThing(new XKey(functionRecord.argNames.get(i)), polyad.getArguments().get(i).evaluate(state));
+                     vThing = new VThing(new XKey(functionRecord.getArgNames().get(i)), polyad.getArguments().get(i).evaluate(state));
                  }
                 //}
                 paramList.add(vThing);
@@ -622,9 +674,18 @@ public class FunctionEvaluator extends AbstractEvaluator {
             State s = referencedStates.get(uuid);
             for (XThing xThing : paramList) {
                 if (xThing instanceof VThing) {
-                    s.getVStack().localPut(xThing);
+                    s.getVStack().localPut((VThing)xThing);
                 } else {
-                    s.getFTStack().localPut(xThing);
+                    if(xThing instanceof FunctionRecordInterface){
+                        // A side-effect of Java erasure is that stacks can have XThings added to them
+                        // regardless of the actual parameterization of the class. This caused a nasty
+                        // hard to track bug so an explicit test is added here to make sure we only have
+                        // the right things in the function stack.
+                        s.getFTStack().localPut(xThing);
+                    }else{
+                        throw new NFWException("internal error. Function records only can be stored as functions, but an instance of type " +
+                                xThing.getClass().getSimpleName() + " was found");
+                    }
                 }
             }
         }

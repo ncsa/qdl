@@ -94,11 +94,6 @@ assertStatement2:
    //      url : URL;
         // The next few lines are kept for reference to see what not to do.
 
-        // The intent was to
-        // promote # to being an operator in its own right, but that played hob with
-        // parsing. What we have works fine and this would require quite a substantial
-        // rewrite of the parser in places for not much payoff.
-        // me : variable? Hash expression;
 
         // The next were to promote @ to be an operator in its own right. Also not much payoff
         // for a big rewrite.

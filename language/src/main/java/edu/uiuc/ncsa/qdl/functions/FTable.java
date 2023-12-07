@@ -98,7 +98,7 @@ public class FTable<K extends FKey, V extends FunctionRecord> extends XTable<K, 
 
         for (XKey key : keySet()) {
             String name = ((FKey) key).getfName(); // de-munge
-            FunctionRecord fr = get(key);
+            FunctionRecordInterface fr = get(key);
             if (regex != null && !regex.isEmpty()) {
                 if (name.matches(regex)) {
                     if (!fAndArgs.containsKey(name)) {

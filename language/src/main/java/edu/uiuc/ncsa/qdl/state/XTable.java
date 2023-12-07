@@ -128,7 +128,6 @@ public abstract class XTable<K extends XKey, V extends XThing> extends HashMap<K
         JSONArray array = new JSONArray();
         for (XKey xKey : keySet()) {
             V v = get(xKey);
-            // in some cases there is nothing to serialize (e.g. java module functions). Skip them
             JSONObject x = serializeToJSON(v, serializationState);
             if(x!=null)array.add(x);
         }

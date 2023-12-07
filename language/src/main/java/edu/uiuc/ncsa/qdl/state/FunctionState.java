@@ -42,7 +42,7 @@ public abstract class FunctionState extends VariableState {
 
     private static final long serialVersionUID = 0xcafed00d4L;
 
-    public void setFTStack(FStack<? extends FTable<? extends FKey, ? extends FunctionRecord>> fStack) {
+    public void setFTStack(FStack<? extends FTable<? extends FKey, ? extends FunctionRecordInterface>> fStack) {
         this.fStack = fStack;
     }
 
@@ -51,7 +51,7 @@ public abstract class FunctionState extends VariableState {
     }
 
 
-    FStack<? extends FTable<? extends FKey, ? extends FunctionRecord>> fStack = new FStack();
+    FStack<? extends FTable<? extends FKey, ? extends FunctionRecordInterface>> fStack = new FStack();
 
     /**
      * Convenience, just looks up name and arg count
@@ -91,14 +91,16 @@ public abstract class FunctionState extends VariableState {
                 lastName = st.nextToken();
             }
             if (wrapper != null) {
-                for (FunctionRecord fr : wrapper.getModule().getState().getFTStack().getByAllName(lastName)) {
+                for (FunctionRecordInterface fr : wrapper.getModule().getState().getFTStack().getByAllName(lastName)) {
+                   // list.add(new FR_WithState(fr, wrapper.getModule().getState(), true));
                     list.add(new FR_WithState(fr.clone(), wrapper.getModule().getState(), true));
                 }
             }
             return list;
         }   // just a name, look for all of them
-        for (FunctionRecord fr : getFTStack().getByAllName(name)) {
+        for (FunctionRecordInterface fr : getFTStack().getByAllName(name)) {
             list.add(new FR_WithState(fr.clone(), this, false));
+            //list.add(new FR_WithState(fr, this, false));
         }
 
         for (Object key : getMInstances().keySet()) {
@@ -106,8 +108,9 @@ public abstract class FunctionState extends VariableState {
             if (wrapper == null) {
                 throw new QDLIllegalAccessException("module not found");
             }
-            for (FunctionRecord fr : wrapper.getModule().getState().getFTStack().getByAllName(name)) {
+            for (FunctionRecordInterface fr : wrapper.getModule().getState().getFTStack().getByAllName(name)) {
                 list.add(new FR_WithState(fr.clone(), wrapper.getModule().getState(), true));
+               // list.add(new FR_WithState(fr, wrapper.getModule().getState(), true));
             }
         }
         return list;
@@ -134,7 +137,7 @@ public abstract class FunctionState extends VariableState {
                 // arguments, uses that.
                 XThing xThing = getFTStack().get(new FKey(name, -1));
                 if (xThing instanceof FunctionRecord) {
-                    FunctionRecord functionRecord = (FunctionRecord) xThing;
+                    FunctionRecordInterface functionRecordInterface = (FunctionRecordInterface) xThing;
                 }
                 XThing xThing1 = getFTStack().get(new FKey(name, argCount));
                 if (xThing1 instanceof FunctionRecord) {
@@ -190,7 +193,7 @@ public abstract class FunctionState extends VariableState {
                         }
                     }
                 } else {
-                    FunctionRecord tempFR = (FunctionRecord) module.getState().getFTStack().get(new FKey(name, argCount));
+                    FunctionRecordInterface tempFR = (FunctionRecordInterface) module.getState().getFTStack().get(new FKey(name, argCount));
                     if ((checkForDuplicates) && tempFR != null) {
                         throw new NamespaceException("Error: There are multiple modules with a function named \"" + name + "\". You must fully qualify which one you want.");
                     }

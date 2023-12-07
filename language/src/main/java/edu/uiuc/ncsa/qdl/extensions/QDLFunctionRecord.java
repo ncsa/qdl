@@ -19,14 +19,14 @@ public class QDLFunctionRecord extends FunctionRecord {
     public QDLFunction qdlFunction = null;
 
     @Override
-    public QDLFunctionRecord clone() throws CloneNotSupportedException {
+    public QDLFunctionRecord clone()  {
         QDLFunctionRecord functionRecord = new QDLFunctionRecord();
-        functionRecord.name = name;
-        functionRecord.sourceCode = sourceCode;
-        functionRecord.documentation = documentation;
-        functionRecord.statements = statements;
-        functionRecord.argNames = argNames;
-        functionRecord.argCount = argCount;
+        functionRecord.setName(getName());
+        functionRecord.setSourceCode(getSourceCode());
+        functionRecord.setDocumentation(getDocumentation());
+        functionRecord.setStatements(getStatements());
+        functionRecord.setArgCount(getArgCount());
+        functionRecord.setArgNames(getArgNames());
         functionRecord.qdlFunction = qdlFunction;
         return functionRecord;
     }

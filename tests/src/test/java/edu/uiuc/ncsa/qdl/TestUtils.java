@@ -4,7 +4,7 @@ import edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.functions.FTable;
-import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
+import edu.uiuc.ncsa.qdl.functions.FunctionRecordInterface;
 import edu.uiuc.ncsa.qdl.module.MIStack;
 import edu.uiuc.ncsa.qdl.module.MTStack;
 import edu.uiuc.ncsa.qdl.state.State;
@@ -38,7 +38,7 @@ public class TestUtils {
             VStack vStack,
             OpEvaluator opEvaluator,
             MetaEvaluator metaEvaluator,
-            FStack<? extends FTable<? extends XKey, ? extends FunctionRecord>> ftStack,
+            FStack<? extends FTable<? extends XKey, ? extends FunctionRecordInterface>> ftStack,
             MTStack mTemplates,
             MIStack mInstances,
             MyLoggingFacade myLoggingFacade,

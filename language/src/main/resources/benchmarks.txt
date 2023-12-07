@@ -1,0 +1,54 @@
+As of 12.7.2023
+
+   Benchmark timings for various cases
+
+-------
+Case 1: resolving a function reference
+      f(x)->x*sin(x)*exp(-x); while[for_next(j,5001)][f(j);];
+
+which consists of a function that has to be looked up each time and all the
+machinery for that:
+
+   s:=date_ms();f(x)->x*sin(x)*exp(-x); while[for_next(j,5001)][f(j);];date_ms()-s
+573
+   S  5001/573
+8.727748691099476
+
+   So 8.72 reps per millisecond and this involves serializing the function with its local
+   state as well as the big decimal execution. This is, actually, not bad performance at all.
+-------
+Case 2: Executing the statement in the loop without a function
+   Contrast with running the function in the loop directly
+     s:=date_ms();while[for_next(j,5001)][j*sin(j)*exp(-j);];date_ms()-s
+299
+  5001/299
+16.725752508361204
+    or 16.7 operations per millisecond. Now for about the simplest function:
+-------
+
+Case 3: executing the statement using implicit looping
+     x. := [;5001];
+     s:=date_ms();y. := x.*sin(x.)*exp(-x.);date_ms()-s
+284
+    5001/284
+17.609154929577464
+-------
+
+Case 4: really simple function
+
+    s:=date_ms();f(x)->x; while[for_next(j,5001)][f(j);];date_ms()-s;
+120
+  5001/120
+41.675
+
+   So 41-ish operations per millisecond for a very basic function.
+-------
+
+Case 5: Contrast with the built in identity function:
+
+    s:=date_ms();f(x)->x; while[for_next(j,5001)][i(j);];date_ms()-s;
+13
+    5001/13
+384.692307692307692
+
+   So built in functions are an order of magnitude faster...   

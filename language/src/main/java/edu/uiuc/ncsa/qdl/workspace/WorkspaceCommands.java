@@ -2377,7 +2377,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             getInterpreter().execute(inputForm);
             // Might not need these next two statements after revisions of FStack?
             FR_WithState fr_withState = getState().resolveFunction(fName, argCount, true); // get it again because it was overwritten
-            fr_withState.functionRecord.sourceCode = inputForm; // update source in the record.
+            fr_withState.functionRecord.setSourceCode( inputForm); // update source in the record.
         } catch (Throwable t) {
             if (DebugUtil.isEnabled()) {
                 t.printStackTrace();

@@ -1171,7 +1171,7 @@ cannot access '__a'
         addLine(script, "module_import('a:a');");
         addLine(script, "h(@g, x)->g(x);");
         addLine(script, "ok := 16 == h(@A#f, 4);");// this actually took a small parser rewrite to fix.
-        addLine(script, "ok1 := 16 == h(@f, 4);");
+        addLine(script, "ok1 := 16 == h(@f, 4);"); // old modules system allows for unqualified access
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);

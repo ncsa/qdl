@@ -8,6 +8,7 @@ import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunctionRecord;
 import edu.uiuc.ncsa.qdl.functions.FR_WithState;
 import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
+import edu.uiuc.ncsa.qdl.functions.FunctionRecordInterface;
 import edu.uiuc.ncsa.qdl.module.MTKey;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.module.QDLModule;
@@ -181,7 +182,7 @@ public class InputFormUtil {
             // no such critter
             return null;
         }
-        FunctionRecord fr = fr_withState.functionRecord;
+        FunctionRecordInterface fr = fr_withState.functionRecord;
         return inputForm(fr);
     }
 
@@ -199,23 +200,7 @@ public class InputFormUtil {
         }
         return output;
     }
-/*
-    public static String inputForm(FunctionRecord fr, State state) {
-        String output = null;
-        if (fr != null) {
-            if (fr instanceof QDLFunctionRecord) {
-                QDLFunction qf = ((QDLFunctionRecord) fr).qdlFunction;
-                if (qf != null) {
-                    output = JAVA_CLASS_MARKER + qf.getClass().getCanonicalName();
-                }
-            } else {
-                output = StringUtils.listToString(fr.sourceCode);
-            }
-        }
 
-        return output;
-    }
-*/
 
     public static String inputForm(QDLNull qdlNull) {
         return "null";

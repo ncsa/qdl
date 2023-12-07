@@ -493,18 +493,138 @@ public class ModuleTests extends AbstractQDLTester {
                 "         [load('" + getSourcePath("qdl/language/src/main/resources/modules/math-x.mdl")+"');\n" +
                 "          use('qdl:/ext/math');\n" +
                 "          versinh(x)→ 2*sinh(x/2)^2; // hyperbolic versine\n" +
+                "          haversinh(x)→ versinh(x)/2; // hyperbolic haversine\n" +
                 "         ];");
         addLine(script, "h := import('my:/ext/math');"); // make this variable is not used, so no false positives
         state = rountripState(state, script, testCase);
         addLine(script, "ok := 0<h#versinh(1)-0.54308063;"); // trick. Mostly if this runs at all we are ok.
+        addLine(script, "ok := 0<h#haversinh(1)-0.271;"); // trick. Mostly if this runs at all we are ok.
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "failed to use() a loaded QDL module in another module";
 
     }
 
+    public void testFunctionReferenceResolution() throws Throwable{
+        testFunctionReferenceResolution(ROUNDTRIP_NONE);
+        testFunctionReferenceResolution(ROUNDTRIP_JSON);
+    }
+    public void testFunctionReferenceResolution(int testCase) throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module['a:a','A'][f(x)->x^2;];");
+        addLine(script, "z:=import('a:a');");
+        addLine(script, "h(@g, x)->g(x);");
+        state = rountripState(state, script, testCase);
+        addLine(script, "ok := 16 == h(z#@f, 4);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to resolve module function reference as function argument";
+    }
 
+    /**
+     * Similar to testFunctionReferenceResolution, but the module inculdes some state that is
+     * used by the function. This verifies that the state is handled correctly. The
+     * previous test assued that the function was handled correctly.
+     * @throws Throwable
+     */
+    public void testFunctionReferenceResolution1() throws Throwable{
+        testFunctionReferenceResolution1(ROUNDTRIP_NONE);
+        testFunctionReferenceResolution1(ROUNDTRIP_JSON);
+    }
+
+    public void testFunctionReferenceResolution1(int testCase) throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module['a:a','A'][a:=4;f(x)->a*x^2;];");
+        addLine(script, "z:=import('a:a');");
+        addLine(script, "h(@g, x)->g(x);");
+        state = rountripState(state, script, testCase);
+        addLine(script, "ok := 36 == h(z#@f, 3);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to resolve module function reference as function argument";
+    }
+      /*
+      module['a:a','A'][f(x)->x^2;];
+        z:=import('a:a')
+        h(@g, x)->g(x)
+        h(z#@f, 4)
+       */
+    public void testFunctionReferenceResolution2() throws Throwable{
+        testFunctionReferenceResolution2(ROUNDTRIP_NONE);
+        testFunctionReferenceResolution2(ROUNDTRIP_JSON);
+    }
+    /**
+     * Descend to an embedded module and get the correct function reference
+     * @param testCase
+     * @throws Throwable
+     */
+    public void testFunctionReferenceResolution2(int testCase) throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module['a:b'][module['a:a'][f(x)->x^2;];w:=import('a:a');];");
+        addLine(script, "z:=import('a:b');");
+        addLine(script, "h(@g, x)->g(x);");
+        state = rountripState(state, script, testCase);
+        addLine(script, "ok := 25 == h(z#w#@f, 5);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to resolve module function reference as function argument";
+    }
+
+    /**
+     * Test where embedded module has state as does ambient emvironment. Module state
+     * has to win out.
+     * @throws Throwable
+     */
+    public void testFunctionReferenceResolution3() throws Throwable{
+        testFunctionReferenceResolution3(ROUNDTRIP_NONE);
+        testFunctionReferenceResolution3(ROUNDTRIP_JSON);
+    }
+    public void testFunctionReferenceResolution3(int testCase) throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module['a:b'][module['a:a'][a:=4;f(x)->a*x^2;];w:=import('a:a');];");
+        addLine(script, "a:=11;");
+        addLine(script, "z:=import('a:b');");
+        addLine(script, "h(@g, x)->g(x);");
+        state = rountripState(state, script, testCase);
+        addLine(script, "ok := 36 == h(z#w#@f, 3);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to resolve module function reference as function argument";
+    }
+
+    /**
+     * Test of case where the embedded module shares the state of the enclosing module.
+     * @throws Throwable
+     */
+    public void testFunctionReferenceResolution4() throws Throwable{
+        testFunctionReferenceResolution4(ROUNDTRIP_NONE);
+        testFunctionReferenceResolution4(ROUNDTRIP_JSON);
+    }
+    public void testFunctionReferenceResolution4(int testCase) throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module['a:b'][p:=4;module['a:a'][a:=4;f(x)->(p+a)*x^2;];w:=import('a:a','share');];");
+        addLine(script, "a:=11;p:=-3;");
+        addLine(script, "z:=import('a:b');");
+        addLine(script, "h(@g, x)->g(x);");
+        state = rountripState(state, script, testCase);
+        addLine(script, "ok := 72 == h(z#w#@f, 3);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to resolve module function reference as function argument";
+    }
     /*
+    module['a:b'][p:=4;module['a:a'][a:=4;f(x)->(p+a)*x^2;];w:=import('a:a','share');];
+
+      module['a:b'][module['a:a'][f(x)->x^2;];w:=import('a:a');];
+      z:=import('a:b');
+      h(@g, x)->g(x);
+      h(z#w#@f, 5);
+
     f(x)->x^2
     s:=5;
      module['p:q'][g(x)->3+f(x);q:=3*s;]
@@ -542,5 +662,10 @@ p:='/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/math-x.mdl';
             throw new IllegalStateException("NCSA_DEV_INPUT variable not set, cannot run test");
         }
         String file = devRoot + "/qdl/language/src/main/resources/modules/nested.mdl";
+
+          module['a:a','A'][a:=4;f(x)->a*x^2;];
+  z:=import('a:a')
+  h(@g, x)->g(x);
+  h(z#@f, 3)
         */
 }

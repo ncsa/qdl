@@ -5,7 +5,7 @@ import edu.uiuc.ncsa.qdl.exceptions.BadArgException;
 import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.expressions.*;
-import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
+import edu.uiuc.ncsa.qdl.functions.FunctionRecordInterface;
 import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNode;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.types.Types;
@@ -475,10 +475,10 @@ public class OpEvaluator extends AbstractEvaluator {
         Object lArg = dyad.getLeftArgument().evaluate(actualState);
         if (lArg instanceof Long) {
             int argCount = ((Long) lArg).intValue();
-            FunctionRecord fRec = fNode.getByArgCount(argCount);
+            FunctionRecordInterface fRec = fNode.getByArgCount(argCount);
             QDLStem out = new QDLStem();
             if (fRec != null) {
-                out.getQDLList().addAll(fRec.argNames);
+                out.getQDLList().addAll(fRec.getArgNames());
             }
             dyad.setEvaluated(true);
             dyad.setResult(out);
@@ -495,12 +495,12 @@ public class OpEvaluator extends AbstractEvaluator {
                 }
 
             } else {
-                FunctionRecord fRec = fNode.getByArgCount(lStem.size());
+                FunctionRecordInterface fRec = fNode.getByArgCount(lStem.size());
                 if (fRec == null) {
                     throw new BadArgException(APPLY_OP_KEY + " cannot resolve the function '" + fNode.getFunctionName() + "' with the argument count of " + lStem.size(), dyad.getRightArgument());
                 }
 
-                for (String name : fRec.argNames) {
+                for (String name : fRec.getArgNames()) {
                     Object object = lStem.get(name);
                     if (object == null) {
                         throw new BadArgException(APPLY_OP_KEY + " '" + fNode.getFunctionName() + "' missing value for " + name, dyad.getLeftArgument());
@@ -1489,8 +1489,8 @@ a.⌆b.
             throw new BadArgException("no such function", monad.getArgument());
         }
         QDLStem stem = new QDLStem();
-        for (FunctionRecord functionRecord : fNode.getFunctionRecords()) {
-            Long a = (long) functionRecord.getArgCount();
+        for (FunctionRecordInterface functionRecordInterface : fNode.getFunctionRecords()) {
+            Long a = (long) functionRecordInterface.getArgCount();
             stem.getQDLList().add(a);
         }
         monad.setEvaluated(true);

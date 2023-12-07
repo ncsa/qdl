@@ -9,7 +9,7 @@ import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunctionRecord;
 import edu.uiuc.ncsa.qdl.extensions.QDLLoader;
 import edu.uiuc.ncsa.qdl.functions.FR_WithState;
-import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
+import edu.uiuc.ncsa.qdl.functions.FunctionRecordInterface;
 import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNode;
 import edu.uiuc.ncsa.qdl.module.MIWrapper;
 import edu.uiuc.ncsa.qdl.module.MTKey;
@@ -1256,7 +1256,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             polyad.setEvaluated(true);
             return;
         }
-        FunctionRecord fr = fr_withState.functionRecord;
+        FunctionRecordInterface fr = fr_withState.functionRecord;
         String output = "";
         if (fr != null) {
             if (fr instanceof QDLFunctionRecord) {
@@ -1265,7 +1265,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                     output = "java:" + qf.getClass().getCanonicalName();
                 }
             } else {
-                output = StringUtils.listToString(fr.sourceCode);
+                output = StringUtils.listToString(fr.getSourceCode());
             }
         }
         polyad.setResult(output);

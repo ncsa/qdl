@@ -2,16 +2,22 @@ package edu.uiuc.ncsa.qdl.functions;
 
 import edu.uiuc.ncsa.qdl.extensions.QDLFunctionRecord;
 import edu.uiuc.ncsa.qdl.state.AbstractState;
-import edu.uiuc.ncsa.qdl.state.XThing;
+import edu.uiuc.ncsa.qdl.statements.Statement;
+import edu.uiuc.ncsa.qdl.statements.TokenPosition;
+import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
+
+import java.util.List;
 
 /**
+ * A facade for a function record. This however has the local state. It is used as a function
+ * reference and passed as e.g. an argument. So in f(@foo) @foo would be one of these.
  * <p>Created by Jeff Gaynor<br>
  * on 1/26/20 at  7:30 AM
  */
-public class FR_WithState implements XThing {
+public class FR_WithState implements FunctionRecordInterface {
     @Override
     public String getName() {
-        return functionRecord.name;
+        return functionRecord.getName();
     }
 
     @Override
@@ -23,26 +29,30 @@ public class FR_WithState implements XThing {
     public FR_WithState() {
     }
 
-    public FR_WithState(FunctionRecord functionRecord, AbstractState state, boolean isModule) {
+    public FR_WithState(FunctionRecordInterface functionRecord, AbstractState state, boolean isModule) {
         this(functionRecord, state);
         this.isModule = isModule;
     }
 
-    public FR_WithState(FunctionRecord functionRecord, AbstractState state) {
+    public FR_WithState(FunctionRecordInterface functionRecord, AbstractState state) {
         this.functionRecord = functionRecord;
         this.state = state;
         isExternalModule = isJavaFunction();
     }
-    public boolean hasState(){
-        return state!=null;
+
+    public boolean hasState() {
+        return state != null;
     }
-    public FunctionRecord functionRecord = null;
+
+    public FunctionRecordInterface functionRecord = null;
     public AbstractState state;
     public boolean isExternalModule = false;
     public boolean isModule = false;
-    public boolean isJavaFunction(){
+
+    public boolean isJavaFunction() {
         return functionRecord instanceof QDLFunctionRecord;
     }
+
     @Override
     public String toString() {
         return "FR_WithState{" +
@@ -51,5 +61,107 @@ public class FR_WithState implements XThing {
                 ", isExternalModule=" + isExternalModule +
                 ", isModule=" + isModule +
                 '}';
+    }
+
+    // In order to get the inheritance right, this class had to be turned into a delegate
+    // for FunctionRecord via an interface.
+    @Override
+    public boolean isAnonymous() {
+        return functionRecord.isAnonymous();
+    }
+
+    @Override
+    public boolean isLambda() {
+        return functionRecord.isLambda();
+    }
+
+    @Override
+    public void setName(String name) {
+        functionRecord.setName(name);
+    }
+
+    @Override
+    public TokenPosition getTokenPosition() {
+        return functionRecord.getTokenPosition();
+    }
+
+    @Override
+    public boolean hasTokenPosition() {
+        return functionRecord.hasTokenPosition();
+    }
+
+    @Override
+    public boolean hasName() {
+        return functionRecord.hasName();
+    }
+
+    @Override
+    public int getArgCount() {
+        return functionRecord.getArgCount();
+    }
+
+    @Override
+    public FunctionRecordInterface clone() {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public List<String> getArgNames() {
+        return functionRecord.getArgNames();
+    }
+
+    @Override
+    public List<String> getSourceCode() {
+        return functionRecord.getSourceCode();
+    }
+
+    @Override
+    public void setSourceCode(List<String> sourceCode) {
+        functionRecord.setSourceCode(sourceCode);
+    }
+
+    @Override
+    public List<String> getDocumentation() {
+        return functionRecord.getDocumentation();
+    }
+
+    @Override
+    public String getfRefName() {
+        return functionRecord.getfRefName();
+    }
+
+    @Override
+    public void setfRefName(String fRefName) {
+        functionRecord.setfRefName(fRefName);
+    }
+
+    @Override
+    public boolean isOperator() {
+        return functionRecord.isOperator();
+    }
+
+    @Override
+    public void setOperator(boolean operator) {
+        functionRecord.setOperator(operator);
+    }
+
+    @Override
+    public boolean isFuncRef() {
+        return functionRecord.isFuncRef();
+    }
+
+    @Override
+    public void setFuncRef(boolean funcRef) {
+        functionRecord.setFuncRef(funcRef);
+    }
+
+    @Override
+    public List<Statement> getStatements() {
+        return functionRecord.getStatements();
+    }
+
+    @Override
+    public void setStatements(List<Statement> statements) {
+        functionRecord.setStatements(statements);
     }
 }

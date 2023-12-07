@@ -9,10 +9,7 @@ import edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader;
 import edu.uiuc.ncsa.qdl.extensions.http.QDLHTTPLoader;
 import edu.uiuc.ncsa.qdl.extensions.inputLine.QDLCLIToolsLoader;
 import edu.uiuc.ncsa.qdl.extensions.mail.QDLMailLoader;
-import edu.uiuc.ncsa.qdl.functions.FKey;
-import edu.uiuc.ncsa.qdl.functions.FStack;
-import edu.uiuc.ncsa.qdl.functions.FTable;
-import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
+import edu.uiuc.ncsa.qdl.functions.*;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.module.*;
 import edu.uiuc.ncsa.qdl.scripting.QDLScript;
@@ -158,7 +155,7 @@ public class State extends FunctionState implements QDLConstants {
     public State newInstance(VStack symbolStack,
                              OpEvaluator opEvaluator,
                              MetaEvaluator metaEvaluator,
-                             FStack<? extends FTable<? extends FKey, ? extends FunctionRecord>> ftStack,
+                             FStack<? extends FTable<? extends FKey, ? extends FunctionRecordInterface>> ftStack,
                              MTStack mtStack,
                              MIStack miStack,
                              MyLoggingFacade myLoggingFacade,
@@ -182,7 +179,7 @@ public class State extends FunctionState implements QDLConstants {
             VStack vStack,
             OpEvaluator opEvaluator,
             MetaEvaluator metaEvaluator,
-            FStack<? extends FTable<? extends FKey, ? extends FunctionRecord>> ftStack,
+            FStack<? extends FTable<? extends FKey, ? extends FunctionRecordInterface>> ftStack,
             MTStack mtStack,
             MIStack miStack,
             MyLoggingFacade myLoggingFacade,
@@ -874,7 +871,7 @@ public class State extends FunctionState implements QDLConstants {
         if (!vStack.isEmpty()) {
             newStack.appendTables(vStack);
         }
-        FStack<? extends FTable<? extends FKey, ? extends FunctionRecord>> ftStack = new FStack();
+        FStack<? extends FTable<? extends FKey, ? extends FunctionRecordInterface>> ftStack = new FStack();
         if (inheritFunctions) {
             if (moduleState != null && !moduleState.getFTStack().isEmpty()) {
                 ftStack.appendTables(moduleState.getFTStack());

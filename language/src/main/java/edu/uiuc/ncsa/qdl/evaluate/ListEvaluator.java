@@ -5,7 +5,7 @@ import edu.uiuc.ncsa.qdl.expressions.ExpressionImpl;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.expressions.VariableNode;
 import edu.uiuc.ncsa.qdl.functions.FKey;
-import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
+import edu.uiuc.ncsa.qdl.functions.FunctionRecordInterface;
 import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNode;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
@@ -530,11 +530,11 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
         ExpressionImpl f = null;
         int argCount = 1;
         try {
-            List<FunctionRecord> functionRecordList = state.getFTStack().getByAllName(frn.getFunctionName());
+            List<FunctionRecordInterface> functionRecordList = state.getFTStack().getByAllName(frn.getFunctionName());
             if (functionRecordList.isEmpty()) {
                 throw new NFWException("no functions found for pick function at all. Did state management change?");
             }
-            for (FunctionRecord fr : functionRecordList) {
+            for (FunctionRecordInterface fr : functionRecordList) {
                 if (2 < fr.getArgCount()) {
                     continue;
                 }

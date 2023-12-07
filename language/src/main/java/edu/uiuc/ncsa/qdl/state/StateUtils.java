@@ -2,13 +2,17 @@ package edu.uiuc.ncsa.qdl.state;
 
 import edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
+import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.module.MIStack;
 import edu.uiuc.ncsa.qdl.module.MTStack;
 import edu.uiuc.ncsa.qdl.variables.VStack;
+import edu.uiuc.ncsa.qdl.workspace.WSJSONSerializer;
 import edu.uiuc.ncsa.qdl.xml.SerializationState;
+import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
+import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.xml.stream.XMLEventReader;
@@ -32,7 +36,24 @@ public abstract class StateUtils {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public static State clone(State state) throws IOException, ClassNotFoundException {
+    public static State clone(State state)  {
+        WSJSONSerializer serializer = new WSJSONSerializer();
+        SerializationState serializationState = new SerializationState();
+        serializationState.setVersion(XMLConstants.VERSION_2_1_TAG);
+        try {
+            JSONObject json = state.serializeToJSON(serializationState);
+            State newState = state.newInstance();
+            newState.deserializeFromJSON(json, serializationState);
+            return newState;
+        } catch (Throwable e) {
+            if(e instanceof RuntimeException){
+                throw (RuntimeException)e;
+            }
+            throw new QDLException("error cloning state", e);
+        }
+    }
+    public static State javaClone(State state) throws IOException, ClassNotFoundException {
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         save(state, baos);
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());

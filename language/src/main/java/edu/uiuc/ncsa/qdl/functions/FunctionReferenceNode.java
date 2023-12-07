@@ -36,15 +36,15 @@ public class FunctionReferenceNode extends ExpressionImpl {
     String functionName;
 
 
-    public List<FunctionRecord> getFunctionRecords() {
+    public List<FunctionRecordInterface> getFunctionRecords() {
         return functionRecords;
     }
 
-    public void setFunctionRecords(List<FunctionRecord> functionRecords) {
+    public void setFunctionRecords(List<FunctionRecordInterface> functionRecords) {
         this.functionRecords = functionRecords;
     }
 
-    List<FunctionRecord> functionRecords= null;
+    List<FunctionRecordInterface> functionRecords= null;
     @Override
     public Object evaluate(State state) {
         setFunctionRecords(state.getFTStack().getByAllName(getFunctionName()));
@@ -73,11 +73,12 @@ public class FunctionReferenceNode extends ExpressionImpl {
         return moduleState != null;
     }
 
-    public FunctionRecord getByArgCount(int argCount){
+    public FunctionRecordInterface getByArgCount(int argCount){
         if(getFunctionRecords() == null){
             return null;
         }
-        for(FunctionRecord functionRecord : getFunctionRecords()){
+        for(FunctionRecordInterface functionRecord
+                : getFunctionRecords()){
             if(functionRecord.getArgCount() == argCount){
                 return functionRecord;
             }
@@ -108,8 +109,8 @@ public class FunctionReferenceNode extends ExpressionImpl {
                     '}';
         }
         List<Integer> argCounts = new ArrayList();
-        for(FunctionRecord functionRecord:getFunctionRecords()){
-            argCounts.add(functionRecord.argCount);
+        for(FunctionRecordInterface functionRecord:getFunctionRecords()){
+            argCounts.add(functionRecord.getArgCount());
         }
            return "@" + (isAnonymous()?"anon":getFunctionName()) + "(" + argCounts + ")";
     }

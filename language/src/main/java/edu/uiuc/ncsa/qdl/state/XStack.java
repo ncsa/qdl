@@ -235,7 +235,6 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
         }
         return stack;
     }
-
     public void setStack(List<XTable<? extends XKey, ? extends XThing>> stack) {
         this.stack = stack;
     }
