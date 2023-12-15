@@ -11,7 +11,7 @@ import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.vfs.*;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.security.core.configuration.StorageConfigurationTags;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
@@ -239,10 +239,10 @@ public class QDLConfigurationLoaderUtils {
                         if (!oldImports.contains(uri)) {
                             String y = null;
                             if (qmc.isImportOnStart()) {
-                                if (moduleConfig.getVersion().equals(XMLConstants.VERSION_2_0_TAG)) {
+                                if (moduleConfig.getVersion().equals(SerializationConstants.VERSION_2_0_TAG)) {
                                     y = SystemEvaluator.MODULE_IMPORT + "('" + uri.getKey() + "');";
                                 }
-                                if (moduleConfig.getVersion().equals(XMLConstants.VERSION_2_1_TAG)) {
+                                if (moduleConfig.getVersion().equals(SerializationConstants.VERSION_2_1_TAG)) {
                                     if (moduleConfig.isUse()) {
                                         y = ModuleEvaluator.USE + "('" + uri.getKey() + "');";
                                     } else {
@@ -302,7 +302,7 @@ public class QDLConfigurationLoaderUtils {
                 State state1 = state.newLocalState();
                 Module instance = template.newInstance(state1);
                 ((JavaModule) instance).init(state1);
-                if (jmc.getVersion().equals(XMLConstants.VERSION_2_0_TAG)) {
+                if (jmc.getVersion().equals(SerializationConstants.VERSION_2_0_TAG)) {
                     state.getMInstances().put(new MIWrapper(template.getKey(), instance));// puts it in the table with default alias.
                 }else{
                     if(jmc.isUse()){
@@ -328,7 +328,7 @@ public class QDLConfigurationLoaderUtils {
 
     /*
     /*     String exec;
-                            if (moduleConfig.getVersion().equals(XMLConstants.VERSION_2_0_TAG)) {
+                            if (moduleConfig.getVersion().equals(SerializationConstants.VERSION_2_0_TAG)) {
                                 exec = SystemEvaluator.MODULE_LOAD;
                             } else {
                                 exec = ModuleEvaluator.LOAD;

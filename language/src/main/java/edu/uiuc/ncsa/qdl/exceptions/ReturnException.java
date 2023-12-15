@@ -16,4 +16,7 @@ public class ReturnException extends QDLException {
                 ", resultType=" + resultType +
                 '}';
     }
+    public boolean hasResult(){
+        return result!=null;
+    }
 }

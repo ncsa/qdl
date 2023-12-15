@@ -6,8 +6,8 @@ import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XThing;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.qdl.xml.SerializationState;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.qdl.xml.XMLMissingCloseTagException;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
@@ -24,7 +24,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
+import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.*;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -182,11 +182,11 @@ public abstract class Module implements XThing, Serializable {
                        boolean fullSerialization,
                        SerializationState SerializationState) throws XMLStreamException {
         xsw.writeStartElement(MODULE_TAG);
-        xsw.writeAttribute(XMLConstants.MODULE_NS_ATTR, getNamespace().toString());
+        xsw.writeAttribute(SerializationConstants.MODULE_NS_ATTR, getNamespace().toString());
         if (!(getAlias() == null && alias == null)) {
-            xsw.writeAttribute(XMLConstants.MODULE_ALIAS_ATTR, StringUtils.isTrivial(alias) ? getAlias() : alias);
+            xsw.writeAttribute(SerializationConstants.MODULE_ALIAS_ATTR, StringUtils.isTrivial(alias) ? getAlias() : alias);
         }
-        xsw.writeAttribute(XMLConstants.UUID_TAG, getId().toString());
+        xsw.writeAttribute(SerializationConstants.UUID_TAG, getId().toString());
         writeExtraXMLAttributes(xsw);
         xsw.writeStartElement("inputForm");
         xsw.writeCData(Base64.encodeBase64URLSafeString(InputFormUtil.inputForm(this).getBytes()));
@@ -242,11 +242,11 @@ public abstract class Module implements XThing, Serializable {
         xsw.writeStartElement(MODULE_TAG);
 
         if (fullSerialization) {
-            xsw.writeAttribute(XMLConstants.MODULE_NS_ATTR, getNamespace().toString());
+            xsw.writeAttribute(SerializationConstants.MODULE_NS_ATTR, getNamespace().toString());
             if (!(getAlias() == null && alias == null)) {
-                xsw.writeAttribute(XMLConstants.MODULE_ALIAS_ATTR, StringUtils.isTrivial(alias) ? getAlias() : alias);
+                xsw.writeAttribute(SerializationConstants.MODULE_ALIAS_ATTR, StringUtils.isTrivial(alias) ? getAlias() : alias);
             }
-            xsw.writeAttribute(XMLConstants.UUID_TAG, getId().toString());
+            xsw.writeAttribute(SerializationConstants.UUID_TAG, getId().toString());
             writeExtraXMLAttributes(xsw);
             State state = getState();
             // if(state != null) {
@@ -258,9 +258,9 @@ public abstract class Module implements XThing, Serializable {
             }
 
         } else {
-            xsw.writeAttribute(XMLConstants.UUID_TAG, getId().toString());
+            xsw.writeAttribute(SerializationConstants.UUID_TAG, getId().toString());
             if (!(isTemplate() || state == null)) {
-                xsw.writeAttribute(XMLConstants.STATE_REFERENCE_TAG, getState().getUuid().toString());
+                xsw.writeAttribute(SerializationConstants.STATE_REFERENCE_TAG, getState().getUuid().toString());
                 SerializationState.stateMap.put(getState().getUuid(), getState());
             }
 

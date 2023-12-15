@@ -424,6 +424,10 @@ public class StemEvaluator extends AbstractEvaluator {
             throw new ExtraArgException(DISPLAY + " takes at most two arguments", polyad.getArgAt(2));
         }
         Object arg0 = polyad.evalArg(0, state);
+        if(arg0 == null){
+            // It is possible to try and print a variable that has not been set.
+            throw new BadArgException("value not found", polyad.getArgAt(0));
+        }
         // defaults
         List<String> keySubset = null;
         boolean sortKeys = DISPLAY_SORT_DEFAULT;

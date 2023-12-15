@@ -53,7 +53,7 @@ import java.security.SecureRandom;
 import java.util.*;
 import java.util.logging.Logger;
 
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
+import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.*;
 
 /**
  * This is a facade for the various stateful components we have to track.

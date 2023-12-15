@@ -6,8 +6,8 @@ import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.ModuleStatement;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.qdl.xml.SerializationState;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import net.sf.json.JSONObject;
@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
+import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.*;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -100,7 +100,7 @@ public class QDLModule extends Module {
     @Override
     public JSONObject serializeToJSON(SerializationState serializationState) throws Throwable {
         JSONObject json = super.serializeToJSON(serializationState);
-        json.put(XMLConstants.MODULE_TYPE_TAG2, XMLConstants.MODULE_TYPE_QDL_TAG);
+        json.put(SerializationConstants.MODULE_TYPE_TAG2, SerializationConstants.MODULE_TYPE_QDL_TAG);
         /*
             Only save the source code for this if the template is missing. The reason is
             that every loaded module has a URI and a random unique UUID. It is possible

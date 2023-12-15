@@ -3,8 +3,8 @@ package edu.uiuc.ncsa.qdl.extensions;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.variables.Constant;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.qdl.xml.SerializationState;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import net.sf.json.JSONObject;
 
 import javax.xml.stream.XMLStreamException;
@@ -16,7 +16,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import static edu.uiuc.ncsa.qdl.state.VariableState.var_regex;
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.MODULE_STATE_TAG;
+import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.MODULE_STATE_TAG;
 
 /**
  * This will let you create your own extensions to QDL in Java. Simply implement the interfaces
@@ -132,8 +132,8 @@ public abstract class JavaModule extends Module {
     @Override
     public void writeExtraXMLAttributes(XMLStreamWriter xsw) throws XMLStreamException {
         super.writeExtraXMLAttributes(xsw);
-        xsw.writeAttribute(XMLConstants.MODULE_TYPE_TAG, XMLConstants.MODULE_TYPE_JAVA_TAG);
-        xsw.writeAttribute(XMLConstants.MODULE_CLASS_NAME_TAG, getClassname());
+        xsw.writeAttribute(SerializationConstants.MODULE_TYPE_TAG, SerializationConstants.MODULE_TYPE_JAVA_TAG);
+        xsw.writeAttribute(SerializationConstants.MODULE_CLASS_NAME_TAG, getClassname());
     }
 
     @Override
@@ -144,8 +144,8 @@ public abstract class JavaModule extends Module {
                 json.put(MODULE_STATE_TAG, getMetaClass().serializeToJSON());
             }
         }
-        json.put(XMLConstants.MODULE_TYPE_TAG2, XMLConstants.MODULE_TYPE_JAVA_TAG);
-        json.put(XMLConstants.MODULE_CLASS_NAME_TAG, getClassname());
+        json.put(SerializationConstants.MODULE_TYPE_TAG2, SerializationConstants.MODULE_TYPE_JAVA_TAG);
+        json.put(SerializationConstants.MODULE_CLASS_NAME_TAG, getClassname());
         return json;
     }
 

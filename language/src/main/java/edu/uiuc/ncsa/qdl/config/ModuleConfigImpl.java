@@ -1,6 +1,6 @@
 package edu.uiuc.ncsa.qdl.config;
 
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -42,7 +42,7 @@ public abstract class ModuleConfigImpl implements ModuleConfig {
         return varName;
     }
 
-    String version = XMLConstants.VERSION_2_0_TAG;
+    String version = SerializationConstants.VERSION_2_0_TAG;
 
     @Override
     public String getVersion() {

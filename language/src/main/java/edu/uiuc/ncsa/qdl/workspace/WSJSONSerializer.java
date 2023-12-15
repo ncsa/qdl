@@ -4,17 +4,20 @@ import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.module.QDLModule;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.variables.VStack;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.qdl.xml.SerializationState;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
+import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.*;
 import static edu.uiuc.ncsa.security.core.util.StringUtils.isTrivial;
 
 /**
@@ -22,6 +25,45 @@ import static edu.uiuc.ncsa.security.core.util.StringUtils.isTrivial;
  * on 11/28/23 at  3:33 PM
  */
 public class WSJSONSerializer {
+    /**
+     * Assumes input stream is a gzipped stream of bytes.
+     *
+     * @param inputStream
+     * @param compressionOn
+     * @return
+     * @throws Throwable
+     */
+    public WorkspaceCommands fromJSON(InputStream inputStream, boolean compressionOn) throws Throwable {
+        GZIPInputStream gzipInputStream = new GZIPInputStream(inputStream, 65536);
+        Reader r = new InputStreamReader(gzipInputStream);
+        BufferedReader bufferedReader = new BufferedReader(r);
+        StringBuffer stringBuffer = new StringBuffer();
+        String s = bufferedReader.readLine();
+        while (s != null) {
+            stringBuffer.append(s + "\n");
+            s = bufferedReader.readLine();
+        }
+        bufferedReader.close();
+        return fromJSON(stringBuffer.toString());
+    }
+
+    /**
+     * Assumes the bytes represent either a compressed stream or not.
+     * @param bytes
+     * @return
+     * @throws Throwable
+     */
+    public WorkspaceCommands fromJSON(byte[] bytes, boolean compressionOn) throws Throwable {
+        if(compressionOn) {
+            return fromJSON(new ByteArrayInputStream(bytes), compressionOn);
+        }
+        return fromJSON(new String(bytes, StandardCharsets.UTF_8));
+    }
+
+    public WorkspaceCommands fromJSON(String rawJSON) throws Throwable {
+        JSONObject jsonObject = JSONObject.fromObject(rawJSON);
+        return fromJSON(jsonObject);
+    }
 
     public WorkspaceCommands fromJSON(JSONObject json) throws Throwable {
         WorkspaceCommands workspaceCommands = new WorkspaceCommands();
@@ -34,6 +76,10 @@ public class WSJSONSerializer {
             JSONObject s = json.getJSONObject(STATE_TAG);
             state.deserializeFromJSON(s, serializationState);
         }
+        if(json.containsKey(BUFFER_MANAGER)){
+            workspaceCommands.getBufferManager().fromJSON(json.getJSONObject(BUFFER_MANAGER));
+        }
+
         if (json.containsKey(COMMAND_HISTORY)) workspaceCommands.commandHistory = json.getJSONArray(COMMAND_HISTORY);
         if (json.containsKey(EDITOR_CLIPBOARD)) workspaceCommands.editorClipboard = json.getJSONArray(EDITOR_CLIPBOARD);
         if (json.containsKey(SCRIPT_PATH)) workspaceCommands.getState().setScriptPaths(json.getJSONArray(SCRIPT_PATH));
@@ -50,7 +96,7 @@ public class WSJSONSerializer {
         if (json.containsKey(EXTRINSIC_VARIABLES_TAG)) {
             VStack xVars = new VStack();
             xVars.deserializeFromJSON(json.getJSONObject(EXTRINSIC_VARIABLES_TAG), serializationState, state);
-         //   state.setExtrinsicVars(xVars);
+            //   state.setExtrinsicVars(xVars);
         }
         return workspaceCommands;
     }
@@ -58,12 +104,12 @@ public class WSJSONSerializer {
     public JSONObject toJSON(WorkspaceCommands workspaceCommands) throws Throwable {
         JSONObject jsonObject = new JSONObject();
         SerializationState serializationState = new SerializationState();
-        serializationState.setVersion(XMLConstants.VERSION_2_1_TAG); // critical!
+        serializationState.setVersion(SerializationConstants.VERSION_2_1_TAG); // critical!
         String comment = "";
         String indent = " --->>";
         JSONArray comments = new JSONArray();
         if (!isTrivial(workspaceCommands.getWSID())) {
-            comments.add( indent + "workspace id: " + workspaceCommands.getWSID());
+            comments.add(indent + "workspace id: " + workspaceCommands.getWSID());
         }
         if (!isTrivial(workspaceCommands.getDescription())) {
             comments.add(indent + "description:" + workspaceCommands.getDescription());
@@ -72,7 +118,6 @@ public class WSJSONSerializer {
         jsonObject.put("comment", comments);
         State state = workspaceCommands.getState();
         state.buildSO(serializationState);
-
         serializationState.addState(state);
         jsonObject.put(WS_ENV_TAG, WSXMLSerializer.envToJSON(workspaceCommands));
         if (workspaceCommands.bufferManager != null && !workspaceCommands.bufferManager.isEmpty()) {

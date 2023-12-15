@@ -6,8 +6,8 @@ import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XTable;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.qdl.xml.SerializationState;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
+import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.*;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -159,12 +159,12 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
 
     @Override
     public String getXMLTableTag() {
-        return XMLConstants.FUNCTIONS_TAG;
+        return SerializationConstants.FUNCTIONS_TAG;
     }
 
     @Override
     public String getXMLElementTag() {
-        return XMLConstants.FUNCTION_TAG;
+        return SerializationConstants.FUNCTION_TAG;
     }
 
     @Override

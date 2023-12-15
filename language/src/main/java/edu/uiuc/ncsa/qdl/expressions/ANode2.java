@@ -2,6 +2,7 @@ package edu.uiuc.ncsa.qdl.expressions;
 
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
+import edu.uiuc.ncsa.qdl.exceptions.ReturnException;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
@@ -108,7 +109,14 @@ public class ANode2 extends ExpressionImpl {
             setResultType(d.getResultType());
         } else {
             // regular assignment, evaluate RHS. That is result.
-            getRightArg().evaluate(state);
+            try {
+                getRightArg().evaluate(state);
+            }catch(ReturnException returnException){
+                if(!returnException.hasResult()){
+                    // edge case where someone is trying to assign a value from a return();
+                    throw new QDLExceptionWithTrace("no value", getRightArg() );
+                }
+            }
             setResult(getRightArg().getResult());
             setResultType(getRightArg().getResultType());
         }

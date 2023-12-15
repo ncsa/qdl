@@ -5,7 +5,7 @@ import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.state.LibLoader;
 import edu.uiuc.ncsa.qdl.util.QDLVersion;
 import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.security.core.configuration.StorageConfigurationTags;
 import edu.uiuc.ncsa.security.core.util.*;
 import edu.uiuc.ncsa.security.util.cli.editing.EditorEntry;
@@ -341,7 +341,7 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
         if (vNode == null) {
             return new ArrayList<>();
         }
-        String defaultVersion = XMLConstants.VERSION_2_0_TAG;
+        String defaultVersion = SerializationConstants.VERSION_2_0_TAG;
         boolean defaultFailOnError = false;
         boolean defaultImportOnStart = true;
         if (getFirstAttribute(vNode, MODULE_ATTR_VERSION) != null) {

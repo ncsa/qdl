@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
+import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -78,7 +78,6 @@ public class BufferManager implements Serializable {
         }
 
         public JSONObject toJSON() {
-            JSONObject jsonObject = new JSONObject();
             JSONObject bufferRecord = new JSONObject();
             if (!StringUtils.isTrivial(alias)) bufferRecord.put(BR_ALIAS, alias);
             if (!StringUtils.isTrivial(src)) bufferRecord.put(BR_SOURCE, src);
@@ -93,17 +92,16 @@ public class BufferManager implements Serializable {
                 jsonArray.addAll(content);
                 bufferRecord.put(BR_CONTENT, Base64.encodeBase64URLSafeString(jsonArray.toString().getBytes(UTF_8)));
             }
-            jsonObject.put(BUFFER_RECORD, bufferRecord);
-            return jsonObject;
+            return bufferRecord;
         }
 
         public void fromJSON(JSONObject json) {
             if (json.containsKey(BR_ALIAS)) alias = json.getString(BR_ALIAS);
             if (json.containsKey(BR_SOURCE)) src = json.getString(BR_SOURCE);
             if (json.containsKey(BR_LINK)) link = json.getString(BR_LINK);
-            edited = json.getBoolean(BR_EDITED);
-            deleted = json.getBoolean(BR_DELETED);
-            memoryOnly = json.getBoolean(BR_MEMORY_ONLY);
+            if(json.containsKey(BR_EDITED)) edited = json.getBoolean(BR_EDITED);
+            if(json.containsKey(BR_DELETED))  deleted = json.getBoolean(BR_DELETED);
+            if(json.containsKey(BR_MEMORY_ONLY))  memoryOnly = json.getBoolean(BR_MEMORY_ONLY);
             if (json.containsKey(BR_SOURCE_SAVE_PATH)) srcSavePath = json.getString(BR_SOURCE_SAVE_PATH);
             if (json.containsKey(BR_LINK_SAVE_PATH)) linkSavePath = json.getString(BR_LINK_SAVE_PATH);
             if (json.containsKey(BR_CONTENT)) {

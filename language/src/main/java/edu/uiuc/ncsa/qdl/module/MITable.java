@@ -8,8 +8,8 @@ import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XTable;
 import edu.uiuc.ncsa.qdl.state.XThing;
 import edu.uiuc.ncsa.qdl.statements.Documentable;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.qdl.xml.SerializationState;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
+import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.*;
 
 /**
  * Table of modules keyed by <b>alias</b>.
@@ -44,23 +44,23 @@ public class MITable<K extends XKey, V extends MIWrapper> extends XTable<K, V> i
             xsw.writeStartElement(getXMLElementTag());
             MIWrapper wrapper = get(key);
             Module module = wrapper.getModule();
-            xsw.writeAttribute(XMLConstants.UUID_TAG, module.getId().toString());
-            xsw.writeAttribute(XMLConstants.TEMPLATE_REFERENCE_TAG, module.getParentTemplateID().toString());
+            xsw.writeAttribute(SerializationConstants.UUID_TAG, module.getId().toString());
+            xsw.writeAttribute(SerializationConstants.TEMPLATE_REFERENCE_TAG, module.getParentTemplateID().toString());
             if (module.getParentInstanceID() != null) {
-                xsw.writeAttribute(XMLConstants.PARENT_INSTANCE_ALIAS_TAG, module.getParentInstanceID().toString());
+                xsw.writeAttribute(SerializationConstants.PARENT_INSTANCE_ALIAS_TAG, module.getParentInstanceID().toString());
             }
             if (!StringUtils.isTrivial(module.getParentInstanceAlias())) {
-                xsw.writeAttribute(XMLConstants.PARENT_INSTANCE_ALIAS_TAG, module.getParentInstanceAlias());
+                xsw.writeAttribute(SerializationConstants.PARENT_INSTANCE_ALIAS_TAG, module.getParentInstanceAlias());
             }
-            xsw.writeAttribute(XMLConstants.MODULE_ALIAS_ATTR, key.getKey()); // What this was imported as
-            xsw.writeAttribute(XMLConstants.STATE_REFERENCE_TAG, module.getState().getInternalID());
+            xsw.writeAttribute(SerializationConstants.MODULE_ALIAS_ATTR, key.getKey()); // What this was imported as
+            xsw.writeAttribute(SerializationConstants.STATE_REFERENCE_TAG, module.getState().getInternalID());
             xsw.writeEndElement(); // end module tag
         }
     }
 
     @Override
     public String getXMLTableTag() {
-        return XMLConstants.MODULES_TAG;
+        return SerializationConstants.MODULES_TAG;
     }
 
     @Override
@@ -153,7 +153,7 @@ public class MITable<K extends XKey, V extends MIWrapper> extends XTable<K, V> i
     public JSONObject serializeToJSON(V wrapper, SerializationState serializationState) throws Throwable {
         Module module = wrapper.getModule();
         K key = (K) wrapper.getKey();
-        if (serializationState.getVersion().equals(XMLConstants.VERSION_2_0_TAG)) {
+        if (serializationState.getVersion().equals(SerializationConstants.VERSION_2_0_TAG)) {
             XMLUtils.ModuleAttributes moduleAttributes = new XMLUtils.ModuleAttributes();
             moduleAttributes.uuid = module.getId();
             moduleAttributes.alias = key.getKey();
@@ -170,7 +170,7 @@ public class MITable<K extends XKey, V extends MIWrapper> extends XTable<K, V> i
 
     @Override
     public String fromJSONEntry(String x, SerializationState serializationState) {
-        if (serializationState.getVersion().equals(XMLConstants.VERSION_2_0_TAG)) {
+        if (serializationState.getVersion().equals(SerializationConstants.VERSION_2_0_TAG)) {
             XMLUtils.ModuleAttributes moduleAttributes = new XMLUtils.ModuleAttributes();
             moduleAttributes.fromJSON(x);
             V m = deserializeElement(moduleAttributes, serializationState);

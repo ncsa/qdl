@@ -27,7 +27,7 @@ import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.qdl.vfs.VFSPaths;
 import edu.uiuc.ncsa.qdl.workspace.QDLWorkspace;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
@@ -2473,7 +2473,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             }
             JavaModuleConfig jmc = new JavaModuleConfig();
             jmc.setImportOnStart(false);
-            jmc.setVersion(XMLConstants.VERSION_2_0_TAG);
+            jmc.setVersion(SerializationConstants.VERSION_2_0_TAG);
 
             List<String> names = QDLConfigurationLoaderUtils.setupJavaModule(state, qdlLoader, jmc);
             if (names.isEmpty()) {

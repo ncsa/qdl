@@ -42,7 +42,7 @@ import static edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.*;
 import static edu.uiuc.ncsa.qdl.variables.Constant.isString;
 import static edu.uiuc.ncsa.qdl.variables.VTable.KEY_KEY;
 import static edu.uiuc.ncsa.qdl.variables.VTable.VALUE_KEY;
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
+import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**

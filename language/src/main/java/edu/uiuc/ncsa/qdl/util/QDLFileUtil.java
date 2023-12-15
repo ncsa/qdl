@@ -377,6 +377,13 @@ public class QDLFileUtil extends FileUtil {
          */
     }
 
+    /**
+     * Read off the file attributes (such as name, length etc.) from the given file
+     * @param state
+     * @param fullPath
+     * @return
+     * @throws Throwable
+     */
     public static FileAttributes readAttributes(State state, String fullPath) throws Throwable {
         if (isVFSPath(fullPath)) {
             VFSFileProvider vfs = getVfsFileProvider(state, fullPath);

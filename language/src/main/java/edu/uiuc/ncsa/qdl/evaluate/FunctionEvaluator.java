@@ -620,7 +620,10 @@ public class FunctionEvaluator extends AbstractEvaluator {
                             */
                             List<XTable> vStack =  localState.getVStack().getStack();
                             if(!frn.getModuleState().getVStack().isEmpty()) {
-                                vStack.add(vStack.size() - 1, frn.getModuleState().getVStack().getLocal());
+                                for(Object xTable : frn.getModuleState().getVStack().getStack()){
+                                    vStack.add(vStack.size() - 1, (XTable) xTable);
+                                }
+                                //vStack.add(vStack.size() - 1, frn.getModuleState().getVStack().getLocal());
                             }
                             //localState.getVStack().push(frn.getModuleState().getVStack().getLocal());
                         } else {

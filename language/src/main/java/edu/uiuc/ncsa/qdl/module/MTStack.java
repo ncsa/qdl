@@ -5,7 +5,7 @@ import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XStack;
 import edu.uiuc.ncsa.qdl.state.XTable;
 import edu.uiuc.ncsa.qdl.state.XThing;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 
 import javax.xml.stream.XMLEventReader;
@@ -38,12 +38,12 @@ public class MTStack<V extends MTTable<? extends MTKey, ? extends Module>> exten
 
     @Override
     public String getXMLStackTag() {
-        return XMLConstants.TEMPLATE_STACK;
+        return SerializationConstants.TEMPLATE_STACK;
     }
 
     @Override
     public String getXMLTableTag() {
-        return XMLConstants.MODULES_TAG;
+        return SerializationConstants.MODULES_TAG;
     }
 
     @Override

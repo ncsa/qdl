@@ -4,8 +4,8 @@ import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XTable;
 import edu.uiuc.ncsa.qdl.state.XThing;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.qdl.xml.SerializationState;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
 import net.sf.json.JSONObject;
 
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.MODULE_TAG;
+import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.MODULE_TAG;
 
 /**
  * Module template table.
@@ -40,7 +40,7 @@ public class MTTable<K extends MTKey, V extends Module>  extends   XTable<K, V> 
 
     @Override
     public String getXMLTableTag() {
-        return XMLConstants.MODULES_TAG;
+        return SerializationConstants.MODULES_TAG;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class MTTable<K extends MTKey, V extends Module>  extends   XTable<K, V> 
           for(XKey key : keySet()){
               xsw.writeStartElement(getXMLElementTag());
               Module module = get(key);
-              xsw.writeAttribute(XMLConstants.UUID_TAG, module.getId().toString());
+              xsw.writeAttribute(SerializationConstants.UUID_TAG, module.getId().toString());
               SerializationState.templateMap.put(module.getId(), module);
               xsw.writeEndElement(); // end module tag
           }
@@ -122,9 +122,9 @@ public class MTTable<K extends MTKey, V extends Module>  extends   XTable<K, V> 
 
     @Override
     public JSONObject serializeToJSON(V xThing, SerializationState serializationState) throws Throwable {
-        if(serializationState.getVersion().equals(XMLConstants.VERSION_2_0_TAG)){
+        if(serializationState.getVersion().equals(SerializationConstants.VERSION_2_0_TAG)){
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put(XMLConstants.UUID_TAG, xThing.getId().toString());
+            jsonObject.put(SerializationConstants.UUID_TAG, xThing.getId().toString());
             return jsonObject;
         }
         return xThing.serializeToJSON(serializationState);

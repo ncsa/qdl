@@ -14,7 +14,7 @@ import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLList;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -656,7 +656,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
             JavaModuleConfig jmc = new JavaModuleConfig();
             jmc.setImportOnStart(false);
             jmc.setUse(false);
-            jmc.setVersion(XMLConstants.VERSION_2_1_TAG);
+            jmc.setVersion(SerializationConstants.VERSION_2_1_TAG);
             switch (loadTarget) {
                 case LOAD_JAVA:
                     loadedQNames = moduleUtils.doJavaModuleLoad(state, resourceName, jmc);
@@ -824,11 +824,18 @@ public class ModuleEvaluator extends AbstractEvaluator {
                     newState = StateUtils.clone(state);
                     // put tables and such in the right place so ambient state is not altered.
                     newState = newState.newSelectiveState(newState,false,true,true);
+
                     break;
                 case IMPORT_STATE_SHARE_VALUE:
                     newState = state;
                     // put tables and such in the right place so ambient state is not altered.
+                    // The next command creates a state with the inhereited functions and variables.
+
                     newState = newState.newSelectiveState(newState,false,true,true);
+                    // now since these are shared, push on new tables to ensure nothing in the ambient state gets overwritten.
+                    // We do not want moduile state to leak back into the ambient state.
+                    newState.getVStack().pushNewTable();
+                    newState.getFTStack().pushNewTable();
                     break;
                 default:
                     throw new BadArgException(IMPORT + " with unknown state inheritene mode", polyad.getArgAt(1));

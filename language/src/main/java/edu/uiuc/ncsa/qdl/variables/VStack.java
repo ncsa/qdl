@@ -5,7 +5,7 @@ import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XStack;
 import edu.uiuc.ncsa.qdl.state.XTable;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import net.sf.json.JSONObject;
 
@@ -40,12 +40,12 @@ public class VStack<V extends VTable<? extends XKey, ? extends VThing>> extends 
 
     @Override
     public String getXMLStackTag() {
-        return XMLConstants.VARIABLE_STACK;
+        return SerializationConstants.VARIABLE_STACK;
     }
 
     @Override
     public String getXMLTableTag() {
-        return XMLConstants.VARIABLES_TAG;
+        return SerializationConstants.VARIABLES_TAG;
     }
 
     @Override

@@ -8,8 +8,8 @@ import edu.uiuc.ncsa.qdl.module.MIStack;
 import edu.uiuc.ncsa.qdl.module.MTStack;
 import edu.uiuc.ncsa.qdl.variables.VStack;
 import edu.uiuc.ncsa.qdl.workspace.WSJSONSerializer;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.qdl.xml.SerializationState;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
 import net.sf.json.JSONObject;
@@ -39,7 +39,7 @@ public abstract class StateUtils {
     public static State clone(State state)  {
         WSJSONSerializer serializer = new WSJSONSerializer();
         SerializationState serializationState = new SerializationState();
-        serializationState.setVersion(XMLConstants.VERSION_2_1_TAG);
+        serializationState.setVersion(SerializationConstants.VERSION_2_1_TAG);
         try {
             JSONObject json = state.serializeToJSON(serializationState);
             State newState = state.newInstance();

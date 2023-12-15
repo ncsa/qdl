@@ -43,7 +43,7 @@ import static edu.uiuc.ncsa.security.core.util.StringUtils.isTrivial;
  * <p>Created by Jeff Gaynor<br>
  * on 12/27/20 at  7:16 AM
  */
-public class XMLUtils implements XMLConstants {
+public class XMLUtils implements SerializationConstants {
 
 
     protected static QDLStem makeStem(XMLStreamReader xsr) throws XMLStreamException {
@@ -521,7 +521,7 @@ public class XMLUtils implements XMLConstants {
     /**
      * Internal class to manage attributes for a module.   Not all modules have all of these all the time!
      */
-    public static class ModuleAttributes implements XMLConstants {
+    public static class ModuleAttributes implements SerializationConstants {
         public String type = null;
         public URI ns = null;
         public String alias = null;

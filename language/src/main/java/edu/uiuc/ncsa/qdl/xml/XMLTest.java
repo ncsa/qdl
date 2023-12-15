@@ -160,7 +160,7 @@ public class XMLTest {
                     String name = xsr.getLocalName();
                     System.out.println("local name = " + name);
 
-                    if (name.equals(XMLConstants.STEM_ENTRY_TAG)) {
+                    if (name.equals(SerializationConstants.STEM_ENTRY_TAG)) {
                         System.out.println(makeStem(xsr));
                     }
                     break;

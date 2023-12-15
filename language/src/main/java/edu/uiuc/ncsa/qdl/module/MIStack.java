@@ -2,7 +2,7 @@ package edu.uiuc.ncsa.qdl.module;
 
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.*;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 
 import javax.xml.stream.XMLEventReader;
@@ -59,12 +59,12 @@ public class MIStack<V extends MITable<? extends XKey, ? extends MIWrapper>> ext
 
     @Override
     public String getXMLStackTag() {
-        return XMLConstants.INSTANCE_STACK;
+        return SerializationConstants.INSTANCE_STACK;
     }
 
     @Override
     public String getXMLTableTag() {
-        return XMLConstants.MODULES_TAG;
+        return SerializationConstants.MODULES_TAG;
     }
 
     /**

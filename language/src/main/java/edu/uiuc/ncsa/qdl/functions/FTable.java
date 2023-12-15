@@ -4,8 +4,8 @@ import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XTable;
 import edu.uiuc.ncsa.qdl.statements.Documentable;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.qdl.xml.SerializationState;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
 import edu.uiuc.ncsa.qdl.xml.XMLMissingCloseTagException;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
@@ -18,8 +18,8 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.XMLEvent;
 import java.util.*;
 
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.FUNCTIONS_TAG;
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.FUNCTION_TAG;
+import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.FUNCTIONS_TAG;
+import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.FUNCTION_TAG;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -209,9 +209,9 @@ public class FTable<K extends FKey, V extends FunctionRecord> extends XTable<K, 
             }
             String name = ((FKey) key).getfName(); // de-munge
 
-            xsw.writeStartElement(XMLConstants.FUNCTION_TAG);
-            xsw.writeAttribute(XMLConstants.FUNCTION_NAME_TAG, name);
-            xsw.writeAttribute(XMLConstants.FUNCTION_ARG_COUNT_TAG, Integer.toString(get(key).getArgCount()));
+            xsw.writeStartElement(SerializationConstants.FUNCTION_TAG);
+            xsw.writeAttribute(SerializationConstants.FUNCTION_NAME_TAG, name);
+            xsw.writeAttribute(SerializationConstants.FUNCTION_ARG_COUNT_TAG, Integer.toString(get(key).getArgCount()));
 
             xsw.writeCData(StringUtils.listToString(get(key).sourceCode));
             xsw.writeEndElement();

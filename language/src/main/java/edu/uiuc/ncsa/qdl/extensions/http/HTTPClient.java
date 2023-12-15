@@ -85,7 +85,7 @@ q := module_load('edu.uiuc.ncsa.qdl.extensions.http.QDLHTTPLoader','java') ;
   Which returns a status of 0 (so all ok), the client_id and the current base 32 encoded grant.
   */
 public class HTTPClient implements QDLModuleMetaClass {
-   transient CloseableHttpClient httpClient = null;
+    transient CloseableHttpClient httpClient = null;
     String host = null;
     public String HOST_METHOD = "host";
     public String GET_METHOD = "get";
@@ -287,12 +287,12 @@ public class HTTPClient implements QDLModuleMetaClass {
         QDLStem stemResponse = null;
         if (entity != null) {
             String rawResult = EntityUtils.toString(entity);
-            if ((entity.getContentType() != null) && entity.getContentType().getValue().contains("application/json")) {
-                stemResponse = jsonToStemJSON(rawResult);
-            } else {
-                // alternately, try to chunk it up
-                stemResponse = new QDLStem();
-                if (!StringUtils.isTrivial(rawResult)) {
+            if (!StringUtils.isTrivial(rawResult)) {
+                if ((entity.getContentType() != null) && entity.getContentType().getValue().contains("application/json")) {
+                    stemResponse = jsonToStemJSON(rawResult);
+                } else {
+                    // alternately, try to chunk it up
+                    stemResponse = new QDLStem();
                     stemResponse.addList(StringUtils.stringToList(rawResult));
                 }
             }
@@ -362,6 +362,11 @@ public class HTTPClient implements QDLModuleMetaClass {
 
     protected QDLStem jsonToStemJSON(String rawJSON) {
         QDLStem stemVariable = new QDLStem();
+        if(StringUtils.isTrivial(rawJSON)){
+            return stemVariable; // trivial response should be trivial JSON.
+        }
+        // So there is something there and it is asserted to be JSON.
+        // Try to process it as such
         try {
             stemVariable.fromJSON(JSONObject.fromObject(rawJSON));
             return stemVariable;
@@ -372,9 +377,8 @@ public class HTTPClient implements QDLModuleMetaClass {
             stemVariable.fromJSON(JSONArray.fromObject(rawJSON));
             return stemVariable;
         } catch (Throwable t) {
-
+            throw new IllegalArgumentException("could not convert '" + rawJSON + "' to stem:" + t.getMessage());
         }
-        throw new IllegalArgumentException("could not convert '" + rawJSON + "' to stem");
     }
 
     public class Close implements QDLFunction {
@@ -918,6 +922,7 @@ public class HTTPClient implements QDLModuleMetaClass {
     /**
      * Given a uriPath, return the actual path to the service. This does the nitpicky things
      * to create the path.
+     *
      * @param uriPath
      * @return
      */
@@ -934,10 +939,10 @@ public class HTTPClient implements QDLModuleMetaClass {
     @Override
     public JSONObject serializeToJSON() {
         JSONObject json = new JSONObject();
-        if(!StringUtils.isTrivial(host)){
+        if (!StringUtils.isTrivial(host)) {
             json.put("host", host);
         }
-        if(headers!=null){
+        if (headers != null) {
             json.put("headers", headers);
         }
         return json;
@@ -945,11 +950,11 @@ public class HTTPClient implements QDLModuleMetaClass {
 
     @Override
     public void deserializeFromJSON(JSONObject json) {
-         if(json.containsKey("host")){
-             host = json.getString("host");
-         }
-         if(json.containsKey("headers")){
-             headers = json.getJSONObject("headers");
-         }
+        if (json.containsKey("host")) {
+            host = json.getString("host");
+        }
+        if (json.containsKey("headers")) {
+            headers = json.getJSONObject("headers");
+        }
     }
 }

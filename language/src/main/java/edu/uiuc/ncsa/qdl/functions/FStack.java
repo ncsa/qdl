@@ -5,7 +5,7 @@ import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XStack;
 import edu.uiuc.ncsa.qdl.state.XTable;
 import edu.uiuc.ncsa.qdl.statements.Documentable;
-import edu.uiuc.ncsa.qdl.xml.XMLConstants;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 
 import javax.xml.stream.XMLEventReader;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.FUNCTION_TABLE_STACK_TAG;
+import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.FUNCTION_TABLE_STACK_TAG;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -80,7 +80,7 @@ public class FStack<V extends FTable<? extends FKey, ? extends FunctionRecord>> 
         if (isEmpty()) {
             return;
         }
-//        xsw.writeStartElement(XMLConstants.FUNCTION_TABLE_STACK_TAG);
+//        xsw.writeStartElement(SerializationConstants.FUNCTION_TABLE_STACK_TAG);
         xsw.writeStartElement(getXMLStackTag());
         xsw.writeComment("The functions for this state.");
         for (int i = getStack().size() - 1; 0 <= i; i--) {
@@ -89,7 +89,7 @@ public class FStack<V extends FTable<? extends FKey, ? extends FunctionRecord>> 
                 continue;
             }
             xsw.writeStartElement(getXMLTableTag());
-            xsw.writeAttribute(XMLConstants.LIST_INDEX_ATTR, Integer.toString(i));
+            xsw.writeAttribute(SerializationConstants.LIST_INDEX_ATTR, Integer.toString(i));
             xTable.toXML(xsw, serializationObjects);
             xsw.writeEndElement(); // end of table.
 
@@ -99,12 +99,12 @@ public class FStack<V extends FTable<? extends FKey, ? extends FunctionRecord>> 
 
     @Override
     public String getXMLStackTag() {
-        return XMLConstants.FUNCTION_TABLE_STACK_TAG;
+        return SerializationConstants.FUNCTION_TABLE_STACK_TAG;
     }
 
     @Override
     public String getXMLTableTag() {
-        return XMLConstants.FUNCTIONS_TAG;
+        return SerializationConstants.FUNCTIONS_TAG;
     }
 
     @Override
@@ -119,7 +119,7 @@ public class FStack<V extends FTable<? extends FKey, ? extends FunctionRecord>> 
                 case XMLEvent.START_ELEMENT:
                     switch (xe.asStartElement().getName().getLocalPart()) {
                         // Legacy case -- just a single functions block, not a stack.
-                        case XMLConstants.FUNCTIONS_TAG:
+                        case SerializationConstants.FUNCTIONS_TAG:
                             if (foundStack) break; // if a stack is being processed, skip this
                             FTable functionTable1 = (FTable) qi.getState().getFTStack().peek();
                             functionTable1.fromXML(xer, qi);

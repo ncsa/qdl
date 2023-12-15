@@ -4,7 +4,7 @@ package edu.uiuc.ncsa.qdl.xml;
  * <p>Created by Jeff Gaynor<br>
  * on 12/27/20 at  7:02 AM
  */
-public interface XMLConstants {
+public interface SerializationConstants {
     String INTEGER_TAG = "integer";
     String BOOLEAN_TAG = "boolean";
     String DECIMAL_TAG = "decimal";

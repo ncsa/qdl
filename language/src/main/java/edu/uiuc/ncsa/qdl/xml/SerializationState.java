@@ -147,7 +147,7 @@ public class SerializationState {
         if (StringUtils.isTrivial(getVersion())) {
             return false;
         }
-        return getVersion().equals(XMLConstants.VERSION_2_0_TAG);
+        return getVersion().equals(SerializationConstants.VERSION_2_0_TAG);
     }
 
     String version;

@@ -24,7 +24,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.util.*;
 
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.STACK_TAG;
+import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.STACK_TAG;
 
 /**
  * A stateful stack of things, such as functions. This is the method by which local state
@@ -655,7 +655,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
                     currentST.deserializeFromJSON(jsonArray.getJSONObject(k), qi, serializationState);
                 } catch (Throwable e) {
                     // For now
-                    e.printStackTrace();
+                 //   e.printStackTrace();
                 }
             }
             // since this is the stack in the interpreter state, this pushes a new table there

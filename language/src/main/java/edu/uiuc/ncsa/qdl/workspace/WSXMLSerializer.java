@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static edu.uiuc.ncsa.qdl.xml.XMLConstants.*;
+import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.*;
 import static edu.uiuc.ncsa.security.core.util.StringUtils.isTrivial;
 import static org.apache.commons.codec.binary.Base64.encodeBase64String;
 
