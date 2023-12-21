@@ -49,7 +49,7 @@ import edu.uiuc.ncsa.security.util.cli.editing.EditorEntry;
 import edu.uiuc.ncsa.security.util.cli.editing.EditorUtils;
 import edu.uiuc.ncsa.security.util.cli.editing.Editors;
 import edu.uiuc.ncsa.security.util.cli.editing.LineEditor;
-import edu.uiuc.ncsa.security.util.configuration.ConfigUtil;
+import edu.uiuc.ncsa.security.util.configuration.XMLConfigUtil;
 import edu.uiuc.ncsa.security.util.configuration.TemplateUtil;
 import edu.uiuc.ncsa.security.util.terminal.ISO6429IO;
 import net.sf.json.JSONArray;
@@ -4388,7 +4388,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 if (4 <= inputLine.getArgCount()) {
                     rawTime = rawTime + " " + inputLine.getArg(4);
                 }
-                setAutosaveInterval(ConfigUtil.getValueSecsOrMillis(rawTime));
+                setAutosaveInterval(XMLConfigUtil.getValueSecsOrMillis(rawTime));
                 say("autosave interval is now " + getAutosaveInterval() + " ms.");
                 break;
             default:
@@ -5612,7 +5612,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 cfgname, CONFIG_TAG_NAME);
 */
         // New style -- multi-inheritance.
-        ConfigurationNode node = ConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgname, CONFIG_TAG_NAME);
+        ConfigurationNode node = XMLConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgname, CONFIG_TAG_NAME);
 
         fromConfigFile(inputLine, node);
     }

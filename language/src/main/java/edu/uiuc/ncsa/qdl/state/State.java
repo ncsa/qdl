@@ -500,6 +500,7 @@ public class State extends FunctionState implements QDLConstants {
         fileTypes.put(SYS_FILE_TYPE_STEM, (long) IOEvaluator.FILE_OP_TEXT_STEM);
         fileTypes.put(SYS_FILE_TYPE_STRING, (long) IOEvaluator.FILE_OP_TEXT_STRING);
         fileTypes.put(SYS_FILE_TYPE_INIT, (long) IOEvaluator.FILE_OP_TEXT_INI);
+        fileTypes.put(SYS_FILE_TYPE_NO_LIST_INIT, (long) IOEvaluator.FILE_OP_TEXT_WITHOUT_LIST_INI);
         systemConstants.put(SYS_FILE_TYPES, fileTypes);
 
 

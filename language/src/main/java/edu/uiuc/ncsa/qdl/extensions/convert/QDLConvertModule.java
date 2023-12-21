@@ -35,6 +35,8 @@ public class QDLConvertModule extends JavaModule {
         funcs.add(xml.new HOCONImport());
         funcs.add(xml.new QDLExport());
         funcs.add(xml.new QDLImport());
+        funcs.add(xml.new IniImport());
+        funcs.add(xml.new IniExport());
         qdlxml.addFunctions(funcs);
         if (state != null) {
             qdlxml.init(state);

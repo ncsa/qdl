@@ -155,7 +155,7 @@ public class ModuleUtils implements Serializable {
         } catch (RuntimeException rx) {
             throw rx;
         } catch (ReflectiveOperationException cnf) {
-            return null; // if it is not found, just return null;
+            throw new BadArgException("class not found for " + resourceName,null);
         } catch (Throwable t) {
             throw new QDLException("could not load Java class " + resourceName + ": '" + t.getMessage() + "'.", t);
         }

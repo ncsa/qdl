@@ -72,7 +72,7 @@ public class OpEvaluator extends AbstractEvaluator {
     public static final String TILDE_STILE2 = "≁"; // unicode 2241
     public static final String TIMES = "*";
     public static final String TIMES2 = "×"; // unicode d7
-    public static final String DOT = ".";
+    public static final String DOT = "."; // for stems
     public static final String REGEX_MATCH = "=~";
     public static final String REGEX_MATCH2 = "≈";
     public static final String TO_SET = "⊢";

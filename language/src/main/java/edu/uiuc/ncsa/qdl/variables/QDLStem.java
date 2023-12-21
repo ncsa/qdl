@@ -13,6 +13,7 @@ import net.sf.json.JSONObject;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -676,7 +677,12 @@ public class QDLStem implements Map<String, Object>, Serializable {
 
     /**
      * This will return a new stem consisting of this stem and the union of all
-     * the stem arguments.
+     * the stem arguments. The effect is to overwrite the current stem values with
+     * the argument values. so e.g.
+     * <pre>
+     *       {'a':1}~{'a':2,'b':3}~{'b':4,'c':5}
+     * {a:2, b:4, c:5}
+     * </pre>
      *
      * @param stemVariables
      * @return
@@ -784,14 +790,16 @@ public class QDLStem implements Map<String, Object>, Serializable {
                 Object newKey = newKeys.get(oldKey);
                 if (containsKey(newKey)) {
                     if (overWriteKeys) {
-                        putLongOrString(newKey, get(oldKey));
+                        Object oldValue = get(oldKey);
                         remove(oldKey);
+                        putLongOrString(newKey, oldValue);
                     } else {
                         throw new IllegalArgumentException("'" + oldKey + "' is already a key. You  must explicitly overwrite it with the flag");
                     }
                 } else {
-                    putLongOrString(newKey, get(oldKey));
+                    Object oldValue = get(oldKey);
                     remove(oldKey);
+                    putLongOrString(newKey, oldValue);
                 }
             }
         }
@@ -1013,7 +1021,16 @@ public class QDLStem implements Map<String, Object>, Serializable {
         }
         if (index instanceof BigDecimal) {
             BigDecimal bd = (BigDecimal) index;
-            put(bd.longValueExact(), value);
+            try{
+                put(bd.longValueExact(), value);
+
+            }catch(ArithmeticException arithmeticException){
+                // over flow, so it's too big to have as an index.
+                BigInteger bi = bd.toBigIntegerExact();
+                SparseEntry sparseEntry = new SparseEntry(bi, value);
+                getQDLList().getSparseEntries().add(sparseEntry);
+
+            }
             return;
         }
         throw new IndexError("Unknown index type for \"" + index + "\"", null);

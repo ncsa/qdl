@@ -641,7 +641,7 @@ subset(b., 3, 6)
             treeSet.add(i);
         }
         for (SparseEntry sparseEntry : getSparseEntries()) {
-            treeSet.add(sparseEntry.index);
+                treeSet.add(sparseEntry.index);
         }
         stemKeys.setListkeys(treeSet);
         return stemKeys;

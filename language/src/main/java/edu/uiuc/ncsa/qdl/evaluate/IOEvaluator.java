@@ -7,6 +7,7 @@ import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.variables.Constant;
+import edu.uiuc.ncsa.qdl.variables.QDLList;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.vfs.*;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static edu.uiuc.ncsa.qdl.config.QDLConfigurationConstants.*;
@@ -111,8 +113,6 @@ public class IOEvaluator extends AbstractEvaluator {
         }
         return EvaluatorInterface.UNKNOWN_VALUE;
     }
-
-
 
 
     public boolean dispatch(Polyad polyad, State state) {
@@ -284,7 +284,7 @@ public class IOEvaluator extends AbstractEvaluator {
                 if (!f.isFile()) {
                     throw new QDLIOException("the requested object '" + f + "' is not a file on this system.");
                 }
-            }else{
+            } else {
                 // Contract is that if it does not exist, return true.
                 polyad.setEvaluated(true);
                 polyad.setResult(rc);
@@ -621,6 +621,7 @@ public class IOEvaluator extends AbstractEvaluator {
                 fileType = ((Long) obj3).intValue();
             }
         }
+        boolean allowListEntriesInIniFiles = true;
         if (state.isVFSFile(fileName)) {
             try {
                 VFSFileProvider vfs = state.getVFS(fileName);
@@ -628,12 +629,14 @@ public class IOEvaluator extends AbstractEvaluator {
                 ArrayList<String> lines = new ArrayList<>();
 
                 switch (fileType) {
+                    case FILE_OP_TEXT_WITHOUT_LIST_INI:
+                        allowListEntriesInIniFiles = false;
                     case FILE_OP_TEXT_INI:
                         if (!isStem(obj2)) {
                             throw new BadArgException(WRITE_FILE + " requires a stem for ini output", polyad.getArgAt(1));
                         }
                         xProperties.put(FileEntry.CONTENT_TYPE, FileEntry.TEXT_TYPE);
-                        lines.add(convertToIni((QDLStem) obj2));
+                        lines.add(convertToIni((QDLStem) obj2, allowListEntriesInIniFiles));
                         break;
                     case FILE_OP_BINARY:
                         xProperties.put(FileEntry.CONTENT_TYPE, FileEntry.BINARY_TYPE);
@@ -677,11 +680,13 @@ public class IOEvaluator extends AbstractEvaluator {
                     case FILE_OP_BINARY:
                         QDLFileUtil.writeFileAsBinary(fileName, (String) obj2);
                         break;
+                    case FILE_OP_TEXT_WITHOUT_LIST_INI:
+                        allowListEntriesInIniFiles = false;
                     case FILE_OP_TEXT_INI:
                         if (!isStem(obj2)) {
                             throw new BadArgException(WRITE_FILE + " requires a stem for ini output", polyad.getArgAt(1));
                         }
-                        QDLFileUtil.writeStringToFile(fileName, convertToIni((QDLStem) obj2));
+                        QDLFileUtil.writeStringToFile(fileName, convertToIni((QDLStem) obj2, allowListEntriesInIniFiles));
                         break;
                     case FILE_OP_TEXT_STEM:
                     case FILE_OP_TEXT_STRING:
@@ -709,7 +714,37 @@ public class IOEvaluator extends AbstractEvaluator {
 
     }
 
-    private String convertToIni(QDLStem obj2) {
+    public static String convertToIni(QDLStem obj2, boolean allowListEntries) {
+        return convertToIni(obj2, 0, allowListEntries); // default is no indent
+    }
+
+    public static String convertToIni(QDLStem obj2, int indentFactor, boolean allowListEntries) {
+        StringBuilder stringBuilder = new StringBuilder();
+        String indent = ""; // top level
+        for (Object key0 : obj2.keySet()) {
+            List<String> sectionNames = new ArrayList<>();
+            if (key0 instanceof Long) {
+                if (allowListEntries) {
+                    sectionNames.add(INI_LIST_ENTRY_START + key0);
+                } else {
+                    throw new IllegalArgumentException("list entries not allowed for sections");
+
+                }
+            } else {
+                sectionNames.add((String) key0);
+            }
+            Object value = obj2.get(key0);
+            if (!Constant.isStem(value)) {
+                throw new IllegalArgumentException("sections of an ini file must be stems");
+            }
+            QDLStem stem = (QDLStem) value;
+            convertToIni(sectionNames, stem, stringBuilder, indent, indentFactor, allowListEntries);
+            stringBuilder.append("\n");
+        }
+        return stringBuilder.toString();
+    }
+
+    public static String convertToIniOLD(QDLStem obj2) {
         StringBuilder stringBuilder = new StringBuilder();
         for (Object key0 : obj2.keySet()) {
             stringBuilder.append("[" + key0 + "]\n");
@@ -720,7 +755,7 @@ public class IOEvaluator extends AbstractEvaluator {
             QDLStem innerStem = (QDLStem) obj;
             for (Object key1 : innerStem.keySet()) {
                 Object innerObject = innerStem.get(key1);
-                if (!isStem(innerObject)) {
+                if (!Constant.isStem(innerObject)) {
                     stringBuilder.append(key1 + " := " + InputFormUtil.inputForm(innerObject) + "\n");
                 } else {
                     QDLStem innerInnerObject = (QDLStem) innerObject;
@@ -728,8 +763,8 @@ public class IOEvaluator extends AbstractEvaluator {
                     boolean isFirst = true;
                     for (Object key2 : innerInnerObject.keySet()) {
                         Object object2 = innerInnerObject.get(key2);
-                        if (isStem(object2)) {
-                            throw new IllegalArgumentException("Ini files do not support nexted stems");
+                        if (Constant.isStem(object2)) {
+                            throw new IllegalArgumentException("Ini files do not support nested stems");
                         }
                         out = out + (isFirst ? "" : ",") + InputFormUtil.inputForm(object2);
                         if (isFirst) isFirst = false;
@@ -741,6 +776,101 @@ public class IOEvaluator extends AbstractEvaluator {
             stringBuilder.append("\n"); // helps with readability.
         }
         return stringBuilder.toString();
+    }
+
+    public static final String INI_LIST_ENTRY_START = "_";
+
+    protected static void convertToIni(List<String> names,
+                                       QDLStem stem,
+                                       StringBuilder sb,
+                                       String initialIndent,
+                                       int indentFactor,
+                                       boolean allowListEntries) {
+        String indent = initialIndent;
+        sb.append(indent + "[" + toSectionHeader(names) + "]\n");
+        Map<String, QDLStem> postProcessStems = new HashMap();
+        for (Object key : stem.keySet()) {
+            Object value = stem.get(key);
+            if (Constant.isStem(value)) {
+                QDLStem s = (QDLStem) value;
+                if (s.isList()) {
+                    sb.append(indent + key + " := " + toIniList(s.getQDLList()) + "\n");
+                } else {
+                    if (key instanceof Long) {
+                        if (allowListEntries) {
+                            postProcessStems.put(INI_LIST_ENTRY_START + key, s);
+                        } else {
+                            throw new IllegalArgumentException("list entries not allowed for sections");
+                        }
+                    } else {
+                        postProcessStems.put((String) key, s);
+                    }
+                }
+            } else {
+                if (key instanceof Long) {
+                    if (allowListEntries) {
+                        sb.append(indent + INI_LIST_ENTRY_START + key + " := " + InputFormUtil.inputForm(value) + "\n");
+                    } else {
+                        throw new IllegalArgumentException("list entries not allowed for sections");
+                    }
+                } else {
+                    sb.append(indent + key + " := " + InputFormUtil.inputForm(value) + "\n");
+                }
+            }
+        }
+        // now we do the next set of embedded stems
+        for (String key : postProcessStems.keySet()) {
+            List<String> newNames = new ArrayList<>();
+            newNames.addAll(names);
+            newNames.add(key);
+            convertToIni(newNames, postProcessStems.get(key), sb, indent + StringUtils.getBlanks(indentFactor), indentFactor, allowListEntries);
+        }
+    }
+
+    /*
+    j_use('convert')
+      ini.:=ini_in(file_read('/tmp/eg.ini'))
+ini.
+print(ini.)
+a : {b:{r:s, t:v}, p:q}
+z : {"m": 123}
+print({'m':123})
+m : 123
+print({'a':{'m':123}})
+a : {"m": 123}
+)r
+a : {"m": 123}
+{a:{b:{r:s, t:v}, p:q}, z:{m:123}}
+print(ini.)
+a : {b:{r:s, t:v}, p:q}
+z : {"m": 123}
+ini_out(ini.)
+     */
+    protected static String toIniList(QDLList list) {
+        if (list.isEmpty()) return null;
+        String out = "";
+        boolean firstPass = true;
+        for (Object key : list.orderedKeys()) {
+            Object value = list.get((Long) key);
+            if (Constant.isStem(value)) {
+                throw new IllegalArgumentException("nested stems in lists are not allowed in ini files");
+            }
+            if (firstPass) {
+                firstPass = false;
+                out = InputFormUtil.inputForm(value);
+            } else {
+                out = out + "," + InputFormUtil.inputForm(value);
+            }
+        }
+        return out;
+    }
+
+    protected static String toSectionHeader(List<String> names) {
+        String out = names.get(0);
+        for (int i = 1; i < names.size(); i++) {
+            out = out + QDLStem.STEM_INDEX_MARKER + names.get(i);
+        }
+        return out;
     }
 
     protected void doReadFile(Polyad polyad, State state) {
@@ -792,6 +922,7 @@ public class IOEvaluator extends AbstractEvaluator {
                 throw new QDLServerModeException("File system operations not permitted in server mode.");
             }
         }
+        boolean allowListEntriesInIniFiles = true;
         try {
             switch (op) {
                 case FILE_OP_BINARY:
@@ -814,6 +945,8 @@ public class IOEvaluator extends AbstractEvaluator {
                     polyad.setResultType(Constant.STEM_TYPE);
                     polyad.setEvaluated(true);
                     return;
+                case FILE_OP_TEXT_WITHOUT_LIST_INI:
+                    allowListEntriesInIniFiles = false;
                 case FILE_OP_TEXT_INI:
                     // read it as a stem and start parsing
                     String content;
@@ -830,7 +963,7 @@ public class IOEvaluator extends AbstractEvaluator {
                     }
                     IniParserDriver iniParserDriver = new IniParserDriver();
                     StringReader stringReader = new StringReader(content);
-                    QDLStem out = iniParserDriver.parse(stringReader);
+                    QDLStem out = iniParserDriver.parse(stringReader, allowListEntriesInIniFiles);
 
                     polyad.setResult(out);
                     polyad.setResultType(Constant.STEM_TYPE);

@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl.parsing;
 
+import edu.uiuc.ncsa.qdl.evaluate.IOEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.ParsingException;
 import edu.uiuc.ncsa.qdl.ini_generated.iniListener;
 import edu.uiuc.ncsa.qdl.ini_generated.iniParser;
@@ -10,7 +11,9 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import java.math.BigDecimal;
-import java.util.StringTokenizer;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 import static edu.uiuc.ncsa.qdl.exceptions.ParsingException.*;
 
@@ -62,30 +65,66 @@ public class IniListenerImpl implements iniListener {
 
     @Override
     public void enterSectionheader(iniParser.SectionheaderContext ctx) {
+        previousSectionHeader = currentSectionHeader;
         currentSectionHeader = null; // Don't just leave this from the last one.
+        currentLineID = null;
+        currentLineValue = null;
     }
+
+    String previousSectionHeader = null;
+    QDLStem stemPointer;
 
     @Override
     public void exitSectionheader(iniParser.SectionheaderContext ctx) {
         checkLexer(ctx);
-        currentSectionHeader = ctx.Identifier().getText();
-        if (currentSectionHeader.contains(".")) {
-            StringTokenizer tokenizer = new StringTokenizer(currentSectionHeader, ".");
+        List<String> identifiers = new ArrayList<>();
+        for (TerminalNode id : ctx.Identifier()) {
+            identifiers.add(id.getText());
+        }
+
+        if (1 < identifiers.size()) {
+            //StringTokenizer tokenizer = new StringTokenizer(currentSectionHeader, STEM_INDEX_MARKER);
             QDLStem currentStem1 = output;
-            while (tokenizer.hasMoreTokens()) {
-                String nextToken = tokenizer.nextToken();
+            boolean hasStemPath = false;
+            for (String nextToken : identifiers) {
+                //String nextToken = tokenizer.nextToken();
                 if (!currentStem1.containsKey(nextToken)) {
                     QDLStem nextStem = new QDLStem();
-                    currentStem1.put(nextToken, nextStem);
+                    if (isAllowListEntries()) {
+                        if (nextToken.startsWith(IOEvaluator.INI_LIST_ENTRY_START)) {
+                            Long index = Long.parseLong(nextToken.substring(1));
+                            currentStem1.put(index, nextStem);
+                        } else {
+                            currentStem1.put(nextToken, nextStem);
+                        }
+                    } else {
+                        currentStem1.put(nextToken, nextStem);
+                    }
                     currentStem1 = nextStem;
                 } else {
                     currentStem1 = currentStem1.getStem(nextToken);
                 }
             }
             //output = currentStem1;
+            stemPointer = currentStem1;
+
             currentStem = currentStem1;
         } else {
-            output.put(currentSectionHeader, currentStem);
+            currentSectionHeader = identifiers.get(identifiers.size() - 1);
+            if (currentSectionHeader.startsWith(IOEvaluator.INI_LIST_ENTRY_START)) {
+                if (isAllowListEntries()) {
+                    try {
+                        Long index = Long.parseLong(currentSectionHeader.substring(1));
+                        output.put(index, currentStem);
+                    } catch (NumberFormatException nfx) {
+                        output.put(currentSectionHeader, currentStem);
+                    }
+                } else {
+                    output.put(currentSectionHeader, currentStem);
+                }
+            } else {
+                output.put(currentSectionHeader, currentStem);
+            }
         }
 
     }
@@ -96,15 +135,49 @@ public class IniListenerImpl implements iniListener {
     public void enterLine(iniParser.LineContext ctx) {
     }
 
+    public boolean isAllowListEntries() {
+        return allowListEntries;
+    }
+
+    public void setAllowListEntries(boolean allowListEntries) {
+        this.allowListEntries = allowListEntries;
+    }
+
+    boolean allowListEntries = true;
+
     @Override
     public void exitLine(iniParser.LineContext ctx) {
         checkLexer(ctx);
-
         if (ctx.Identifier() == null) {
-            return; // means there was a blank line
+            if (ctx.Url() == null) {
+                return; // means there was a blank line
+            }
+            currentLineID = ctx.Url().getText();
+        } else {
+            currentLineID = ctx.Identifier().getText();
         }
-        currentLineID = ctx.Identifier().getText(); // don't know if this is scalar or stem at this point
-        currentStem.put(currentLineID, currentLineValue);
+        if (isAllowListEntries()) {
+            // Then any identifier of the form _number is treated as an
+            // index and put into the list
+            if (currentLineID.startsWith("_")) {
+                try {
+                    if (currentLineID.length() - 1 < 19) {
+                        Long index = Long.parseLong(currentLineID.substring(1));
+                        currentStem.put(index, currentLineValue);
+                    } else {
+                        BigInteger index = new BigInteger(currentLineID.substring(1));
+                        currentStem.put(index.toString(), currentLineValue); // can't handle anything but longs as list indices
+                    }
+
+                } catch (NumberFormatException nfx) {
+                    currentStem.put(currentLineID, currentLineValue);
+                }
+            } else {
+                currentStem.put(currentLineID, currentLineValue);
+            }
+        } else {
+            currentStem.put(currentLineID, currentLineValue);
+        }
     }
 
     @Override
@@ -145,7 +218,7 @@ public class IniListenerImpl implements iniListener {
             return outString;
         }
         if (entryContext.ConstantKeywords() != null) {
-            System.out.println(entryContext.ConstantKeywords().getClass());
+            //  System.out.println(entryContext.ConstantKeywords().getClass());
             if (entryContext.ConstantKeywords().getText().equals("true")) {
                 return Boolean.TRUE;
             } else {
@@ -153,12 +226,18 @@ public class IniListenerImpl implements iniListener {
             }
         }
         if (entryContext.Number() != null) {
-            try {
-                return new BigDecimal(entryContext.Number().getText());
-            } catch (Throwable t) {
-
+            // the parser only recognizes numbers, so this *should* never fail to parse.
+            BigDecimal bd;
+            bd = new BigDecimal(entryContext.Number().getText());
+            if(bd.scale()<=0){
+                try {
+                    return bd.longValueExact();
+                }catch(ArithmeticException arithmeticException){
+                    // In this case it does not fit into a long though it is a (big) integer
+                    // return the big decimal since we use  big decimals
+                }
             }
-            return new Long(entryContext.Number().getText());
+            return bd;
         }
         throw new IllegalArgumentException("unknown value type");
     }

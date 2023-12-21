@@ -18,9 +18,10 @@ public class iniParser extends Parser {
 		new PredictionContextCache();
 	public static final int
 		T__0=1, T__1=2, T__2=3, ConstantKeywords=4, UnaryMinus=5, UnaryPlus=6, 
-		Plus=7, Minus=8, Assign=9, String=10, Identifier=11, BOOL_FALSE=12, BOOL_TRUE=13, 
-		Bool=14, Number=15, Integer=16, Decimal=17, SCIENTIFIC_NUMBER=18, LINE_COMMENT=19, 
-		COMMENT=20, EOL=21, WS=22;
+		Plus=7, Minus=8, Colon=9, Divide=10, Dot=11, Assign=12, Semicolon=13, 
+		String=14, Identifier=15, Url=16, BOOL_FALSE=17, BOOL_TRUE=18, Bool=19, 
+		Number=20, Integer=21, Decimal=22, SCIENTIFIC_NUMBER=23, LINE_COMMENT=24, 
+		COMMENT=25, EOL=26, WS=27;
 	public static final int
 		RULE_ini = 0, RULE_section = 1, RULE_sectionheader = 2, RULE_line = 3, 
 		RULE_entries = 4, RULE_entry = 5;
@@ -34,16 +35,16 @@ public class iniParser extends Parser {
 	private static String[] makeLiteralNames() {
 		return new String[] {
 			null, "'['", "']'", "','", null, "'\u00AF'", "'\u207A'", "'+'", "'-'", 
-			null, null, null, "'false'", "'true'"
+			"':'", "'/'", "'.'", null, "';'", null, null, null, "'false'", "'true'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
 			null, null, null, null, "ConstantKeywords", "UnaryMinus", "UnaryPlus", 
-			"Plus", "Minus", "Assign", "String", "Identifier", "BOOL_FALSE", "BOOL_TRUE", 
-			"Bool", "Number", "Integer", "Decimal", "SCIENTIFIC_NUMBER", "LINE_COMMENT", 
-			"COMMENT", "EOL", "WS"
+			"Plus", "Minus", "Colon", "Divide", "Dot", "Assign", "Semicolon", "String", 
+			"Identifier", "Url", "BOOL_FALSE", "BOOL_TRUE", "Bool", "Number", "Integer", 
+			"Decimal", "SCIENTIFIC_NUMBER", "LINE_COMMENT", "COMMENT", "EOL", "WS"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -233,8 +234,15 @@ public class iniParser extends Parser {
 	}
 
 	public static class SectionheaderContext extends ParserRuleContext {
-		public TerminalNode Identifier() { return getToken(iniParser.Identifier, 0); }
+		public List<TerminalNode> Identifier() { return getTokens(iniParser.Identifier); }
+		public TerminalNode Identifier(int i) {
+			return getToken(iniParser.Identifier, i);
+		}
 		public TerminalNode EOL() { return getToken(iniParser.EOL, 0); }
+		public List<TerminalNode> Dot() { return getTokens(iniParser.Dot); }
+		public TerminalNode Dot(int i) {
+			return getToken(iniParser.Dot, i);
+		}
 		public SectionheaderContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -252,6 +260,7 @@ public class iniParser extends Parser {
 	public final SectionheaderContext sectionheader() throws RecognitionException {
 		SectionheaderContext _localctx = new SectionheaderContext(_ctx, getState());
 		enterRule(_localctx, 4, RULE_sectionheader);
+		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
@@ -259,9 +268,25 @@ public class iniParser extends Parser {
 			match(T__0);
 			setState(27);
 			match(Identifier);
-			setState(28);
+			setState(32);
+			_errHandler.sync(this);
+			_la = _input.LA(1);
+			while (_la==Dot) {
+				{
+				{
+				setState(28);
+				match(Dot);
+				setState(29);
+				match(Identifier);
+				}
+				}
+				setState(34);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+			}
+			setState(35);
 			match(T__1);
-			setState(29);
+			setState(36);
 			match(EOL);
 			}
 		}
@@ -277,12 +302,14 @@ public class iniParser extends Parser {
 	}
 
 	public static class LineContext extends ParserRuleContext {
-		public TerminalNode Identifier() { return getToken(iniParser.Identifier, 0); }
 		public TerminalNode EOL() { return getToken(iniParser.EOL, 0); }
+		public TerminalNode Url() { return getToken(iniParser.Url, 0); }
+		public TerminalNode Identifier() { return getToken(iniParser.Identifier, 0); }
 		public TerminalNode Assign() { return getToken(iniParser.Assign, 0); }
 		public EntriesContext entries() {
 			return getRuleContext(EntriesContext.class,0);
 		}
+		public TerminalNode Semicolon() { return getToken(iniParser.Semicolon, 0); }
 		public LineContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -300,23 +327,43 @@ public class iniParser extends Parser {
 	public final LineContext line() throws RecognitionException {
 		LineContext _localctx = new LineContext(_ctx, getState());
 		enterRule(_localctx, 6, RULE_line);
+		int _la;
 		try {
-			setState(38);
+			setState(48);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case Identifier:
+			case Url:
 				enterOuterAlt(_localctx, 1);
 				{
 				{
-				setState(31);
-				match(Identifier);
+				setState(38);
+				_la = _input.LA(1);
+				if ( !(_la==Identifier || _la==Url) ) {
+				_errHandler.recoverInline(this);
+				}
+				else {
+					if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+					_errHandler.reportMatch(this);
+					consume();
+				}
 				{
-				setState(32);
+				setState(39);
 				match(Assign);
-				setState(33);
+				setState(40);
 				entries();
 				}
-				setState(35);
+				setState(43);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+				if (_la==Semicolon) {
+					{
+					setState(42);
+					match(Semicolon);
+					}
+				}
+
+				setState(45);
 				match(EOL);
 				}
 				}
@@ -324,7 +371,7 @@ public class iniParser extends Parser {
 			case EOL:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(37);
+				setState(47);
 				match(EOL);
 				}
 				break;
@@ -371,29 +418,29 @@ public class iniParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(40);
+			setState(50);
 			entry();
-			setState(47);
+			setState(57);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==T__2) {
 				{
 				{
-				setState(41);
+				setState(51);
 				match(T__2);
-				setState(43);
+				setState(53);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ConstantKeywords) | (1L << String) | (1L << Number))) != 0)) {
 					{
-					setState(42);
+					setState(52);
 					entry();
 					}
 				}
 
 				}
 				}
-				setState(49);
+				setState(59);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -435,7 +482,7 @@ public class iniParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(50);
+			setState(60);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ConstantKeywords) | (1L << String) | (1L << Number))) != 0)) ) {
 			_errHandler.recoverInline(this);
@@ -459,21 +506,24 @@ public class iniParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\30\67\4\2\t\2\4\3"+
-		"\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\3\2\3\2\7\2\21\n\2\f\2\16\2\24\13"+
-		"\2\3\3\3\3\7\3\30\n\3\f\3\16\3\33\13\3\3\4\3\4\3\4\3\4\3\4\3\5\3\5\3\5"+
-		"\3\5\3\5\3\5\3\5\5\5)\n\5\3\6\3\6\3\6\5\6.\n\6\7\6\60\n\6\f\6\16\6\63"+
-		"\13\6\3\7\3\7\3\7\2\2\b\2\4\6\b\n\f\2\3\5\2\6\6\f\f\21\21\2\66\2\22\3"+
-		"\2\2\2\4\25\3\2\2\2\6\34\3\2\2\2\b(\3\2\2\2\n*\3\2\2\2\f\64\3\2\2\2\16"+
-		"\21\5\4\3\2\17\21\7\27\2\2\20\16\3\2\2\2\20\17\3\2\2\2\21\24\3\2\2\2\22"+
-		"\20\3\2\2\2\22\23\3\2\2\2\23\3\3\2\2\2\24\22\3\2\2\2\25\31\5\6\4\2\26"+
-		"\30\5\b\5\2\27\26\3\2\2\2\30\33\3\2\2\2\31\27\3\2\2\2\31\32\3\2\2\2\32"+
-		"\5\3\2\2\2\33\31\3\2\2\2\34\35\7\3\2\2\35\36\7\r\2\2\36\37\7\4\2\2\37"+
-		" \7\27\2\2 \7\3\2\2\2!\"\7\r\2\2\"#\7\13\2\2#$\5\n\6\2$%\3\2\2\2%&\7\27"+
-		"\2\2&)\3\2\2\2\')\7\27\2\2(!\3\2\2\2(\'\3\2\2\2)\t\3\2\2\2*\61\5\f\7\2"+
-		"+-\7\5\2\2,.\5\f\7\2-,\3\2\2\2-.\3\2\2\2.\60\3\2\2\2/+\3\2\2\2\60\63\3"+
-		"\2\2\2\61/\3\2\2\2\61\62\3\2\2\2\62\13\3\2\2\2\63\61\3\2\2\2\64\65\t\2"+
-		"\2\2\65\r\3\2\2\2\b\20\22\31(-\61";
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\35A\4\2\t\2\4\3\t"+
+		"\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\3\2\3\2\7\2\21\n\2\f\2\16\2\24\13\2"+
+		"\3\3\3\3\7\3\30\n\3\f\3\16\3\33\13\3\3\4\3\4\3\4\3\4\7\4!\n\4\f\4\16\4"+
+		"$\13\4\3\4\3\4\3\4\3\5\3\5\3\5\3\5\3\5\5\5.\n\5\3\5\3\5\3\5\5\5\63\n\5"+
+		"\3\6\3\6\3\6\5\68\n\6\7\6:\n\6\f\6\16\6=\13\6\3\7\3\7\3\7\2\2\b\2\4\6"+
+		"\b\n\f\2\4\3\2\21\22\5\2\6\6\20\20\26\26\2B\2\22\3\2\2\2\4\25\3\2\2\2"+
+		"\6\34\3\2\2\2\b\62\3\2\2\2\n\64\3\2\2\2\f>\3\2\2\2\16\21\5\4\3\2\17\21"+
+		"\7\34\2\2\20\16\3\2\2\2\20\17\3\2\2\2\21\24\3\2\2\2\22\20\3\2\2\2\22\23"+
+		"\3\2\2\2\23\3\3\2\2\2\24\22\3\2\2\2\25\31\5\6\4\2\26\30\5\b\5\2\27\26"+
+		"\3\2\2\2\30\33\3\2\2\2\31\27\3\2\2\2\31\32\3\2\2\2\32\5\3\2\2\2\33\31"+
+		"\3\2\2\2\34\35\7\3\2\2\35\"\7\21\2\2\36\37\7\r\2\2\37!\7\21\2\2 \36\3"+
+		"\2\2\2!$\3\2\2\2\" \3\2\2\2\"#\3\2\2\2#%\3\2\2\2$\"\3\2\2\2%&\7\4\2\2"+
+		"&\'\7\34\2\2\'\7\3\2\2\2()\t\2\2\2)*\7\16\2\2*+\5\n\6\2+-\3\2\2\2,.\7"+
+		"\17\2\2-,\3\2\2\2-.\3\2\2\2./\3\2\2\2/\60\7\34\2\2\60\63\3\2\2\2\61\63"+
+		"\7\34\2\2\62(\3\2\2\2\62\61\3\2\2\2\63\t\3\2\2\2\64;\5\f\7\2\65\67\7\5"+
+		"\2\2\668\5\f\7\2\67\66\3\2\2\2\678\3\2\2\28:\3\2\2\29\65\3\2\2\2:=\3\2"+
+		"\2\2;9\3\2\2\2;<\3\2\2\2<\13\3\2\2\2=;\3\2\2\2>?\t\3\2\2?\r\3\2\2\2\n"+
+		"\20\22\31\"-\62\67;";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

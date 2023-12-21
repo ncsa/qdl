@@ -11,7 +11,7 @@ import edu.uiuc.ncsa.security.core.util.*;
 import edu.uiuc.ncsa.security.util.cli.editing.EditorEntry;
 import edu.uiuc.ncsa.security.util.cli.editing.EditorUtils;
 import edu.uiuc.ncsa.security.util.cli.editing.Editors;
-import edu.uiuc.ncsa.security.util.configuration.ConfigUtil;
+import edu.uiuc.ncsa.security.util.configuration.XMLConfigUtil;
 import org.apache.commons.configuration.tree.ConfigurationNode;
 
 import java.util.ArrayList;
@@ -241,7 +241,7 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
         String rawValue = getFirstAttribute(node, WS_ATTR_AUTOSAVE_INTERVAL);
         long autosaveInterval = 10 * 60 * 1000L; // 10 minutes in milliseconds.
         if (rawValue != null) {
-            autosaveInterval = ConfigUtil.getValueSecsOrMillis(rawValue);
+            autosaveInterval = XMLConfigUtil.getValueSecsOrMillis(rawValue);
         }
         return autosaveInterval;
     }
@@ -456,7 +456,7 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
 
     public static void main(String[] args) {
         String path = DebugUtil.getDevPath() + "/qdl/language/src/main/resources/qdl-cfg.xml";
-        ConfigurationNode node = ConfigUtil.findConfiguration(path, "test", QDLConfigurationConstants.CONFIG_TAG_NAME);
+        ConfigurationNode node = XMLConfigUtil.findConfiguration(path, "test", QDLConfigurationConstants.CONFIG_TAG_NAME);
 
         QDLConfigurationLoader loader = new QDLConfigurationLoader(path, node);
 

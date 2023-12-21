@@ -17,13 +17,14 @@ import java.io.Reader;
  */
 public class IniParserDriver {
     protected QDLStem output = null;
-    protected iniParser getParser(Reader reader) throws Throwable {
+    protected iniParser getParser(Reader reader, boolean allowListElements) throws Throwable {
         if(parser == null) {
             lexer = new iniLexer(CharStreams.fromReader(reader));
 
             parser = new iniParser(new CommonTokenStream(lexer));
             output = new QDLStem();
             IniListenerImpl iniListener = new IniListenerImpl(output);
+            iniListener.setAllowListEntries(allowListElements);
             lexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
             parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
             /*
@@ -43,15 +44,15 @@ public class IniParserDriver {
     QDLParserParser parser;
       */
 
-    public QDLStem parse(Reader reader) throws Throwable {
-        iniParser parser = getParser(reader);
+    public QDLStem parse(Reader reader, boolean allowListEntries) throws Throwable {
+        iniParser parser = getParser(reader, allowListEntries);
         parser.ini();
         return output;
     }
     public static void main(String[] args) throws Throwable{
         IniParserDriver iniParserDriver = new IniParserDriver();
         FileReader fileReader = new FileReader(DebugUtil.getDevPath()+"/qdl/language/src/main/antlr4/iniFile/test2.ini");
-        QDLStem out = iniParserDriver.parse(fileReader);
+        QDLStem out = iniParserDriver.parse(fileReader, true);
         System.out.println(out);
 
     }

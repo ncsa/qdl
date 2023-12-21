@@ -3,12 +3,14 @@ package edu.uiuc.ncsa.qdl.extensions.convert;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigRenderOptions;
+import edu.uiuc.ncsa.qdl.evaluate.IOEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.StemEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator;
 import edu.uiuc.ncsa.qdl.expressions.ConstantNode;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
 import edu.uiuc.ncsa.qdl.extensions.QDLModuleMetaClass;
+import edu.uiuc.ncsa.qdl.parsing.IniParserDriver;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
@@ -55,9 +57,12 @@ public class QDLConvert implements QDLModuleMetaClass {
     public static final String ATTRIBUTE_CAPUT = "@";
     public static final String DECLARATION_KEY = DOC_CAPUT + "declaration";
     public static final String DTD_TYPE_KEY = DOC_CAPUT + "doc_type";
-    public static final String PROCESSING_INSTRUCTION_KEY = DOC_CAPUT + "processing_instruction";
+    public static final String PROCESSING_IfNSTRUCTION_KEY = DOC_CAPUT + "processing_instruction";
     public static final String COMMENT_KEY = DOC_CAPUT + "comment";
     public static final String ENTITY_KEY = DOC_CAPUT + "entity";
+
+    public static final String INI_OUT = "ini_out";
+    public static final String INI_IN = "ini_in";
      /*
      Node types from the Node class:
     short ELEMENT_NODE = 1;
@@ -514,7 +519,7 @@ public class QDLConvert implements QDLModuleMetaClass {
         }
     }
 
-    public static void main(String[] args) throws Throwable{
+    public static void main(String[] args) throws Throwable {
         QDLConvert QDLConvert = new QDLConvert();
         XMLImport xmlImport = QDLConvert.new XMLImport();
         // Test XML as configuration language
@@ -523,7 +528,7 @@ public class QDLConvert implements QDLModuleMetaClass {
         State state = new State();
         state.setServerMode(false);
         //cfg.put("file", DebugUtil.getDevPath()+"/qdl/language/src/main/resources/xml/planes.xml");
-        cfg.put("file", DebugUtil.getDevPath()+"/qdl/language/src/main/resources/xml/simple0.xml");
+        cfg.put("file", DebugUtil.getDevPath() + "/qdl/language/src/main/resources/xml/simple0.xml");
         QDLStem stem = (QDLStem) xmlImport.evaluate(new Object[]{cfg}, state);
         XMLExport xmlExport = QDLConvert.new XMLExport();
         Object x = xmlExport.evaluate(new Object[]{stem}, state);
@@ -1140,6 +1145,137 @@ public class QDLConvert implements QDLModuleMetaClass {
     @Override
     public void deserializeFromJSON(JSONObject json) {
 
+    }
+
+    public class IniImport implements QDLFunction {
+        @Override
+        public String getName() {
+            return INI_IN;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1,2};
+        }
+
+        @Override
+        public Object evaluate(Object[] objects, State state) throws Throwable {
+            if (!(objects[0] instanceof String)) {
+                throw new IllegalArgumentException(INI_IN + " requires a string as its argument");
+            }
+            boolean allowListEntries = true;
+
+            if(objects.length == 2 && objects[1] instanceof Boolean){
+                allowListEntries = (Boolean)objects[1];
+
+            }
+            String content = (String) objects[0];
+            IniParserDriver iniParserDriver = new IniParserDriver();
+            StringReader stringReader = new StringReader(content);
+            QDLStem out = iniParserDriver.parse(stringReader, allowListEntries);
+            return out;
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            if (argCount == 1) {
+                dd.add(INI_IN + "(string{,allowListEntries}) - convert a string in ini file format to a stem");
+                dd.add("allowListEntries = is a flag that when true will write list entries in the form");
+                dd.add("    _index, allowing for putting lists in the body of a section rather than on a line.");
+                dd.add("See http://qdl-lang.org/pdf/qdl_ini_file.pdf which is included in the");
+                dd.add("docs directory of the standard distribution too.");
+
+            }
+            return dd;
+        }
+    }
+
+    public class IniExport implements QDLFunction{
+        @Override
+        public String getName() {
+            return INI_OUT;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1,2,3};
+        }
+
+        @Override
+        public Object evaluate(Object[] objects, State state) throws Throwable {
+            if(!(objects[0] instanceof QDLStem)){
+                throw new IllegalArgumentException(INI_OUT + " takes a stem as its first argument");
+            }
+            int indentfactor = 1; // default here
+            boolean allowListEntries = true;
+            boolean gotOne = objects.length == 1; // default case is allow for single argument
+            if(objects.length == 2) {
+                if (objects[1] instanceof Boolean) {
+                    allowListEntries = (Boolean) objects[1];
+                    gotOne = true;
+                }
+                if (objects[1] instanceof Long) {
+                    indentfactor = ((Long) objects[1]).intValue();
+                    gotOne = true;
+                }
+            }
+            if(objects.length == 3){
+                if (objects[2] instanceof Boolean) {
+                    allowListEntries = (Boolean) objects[1];
+                    gotOne = true;
+                }
+                if (objects[1] instanceof Long) {
+                    indentfactor = ((Long) objects[1]).intValue();
+                    gotOne = true;
+                }
+
+            }
+            if(!gotOne){
+                throw new IllegalArgumentException(INI_OUT + " requires an integer or boolean as its additional arguments if present");
+            }
+
+            String out =  IOEvaluator.convertToIni((QDLStem) objects[0], indentfactor, allowListEntries);
+            return out;
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            switch (argCount){
+               case 1:
+                   dd.add(getName() + "(stem.) - convert a stem to ini file format");
+                break;
+                case 2:
+                    dd.add(getName() + "(stem., indent) - convert a stem to ini file format and indent subsections by indent.");
+                    break;
+            }
+            dd.add("E.g.");
+            dd.add("If you had the following ini file\n");
+            dd.add("[a]\n" +
+                    "p:='q'\n" +
+                    "[a.b]\n" +
+                    "r:='s'\n" +
+                    "t:='v'\n" +
+                    "[z]\n" +
+                    "m:=123\n");
+            dd.add("\nin the file /tmp/eg.ini then you could issue");
+            dd.add("ini.:=ini_in(file_read('/tmp/eg.ini'))");
+            dd.add("  print(ini.)\n" +
+                    "   a : {b:{r:s, t:v}, p:q}\n" +
+                    "   z : {m: 123}");
+            dd.add("and ");
+            dd.add("  ini_out(ini.)\n" +
+                    "[a]\n" +
+                    "p := 'q'\n" +
+                    " [a.b]\n" +
+                    " r := 's'\n" +
+                    " t := 'v'\n" +
+                    "\n" +
+                    "[z]\n" +
+                    "m := 123");
+            return dd;
+        }
     }
 }
 /*

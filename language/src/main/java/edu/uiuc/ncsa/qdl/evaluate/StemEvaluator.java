@@ -497,7 +497,8 @@ public class StemEvaluator extends AbstractEvaluator {
                 sortKeys,
                 multilineMode,
                 indent,
-                width);
+                width,
+                false); // don't let it try to turn random stems into JSON.
         if (returnAsString) {
             String x = "";
             boolean firstPass = true;

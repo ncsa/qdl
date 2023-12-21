@@ -89,6 +89,7 @@ public interface QDLConstants {
     String SYS_FILE_TYPE_STEM = "stem";
     String SYS_FILE_TYPE_STRING = "string";
     String SYS_FILE_TYPE_INIT = "ini";
+    String SYS_FILE_TYPE_NO_LIST_INIT = "ini_no_list";
 
     String SYS_INFO_USER = "user.";
     String SYS_INFO_USER_INVOCATION_DIR = "invocation_dir";

@@ -898,7 +898,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
             // These can be defined in extensions to QDL and can be arbitrarily complex.
             // Do a path lookup
             if (0 < possibleName.indexOf(STEM_INDEX_MARKER)) {
-                StringTokenizer stringTokenizer = new StringTokenizer(possibleName, ".");
+                StringTokenizer stringTokenizer = new StringTokenizer(possibleName, "."); // NOT the stem marker!
                 ArrayList<String> toolPath = new ArrayList<>();
                 while (stringTokenizer.hasMoreTokens()) {
                     toolPath.add(stringTokenizer.nextToken());
