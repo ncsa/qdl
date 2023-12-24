@@ -388,13 +388,25 @@ public class StringEvaluator extends AbstractEvaluator {
 
         QDLStem s = (QDLStem) object;
         try {
-            Long port = s.getLong("port");
-
+            Long port = s.getLong(URI_PORT);
+            String path;
+            if(s.get(URI_PATH) instanceof QDLStem ){
+                QDLStem pathStem = s.getStem(URI_PATH);
+                path="";
+                for(Object v : pathStem.getQDLList().values()){
+                     if(!isString(v)){
+                         throw new BadArgException("uri path must consist of strings only if a list", polyad.getArgAt(0));
+                     }
+                         path = path + "/" + v;
+                }
+            }else{
+                path = s.getString(URI_PATH);
+            }
             URI uri = new URI(s.getString(URI_SCHEME),
                     s.getString(URI_USER_INFO),
                     s.getString(URI_HOST),
                     port.intValue(),
-                    s.getString(URI_PATH),
+                    s.getString(path),
                     s.getString(URI_QUERY),
                     s.getString(URI_FRAGMENT));
             polyad.setResult(uri.toString());
@@ -413,7 +425,7 @@ public class StringEvaluator extends AbstractEvaluator {
      */
     private void doToURI(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setResult(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -421,13 +433,15 @@ public class StringEvaluator extends AbstractEvaluator {
             throw new MissingArgException(TO_URI + " requires at least 1 argument", polyad);
         }
 
-        if (1 < polyad.getArgCount()) {
-            throw new ExtraArgException(TO_URI + " requires at most 1 argument", polyad.getArgAt(1));
+        if (2 < polyad.getArgCount()) {
+            throw new ExtraArgException(TO_URI + " requires at most 2 arguments", polyad.getArgAt(1));
         }
         Object object = polyad.evalArg(0, state);
         if (!isString(object)) {
             throw new BadArgException(TO_URI + " requires a string as its argument", polyad.getArgAt(0));
         }
+        boolean pathToList = false;
+        
         try {
             URI uri = URI.create(object.toString());
             QDLStem output = new QDLStem();

@@ -72,7 +72,8 @@ module[
    ][
       » ravel(q) - turn any stem (of any dimension) into a list of values.
       » This always returns a simple list. If you supply a scalar, that will be
-      » returned in a list too.
+      » returned in a list too. This is different that getting the unique values
+      » in that each value in order is preserved.
       » One use is 'pouring' one set of values into another shape
       » E.g.
       »     q. := n(2,6,[;12]);
@@ -278,15 +279,36 @@ module[
        »  ]
        » Since x. had size 3, these are 3-indices.
        ⊨ 1<size(x.) : 'm_indices requires its argument to have at least 2 elements.';
-       r. :=m_indices(x.0,x.1);
+       r. :=m_indices(x.0,x.1); // applies ~ to the outer product
        while[
             for_next(k, size(x.),2)
         ][
-           r.:=m_indices(r., x.k);
-        ];
+          // r.:=m_indices(r., x.k);
+           n:=0;
+           s.:=null;
+           w.:=x.k;
+           say('r.' + r.);
+           say('w.:' + w.);
+           while[i∋r.]
+                [while[j∋w.]
+                      [
+                        s.(n++):=(r.i)~(w.j);
+                      ]; // end j loop
+                ]; //end i loop
+            r.:=s.;
+        ]; // end k loop
         return(r.);
       ]; // end m_indices
-
+       /*
+       n:=0;
+       s.:=null;
+       while[i∋z.]
+            [while[j∋w.]
+                  [
+                    s.(n++):=z.i~w.j;
+                  ];
+            ];
+       */
       define[while0(@f, input.)][
         » while0(@f, input.) -- (shallow while loop construct) apply f to axis 0 of input. only
         » This is a common idiom.

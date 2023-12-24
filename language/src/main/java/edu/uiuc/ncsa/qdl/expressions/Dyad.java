@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl.expressions;
 
+import edu.uiuc.ncsa.qdl.exceptions.BadArgException;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
@@ -46,6 +47,10 @@ public class Dyad extends ExpressionImpl{
 
     @Override
     public Object evaluate(State state) {
+        if(2<getArguments().size()){
+            // This happened once when QDl was creating a dyad, so do check again
+            throw new BadArgException("internal error, dyad type " + getOperatorType() + " has too many arguments",getArguments().get(2));
+        }
         state.getOpEvaluator().evaluate(this, state);
         return getResult();
     }

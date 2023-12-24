@@ -935,11 +935,30 @@ public class StemEvaluator extends AbstractEvaluator {
 
 
     protected Object forEachEval(ExpressionImpl f, State state, List args) {
-        ArgList argList1 = new ArgList();
-        for (Object arg : args) {
-            argList1.add(new ConstantNode(arg));
+       if(f instanceof Monad){
+           if(args.size() != 1){
+               throw new BadArgException("cannot apply monad to multiple arguments", f);
+           }
+       }
+       // Fix https://github.com/ncsa/qdl/issues/38
+        if(f instanceof Dyad){
+            // have to apply pairwise
+           Dyad dyad = (Dyad) f;
+           dyad.setLeftArgument(new ConstantNode(args.get(0)));
+           dyad.setRightArgument(new ConstantNode(args.get(1)));
+           Object out= dyad.evaluate(state);
+           for(int i = 2; i < args.size(); i++){
+               dyad.setLeftArgument(new ConstantNode(out));
+               dyad.setRightArgument(new ConstantNode(args.get(i)));
+               out = dyad.evaluate(state);
+           }
+           return out;
         }
-        f.setArguments(argList1);
+        ArgList argList1 = new ArgList();
+         for (Object arg : args) {
+             argList1.add(new ConstantNode(arg));
+         }
+         f.setArguments(argList1);
         return f.evaluate(state);
 
     }

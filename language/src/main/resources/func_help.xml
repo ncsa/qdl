@@ -1022,7 +1022,8 @@ See also: constants() for the field names, from_uri.]]>
             <![CDATA[from_uri(stem.) - Turn a stem into a uri. Typically if you have a uri in the
                   variable x, then
    x == from_uri(to_uri(x))
-should be true.
+should be true. Note that you may have path as a list of strings, but then it will
+always be interpreted as an absolute path (starting with a '/').
 
 See also: constants() for the field names, to_uri.]]>
         </body>
@@ -3067,6 +3068,25 @@ a 5 x 6 array that results. a.i.j = x.i * y.j.
 |           your liking.                        |
 +-----------------------------------------------+
 
+Note that if f is a monad, then it can only operate on a single argument, hence
+  for_each(@monad, x.,y.)
+will fail.
+However, if f is a dyad, call it δ, them it will be extended to each element
+
+   for_each(@δ, x0., x1., x2., ...)
+evaluates as
+  x0. δ x1. δ x2. δ ...
+For commutative δ (like *, +, ~ etc.) this is straightforward, but for operators
+like / or - do be aware of the contract!
+
+In general n-adic functions though require n arguments or they will fail. So
+if γ(x,y,z)->... then the following fail since there is not a general way to
+extend a contract to multiple arguments (unlike dyads).
+
+  for_each(@γ, x., y.) ;// too few arguments
+  for_each(@γ, x., y., z., w.) ;// too many arguments
+
+
 See also: transpose, \ (extraction), remap]]>
 
         </body>
@@ -3078,6 +3098,18 @@ If our stem of numbers is x., then
    for_each(@to_string, x.) or @to_string∀[x.]
 returns a stem each of whose elements is a string. Note that to_string(x.)
 would turn the entire stem into a formatted string.
+
+Example. Apply a dyadic function to every argument
+  for_each(@*, [-3;1],[2;5],[3;6])
+[
+ [[-18,-24,-30],[-27,-36,-45],[-36,-48,-60]],
+ [[-12,-16,-20],[-18,-24,-30],[-24,-32,-40]],
+ [[-6,-8,-10],[-9,-12,-15],[-12,-16,-20]],
+ [[0,0,0],[0,0,0],[0,0,0]]
+ ]
+This multiplies each of the elements together and puts the
+result in the corresponding entry. So the output at [0.0.0] has
+value -3*2*3 == 18.
 
 Example. Scalars and the shape of the result. Let's say we had
   f(x,n,y) -> x^n + y^n
