@@ -1641,4 +1641,23 @@ public class QDLStem implements Map<String, Object>, Serializable {
         return output + "\n" + currentIndent + "}";
 
     }
+    public boolean removeByValue(Object c){
+        getQDLList().remove(c);
+        Collection keysToRemove = new ArrayList();
+        boolean rc = true;
+         for(Object key : keySet()){
+             Object value = get(key);
+             if(value instanceof QDLStem){
+                 rc = rc && ((QDLStem)value).removeByValue(c);
+             }else {
+                 if (value.equals(c)) {
+                 keysToRemove.add(key);
+                 }
+             }
+         }
+         for(Object key : keysToRemove){
+             remove(key); // have to be carefule to remove this so no concurrent modification exception.
+         }
+         return rc;
+    }
 } // end class

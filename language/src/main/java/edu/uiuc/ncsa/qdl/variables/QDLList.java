@@ -459,14 +459,14 @@ subset(b., 3, 6)
      * @return
      */
     public JSONArray toJSON() {
-        return toJSON(false,-1);
+        return toJSON(false, -1);
     }
 
     public JSONArray toJSON(boolean escapeNames, int type) {
         JSONArray array = new JSONArray();
         for (Object element : getArrayList()) {
             if (element instanceof QDLStem) {
-                array.add(((QDLStem) element).toJSON(escapeNames,type));
+                array.add(((QDLStem) element).toJSON(escapeNames, type));
             } else {
                 if (element instanceof QDLNull) {
                     array.add(QDLConstants.JSON_QDL_NULL);
@@ -478,7 +478,7 @@ subset(b., 3, 6)
         for (SparseEntry s : getSparseEntries()) {
             Object v = s.entry;
             if (v instanceof QDLStem) {
-                array.add(((QDLStem) v).toJSON(escapeNames,type));
+                array.add(((QDLStem) v).toJSON(escapeNames, type));
             } else {
                 array.add(v);
             }
@@ -641,7 +641,7 @@ subset(b., 3, 6)
             treeSet.add(i);
         }
         for (SparseEntry sparseEntry : getSparseEntries()) {
-                treeSet.add(sparseEntry.index);
+            treeSet.add(sparseEntry.index);
         }
         stemKeys.setListkeys(treeSet);
         return stemKeys;
@@ -650,6 +650,7 @@ subset(b., 3, 6)
     /**
      * Add every element in a collection to this list. It will <b>NOT</b> attempt to convert values, it
      * just appends them.
+     *
      * @param c
      * @return
      */
@@ -1048,8 +1049,8 @@ subset(b., 3, 6)
             getSparseEntries().add(newEntry);
             return true;
         }
-        if(o instanceof SparseEntry){
-            return getArrayList().add(((SparseEntry)o).entry);
+        if (o instanceof SparseEntry) {
+            return getArrayList().add(((SparseEntry) o).entry);
         }
         return getArrayList().add(o);
     }
@@ -1084,7 +1085,55 @@ subset(b., 3, 6)
             }
             return getSparseEntries().remove(removeIt);
         }
-        return getArrayList().remove(o);
+        // Java removes the first it finds. It does not remove all of them
+ /*       boolean rc = getArrayList().remove(o);
+        while (getArrayList().contains(o)) {
+            rc = rc && getArrayList().remove(o);
+        }
+        if (!getSparseEntries().isEmpty()) {
+            List<SparseEntry> removeSE = new ArrayList<>();
+            for (SparseEntry sparseEntry : getSparseEntries()) {
+                if (sparseEntry.entry.equals(o)) {
+                    removeSE.add(sparseEntry);
+                }
+            }
+            rc = rc && getSparseEntries().removeAll(removeSE);
+        }*/
+        return removeIt(o);
+    }
+
+    protected boolean removeIt(Object c) {
+        List<Integer> removeList = new ArrayList<>();
+        boolean rc = true;
+        for (int i = 0; i < getArrayList().size(); i++) {
+            Object value = getArrayList().get(i);
+            if (value instanceof QDLStem) {
+                rc = rc && ((QDLStem) value).removeByValue(c);
+            } else {
+                if (value.equals(c)) {
+                    removeList.add(i);
+                }
+            }
+            Collections.reverse(removeList);
+            for (Integer ndx : removeList) {
+                getArrayList().remove(ndx);
+            }
+        }
+        if (!getSparseEntries().isEmpty()) {
+            List<SparseEntry> removeSE = new ArrayList<>();
+            for (SparseEntry sparseEntry : getSparseEntries()) {
+                Object value = sparseEntry.entry;
+                if(value instanceof QDLStem){
+                    rc = rc && ((QDLStem)value).removeByValue(c);
+                }else{
+                    if(value.equals(c)){
+                        removeSE.add(sparseEntry);
+                    }
+                }
+            }
+            rc = rc && getSparseEntries().removeAll(removeSE);
+        }
+        return rc;
     }
 
     @Override
@@ -1099,7 +1148,20 @@ subset(b., 3, 6)
 
     @Override
     public boolean removeAll(Collection c) {
-        throw new NotImplementedException("removeAll(Collection)");
+        getArrayList().removeAll(c);
+        if (!getSparseEntries().isEmpty()) {
+            // Yuck. No choice but to look everything up and remove them
+            List<SparseEntry> removeList = new ArrayList<>();
+            for (SparseEntry sparseEntry : getSparseEntries()) {
+                for (Object object : c) {
+                    if (sparseEntry.entry.equals(object)) {
+                        removeList.add(sparseEntry);
+                    }
+                }
+            }
+            getSparseEntries().removeAll(removeList);
+        }
+        return true;
     }
 
     @Override
@@ -1122,13 +1184,14 @@ subset(b., 3, 6)
      * This is mostly used when hot-rodding performance. It <i>only</i> updates
      * the array list backing this object, not any sparse entries. Generally
      * only call it if you have a well-articulated need to do so.
+     *
      * @param index
      * @param element
      * @return
      */
     @Override
     public Object set(int index, Object element) {
-       return  getArrayList().set(index, element);
+        return getArrayList().set(index, element);
         //throw new NotImplementedException("set(int, Object)");
 
     }
@@ -1138,7 +1201,8 @@ subset(b., 3, 6)
    /*    if(!hasSparseEntries()){
             getArrayList().add(index, element);
         }
-   */     throw new NotImplementedException("add(int, Object) -- need logic for sparse entries");
+   */
+        throw new NotImplementedException("add(int, Object) -- need logic for sparse entries");
     }
 
     @Override

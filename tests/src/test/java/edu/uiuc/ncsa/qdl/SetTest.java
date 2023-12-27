@@ -414,15 +414,15 @@ public class SetTest extends AbstractQDLTester {
 
 
     /**
-     * Test that for_each applies to the ⊢ (to_set) operator. This turns a matrix
-     * into a set whose elements are rows.
+     * Test that for_each applies to the ⊢ (to_set) operator. This turns each element of a matrix
+     * into a set.
      *
      * @throws Throwable
      */
     public void testToSetForEach() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "ok ≔ {{0,1,2,3},{4,5,6,7},{8,9,10,11}} ≡  ⊢for_each(⊗⊢, n(3,4,n(12)));");
+        addLine(script, "ok ≔ {{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}} ≡  ⊢for_each(⊗⊢, n(3,4,n(12)));");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);

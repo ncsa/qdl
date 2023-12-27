@@ -1992,7 +1992,7 @@ public class StemTest extends AbstractQDLTester {
         StringBuffer script = new StringBuffer();
         addLine(script, "ξ. := n(3,5,n(15));"); // matrix
         addLine(script, "ω. := indices(ξ.,-1);"); // old indices
-        addLine(script, "ϖ. := for_each(@reverse,  ω.);"); // new indices
+        addLine(script, "ϖ. := null; while[k∋ω.][ϖ.k:=reverse(ω.k);];"); // new indices
         // Correspondence is that η.ϖ..k := ξ.ω.k
         addLine(script, "η. := " + StemEvaluator.REMAP + "(ξ.,   ω., ϖ.);"); // axis 1
         addLine(script, "ok := reduce(@∧,reduce(@∧, [[0,5,10],[1,6,11],[2,7,12],[3,8,13],[4,9,14]] ≡ η.)); ");
@@ -2120,7 +2120,43 @@ public class StemTest extends AbstractQDLTester {
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : OpEvaluator.FOR_ALL_KEY + " failed to process multiple trailing scalar case.";
     }
+    public void testForEachMonad() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "z.:=@size" + OpEvaluator.FOR_ALL_KEY + "[n(4,3,['xxxx','xx','xxx'])];");
+        addLine(script, " ok := rank(z.)==2 && reduce(@&&,  dim(z.)==[4,3]);");
+        addLine(script, " ok1 := reduce(@&&,reduce(@&&, n(4,3,[4,2,3])==z.));");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : OpEvaluator.FOR_ALL_KEY + " failed to process all elements in monadic case.";
+        assert getBooleanValue("ok1", state) : OpEvaluator.FOR_ALL_KEY + " applied monad incorrectly.";
+    }
 
+    /**
+     * The contract for for_each os that a built-in dyadic function, δ, will be extended to each argument
+     * if there are more than 2 arguments, i.e. a δ b δ c δ ...
+     * <p>
+     * Random note: For an n-ary function we could generalize this to apply in sequence to the next n-1 args,
+     * so for a ternary function, we'd need 5 arguments
+     * <pre>[a,b,c,d,e] --> f(f(a,b,c),d,e)</pre>
+     * but then the hoops to jump through get larger, e.g., if the function f has defintions for multiple
+     * arg counts, which do we use? No canonical solution, so we stick with the dyadic case (or ficure out a way to
+     * specify exactly which function to use...)
+     * </p>
+     * @throws Throwable
+     */
+    public void testForEachMultiDyad() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "z.:=@*" + OpEvaluator.FOR_ALL_KEY + "[[1;5],[-3;0],[4;7]];");
+        addLine(script, "test.:=[[[-12,-15,-18],[-8,-10,-12],[-4,-5,-6]],[[-24,-30,-36],[-16,-20,-24],[-8,-10,-12]],[[-36,-45,-54],[-24,-30,-36],[-12,-15,-18]],[[-48,-60,-72],[-32,-40,-48],[-16,-20,-24]]];");
+        addLine(script, " ok := rank(z.)==3 && reduce(@&&,  dim(z.)==[4,3,3]);");
+        addLine(script, " ok1 := reduce(@&&,reduce(@&&,reduce(@&&, test.==z.)));");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : OpEvaluator.FOR_ALL_KEY + " failed to process all elements in extended dyadic case.";
+        assert getBooleanValue("ok1", state) : OpEvaluator.FOR_ALL_KEY + " applied dyad '*' incorrectly.";
+    }
     /**
      * Test case that a scalar is at the end of the argument list in for_each.
      *

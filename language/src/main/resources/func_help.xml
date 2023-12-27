@@ -1475,7 +1475,7 @@ Note 2: This is always empty in server mode! Scripts have no access to the
 Note: This expunges it from the session and any future attempts to access it
       will result in errors until it is set again.
 
-See also: is_defined]]>
+See also: is_defined, excise (to remove by value from a stem)]]>
         </body>
     </entry>
     <entry id="script_path">
@@ -3093,11 +3093,12 @@ See also: transpose, \ (extraction), remap]]>
         <example>
 
             <![CDATA[
-Example. Turning an stem of numbers in to an array of strings.
+Example. Turning a stem of numbers in to an array of strings.
 If our stem of numbers is x., then
    for_each(@to_string, x.) or @to_string∀[x.]
 returns a stem each of whose elements is a string. Note that to_string(x.)
-would turn the entire stem into a formatted string.
+would turn the entire stem into a formatted string.  Note that this is
+a monadic function and there is therefore a single argument.
 
 Example. Apply a dyadic function to every argument
   for_each(@*, [-3;1],[2;5],[3;6])
@@ -5703,8 +5704,7 @@ Here there is no such value equal to 11, so the default case value of -1 is retu
     <entry id="apply" alt="⍺">
         <body>
             <![CDATA[apply(@function) - returns a list of arg counts for this function
-  apply(@function. int) - return a list of variable names
-  apply(@function, stem. | list.) - apply the function to the arguments
+  apply(@function, stem. ) - apply the function to the arguments
 
   This permits on the fly construction of argument lists to functions.
 
@@ -5712,7 +5712,6 @@ Here there is no such value equal to 11, so the default case value of -1 is retu
   is not the same as the Greek letter α, (unicode 03b1) that the arguments
   are switched.
   ⍺@f == apply(@f)
-  j⍺@f == apply(@f,j), integer query case
   stem.⍺@f == apply(@f, stem.)
 
 Note especially the application to a module function. So if the function
@@ -5721,7 +5720,9 @@ f is nested in modules x, y and z, then
 would access the function proper and
    [2,3,4]⍺x#y#z#@f
 would evaluate it as
-   x#y#z#f(2,3,4)]]>
+   x#y#z#f(2,3,4)
+
+See also: apply, names, arg_count]]>
         </body>
         <example>
             <![CDATA[Complete use might be
@@ -5730,7 +5731,7 @@ would evaluate it as
    ⍺@f
 [1]
     // The function list for f is the single variable x
-    1⍺@f
+    names(@f,1)
 [x]
    // evaluate f(3)
    [3]⍺@f
@@ -5906,6 +5907,142 @@ not kknown outside of the scope.
        </body>
        <example>
    <![CDATA[
+   ]]>
+        </example>
+    </entry>
+    <entry id="excise">
+       <body>
+  <![CDATA[excise(target., values.) remove the values in values. from target.
+  when done, values.∈target. returns false for every entry.
+This alters target and returns the altered stem as well. If you do not want
+target. altered, make a copy of it first. The reason is that this is a potentially
+expensive operation, which involves looking at every value in the target., so
+making a copy first them operating on that would make this even slower.
+
+  E.g.excise(['a','b','c'],['c'])
+[a,b]
+See also: \ (extraction), pick, remap]]>
+       </body>
+       <example>
+   <![CDATA[   excise(n(5,4,[;7]),3)
+   [[0,1,2],[4,5,6,0],{0:1, 1:2, 3:4},[5,6,0,1],{0:2, 2:4, 3:5}]
+
+   excise({'a':{'p':'c','q':'d'},'f':'c','c':'w'}, 'c')
+{a:{q:d}, c:w}
+
+   excise({'a':{'p':'c','q':'d'},'f':'c','c':'w'}, {'a':'c'})
+{a:{q:d}, c:w}
+
+Note that you can use a stem as the right argument and the keys are ignored -- only
+the values matter:
+     excise({'a':{'p':'c','q':'d'},'f':'c','c':'w'}, {'a':'c'})
+{a:{q:d}, c:w}]]>
+        </example>
+    </entry>
+    <entry id="names">
+        <body>
+   <![CDATA[names(arg{.}{,arg_count}) - get the names for function references' arguments
+
+This will return either list of all the names in the signature of a function or just
+a list of names for the given argument count. You may also pass in a stem of
+function references and get back a stem of name lists.
+
+E.g.
+  f(x)->x
+  f(x,y,z)->x+y+z
+  names(@f,1)
+[x]
+  names(@f, 3)
+[x,y,z]
+
+If you request the arguments for a function that is not defined, you get an error:
+  names(@f,2)
+no such function 'f' with 2 arguments At (1, 9)
+
+If you don't specify the arg count, you get a list of all argument lists:
+  names(@f)
+[[x],[x,y,z]]
+
+See also: apply (⍺ operator), arg_count]]>
+        </body>
+        <example>
+    <![CDATA[Example of passing in a generic stem. The names are preserved and each gets
+a list of argument lists for the given function refernce
+    f(x)->x^2; g(x,y)->x*y;
+    names({'f':@f, 'g':@g})
+{f:[[x]], g:[[x,y]]}
+
+You may also explicitly pass in the arg counts this way
+  names({'f':@f, 'g':@g}, {'f':1,'g':2})
+{f:[x], g:[x,y]}]]>
+         </example>
+     </entry>
+    <entry id="arg_count" alt="⍺">
+       <body>
+  <![CDATA[arg_count(@f | stem.) - return a list of the argument counts for
+            a function reference or stem of them.
+
+E.g.
+   f(x)->x;
+   f(x,y,z)->x+y+z;
+   arg_count(@f)
+[1,3]
+
+means there are two functions names f and one takes a single argument, the other takes 3 arguments.
+You can get the names of these arguments with the names() function.
+  ]]>
+       </body>
+       <example>
+   <![CDATA[   f(x)->x;
+      g(x,y,z)->x+y+z;
+     arg_count([@g,@f])
+[[2],[1]]
+
+You can also pass in a generic stem, of course:
+  arg_count({'f':@f, 'g':@g})
+{f:[1], g:[2]}]]>
+        </example>
+    </entry>
+    <entry id="switch">
+       <body>
+  <![CDATA[The keyword for the switch statement. This is
+of the general form
+  switch[
+     if[boolean][...];
+     // cases
+     if[true][...];  // default case
+    ]; // end switch
+
+Each conditional is tested and the first one that passes is executed. No then clauses are
+allowed. If you want a default case, then it should be the last one and should have the
+conditional set to true.
+
+This is "heavyweight" in the sense that each conditional has its own local state etc.
+A more lightweight version uses the ?! operator and may be treated like any other expression.
+
+See also: if, then, ?, and ?!  ]]>
+       </body>
+       <example>
+   <![CDATA[
+   j :=3;
+       switch[
+        if[j == 0]then[say('zero');];
+        if[j == 1]then[say('   one');];
+        if[j == 2]then[say(' two');];
+        if[j == 3]then[say(' three');];
+          if[true]then[say('oops');];
+    ];
+three
+
+Compare this with the ?! operator:
+   j:=3;
+   say([;4]==j?!['zero','one','two,'three']:'oops')
+three
+
+Note that the final oops is an optional default value, so
+  j := 42;
+   say([;4]==j?!['zero','one','two,'three']:'oops')
+oops
    ]]>
         </example>
     </entry>

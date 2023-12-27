@@ -406,7 +406,7 @@ public class StringEvaluator extends AbstractEvaluator {
                     s.getString(URI_USER_INFO),
                     s.getString(URI_HOST),
                     port.intValue(),
-                    s.getString(path),
+                    path,
                     s.getString(URI_QUERY),
                     s.getString(URI_FRAGMENT));
             polyad.setResult(uri.toString());

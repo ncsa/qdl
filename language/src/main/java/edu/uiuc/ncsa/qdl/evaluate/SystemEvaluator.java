@@ -2946,6 +2946,8 @@ public class SystemEvaluator extends AbstractEvaluator {
                 checkNull(flag, polyad.getArgAt(1));
                 if (flag instanceof Boolean) {
                     prettyPrintForStems = (Boolean) flag;
+                } else{
+                    throw new BadArgException("the second argument to " + SAY_FUNCTION + " requires a boolean", polyad.getArgAt(1));
                 }
             }
             if (temp == null || temp instanceof QDLNull) {

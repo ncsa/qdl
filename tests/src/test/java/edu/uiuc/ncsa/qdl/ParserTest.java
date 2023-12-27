@@ -45,7 +45,7 @@ public class ParserTest extends AbstractQDLTester {
     }
 
     public void testRational1(int testCase) throws Throwable {
-        BigDecimal[] results = {                new BigDecimal("1.37037037037037"),
+        BigDecimal[] results = {new BigDecimal("1.37037037037037"),
                 new BigDecimal("1.87793427230047"),
                 new BigDecimal("1.69230769230769"),
                 new BigDecimal("1.39375629405841")
@@ -264,7 +264,7 @@ public class ParserTest extends AbstractQDLTester {
 
         addLine(script, "f(x,y)->" + cf);
         addLine(script, "-" + cf2 + ";"); // so f should be zero.
-      //  state = rountripState(state, script, testCase);
+        //  state = rountripState(state, script, testCase);
         QDLInterpreter interpreter;
 
         // That was to make sure the function ended up in the state, so let's be sure it
@@ -365,7 +365,7 @@ public class ParserTest extends AbstractQDLTester {
         interpreter.execute(script.toString());
         state = rountripState(state, script, testCase);
         // now verify the results
-         interpreter = new QDLInterpreter(null, state);
+        interpreter = new QDLInterpreter(null, state);
 
         for (int i = 1; i < 1 + results.length; i++) {
             script = new StringBuffer();
@@ -695,6 +695,7 @@ public class ParserTest extends AbstractQDLTester {
             assert true;
         }
     }
+
     public void testSingleDoubleQuote() throws Throwable {
         StringBuffer script = new StringBuffer();
         addLine(script, "a:= 'woof\";");
@@ -1126,6 +1127,7 @@ public class ParserTest extends AbstractQDLTester {
 
     /**
      * Same as {@link #testHasKey} but using unicode character for it.
+     *
      * @throws Throwable
      */
     public void testHasKey2() throws Throwable {
@@ -1144,9 +1146,11 @@ public class ParserTest extends AbstractQDLTester {
             assert !getBooleanValue("z." + i, state);
         }
     }
+
     /**
      * This tests the old has_keys function which is not left conformable. There might
      * be scripts that use it, so it is retained here as a regression check.
+     *
      * @throws Throwable
      */
     public void testHasKeys() throws Throwable {
@@ -1592,7 +1596,6 @@ public class ParserTest extends AbstractQDLTester {
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);
     }
-
 
 
     /**
@@ -2560,11 +2563,12 @@ public class ParserTest extends AbstractQDLTester {
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         FunctionRecord fRec = (FunctionRecord) state.getFTStack().get(new FKey("f", 1));
-        assert fRec.documentation.size()==2;
+        assert fRec.documentation.size() == 2;
         assert fRec.documentation.get(0).trim().equals("This is a comment");
         assert fRec.documentation.get(1).trim().equals("This is another comment");
 
     }
+
     /**
      * tests that supplying a loop with a list in the for_next function works.
      *
@@ -2585,6 +2589,7 @@ public class ParserTest extends AbstractQDLTester {
 
     /**
      * Tests looping with ∈ on a stem. This should access values, not keys
+     *
      * @throws Throwable
      */
     public void testEpsilonLoop() throws Throwable {
@@ -2601,6 +2606,7 @@ public class ParserTest extends AbstractQDLTester {
 
     /**
      * Same conceptually as ∈ loop. Tests that using has_value works the same
+     *
      * @throws Throwable
      */
     public void testHasValueLoop() throws Throwable {
@@ -2863,6 +2869,7 @@ public class ParserTest extends AbstractQDLTester {
     /**
      * A function s (triadic) is defined. It is references along with the other functions that dereferecse
      * to s (monad, dyad).
+     *
      * @throws Throwable
      */
     public void testOverloadFunction2a() throws Throwable {
@@ -2884,6 +2891,7 @@ public class ParserTest extends AbstractQDLTester {
 
     /**
      * 3 differnce valences of functions are defined and areferenced/dereferenced.
+     *
      * @throws Throwable
      */
     public void testOverloadFunction3() throws Throwable {
@@ -2902,6 +2910,7 @@ public class ParserTest extends AbstractQDLTester {
 
     /**
      * Tests resolution of overloading a built in function (here substring) with difference valences.
+     *
      * @throws Throwable
      */
     public void testOverloadFunction4() throws Throwable {
@@ -2918,6 +2927,7 @@ public class ParserTest extends AbstractQDLTester {
      * Trick here is that a monadic operator passed by reference has to be
      * resolved with the right airity. Mostly this is a regression test for
      * a bug that might be otherwise very odd to track down.
+     *
      * @throws Throwable
      */
     public void testMonadicFunctionReference() throws Throwable {
@@ -2992,12 +3002,13 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "f(x)->x;");
-        addLine(script, "out. := apply(@f);");
+        addLine(script, "out. := arg_count(@f);");
         addLine(script, "ok := (size(out.) == 1) ∧ (1∈out.);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "failed to get arg count list in " + FunctionEvaluator.APPLY;
     }
+
     public void testBasicApply1() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -3008,7 +3019,48 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         assert getBooleanValue("ok", state) : "failed to apply list argument to function with " + FunctionEvaluator.APPLY;
     }
 
-    public void testBasicApply2() throws Throwable {
+    /**
+     * Navigation test. A general stem with corresponding arguments should have the correct argument to the correct
+     * function.
+     *
+     * @throws Throwable
+     */
+    public void testApplyToStem() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)->x;f(x,y,z)->x+y+z;");
+        addLine(script, "z.:=apply({'a':@f,'b':@f},{'a':[3],'b':[2,3,4]});");
+        addLine(script, "ok := 2 == size(z.);");
+        addLine(script, "ok1 := z.'a'==3 && z.'b'==9;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : FunctionEvaluator.APPLY + " failed to navigate stem arguments ";
+        assert getBooleanValue("ok1", state) : "failed to apply list argument to function with " + FunctionEvaluator.APPLY;
+    }
+
+    /**
+     * Pass in an argument stem with a default value, setting only a single argument explicitly.
+     * @throws Throwable
+     */
+    public void testApplyToDefaultStem() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)->x;f(x,y,z)->x+y+z;");
+        addLine(script, "arg.:={*:[1,2,3]};arg.0:=[5];"); // set default and one explicit value
+        addLine(script, "z.:=apply([@f,@f,@f],arg.);");
+        addLine(script, "ok := 3 == size(z.);");
+        addLine(script, "ok1 := reduce(@&&, z.==[5,6,6]);"); // zero-th element is evaluates at x:=5;
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : FunctionEvaluator.APPLY + " failed to navigate applying default values ";
+        assert getBooleanValue("ok1", state) : FunctionEvaluator.APPLY + " failed to apply default argument";
+    }
+
+    /**
+     * Tests applying a function with the arguments named explicitly.
+     * @throws Throwable
+     */
+    public void testApplyExplicitNamedArguments() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "f(x)->x;");
@@ -3018,12 +3070,68 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         assert getBooleanValue("ok", state) : "failed apply stem arguemnt to function with " + FunctionEvaluator.APPLY;
     }
 
-/*
-  f(x)->x
-  apply(@f)
-[1]
-  apply([2],@f)
-2
- */
+    public void testArgCountForFunction() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)->x;");
+        addLine(script, "args. := " + FunctionEvaluator.ARG_COUNT + "(@f);");
+        addLine(script, "ok:=size(args.) == 1 && args.0==1;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : FunctionEvaluator.ARG_COUNT + " failed ";
+    }
+    public void testArgNamesFunction() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)->x;");
+        addLine(script, "args. := " + FunctionEvaluator.NAMES + "(@f,1);");
+        addLine(script, "ok:=size(args.) == 1 && args.0=='x';");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : FunctionEvaluator.ARG_COUNT + " failed ";
+    }
+
+    /**
+     * Messy case to kick the tires hard. This will create a stem with a default
+     * and various function then run the whole thing.
+     * @throws Throwable
+     */
+    public void testAppliesComplexCase() throws Throwable{
+        State state = testUtils.getNewState();
+            StringBuffer script = new StringBuffer();
+            addLine(script, " zz.0.1 := zz.0.3 := zz.1.1:= zz.1.3:=[2,3];\n" +
+                    "    zz.2.1:=zz.2.3 := [-1,1];\n" +
+                    "    zz.:=zz.~{*:[4,1,2]};\n" +
+                    "    zz.0.0 := [-11]; // one outlier for monadic f\n" +
+                    "    f(x)->x;\n" +
+                    "    g(p,q)->p*q;\n" +
+                    "    f(x,y,z)->x+y+z;\n" +
+                    "    ff.:=n(3,4,[@f,@g]);");
+            addLine(script, "out. := (zz.)⍺ff.;");
+            addLine(script, "ok:=rank(out.) == 2 && reduce(@&&, dim(out.) ==[3,4]);");
+            addLine(script, "ok1:=reduce(@&&,reduce(@&&, out. ==[[-11,6,7,6],[7,6,7,6],[7,-1,7,-1]]));");
+            QDLInterpreter interpreter = new QDLInterpreter(null, state);
+            interpreter.execute(script.toString());
+            assert getBooleanValue("ok", state) : OpEvaluator.APPLY_OP_KEY + " returned wrong shape of argument ";
+            assert getBooleanValue("ok1", state) : OpEvaluator.APPLY_OP_KEY + " returned wrong values ";
+    }
+    /*
+         Complex example: This sets up a matrix fo function refs with a default value an specific values.
+    zz.0.1 := zz.0.3 := zz.1.1:= zz.1.3:=[2,3];
+    zz.2.1:=zz.2.3 := [-1,1];
+    zz.:=zz.~{*:[4,1,2]};
+    zz.0.0 := [-11]; // one outlier for monadic f
+    f(x)->x;
+    g(p,q)->(p^2+q^2)^0.5;
+    f(x,y,z)->x+y+z;
+    ff.:=n(3,4,[@f,@g]);
+    apply(ff., zz.);
+[[-11,3.60555127546399,7,3.60555127546399],[7,3.60555127546399,7,3.60555127546399],[7,1.4142135623731,7,1.4142135623731]]
+
+     Simpler case with integer outputs for testing (or we have to check comparison tolerances for decimals)
+    g(p,q)->p*q;
+    (zz.)⍺ff.
+[[-11,6,7,6],[7,6,7,6],[7,-1,7,-1]]
+     */
 }
 

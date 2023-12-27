@@ -2,6 +2,7 @@ package edu.uiuc.ncsa.qdl.evaluate;
 
 
 import edu.uiuc.ncsa.qdl.exceptions.BadArgException;
+import edu.uiuc.ncsa.qdl.exceptions.MissingArgException;
 import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.expressions.*;
@@ -16,10 +17,7 @@ import org.apache.commons.lang.StringUtils;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 
 import static edu.uiuc.ncsa.qdl.types.Types.NULL;
 import static edu.uiuc.ncsa.qdl.variables.Constant.*;
@@ -466,13 +464,160 @@ public class OpEvaluator extends AbstractEvaluator {
         }
     }
 
+
+    private void doDyadicApply2(Dyad dyad, State state) {
+        fPointer pointer = new fPointer() {
+            @Override
+            public fpResult process(Object... objects) {
+                fpResult r = new fpResult();
+                if (objects[1] instanceof FunctionReferenceNode) {
+                    FunctionReferenceNode fNode = (FunctionReferenceNode) objects[1];
+                    State actualState = fNode.hasModuleState() ? fNode.getModuleState() : state; // determined per fNode
+
+                    r.result = doSingleApply(objects[0], (FunctionReferenceNode) objects[1], actualState);
+                    r.resultType = Constant.getType(r.result);
+                    return r;
+                }
+                if (areAllSets(objects)) {
+                    throw new QDLExceptionWithTrace(REGEX_MATCH + " not defined on sets.", dyad.getLeftArgument());
+                }
+
+                if (!isString(objects[0])) {
+                    throw new QDLExceptionWithTrace(REGEX_MATCH + " requires a regular expression as its left argument", dyad.getLeftArgument());
+                }
+                String regex = objects[0].toString();
+                String ob = objects[1].toString();
+                r.result = new Boolean(ob.matches(regex));
+                r.resultType = BOOLEAN_TYPE;
+                return r;
+            }
+        };
+        process2(dyad, pointer, REGEX_MATCH, state);
+    }
+
+    /*
+        f(x)->x^2
+  f(x,y)->x*y
+  g(x)->x^2
+  ⍺[@f,@g]
+  {'a':[1,2],'b':1}⍺{'a':@f, 'b':@g}
+     */
     private void doDyadicApply(Dyad dyad, State state) {
-        FunctionReferenceNode fNode = (FunctionReferenceNode) dyad.getRightArgument().evaluate(state);
-        if(fNode == null){
-            throw new BadArgException("no such function", dyad.getArgAt(1));
+        Object lArg = dyad.getLeftArgument().evaluate(state); // evaluated in ambient state
+        Object rArg = dyad.getRightArgument().evaluate(state); // evaluated in ambient state
+        QDLStem wrapper;
+        if (isStem(lArg)) {
+            wrapper = (QDLStem) lArg;
+        } else {
+            // arguments are wrapper, so if they sent a scalar or set,
+            QDLStem s = new QDLStem();
+            s.getQDLList().add(lArg);
+            wrapper = new QDLStem();
+            wrapper.setDefaultValue(s);
         }
-        State actualState = fNode.hasModuleState()?fNode.getModuleState():state;
+        Object result;
+        result = evaluateNextArgForApplies(wrapper, rArg, state, dyad);
+        dyad.setEvaluated(true);
+        dyad.setResult(result);
+        dyad.setResultType(Constant.getType(result));
+
+    }
+
+    protected QDLSet applyToSet(QDLStem lArg, QDLSet rArg, State state, Dyad dyad) {
+        QDLSet output = new QDLSet();
+        Iterator rIterator = rArg.iterator();
+        while (rIterator.hasNext()) {
+            Object nextRArg = rIterator.next();
+            Object result = evaluateNextArgForApplies(lArg, nextRArg, state, dyad);
+            output.add(result);
+        }
+        return output;
+    }
+
+    protected Object evaluateNextArgForApplies(Object lArg, Object rArg, State state, Dyad dyad) {
+        Object result;
+        if (rArg instanceof QDLStem) {
+            if (!(lArg instanceof QDLStem)) {
+                throw new BadArgException("non-conformable left argument (should be a stem)", dyad.getLeftArgument());
+            }
+            result = applyToStem((QDLStem) lArg, (QDLStem) rArg, state, dyad);
+        } else {
+            if (rArg instanceof QDLSet) {
+                result = applyToSet((QDLStem) lArg, (QDLSet) rArg, state, dyad);
+            } else {
+                if (rArg instanceof FunctionReferenceNode) {
+                    result = doSingleApply(lArg, (FunctionReferenceNode) rArg, state, dyad);
+                } else {
+                    result = rArg;
+                }
+            }
+        }
+        return result;
+    }
+
+    protected QDLStem applyToStem(QDLStem lArg, QDLStem rArg, State state, Dyad dyad) {
+        QDLStem output = new QDLStem();
+        for (Object key : rArg.keySet()) {
+            Object nextLArg = lArg.get(key);
+            if (nextLArg == null) {
+                throw new MissingArgException("no such argument for key " + key, dyad.getLeftArgument());
+            }
+            if(nextLArg instanceof QDLStem){
+                // propagate a default value if there is one.
+                QDLStem qqq = (QDLStem) nextLArg;
+                if(lArg.hasDefaultValue()){
+                       if(!qqq.hasDefaultValue()){
+                           qqq.setDefaultValue(lArg.getDefaultValue());
+                       }
+                }
+            }
+            Object nextRArg = rArg.get(key);
+            Object result = evaluateNextArgForApplies(nextLArg, nextRArg, state, dyad);
+            output.putLongOrString(key, result);
+        }
+        return output;
+    }
+    /*
+      f(x)->x^2
+g(x)->x^3
+apply([@f,@g],[2])
+[2]⍺[@f,@g]
+
+     [3]⍺@f
+      <==> f(3.4)
+     -----
+     Complex example: This sets up a matrix fo function refs with a default value an specific values.
+    zz.0.1 := zz.0.3 := zz.1.1:= zz.1.3:=[2,3];
+    zz.2.1:=zz.2.3 := [-1,1];
+    zz.:=zz.~{*:[4,1,2]};
+    zz.0.0 := [-11]; // one outlier for monadic f
+    f(x)->x;
+    g(p,q)->(p^2+q^2)^0.5;
+    f(x,y,z)->x+y+z;
+    ff.:=n(3,4,[@f,@g]);
+    apply(ff., zz.);
+[[-11,3.60555127546399,7,3.60555127546399],[7,3.60555127546399,7,3.60555127546399],[7,1.4142135623731,7,1.4142135623731]]
+
+    g(p,q)->p*q;
+    (zz.)⍺ff.
+[[-11,6,7,6],[7,6,7,6],[7,-1,7,-1]]
+
+     */
+
+    /**
+     * apply the argument to a single function. Note that the dyad here is passed along to make
+     * error messages only.
+     *
+     * @param fNode
+     * @param dyad
+     * @return
+     */
+    protected Object doSingleApply(Object lArg, FunctionReferenceNode fNode, State state, Dyad dyad) {
+        State actualState = fNode.hasModuleState() ? fNode.getModuleState() : state; // determined per fNode
+/*
         Object lArg = dyad.getLeftArgument().evaluate(actualState);
+*/
+
         if (lArg instanceof Long) {
             int argCount = ((Long) lArg).intValue();
             FunctionRecordInterface fRec = fNode.getByArgCount(argCount);
@@ -480,13 +625,18 @@ public class OpEvaluator extends AbstractEvaluator {
             if (fRec != null) {
                 out.getQDLList().addAll(fRec.getArgNames());
             }
-            dyad.setEvaluated(true);
-            dyad.setResult(out);
-            dyad.setResultType(STEM_TYPE);
-            return;
+            return out;
         }
         if (lArg instanceof QDLStem) {
             QDLStem lStem = (QDLStem) lArg;
+            if(lStem.isEmpty()){
+                if(lStem.hasDefaultValue()){
+                    if(!(lStem.getDefaultValue() instanceof QDLStem)){
+                        throw new BadArgException("All arguments to are stems. Default value is not a stem.", dyad.getLeftArgument());
+                    }
+                    lStem = (QDLStem)lStem.getDefaultValue();
+                }
+            }
             Polyad polyad = new Polyad(fNode.getFunctionName());
             polyad.setBuiltIn(false);
             if (lStem.isList()) {
@@ -508,15 +658,48 @@ public class OpEvaluator extends AbstractEvaluator {
                     polyad.addArgument(new ConstantNode(object));
                 }
             }
-            Object result = polyad.evaluate(actualState);
-            dyad.setEvaluated(true);
-            dyad.setResult(result);
-            dyad.setResultType(Constant.getType(result));
-            return;
-            //[3,4]⍺f <==> f(3.4)
+            return polyad.evaluate(actualState);
         }
+        throw new BadArgException("unknown argument type", dyad.getLeftArgument());
+    }
 
+    protected Object doSingleApply(Object lArg, FunctionReferenceNode fNode, State actualState) {
 
+        if (lArg instanceof Long) {
+            int argCount = ((Long) lArg).intValue();
+            FunctionRecordInterface fRec = fNode.getByArgCount(argCount);
+            QDLStem out = new QDLStem();
+            if (fRec != null) {
+                out.getQDLList().addAll(fRec.getArgNames());
+            }
+            return out;
+        }
+        if (lArg instanceof QDLStem) {
+            QDLStem lStem = (QDLStem) lArg;
+            Polyad polyad = new Polyad(fNode.getFunctionName());
+            polyad.setBuiltIn(false);
+            if (lStem.isList()) {
+                for (Object key : lStem.keySet()) {
+                    polyad.addArgument(new ConstantNode(lStem.get(key)));
+                }
+
+            } else {
+                FunctionRecordInterface fRec = fNode.getByArgCount(lStem.size());
+                if (fRec == null) {
+                    throw new BadArgException(APPLY_OP_KEY + " cannot resolve the function '" + fNode.getFunctionName() + "' with the argument count of " + lStem.size(), null);
+                }
+
+                for (String name : fRec.getArgNames()) {
+                    Object object = lStem.get(name);
+                    if (object == null) {
+                        throw new BadArgException(APPLY_OP_KEY + " '" + fNode.getFunctionName() + "' missing value for " + name, null);
+                    }
+                    polyad.addArgument(new ConstantNode(object));
+                }
+            }
+            return polyad.evaluate(actualState);
+        }
+        throw new BadArgException("unknown argument type", null);
     }
 
     private void doFRefDyadicOperator(Dyad dyad, String expand, State state) {
@@ -1483,20 +1666,30 @@ a.⌆b.
     }
 
     private void doMonadicApply(Monad monad, State state) {
-        // parser restricts this being a function reference
-        FunctionReferenceNode fNode = (FunctionReferenceNode) monad.getArgument().evaluate(state);
-        if(fNode == null){
-            throw new BadArgException("no such function", monad.getArgument());
-        }
-        QDLStem stem = new QDLStem();
-        for (FunctionRecordInterface functionRecordInterface : fNode.getFunctionRecords()) {
-            Long a = (long) functionRecordInterface.getArgCount();
-            stem.getQDLList().add(a);
-        }
-        monad.setEvaluated(true);
-        monad.setResult(stem);
-        monad.setResultType(Constant.getType(monad.getResult()));
+        fPointer pointer = new fPointer() {
+            @Override
+            public fpResult process(Object... objects) {
+                fpResult r = new fpResult();
+                if (objects[0] instanceof FunctionReferenceNode) {
+                    FunctionReferenceNode fNode = (FunctionReferenceNode) objects[0];
+                    // keep it all sorted
+                    TreeSet<Long> counts = new TreeSet<>();
+                    for (FunctionRecordInterface functionRecordInterface : fNode.getFunctionRecords()) {
+                        counts.add((long) functionRecordInterface.getArgCount());
+                    }
+                    QDLStem stem = new QDLStem();
+                    for (Long x : counts) {
+                        stem.getQDLList().add(x);
+                    }
+                    r.result = stem;
+                    r.resultType = STEM_TYPE;
+                }
+                return r;
+            }
+        };
+        process1(monad, pointer, NOT, state);
     }
+
 
     private void doMonadicTranspose(Monad monad, State state) {
         Polyad polyad = new Polyad(StemEvaluator.TRANSPOSE);

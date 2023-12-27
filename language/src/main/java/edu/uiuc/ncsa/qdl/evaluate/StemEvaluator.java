@@ -125,6 +125,8 @@ public class StemEvaluator extends AbstractEvaluator {
     public static final String HAS_KEYS = "has_keys";
     public static final int HAS_KEYS_TYPE = 115 + STEM_FUNCTION_BASE_VALUE;
 
+    public static final String EXCISE = "excise";
+    public static final int EXCISE_TYPE = 116 + STEM_FUNCTION_BASE_VALUE;
     public static final String IS_LIST = "is_list";
     public static final int IS_LIST_TYPE = 204 + STEM_FUNCTION_BASE_VALUE;
 
@@ -160,6 +162,7 @@ public class StemEvaluator extends AbstractEvaluator {
     public String[] getFunctionNames() {
         if (fNames == null) {
             fNames = new String[]{
+                    EXCISE,
                     HAS_KEYS,
                     DISPLAY,
                     DIFF,
@@ -199,6 +202,8 @@ public class StemEvaluator extends AbstractEvaluator {
     @Override
     public int getType(String name) {
         switch (name) {
+            case EXCISE:
+                return EXCISE_TYPE;
             case HAS_KEYS:
                 return HAS_KEYS_TYPE;
             case DISPLAY:
@@ -276,6 +281,9 @@ public class StemEvaluator extends AbstractEvaluator {
     @Override
     public boolean dispatch(Polyad polyad, State state) {
         switch (polyad.getName()) {
+            case EXCISE:
+                doExcise(polyad, state);
+                return true;
             case HAS_KEYS:
                 doHasKeys(polyad, state);
                 return true;
@@ -385,6 +393,65 @@ public class StemEvaluator extends AbstractEvaluator {
         return false;
     }
 
+    /**
+     * Removes elements from a stem by value. In general stems this is not as useful as in lists.
+     *
+     * @param polyad
+     * @param state
+     */
+    private void doExcise(Polyad polyad, State state) {
+        if (polyad.isSizeQuery()) {
+            polyad.setResult(new int[]{2});
+            polyad.setEvaluated(true);
+            return;
+        }
+        if (polyad.getArgCount() < 2) {
+            throw new MissingArgException(EXCISE + " takes at two arguments", polyad.getArgCount() == 1 ? polyad.getArgAt(0) : polyad);
+        }
+        if (2 < polyad.getArgCount()) {
+            throw new ExtraArgException(EXCISE + " takes at most two arguments", polyad.getArgAt(2));
+        }
+        Object arg0 = polyad.evalArg(0, state);
+        Object arg1 = polyad.evalArg(1, state);
+
+        if (arg0 instanceof QDLStem) {
+            QDLStem inStem = (QDLStem) arg0;
+            if (inStem.isEmpty()) {
+                polyad.setResult(new QDLStem());
+                polyad.setResultType(STEM_TYPE);
+                polyad.setEvaluated(true);
+                return;
+            }
+            Collection values;
+            if(arg1 instanceof QDLStem) {
+                values = ((QDLStem) arg1).values();
+            }else{
+                values=new ArrayList();
+                values.add(arg1);
+            }
+            if (inStem.isList()) {
+                if (arg1 instanceof QDLStem) {
+                    inStem.getQDLList().removeAll(values);
+                } else {
+                    inStem.getQDLList().remove(arg1);
+                }
+                polyad.setResult(inStem);
+                polyad.setResultType(STEM_TYPE);
+                polyad.setEvaluated(true);
+                return;
+            }
+            for (Object v : values) {
+                inStem.removeByValue(v);
+                polyad.setResult(inStem);
+                polyad.setResultType(STEM_TYPE);
+                polyad.setEvaluated(true);
+                return;
+            }
+        } // end stem processing
+
+        throw new BadArgException("unknown type for " + EXCISE, polyad.getArgAt(0));
+    }
+
     public static String DISPLAY_WIDTH = "width";
     public static int DISPLAY_WIDTH_DEFAULT = -1;
     public static String DISPLAY_KEYS = "keys";
@@ -424,7 +491,7 @@ public class StemEvaluator extends AbstractEvaluator {
             throw new ExtraArgException(DISPLAY + " takes at most two arguments", polyad.getArgAt(2));
         }
         Object arg0 = polyad.evalArg(0, state);
-        if(arg0 == null){
+        if (arg0 == null) {
             // It is possible to try and print a variable that has not been set.
             throw new BadArgException("value not found", polyad.getArgAt(0));
         }
@@ -856,7 +923,7 @@ public class StemEvaluator extends AbstractEvaluator {
         QDLStem output = new QDLStem();
         // special case single args. Otherwise, have to special case a bunch of stuff in forEachRecursion
 
-        if (stems.length == 1) {
+  /*      if (stems.length == 1) {
             // Must be a stem since we tested for scalars above.
             QDLStem inStem = (QDLStem) stems[0];
             for (Object key0 : inStem.keySet()) {
@@ -872,7 +939,7 @@ public class StemEvaluator extends AbstractEvaluator {
             polyad.setEvaluated(true);
             return;
 
-        }
+        }*/
         // Fixes https://github.com/ncsa/qdl/issues/17
         forEachRecursion(output, f, state, stems, new IndexList(), new ArrayList(), 0);
         polyad.setResult(output);
@@ -935,30 +1002,30 @@ public class StemEvaluator extends AbstractEvaluator {
 
 
     protected Object forEachEval(ExpressionImpl f, State state, List args) {
-       if(f instanceof Monad){
-           if(args.size() != 1){
-               throw new BadArgException("cannot apply monad to multiple arguments", f);
-           }
-       }
-       // Fix https://github.com/ncsa/qdl/issues/38
-        if(f instanceof Dyad){
+        if (f instanceof Monad) {
+            if (args.size() != 1) {
+                throw new BadArgException("cannot apply monad to multiple arguments", f);
+            }
+        }
+        // Fix https://github.com/ncsa/qdl/issues/38
+        if (f instanceof Dyad) {
             // have to apply pairwise
-           Dyad dyad = (Dyad) f;
-           dyad.setLeftArgument(new ConstantNode(args.get(0)));
-           dyad.setRightArgument(new ConstantNode(args.get(1)));
-           Object out= dyad.evaluate(state);
-           for(int i = 2; i < args.size(); i++){
-               dyad.setLeftArgument(new ConstantNode(out));
-               dyad.setRightArgument(new ConstantNode(args.get(i)));
-               out = dyad.evaluate(state);
-           }
-           return out;
+            Dyad dyad = (Dyad) f;
+            dyad.setLeftArgument(new ConstantNode(args.get(0)));
+            dyad.setRightArgument(new ConstantNode(args.get(1)));
+            Object out = dyad.evaluate(state);
+            for (int i = 2; i < args.size(); i++) {
+                dyad.setLeftArgument(new ConstantNode(out));
+                dyad.setRightArgument(new ConstantNode(args.get(i)));
+                out = dyad.evaluate(state);
+            }
+            return out;
         }
         ArgList argList1 = new ArgList();
-         for (Object arg : args) {
-             argList1.add(new ConstantNode(arg));
-         }
-         f.setArguments(argList1);
+        for (Object arg : args) {
+            argList1.add(new ConstantNode(arg));
+        }
+        f.setArguments(argList1);
         return f.evaluate(state);
 
     }
@@ -2270,26 +2337,26 @@ public class StemEvaluator extends AbstractEvaluator {
             return;
         }
         String var = null;
-        switch (polyad.getArgAt(0).getNodeType()){
+        switch (polyad.getArgAt(0).getNodeType()) {
             case ExpressionInterface.VARIABLE_NODE:
                 VariableNode variableNode = (VariableNode) polyad.getArgAt(0);
-                           // Don't evaluate this because it might not exist (that's what we are testing for). Just check
-                           // if the name is defined.
-                           var = variableNode.getVariableReference();
-                           if (var == null) {
-                               polyad.setResult(Boolean.FALSE);
-                           } else {
-                               state.remove(var);
-                               polyad.setResult(Boolean.TRUE);
-                           }
-                           break;
+                // Don't evaluate this because it might not exist (that's what we are testing for). Just check
+                // if the name is defined.
+                var = variableNode.getVariableReference();
+                if (var == null) {
+                    polyad.setResult(Boolean.FALSE);
+                } else {
+                    state.remove(var);
+                    polyad.setResult(Boolean.TRUE);
+                }
+                break;
             case ExpressionInterface.CONSTANT_NODE:
                 throw new BadArgException(" cannot remove a constant", polyad.getArgAt(0));
 
             case ExpressionInterface.EXPRESSION_STEM2_NODE:
                 ESN2 esn2 = (ESN2) polyad.getArgAt(0);
-                          polyad.setResult(esn2.remove(state));
-                          break;
+                polyad.setResult(esn2.remove(state));
+                break;
         }
         polyad.setResultType(BOOLEAN_TYPE);
         polyad.setEvaluated(true);

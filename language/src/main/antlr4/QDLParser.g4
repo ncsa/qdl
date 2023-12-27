@@ -118,8 +118,8 @@ expression
  |  variable? Hash expression                                                  #moduleExpression
  | (function | '(' f_args* ')')
        LambdaConnector (expression | expressionBlock)                          #lambdaDef
- | expression op=Apply expression                                                   #appliesOperator
- | Apply expression                                                                 #unaryApplyExpression
+ | expression op=Apply expression                                              #appliesOperator
+ | Apply expression                                                            #unaryApplyExpression
  | stemVariable                                                                #stemVar
  | stemList                                                                    #stemLi
  | set                                                                         #setThing

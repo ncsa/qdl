@@ -331,7 +331,8 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     }
 
     /**
-     * Main workhorse method of evaluating a QDL dyadic system function.
+     * Main workhorse method of evaluating a QDL dyadic system function. See note for
+     * {@link #process2(ExpressionImpl, fPointer, String, State, boolean)} )}
      *
      * @param polyad
      * @param pointer
@@ -347,8 +348,6 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     }
 
     /**
-     * NOTE optionalArguments means that the {@link fPointer} an take more than 2 arguments.
-     * So the basic functionality requires 2 args and there may be more.
      * <h2>Note</h2>
      * This (and the other processN functions)
      * do all the magic of figuring out sets, stems, subsetting etc. You simply write a
@@ -357,6 +356,12 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * <b>Tip</b>: You should check for arguments types in the fPointer, not before. Argument checks before
      * invoking this are often a lot more work to unpack. Just let the method do the work. Besides, you can throw
      * {@link BadArgException}s which are extremely exact at the point of failure.
+     * <br/><br/>
+     * <B>Tip</B>: OptionalArguments means that the {@link fPointer} an take more than 2 arguments.
+     * So the basic functionality requires 2 args and there may be more.
+     * <h3>Caveat</h3>
+     * <p>This applies subsetting! So any functions that require something more exotic
+     * cannot use this.</p>
      *
      * @param polyad
      * @param pointer
@@ -588,7 +593,6 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         // so all this is basically to figure out how to loop over what.
         while (iterator.hasNext()) {
             Object key = iterator.next();
-            boolean keyIsLong = key instanceof Long;
             fpResult r = null;
             Object[] objects;
             if (optionalArgs) {
