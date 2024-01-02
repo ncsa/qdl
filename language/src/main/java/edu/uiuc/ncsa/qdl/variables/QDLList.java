@@ -1057,22 +1057,19 @@ subset(b., 3, 6)
 
 
     /**
-     * Remove by value
+     * Remove by value  from <b>top level</b> only. This fulfills Java's contract for
+     * lists/collections, which removes <i>the first instance of this object <b>only</b></i>.
      *
      * @param o
      * @return
      */
     @Override
     public boolean remove(Object o) {
-        return removebyValue(o);
-    }
-
-    public boolean removebyValue(Object o) {
+        boolean rc = true;
+        rc = rc && getArrayList().remove(o);
         if (o instanceof SparseEntry) {
             SparseEntry sparseEntry = (SparseEntry) o;
-            if (getArrayList().remove(sparseEntry.entry)) {
-                return true;
-            }
+            rc = rc && getArrayList().remove(sparseEntry.entry);
             SparseEntry removeIt = null;
             for (SparseEntry se : getSparseEntries()) {
                 if (se.entry.equals(sparseEntry.entry)) {
@@ -1083,50 +1080,93 @@ subset(b., 3, 6)
             if (removeIt == null) {
                 return false;
             }
-            return getSparseEntries().remove(removeIt);
+            rc = rc && getSparseEntries().remove(removeIt);
         }
-        // Java removes the first it finds. It does not remove all of them
- /*       boolean rc = getArrayList().remove(o);
-        while (getArrayList().contains(o)) {
-            rc = rc && getArrayList().remove(o);
-        }
-        if (!getSparseEntries().isEmpty()) {
-            List<SparseEntry> removeSE = new ArrayList<>();
-            for (SparseEntry sparseEntry : getSparseEntries()) {
-                if (sparseEntry.entry.equals(o)) {
-                    removeSE.add(sparseEntry);
-                }
-            }
-            rc = rc && getSparseEntries().removeAll(removeSE);
-        }*/
-        return removeIt(o);
+        return rc;
     }
 
-    protected boolean removeIt(Object c) {
+    public boolean remove(Collection c) {
+        boolean rc = true;
+        for (Object obj : c) {
+            rc = rc && remove(obj);
+        }
+        return rc;
+    }
+
+
+    public boolean removeAllByValue(Collection c, boolean reorderLists) {
+        ArrayList newList = new ArrayList();
+        if (reorderLists) {
+            for (Object v : getArrayList()) {
+                if (v instanceof QDLStem) {
+                    QDLStem vv = (QDLStem) v;
+                    vv.removeAllByValues(c, reorderLists);
+                    if (!vv.isEmpty()) {
+                        newList.add(vv);
+                    }
+                } else {
+                    if (!c.contains(v)) {
+                        newList.add(v);
+                    }
+                }
+            }
+            for (SparseEntry sparseEntry : getSparseEntries()) {
+                if (sparseEntry.entry instanceof QDLStem) {
+                    QDLStem vv = (QDLStem) sparseEntry.entry;
+                    vv.removeAllByValues(c, reorderLists);
+                    if (!vv.isEmpty()) {
+                        newList.add(vv);
+                    }
+                }else{
+                    if(!c.contains(sparseEntry.entry)){
+                        newList.add(sparseEntry.entry);
+                    }
+                }
+            }
+            setSparseEntries(new TreeSet<>()); // never null.
+            setArrayList(newList);
+            return true;
+        }
+        boolean rc = true;
+        for (Object obj : c) {
+            rc = rc && removeAllByValue(obj, reorderLists);
+        }
+        return rc;
+    }
+
+    /**
+     * removes a single object from everywhere in this stem.
+     *
+     * @param c
+     * @return
+     */
+    protected boolean removeAllByValue(Object c, boolean reorderLists) {
         List<Integer> removeList = new ArrayList<>();
         boolean rc = true;
         for (int i = 0; i < getArrayList().size(); i++) {
             Object value = getArrayList().get(i);
             if (value instanceof QDLStem) {
-                rc = rc && ((QDLStem) value).removeByValue(c);
+                rc = rc && ((QDLStem) value).removeAllByValue(c, reorderLists);
             } else {
                 if (value.equals(c)) {
                     removeList.add(i);
                 }
             }
-            Collections.reverse(removeList);
-            for (Integer ndx : removeList) {
-                getArrayList().remove(ndx);
-            }
+        }
+        Collections.reverse(removeList);
+        for (Integer ndx : removeList) {
+            // Can't remove Integer, since that attempts to remove an Integer with
+            // the given value. It must be an int to remove by index.
+            getArrayList().remove(ndx.intValue());
         }
         if (!getSparseEntries().isEmpty()) {
             List<SparseEntry> removeSE = new ArrayList<>();
             for (SparseEntry sparseEntry : getSparseEntries()) {
                 Object value = sparseEntry.entry;
-                if(value instanceof QDLStem){
-                    rc = rc && ((QDLStem)value).removeByValue(c);
-                }else{
-                    if(value.equals(c)){
+                if (value instanceof QDLStem) {
+                    rc = rc && ((QDLStem) value).removeAllByValue(c, reorderLists);
+                } else {
+                    if (value.equals(c)) {
                         removeSE.add(sparseEntry);
                     }
                 }
@@ -1146,8 +1186,29 @@ subset(b., 3, 6)
         throw new NotImplementedException("addAll(int, Collection)");
     }
 
+    /**
+     * removes every element by value.
+     *
+     * @param c
+     * @return
+     */
     @Override
     public boolean removeAll(Collection c) {
+        List<Integer> rr = new ArrayList<>();
+        for (int i = 0; i < getArrayList().size(); i++) {
+            Object obj = getArrayList().get(i);
+            if (obj instanceof QDLStem) {
+                ((QDLStem) obj).removeAllByValues(c, false);
+            } else {
+                if (c.contains(obj)) {
+                    rr.add(i);
+                }
+            }
+        }
+        Collections.reverse(rr);
+        for (int i : rr) {
+            getArrayList().remove(i);
+        }
         getArrayList().removeAll(c);
         if (!getSparseEntries().isEmpty()) {
             // Yuck. No choice but to look everything up and remove them

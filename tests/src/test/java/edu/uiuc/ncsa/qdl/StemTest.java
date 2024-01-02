@@ -2004,6 +2004,7 @@ public class StemTest extends AbstractQDLTester {
 
     /**
      * Test moadic transpose operator. This also uses the operator form of reduce.
+     *
      * @throws Throwable
      */
     public void testMonadicTransposeOperator() throws Throwable {
@@ -2120,6 +2121,7 @@ public class StemTest extends AbstractQDLTester {
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : OpEvaluator.FOR_ALL_KEY + " failed to process multiple trailing scalar case.";
     }
+
     public void testForEachMonad() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -2143,6 +2145,7 @@ public class StemTest extends AbstractQDLTester {
      * arg counts, which do we use? No canonical solution, so we stick with the dyadic case (or ficure out a way to
      * specify exactly which function to use...)
      * </p>
+     *
      * @throws Throwable
      */
     public void testForEachMultiDyad() throws Throwable {
@@ -2157,6 +2160,7 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok", state) : OpEvaluator.FOR_ALL_KEY + " failed to process all elements in extended dyadic case.";
         assert getBooleanValue("ok1", state) : OpEvaluator.FOR_ALL_KEY + " applied dyad '*' incorrectly.";
     }
+
     /**
      * Test case that a scalar is at the end of the argument list in for_each.
      *
@@ -2661,7 +2665,7 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok42", state) : "failure processing a\\>[star(),[0,0,0]]";
     }
 
-    public static String BIG_JSON_OBJECT = DebugUtil.getDevPath()+"/qdl/language/src/main/resources/test.json";
+    public static String BIG_JSON_OBJECT = DebugUtil.getDevPath() + "/qdl/language/src/main/resources/test.json";
 
     /**
      * This grabs a large randomly generated JSON object (which is stashed for reproducibility)
@@ -2727,7 +2731,7 @@ public class StemTest extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testJSONExtractions2() throws Throwable {
-        String jsonFile = DebugUtil.getDevPath()+"/qdl/tests/src/test/resources/extract.json";
+        String jsonFile = DebugUtil.getDevPath() + "/qdl/tests/src/test/resources/extract.json";
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "x. := from_json(file_read('" + jsonFile + "'));");
@@ -2851,6 +2855,33 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok3", state) : StemEvaluator.DIFF + " for basic stems with subsetting off fails";
         assert getBooleanValue("ok4", state) : StemEvaluator.DIFF + " for stem vs scalar fails";
         assert getBooleanValue("ok5", state) : StemEvaluator.DIFF + " for scalar vs stem fails";
+    }
+
+    public void testExciseList() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ϱ. := excise(n(5,5,[;3]),[0,2]);"); // matrix
+        addLine(script, "ok:=reduce(@&&, dim(ϱ.)==[5,2]) && rank(ϱ.)==2;");
+        addLine(script, "ok1:=reduce(@&&, reduce(@&&,ϱ.==[[1,1],[1],[1,1],[1,1],[1]]));");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : StemEvaluator.EXCISE + " incorrect shape of result";
+        assert getBooleanValue("ok1", state) : StemEvaluator.EXCISE + " incorrect values for result";
+    }
+
+    public void testExciseStem() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        // Note that the second argument is a stem. The function only looks at the values and this
+        // tests that as well.
+        addLine(script, "ϱ. := excise({'a':{'p':'c','q':'d'},'f':'c','c':'w'}, {'a':'c'});");
+        addLine(script, "ok:= size(ϱ.)==2;"); // dim and rank only work on lists. Best we can do is count
+        addLine(script, "b.:=ϱ. == {'a':{'q':'d'}, 'c':'w'};"); // resule is the stem  {a:{q:true}, c:true}
+        addLine(script, "ok1 := b.'a'.'q' && b.'c';");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : StemEvaluator.EXCISE + " incorrect shape of result";
+        assert getBooleanValue("ok1", state) : StemEvaluator.EXCISE + " incorrect values for result";
     }
 
 }

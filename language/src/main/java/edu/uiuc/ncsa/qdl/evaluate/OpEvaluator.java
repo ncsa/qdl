@@ -1,10 +1,7 @@
 package edu.uiuc.ncsa.qdl.evaluate;
 
 
-import edu.uiuc.ncsa.qdl.exceptions.BadArgException;
-import edu.uiuc.ncsa.qdl.exceptions.MissingArgException;
-import edu.uiuc.ncsa.qdl.exceptions.QDLException;
-import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
+import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.expressions.*;
 import edu.uiuc.ncsa.qdl.functions.FunctionRecordInterface;
 import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNode;
@@ -178,6 +175,7 @@ public class OpEvaluator extends AbstractEvaluator {
     public static ArrayList<String> ONLY_MONADS = new ArrayList<>(Arrays.asList(new String[]{
             NOT, NOT2, PLUS_PLUS, MINUS_MINUS, FLOOR, CEILING, TO_SET, TO_SET2, IS_DEFINED, IS_NOT_DEFINED
     }));
+
     int[] monadOnlyArg = new int[]{1};
     int[] dyadOnlyArg = new int[]{2};
     int[] monadAndDyadArg = new int[]{1, 2};
@@ -200,18 +198,14 @@ public class OpEvaluator extends AbstractEvaluator {
         return monadAndDyadArg;
     }
 
+
     @Override
     public String getNamespace() {
         throw new NotImplementedException("namespaces for operators not supported");
     }
 
     public boolean isMathOperator(String x) {
-        for (String op : ALL_MATH_OPS) {
-            if (op.equals(x)) {
-                return true;
-            }
-        }
-        return false;
+        return getType(x) != UNKNOWN_TYPE; // switch is faster than rumaging around
     }
 
     @Override
@@ -508,6 +502,16 @@ public class OpEvaluator extends AbstractEvaluator {
         QDLStem wrapper;
         if (isStem(lArg)) {
             wrapper = (QDLStem) lArg;
+/*            if(!wrapper.isList()){
+                // If it's not a list, wrap it so it can be used by lists.
+                // Assumption is that the stem is passing in the values by name
+                // and we do not want the stem of elements to be mis-interpreted.
+                // Only a partial solution...
+                QDLStem s = new QDLStem();
+                s.getQDLList().add(wrapper);
+                wrapper = s;
+
+            }*/
         } else {
             // arguments are wrapper, so if they sent a scalar or set,
             QDLStem s = new QDLStem();
@@ -516,37 +520,41 @@ public class OpEvaluator extends AbstractEvaluator {
             wrapper.setDefaultValue(s);
         }
         Object result;
-        result = evaluateNextArgForApplies(wrapper, rArg, state, dyad);
+        result = evaluateNextArgForApplies(wrapper, rArg, wrapper.getDefaultValue(), state, dyad);
         dyad.setEvaluated(true);
         dyad.setResult(result);
         dyad.setResultType(Constant.getType(result));
 
     }
 
-    protected QDLSet applyToSet(QDLStem lArg, QDLSet rArg, State state, Dyad dyad) {
+    protected QDLSet applyToSet(QDLStem lArg, QDLSet rArg, Object defaultValue, State state, Dyad dyad) {
         QDLSet output = new QDLSet();
         Iterator rIterator = rArg.iterator();
         while (rIterator.hasNext()) {
             Object nextRArg = rIterator.next();
-            Object result = evaluateNextArgForApplies(lArg, nextRArg, state, dyad);
+            Object result = evaluateNextArgForApplies(lArg, nextRArg, defaultValue, state, dyad);
             output.add(result);
         }
         return output;
     }
 
-    protected Object evaluateNextArgForApplies(Object lArg, Object rArg, State state, Dyad dyad) {
+    protected Object evaluateNextArgForApplies(Object lArg,
+                                               Object rArg,
+                                               Object defaultValue,
+                                               State state,
+                                               Dyad dyad) {
         Object result;
         if (rArg instanceof QDLStem) {
-            if (!(lArg instanceof QDLStem)) {
+            if (!(lArg instanceof QDLStem) && defaultValue == null) {
                 throw new BadArgException("non-conformable left argument (should be a stem)", dyad.getLeftArgument());
             }
-            result = applyToStem((QDLStem) lArg, (QDLStem) rArg, state, dyad);
+            result = applyToStem((QDLStem) lArg, (QDLStem) rArg, defaultValue, state, dyad);
         } else {
             if (rArg instanceof QDLSet) {
-                result = applyToSet((QDLStem) lArg, (QDLSet) rArg, state, dyad);
+                result = applyToSet((QDLStem) lArg, (QDLSet) rArg, defaultValue, state, dyad);
             } else {
                 if (rArg instanceof FunctionReferenceNode) {
-                    result = doSingleApply(lArg, (FunctionReferenceNode) rArg, state, dyad);
+                    result = doSingleApply(lArg, (FunctionReferenceNode) rArg, defaultValue, state, dyad);
                 } else {
                     result = rArg;
                 }
@@ -555,24 +563,29 @@ public class OpEvaluator extends AbstractEvaluator {
         return result;
     }
 
-    protected QDLStem applyToStem(QDLStem lArg, QDLStem rArg, State state, Dyad dyad) {
+    protected QDLStem applyToStem(QDLStem lArg,
+                                  QDLStem rArg,
+                                  Object defaultValue,
+                                  State state,
+                                  Dyad dyad) {
         QDLStem output = new QDLStem();
         for (Object key : rArg.keySet()) {
-            Object nextLArg = lArg.get(key);
-            if (nextLArg == null) {
-                throw new MissingArgException("no such argument for key " + key, dyad.getLeftArgument());
-            }
-            if(nextLArg instanceof QDLStem){
-                // propagate a default value if there is one.
-                QDLStem qqq = (QDLStem) nextLArg;
-                if(lArg.hasDefaultValue()){
-                       if(!qqq.hasDefaultValue()){
-                           qqq.setDefaultValue(lArg.getDefaultValue());
-                       }
+            Object nextLArg = null;
+            if (lArg == null) {
+                if (defaultValue == null) {
+                    throw new MissingArgException("missing argument for index " + key, dyad.getLeftArgument());
+                }
+            } else {
+                if (lArg.containsKey(key)) {
+                    nextLArg = lArg.get(key);
+                }
+                if (lArg.hasDefaultValue()) {
+                    defaultValue = lArg.getDefaultValue();
                 }
             }
+
             Object nextRArg = rArg.get(key);
-            Object result = evaluateNextArgForApplies(nextLArg, nextRArg, state, dyad);
+            Object result = evaluateNextArgForApplies(nextLArg, nextRArg, defaultValue, state, dyad);
             output.putLongOrString(key, result);
         }
         return output;
@@ -612,60 +625,107 @@ apply([@f,@g],[2])
      * @param dyad
      * @return
      */
-    protected Object doSingleApply(Object lArg, FunctionReferenceNode fNode, State state, Dyad dyad) {
+    protected Object doSingleApply(Object lArg, FunctionReferenceNode fNode, Object defaultValue, State state, Dyad dyad) {
         State actualState = fNode.hasModuleState() ? fNode.getModuleState() : state; // determined per fNode
-/*
-        Object lArg = dyad.getLeftArgument().evaluate(actualState);
-*/
-
-        if (lArg instanceof Long) {
-            int argCount = ((Long) lArg).intValue();
-            FunctionRecordInterface fRec = fNode.getByArgCount(argCount);
-            QDLStem out = new QDLStem();
-            if (fRec != null) {
-                out.getQDLList().addAll(fRec.getArgNames());
-            }
-            return out;
+        if (lArg == null) {
+            lArg = defaultValue;
         }
         if (lArg instanceof QDLStem) {
             QDLStem lStem = (QDLStem) lArg;
-            if(lStem.isEmpty()){
-                if(lStem.hasDefaultValue()){
-                    if(!(lStem.getDefaultValue() instanceof QDLStem)){
-                        throw new BadArgException("All arguments to are stems. Default value is not a stem.", dyad.getLeftArgument());
+            if (lStem.isEmpty()) {
+                if (lStem.hasDefaultValue()) {
+                    if (!(lStem.getDefaultValue() instanceof QDLStem)) {
+                        // So they used a scalar as the default value. Assume they mean it.
+                        Polyad polyad = new Polyad(fNode.getFunctionName());
+                        polyad.setBuiltIn(false);
+                        polyad.addArgument(new ConstantNode(lStem.getDefaultValue()));
+                        return polyad.evaluate(actualState);
                     }
-                    lStem = (QDLStem)lStem.getDefaultValue();
+                    lStem = (QDLStem) lStem.getDefaultValue();
                 }
             }
-            Polyad polyad = new Polyad(fNode.getFunctionName());
-            polyad.setBuiltIn(false);
+            ExpressionImpl expression = null;
+            boolean isOperator = false;
+            boolean isBuiltin = false;
+            if (fNode.getFunctionRecords().isEmpty()) {
+                Polyad polyad = new Polyad(fNode.getFunctionName());
+                isBuiltin = true; // need flag for later since expression is general
+                polyad.setBuiltIn(true);
+                if (state.getMetaEvaluator().isBuiltInFunction(fNode.getFunctionName())) {
+                    expression = polyad;
+                } else {
+                    if (!state.getOpEvaluator().isMathOperator(fNode.getFunctionName())) {
+                        throw new UnknownSymbolException("unknown function '" + fNode.getFunctionName() + "'", dyad.getLeftArgument());
+                    }
+                    // so it's an operator.
+                    if (lStem.size() == 1) {
+                        Monad monad = new Monad(actualState.getOperatorType(fNode.getFunctionName()), null); // arg set later
+                        expression = monad;
+                    }
+                    if (lStem.size() == 2) {
+                        Dyad dyad1 = new Dyad(actualState.getOperatorType(fNode.getFunctionName()), null, null);
+                        expression = dyad1;
+                    }
+                    expression.setArguments(new ArrayList<>()); // zero this out since we are adding argument later and just set them to null
+                    isOperator = true;
+                    isBuiltin = true;
+                }
+            } else {
+                // user-defined case
+                Polyad polyad = new Polyad(fNode.getFunctionName());
+                polyad.setBuiltIn(false);
+                expression = polyad;
+            }
             if (lStem.isList()) {
                 for (Object key : lStem.keySet()) {
-                    polyad.addArgument(new ConstantNode(lStem.get(key)));
+                    expression.getArguments().add(new ConstantNode(lStem.get(key)));
                 }
 
             } else {
-                FunctionRecordInterface fRec = fNode.getByArgCount(lStem.size());
-                if (fRec == null) {
-                    throw new BadArgException(APPLY_OP_KEY + " cannot resolve the function '" + fNode.getFunctionName() + "' with the argument count of " + lStem.size(), dyad.getRightArgument());
-                }
-
-                for (String name : fRec.getArgNames()) {
-                    Object object = lStem.get(name);
-                    if (object == null) {
-                        throw new BadArgException(APPLY_OP_KEY + " '" + fNode.getFunctionName() + "' missing value for " + name, dyad.getLeftArgument());
+                if (isBuiltin) {
+                    for (int i = 0; i < lStem.size(); i++) {
+                        Object obj = lStem.get(FunctionEvaluator.DUMMY_BUILT_IN_FUNCTION_NAME_CAPUT + i);
+                        if (obj == null) {
+                            throw new BadArgException("missing argument for '" + FunctionEvaluator.DUMMY_BUILT_IN_FUNCTION_NAME_CAPUT + i + "'", dyad.getLastArg());
+                        }
+                        expression.getArguments().add(new ConstantNode(obj));
                     }
-                    polyad.addArgument(new ConstantNode(object));
+                } else {
+                    FunctionRecordInterface fRec = fNode.getByArgCount(lStem.size());
+                    for (String name : fRec.getArgNames()) {
+                        Object object = lStem.get(name);
+                        if (object == null) {
+                            throw new BadArgException(APPLY_OP_KEY + " '" + fNode.getFunctionName() + "' missing value for " + name, dyad.getLeftArgument());
+                        }
+                        expression.getArguments().add(new ConstantNode(object));
+                    }
+
                 }
             }
-            return polyad.evaluate(actualState);
+
+            if (isOperator) {
+                if(expression instanceof Monad){
+                    actualState.getOpEvaluator().evaluate((Monad)expression, actualState);
+                }
+                if(expression instanceof Dyad){
+                    actualState.getOpEvaluator().evaluate((Dyad)expression, actualState);
+                }
+                return expression.getResult();
+            }
+            return expression.evaluate(actualState);
         }
-        throw new BadArgException("unknown argument type", dyad.getLeftArgument());
+        // so this is a scalar
+        Polyad polyad = new Polyad(fNode.getFunctionName());
+        polyad.setBuiltIn(false);
+        polyad.addArgument(new ConstantNode(lArg));
+        return polyad.evaluate(actualState);
+
+        //  throw new BadArgException("unknown argument type", dyad.getLeftArgument());
     }
 
     protected Object doSingleApply(Object lArg, FunctionReferenceNode fNode, State actualState) {
 
-        if (lArg instanceof Long) {
+    /*    if (lArg instanceof Long) {
             int argCount = ((Long) lArg).intValue();
             FunctionRecordInterface fRec = fNode.getByArgCount(argCount);
             QDLStem out = new QDLStem();
@@ -673,7 +733,7 @@ apply([@f,@g],[2])
                 out.getQDLList().addAll(fRec.getArgNames());
             }
             return out;
-        }
+        }*/
         if (lArg instanceof QDLStem) {
             QDLStem lStem = (QDLStem) lArg;
             Polyad polyad = new Polyad(fNode.getFunctionName());
@@ -1672,10 +1732,32 @@ a.⌆b.
                 fpResult r = new fpResult();
                 if (objects[0] instanceof FunctionReferenceNode) {
                     FunctionReferenceNode fNode = (FunctionReferenceNode) objects[0];
-                    // keep it all sorted
-                    TreeSet<Long> counts = new TreeSet<>();
-                    for (FunctionRecordInterface functionRecordInterface : fNode.getFunctionRecords()) {
-                        counts.add((long) functionRecordInterface.getArgCount());
+
+                    TreeSet<Long> counts = new TreeSet<>(); // keep it all sorted
+                    if (fNode.getFunctionRecords().isEmpty()) {
+                        if (state.getMetaEvaluator().isBuiltInFunction(fNode.getFunctionName())) {
+                            Polyad polyad = new Polyad(fNode.getFunctionName());
+                            polyad.setSizeQuery(true);
+                            state.getMetaEvaluator().evaluate(polyad, state);
+                            int[] argCounts = (int[]) polyad.getResult();
+                            for (int argCount : argCounts) {
+                                counts.add((long) argCount);
+                            }
+                        } else {
+                            // final case, this might be just an operator. Operators like +
+                            // are processed in the OpEvaluator, so check there.
+                            if (!isMathOperator(fNode.getFunctionName())) {
+                                throw new UnknownSymbolException("no such function named '" + fNode.getFunctionName() + "'", monad.getArgument());
+                            }
+                            int[] argCounts = getArgCount(fNode.getFunctionName());
+                            for (int argCount : argCounts) {
+                                counts.add((long) argCount);
+                            }
+                        }
+                    } else {
+                        for (FunctionRecordInterface functionRecordInterface : fNode.getFunctionRecords()) {
+                            counts.add((long) functionRecordInterface.getArgCount());
+                        }
                     }
                     QDLStem stem = new QDLStem();
                     for (Long x : counts) {

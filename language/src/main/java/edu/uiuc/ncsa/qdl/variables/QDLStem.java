@@ -1641,14 +1641,38 @@ public class QDLStem implements Map<String, Object>, Serializable {
         return output + "\n" + currentIndent + "}";
 
     }
-    public boolean removeByValue(Object c){
-        getQDLList().remove(c);
-        Collection keysToRemove = new ArrayList();
+
+    /**
+     * Removes every value in the collection from everywhere in the stem.
+     * Optionally,
+     * lists will be reordered too. Since this a bit more
+     * @param c
+     * @param reorderLists
+     * @return
+     */
+    public boolean removeAllByValues(Collection c, boolean reorderLists) {
+            // list remove is a bit optimized, so just do that if possible.
+        boolean rc=     getQDLList().removeAllByValue(c, reorderLists);
+        for (Object obj : c) {
+            rc = rc && removeAllByValue(obj, reorderLists, true);
+        }
+        return rc;
+    }
+    public boolean removeAllByValue(Object c, boolean reorderLists){
+         return removeAllByValue(c, reorderLists, false);
+    }
+    public boolean removeAllByValue(Object c, boolean reorderLists, boolean listProcessed){
         boolean rc = true;
-         for(Object key : keySet()){
+        if(!listProcessed) {
+            // remove from list
+             rc = rc &&  getQDLList().removeAllByValue(c, reorderLists);
+        }
+        // remove from map.
+        Collection keysToRemove = new ArrayList();
+         for(Object key : getQDLMap().keySet()){
              Object value = get(key);
              if(value instanceof QDLStem){
-                 rc = rc && ((QDLStem)value).removeByValue(c);
+                 rc = rc && ((QDLStem)value).removeAllByValue(c, reorderLists);
              }else {
                  if (value.equals(c)) {
                  keysToRemove.add(key);
@@ -1656,7 +1680,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
              }
          }
          for(Object key : keysToRemove){
-             remove(key); // have to be carefule to remove this so no concurrent modification exception.
+             getQDLMap().remove(key); // have to be carefule to remove this so no concurrent modification exception.
          }
          return rc;
     }

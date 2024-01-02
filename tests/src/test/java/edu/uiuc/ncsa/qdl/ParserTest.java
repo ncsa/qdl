@@ -3040,6 +3040,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
 
     /**
      * Pass in an argument stem with a default value, setting only a single argument explicitly.
+     *
      * @throws Throwable
      */
     public void testApplyToDefaultStem() throws Throwable {
@@ -3058,6 +3059,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
 
     /**
      * Tests applying a function with the arguments named explicitly.
+     *
      * @throws Throwable
      */
     public void testApplyExplicitNamedArguments() throws Throwable {
@@ -3080,6 +3082,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : FunctionEvaluator.ARG_COUNT + " failed ";
     }
+
     public void testArgNamesFunction() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -3094,27 +3097,77 @@ left hand argument at index 'p' is not a boolean At (1, 0)
     /**
      * Messy case to kick the tires hard. This will create a stem with a default
      * and various function then run the whole thing.
+     *
      * @throws Throwable
      */
-    public void testAppliesComplexCase() throws Throwable{
+    public void testAppliesComplexCase() throws Throwable {
         State state = testUtils.getNewState();
-            StringBuffer script = new StringBuffer();
-            addLine(script, " zz.0.1 := zz.0.3 := zz.1.1:= zz.1.3:=[2,3];\n" +
-                    "    zz.2.1:=zz.2.3 := [-1,1];\n" +
-                    "    zz.:=zz.~{*:[4,1,2]};\n" +
-                    "    zz.0.0 := [-11]; // one outlier for monadic f\n" +
-                    "    f(x)->x;\n" +
-                    "    g(p,q)->p*q;\n" +
-                    "    f(x,y,z)->x+y+z;\n" +
-                    "    ff.:=n(3,4,[@f,@g]);");
-            addLine(script, "out. := (zz.)⍺ff.;");
-            addLine(script, "ok:=rank(out.) == 2 && reduce(@&&, dim(out.) ==[3,4]);");
-            addLine(script, "ok1:=reduce(@&&,reduce(@&&, out. ==[[-11,6,7,6],[7,6,7,6],[7,-1,7,-1]]));");
-            QDLInterpreter interpreter = new QDLInterpreter(null, state);
-            interpreter.execute(script.toString());
-            assert getBooleanValue("ok", state) : OpEvaluator.APPLY_OP_KEY + " returned wrong shape of argument ";
-            assert getBooleanValue("ok1", state) : OpEvaluator.APPLY_OP_KEY + " returned wrong values ";
+        StringBuffer script = new StringBuffer();
+        addLine(script, " zz.0.1 := zz.0.3 := zz.1.1:= zz.1.3:=[2,3];\n" +
+                "    zz.2.1:=zz.2.3 := [-1,1];\n" +
+                "    zz.:=zz.~{*:[4,1,2]};\n" +
+                "    zz.0.0 := [-11]; // one outlier for monadic f\n" +
+                "    f(x)->x;\n" +
+                "    g(p,q)->p*q;\n" +
+                "    f(x,y,z)->x+y+z;\n" +
+                "    ff.:=n(3,4,[@f,@g]);");
+        addLine(script, "out. := (zz.)⍺ff.;");
+        addLine(script, "ok:=rank(out.) == 2 && reduce(@&&, dim(out.) ==[3,4]);");
+        addLine(script, "ok1:=reduce(@&&,reduce(@&&, out. ==[[-11,6,7,6],[7,6,7,6],[7,-1,7,-1]]));");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : OpEvaluator.APPLY_OP_KEY + " returned wrong shape of argument ";
+        assert getBooleanValue("ok1", state) : OpEvaluator.APPLY_OP_KEY + " returned wrong values ";
     }
+
+    /**
+     * This tests that supplying a default argument and a couple of functions to apply them to
+     * is resolved correcly.
+     *
+     * @throws Throwable
+     */
+    public void testAppliesDefaults() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)->x^2-1;\n" +
+                "f(x,y,z)->x+y/(z^2+1);  \n" +
+                "args.:={*:[1,4,2]};\n" +  // default
+                "args.1:=3;\n" +           // argument by position
+                "args.2:={'x':5};    \n" + // argument by function signature
+                "out. := (args.)⍺n(5,[@f]);");
+        addLine(script, "ok:=rank(out.) == 1 && size(out.)==5;");
+        addLine(script, "ok1 := false ∉ (out. == [1.8,8,24,1.8,1.8]);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : OpEvaluator.APPLY_OP_KEY + " returned wrong shape of argument ";
+        assert getBooleanValue("ok1", state) : OpEvaluator.APPLY_OP_KEY + " returned wrong values ";
+    }
+
+    public void testAppliesBuiltin() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok := 5==([2,3]⍺@+);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : OpEvaluator.APPLY_OP_KEY + " returned wrong result for built in operator ";
+    }
+
+    public void testAppliesBuiltinWithArgs() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok := 5==({'x_1':2,'x_0':3}⍺@+);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : OpEvaluator.APPLY_OP_KEY + " returned wrong result for built in operator ";
+    }
+    /*
+   f(x)->x^2-1;
+   f(x,y,z)->x+y/(z^2+1);
+   args.:={*:[1,4,2]};
+   args.1:=3;
+   args.2:={'x':5};
+   z. := (args.)⍺n(5,[@f]);
+     */
     /*
          Complex example: This sets up a matrix fo function refs with a default value an specific values.
     zz.0.1 := zz.0.3 := zz.1.1:= zz.1.3:=[2,3];

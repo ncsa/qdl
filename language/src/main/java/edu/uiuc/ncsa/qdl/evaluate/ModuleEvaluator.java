@@ -784,6 +784,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
                     case IMPORT_STATE_NONE:
                         inhertianceMode = IMPORT_STATE_NONE_VALUE;
                         break;
+                    case IMPORT_STATE_ANY: // probably means the module was imported by the old template system
                     case IMPORT_STATE_SHARE:
                         inhertianceMode = IMPORT_STATE_SHARE_VALUE;
                         break;
@@ -791,13 +792,13 @@ public class ModuleEvaluator extends AbstractEvaluator {
                         inhertianceMode = IMPORT_STATE_SNAPSHOT_VALUE;
                         break;
                     default:
-                        throw new BadArgException(IMPORT + " unknown state inheritance mode", polyad.getArgAt(1));
+                        throw new BadArgException(IMPORT + " unknown state inheritance mode '" + arg1 + "'", polyad.getArgAt(1));
                 }
             } else {
                 if (isLong(arg1)) {
                     inhertianceMode = ((Long) arg1).intValue();
                 } else {
-                    throw new BadArgException(IMPORT + " unknown state inheritance mode", polyad.getArgAt(1));
+                    throw new BadArgException(IMPORT + " unknown state inheritance mode '" + arg1 + "'", polyad.getArgAt(1));
                 }
             }
         }

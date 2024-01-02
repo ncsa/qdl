@@ -1110,17 +1110,59 @@ See also: print]]>
     </entry>
     <entry id="file_read">
         <body>
-            <![CDATA[file_read(file_name) - read a file in. The result is a single string of the
+            <![CDATA[file_read(file_name{.}) - read a file in. The result is a single string of the
                        file contents
-file_read(file_name, type) - type is an integer that determines the result:
+
+file_read(file_name{.}, type{.}) - type is an integer that determines the result:
 -1 = as string (default)
  0 = binary. This reads the file and hands back a single base 64 encoded
      string of the contents.
  1 = stem. A stem list whose entries are each line in the file.
  2 = ini(tialization) file format. See the entry under 'ini' in help
 
+If file_name. is a stem of names, then every file will be read and placed into
+the corresponding stem entry with the corresponding type (if specified).
+
 See also: decode_64, ini]]>
         </body>
+        <example>
+            <![CDATA[   d:='/path/to/data/files';
+   list. := dir(d); // get the list of files
+   files. := file_read(d+'/' + list.);
+
+reads every file in list. in the correct directory.
+file.i is list.i. This also holds if i is not an integer.
+Read on.
+
+You could have specified a specific entry in a stem (rather than
+just a list) for files, e.g. by renaming the keys to the file names:
+  list2. := remap(list., list_keys(list.), list.); // idiom to change indices to entry values
+  files2. := file_read(d+'/' + list2.)
+
+So now e.g. the entry for 'foo.json' would have the entire path to the file.
+You could also massage the keys so that the extensions were removed, e.g.
+
+  list2. := remap(list., keys(list.), list.-'.json'); // remove file extensions
+
+So list., might look like
+
+   {'my_input':'/path/to/data/files/my_input.json',...}
+
+And you can just call file_read on that which would set the contents of
+the file as the value.
+
+What to do with something like this? Well, if all the files were JSON
+then you might turn them into stems using
+    json. := @from_json∀[z.]
+
+Or if they were all QDL files (that had a single value, such as stems)
+you could simply inhale the entire directory and interpret it
+
+    my_qdl. := @interpret∀[z.]
+
+Each entry then would have the interpreted QDL as its value.
+]]>
+        </example>
     </entry>
     <entry id="scan">
         <body>
@@ -1191,12 +1233,24 @@ null
 
     <entry id="file_write">
         <body>
-            <![CDATA[file_write(file_name, contents) = write the contents to the given file.
-                                  contents can be a string or a list of strings
-file_write(file_name, contents, is_base_64) = same, but if is_base_64 is true,
-                                  then the contents are decoded to binary
-                                  before writing. The default is that this
-                                  flag is false.
+            <![CDATA[file_write(contents.) - process the argument, where each entry is a file.
+                        Unrecognized entries are skipped.
+file_write(file_name, content) = write the content to the given file.
+                        content can be a string or a list of strings
+file_write(file_name, content, is_base_64 | type) = same, but either the file
+                        type is given (as an integer) or if a boolean, then
+                        it is processed as base_64 or not. the default is that
+                        the content is a string or stem of them.
+
+If the argument is a stem, then a valid entry has the entries
+
+     'path': path-to_file,
+ 'content' : contents a stem or string
+    'type' : (optional) the integer file type OR a boolean, where true means the file is binary
+
+Again, if an entry to contents. is not of this form, it is skipped and returned unaltered,
+otherwise, the value of the entry post-processing is true if the operation worked and
+false otherwise (or an error is raised).
 
 See also: file_read, decode, encode]]>
         </body>
@@ -5708,6 +5762,9 @@ Here there is no such value equal to 11, so the default case value of -1 is retu
 
   This permits on the fly construction of argument lists to functions.
 
+  Note that apply will certainly work on non-function references, in which
+  case it does nothing and treats any non-function as a constant
+
   Note that for the operator version, which uses ⍺ (unicode 237A) which
   is not the same as the Greek letter α, (unicode 03b1) that the arguments
   are switched.
@@ -5739,17 +5796,87 @@ See also: apply, names, arg_count]]>
    // Evaluate f at 3, explicitly setting the variable x in the argument list.
    {'x':3}⍺@f
 9
-
-   ]]>
+To amplify that constants are not evaluated,
+  {*:{'x':3}}⍺[@f,4]
+[9,4]]]>
         </example>
     </entry>
     <entry id="⍺">
         <body>
             <![CDATA[The apply function as an operator.
 
-See also apply
+See also apply, names, arg_count
   ]]>
         </body>
+        <example>
+<![CDATA[One should be aware of how the left hand argument is
+handled. Generally the lhs is a stem and each index is an argument
+the the function. So here is an example of using all the machinery
+in QDL to evaluate this function
+   f(x)->x^2-1
+   f(x,y,z)->x+y/(z^2+1)
+   arg_count(@f)
+[1,3]
+
+There are two functions named f in this workspace. One takes a
+single argument, one takes 3 arguments.
+   names(@f)
+[[x],[x,y,z]]
+
+The name of the argument (in the signature) for the monadic f is 'x'
+and for triadic f they are 'x','y','z'
+
+To evaluate f with a single argument, at the value of 5, all
+of the following work the same
+
+   5⍺@f       // argument as scalar (only works for monads)
+   [5]⍺@f     // argument by position, zero element fed as zeroth arg to function
+   {'x':5}⍺@f // argument by function signature
+   {*:5}⍺@f   // argument using default
+
+These all return the value of 24, as expected. Setting a default value
+for the stem is very useful at times.
+
+For stems on the right hand side (rhs) the contract is a bit different
+from elsewhere in QDL -- there is no subsetting. The shape of the rhs
+and lhs must match or an index error will be raised. This is because
+functions may have different length arguments and QDL, every helpful,
+tries to make it so you cannot, e.g. forget and argument and get the
+wrong function.
+
+Evaluate the monadic and triadic forms of f:
+     [5,[1,4,2]]⍺[@f,@f]
+[24,1.8]
+
+Evaluate the monadic form of f with two different arguments
+     [2,3]⍺[@f,@f]
+[3,8]
+
+Finally, evaluate a list of functions. The default is the triadic
+form of f and two specific values for the monadic form are set.
+    args.:={*:[1,4,2]}
+    args.1:=3
+    args.2:={'x':5}
+    (args.)⍺n(5,[@f])
+[1.8,8,24,1.8,1.8]
+
+Note especially we wrote
+  (args.)⍺n(5,[@f])
+and NOT
+  args.⍺n(5,[@f])
+Because order of operations would mean that the right side of ⍺ is evaluated
+and passed as the stem index to args., i.e., the way it is parsed is
+   args.(⍺n(5,[@f]))
+
+A final caveat about default values. Compare this
+        (args.)⍺[n(5,[@f])]
+[[1.8,1.8,1.8,1.8,1.8]]
+
+which is different than  (args.)⍺n(5,[@f]) (which does not have the nested argument on the rhs.)
+Why? Because a default is specified and the structures must match exactly. The net effect
+during evaluation is that rhs.i.j has no elements specified, so that entire evaluation
+uses the default. Upshot is to check your arguments.]]>
+        </example>
     </entry>
     <entry id="namespace">
         <body>
@@ -5913,35 +6040,55 @@ not kknown outside of the scope.
     <entry id="excise">
        <body>
   <![CDATA[excise(target., values.) remove the values in values. from target.
-  when done, values.∈target. returns false for every entry.
+when done, values.∉target. returns true for every entry.
+
 This alters target and returns the altered stem as well. If you do not want
-target. altered, make a copy of it first. The reason is that this is a potentially
-expensive operation, which involves looking at every value in the target., so
-making a copy first them operating on that would make this even slower.
+target. altered, make a copy of it first. The reasons are that
+
+ (1)  This is a potentially expensive operation, which involves looking
+      at every value in the target.
+ (2)  This can be applied in situ to parts of stems, so
+      excise(foo.bar.baz, ['a',3]) operates on foo.bar.baz
+ (3)  making a copy first them operating on that would make this even slower.
 
   E.g.excise(['a','b','c'],['c'])
 [a,b]
-See also: \ (extraction), pick, remap]]>
+Note that remove() removes by index and excise removes by value.
+
+See also: \ (extraction), pick, mask, remap, remove]]>
        </body>
        <example>
-   <![CDATA[   excise(n(5,4,[;7]),3)
-   [[0,1,2],[4,5,6,0],{0:1, 1:2, 3:4},[5,6,0,1],{0:2, 2:4, 3:5}]
+   <![CDATA[E.g. Remove the value of 3 from a given array.
+      excise(n(5,4,[;7]),3)
+[[0,1,2],[4,5,6,0],[1,2,4],[5,6,0,1],[2,4,5]]
 
+E.g. remove the value 'c' from a stem.
    excise({'a':{'p':'c','q':'d'},'f':'c','c':'w'}, 'c')
 {a:{q:d}, c:w}
 
+E.g. same as before, illustrating that in the right argument,
+     only the values are used.
    excise({'a':{'p':'c','q':'d'},'f':'c','c':'w'}, {'a':'c'})
 {a:{q:d}, c:w}
 
-Note that you can use a stem as the right argument and the keys are ignored -- only
-the values matter:
-     excise({'a':{'p':'c','q':'d'},'f':'c','c':'w'}, {'a':'c'})
-{a:{q:d}, c:w}]]>
+E.g. Do surgery on part of a stem. The returns the exactly altered
+     stem and then we display the whole stem, showing that the effect
+     is local.
+   z.:=n(4,4,[;5])
+   excise(z.1, 2)
+[4,0,1]
+   z.
+[[0,1,2,3],
+ [4,0,1],    <--- only z.1 is altered
+ [3,4,0,1],
+ [2,3,4,0]
+]]]>
         </example>
     </entry>
     <entry id="names">
         <body>
-   <![CDATA[names(arg{.}{,arg_count}) - get the names for function references' arguments
+   <![CDATA[names(arg{.}{,arg_count}) - get the names for a user-defined function
+             references' arguments
 
 This will return either list of all the names in the signature of a function or just
 a list of names for the given argument count. You may also pass in a stem of
@@ -5962,6 +6109,11 @@ no such function 'f' with 2 arguments At (1, 9)
 If you don't specify the arg count, you get a list of all argument lists:
   names(@f)
 [[x],[x,y,z]]
+
+Note that this the list for QDL functions, always has entries of the form
+x_j  since these are often very overloaded. E.g.,
+   names(@sin)
+[[x_0]]
 
 See also: apply (⍺ operator), arg_count]]>
         </body>

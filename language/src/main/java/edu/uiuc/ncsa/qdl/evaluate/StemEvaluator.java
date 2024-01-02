@@ -401,54 +401,52 @@ public class StemEvaluator extends AbstractEvaluator {
      */
     private void doExcise(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setResult(new int[]{2, 3});
             polyad.setEvaluated(true);
             return;
         }
         if (polyad.getArgCount() < 2) {
-            throw new MissingArgException(EXCISE + " takes at two arguments", polyad.getArgCount() == 1 ? polyad.getArgAt(0) : polyad);
+            throw new MissingArgException(EXCISE + " takes at least two arguments", polyad.getArgCount() == 1 ? polyad.getArgAt(0) : polyad);
         }
-        if (2 < polyad.getArgCount()) {
-            throw new ExtraArgException(EXCISE + " takes at most two arguments", polyad.getArgAt(2));
+        if (3 < polyad.getArgCount()) {
+            throw new ExtraArgException(EXCISE + " takes at most three arguments", polyad.getArgAt(2));
         }
         Object arg0 = polyad.evalArg(0, state);
         Object arg1 = polyad.evalArg(1, state);
+        boolean reorderLists = true; // default
+        if(polyad.getArgCount() == 3){
+            Object arg2 = polyad.evalArg(2, state);
+            if(arg2 instanceof Boolean){
+                reorderLists = (Boolean)arg2;
+            }else{
+                throw new BadArgException(EXCISE + " takes a boolean as its third argument", polyad.getArgAt(2));
+            }
 
+        }
+        Collection values;
+        if (arg1 instanceof QDLStem) {
+            values = ((QDLStem) arg1).values();
+        } else {
+            values = new QDLSet();
+            values.add(arg1);
+        }
         if (arg0 instanceof QDLStem) {
             QDLStem inStem = (QDLStem) arg0;
-            if (inStem.isEmpty()) {
-                polyad.setResult(new QDLStem());
-                polyad.setResultType(STEM_TYPE);
-                polyad.setEvaluated(true);
-                return;
-            }
-            Collection values;
-            if(arg1 instanceof QDLStem) {
-                values = ((QDLStem) arg1).values();
-            }else{
-                values=new ArrayList();
-                values.add(arg1);
-            }
-            if (inStem.isList()) {
-                if (arg1 instanceof QDLStem) {
-                    inStem.getQDLList().removeAll(values);
-                } else {
-                    inStem.getQDLList().remove(arg1);
-                }
-                polyad.setResult(inStem);
-                polyad.setResultType(STEM_TYPE);
-                polyad.setEvaluated(true);
-                return;
-            }
-            for (Object v : values) {
-                inStem.removeByValue(v);
-                polyad.setResult(inStem);
-                polyad.setResultType(STEM_TYPE);
-                polyad.setEvaluated(true);
-                return;
-            }
+            inStem.removeAllByValues(values, reorderLists);
+            polyad.setResult(inStem);
+            polyad.setResultType(STEM_TYPE);
+            polyad.setEvaluated(true);
+            return;
         } // end stem processing
-
+        if (arg0 instanceof QDLSet) {
+            QDLSet set = (QDLSet) arg0;
+            set.removeAll(values);
+            polyad.setResult(set);
+            ;
+            polyad.setResultType(SET_TYPE);
+            polyad.setEvaluated(true);
+            return;
+        }
         throw new BadArgException("unknown type for " + EXCISE, polyad.getArgAt(0));
     }
 

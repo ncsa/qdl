@@ -146,6 +146,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
 
     }
 
+    public static final String DUMMY_BUILT_IN_FUNCTION_NAME_CAPUT = "x_";
     private void doMonadicArgNames(Polyad polyad, State state) {
         fPointer pointer = new fPointer() {
             @Override
@@ -156,11 +157,39 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 }
                 FunctionReferenceNode fNode = (FunctionReferenceNode) objects[0];
                 TreeMap<Integer, QDLStem> args = new TreeMap<>(); // sort them!
-                for (FunctionRecordInterface fRec : fNode.getFunctionRecords()) {
-                    QDLStem current = new QDLStem();
-                    List argNames = fRec.getArgNames();
-                    current.getQDLList().addAll(argNames);
-                    args.put(argNames.size(), current);
+                if (fNode.getFunctionRecords().isEmpty()) {
+                    //...
+                    int[] argCounts;
+                    if (state.getMetaEvaluator().isBuiltInFunction(fNode.getFunctionName())) {
+                        Polyad polyad = new Polyad(fNode.getFunctionName());
+                        polyad.setSizeQuery(true);
+                        state.getMetaEvaluator().evaluate(polyad, state);
+                        argCounts = (int[]) polyad.getResult();
+
+                    } else {
+                        // final case, this might be just an operator. Operators like +
+                        // are processed in the OpEvaluator, so check there.
+                        if (!state.getOpEvaluator().isMathOperator(fNode.getFunctionName())) {
+                            throw new UnknownSymbolException("no such function named '" + fNode.getFunctionName() + "'", polyad.getArgAt(0));
+                        }
+                        argCounts = state.getOpEvaluator().getArgCount(fNode.getFunctionName());
+                    }
+                    for (int argCount : argCounts) {
+                        QDLStem current = new QDLStem();
+                        for (int i = 0; i < argCount; i++) {
+                            current.getQDLList().add(DUMMY_BUILT_IN_FUNCTION_NAME_CAPUT + i);
+                        }
+                        args.put(argCount, current);
+                    }
+                    //...
+
+                } else {
+                    for (FunctionRecordInterface fRec : fNode.getFunctionRecords()) {
+                        QDLStem current = new QDLStem();
+                        List argNames = fRec.getArgNames();
+                        current.getQDLList().addAll(argNames);
+                        args.put(argNames.size(), current);
+                    }
                 }
                 QDLStem out = new QDLStem();
                 for (Integer ndx : args.keySet()) {
