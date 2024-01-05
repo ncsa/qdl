@@ -20,7 +20,7 @@ then
   exit 1;
 fi
 
-cd $QDL_SOURCES
+cd $QDL_SOURCES  || exit
 mvn -P qdl package > qdl-maven.log
 if [ $? -ne 0 ]
 then
@@ -31,7 +31,7 @@ fi
 cp "$QDL_SOURCES/target/qdl-jar-with-dependencies.jar" $TARGET_ROOT/lib/qdl.jar
 unzip -p target/qdl-jar-with-dependencies.jar META-INF/MANIFEST.MF > $TARGET_ROOT/lib/build-info.txt
 
-cd $TARGET_ROOT
+cd $TARGET_ROOT || exit
 # Get the actual manifest so that build info is available.
 jar cmf installer.mf "$JAR_NAME" edu/uiuc/ncsa/qdl/install/Installer.class version.txt  bin docs etc lib log var examples
 echo '     ... done!'

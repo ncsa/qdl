@@ -6,7 +6,7 @@
 # not the program name!
 
 args=("$@")
-cd ${args[1]}
+cd ${args[1]} || exit
 
 echo "converting QDL docs to PDF"
 

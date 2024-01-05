@@ -22,7 +22,7 @@ QDL_ROOT=$NCSA_DEV_INPUT/qdl
 
 # build qdl proper
 echo "building QDL from sources..."
-cd $QDL_ROOT
+cd $QDL_ROOT || exit
 mvn clean install > maven.log
 if [ $? -ne 0 ]
 then
@@ -31,7 +31,7 @@ then
 fi
 echo "     ... done!"
 echo "  creating installer"
-cd "$QDL_ROOT"/language/src/main/scripts
+cd "$QDL_ROOT"/language/src/main/scripts || exit
 ./create_installer.sh > installer.log
 if [ $? -ne 0 ]
 then
