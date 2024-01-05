@@ -3135,11 +3135,22 @@ like / or - do be aware of the contract!
 
 In general n-adic functions though require n arguments or they will fail. So
 if γ(x,y,z)->... then the following fail since there is not a general way to
-extend a contract to multiple arguments (unlike dyads).
+extend a contract to multiple arguments (unlike dyads where statements like
+a+b+c+d are standard usages).
 
   for_each(@γ, x., y.) ;// too few arguments
   for_each(@γ, x., y., z., w.) ;// too many arguments
 
+Note that this means that default values for stems don't work. If you write
+  @+∀[['a','a','a','a'],{*:'b'}]
+[]
+There are no indices in the right argument to dictate the shape.
+You probably meant
+
+  @+∀[['a','a','a','a'],'b']
+[ab,ab,ab,ab]
+
+which works fine.
 
 See also: transpose, \ (extraction), remap]]>
 

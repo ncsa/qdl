@@ -50,7 +50,9 @@ cp $QDL_SOURCES/target/classes/edu/uiuc/ncsa/qdl/install/Installer.class edu/uiu
 mkdir "bin"
 cp $QDL_SOURCES/src/main/scripts/qdl bin
 mkdir "docs"
-cp $QDL_ROOT/docs/pdf/*.pdf docs
+# assumes the website was created
+$QDL_ROOT/website/convert-docs.sh $QDL_ROOT/language/src/main/docs $TARGET_ROOT/docs
+# cp $QDL_ROOT/docs/pdf/*.pdf docs
 cp $QDL_SOURCES/src/main/docs/jsonpath.pdf docs
 
 mkdir "etc"
