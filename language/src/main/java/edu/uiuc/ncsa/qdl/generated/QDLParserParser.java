@@ -3275,7 +3275,7 @@ public class QDLParserParser extends Parser {
 				setState(350);
 				match(Hash);
 				setState(351);
-				expression(48);
+				expression(54);
 				}
 				break;
 			case 3:
@@ -3651,7 +3651,7 @@ public class QDLParserParser extends Parser {
 						_localctx = new DotOpContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(413);
-						if (!(precpred(_ctx, 54))) throw new FailedPredicateException(this, "precpred(_ctx, 54)");
+						if (!(precpred(_ctx, 53))) throw new FailedPredicateException(this, "precpred(_ctx, 53)");
 						setState(415); 
 						_errHandler.sync(this);
 						_la = _input.LA(1);
@@ -3667,7 +3667,7 @@ public class QDLParserParser extends Parser {
 							_la = _input.LA(1);
 						} while ( _la==StemDot );
 						setState(419);
-						expression(55);
+						expression(54);
 						}
 						break;
 					case 2:
@@ -3675,11 +3675,11 @@ public class QDLParserParser extends Parser {
 						_localctx = new ExtractContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(420);
-						if (!(precpred(_ctx, 52))) throw new FailedPredicateException(this, "precpred(_ctx, 52)");
+						if (!(precpred(_ctx, 51))) throw new FailedPredicateException(this, "precpred(_ctx, 51)");
 						setState(421);
 						match(Backslash);
 						setState(422);
-						expression(53);
+						expression(52);
 						}
 						break;
 					case 3:
@@ -3687,11 +3687,11 @@ public class QDLParserParser extends Parser {
 						_localctx = new Extract3Context(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(423);
-						if (!(precpred(_ctx, 50))) throw new FailedPredicateException(this, "precpred(_ctx, 50)");
+						if (!(precpred(_ctx, 49))) throw new FailedPredicateException(this, "precpred(_ctx, 49)");
 						setState(424);
 						match(Backslash3);
 						setState(425);
-						expression(51);
+						expression(50);
 						}
 						break;
 					case 4:
@@ -3968,7 +3968,7 @@ public class QDLParserParser extends Parser {
 						_localctx = new DotOp2Context(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(480);
-						if (!(precpred(_ctx, 53))) throw new FailedPredicateException(this, "precpred(_ctx, 53)");
+						if (!(precpred(_ctx, 52))) throw new FailedPredicateException(this, "precpred(_ctx, 52)");
 						setState(481);
 						((DotOp2Context)_localctx).postfix = match(StemDot);
 						}
@@ -3978,7 +3978,7 @@ public class QDLParserParser extends Parser {
 						_localctx = new Extract2Context(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(482);
-						if (!(precpred(_ctx, 51))) throw new FailedPredicateException(this, "precpred(_ctx, 51)");
+						if (!(precpred(_ctx, 50))) throw new FailedPredicateException(this, "precpred(_ctx, 50)");
 						setState(483);
 						((Extract2Context)_localctx).postfix = match(Backslash2);
 						}
@@ -3988,7 +3988,7 @@ public class QDLParserParser extends Parser {
 						_localctx = new Extract4Context(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(484);
-						if (!(precpred(_ctx, 49))) throw new FailedPredicateException(this, "precpred(_ctx, 49)");
+						if (!(precpred(_ctx, 48))) throw new FailedPredicateException(this, "precpred(_ctx, 48)");
 						setState(485);
 						((Extract4Context)_localctx).postfix = match(Backslash4);
 						}
@@ -4248,11 +4248,11 @@ public class QDLParserParser extends Parser {
 	private boolean expression_sempred(ExpressionContext _localctx, int predIndex) {
 		switch (predIndex) {
 		case 0:
-			return precpred(_ctx, 54);
+			return precpred(_ctx, 53);
 		case 1:
-			return precpred(_ctx, 52);
+			return precpred(_ctx, 51);
 		case 2:
-			return precpred(_ctx, 50);
+			return precpred(_ctx, 49);
 		case 3:
 			return precpred(_ctx, 46);
 		case 4:
@@ -4290,11 +4290,11 @@ public class QDLParserParser extends Parser {
 		case 20:
 			return precpred(_ctx, 1);
 		case 21:
-			return precpred(_ctx, 53);
+			return precpred(_ctx, 52);
 		case 22:
-			return precpred(_ctx, 51);
+			return precpred(_ctx, 50);
 		case 23:
-			return precpred(_ctx, 49);
+			return precpred(_ctx, 48);
 		case 24:
 			return precpred(_ctx, 37);
 		case 25:
@@ -4434,7 +4434,7 @@ public class QDLParserParser extends Parser {
 		"\2\2\u0156\u0154\3\2\2\2\u0156\u0157\3\2\2\2\u0157?\3\2\2\2\u0158\u0156"+
 		"\3\2\2\2\u0159\u015a\7a\2\2\u015aA\3\2\2\2\u015b\u015c\b\"\1\2\u015c\u019e"+
 		"\5:\36\2\u015d\u015f\5D#\2\u015e\u015d\3\2\2\2\u015e\u015f\3\2\2\2\u015f"+
-		"\u0160\3\2\2\2\u0160\u0161\7S\2\2\u0161\u019e\5B\"\62\u0162\u016c\5:\36"+
+		"\u0160\3\2\2\2\u0160\u0161\7S\2\2\u0161\u019e\5B\"8\u0162\u016c\5:\36"+
 		"\2\u0163\u0167\7\6\2\2\u0164\u0166\5> \2\u0165\u0164\3\2\2\2\u0166\u0169"+
 		"\3\2\2\2\u0167\u0165\3\2\2\2\u0167\u0168\3\2\2\2\u0168\u016a\3\2\2\2\u0169"+
 		"\u0167\3\2\2\2\u016a\u016c\7\5\2\2\u016b\u0162\3\2\2\2\u016b\u0163\3\2"+
@@ -4460,46 +4460,46 @@ public class QDLParserParser extends Parser {
 		"\2\2\u019d\u0193\3\2\2\2\u019d\u0195\3\2\2\2\u019d\u0196\3\2\2\2\u019d"+
 		"\u0197\3\2\2\2\u019d\u0198\3\2\2\2\u019d\u0199\3\2\2\2\u019d\u019a\3\2"+
 		"\2\2\u019d\u019b\3\2\2\2\u019d\u019c\3\2\2\2\u019e\u01fa\3\2\2\2\u019f"+
-		"\u01a1\f8\2\2\u01a0\u01a2\7V\2\2\u01a1\u01a0\3\2\2\2\u01a2\u01a3\3\2\2"+
-		"\2\u01a3\u01a1\3\2\2\2\u01a3\u01a4\3\2\2\2\u01a4\u01a5\3\2\2\2\u01a5\u01f9"+
-		"\5B\"9\u01a6\u01a7\f\66\2\2\u01a7\u01a8\7O\2\2\u01a8\u01f9\5B\"\67\u01a9"+
-		"\u01aa\f\64\2\2\u01aa\u01ab\7Q\2\2\u01ab\u01f9\5B\"\65\u01ac\u01ad\f\60"+
-		"\2\2\u01ad\u01ae\7G\2\2\u01ae\u01f9\5B\"\61\u01af\u01b0\f(\2\2\u01b0\u01b1"+
-		"\t\6\2\2\u01b1\u01f9\5B\")\u01b2\u01b3\f%\2\2\u01b3\u01b4\7E\2\2\u01b4"+
-		"\u01f9\5B\"&\u01b5\u01b6\f$\2\2\u01b6\u01b7\t\7\2\2\u01b7\u01f9\5B\"%"+
-		"\u01b8\u01b9\f#\2\2\u01b9\u01ba\t\b\2\2\u01ba\u01f9\5B\"$\u01bb\u01bc"+
-		"\f\37\2\2\u01bc\u01bd\7B\2\2\u01bd\u01f9\5B\" \u01be\u01bf\f\36\2\2\u01bf"+
-		"\u01c0\t\t\2\2\u01c0\u01f9\5B\"\37\u01c1\u01c2\f\35\2\2\u01c2\u01c3\t"+
-		"\n\2\2\u01c3\u01f9\5B\"\36\u01c4\u01c5\f\34\2\2\u01c5\u01c6\t\13\2\2\u01c6"+
-		"\u01f9\5B\"\35\u01c7\u01c8\f\33\2\2\u01c8\u01c9\7?\2\2\u01c9\u01f9\5B"+
-		"\"\34\u01ca\u01cb\f\32\2\2\u01cb\u01cc\7<\2\2\u01cc\u01f9\5B\"\33\u01cd"+
-		"\u01ce\f\31\2\2\u01ce\u01cf\7J\2\2\u01cf\u01f9\5B\"\32\u01d0\u01d1\f\30"+
-		"\2\2\u01d1\u01d2\7K\2\2\u01d2\u01f9\5B\"\31\u01d3\u01d4\f\23\2\2\u01d4"+
-		"\u01d5\7A\2\2\u01d5\u01f9\5B\"\24\u01d6\u01d7\f\22\2\2\u01d7\u01d8\7D"+
-		"\2\2\u01d8\u01f9\5B\"\23\u01d9\u01da\f\20\2\2\u01da\u01db\7F\2\2\u01db"+
-		"\u01f9\5B\"\21\u01dc\u01dd\f\17\2\2\u01dd\u01de\7H\2\2\u01de\u01f9\5B"+
-		"\"\20\u01df\u01e0\f\3\2\2\u01e0\u01e1\7^\2\2\u01e1\u01f9\5B\"\4\u01e2"+
-		"\u01e3\f\67\2\2\u01e3\u01f9\7V\2\2\u01e4\u01e5\f\65\2\2\u01e5\u01f9\7"+
-		"P\2\2\u01e6\u01e7\f\63\2\2\u01e7\u01f9\7R\2\2\u01e8\u01e9\f\'\2\2\u01e9"+
-		"\u01f9\t\2\2\2\u01ea\u01eb\f\25\2\2\u01eb\u01ec\7\\\2\2\u01ec\u01ef\5"+
-		"B\"\2\u01ed\u01ee\7)\2\2\u01ee\u01f0\5B\"\2\u01ef\u01ed\3\2\2\2\u01ef"+
-		"\u01f0\3\2\2\2\u01f0\u01f9\3\2\2\2\u01f1\u01f2\f\24\2\2\u01f2\u01f3\7"+
-		"]\2\2\u01f3\u01f6\5B\"\2\u01f4\u01f5\7)\2\2\u01f5\u01f7\5B\"\2\u01f6\u01f4"+
-		"\3\2\2\2\u01f6\u01f7\3\2\2\2\u01f7\u01f9\3\2\2\2\u01f8\u019f\3\2\2\2\u01f8"+
-		"\u01a6\3\2\2\2\u01f8\u01a9\3\2\2\2\u01f8\u01ac\3\2\2\2\u01f8\u01af\3\2"+
-		"\2\2\u01f8\u01b2\3\2\2\2\u01f8\u01b5\3\2\2\2\u01f8\u01b8\3\2\2\2\u01f8"+
-		"\u01bb\3\2\2\2\u01f8\u01be\3\2\2\2\u01f8\u01c1\3\2\2\2\u01f8\u01c4\3\2"+
-		"\2\2\u01f8\u01c7\3\2\2\2\u01f8\u01ca\3\2\2\2\u01f8\u01cd\3\2\2\2\u01f8"+
-		"\u01d0\3\2\2\2\u01f8\u01d3\3\2\2\2\u01f8\u01d6\3\2\2\2\u01f8\u01d9\3\2"+
-		"\2\2\u01f8\u01dc\3\2\2\2\u01f8\u01df\3\2\2\2\u01f8\u01e2\3\2\2\2\u01f8"+
-		"\u01e4\3\2\2\2\u01f8\u01e6\3\2\2\2\u01f8\u01e8\3\2\2\2\u01f8\u01ea\3\2"+
-		"\2\2\u01f8\u01f1\3\2\2\2\u01f9\u01fc\3\2\2\2\u01fa\u01f8\3\2\2\2\u01fa"+
-		"\u01fb\3\2\2\2\u01fbC\3\2\2\2\u01fc\u01fa\3\2\2\2\u01fd\u01fe\7_\2\2\u01fe"+
-		"E\3\2\2\2\u01ff\u0200\t\f\2\2\u0200G\3\2\2\2\u0201\u0202\7!\2\2\u0202"+
-		"I\3\2\2\2\u0203\u0204\7\r\2\2\u0204K\3\2\2\2+Ocgls|\u0087\u0091\u009a"+
-		"\u00a0\u00a7\u00ab\u00c6\u00ce\u00d7\u00df\u00eb\u00f7\u00fe\u0104\u010b"+
-		"\u0115\u011c\u0124\u012b\u0136\u013d\u0142\u0148\u014f\u0156\u015e\u0167"+
-		"\u016b\u0170\u019d\u01a3\u01ef\u01f6\u01f8\u01fa";
+		"\u01a1\f\67\2\2\u01a0\u01a2\7V\2\2\u01a1\u01a0\3\2\2\2\u01a2\u01a3\3\2"+
+		"\2\2\u01a3\u01a1\3\2\2\2\u01a3\u01a4\3\2\2\2\u01a4\u01a5\3\2\2\2\u01a5"+
+		"\u01f9\5B\"8\u01a6\u01a7\f\65\2\2\u01a7\u01a8\7O\2\2\u01a8\u01f9\5B\""+
+		"\66\u01a9\u01aa\f\63\2\2\u01aa\u01ab\7Q\2\2\u01ab\u01f9\5B\"\64\u01ac"+
+		"\u01ad\f\60\2\2\u01ad\u01ae\7G\2\2\u01ae\u01f9\5B\"\61\u01af\u01b0\f("+
+		"\2\2\u01b0\u01b1\t\6\2\2\u01b1\u01f9\5B\")\u01b2\u01b3\f%\2\2\u01b3\u01b4"+
+		"\7E\2\2\u01b4\u01f9\5B\"&\u01b5\u01b6\f$\2\2\u01b6\u01b7\t\7\2\2\u01b7"+
+		"\u01f9\5B\"%\u01b8\u01b9\f#\2\2\u01b9\u01ba\t\b\2\2\u01ba\u01f9\5B\"$"+
+		"\u01bb\u01bc\f\37\2\2\u01bc\u01bd\7B\2\2\u01bd\u01f9\5B\" \u01be\u01bf"+
+		"\f\36\2\2\u01bf\u01c0\t\t\2\2\u01c0\u01f9\5B\"\37\u01c1\u01c2\f\35\2\2"+
+		"\u01c2\u01c3\t\n\2\2\u01c3\u01f9\5B\"\36\u01c4\u01c5\f\34\2\2\u01c5\u01c6"+
+		"\t\13\2\2\u01c6\u01f9\5B\"\35\u01c7\u01c8\f\33\2\2\u01c8\u01c9\7?\2\2"+
+		"\u01c9\u01f9\5B\"\34\u01ca\u01cb\f\32\2\2\u01cb\u01cc\7<\2\2\u01cc\u01f9"+
+		"\5B\"\33\u01cd\u01ce\f\31\2\2\u01ce\u01cf\7J\2\2\u01cf\u01f9\5B\"\32\u01d0"+
+		"\u01d1\f\30\2\2\u01d1\u01d2\7K\2\2\u01d2\u01f9\5B\"\31\u01d3\u01d4\f\23"+
+		"\2\2\u01d4\u01d5\7A\2\2\u01d5\u01f9\5B\"\24\u01d6\u01d7\f\22\2\2\u01d7"+
+		"\u01d8\7D\2\2\u01d8\u01f9\5B\"\23\u01d9\u01da\f\20\2\2\u01da\u01db\7F"+
+		"\2\2\u01db\u01f9\5B\"\21\u01dc\u01dd\f\17\2\2\u01dd\u01de\7H\2\2\u01de"+
+		"\u01f9\5B\"\20\u01df\u01e0\f\3\2\2\u01e0\u01e1\7^\2\2\u01e1\u01f9\5B\""+
+		"\4\u01e2\u01e3\f\66\2\2\u01e3\u01f9\7V\2\2\u01e4\u01e5\f\64\2\2\u01e5"+
+		"\u01f9\7P\2\2\u01e6\u01e7\f\62\2\2\u01e7\u01f9\7R\2\2\u01e8\u01e9\f\'"+
+		"\2\2\u01e9\u01f9\t\2\2\2\u01ea\u01eb\f\25\2\2\u01eb\u01ec\7\\\2\2\u01ec"+
+		"\u01ef\5B\"\2\u01ed\u01ee\7)\2\2\u01ee\u01f0\5B\"\2\u01ef\u01ed\3\2\2"+
+		"\2\u01ef\u01f0\3\2\2\2\u01f0\u01f9\3\2\2\2\u01f1\u01f2\f\24\2\2\u01f2"+
+		"\u01f3\7]\2\2\u01f3\u01f6\5B\"\2\u01f4\u01f5\7)\2\2\u01f5\u01f7\5B\"\2"+
+		"\u01f6\u01f4\3\2\2\2\u01f6\u01f7\3\2\2\2\u01f7\u01f9\3\2\2\2\u01f8\u019f"+
+		"\3\2\2\2\u01f8\u01a6\3\2\2\2\u01f8\u01a9\3\2\2\2\u01f8\u01ac\3\2\2\2\u01f8"+
+		"\u01af\3\2\2\2\u01f8\u01b2\3\2\2\2\u01f8\u01b5\3\2\2\2\u01f8\u01b8\3\2"+
+		"\2\2\u01f8\u01bb\3\2\2\2\u01f8\u01be\3\2\2\2\u01f8\u01c1\3\2\2\2\u01f8"+
+		"\u01c4\3\2\2\2\u01f8\u01c7\3\2\2\2\u01f8\u01ca\3\2\2\2\u01f8\u01cd\3\2"+
+		"\2\2\u01f8\u01d0\3\2\2\2\u01f8\u01d3\3\2\2\2\u01f8\u01d6\3\2\2\2\u01f8"+
+		"\u01d9\3\2\2\2\u01f8\u01dc\3\2\2\2\u01f8\u01df\3\2\2\2\u01f8\u01e2\3\2"+
+		"\2\2\u01f8\u01e4\3\2\2\2\u01f8\u01e6\3\2\2\2\u01f8\u01e8\3\2\2\2\u01f8"+
+		"\u01ea\3\2\2\2\u01f8\u01f1\3\2\2\2\u01f9\u01fc\3\2\2\2\u01fa\u01f8\3\2"+
+		"\2\2\u01fa\u01fb\3\2\2\2\u01fbC\3\2\2\2\u01fc\u01fa\3\2\2\2\u01fd\u01fe"+
+		"\7_\2\2\u01feE\3\2\2\2\u01ff\u0200\t\f\2\2\u0200G\3\2\2\2\u0201\u0202"+
+		"\7!\2\2\u0202I\3\2\2\2\u0203\u0204\7\r\2\2\u0204K\3\2\2\2+Ocgls|\u0087"+
+		"\u0091\u009a\u00a0\u00a7\u00ab\u00c6\u00ce\u00d7\u00df\u00eb\u00f7\u00fe"+
+		"\u0104\u010b\u0115\u011c\u0124\u012b\u0136\u013d\u0142\u0148\u014f\u0156"+
+		"\u015e\u0167\u016b\u0170\u019d\u01a3\u01ef\u01f6\u01f8\u01fa";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

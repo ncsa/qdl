@@ -487,4 +487,29 @@ public class StatementTest extends AbstractQDLTester {
         assert getBooleanValue("ok", state);
     }
 
+    /**
+     * Regression test to ensure that using the define statement keeps its state
+     * separate
+     * @throws Throwable
+     */
+    public void testFunctionDefinitionVariableVisibility() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        // Evaluate the function. The test is that at. is not altered in the ambient state
+        addLine(script, "tokens.:={'foo':{'bar':'baz'},'fnord':'woof'};\n" +
+                "at.:=tokens.;\n" +
+                "define[f(tt.)][at.:=tt.'foo';];    \n" +  // sets a. to the substem.
+                "f(tokens.); \n");
+        addLine(script, "ok := at.'fnord'=='woof';") ; // fingers and toes check, but it works.
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state):"define statement variable visibility contract violated.";
+    }
+
+/*
+tokens.:={'foo':{'bar':'baz'},'fnord':'woof'};
+at.:=tokens.;
+define[f(tt.)][at.:=tt.'foo';];
+f(tokens.)
+ */
 }

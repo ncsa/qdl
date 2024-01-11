@@ -109,13 +109,13 @@ assertStatement2:
 expression
  :
    function                                                                    #functions
+ |  variable? Hash expression                                                  #moduleExpression
  | expression StemDot+ expression                                              #dotOp
  | expression postfix=StemDot                                                  #dotOp2
  | expression Backslash  expression                                            #extract
  | expression postfix=Backslash2                                               #extract2
  | expression Backslash3  expression                                           #extract3
  | expression postfix=Backslash4                                               #extract4
- |  variable? Hash expression                                                  #moduleExpression
  | (function | '(' f_args* ')')
        LambdaConnector (expression | expressionBlock)                          #lambdaDef
  | expression op=Apply expression                                              #appliesOperator

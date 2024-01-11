@@ -868,18 +868,19 @@ public class State extends FunctionState implements QDLConstants {
                 //newStack.addAll(moduleState.symbolStack.getParentTables());
                 newStack.appendTables(moduleState.vStack);
             }
+            if (!vStack.isEmpty()) {
+                       newStack.appendTables(vStack);
+                   }
         }
-        if (!vStack.isEmpty()) {
-            newStack.appendTables(vStack);
-        }
+
         FStack<? extends FTable<? extends FKey, ? extends FunctionRecordInterface>> ftStack = new FStack();
         if (inheritFunctions) {
             if (moduleState != null && !moduleState.getFTStack().isEmpty()) {
                 ftStack.appendTables(moduleState.getFTStack());
             }
-        }
-        if (!getFTStack().isEmpty()) {
-            ftStack.appendTables(getFTStack()); // pushes elements in reverse order
+            if (!getFTStack().isEmpty()) {
+                ftStack.appendTables(getFTStack()); // pushes elements in reverse order
+            }
         }
 
 
