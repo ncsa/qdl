@@ -485,7 +485,7 @@ public class StatementTest extends AbstractQDLTester {
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state); 
-    }
+    }                                                     
 
     /**
      * Regression test to ensure that using the define statement keeps its state
