@@ -13,7 +13,7 @@ The base QDL jar is in Maven and should be referenced as
 <dependency>
   <groupId>edu.uiuc.ncsa.qdl</groupId>
   <artifactId>language</artifactId>
-  <version>1.5.4.2</version>
+  <version>1.5.4.3</version>
 </dependency>
 ```
 (Or whatever version you want.)
