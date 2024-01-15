@@ -10,7 +10,7 @@
     <!--  Turn into a war for local testing, otherwise this is a jar.
     <packaging>war</packaging>
     -->
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
     <name>SAS for QDL</name>
     <url>http://maven.apache.org</url>
     <dependencies>
