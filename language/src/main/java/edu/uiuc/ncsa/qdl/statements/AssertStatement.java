@@ -1,8 +1,8 @@
 package edu.uiuc.ncsa.qdl.statements;
 
 import edu.uiuc.ncsa.qdl.exceptions.AssertionException;
-import edu.uiuc.ncsa.qdl.expressions.ExpressionNode;
 import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
 
 import java.util.List;
 
@@ -10,16 +10,23 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 6/1/21 at  12:53 PM
  */
-public class AssertStatement implements Statement{
+public class AssertStatement implements Statement {
     TokenPosition tokenPosition = null;
-    @Override
-    public void setTokenPosition(TokenPosition tokenPosition) {this.tokenPosition=tokenPosition;}
 
     @Override
-    public TokenPosition getTokenPosition() {return tokenPosition;}
+    public void setTokenPosition(TokenPosition tokenPosition) {
+        this.tokenPosition = tokenPosition;
+    }
 
     @Override
-    public boolean hasTokenPosition() {return tokenPosition!=null;}
+    public TokenPosition getTokenPosition() {
+        return tokenPosition;
+    }
+
+    @Override
+    public boolean hasTokenPosition() {
+        return tokenPosition != null;
+    }
 
     public AssertStatement(TokenPosition tokenPosition) {
         this.tokenPosition = tokenPosition;
@@ -35,34 +42,47 @@ public class AssertStatement implements Statement{
         this.conditional = conditional;
     }
 
-    public ExpressionNode getMesssge() {
+    public ExpressionInterface getMesssge() {
         return messsge;
     }
 
-    public void setMesssge(ExpressionNode messsge) {
+    public void setMesssge(ExpressionInterface messsge) {
         this.messsge = messsge;
     }
 
-    ExpressionNode messsge;
+    // Fix https://github.com/ncsa/qdl/issues/39 change this from ExpressionNode to ExpressionInterface.
+    ExpressionInterface messsge;
+
     @Override
     public Object evaluate(State state) {
-        if(!state.isAssertionsOn()){
+        if (!state.isAssertionsOn()) {
             return null;
         }
 
         Object obj = getConditional().evaluate(state);
-        if(obj instanceof Boolean){
-             Boolean b = (Boolean) obj;
-             if(!b){
-                 if(getMesssge() != null) {
-                     Object m = getMesssge().evaluate(state);
-                     throw new AssertionException(m.toString());
-                 }else{
-                     throw new AssertionException(""); // no message implies empty message
-                 }
-             }else{
-                 return Boolean.TRUE;
-             }
+        if (obj instanceof Boolean) {
+            Boolean b = (Boolean) obj;
+            if (!b) {
+                AssertionException assertionException = null;
+                if (getMesssge() == null) {
+                    assertionException = new AssertionException(""); // no message implies empty message
+                } else {
+                    Object m = getMesssge().evaluate(state);
+                    if (m instanceof String) {
+                        assertionException = new AssertionException((String) m);
+                    } else {
+                        if(m instanceof QDLStem) {
+                            assertionException = new AssertionException("assertion failed");
+                            assertionException.setAssertionState((QDLStem) m);
+                        }else{
+                            assertionException = new AssertionException(m.toString());
+                        }
+                    }
+                }
+                throw assertionException;
+            } else {
+                return Boolean.TRUE;
+            }
         }
         throw new IllegalArgumentException("error: the conditional must be boolean valued.");
     }

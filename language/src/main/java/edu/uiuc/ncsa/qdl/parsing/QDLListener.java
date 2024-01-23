@@ -1730,7 +1730,8 @@ illegal argument:no module named "b" was  imported at (1, 67)
                 assertStatement.setConditional((ExpressionInterface) resolveChild(ctx.getChild(i)));
                 isFirst = false;
             } else {
-                assertStatement.setMesssge((ExpressionNode) resolveChild(ctx.getChild(i)));
+                // Fix https://github.com/ncsa/qdl/issues/39
+                assertStatement.setMesssge((ExpressionInterface) resolveChild(ctx.getChild(i)));
 
             }
         }

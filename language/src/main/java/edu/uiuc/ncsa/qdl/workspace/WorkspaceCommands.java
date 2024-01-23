@@ -879,7 +879,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             say("Operation not permitted in server mode");
             return RC_NO_OP;
         }
-        if(!isVFSPath){
+        if (!isVFSPath) {
             say("virtual file clean not supported at this time");
             return RC_NO_OP;
         }
@@ -1897,7 +1897,7 @@ public class WorkspaceCommands implements Logable, Serializable {
      * @return
      */
     protected boolean _doHelp(InputLine inputLine) {
-        if (inputLine.hasArg("help") || inputLine.hasArg("-help") || inputLine.hasArg("--help")) return true;
+        if (inputLine.hasArg("-help") || inputLine.hasArg("--help")) return true;
         return false;
     }
 
@@ -2346,8 +2346,15 @@ public class WorkspaceCommands implements Logable, Serializable {
                 sayi("edit {args} - edit the function with args (an integer) arguments");
                 sayi("              No arg means it defaults to 0.");
                 sayi("              You can, of course, redefine the function as you wish.");
-                sayi("       help - this menu");
-                sayi("       list - list all known functions. Allows display options.");
+                sayi("       help - display  ");
+                sayi("              (1) help for a single function, given its name and arg count");
+                sayi("              (2) short help for all functions with a given name");
+                sayi("              Fully qualified names are allowed.");
+                sayi("       list - list all known user-defined functions. Allows display options.");
+                sayi("              Fully qualified names are supported as an argument.");
+                sayi("              E.g.");
+                sayi("              )funcs list foo");
+                sayi("                  lists all of the functions in the imported module foo");
                 sayi("     system - list all known system functions. Allows display options.");
                 sayi("    -system - same as system.");
                 return RC_NO_OP;
@@ -2363,9 +2370,11 @@ public class WorkspaceCommands implements Logable, Serializable {
             case "edit":
                 return _doFuncEdit(inputLine);
             default:
-                say("sorry, unrecognized command.");
+                //     say("sorry, unrecognized command.");
+                return _funcsList(inputLine);
+
         }
-        return RC_CONTINUE;
+        //return RC_CONTINUE;
     }
 
     protected Object _doFuncEdit(InputLine inputLine) {
@@ -2427,21 +2436,6 @@ public class WorkspaceCommands implements Logable, Serializable {
         if (rc.equals(RC_CONTINUE)) {
             return RC_CONTINUE;
         }
-/*        if (useExternalEditor()) {
-            f = _doExternalEdit(f);
-        } else {
-            if (isSwingGUI()) {
-                QDLEditor qdlEditor = new QDLEditor();
-                qdlEditor.setWorkspaceCommands(this); // or callback fails
-                qdlEditor.setType(EditDoneEvent.TYPE_FUNCTION);
-                qdlEditor.setLocalName(fName);
-                qdlEditor.setArgState(argCount);
-                qdlEditor.setup(StringUtils.listToString(f));
-                return RC_CONTINUE;
-            }
-            f = _doLineEditor(f);
-
-        }*/
         return restoreFunction(output, fName, argCount);
     }
 
@@ -2461,6 +2455,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             }
             inputForm = _doLineEditor(inputForm);
         }
+        output.addAll(inputForm);
         return RC_NO_OP;
     }
 
@@ -2543,7 +2538,8 @@ public class WorkspaceCommands implements Logable, Serializable {
             say("Sorry, but \"" + rawArgCount + "\" is not an integer");
             return RC_CONTINUE;
         }
-        List<String> doxx = getState().listFunctionDoc(fName, argCount);
+        //List<String> doxx = getState().listFunctionDoc(fName, argCount);
+        List<String> doxx = getFunctionDocFromVariable(fName, argCount);
         for (String x : doxx) {
             say(x);
         }
@@ -2662,10 +2658,13 @@ public class WorkspaceCommands implements Logable, Serializable {
         if (_doHelp(inputLine)) {
             say("list [" + COMPACT_ALIAS_SWITCH + "|" + LIST_MODULES_SWITCH + "]");
             sayi("List all user defined functions.");
+            sayi("list module - list all the functions in a given module");
             sayi(COMPACT_ALIAS_SWITCH + " will collapse all modules to show by alias.");
             sayi(LIST_MODULES_SWITCH + " List modules as well. Default is just what you've defined.");
             sayi(LIST_INTRINSIC_SWITCH + " List intrinsic functions as well. Default is not to show them.");
             sayi("    Note that you cannot modify or query them, simply see what they are named.");
+            sayi("You  may omit the list command and any argument will be processed as a module,");
+            sayi("so be aware.");
             return RC_NO_OP;
         }
         boolean listFQ = inputLine.hasArg(FQ_SWITCH);
@@ -2674,7 +2673,31 @@ public class WorkspaceCommands implements Logable, Serializable {
         boolean showIntrinsic = inputLine.hasArg(LIST_INTRINSIC_SWITCH);
         inputLine.removeSwitch(LIST_INTRINSIC_SWITCH);
         boolean useCompactNotation = inputLine.hasArg(COMPACT_ALIAS_SWITCH);
-        TreeSet<String> funcs = getState().listFunctions(useCompactNotation, null, includeModules, showIntrinsic);
+        inputLine.removeSwitch("list");
+        TreeSet<String> funcs;
+        if (0 < inputLine.getArgCount()) {
+            String lastArg = inputLine.getLastArg();
+            StringTokenizer stringTokenizer = new StringTokenizer(lastArg, State.NS_DELIMITER);
+            State currentState = getState();
+            Module module = null;
+            while (stringTokenizer.hasMoreTokens()) {
+                String nextToken = stringTokenizer.nextToken();
+                Object obj = currentState.getValue(nextToken);
+                if (obj instanceof Module) {
+                    module = (Module) obj;
+                } else {
+                    funcs = new TreeSet<>();
+                }
+            }
+            if (module == null) {
+                funcs = new TreeSet<>();
+            } else {
+                funcs = module.getState().listFunctions(useCompactNotation, null, includeModules, showIntrinsic);
+            }
+
+        } else {
+            funcs = getState().listFunctions(useCompactNotation, null, includeModules, showIntrinsic);
+        }
         // These are fully qualified.
         Object rc = -1;
         if (listFQ) {
@@ -2784,8 +2807,8 @@ public class WorkspaceCommands implements Logable, Serializable {
             case "--help":
                 say("Variable commands");
                 say("     drop - remove a variable from the system");
-                say("     list - list all user defined variables. If you include the -m flag, module");
-                say("            variables are shown too");
+                say("     list - list all user defined variables. You can also request the variables for a module");
+                say("            E.g. )vars list module_name");
                 say("     size - try to guestimate the size of all the symbols used.");
                 sayi("  system - list all system variables.");
                 sayi("edit [" + EDIT_TEXT_FLAG + "]- edit the given variable. Adding the " + EDIT_TEXT_FLAG);
@@ -2811,10 +2834,11 @@ public class WorkspaceCommands implements Logable, Serializable {
             case "edit":
                 return _doVarEdit(inputLine);
             default:
-                say("Unknown variable command.");
+                return _varsList(inputLine);
+
 
         }
-        return RC_CONTINUE;
+        //    return RC_CONTINUE;
     }
 
     public static final String EDIT_TEXT_FLAG = "-x";
@@ -2950,6 +2974,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         if (_doHelp(inputLine)) {
             say("list [" + COMPACT_ALIAS_SWITCH + "]");
             sayi("Lists the variables in the current workspace.");
+            sayi("list module - lists the variables in the module.");
             sayi(COMPACT_ALIAS_SWITCH + " will collapse all modules to show by alias.");
             sayi(LIST_MODULES_SWITCH + " list variables in modules");
             sayi(LIST_INTRINSIC_SWITCH + " show intrinsic variables");
@@ -2964,10 +2989,38 @@ public class WorkspaceCommands implements Logable, Serializable {
         inputLine.removeSwitch(COMPACT_ALIAS_SWITCH);
         inputLine.removeSwitch(LIST_INTRINSIC_SWITCH);
         inputLine.removeSwitch(LIST_EXTRINSIC_SWITCH);
-        return printList(inputLine, getState().listVariables(useCompactNotation,
-                includeModules,
-                showIntrinsic,
-                showExtrinsic));
+        inputLine.removeSwitch("list"); // remove this so we can eyeball any other arguments
+        // process if modules
+        TreeSet<String> vars;
+        if (0 < inputLine.getArgCount()) {
+            String lastArg = inputLine.getLastArg();
+            StringTokenizer stringTokenizer = new StringTokenizer(lastArg, State.NS_DELIMITER);
+            State currentState = getState();
+            Module module = null;
+            while (stringTokenizer.hasMoreTokens()) {
+                String nextToken = stringTokenizer.nextToken();
+                Object obj = currentState.getValue(nextToken);
+                if (obj instanceof Module) {
+                    module = (Module) obj;
+                } else {
+                    vars = new TreeSet<>();
+                }
+            }
+            if (module == null) {
+                vars = new TreeSet<>();
+            } else {
+                vars = module.getState().listVariables(useCompactNotation,
+                        includeModules,
+                        showIntrinsic,
+                        showExtrinsic);
+            }
+        } else {
+            vars = getState().listVariables(useCompactNotation,
+                    includeModules,
+                    showIntrinsic,
+                    showExtrinsic);
+        }
+        return printList(inputLine, vars);
     }
 
     public static final String ONLINE_HELP_EXAMPLE_FLAG = "-ex";
@@ -2997,6 +3050,8 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         boolean doOnlineExample = inputLine.hasArg(ONLINE_HELP_EXAMPLE_FLAG);
         inputLine.removeSwitch(ONLINE_HELP_EXAMPLE_FLAG);
+        boolean checkAsModule = inputLine.hasArg(LIST_MODULES_SWITCH);
+        inputLine.removeSwitch(LIST_MODULES_SWITCH);
         String name = inputLine.getArg(ACTION_INDEX);
         boolean isRegex = inputLine.hasArg(REGEX_SWITCH);
 
@@ -3068,9 +3123,35 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
 
 
-        if (name.endsWith(State.NS_DELIMITER)) {
-            List<String> doxx = getState().listModuleDoc(name);
-            if (doxx.isEmpty()) {
+        if (checkAsModule) {
+            /*
+             Cases are
+             1. )help -m uri -- get help from the templates
+             2. )help -m alias | var - if its
+             3. )help alias# | var#var# -
+            */
+            List<String> doxx = null;
+            try {
+                URI uri = URI.create(name);
+                Module template = getState().getMTemplates().getModule(new MTKey(uri));
+                if (template != null) {
+                    doxx = template.getDocumentation();
+                }
+            } catch (Throwable t) {
+
+            }
+
+            if (doxx == null) {
+                doxx = getModuleDocFromVariable(name);
+            }
+            // that didn't work, see if it is an instance in the old system
+            if (doxx == null) {
+                if (!name.endsWith(State.NS_DELIMITER)) {
+                    name = name + State.NS_DELIMITER; // add it if the used the flag.
+                }
+                doxx = getState().listModuleDoc(name);
+            }
+            if (doxx == null || doxx.isEmpty()) {
                 say("Sorry, no help for '" + name + "'");
                 return RC_CONTINUE;
             }
@@ -3097,8 +3178,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             say("Sorry, but \"" + rawArgCount + "\" is not an integer");
             return RC_CONTINUE;
         }
-
-        List<String> doxx = getState().listFunctionDoc(name, argCount);
+        List<String> doxx = getFunctionDocFromVariable(name, argCount);
         if (doxx.isEmpty()) {
             if (-1 < argCount) {
                 say("sorry, no help for " + name + "(" + argCount + ")");
@@ -3114,6 +3194,46 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
+    protected List<String> getFunctionDocFromVariable(String name, int argCount) {
+        List<String> doxx = null;
+        if (name.contains(State.NS_DELIMITER)) {
+            // a#b#c 2
+            State currentState = getState();
+            State previousState = null;
+            StringTokenizer st = new StringTokenizer(name, State.NS_DELIMITER);
+            while (st.hasMoreTokens()) {
+                String currentToken = st.nextToken();
+                Object obj = currentState.getValue(currentToken);
+                if (obj instanceof Module) {
+                    previousState = currentState;
+                    currentState = ((Module) obj).getState();
+                } else {
+                    doxx = currentState.listFunctionDoc(currentToken, argCount);
+                }
+            }
+        } else {
+            doxx = getState().listFunctionDoc(name, argCount);
+        }
+        return doxx;
+    }
+
+    protected List<String> getModuleDocFromVariable(String name) {
+        StringTokenizer st = new StringTokenizer(name, State.NS_DELIMITER);
+        State currentState = getState();
+        String currentName = null;
+        Module currentModule = null;
+        while (st.hasMoreTokens()) {
+            currentName = st.nextToken();
+            Object object = currentState.getValue(currentName);
+            if (object instanceof Module) {
+                currentModule = (Module) object;
+                currentState = currentModule.getState();
+            } else {
+                return null;
+            }
+        }
+        return currentModule.getDocumentation();
+    }
 
     public HashMap<String, String> getOnlineHelp() {
         return onlineHelp;

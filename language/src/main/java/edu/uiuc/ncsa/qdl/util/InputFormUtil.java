@@ -45,6 +45,7 @@ public class InputFormUtil {
         if (obj instanceof QDLNull) return inputForm((QDLNull) obj);
         if(obj instanceof QDLSet) return inputForm((QDLSet)obj);
         if(obj instanceof Module) return inputForm((Module) obj);
+        if(obj instanceof FunctionRecord) return inputForm((FunctionRecord) obj);
         return "";
     }
 

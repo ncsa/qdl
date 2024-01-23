@@ -173,7 +173,6 @@ public class QDLCLITools implements QDLModuleMetaClass {
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> out = new ArrayList<>();
-            out.add(getName() + " - convert a list of arguments for a script to a stem");
             switch (argCount) {
                 case 0:
                     out.add(getName() + "() - use args() as the argument, default switch marker of " + DEFAULT_SWITCH_MARKER);

@@ -2325,6 +2325,9 @@ public class SystemEvaluator extends AbstractEvaluator {
         polyad.setEvaluated(true);
         // set the message in the exception to the message from the error, so if it happens in the course of execution
         // they get a message
+        if(stateCode == TryCatch.RESERVED_ASSERTION_CODE){
+            throw new AssertionException(message,  stateStem);
+        }
         throw new RaiseErrorException(polyad, message, stateCode, stateStem);
     }
 

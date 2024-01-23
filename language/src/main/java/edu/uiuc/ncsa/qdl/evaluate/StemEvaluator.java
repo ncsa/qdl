@@ -414,11 +414,11 @@ public class StemEvaluator extends AbstractEvaluator {
         Object arg0 = polyad.evalArg(0, state);
         Object arg1 = polyad.evalArg(1, state);
         boolean reorderLists = true; // default
-        if(polyad.getArgCount() == 3){
+        if (polyad.getArgCount() == 3) {
             Object arg2 = polyad.evalArg(2, state);
-            if(arg2 instanceof Boolean){
-                reorderLists = (Boolean)arg2;
-            }else{
+            if (arg2 instanceof Boolean) {
+                reorderLists = (Boolean) arg2;
+            } else {
                 throw new BadArgException(EXCISE + " takes a boolean as its third argument", polyad.getArgAt(2));
             }
 
@@ -1943,32 +1943,49 @@ public class StemEvaluator extends AbstractEvaluator {
         }
         Object arg0 = polyad.evalArg(0, state);
         checkNull(arg0, polyad.getArgAt(0));
-        boolean isScalar = false;
-        QDLStem keyList = null;
+        boolean isLeftScalar = false;
+        QDLStem leftArg = null;
         if (isStem(arg0)) {
-            keyList = (QDLStem) arg0;
+            leftArg = (QDLStem) arg0;
         } else {
-            isScalar = true;
+            isLeftScalar = true;
         }
-        QDLStem argStem = null;
-        Object arg2 = polyad.evalArg(1, state);
-        checkNull(arg2, polyad.getArgAt(1));
-        if (arg2 instanceof QDLStem) {
-            argStem = (QDLStem) arg2;
+        QDLStem rightArg = null;
+        Object arg1 = polyad.evalArg(1, state);
+        checkNull(arg1, polyad.getArgAt(1));
+        boolean isRightScalar = false;
+        if (arg1 instanceof QDLStem) {
+            rightArg = (QDLStem) arg1;
         } else {
-            throw new QDLExceptionWithTrace(HAS_KEY + " requires a stem as its second argument", polyad.getArgAt(1));
+            isRightScalar = true;
+            //throw new QDLExceptionWithTrace(HAS_KEY + " requires a stem as its second argument", polyad.getArgAt(1));
         }
 
-        if (isScalar) {
-            polyad.setResult(argStem.containsKey(arg0));
-            polyad.setResultType(BOOLEAN_TYPE);
+        if (isLeftScalar) {
+            if (isRightScalar) {
+                polyad.setResult(Boolean.TRUE);
+            } else {
+                if (isString(arg0) || isLong(arg0)) {
+                    polyad.setEvaluated(true);
+                    polyad.setResult(rightArg.containsKey(arg0));
+                    polyad.setResultType(Constant.getType(polyad.getResult()));
+                    return;
+                }
+                throw new BadArgException(HAS_KEY + " ", polyad.getArgAt(1));
+            }
             polyad.setEvaluated(true);
+            polyad.setResultType(Constant.getType(polyad.getResult()));
             return;
+        } else {
+            if (isRightScalar) {
+                throw new BadArgException("second argument must be a stem ", polyad.getArgAt(1));
+            }
+            // if neither is a scalar, do the next bit,
         }
-        QDLStem result = argStem.hasKeys(keyList);
+        QDLStem result = leftArg.hasKeys(rightArg);
+        polyad.setEvaluated(true);
         polyad.setResult(result);
         polyad.setResultType(STEM_TYPE);
-        polyad.setEvaluated(true);
     }
 
 

@@ -425,8 +425,10 @@ See also: keys(), var_type(), constants('var_type')]]>
     </entry>
     <entry id="has_key" alt="∋">
         <body>
-            <![CDATA[has_key(key | key_list., arg. ) - returns a left conformable result if the key or list
-      of keys are in the arg.
+            <![CDATA[has_key(key, arg. ) - returns a left conformable result
+                  if the key or list of keys are in the arg.
+has_key(l_arg., r_arg. ) - returns a left conformable stem that has a true
+       if the corresponding key is found in the r_arg.
 
 To use in loops, use either for_keys() or ∋
   a. := [-10;-5]
@@ -436,8 +438,37 @@ To use in loops, use either for_keys() or ∋
 2
 3
 4
+
+Final caveat: this does not recurse through the stem since the contract
+is to report if a given index is there or not.
 See also: has_value, for_keys, list_keys]]>
         </body>
+<example>
+    <![CDATA[   ccc.:={'a':0,'b':1,'c':2};
+   ddd.:={'a':[0,1,2,3,4], 'b':-1, 'c':2, 'd':3, 'e':4};
+   has_key(ccc.,ddd.)
+{a:true, b:true, c:true}
+   has_key(ddd., ccc.)
+{a:true, b:true, c:true, d:false, e:false}
+
+Or in operator notation
+  ccc.∋ddd.
+{a:true, b:true, c:true}
+   has_key('a', ddd.)
+true
+
+Another example, grabbing the difference between two stems, using mask.
+     ddd. ∌ ccc.⌆ddd.
+{d:3, e:4}
+
+Grabbing the elements in one stem that are also in another
+     ddd. ∋ ccc.⌆ddd.
+{a:[0,1,2,3,4], b:-1, c:2}
+
+Grab elements in ccc. that are also in ddd.
+  ccc.∋ddd.⌆ccc.
+{a:0, b:1, c:2}]]>
+</example>
     </entry>
     <entry id="include_keys">
         <body>
@@ -3051,8 +3082,8 @@ or
 ⊨ boolean : expression
 
 is a directive that tells the system to fail if the boolean is false. The
-result will be an error returned with the expression evaluated (if possible)
-and turned into a string.
+result will be an error returned with the expression evaluated.
+
 E.g.
 assert[ script_args() == 2 ]['You must supply both a username and password.'];
 
@@ -3065,7 +3096,24 @@ any other error message.
 
 Assertions may be globally turned off and on with the assertions_on variable
 in the workspace, or as a configuration option. One common use is to have
-them on for development and off in production.]]>
+them on for development and off in production.
+
+Notes:
+(1) You may assert  a stem and it will be accessible as the error_state. in the
+    catch block, e.g.
+
+    try[⊨false : {'a':'b'};]catch[say(error_code);say(error_message);say(error_state.);]
+-2
+assertion failed
+{a:b}
+
+(2) You *should* pass back only stems or strings. If you assert something
+    other than a stem or string, it will be converted to a string and be available
+    in the catch block as the error_message. E.g.
+
+    try[⊨false : 37/17;]catch[say(error_message);say(error_state.);]
+2.176470588235294
+[]]]>
         </body>
         <example>
             <![CDATA[⊨ script_arg() ≡  2 : 'you must supply both a username and password';

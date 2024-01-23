@@ -846,21 +846,24 @@ public class QDLStem implements Map<String, Object>, Serializable {
     }
 
     /**
-     * Takes a stem list of keys and returns a boolean list conformable to the argument.
+     * Takes a stem  and returns a boolean list conformable to the argument.
      *
      * @param keyList
      * @return
      */
     public QDLStem hasKeys(QDLStem keyList) {
         QDLStem result = newInstance();
-        for (int i = 0; i < keyList.size(); i++) {
+        for(Object k : keySet()){
+            result.putLongOrString(k, keyList.containsKey(k));
+        }
+/*        for (int i = 0; i < keyList.size(); i++) {
             // for loop to be sure that everything is done in order.
             String index = Integer.toString(i);
             if (!keyList.containsKey(index)) {
                 throw new IllegalArgumentException("the set of supplied keys is not a list");
             }
             result.put(index, containsKey(keyList.get(index).toString()));
-        }
+        }*/
         return result;
     }
 
@@ -1040,6 +1043,11 @@ public class QDLStem implements Map<String, Object>, Serializable {
          MultiIndex operations
        ********* */
 
+    /**
+     * Note that the
+     * @param w
+     * @return
+     */
     public Object get(StemMultiIndex w) {
         QDLStem currentStem = this;
         /**
@@ -1683,5 +1691,24 @@ public class QDLStem implements Map<String, Object>, Serializable {
              getQDLMap().remove(key); // have to be carefule to remove this so no concurrent modification exception.
          }
          return rc;
+    }
+
+    /**
+     * This will take a stem with embedded . and return the object at that index.<br/><br/>
+     * E.g.<br/> <br/>
+     * myStem.getByMultiIndex("a.b.c");<br/> <br/>
+     * would return myStem.a.b.c;<br/>
+     * <p>This just calls {@link #get(StemMultiIndex)}.</p>
+     * <h3>Note</h3>
+     * <p>In this call, you pass in the exact index you want, unlike {@link #get(StemMultiIndex)}
+     * which accepts the name of the stem as the first argument</p>
+     * @param index
+     * @return
+     */
+    public Object getByMultiIndex(String index){
+        // This adds a dummy first argument that is omitted in the get call. It is set to something that cannot
+        // ever resolve to a valid variable name, hence avoids variable resolution.
+         StemMultiIndex stemMultiIndex = new StemMultiIndex("^^^" + QDLStem.STEM_INDEX_MARKER +  index);
+         return get(stemMultiIndex);
     }
 } // end class

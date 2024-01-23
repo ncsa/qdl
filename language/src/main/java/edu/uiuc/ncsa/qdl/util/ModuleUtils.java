@@ -155,7 +155,7 @@ public class ModuleUtils implements Serializable {
         } catch (RuntimeException rx) {
             throw rx;
         } catch (ReflectiveOperationException cnf) {
-            throw new BadArgException("class not found for " + resourceName,null);
+            throw new BadArgException("class not found for " + resourceName,cnf,null);
         } catch (Throwable t) {
             throw new QDLException("could not load Java class " + resourceName + ": '" + t.getMessage() + "'.", t);
         }
@@ -168,7 +168,7 @@ public class ModuleUtils implements Serializable {
      * @param resourceName
      * @return
      */
-    public List<String> doQDLModuleLoad(State state, String resourceName) {
+    public List<String> doQDLModuleLoad(State state, String resourceName)  {
         QDLScript script = null;
         try {
             script = resolveScript(resourceName, state.getModulePaths(), state);
@@ -183,7 +183,7 @@ public class ModuleUtils implements Serializable {
             throw new QDLRuntimeException("Could not find  '" + resourceName + "'. Is your module path set?", t);
         }
 
-        try {
+   //     try {
             QDLParserDriver parserDriver = new QDLParserDriver(new XProperties(), state);
             // Exceptional case where we just run it directly.
             // note that since this is QDL there may be multiple modules, etc.
@@ -195,11 +195,17 @@ public class ModuleUtils implements Serializable {
                 if (state.isServerMode()) {
                     throw new QDLServerModeException("File operations are not permitted in server mode");
                 }
-                Reader reader = new InputStreamReader(QDLFileUtil.readFileAsInputStream(state, resourceName));
-                QDLRunner runner = new QDLRunner(parserDriver.parse(reader));
-                runner.setState(state);
-                runner.run();
-
+                try {
+                    Reader reader = new InputStreamReader(QDLFileUtil.readFileAsInputStream(state, resourceName));
+                    QDLRunner runner = new QDLRunner(parserDriver.parse(reader));
+                    runner.setState(state);
+                    runner.run();
+                }catch(Throwable t){
+                    if(t instanceof RuntimeException){
+                        throw (RuntimeException)t;
+                    }
+                    throw new BadArgException("could not parse module '" + t.getMessage() + "'", null);
+                }
             } else {
                 boolean importMode = state.isImportMode();
                 state.setImportMode(false);
@@ -214,10 +220,10 @@ public class ModuleUtils implements Serializable {
             }
             state.getMTemplates().clearChangeList();
             return afterLoad;
-        } catch (Throwable t) {
-
+  /*      } catch (Throwable t) {
+           t.printStackTrace();
         }
-        return null;
+        return null;*/
     }
 
     /**

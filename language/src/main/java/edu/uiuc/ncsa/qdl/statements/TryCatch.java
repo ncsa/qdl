@@ -98,10 +98,16 @@ public class TryCatch implements Statement {
         }catch (Throwable otherT) {
             // everything else.
             localState.getVStack().localPut(new VThing(new XKey(ERROR_MESSAGE_NAME), otherT.getMessage()));
-            localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), new QDLStem())); 
             if (otherT instanceof AssertionException) {
+                AssertionException assertionException = (AssertionException)otherT;
+                if(assertionException.hasPayload()){
+                    localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), assertionException.getAssertionState()));
+                }else{
+                    localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), new QDLStem()));
+                }
                 localState.getVStack().localPut(new VThing(new XKey(ERROR_CODE_NAME), RESERVED_ASSERTION_CODE));
             } else {
+                localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), new QDLStem()));
                 localState.getVStack().localPut(new VThing(new XKey(ERROR_CODE_NAME), RESERVED_SYSTEM_ERROR_CODE));
             }
 

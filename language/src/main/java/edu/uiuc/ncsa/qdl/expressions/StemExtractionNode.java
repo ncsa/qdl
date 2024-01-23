@@ -1,6 +1,5 @@
 package edu.uiuc.ncsa.qdl.expressions;
 
-import edu.uiuc.ncsa.qdl.exceptions.IndexError;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
@@ -11,7 +10,6 @@ import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -115,81 +113,7 @@ public class StemExtractionNode extends ExpressionImpl {
         return getResult();
     }
 
-    protected Object evaluateOLD(State state) {
-        // The 0th element of args is the left-most argument.
-        IndexArgs args = new IndexArgs();
-        args.addAll(linearize(state));
-        indexArgs = normalize(args);
-        for (int i = 0; i < indexArgs.size(); i++) {
-            IndexArg ia = indexArgs.get(i);
-            ia.swri.evaluate(state);
-            if (0 < i) {
-                if (ia.swri.getResult() == null) {
-                    if (ia.swri instanceof VariableNode) {
-                        VariableNode vNode = (VariableNode) ia.swri;
-                        if (vNode.getVariableReference().endsWith(QDLStem.STEM_INDEX_MARKER)) {
-                            throw new QDLExceptionWithTrace(vNode.getVariableReference() + " not found", this);
-                        }
-                        vNode.setResult(vNode.getVariableReference());
-                    }
-                }
-            }
-        }
-        Object larg = args.get(0).swri.getResult();
-        if (!(larg instanceof QDLStem)) {
-            throw new QDLExceptionWithTrace("Extraction operator only applies to stems.", getLeftArg());
-        }
-        QDLStem inStem = (QDLStem) larg;
-        if (indexArgs.isAllWildcards()) {
-            // special case of a\* or a\*\* etc.
-            setResultType(Constant.STEM_TYPE);
-            setEvaluated(true);
-            setResult(inStem);
-            return getResult();
-        }
 
-        ArrayList<IndexList> sourceIndices = null;
-        ArrayList<IndexList> targetIndices = null;
-        if (indexArgs.hasWildcard()) {
-            QDLStem out = (QDLStem) recurse(inStem, indexArgs);
-            setResult(out);
-            setResultType(Constant.STEM_TYPE);
-            setEvaluated(true);
-            return getResult();
-        } else {
-            // Special case no wild cards because there is no dynamic allocation of
-            // indices. No wildcards should be very fast.
-            sourceIndices = indexArgs.createSourceIndices();
-            targetIndices = indexArgs.createTargetIndices();
-        }
-        // edge case. They requested something like b\2\3 -- this should be a scalar
-        if (sourceIndices.size() == 1 && targetIndices.size() == 1 && targetIndices.get(0).size() == 0) {
-            IndexList value = inStem.get(sourceIndices.get(0), false);
-            if (value != null && !value.isEmpty()) {
-                setResult(value.get(0));
-                setEvaluated(true);
-                setResultType(Constant.getType(getResult()));
-                return getResult();
-            }
-            throw new QDLExceptionWithTrace("no such value ", this);
-        }
-        QDLStem out = new QDLStem();
-        for (int i = 0; i < sourceIndices.size(); i++) {
-            try {
-                IndexList value = inStem.get(sourceIndices.get(i), false);
-                if (value != null && !value.isEmpty()) {
-                    out.set(targetIndices.get(i), value.get(0));
-                }
-            } catch (IndexError ie) {
-                // rock on. This is benign in this context.
-            }
-
-        }
-        setResultType(Constant.STEM_TYPE);
-        setEvaluated(true);
-        setResult(out);
-        return getResult();
-    }
 
     /*
     b.0 := [;3]
@@ -216,7 +140,7 @@ a.
 
 
     /**
-     * Starts descent through all of the
+     * Starts descent through all of the  nodes
      *
      * @param in
      * @param sourceIndices

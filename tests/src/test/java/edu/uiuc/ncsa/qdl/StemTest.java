@@ -556,7 +556,7 @@ public class StemTest extends AbstractQDLTester {
         for (int i = 0; i < 2 * count; i++) {
             String key = geter();
             if (0 == i % 2) {
-                keys.put(Integer.toString(j++), key);
+                keys.put(key, Integer.toString(j++));
             }
             sourceStem.put(key, geter());
         }
@@ -567,21 +567,21 @@ public class StemTest extends AbstractQDLTester {
         vStack.put(new VThing(new XKey("sourceStem."), sourceStem));
         vStack.put(new VThing(new XKey("keys."), keys));
         Polyad polyad = new Polyad(StemEvaluator.HAS_KEY);
-        VariableNode arg = new VariableNode("sourceStem.");
-        VariableNode arg2 = new VariableNode("keys.");
+        VariableNode arg2 = new VariableNode("sourceStem.");
+        VariableNode arg = new VariableNode("keys.");
         polyad.addArgument(arg2);
         polyad.addArgument(arg);
         polyad.evaluate(state);
         QDLStem result = (QDLStem) polyad.getResult();
         assert result.size() == count * 2;
-        j = 0;
-        for (int i = 0; i < count; i++) {
-            assert result.getBoolean(Integer.toString(j++));
+        for (Object k : sourceStem.keySet()) {
+            Boolean b = result.getBoolean(k.toString()); // only string keys
+            if (keys.containsKey(k)) {
+                assert b : "wrong key marked as existing in has_keys";
+            } else {
+                assert !b : "wrong key markes as abset in has_keys";
+            }
         }
-        for (int i = 0; i < count; i++) {
-            assert !result.getBoolean(Integer.toString(j++));
-        }
-
     }
 
 

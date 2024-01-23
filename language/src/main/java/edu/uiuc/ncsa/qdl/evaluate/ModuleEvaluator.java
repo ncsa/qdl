@@ -651,6 +651,9 @@ public class ModuleEvaluator extends AbstractEvaluator {
                 loadTarget = q.get(1L).toString().equals(MODULE_TYPE_JAVA) ? LOAD_JAVA : LOAD_FILE;
 
             }
+            if (resourceName.endsWith(".qdl") || resourceName.endsWith(".mdl")) {
+                loadTarget = LOAD_FILE;
+            }
             List<String> loadedQNames = null;
             // if they force the issue, do that and fail
             JavaModuleConfig jmc = new JavaModuleConfig();
@@ -665,8 +668,9 @@ public class ModuleEvaluator extends AbstractEvaluator {
                     loadedQNames = moduleUtils.doQDLModuleLoad(state, resourceName);
                     break;
                 case LOAD_UNKNOWN:
-                    loadedQNames = moduleUtils.doQDLModuleLoad(state, resourceName);
-                    if (loadedQNames == null) {
+                    try {
+                        loadedQNames = moduleUtils.doQDLModuleLoad(state, resourceName);
+                    } catch (Throwable t) {
                         loadedQNames = moduleUtils.doJavaModuleLoad(state, resourceName, jmc);
                     }
                     break;
@@ -729,8 +733,9 @@ public class ModuleEvaluator extends AbstractEvaluator {
     public final static int IMPORT_STATE_SNAPSHOT_VALUE = 101;
     public final static int IMPORT_STATE_SHARE_VALUE = 102;
     public final static int IMPORT_STATE_ANY_VALUE = 110;
-    public static String getInheritanceMode(int x){
-        switch (x){
+
+    public static String getInheritanceMode(int x) {
+        switch (x) {
 
             case IMPORT_STATE_SHARE_VALUE:
                 return IMPORT_STATE_SHARE;
@@ -739,12 +744,13 @@ public class ModuleEvaluator extends AbstractEvaluator {
             case IMPORT_STATE_ANY_VALUE:
                 return IMPORT_STATE_ANY;
             default:
-            case  IMPORT_STATE_NONE_VALUE:
-              return IMPORT_STATE_NONE;
+            case IMPORT_STATE_NONE_VALUE:
+                return IMPORT_STATE_NONE;
         }
     }
-    public static int getInheritanceMode(String x){
-        switch (x){
+
+    public static int getInheritanceMode(String x) {
+        switch (x) {
             default:
             case IMPORT_STATE_NONE:
                 return IMPORT_STATE_NONE_VALUE;
@@ -757,6 +763,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
         }
 
     }
+
     protected void doImport(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{1, 2});
@@ -824,7 +831,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
                 case IMPORT_STATE_SNAPSHOT_VALUE:
                     newState = StateUtils.clone(state);
                     // put tables and such in the right place so ambient state is not altered.
-                    newState = newState.newSelectiveState(newState,false,true,true);
+                    newState = newState.newSelectiveState(newState, false, true, true);
 
                     break;
                 case IMPORT_STATE_SHARE_VALUE:
@@ -832,7 +839,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
                     // put tables and such in the right place so ambient state is not altered.
                     // The next command creates a state with the inhereited functions and variables.
 
-                    newState = newState.newSelectiveState(newState,false,true,true);
+                    newState = newState.newSelectiveState(newState, false, true, true);
                     // now since these are shared, push on new tables to ensure nothing in the ambient state gets overwritten.
                     // We do not want moduile state to leak back into the ambient state.
                     newState.getVStack().pushNewTable();
@@ -846,7 +853,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
             newState.setModule(module);
             module.setTemplate(false);
             module.setParentTemplateID(template.getId());
-            if(state.hasModule()){
+            if (state.hasModule()) {
                 module.setParentInstanceID(state.getModule().getId());
                 module.setParentInstanceAlias(state.getModule().getAlias());
             }
@@ -854,7 +861,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
             polyad.setResult(module);
             polyad.setResultType(Constant.MODULE_TYPE);
         } catch (Throwable t) {
-           throw new QDLExceptionWithTrace("there was an issue creating the state of the module:" + t.getMessage(), polyad);
+            throw new QDLExceptionWithTrace("there was an issue creating the state of the module:" + t.getMessage(), polyad);
         }
 
     }
@@ -883,7 +890,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
         if (polyad.getArgCount() == 2) {
             Object object = polyad.evalArg(1, state);
             if (!isString(object)) {
-                throw new BadArgException((isLoad?JAVA_MODULE_LOAD:JAVA_MODULE_USE) + " requires a string as its second argument if present", polyad.getArgAt(1));
+                throw new BadArgException((isLoad ? JAVA_MODULE_LOAD : JAVA_MODULE_USE) + " requires a string as its second argument if present", polyad.getArgAt(1));
             }
             alias = (String) object;
             hasAlias = true;
@@ -912,7 +919,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
                     if (libStem.containsKey(toolPath.get(toolPath.size() - 1))) {
                         possibleName = libStem.getString(toolPath.get(toolPath.size() - 1));
                     }
-                }catch(Throwable t){
+                } catch (Throwable t) {
                     // ok, so parsing the path failed. This probably means they passed in the actual
                     // full java path, so try to process what they sent.
                 }
@@ -922,7 +929,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
         module_load.addArgument(new ConstantNode(possibleName));
         module_load.addArgument(new ConstantNode(MODULE_TYPE_JAVA));
         module_load.evaluate(state);
-        Polyad module_import = new Polyad(isLoad?ModuleEvaluator.IMPORT:ModuleEvaluator.USE);
+        Polyad module_import = new Polyad(isLoad ? ModuleEvaluator.IMPORT : ModuleEvaluator.USE);
         module_import.addArgument(new ConstantNode(module_load.getResult()));
         if (hasAlias) {
             module_import.addArgument(new ConstantNode(alias));
