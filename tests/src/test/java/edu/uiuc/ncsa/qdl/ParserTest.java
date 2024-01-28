@@ -2553,13 +2553,13 @@ public class ParserTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "f(x)\n" +
-                "->\n" +
+                "->block[\n" +
                 "» This is a comment\n" +
                 "» This is another comment\n" +
                 "x\n" +
                 "  ^\n" +
                 "     2\n" +
-                ";"); //
+                ";];"); //
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         FunctionRecord fRec = (FunctionRecord) state.getFTStack().get(new FKey("f", 1));

@@ -67,7 +67,8 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
     String configFile = null;
 
     protected String getBootScript() {
-        return getNodeValue(cn, BOOT_SCRIPT_TAG, "");
+        String x = getFirstAttribute(cn, BOOT_SCRIPT_TAG);
+        return x == null ? "" : x;
     }
 
     protected String getWSEnvFile() {

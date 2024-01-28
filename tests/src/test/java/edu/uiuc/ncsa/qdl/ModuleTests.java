@@ -498,10 +498,11 @@ public class ModuleTests extends AbstractQDLTester {
         addLine(script, "h := import('my:/ext/math');"); // make this variable is not used, so no false positives
         state = rountripState(state, script, testCase);
         addLine(script, "ok := 0<h#versinh(1)-0.54308063;"); // trick. Mostly if this runs at all we are ok.
-        addLine(script, "ok := 0<h#haversinh(1)-0.271;"); // trick. Mostly if this runs at all we are ok.
+        addLine(script, "ok1 := 0<h#haversinh(1)-0.271;"); // trick. Mostly if this runs at all we are ok.
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "failed to use() a loaded QDL module in another module";
+        assert getBooleanValue("ok1", state) : "failed to use() a loaded QDL module in another module";
 
     }
 

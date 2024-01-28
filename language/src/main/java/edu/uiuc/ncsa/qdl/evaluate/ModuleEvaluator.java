@@ -861,6 +861,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
             polyad.setResult(module);
             polyad.setResultType(Constant.MODULE_TYPE);
         } catch (Throwable t) {
+            t.printStackTrace();
             throw new QDLExceptionWithTrace("there was an issue creating the state of the module:" + t.getMessage(), polyad);
         }
 

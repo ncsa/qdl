@@ -106,11 +106,12 @@ module[
    ];
 
    poly2(coefficients., x)->
-         » poly2(coefficients., arg) takes a list of coefficients (last index is the constant) and evaluates it.
+    block[     » poly2(coefficients., arg) takes a list of coefficients (last index is the constant) and evaluates it.
          » so poly2([11,7,5,3], x) == 11*x^3 + 7*x^2 + 5*x + 3
          » This is because some people just find it optically easier.
          reduce(@+, list_reverse(coefficients.)*(x^n(size(coefficients.))));
-
+       ];
+       
       define[
          plot(@f(), arg.)
       ][
@@ -122,15 +123,15 @@ module[
          return(arg.~|y.);
       ];
 
-   pplot(@x(), @y(), t.)->
+   pplot(@x(), @y(), t.)->block[
         » pplot(@x(), @y(), t.) - A program to generate the parametric plot points of two real valued function over an interval.
         » The result is a list of (x,y) coordinates.
         » Try it out on
         » pplot(@sin,@cos,  [|0; pi()/2; 10|])
          laminate(x(t.),y(t.),1);
-
+        ];
           splot(@x(), @y(), @z(), t., s.)->
-         » splot(@x(), @y(), @z(), t., s.) - A program to generate the parametric surface plot points of three real valued functions
+         block[» splot(@x(), @y(), @z(), t., s.) - A program to generate the parametric surface plot points of three real valued functions
          » over the intervals for t ands.
          » The result is a list of (x,y,z) coordinates.
          » E.g.
@@ -141,9 +142,9 @@ module[
          » s. :=⟦0;1;10⟧
          » splot(@x, @y, @z, t., s.)
           join(x(t.,s.)~|y(t.,s.), z(t.,s.), 1);
-
+        ];
    ip(@r, @f, x., y.)->
-   » ip(@r, @f, x., y.) -- generalized inner product of two stems
+   block[» ip(@r, @f, x., y.) -- generalized inner product of two stems
    » This loops over the zeroth axis of each stem and applies f
    » between the elements and then reduces with r.
    » E.g. standard inner product of two 3 vectors
@@ -158,7 +159,7 @@ module[
    » ip(@+, @*, 1⦰a., b.)
    » Final note: Remember that subsetting is on, so be sure your stems are
    » the right size!
-   local[
+
         z.:= null;
         if[rank(x.)==1][
           if[rank(y.) == 1][
@@ -191,8 +192,9 @@ module[
              ];// end i do
              return(z.);
         ]; //end local
+
    mm(x., y.)->
-       » mm(x., y.) - multiply an n×m and m×k matrix.
+     local[  » mm(x., y.) - multiply an n×m and m×k matrix.
        » The result is the n×k matrix product.
        » mm stands for matrix multiply
        » E.g.
@@ -214,6 +216,7 @@ module[
        » (so flip them both) simply showing that
        » matrix multiplication is not, of course, commutative.
        ip(@+,@*, x., 1⦰y.);
+       ];
    /*
       A list of primes less than 10,000.      
    */

@@ -780,10 +780,11 @@ public class QDLListener implements QDLParserListener {
 
     @Override
     public void exitLambdaStatement(QDLParserParser.LambdaStatementContext lambdaContext) {
-        createLambdaStatement(lambdaContext);
+        //createLambdaStatement(lambdaContext);
+        createLambdaStatementNEW(lambdaContext);
     }
 
-    protected void createLambdaStatement(QDLParserParser.LambdaStatementContext lambdaContext) {
+    protected void createLambdaStatementNEW(QDLParserParser.LambdaStatementContext lambdaContext) {
         QDLParserParser.FunctionContext nameAndArgsNode = lambdaContext.function();
 
         if (nameAndArgsNode == null) {
@@ -791,8 +792,9 @@ public class QDLListener implements QDLParserListener {
         }
         FunctionRecord functionRecord = new FunctionRecord();
         functionRecord.setTokenPosition(tp(lambdaContext));
-        functionRecord.setLambda(true);
-
+        //functionRecord.setLambda(true);
+        functionRecord.setLambda(lambdaContext.LOCAL() == null);
+        //boolean isBlock = lambdaContext.LOCAL() == null;
         // not quite the original source... The issue is that this comes parsed and stripped of any original
         // end of line markers, so we cannot tell what was there. Since it may include documentation lines
         // we have to add back in EOLs at the end of every statement so the comments don't get lost.
@@ -800,10 +802,7 @@ public class QDLListener implements QDLParserListener {
         FunctionDefinitionStatement fds = (FunctionDefinitionStatement) parsingMap.getStatementFromContext(lambdaContext);
         fds.setFunctionRecord(functionRecord);
 
-        List<String> stringList = new ArrayList<>();
-        for (int i = 0; i < lambdaContext.getChildCount(); i++) {
-            stringList.add(lambdaContext.getChild(i).getText());
-        }
+        List<String> stringList = getSource(lambdaContext);
         // ANTLR may strip final terminator. Put it back as needed.
         if (!stringList.get(stringList.size() - 1).endsWith(";")) {
             stringList.set(stringList.size() - 1, stringList.get(stringList.size() - 1) + ";");
@@ -814,12 +813,6 @@ public class QDLListener implements QDLParserListener {
         if (name.endsWith("(")) {
             name = name.substring(0, name.length() - 1);
         }
-        functionRecord.name = name;
-
-        for (QDLParserParser.FdocContext fd : lambdaContext.fdoc()) {
-            functionRecord.documentation.add(getFdocLine(fd.getText()));
-        }
-        //for (QDLParserParser.ArgListContext argListContext : nameAndArgsNode.argList()) {
         for (QDLParserParser.F_argsContext argListContext : nameAndArgsNode.f_args()) {
             // this is a comma delimited list of arguments.
             String allArgs = argListContext.getText();
@@ -829,58 +822,46 @@ public class QDLListener implements QDLParserListener {
                 functionRecord.argNames.add(st.nextToken());
             }
         }
+        functionRecord.name = name;
         functionRecord.setArgCount(functionRecord.argNames.size()); // Just set it here and be done with it.
-        boolean hasSingleArg = true;
-        ParseTree p;
-        int lastChildIndex = lambdaContext.getChildCount() - 1;
-        if (lambdaContext.getChild(lastChildIndex).getChild(0) instanceof QDLParserParser.LambdaStatementContext) {
-            p = lambdaContext.getChild(lastChildIndex).getChild(0).getChild(0);
-            hasSingleArg = false;
-        } else {
-            p = lambdaContext.getChild(lastChildIndex).getChild(0);
+
+        QDLParserParser.DocStatementBlockContext docStatmentBlockContext = lambdaContext.docStatementBlock();
+        for (QDLParserParser.FdocContext fd : docStatmentBlockContext.fdoc()) {
+            functionRecord.documentation.add(getFdocLine(fd.getText()));
         }
-        String x = p.getChild(0).getText();
-
-        if (!hasSingleArg) {
-            // its a set of statements
-            for (int i = 0; i < p.getChildCount(); i++) {
-                ParseTree parserTree = p.getChild(i);
-                if (parserTree.getText().equals("[") ||
-                        parserTree.getText().equals(";") ||
-                        parserTree.getText().equals("]")) {
-                    continue;
-                }
-                functionRecord.statements.add(resolveChild(parserTree));
+        List<QDLParserParser.StatementContext> statements = docStatmentBlockContext.statement();
+        if (1 < statements.size()) {
+            // super simple case -- just snarf up the statements.
+            for (QDLParserParser.StatementContext statementContext : statements) {
+                functionRecord.statements.add(resolveChild(statementContext));
             }
-
-        } else {
-            // it's a single expression most likely. Check to see if it needs wrapped in
-            // a return
-            Statement stmt = resolveChild(p);
-            // Contract: Wrap simple expressions in a return.
-            if (stmt instanceof ExpressionInterface) {
-                if (stmt instanceof ExpressionImpl) {
-                    ExpressionImpl expr = (ExpressionImpl) stmt;
-                    if (expr.getOperatorType() != SystemEvaluator.RETURN_TYPE) {
-                        Polyad expr1 = new Polyad(SystemEvaluator.RETURN_TYPE);
-                        expr1.setName(SystemEvaluator.RETURN);
-                        expr1.addArgument(expr);
-                        functionRecord.statements.add(expr1); // wrapped in a return
-                    } else {
-                        functionRecord.statements.add(expr); // already has a return
-                    }
-                } else {
+            return;
+        }
+        // harder is to decide if there is a single statement that gets wrapped in a return();
+        Statement stmt = resolveChild(statements.get(0));
+        // Contract: Wrap simple expressions in a return.
+        if (stmt instanceof ExpressionInterface) {
+            if (stmt instanceof ExpressionImpl) {
+                ExpressionImpl expr = (ExpressionImpl) stmt;
+                if (expr.getOperatorType() != SystemEvaluator.RETURN_TYPE) {
                     Polyad expr1 = new Polyad(SystemEvaluator.RETURN_TYPE);
                     expr1.setName(SystemEvaluator.RETURN);
-                    expr1.addArgument((ExpressionInterface) stmt);
+                    expr1.addArgument(expr);
                     functionRecord.statements.add(expr1); // wrapped in a return
+                } else {
+                    functionRecord.statements.add(expr); // already has a return
                 }
             } else {
-                functionRecord.statements.add(stmt); // a statement, not merely an expression
+                Polyad expr1 = new Polyad(SystemEvaluator.RETURN_TYPE);
+                expr1.setName(SystemEvaluator.RETURN);
+                expr1.addArgument((ExpressionInterface) stmt);
+                functionRecord.statements.add(expr1); // wrapped in a return
             }
-
+        } else {
+            functionRecord.statements.add(stmt); // a statement, not merely an expression
         }
     }
+
 
     protected String getFdocLine(String doc) {
 
@@ -1999,8 +1980,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
             }
         }
 
-        QDLParserParser.ExpressionBlockContext expressionBlockContext = lambdaContext.expressionBlock();
-        QDLParserParser.ExpressionContext expressionContext = lambdaContext.expression();
+   /*     QDLParserParser.ExpressionBlockContext expressionBlockContext = lambdaContext.expressionBlock();
         if (expressionBlockContext != null && !expressionBlockContext.isEmpty()) {
             for (int i = 0; i < expressionBlockContext.getChildCount(); i++) {
                 //resolveChild(expressionBlockContext.getChild(i));
@@ -2010,7 +1990,9 @@ illegal argument:no module named "b" was  imported at (1, 67)
                 }
                 functionRecord.statements.add(resolveChild(expressionBlockContext.getChild(i)));
             }
-        }
+        }*/
+        
+        QDLParserParser.ExpressionContext expressionContext = lambdaContext.expression();
         if (expressionContext != null && !expressionContext.isEmpty()) {
 
             // its a single expression most likely. Check to see if it needs wrapped in

@@ -44,8 +44,8 @@ defineStatement:
      DEFINE '[' function ']' BODY? docStatementBlock;
 
 lambdaStatement:
-      function LambdaConnector fdoc* (statement) | statementBlock;
-  //  function LambdaConnector  (statement) |  docStatementBlock;
+    //  function LambdaConnector fdoc* (statement) | statementBlock;
+      function LambdaConnector (BLOCK | LOCAL)? docStatementBlock;
 
 moduleStatement:
    MODULE LeftBracket STRING (',' STRING)? RightBracket BODY? docStatementBlock;
@@ -116,8 +116,9 @@ expression
  | expression postfix=Backslash2                                               #extract2
  | expression Backslash3  expression                                           #extract3
  | expression postfix=Backslash4                                               #extract4
- | (function | '(' f_args* ')')
-       LambdaConnector (expression | expressionBlock)                          #lambdaDef
+// | (function | '(' f_args* ')')
+//         LambdaConnector (expression | expressionBlock)                          #lambdaDef
+ //      LambdaConnector expression                                              #lambdaDef
  | expression op=Apply expression                                              #appliesOperator
  | Apply expression                                                            #unaryApplyExpression
  | stemVariable                                                                #stemVar
@@ -176,6 +177,7 @@ expression
  | Null                                                                        #null
  //| url                                                                         #url2
  | expression  op=ASSIGN  expression                                           #assignment
+ | (function | '(' f_args* ')') LambdaConnector expression                     #lambdaDef
  // removed the next expression (and keeping it for reference wit this comment) because empty expressions were
  // being misinterpreted inside of slices in certain edge cases. It is better to just get errors if a
  // user types in something like ;;;; rather than have wrong slices.

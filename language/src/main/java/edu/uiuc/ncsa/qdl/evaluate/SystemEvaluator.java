@@ -1154,7 +1154,13 @@ public class SystemEvaluator extends AbstractEvaluator {
         // is a#b, and the input form of b will be returned.
         if (polyad.getArguments().get(0) instanceof ModuleExpression) {
             ModuleExpression moduleExpression = (ModuleExpression) polyad.getArguments().get(0);
-            Module module = state.getMInstances().getModule(new XKey(moduleExpression.getAlias()));
+            Module module;
+            Object object = state.getValue(moduleExpression.getAlias());
+            if(object instanceof Module){
+                module = (Module) object;
+            }else {
+                module = state.getMInstances().getModule(new XKey(moduleExpression.getAlias()));
+            }
             if (module == null) {
                 throw new BadArgException("no module named '" + moduleExpression.getAlias() + "' found.", moduleExpression);
             }

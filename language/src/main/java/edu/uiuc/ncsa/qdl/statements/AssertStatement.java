@@ -84,7 +84,7 @@ public class AssertStatement implements Statement {
                 return Boolean.TRUE;
             }
         }
-        throw new IllegalArgumentException("error: the conditional must be boolean valued.");
+        throw new IllegalArgumentException("error: the conditional must be boolean valued, got '" + obj + "'");
     }
 
     @Override
