@@ -621,7 +621,15 @@ public class FunctionEvaluator extends AbstractEvaluator {
             }
         }
         for (Statement statement : functionRecord.getStatements()) {
-            if (statement instanceof ExpressionInterface) {
+            // Fix for https://github.com/ncsa/qdl/issues/43 -- hard to isolate and track down!
+            // The polyad may have a null alias in certain use cases, such as
+            // verify()->block[mm#f(x,y);];
+            // where the function is inheriting mm, x and y. In that case, the
+            // alias of the function verify is null (as it should be), but
+            // the alias of f is not and should not be overwritten.
+            // The net effect will be much later, mm will be resolved against the
+            // ambient space.
+            if (statement instanceof ExpressionInterface && polyad.getAlias()!=null) {
                 ((ExpressionInterface) statement).setAlias(polyad.getAlias());
             }
             try {

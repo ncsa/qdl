@@ -124,7 +124,7 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
                 String raw = new String(Base64.decodeBase64(json.getString(VALUE_KEY)), StandardCharsets.UTF_8);
                 qi.execute(raw);
             } catch (Throwable e) {
-                e.printStackTrace();
+              //  e.printStackTrace();
             }
         }
         if (json.getString(TYPE_TAG).equals(MODULE_TAG)) {

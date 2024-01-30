@@ -54,7 +54,7 @@ public abstract class VariableState extends NamespaceAwareState {
             return getValue(symbol) != null;
         } catch (IndexError | UnknownSymbolException u) {
             // Can happen if the request is for a stem that eventually does not resolve.
-            return false;
+            return false;                                                      
         }
     }
 
@@ -66,6 +66,9 @@ public abstract class VariableState extends NamespaceAwareState {
      * @return
      */
     public Object getValue(String variableName) {
+        if(variableName == null){
+            throw new NFWException("null variable name encountered.");
+        }
         return getValue(variableName, null); // kick off the search
 
     }
@@ -207,6 +210,7 @@ public abstract class VariableState extends NamespaceAwareState {
             if (vThing == null) {
                 stem = null;
             } else {
+                isQDLNull = vThing.isNull(); // Fix https://github.com/ncsa/qdl/issues/42
                 if (vThing.isStem()) {
                     stem = vThing.getStemValue();
                 }
@@ -219,6 +223,7 @@ public abstract class VariableState extends NamespaceAwareState {
             if (vThing == null) {
                 stem = null;
             } else {
+                isQDLNull = vThing.isNull(); // Fix https://github.com/ncsa/qdl/issues/42
                 if (vThing.isStem()) {
                     stem = vThing.getStemValue();
                 }

@@ -254,6 +254,23 @@ public class ModuleTests extends AbstractQDLTester {
     }
 
     /**
+     * Regression test for https://github.com/ncsa/qdl/issues/42
+     *
+     * @throws Throwable
+     */
+    public void testIntrinsicStem() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module['A:T'][__x.:=null;getX()->block[if[__x.==null][__x.:=[;1];];return(__x.);];];");
+        addLine(script, "t := import('A:T');");
+        addLine(script, "ok:=size(t#getX())==1;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "intrinsic stem not set right";
+
+    }
+
+    /**
      * Basic test of a module with a hidden state variable and mutators. The contract is that
      * name() returns the name, name(new_name) sets the name, returns the old name.
      *
@@ -483,6 +500,7 @@ public class ModuleTests extends AbstractQDLTester {
     /**
      * Tests that a module with an embedded use() keeps the state straight and loads. This also
      * is a test for the load call.
+     *
      * @param testCase
      * @throws Throwable
      */
@@ -490,7 +508,7 @@ public class ModuleTests extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "  module['my:/ext/math']\n" +
-                "         [load('" + getSourcePath("qdl/language/src/main/resources/modules/math-x.mdl")+"');\n" +
+                "         [load('" + getSourcePath("qdl/language/src/main/resources/modules/math-x.mdl") + "');\n" +
                 "          use('qdl:/ext/math');\n" +
                 "          versinh(x)→ 2*sinh(x/2)^2; // hyperbolic versine\n" +
                 "          haversinh(x)→ versinh(x)/2; // hyperbolic haversine\n" +
@@ -506,10 +524,11 @@ public class ModuleTests extends AbstractQDLTester {
 
     }
 
-    public void testFunctionReferenceResolution() throws Throwable{
+    public void testFunctionReferenceResolution() throws Throwable {
         testFunctionReferenceResolution(ROUNDTRIP_NONE);
         testFunctionReferenceResolution(ROUNDTRIP_JSON);
     }
+
     public void testFunctionReferenceResolution(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -527,9 +546,10 @@ public class ModuleTests extends AbstractQDLTester {
      * Similar to testFunctionReferenceResolution, but the module inculdes some state that is
      * used by the function. This verifies that the state is handled correctly. The
      * previous test assued that the function was handled correctly.
+     *
      * @throws Throwable
      */
-    public void testFunctionReferenceResolution1() throws Throwable{
+    public void testFunctionReferenceResolution1() throws Throwable {
         testFunctionReferenceResolution1(ROUNDTRIP_NONE);
         testFunctionReferenceResolution1(ROUNDTRIP_JSON);
     }
@@ -546,18 +566,21 @@ public class ModuleTests extends AbstractQDLTester {
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "failed to resolve module function reference as function argument";
     }
-      /*
-      module['a:a','A'][f(x)->x^2;];
-        z:=import('a:a')
-        h(@g, x)->g(x)
-        h(z#@f, 4)
-       */
-    public void testFunctionReferenceResolution2() throws Throwable{
+
+    /*
+    module['a:a','A'][f(x)->x^2;];
+      z:=import('a:a')
+      h(@g, x)->g(x)
+      h(z#@f, 4)
+     */
+    public void testFunctionReferenceResolution2() throws Throwable {
         testFunctionReferenceResolution2(ROUNDTRIP_NONE);
         testFunctionReferenceResolution2(ROUNDTRIP_JSON);
     }
+
     /**
      * Descend to an embedded module and get the correct function reference
+     *
      * @param testCase
      * @throws Throwable
      */
@@ -577,12 +600,14 @@ public class ModuleTests extends AbstractQDLTester {
     /**
      * Test where embedded module has state as does ambient emvironment. Module state
      * has to win out.
+     *
      * @throws Throwable
      */
-    public void testFunctionReferenceResolution3() throws Throwable{
+    public void testFunctionReferenceResolution3() throws Throwable {
         testFunctionReferenceResolution3(ROUNDTRIP_NONE);
         testFunctionReferenceResolution3(ROUNDTRIP_JSON);
     }
+
     public void testFunctionReferenceResolution3(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -599,12 +624,14 @@ public class ModuleTests extends AbstractQDLTester {
 
     /**
      * Test of case where the embedded module shares the state of the enclosing module.
+     *
      * @throws Throwable
      */
-    public void testFunctionReferenceResolution4() throws Throwable{
+    public void testFunctionReferenceResolution4() throws Throwable {
         testFunctionReferenceResolution4(ROUNDTRIP_NONE);
         testFunctionReferenceResolution4(ROUNDTRIP_JSON);
     }
+
     public void testFunctionReferenceResolution4(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
