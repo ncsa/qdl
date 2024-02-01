@@ -5,6 +5,8 @@ import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 import edu.uiuc.ncsa.qdl.variables.VThing;
+import edu.uiuc.ncsa.security.core.util.DebugConstants;
+import edu.uiuc.ncsa.security.core.util.DebugUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,7 +99,16 @@ public class TryCatch implements Statement {
             throw returnException;
         }catch (Throwable otherT) {
             // everything else.
-            localState.getVStack().localPut(new VThing(new XKey(ERROR_MESSAGE_NAME), otherT.getMessage()));
+            if(otherT.getMessage() == null){
+                // This is really ugly, *BUT* there are a very few exceptions thrown in QDL that still do not
+                // set the message and this is a diagnostic tool so I can track these down.
+                if(DebugUtil.getDebugLevel() == DebugConstants.DEBUG_LEVEL_TRACE){
+                    otherT.printStackTrace();
+                }
+                localState.getVStack().localPut(new VThing(new XKey(ERROR_MESSAGE_NAME), "(no message)"));
+            }else {
+                localState.getVStack().localPut(new VThing(new XKey(ERROR_MESSAGE_NAME), otherT.getMessage()));
+            }
             if (otherT instanceof AssertionException) {
                 AssertionException assertionException = (AssertionException)otherT;
                 if(assertionException.hasPayload()){

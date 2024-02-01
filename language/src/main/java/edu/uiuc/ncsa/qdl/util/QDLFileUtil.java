@@ -169,7 +169,7 @@ public class QDLFileUtil extends FileUtil {
     }
 
     /**
-     * Note that this is a stem list or the ouotput is random.
+     * Note that this is a stem list or the output is random.
      *
      * @param filename
      */
@@ -221,7 +221,7 @@ public class QDLFileUtil extends FileUtil {
         VFSFileProvider vfs = getVfsFileProvider(state, path);
         VFSEntry vfsEntry = vfs.get(path, AbstractEvaluator.FILE_OP_BINARY);
         if(vfsEntry == null){
-            throw new QDLFileNotFoundException();
+            throw new QDLFileNotFoundException("file '" + path + "' not found");
         }
         return vfsEntry.getBytes();
     }
@@ -230,7 +230,7 @@ public class QDLFileUtil extends FileUtil {
         VFSFileProvider vfs = getVfsFileProvider(state, path);
         VFSEntry vfsEntry = vfs.get(path, AbstractEvaluator.FILE_OP_TEXT_STRING);
         if(vfsEntry == null){
-            throw new QDLFileNotFoundException();
+            throw new QDLFileNotFoundException("file '" + path + "' not found");
         }
         return vfsEntry.getText();
     }
