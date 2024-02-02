@@ -223,7 +223,14 @@ public class WorkspaceCommands implements Logable, Serializable {
         say("\nExample. Show all the online help within a display with of 120 characters\n");
         say("   " + HELP_COMMAND + " " + ONLINE_HELP_COMMAND + " " + DISPLAY_WIDTH_SWITCH + " 120 ");
         say("Help is available for the following (231 topics):\n" +
-                "!                         dir                       mkdir                     then                      ⌊                         \n... more");
+                "!                         dir                       mkdir                     then\n... more");
+        say(HELP_COMMAND + " -m module_var | namespace - list the module help for this module");
+        say("                E.g.");
+        say("                   load('/path/to/module.mdl');");
+        say("                 my:/ns/foo  ");
+        say("                   )help -m my:/ns/foo");
+        say("                 (whatever help is for the module displays.)");
+        say("                See also )funcs module_var to list all of the functions in a module");
     }
 
     protected void showGeneralHelp() {
@@ -2659,12 +2666,14 @@ public class WorkspaceCommands implements Logable, Serializable {
             say("list [" + COMPACT_ALIAS_SWITCH + "|" + LIST_MODULES_SWITCH + "]");
             sayi("List all user defined functions.");
             sayi("list module - list all the functions in a given module");
-            sayi(COMPACT_ALIAS_SWITCH + " will collapse all modules to show by alias.");
-            sayi(LIST_MODULES_SWITCH + " List modules as well. Default is just what you've defined.");
+            sayi("              Note that the module name must be the last argument if there are");
+            sayi("              formatting switches.");
+            sayi(COMPACT_ALIAS_SWITCH + " will collapse all old style modules to show by alias.");
+            sayi(LIST_MODULES_SWITCH + " List old style module_import as well. Default is just what you've defined.");
             sayi(LIST_INTRINSIC_SWITCH + " List intrinsic functions as well. Default is not to show them.");
             sayi("    Note that you cannot modify or query them, simply see what they are named.");
-            sayi("You  may omit the list command and any argument will be processed as a module,");
-            sayi("so be aware.");
+            sayi("You  may omit the list command and any argument will be processed as a module");
+            sayi("variable, so be aware.");
             return RC_NO_OP;
         }
         boolean listFQ = inputLine.hasArg(FQ_SWITCH);
@@ -5495,7 +5504,11 @@ public class WorkspaceCommands implements Logable, Serializable {
             }
         }
         if (doJSON) {
-            return _jsonWSSLoad(fullPath, compressionOn);
+            Object rc = _jsonWSSLoad(fullPath, compressionOn);
+            if (!keepCurrentWS) {
+                currentWorkspace = fullPath;
+            }
+            return rc;
         }
         loadOK = _xmlWSJavaLoad(fullPath);
         if (!loadOK) {
