@@ -173,7 +173,6 @@ a.
                     out.putLongOrString(key, value);
                 } else {
                     out.put(autoIndex++, value);
-
                 }
             } // end for
             return out;
@@ -497,7 +496,7 @@ a.
 
     @Override
     public String toString() {
-        return "StemSubsettingNode{" +
+        return "StemExtractionNode{" +
                 "indexArgs=" + indexArgs +
                 '}';
     }

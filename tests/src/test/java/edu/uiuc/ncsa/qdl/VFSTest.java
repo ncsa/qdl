@@ -8,9 +8,11 @@ import edu.uiuc.ncsa.qdl.exceptions.QDLServerModeException;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.vfs.*;
+import edu.uiuc.ncsa.security.core.configuration.StorageConfigurationTags;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.storage.sql.ConnectionPool;
+import edu.uiuc.ncsa.security.storage.sql.ConnectionPoolProvider;
 import edu.uiuc.ncsa.security.storage.sql.derby.DerbyConnectionParameters;
 import edu.uiuc.ncsa.security.storage.sql.mysql.MySQLConnectionParameters;
 import edu.uiuc.ncsa.security.storage.sql.mysql.MySQLConnectionPool;
@@ -518,13 +520,14 @@ public class VFSTest extends AbstractQDLTester {
             params = new DerbyConnectionParameters(
                     getXp().getString(DERBY + USERNAME).trim(),
                     getXp().getString(DERBY + PASSWORD).trim(),
+                    getXp().getString(DERBY + StorageConfigurationTags.FS_PATH).trim(),
                     getXp().getString(DERBY + DATABASE).trim(),
                     getXp().getString(DERBY + SCHEMA).trim(),
                     "localhost",
                     1527,
                     "org.apache.derby.jdbc.EmbeddedDriver",
                     false,
-                    false,
+                    getXp().getString(DERBY + ConnectionPoolProvider.DERBY_STORE_TYPE).trim(),
                     getXp().getString(DERBY + BOOT_PASSWORD).trim(),
                     ""
             );

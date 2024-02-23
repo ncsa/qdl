@@ -123,15 +123,10 @@ SCIENTIFIC_NUMBER : Decimal (E SIGN? Integer)?;
             ForAll : '∀' ;       // unicode 2200
        ContainsKey : '∋' | '∌';  // unicode 220B, 220C
     Exponentiation : '^';
-         Transpose : '⦰';  // 29b0
-             Apply : '⍺'; //237A
- //    ExprDyadicOps : '∈' | '∉' | '∋' | '∌' | '⌆' | '⦰'; // 2306 29b0 operations that require expressions left and right
-     ExprDyadicOps :  '⌆' ; // 2306 29b0 operations that require expressions left and right
- //    FRefDyadicOps :  '∀' | '⨀' | '⨁' ; //  2a00 2a01 29b0 ops that have a function ref for LHS
-     FRefDyadicOps :   '⊙' | '⊕' ; //  2297 2295  ops that have a function ref for LHS
-
-    // Note that the extra characters for && and || are there because certain unicode aware keyboards
-    // have them rather than the correct one. \u22c0 \u22c1 are for n-ary expressions properly
+         Transpose : '⦰';  // unicode 29b0
+             Apply : '⍺';  // unicode 237A
+     ExprDyadicOps : '⌆' ; // unicode 2306
+     FRefDyadicOps : '⊙' | '⊕' ; //  2297 2295  ops that have a function ref for LHS
                And : '&&'  | '∧'  ; // unicode  2227
                 Or : '||'  | '∨'  ; // unicode  2228
           Backtick : '`';
@@ -151,7 +146,7 @@ SCIENTIFIC_NUMBER : Decimal (E SIGN? Integer)?;
            Ceiling : '⌈'; // unicode 2308
      FunctionMarker: '@' | '⊗';  // unicode 2297
        AltIfMarker : '?' | '⇒' ; // unicode 21d2
-       SwitchMarker : '¿' | '?!' ; // unicode 00bf
+      SwitchMarker : '¿' | '?!' ; // unicode 00bf
             ASSIGN : '≔' | ':=' | '≕' | '=:' | '+=' | '-=' | (Times '=') | (Divide '=') | '%=' | '^=' ;  // unicode 2254, 2255
 
 // Remember that changing this file is taking your life in your hands, since tiny changes here

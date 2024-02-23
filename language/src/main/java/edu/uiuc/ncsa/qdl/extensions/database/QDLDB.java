@@ -7,6 +7,7 @@ import edu.uiuc.ncsa.qdl.extensions.QDLVariable;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
 import edu.uiuc.ncsa.qdl.variables.*;
+import edu.uiuc.ncsa.security.core.configuration.StorageConfigurationTags;
 import edu.uiuc.ncsa.security.core.exceptions.GeneralException;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
@@ -119,7 +120,9 @@ public class QDLDB implements QDLModuleMetaClass {
                 doc.add(PARAMETERS + " = (optional) extra connection parameters");
                 doc.add(USE_SSL + " = use ssl. Make sure your database is properly configured for SSL first.");
                 doc.add(BOOT_PASSWORD + " = the boot password (Derby only)");
-                doc.add(IN_MEMORY + " = in memory only (Derby only)");
+                doc.add(StorageConfigurationTags.DERBY_STORE_TYPE_MEMORY + " = in memory only (Derby only)");
+                doc.add(StorageConfigurationTags.DERBY_STORE_TYPE_FILE + " = file only (Derby only)");
+                doc.add(StorageConfigurationTags.DERBY_STORE_TYPE_SERVER + " = server only (Derby only)");
                 doc.add(TYPE_ARG + " = the type. One of " + MYSQL_TYPE + ", " + MARIADB_TYPE + ", " + POSTGRES_TYPE + " or " + DERBY_TYPE);
 
             }

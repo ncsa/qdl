@@ -15,6 +15,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
+import java.time.LocalTime;
 import java.util.Date;
 
 /**
@@ -706,12 +707,18 @@ public class MathEvaluator extends AbstractEvaluator {
                         r.resultType = Constant.LONG_TYPE;
                         r.result = objects[0];
                     } else {
-                        // assume its and ISO 8601 date and should lbe converted to millis
+                        // assume it's and ISO 8601 date and should le converted to millis
                         try {
+                            String x = objects.toString().trim();
+                            if(!x.endsWith("Z")){
+                                // try it as a local time
+                                LocalTime localTime =LocalTime.parse(x);
+                            }
                             Long ts = Iso8601.string2Date(objects[0].toString()).getTimeInMillis();
                             r.resultType = Constant.LONG_TYPE;
                             r.result = ts;
                         } catch (Throwable t) {
+
                             r.result = objects[0];
                             r.resultType = polyad.getArguments().get(0).getResultType();
                         }
