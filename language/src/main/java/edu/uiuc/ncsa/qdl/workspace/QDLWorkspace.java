@@ -267,7 +267,7 @@ public class QDLWorkspace implements Serializable {
         while (keepLooping) {
             String input;
             input = workspaceCommands.readline(INDENT);
-            //  System.out.println("  got fom readline:" + input);
+            //  System.out.println("  got from readline:" + input);
             keepLooping = (Boolean) execute(input);
         }
     }

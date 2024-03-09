@@ -26,6 +26,7 @@ public class QDLSASConfigurationLoader<T extends QDLSASEnvironment> extends SASC
         return (T) new QDLSASEnvironment(loggerProvider.get(),
                 (Store<? extends SASClient>) getCSP().get(),
                 new QDLSASActionDeserializer(),
-                new ResponseSerializer());
+                new ResponseSerializer(),
+                getAccessList());
     }
 }

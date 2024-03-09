@@ -55,7 +55,12 @@ public class QDLExe implements Executable, QDLSASConstants {
         State state = createState();
         workspaceCommands = new QDLSASWorkspaceCommands();
         workspaceCommands.setState(state);
+        // bootstrapping issue. Need workspace commands to exist to set itin the qdlWorkspace,
+        // so load it here usign default configuration, set the IO then call init() to
+        // actually do the rest of the setup.
         try {
+            // zero-th argument is assumed to be calling program name, so is ignored.
+            // no name for the configuration causes the one named "default" to be used.
             workspaceCommands.fromConfigFile(new InputLine("foo", "-cfg", "/home/ncsa/dev/csd/config/qdl-cfg.xml"));
         } catch (Throwable e) {
             e.printStackTrace();
@@ -65,6 +70,8 @@ public class QDLExe implements Executable, QDLSASConstants {
         StringIO stringIO = new StringIO("");
         workspaceCommands.setIoInterface(stringIO);
         try {
+            // Empty input line causes general setup (loading online help) then passes everything over
+            // to the command line startup
             workspaceCommands.init(new InputLine());
         } catch (Throwable e) {
             e.printStackTrace();

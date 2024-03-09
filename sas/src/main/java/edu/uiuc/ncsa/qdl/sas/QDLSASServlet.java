@@ -11,7 +11,8 @@ import edu.uiuc.ncsa.sas.SASServlet;
  */
 public class QDLSASServlet extends SASServlet {
     @Override
-    public Executable createExecutable() {
+    public Executable createExecutable(String executableName) {
+        // only one is supported.
         return new QDLExe();
     }
 }
