@@ -645,6 +645,73 @@ public class ModuleTests extends AbstractQDLTester {
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "failed to resolve module function reference as function argument";
     }
+
+    public void testGithub45() throws Throwable {
+        testGithub45(ROUNDTRIP_NONE);
+        testGithub45(ROUNDTRIP_JSON);
+        testGithub45(ROUNDTRIP_QDL);
+    }
+
+    // test for https://github.com/ncsa/qdl/issues/45
+    // A module state bug
+    public void testGithub45(int testCase) throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        // triply nested module. The key here is that at each level it picks up local
+        // state both  in the module and passed in. This has a very complex VStack at
+        // evaluation time.
+        addLine(script,
+                "module['a:c'][\n" +
+                "   module['a:b'][\n" +
+                "      module['a:a'][\n" +
+                "        t(u,v,w,x,y,z)->u+v+w+x+y+z;\n" +
+                "      ]; // end a:a\n" +
+                "     A:= import('a:a');\n" +
+                "     a:='a';\n" +
+                "     b:='b';\n" +
+                "     s(u,v,w,x)->A#t(u,v,w,x,a,b);\n" +
+                "   ]; // end a:b\n" +
+                "  B:=import('a:b');\n" +
+                "  c:='c';\n" +
+                "  r(u,v,w)->B#s(u,v,w,c);\n" +
+                "]; // end a:c\n" +
+                " // pqrst\n" +
+                "C:=import('a:c');\n" +
+                "d:='d';\n" +
+                "e:='e';\n" +
+                "q(u)->C#r(u,d,e);\n" +
+                "zz:='zz';");
+        state = rountripState(state, script, testCase);
+        addLine(script, "ok := q(zz)=='zzdecab';");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "regression for GitLab issue 45, module state bug accessing module functions";
+    }
+
+    /*
+    module['a:c'][
+       module['a:b'][
+          module['a:a'][
+            t(u,v,w,x,y,z)->u+v+w+x+y+z;
+          ]; // end a:a
+         A:= import('a:a');
+         a:='a';
+         b:='b';
+         s(u,v,w,x)->A#t(u,v,w,x,a,b);
+       ]; // end a:b
+      B:=import('a:b');
+      c:='c';
+      r(u,v,w)->B#s(u,v,w,c);
+    ]; // end a:c
+     // pqrst
+    C:=import('a:c');
+    d:='d';
+    e:='e';
+    q(u)->C#r(u,d,e);
+    zz:='zz';
+    q(zz);
+     */
+
     /*
     module['a:b'][p:=4;module['a:a'][a:=4;f(x)->(p+a)*x^2;];w:=import('a:a','share');];
 

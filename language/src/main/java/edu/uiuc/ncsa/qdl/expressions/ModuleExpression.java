@@ -179,20 +179,37 @@ public class ModuleExpression extends ExpressionImpl {
         } else {
 
             if (isNewModuleVersion()) {
-
                 // create a new state object for function resolution. This should have the
                 // current variables in the ambient state, but the variables, imported modules and functions
                 // in the module (or encapsulation breaks!!)
                 State newState = null;
-              //  try {
-                    newState = StateUtils.clone(getModuleState());
-                    newState.getVStack().appendTables(getAmbientState().getVStack());
-                    newState.setModuleState(true);
-                /*} catch (IOException e) {
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
-                }*/
+                newState = StateUtils.clone(getModuleState());
+                newState.getVStack().appendTables(getAmbientState().getVStack());  // add in the state of the module
+                // Partial fix for https://github.com/ncsa/qdl/issues/45
+                
+                // Fuller discussion:
+                // There is good argument that the next should add in all of the ambient state.
+                // But probably not here. The local part definitely should be on the top of the stack,
+                // Now we have
+                //
+                //  calling function local state :: current module ambient state :: module state
+                //
+                // but should this really be
+                //
+                //  calling function local state :: current module ambient state :: rest of calling function state :: module state
+                //
+                // Or something else?? This was discovered by the call
+
+                 // λat(requested)->test_util#at_lifetime(server_defaults., client., requested);
+                //
+                // where the LHS argument of requested was not getting set. But it would be possible to have something like
+                // a(x) -> Q#f(x,3) -> W#g(1,x,4)
+                // I.e. to have the RHS be a lambda function that does this and is called by another lambda function.
+                //
+
+                newState.getVStack().append(ambientState.getVStack().getLocal()); // add in any passed in state (e.g. function arguments to module functions)
+                newState.setModuleState(true);
+
                 Object r = null;
                 if (getExpression() instanceof Polyad) {
                     ((Polyad) getExpression()).evaluatedArgs(newState);
@@ -231,7 +248,7 @@ public class ModuleExpression extends ExpressionImpl {
                 Polyad f = (Polyad) getExpression();
                 List evaluatedArgs = new ArrayList();
                 for (int i = 0; i < f.getArgCount(); i++) {
-                    evaluatedArgs.add( f.evalArg(i, ambientState));
+                    evaluatedArgs.add(f.evalArg(i, ambientState));
                 }
                 f.setEvaluatedArgs(evaluatedArgs);
             }

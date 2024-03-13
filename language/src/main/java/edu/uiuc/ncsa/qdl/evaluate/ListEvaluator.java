@@ -264,6 +264,7 @@ public class ListEvaluator extends AbstractEvaluator {
                                            ^ targetArgIndex
      */
     protected void doListCopyOrInsert(Polyad polyad, State state, boolean doInsert) {
+        // Fixes https://github.com/ncsa/qdl/issues/31
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{2, 3, 45});
             polyad.setEvaluated(true);
