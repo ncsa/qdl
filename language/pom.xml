@@ -6,7 +6,7 @@
     <parent>
         <groupId>edu.uiuc.ncsa.qdl</groupId>
         <artifactId>qdl</artifactId>
-        <version>1.5-QDL-SNAPSHOT</version>
+        <version>1.5.5</version>
     </parent>
 
     <artifactId>language</artifactId>
@@ -194,13 +194,13 @@
         <dependency>
             <groupId>edu.uiuc.ncsa.security</groupId>
             <artifactId>storage</artifactId>
-            <version>5.3-SNAPSHOT</version>
+            <version>5.5</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>edu.uiuc.ncsa.security</groupId>
             <artifactId>util</artifactId>
-            <version>5.3-SNAPSHOT</version>
+            <version>5.5</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -258,7 +258,7 @@
         <dependency>
             <groupId>edu.uiuc.ncsa.security</groupId>
             <artifactId>sas-server</artifactId>
-            <version>5.3-SNAPSHOT</version>
+            <version>5.5</version>
             <type>jar</type>
         </dependency>
     </dependencies>
