@@ -1982,7 +1982,7 @@ public class StemEvaluator extends AbstractEvaluator {
             }
             // if neither is a scalar, do the next bit,
         }
-        QDLStem result = leftArg.hasKeys(rightArg);
+        QDLStem result = leftArg.hasKey(rightArg);
         polyad.setEvaluated(true);
         polyad.setResult(result);
         polyad.setResultType(STEM_TYPE);
@@ -2592,6 +2592,7 @@ public class StemEvaluator extends AbstractEvaluator {
      * The result is that each key in arg. is renamed, but the values are not changed.
      * If a key is in indices. and does not correspond to one on the left, it is skipped,
      * by subsetting rule.
+     * If  a key is indices and the old and new value are the same, it is skipped.
      * <br/><br/> Limitations are that it applies to the zeroth axis, modifies arg. and
      * the indices. are different than remap.
      *

@@ -1154,11 +1154,12 @@ public class ParserTest extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testHasKeys() throws Throwable {
+        // Part of https://github.com/ncsa/qdl/issues/46
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "var. := random(5);");
         addLine(script, "w. := n(10);");
-        addLine(script, "z. := has_keys(w., var.);");
+        addLine(script, "z. := has_keys( var., w.);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         // so the first 5 entries are true, the next 5 are false.

@@ -786,8 +786,9 @@ public class QDLStem implements Map<String, Object>, Serializable {
       */
     public void renameKeys(QDLStem newKeys, boolean overWriteKeys) {
         for (Object oldKey : newKeys.keySet()) {
+            Object newKey = newKeys.get(oldKey);
+            if(newKey.equals(oldKey)) continue;
             if (containsKey(oldKey)) {
-                Object newKey = newKeys.get(oldKey);
                 if (containsKey(newKey)) {
                     if (overWriteKeys) {
                         Object oldValue = get(oldKey);
@@ -853,21 +854,29 @@ public class QDLStem implements Map<String, Object>, Serializable {
      */
     public QDLStem hasKeys(QDLStem keyList) {
         QDLStem result = newInstance();
-        for(Object k : keySet()){
-            result.putLongOrString(k, keyList.containsKey(k));
+        if(!keyList.isList()){
+            throw new IllegalArgumentException("has keys requires a list");
         }
-/*        for (int i = 0; i < keyList.size(); i++) {
-            // for loop to be sure that everything is done in order.
-            String index = Integer.toString(i);
-            if (!keyList.containsKey(index)) {
-                throw new IllegalArgumentException("the set of supplied keys is not a list");
-            }
-            result.put(index, containsKey(keyList.get(index).toString()));
-        }*/
+        for(Object ndx : keyList.getQDLList().orderedKeys()){
+            result.put((Long)ndx, containsKey(keyList.get((Long)ndx))); // since we know it's a list
+        }
         return result;
     }
 
+    /**
+     * Modern successor to the deprecated {@link #hasKeys(QDLStem)}. This returns a left conformable
+     * stem as it should.
+     * @param keyList
+     * @return
+     */
+    public QDLStem hasKey(QDLStem keyList) {
+    QDLStem result = newInstance();
 
+    for(Object k : keySet()){
+        result.putLongOrString(k, keyList.containsKey(k));
+    }
+    return result;
+}
     /* ********
          IndexEntry operations
        ********* */
