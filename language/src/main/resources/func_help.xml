@@ -658,9 +658,11 @@ See also: copy]]>
     </entry>
     <entry id="remap">
         <body>
-            <![CDATA[Take the elements in arg. and create a new stem. There are two cases:
+            <![CDATA[Take the elements in argument(s) and create a new stem. There are three cases:
+#1 remap(arg.) - reverses the keys and values. Note that this only uses the values that are integers
+              or strings, since those are the only indices allowed.
 
-remap(source_list., index_list.) - returns the elements of source_list.
+#2 remap(source_list., index_list.) - returns the elements of source_list.
           as specified in index_list. The result is always a simple list.
 
 The contract runs as follows. If
@@ -684,7 +686,7 @@ Note that
   r.4 := source_list.9
 
 Most general case
-remap(source_list., old_indices., new_indices) - returns the elements of source_list.
+#3 remap(source_list., old_indices., new_indices) - returns the elements of source_list.
           as specified by (assuming out. is the returned result)
 
           out.new_indices.i := source_list.old_indices.i

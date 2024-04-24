@@ -764,22 +764,31 @@ public class StemEvaluator extends AbstractEvaluator {
 
     private void doRemap(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3});
+            polyad.setResult(new int[]{1, 2, 3});
             polyad.setEvaluated(true);
             return;
         }
-        if (polyad.getArgCount() < 2) {
+  /*      if (polyad.getArgCount() < 2) {
             throw new MissingArgException(REMAP + " requires at least two arguments", polyad.getArgCount() == 1 ? polyad.getArgAt(0) : polyad);
         }
         if (3 < polyad.getArgCount()) {
             throw new ExtraArgException(REMAP + " takes at most 3 arguments", polyad.getArgAt(3));
-        }
+        }*/
         Object arg1 = polyad.evalArg(0, state);
         checkNull(arg1, polyad.getArgAt(0));
         if (!isStem(arg1)) {
             throw new BadArgException(REMAP + " requires stem as its first argument", polyad.getArgAt(0));
         }
         QDLStem stem = (QDLStem) arg1;
+        if (polyad.getArgCount() == 1) {
+            // reverse keys and values
+            QDLStem out = reverseKeysAndValues(stem);
+            polyad.setResult(out);
+            polyad.setEvaluated(true);
+            polyad.setResultType(STEM_TYPE);
+            return;
+        }
+
         Object arg2 = polyad.evalArg(1, state);
         checkNull(arg2, polyad.getArgAt(1));
 
@@ -808,6 +817,19 @@ public class StemEvaluator extends AbstractEvaluator {
 
     }
 
+    protected QDLStem reverseKeysAndValues(QDLStem inStem) {
+        QDLStem out = new QDLStem();
+        for (Object kk : inStem.keySet()) {
+            Object v = inStem.get(kk);
+            if (isLong(v) || isString(v)) {
+                out.putLongOrString(v, kk);
+            }
+            if (isStem(v)) {
+                out.putLongOrString(kk, reverseKeysAndValues((QDLStem) v));
+            }
+        }
+        return out;
+    }
     protected void doIndices(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{1, 2});

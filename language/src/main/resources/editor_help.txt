@@ -1,4 +1,5 @@
-Help for the editor.
+Help for the editor. This also applies to the main QDL input
+panel when using the GUI.
 (To get help for a topic, select the word, hit F1).
 
 To see the special characters, select this word in the input window:
