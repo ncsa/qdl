@@ -37,13 +37,44 @@ import java.util.List;
  *     <li>{@link #readTextFileAsStem(State, String)}  - reads a text file as a stem list. </li>
  *     <li>{@link #writeTextFile(State, String, String)}</li>
  *     <li>{@link #readAttributes(State, String)} - get the attributes for a file (length, name, path...)</li>
- *     
+ *
  * </ul>
  * These are a facade for several calls. Note that for all workspace programming you should use these
  * <p>Created by Jeff Gaynor<br>
  * on 1/29/20 at  9:52 AM
  */
 public class QDLFileUtil extends FileUtil {
+    /**
+     * Reads an {@link InputStream} as a string, does <i>not</i> close it when done!
+     *
+     * @param inputStream
+     * @return
+     * @throws Throwable
+     */
+    public static String isToString(InputStream inputStream) throws IOException {
+        InputStreamReader isr = new InputStreamReader(inputStream);
+        return readerToString(isr);
+    }
+
+    public static String readerToString(Reader reader) throws IOException {
+        if(reader == null){
+            return "";
+        }
+        BufferedReader bufferedReader;
+
+        if(reader instanceof BufferedReader){
+           bufferedReader = (BufferedReader) reader;
+        }else{
+            bufferedReader = new BufferedReader(reader);
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+            String lineIn = bufferedReader.readLine();
+            while (lineIn != null) {
+                stringBuilder.append(lineIn + "\n");
+                lineIn = bufferedReader.readLine();
+            }
+        return stringBuilder.toString();
+    }
 
     public static QDLStem readFileAsStem(String fileName) throws Throwable {
         checkFile(fileName);
@@ -71,10 +102,10 @@ public class QDLFileUtil extends FileUtil {
     public static List<String> readTextFileAsLines(State state, String fullPath) throws Throwable {
         if (isVFSPath(fullPath)) {
             String x = readTextVFS(state, fullPath);
-            if(x == null){
+            if (x == null) {
                 return null;
             }
-          return  StringUtils.stringToList(x);
+            return StringUtils.stringToList(x);
         }
         if (state.isServerMode()) {
             throw new QDLServerModeException("unsupported in server mode");
@@ -84,6 +115,7 @@ public class QDLFileUtil extends FileUtil {
 
     /**
      * Main entry point for reading a text file as lines
+     *
      * @param state
      * @param fullPath
      * @return
@@ -101,6 +133,7 @@ public class QDLFileUtil extends FileUtil {
 
     /**
      * main entry point for reading a text file as a stem.
+     *
      * @param state
      * @param fullPath
      * @return
@@ -115,6 +148,7 @@ public class QDLFileUtil extends FileUtil {
 
     /**
      * Main entry point for reading a binary file.
+     *
      * @param state
      * @param fullPath
      * @return
@@ -132,6 +166,7 @@ public class QDLFileUtil extends FileUtil {
 
     /**
      * Main entry point for writing a binary file
+     *
      * @param state
      * @param fullPath
      * @param bytes
@@ -147,7 +182,7 @@ public class QDLFileUtil extends FileUtil {
         Files.write(Paths.get(fullPath), bytes);
     }
 
-    public static void writeTextFile(State state, String fullPath, String contents) throws Throwable{
+    public static void writeTextFile(State state, String fullPath, String contents) throws Throwable {
         if (isVFSPath(fullPath)) {
             writeTextVFS(state, fullPath, contents);
         }
@@ -158,7 +193,7 @@ public class QDLFileUtil extends FileUtil {
     }
 
 
-    public static void writeTextFile(State state, String fullPath, List<String> contents) throws Throwable{
+    public static void writeTextFile(State state, String fullPath, List<String> contents) throws Throwable {
         if (isVFSPath(fullPath)) {
             writeTextVFS(state, fullPath, StringUtils.listToString(contents));
         }
@@ -220,7 +255,7 @@ public class QDLFileUtil extends FileUtil {
     public static byte[] readBinaryVFS(State state, String path) throws Throwable {
         VFSFileProvider vfs = getVfsFileProvider(state, path);
         VFSEntry vfsEntry = vfs.get(path, AbstractEvaluator.FILE_OP_BINARY);
-        if(vfsEntry == null){
+        if (vfsEntry == null) {
             throw new QDLFileNotFoundException("file '" + path + "' not found");
         }
         return vfsEntry.getBytes();
@@ -229,7 +264,7 @@ public class QDLFileUtil extends FileUtil {
     public static String readTextVFS(State state, String path) throws Throwable {
         VFSFileProvider vfs = getVfsFileProvider(state, path);
         VFSEntry vfsEntry = vfs.get(path, AbstractEvaluator.FILE_OP_TEXT_STRING);
-        if(vfsEntry == null){
+        if (vfsEntry == null) {
             throw new QDLFileNotFoundException("file '" + path + "' not found");
         }
         return vfsEntry.getText();
@@ -379,6 +414,7 @@ public class QDLFileUtil extends FileUtil {
 
     /**
      * Read off the file attributes (such as name, length etc.) from the given file
+     *
      * @param state
      * @param fullPath
      * @return
@@ -413,19 +449,20 @@ public class QDLFileUtil extends FileUtil {
 
     }
 
-    public static InputStream readFileAsInputStream(State state, String fullPath) throws Throwable{
-        if(isVFSPath(fullPath)){
+    public static InputStream readFileAsInputStream(State state, String fullPath) throws Throwable {
+        if (isVFSPath(fullPath)) {
             return new ByteArrayInputStream(readBinaryVFS(state, fullPath));
         }
         if (state.isServerMode()) {
-             throw new QDLServerModeException("This operation is unsupported in server mode.");
-         }
+            throw new QDLServerModeException("This operation is unsupported in server mode.");
+        }
         return new FileInputStream(new File(fullPath));
     }
 
-      public static void copy(State state, String source, String target) throws Throwable {
+    public static void copy(State state, String source, String target) throws Throwable {
         writeBinaryFile(state, target, readBinaryFile(state, source));
-      }
+    }
+
     public static void main(String[] args) {
         System.out.println(resolvePath("/a/b/c", "p/q"));
         System.out.println(resolvePath("vfs#/a/b/c", "p/q"));

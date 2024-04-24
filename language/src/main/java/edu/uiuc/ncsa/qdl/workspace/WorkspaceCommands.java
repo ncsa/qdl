@@ -95,6 +95,8 @@ import static edu.uiuc.ncsa.security.util.cli.CLIDriver.HELP_SWITCH;
  */
 public class WorkspaceCommands implements Logable, Serializable {
 
+    private InputStream helpS;
+
     public WorkspaceCommands() {
     }
 
@@ -6018,7 +6020,19 @@ public class WorkspaceCommands implements Logable, Serializable {
                     }
                 }
             }
-
+            helpStream.close();
+            // now add the editor help
+            helpStream = getClass().getResourceAsStream("/editor_help.txt");
+            String x = "(missing help)";
+            try{
+                x= QDLFileUtil.isToString(helpStream);
+                helpStream.close();
+            }catch(IOException iox){
+                 if(isDebugOn()){
+                     iox.printStackTrace();
+                 }
+            }
+            onlineHelp.put("editor", x);
         }
         if (inputLine.hasArg(CONFIG_FILE_FLAG)) {
             fromConfigFile(inputLine);

@@ -221,7 +221,13 @@
             <version>42.4.3</version>
             <scope>provided</scope>
         </dependency>
-
+        <!-- For DynamoDB support -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>aws-sdk-java</artifactId>
+            <version>2.25.36</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>

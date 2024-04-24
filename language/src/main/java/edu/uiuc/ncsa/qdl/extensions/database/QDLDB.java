@@ -47,6 +47,7 @@ public class QDLDB implements QDLModuleMetaClass {
     public static final String MYSQL_TYPE = "mysql";
     public static final String MARIADB_TYPE = "mariadb";
     public static final String POSTGRES_TYPE = "postgres";
+    public static final String DYNAMODB_TYPE = "dynamodb";
     public static final String DERBY_TYPE = "derby";
     public static final String TYPE_ARG = "type";
     ConnectionPool connectionPool;
@@ -96,6 +97,8 @@ public class QDLDB implements QDLModuleMetaClass {
                 case POSTGRES_TYPE:
                     connection = new PostgresConnectionParameters(json);
                     connectionPool = new ConnectionPool(connection, ConnectionPool.CONNECTION_TYPE_POSTGRES);
+                    break;
+                case DYNAMODB_TYPE:
                     break;
                 default:
                     throw new IllegalArgumentException("unknown database type");

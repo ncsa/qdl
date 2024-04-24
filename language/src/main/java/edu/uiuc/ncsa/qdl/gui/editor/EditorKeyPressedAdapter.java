@@ -4,6 +4,7 @@ import edu.uiuc.ncsa.qdl.gui.LineUtil;
 import edu.uiuc.ncsa.qdl.parsing.QDLParserDriver;
 import edu.uiuc.ncsa.qdl.parsing.QDLRunner;
 import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
@@ -101,23 +102,14 @@ public class EditorKeyPressedAdapter extends KeyAdapter {
 
             InputStream helpStream = getClass().getResourceAsStream("/editor_help.txt");
             if (helpStream != null) {
-                InputStreamReader isr = new InputStreamReader(helpStream);
-                BufferedReader bufferedReader = new BufferedReader(isr);
-                StringBuilder stringBuilder = new StringBuilder();
                 try {
-                    String lineIn = bufferedReader.readLine();
-                    while (lineIn != null) {
-                        stringBuilder.append(lineIn + "\n");
-                        lineIn = bufferedReader.readLine();
-                    }
-                    guiHelp = stringBuilder.toString();
-                    bufferedReader.close();
+                    guiHelp = QDLFileUtil.isToString(helpStream);
+                    helpStream.close();
                 } catch (IOException e) {
                     if (DebugUtil.isEnabled()) {
                         e.printStackTrace();
                     }
                 }
-
             }
         }
         return guiHelp;
@@ -173,28 +165,28 @@ public class EditorKeyPressedAdapter extends KeyAdapter {
             case KeyEvent.VK_I:
                 // Insert in input form
                 if (e.isControlDown()) {
-                        try {
-                            String out = (String) getClipboard().getData(DataFlavor.stringFlavor);
-                            out = LineUtil.toInputForm(out, e.isShiftDown());
-                            String content = input.getText();
-                            int position = input.getCaretPosition();
-                            StringBuilder stringBuilder = new StringBuilder();
-                            stringBuilder.append(content.substring(0, position));
-                            stringBuilder.append(out);
-                            if (position + 1 < content.length()) {
-                                stringBuilder.append(content.substring(position + 1));
-                            }
-                            input.setText(null);
-                            input.setText(stringBuilder.toString());
-                            input.repaint();
-                            input.setCaretPosition(position);
-
-                        } catch (UnsupportedFlavorException | IOException ex) {
-                            if (DebugUtil.isEnabled()) {
-                                ex.printStackTrace();
-                            }
-                            break;
+                    try {
+                        String out = (String) getClipboard().getData(DataFlavor.stringFlavor);
+                        out = LineUtil.toInputForm(out, e.isShiftDown());
+                        String content = input.getText();
+                        int position = input.getCaretPosition();
+                        StringBuilder stringBuilder = new StringBuilder();
+                        stringBuilder.append(content.substring(0, position));
+                        stringBuilder.append(out);
+                        if (position + 1 < content.length()) {
+                            stringBuilder.append(content.substring(position + 1));
                         }
+                        input.setText(null);
+                        input.setText(stringBuilder.toString());
+                        input.repaint();
+                        input.setCaretPosition(position);
+
+                    } catch (UnsupportedFlavorException | IOException ex) {
+                        if (DebugUtil.isEnabled()) {
+                            ex.printStackTrace();
+                        }
+                        break;
+                    }
                 }
                 break;
             case KeyEvent.VK_H:
@@ -285,10 +277,10 @@ public class EditorKeyPressedAdapter extends KeyAdapter {
             case KeyEvent.VK_F1:
                 // If no selected text, put up a generic help message. Otherwise,
                 // search online help.
-                if(e.isControlDown()&& !e.isAltDown()){
+                if (e.isControlDown() && !e.isAltDown()) {
                     String x = getHelp("keyboard");
                     if (x != null) {
-                       String helpMessage = x;
+                        String helpMessage = x;
                     }
                     showHelp("QDL keyboard layout", x);
                     break;
@@ -362,7 +354,6 @@ public class EditorKeyPressedAdapter extends KeyAdapter {
                 break;
         }
     }
-
 
 
     protected void doQuit(boolean forceQuit) {
