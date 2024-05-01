@@ -904,7 +904,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
         if (indexList.get(indexList.size() - 1) instanceof QDLStem) {
             QDLStem ndx = (QDLStem) indexList.get(indexList.size() - 1);
             if (!ndx.isList()) {
-                throw new IllegalArgumentException("stem index list must be a list");
+                throw new IndexError("stem index list must be a list", null);
             }
             Object obj = null;
             QDLList qdlList = ndx.getQDLList();

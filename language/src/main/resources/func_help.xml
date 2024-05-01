@@ -721,7 +721,7 @@ you can then recast as needed.
 See also: transpose, n (function), rename_keys]]>
         </body>
         <example>
-            <![CDATA[E.g. monadic use:
+            <![CDATA[E.g. monadic uses:
   c. := {'isMemberOf':'is_member_of', 'voPersonID':'vo_person_id'}
   remap(c.)
 {is_member_of:isMemberOf, vo_person_id:voPersonID}
@@ -732,6 +732,14 @@ E.g. for the monadic case, a stem kept at the same index and the keys/values
 {b:s, v:{is_member_of:isMemberOf, vo_person_id:voPersonID}}
 
 Note that b and s are swapped, the stem at v is swapped.
+
+E.g. One way to get an error
+  remap([-5;2])
+index -5 out of bounds for list of length 0
+
+Remember that setting relative indices requires they exist first. In this case
+0 and -5 were to be swapped but that is not possible, since there are not enough
+entries.
 
 E.g: Turn an array into a flat list
    a. := [;5]

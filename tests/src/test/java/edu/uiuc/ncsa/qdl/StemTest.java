@@ -969,6 +969,101 @@ public class StemTest extends AbstractQDLTester {
     }
 
     /*
+  a.:= [;5]
+  a.100 := 11
+  a.200 := 12
+  a.300 := 14
+  a.400 := 15
+  a.(-2)
+     */
+
+    /**
+     * Test for signed indices in stems.
+     * @throws Throwable
+     */
+    public void testRelativeIndices() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "  a.:= [;5];\n" +
+                "  a.100 := 11;\n" +
+                "  a.200 := 12;\n" +
+                "  a.300 := 14;\n" +
+                "  a.400 := 15;");
+        addLine(script, "ok0 := a.(-1)==15;"); // gets the last sparse index
+        addLine(script, "ok1 := a.(-2)==14;"); // gets the nest to last sparse index
+        addLine(script, "ok2 := a.(-4)==11;"); // gets the first sparse index
+        addLine(script, "ok3 := a.(-5)==4;"); // gets the last contiguous index
+        addLine(script, "ok4 := a.(-9)==0;"); // gets the first contiguous index
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "failed to get last sparse entry using relative index -1";
+        assert getBooleanValue("ok2", state) : "failed to get next to last sparse entry using relative index -2";
+        assert getBooleanValue("ok1", state) : "failed to get first sparse entry using relative index -4";
+        assert getBooleanValue("ok3", state) : "failed to get last contiguous entry for relative index -5";
+        assert getBooleanValue("ok4", state) : "failed to get first contiguous entry for relative index -9";
+    }
+
+    public void testBadRelativeIndex() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "  a.:= [;5];\n" +
+                "  a.100 := 11;\n" +
+                "  a.200 := 12;\n" +
+                "  a.300 := 14;\n" +
+                "  a.400 := 15;");
+        addLine(script, "a.(-100);"); // way outside range. Has to fail
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        boolean testOK = true;
+        try{
+            interpreter.execute(script.toString());
+            testOK = false;
+        }catch(IndexError t){
+        }
+        assert testOK : "attempt to get relative index outside of range should have failed";
+    }
+
+    public void testRelativeIndicesSet() throws Throwable {
+           State state = testUtils.getNewState();
+           StringBuffer script = new StringBuffer();
+           addLine(script, "  a.:= [;5];\n" +
+                   "  a.100 := 11;\n" +
+                   "  a.200 := 12;\n" +
+                   "  a.300 := 14;\n" +
+                   "  a.400 := 15;");
+           addLine(script, "a.(-1):=42;");
+           addLine(script, "a.(-4):=1000;");
+           addLine(script, "a.(-6):=1111;");
+           addLine(script, "ok0 := a.400==42;"); // gets the last sparse index
+           addLine(script, "ok1 := a.100==1000;"); // gets the nest to last sparse index
+           addLine(script, "ok2 := a.3==1111;"); // gets the first sparse index
+           QDLInterpreter interpreter = new QDLInterpreter(null, state);
+           interpreter.execute(script.toString());
+           assert getBooleanValue("ok0", state) : "failed to set last sparse entry using relative index -1";
+           assert getBooleanValue("ok2", state) : "failed to set next to last sparse entry using relative index -4";
+           assert getBooleanValue("ok1", state) : "failed to set contiguous entry using relative index -6";
+       }
+
+    public void testBadRelativeIndicesSet() throws Throwable {
+           State state = testUtils.getNewState();
+           StringBuffer script = new StringBuffer();
+           addLine(script, "  a.:= [;5];\n" +
+                   "  a.100 := 11;\n" +
+                   "  a.200 := 12;\n" +
+                   "  a.300 := 14;\n" +
+                   "  a.400 := 15;");
+           addLine(script, "a.(-100):=0;");
+           QDLInterpreter interpreter = new QDLInterpreter(null, state);
+           boolean testOk = true;
+           try {
+               interpreter.execute(script.toString());
+               testOk = false;
+           }catch (IndexError indexError){
+
+           }
+           assert testOk : "Was able to set relative index outside of list";
+       }
+
+    /*
     a.:=[;10];
     remove(a.3)
     b.:=[-10;0]
@@ -988,6 +1083,7 @@ public class StemTest extends AbstractQDLTester {
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "failed to round trip JSON array with QDL nulls in it.";
     }
+
 
     public void testSparseListCopySourceFail() throws Throwable {
         // The source is missing some entries, so this should fail with an index error

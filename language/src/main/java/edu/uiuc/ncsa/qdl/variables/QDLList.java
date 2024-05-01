@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl.variables;
 
+import edu.uiuc.ncsa.qdl.exceptions.IndexError;
 import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.state.QDLConstants;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
@@ -285,10 +286,63 @@ subset(b., 3, 6)
 
 
     public Object get(long index) {
-        if (index < 0L) {
-            index = size() + index;
+        // Fixes https://github.com/ncsa/qdl/issues/47
+        if (index < 0) {
+            return getRelativeAddress(index);
         }
-        if (index < arrayList.size()) {
+        return getAbsoluteAddress(index);
+    }
+
+    /**
+     * Used in cases where the index < 0 and we have to compute it relative to the other indices.
+     * Note that for sparse entries, this can be expensive, so a few special cases are handled directly.
+     * Searching a sparse list for a relative address will be at worst linear because of the way
+     * {@link TreeSet} is implemented.
+     *
+     * @param originalIndex
+     * @return
+     */
+    protected Object getRelativeAddress(long originalIndex) {
+        int s = size();
+        long index = originalIndex + s;
+        if (index < 0L) {
+            // we' tried to wrap around once, but more than that should fail
+            throw new IndexError("index " + originalIndex + " out of bounds for list of length " + s, null);
+        }
+        if (index < arrayList.size()) { // so it's in the array list unless the next condition fails
+            return arrayList.get((int) index);
+        }
+        // It's a sparse entry. A tree set may have entries like {100:3, 200:4} and
+        // get originalIndex = -1 would mean returning the value associated with 200.
+        if (originalIndex == -1) {
+            return getSparseEntries().last().entry;
+        }
+        index = index - arrayList.size(); // restricts to indices in Sparse entries.
+        if (index == 0) {
+            return getSparseEntries().first().entry;
+        }
+        // neither first nor last, now we have to iterate. This is s-l-o-o-o-w.
+        Iterator<SparseEntry> it = getSparseEntries().iterator();
+        int i = 0;
+        SparseEntry current = null;
+        while (it.hasNext() && i <= index) {  // want to jump out at i == index.
+            current = it.next();
+            i++;
+        }
+        return current.entry;
+    }
+
+    /*
+      a.:= [;5]
+      a.100 := 11
+      a.200 := 12
+      a.300 := 14
+      a.400 := 15
+      a.(-2)
+      a.
+     */
+    protected Object getAbsoluteAddress(long index) {
+        if (index < arrayList.size()) { // so it's in the array list
             return arrayList.get((int) index);
         }
         // It's a sparse entry
@@ -735,12 +789,88 @@ subset(b., 3, 6)
     }
 
     public void set(long index, Object element) {
-        //if (isInt(index)) {
         if (index == 0 && getArrayList().size() == 0) {
             // edge case
             getArrayList().add(element);
             return;
         }
+        if (0 <= index) {
+            setAbsoluteIndex(index, element);
+            return;
+        }
+        // Fixes https://github.com/ncsa/qdl/issues/48
+        setRelativeIndex(index, element);
+    }
+      /*
+             int s = size();
+        long index = originalIndex + s;
+        if (index < 0L) {
+            // we' tried to wrap around once, but more than that should fail
+            throw new IndexError("index " + originalIndex + " out of bounds for list of length " + s, null);
+        }
+        if (index < arrayList.size()) { // so it's in the array list unless the next condition fails
+            return arrayList.get((int) index);
+        }
+        // It's a sparse entry. A tree set may have entries like {100:3, 200:4} and
+        // get originalIndex = -1 would mean returning the value associated with 200.
+        if (originalIndex == -1) {
+            return getSparseEntries().last().entry;
+        }
+        index = index - arrayList.size(); // restricts to indices in Sparse entries.
+        if (index == 0) {
+            return getSparseEntries().first().entry;
+        }
+        // neither first nor last, now we have to iterate. This is s-l-o-o-o-w.
+        Iterator<SparseEntry> it = getSparseEntries().iterator();
+        int i = 0;
+        SparseEntry current = null;
+        while (it.hasNext() && i <= index) {  // want to jump out at i == index.
+            current = it.next();
+            i++;
+        }
+        return current.entry;
+       */
+
+    /**
+     * Set a relative value. Note that unlike absolute addresses, relative ones must exist prior to being
+     * set. So a.42 can always be set (may result in a sparse entry) but a.(-42) requires there be at least 42 elements
+     *
+     * @param originalIndex
+     * @param element
+     */
+    protected void setRelativeIndex(long originalIndex, Object element) {
+        int s = size();
+        long index = originalIndex + s;
+        if (index < 0L) {
+            // we' tried to wrap around once, but more than that should fail
+            throw new IndexError("index " + originalIndex + " out of bounds for list of length " + s, null);
+        }
+        if (index < getArrayList().size()) {
+            getArrayList().set((int) index, element);
+            return;
+        }
+        if (originalIndex == -1) {
+            getSparseEntries().last().entry = element;
+            return;
+        }
+        index = index - arrayList.size(); // restricts to indices in Sparse entries.
+        if (index == 0) {
+            getSparseEntries().first().entry = element;
+            return;
+        }
+
+        Iterator<SparseEntry> it = getSparseEntries().iterator();
+        int i = 0;
+        SparseEntry current = null;
+        while (it.hasNext() && i <= index) {  // want to jump out at i == index.
+            current = it.next();
+            i++;
+        }
+        current.entry = element;
+    }
+
+    protected void setAbsoluteIndex(long index, Object element) {
+
         if (index < getArrayList().size()) {
             if (index < 0) {
                 getArrayList().set((int) (getArrayList().size() + (index % getArrayList().size())), element);
@@ -1117,8 +1247,8 @@ subset(b., 3, 6)
                     if (!vv.isEmpty()) {
                         newList.add(vv);
                     }
-                }else{
-                    if(!c.contains(sparseEntry.entry)){
+                } else {
+                    if (!c.contains(sparseEntry.entry)) {
                         newList.add(sparseEntry.entry);
                     }
                 }
