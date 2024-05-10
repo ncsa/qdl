@@ -472,27 +472,38 @@ public class TMathEvaluator extends AbstractEvaluator {
         if (polyad.getArgCount() == 0) {
             // implicit assumption that the exponent is 1.
             polyad.setResult(getPi(state.getOpEvaluator().getMathContext()));
-        } else {
-            exponent = polyad.evalArg(0, state);
-
-            MathContext mathContext = OpEvaluator.getMathContext();
-            BigDecimal rr = null;
-            if (isLong(exponent)) {
-                rr = pow(getPi(mathContext), (Long) exponent, mathContext);
-            }
-            if (isBigDecimal(exponent)) {
-                rr = pow(getPi(mathContext), (BigDecimal) exponent, mathContext);
-            }
-            if (rr == null) {
-                throw new BadArgException("argument must be a number", polyad.getArgAt(0));
-            }
-            polyad.setResult(rr);
-
+            polyad.setResultType(Constant.DECIMAL_TYPE);
+            polyad.setEvaluated(true);
+            return;
         }
-        polyad.setResultType(Constant.DECIMAL_TYPE);
-        polyad.setEvaluated(true);
-    }
+        MathContext mathContext = OpEvaluator.getMathContext();
 
+        fPointer pointer = new fPointer() {
+        @Override
+        public fpResult process(Object... objects) {
+            fpResult r = new fpResult();
+            BigDecimal bd = null;
+            Object ob = objects[0];
+            if (ob instanceof Long) {
+                bd = pow(getPi(mathContext), (Long) ob, mathContext);
+            }
+            if (ob instanceof BigDecimal) {
+                bd = pow(getPi(mathContext), (BigDecimal) ob, mathContext);
+            }
+
+            if (bd == null) {
+                throw new BadArgException( PI + " requires a number", polyad.getArgAt(0));
+            }
+
+          //  r.result = evaluateBD(bd, OpEvaluator.getMathContext(), PI);
+            r.result = bd;
+            r.resultType = Constant.DECIMAL_TYPE;
+            return r;
+        }
+    };
+
+                process1(polyad, pointer, PI, state);
+    }
     @Override
     public int getType(String name) {
         switch (name) {

@@ -721,7 +721,8 @@ you can then recast as needed.
 See also: transpose, n (function), rename_keys]]>
         </body>
         <example>
-            <![CDATA[E.g. monadic uses:
+            <![CDATA[Monadic remap
+=============
   c. := {'isMemberOf':'is_member_of', 'voPersonID':'vo_person_id'}
   remap(c.)
 {is_member_of:isMemberOf, vo_person_id:voPersonID}
@@ -741,6 +742,14 @@ Remember that setting relative indices requires they exist first. In this case
 0 and -5 were to be swapped but that is not possible, since there are not enough
 entries.
 
+Compare with
+  remap([5,4,3,2,1,-1,-2])
+{1:4, 2:3, 3:2, 4:6, 5:5}
+However this works since the elements are remapped in order, and the final elements
+still refer to list elements.
+
+Dyadic remap
+============
 E.g: Turn an array into a flat list
    a. := [;5]
    a.'foo' := 'bar'
@@ -4885,6 +4894,32 @@ See also: unicode, greek]]>
 You may create them in various ways using slices or simply enter
 the elements directly between square brackets.
 
+Lists may be sparse, so
+
+    a.42 := 2;
+  a.1000 := 3;
+
+is a perfectly fine definition.
+
+Note that QDL allows signed indices as well, where -1 is the first element from the end of the list,
+etc.
+   a.:=[;5]
+   a.(-1)
+4
+
+This gets the last element in the list. For sparse lists, this works too:
+   a.1000 := 10;
+   a.2000 := 20;
+   a.(-1)
+20
+   a.(-3)
+4
+
+One point is that signed indices must still correspond to elements in the list,
+so this does not wrap around the list:
+   a.(-100)
+index error
+   
 See also: stem, slice]]>
         </body>
         <example>
