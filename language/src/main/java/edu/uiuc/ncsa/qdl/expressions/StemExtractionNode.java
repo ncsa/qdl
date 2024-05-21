@@ -361,7 +361,7 @@ a.
         IndexArgs swris = new IndexArgs();
         int left = 0;
         int right = 1; // indices
-        if ((!(indices.get(left).swri instanceof StemExtractionNode)) && (!(indices.get(right).swri instanceof StemExtractionNode))) {
+        if (indices.size() == 2 && (!(indices.get(left).swri instanceof StemExtractionNode)) && (!(indices.get(right).swri instanceof StemExtractionNode))) {
             // simplest case: a\* so nothing to linearize.
             swris.add(indices.get(left), state);
             swris.add(indices.get(right), state);
@@ -390,6 +390,24 @@ a.
         return swris;
     }
 
+    protected IndexArgs checkIfAlreadyLinearized(State state) {
+        IndexArgs swris = new IndexArgs();
+        int last = indexArgs.size() - 1;
+        for (int i = 0; i < indexArgs.size(); i++) {
+            if (indexArgs.get(i).swri instanceof StemExtractionNode) {
+                // jump out
+                return null;
+            }
+            if (i == last) {
+                swris.add(indexArgs.get(i), state); // state is appended with the final one
+            } else {
+                swris.add(indexArgs.get(i));
+            }
+        }
+        return swris;
+
+    }
+
     /**
      * Start linearizing the tree. This treats trees balanced on the right directly,and calls another
      * method if there is a left hand tree.
@@ -397,15 +415,24 @@ a.
      * @return
      */
     protected List<IndexArg> linearize(State state) {
-        IndexArgs swris = new IndexArgs();
-        int left = 0;
-        int right = 1; // indices
-        if ((!(indexArgs.get(left).swri instanceof StemExtractionNode)) && (!(indexArgs.get(right).swri instanceof StemExtractionNode))) {
-            // simplest case: a\*, a\i. so nothing to linearize.
-            swris.add(indexArgs.get(left));
-            swris.add(indexArgs.get(right), state);
+        IndexArgs swris = checkIfAlreadyLinearized(state); // Fix https://github.com/ncsa/qdl/issues/49
+        if (swris != null) {
             return swris;
         }
+        swris = new IndexArgs();
+        int left = 0;
+        int right = 1; // indices
+/*
+        if ((!(indexArgs.get(0).swri instanceof StemExtractionNode)) &&
+                (!(indexArgs.get(indexArgs.size()-1).swri instanceof StemExtractionNode))) {
+            // simplest case: a\*, a\i. already linearized.
+            for(int i = 0; i < indexArgs.size()-1; i++){
+                swris.add(indexArgs.get(i));
+            }
+            swris.add(indexArgs.get(indexArgs.size()-1), state);
+            return swris;
+        }
+*/
         boolean isStrict = indexArgs.get(right).strictOrder; // This is read as part of the operator, so previous op has it.
         boolean interpretAsList = indexArgs.get(right).interpretListArg;
         List<IndexArg> currentIAs = indexArgs;
@@ -500,8 +527,9 @@ a.
                 "indexArgs=" + indexArgs +
                 '}';
     }
+
     @Override
-        public int getNodeType() {
-            return STEM_EXTRACTION_NODE;
-        }
+    public int getNodeType() {
+        return STEM_EXTRACTION_NODE;
+    }
 }
