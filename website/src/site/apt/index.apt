@@ -53,7 +53,11 @@ Documentation
     scripts on a server (such as OA4MP). This describes the syntax that is needed to specify scripts and blocks
     of code.
 
-    *{{{./pdf/old-module-reference.pdf}Old module documentation}} Modules have gotten an overhaul but the old
+    *{{{./pdf/module-reference.pdf}Module documentation}}How to use the new version 2,0 module system which offers
+    much better usability. Chief innovation: modules are now just variables, so you can pass them around and operate
+    on them.
+
+    *{{{./pdf/old-module-reference.pdf}Old module documentation}} Modules for version 1.0. They have gotten an overhaul but the old
     machinery still works. The documentation has been moved fom the main refernce to here if you need it. Generally
     you should use the module machinery that is current. (So load, import, use etc., not module_load, module_import, etc.)
 
