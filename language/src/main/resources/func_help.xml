@@ -6075,6 +6075,7 @@ The mode refers to how the state is inherited. The options are
 inherit = The state at the time of importing the module is cloned
           and is availble to the state. This means that updates to the
           state are not known to the module.
+These are also entries in the constants() under module_modes.
 
 E.g.
    z := import('my:/extension/module')

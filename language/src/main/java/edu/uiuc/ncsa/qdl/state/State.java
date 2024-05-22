@@ -53,6 +53,7 @@ import java.security.SecureRandom;
 import java.util.*;
 import java.util.logging.Logger;
 
+import static edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator.*;
 import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.*;
 
 /**
@@ -524,6 +525,12 @@ public class State extends FunctionState implements QDLConstants {
         logLevels.put(SYS_LOG_ERROR, SystemEvaluator.LOG_LEVEL_ERROR);
         logLevels.put(SYS_LOG_SEVERE, SystemEvaluator.LOG_LEVEL_SEVERE);
         systemConstants.put(SYS_LOG_LEVELS, logLevels);
+
+        QDLStem moduleImportModes = new QDLStem();
+        moduleImportModes.put(IMPORT_STATE_SNAPSHOT, (long)IMPORT_STATE_SNAPSHOT_VALUE);
+        moduleImportModes.put(IMPORT_STATE_SHARE, (long)IMPORT_STATE_SHARE_VALUE);
+        moduleImportModes.put(IMPORT_STATE_NONE, (long)IMPORT_STATE_NONE_VALUE);
+        systemConstants.put(SYS_MODULE_IMPORT_MODES, moduleImportModes);
 
     }
 

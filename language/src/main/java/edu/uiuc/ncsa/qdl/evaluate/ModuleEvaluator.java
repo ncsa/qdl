@@ -93,7 +93,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
     public static final String USE = "use";
     public static final int USE_TYPE = 3 + MODULE_FUNCTION_BASE_VALUE;
 
-    public static final String DROP = "drop";
+    public static final String DROP = "unload";
     public static final int DROP_TYPE = 4 + MODULE_FUNCTION_BASE_VALUE;
     public static final String RENAME = "rename";
     public static final int RENAME_TYPE = 4 + MODULE_FUNCTION_BASE_VALUE;
@@ -114,9 +114,15 @@ public class ModuleEvaluator extends AbstractEvaluator {
     public static final String JAVA_MODULE_USE = "j_use";
     public static final int JAVA_MODULE_USE_TYPE = 10 + MODULE_FUNCTION_BASE_VALUE;
 
+    public static final String ADD_LIB_ENTRIES = "lib_entries";
+    public static final int ADD_LIB_ENTRIES_TYPE = 11 + MODULE_FUNCTION_BASE_VALUE;
+
 
     public boolean dispatch(Polyad polyad, State state) {
         switch (polyad.getName()) {
+            case ADD_LIB_ENTRIES:
+                doLibEntries(polyad, state);
+                return true;
             case IMPORT:
                 doImport(polyad, state);
                 return true;
@@ -130,7 +136,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
                 doRenameURIs(polyad, state);
                 return true;
             case DROP:
-                doDrop(polyad, state);
+                doUnload(polyad, state);
                 return true;
             case GET_FUNCTIONS:
                 doGetFunctions(polyad, state);
@@ -155,6 +161,52 @@ public class ModuleEvaluator extends AbstractEvaluator {
     }
 
     /**
+     * Exposes the {@link State#addLibEntries(String, QDLStem)} so the user can add them.
+     * @param polyad
+     * @param state
+     */
+    private void doLibEntries(Polyad polyad, State state) {
+        if (polyad.isSizeQuery()) {
+              polyad.setResult(new int[]{0, 2});
+              polyad.setEvaluated(true);
+              return;
+          }
+        if(polyad.getArgCount() == 0){
+            polyad.setEvaluated(true);
+            QDLStem info = state.getSystemInfo();
+            polyad.setResult(info.get("lib"));
+            polyad.setResultType(Constant.getType(polyad.getResult()));
+            return;
+        }
+        Object x = polyad.evalArg(0,state);
+        if(!isString(x)){
+            throw new BadArgException("the first argument of " + ADD_LIB_ENTRIES + " must be a (string) key", polyad.getArgAt(0));
+        }
+        String name = (String)x;
+        x = polyad.evalArg(1, state);
+        if(!isStem(x)){
+            throw new BadArgException("the first argument of " + ADD_LIB_ENTRIES + " must be a (string) key", polyad.getArgAt(0));
+        }
+        QDLStem stem = (QDLStem) x;
+        if(((QDLStem) x).isList()){
+            throw new BadArgException("the second argument of " + ADD_LIB_ENTRIES + " must not be a list", polyad.getArgAt(0));
+        }
+        state.addLibEntries(name, stem);
+        polyad.setEvaluated(true);
+        QDLStem info = state.getSystemInfo();
+        polyad.setResult(info.get("lib"));
+        polyad.setResultType(Constant.getType(polyad.getResult()));
+
+
+        /*
+        lib_entries() - queries all and returns a ste
+        lib_entries(key, stem.) adds a bunch.
+         */
+    }
+
+    /**
+     * Rename loaded module(s). This accepts an old value (that is the unique URI for the loaded modules)
+     * and chnages the name to the new value. Currently imported modules are not altered. <br/><br/>
      * Arguments are:
      * <ul>
      *
@@ -501,6 +553,8 @@ public class ModuleEvaluator extends AbstractEvaluator {
     }
 
     /**
+     * Drop i.e., remove a loaded template from the system. This returns a list of uris that were
+     * removed.<br/><br/>
      * Contract is
      * <ul>
      *     <li>string</li>
@@ -512,7 +566,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
      * @param polyad
      * @param state
      */
-    private void doDrop(Polyad polyad, State state) {
+    private void doUnload(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{1});
             polyad.setEvaluated(true);
@@ -764,6 +818,16 @@ public class ModuleEvaluator extends AbstractEvaluator {
 
     }
 
+    /**
+     * Eithjer
+     * <ul>
+     *     <li>import(string) - namespace</li>
+     *     <li>import(string, mode) - mode is a string or integer</li>
+     * </ul>
+     * returns the instance of the module.
+     * @param polyad
+     * @param state
+     */
     protected void doImport(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{1, 2});

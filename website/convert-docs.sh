@@ -18,6 +18,7 @@ lowriter --headless --convert-to pdf ${args[0]}/qdl_reference.odt        > /dev/
 lowriter --headless --convert-to pdf ${args[0]}/qdl_scripting.odt        > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/qdl_server_scripts.odt   > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/old-module-reference.odt > /dev/null
+lowriter --headless --convert-to pdf ${args[0]}/module-reference.odt     > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/qdl_swing_gui.odt        > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/qdl_workspace.odt        > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/tutorial.odt             > /dev/null

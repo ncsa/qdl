@@ -139,6 +139,7 @@ public interface QDLConstants {
     String URI_USER_INFO = "user_info";
     String URI_PORT = "port";
 
+    String SYS_MODULE_IMPORT_MODES = "module_modes.";
     String SYS_LOG_LEVELS = "sys_log.";
     String SYS_LOG_NONE = "off";
     String SYS_LOG_TRACE = "trace";

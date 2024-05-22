@@ -38,8 +38,10 @@ public interface QDLConfigurationConstants {
     String MODULE_ATTR_IMPORT_ON_START = "import_on_start";
     String MODULE_ATTR_USE_MODULE = "use";
     String MODULE_ATTR_VERSION = "version";
+    String MODULE_ATTR_VERSION_1_0 = "1.0";
+    String MODULE_ATTR_VERSION_2_0 = "2.0";
     String MODULE_ATTR_ASSIGN_VARIABLE = "var";
-    String MODULE_ATTR_LIB_LOADER = "libLoader";
+    String MODULE_ATTR_LIB_LOADER = "lib_loader";
     String MODULE_FAIL_ON_ERRORS = "fail_on_error";
     String MODULE_ATTR_TYPE = "type";
     String MODULE_TYPE_JAVA = "java";
