@@ -53,7 +53,7 @@ Documentation
     scripts on a server (such as OA4MP). This describes the syntax that is needed to specify scripts and blocks
     of code.
 
-    *{{{./pdf/module-reference.pdf}Module documentation}}How to use the new version 2,0 module system which offers
+    *{{{./pdf/module_reference.pdf}Module documentation}}How to use the new version 2,0 module system which offers
     much better usability. Chief innovation: modules are now just variables, so you can pass them around and operate
     on them.
 

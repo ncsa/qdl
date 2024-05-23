@@ -3,6 +3,7 @@ package edu.uiuc.ncsa.qdl.evaluate;
 import edu.uiuc.ncsa.qdl.config.JavaModuleConfig;
 import edu.uiuc.ncsa.qdl.exceptions.BadArgException;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
+import edu.uiuc.ncsa.qdl.exceptions.WrongArgCountException;
 import edu.uiuc.ncsa.qdl.expressions.ConstantNode;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.module.MTKey;
@@ -14,7 +15,6 @@ import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLList;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
-import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import static edu.uiuc.ncsa.qdl.config.QDLConfigurationConstants.MODULE_ATTR_VERSION_2_0;
 import static edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.MODULE_TYPE_JAVA;
 import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
 
@@ -43,7 +44,10 @@ public class ModuleEvaluator extends AbstractEvaluator {
     public String[] getFunctionNames() {
         if (fNames == null) {
             fNames = new String[]{
+                    ADD_LIB_ENTRIES,
                     LOAD,
+                    DROP,
+                    LOADED,
                     IMPORT,
                     USE,
                     RENAME,
@@ -162,33 +166,40 @@ public class ModuleEvaluator extends AbstractEvaluator {
 
     /**
      * Exposes the {@link State#addLibEntries(String, QDLStem)} so the user can add them.
+     *
      * @param polyad
      * @param state
      */
     private void doLibEntries(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-              polyad.setResult(new int[]{0, 2});
-              polyad.setEvaluated(true);
-              return;
-          }
-        if(polyad.getArgCount() == 0){
+            polyad.setResult(new int[]{0, 2});
+            polyad.setEvaluated(true);
+            return;
+        }
+        if (polyad.getArgCount() == 0) {
             polyad.setEvaluated(true);
             QDLStem info = state.getSystemInfo();
             polyad.setResult(info.get("lib"));
             polyad.setResultType(Constant.getType(polyad.getResult()));
             return;
         }
-        Object x = polyad.evalArg(0,state);
-        if(!isString(x)){
+        if (polyad.getArgCount() == 1) {
+           throw new WrongArgCountException(ADD_LIB_ENTRIES + " requires either no or two arguments", polyad.getArgAt(0));
+       }
+       if (2 < polyad.getArgCount()) {
+           throw new WrongArgCountException(ADD_LIB_ENTRIES + " requires at most two arguments", polyad.getArgAt(2));
+       }
+        Object x = polyad.evalArg(0, state);
+        if (!isString(x)) {
             throw new BadArgException("the first argument of " + ADD_LIB_ENTRIES + " must be a (string) key", polyad.getArgAt(0));
         }
-        String name = (String)x;
+        String name = (String) x;
         x = polyad.evalArg(1, state);
-        if(!isStem(x)){
+        if (!isStem(x)) {
             throw new BadArgException("the first argument of " + ADD_LIB_ENTRIES + " must be a (string) key", polyad.getArgAt(0));
         }
         QDLStem stem = (QDLStem) x;
-        if(((QDLStem) x).isList()){
+        if (((QDLStem) x).isList()) {
             throw new BadArgException("the second argument of " + ADD_LIB_ENTRIES + " must not be a list", polyad.getArgAt(0));
         }
         state.addLibEntries(name, stem);
@@ -223,6 +234,13 @@ public class ModuleEvaluator extends AbstractEvaluator {
             polyad.setResult(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
+        }
+
+        if (polyad.getArgCount() == 0) {
+            throw new WrongArgCountException(RENAME + " requires an argument", polyad);
+        }
+        if (2 < polyad.getArgCount()) {
+            throw new WrongArgCountException(RENAME + " requires at most two arguments", polyad.getArgAt(2));
         }
         QDLStem renameStem;
         Object arg0 = polyad.evalArg(0, state);
@@ -314,6 +332,10 @@ public class ModuleEvaluator extends AbstractEvaluator {
             polyad.setEvaluated(true);
             return;
         }
+
+        if (2 < polyad.getArgCount()) {
+            throw new WrongArgCountException(LOADED + " requires at most two arguments", polyad.getArgAt(2));
+        }
         boolean isScalarArg = true;
         QDLStem inStem = null;
         if (polyad.getArgCount() == 1) {
@@ -397,6 +419,12 @@ public class ModuleEvaluator extends AbstractEvaluator {
             polyad.setEvaluated(true);
             return;
         }
+        if (0 == polyad.getArgCount()) {
+            throw new WrongArgCountException(GET_DOCUMENTATION + " requires an arguments", polyad);
+        }
+        if (1 < polyad.getArgCount()) {
+            throw new WrongArgCountException(GET_DOCUMENTATION + " requires at most one arguments", polyad.getArgAt(1));
+        }
         Module m = getMorT(polyad, state);
         QDLList outList = new QDLList();
         outList.addAll(m.getDocumentation());
@@ -422,7 +450,9 @@ public class ModuleEvaluator extends AbstractEvaluator {
             polyad.setResultType(Constant.getType(polyad.getResult()));
             return;
         }
-
+        if (3 < polyad.getArgCount()) {
+            throw new WrongArgCountException(GET_VARIABLES + " requires at most 3 arguments", polyad.getArgAt(3));
+        }
         Object arg0 = polyad.evalArg(0, state);
 
         if (arg0 instanceof QDLNull) {
@@ -430,7 +460,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
             if (polyad.getArgCount() == 2) {
                 Object arg1 = polyad.evalArg(1, state);
                 if (!isString(arg1)) {
-                    throw new BadArgException(GET_FUNCTIONS + " requires a string regexc as its second argument if the first is null", polyad.getArgAt(1));
+                    throw new BadArgException(GET_VARIABLES + " requires a string regexc as its second argument if the first is null", polyad.getArgAt(1));
                 }
                 regex = (String) arg1;
             }
@@ -454,13 +484,16 @@ public class ModuleEvaluator extends AbstractEvaluator {
 
         }
         Module m = getMorT(polyad, state);
+        if (m == null || m.getState() == null) {
+            throw new BadArgException(GET_VARIABLES + " cannot find the module", polyad.getArgAt(0));
+        }
         String regex = null;
         if (polyad.getArgCount() == 2) {
             Object arg2 = polyad.evalArg(1, state);
             if (isString(arg2)) {
                 regex = (String) arg2;
             } else {
-                throw new BadArgException(GET_FUNCTIONS + " second argument must be a string if present", polyad.getArgAt(1));
+                throw new BadArgException(GET_VARIABLES + " second argument must be a string if present", polyad.getArgAt(1));
             }
         }
 
@@ -512,7 +545,9 @@ public class ModuleEvaluator extends AbstractEvaluator {
             polyad.setResultType(Constant.getType(polyad.getResult()));
             return;
         }
-
+        if (3 < polyad.getArgCount()) {
+            throw new WrongArgCountException(GET_FUNCTIONS + " requires at most 3 arguments", polyad.getArgAt(3));
+        }
         Object arg0 = polyad.evalArg(0, state);
 
         if (arg0 instanceof QDLNull) {
@@ -532,6 +567,11 @@ public class ModuleEvaluator extends AbstractEvaluator {
             return;
         }
         Module m = getMorT(polyad, state);
+        if (m == null || m.getState() == null) {
+            // we found the template they gave, but templates do not have state, hence we cannot
+            // list their functions.
+            throw new BadArgException(GET_FUNCTIONS + " cannot find the module", polyad.getArgAt(0));
+        }
         String regex = null;
         if (polyad.getArgCount() == 2) {
             Object arg2 = polyad.evalArg(1, state);
@@ -571,6 +611,12 @@ public class ModuleEvaluator extends AbstractEvaluator {
             polyad.setResult(new int[]{1});
             polyad.setEvaluated(true);
             return;
+        }
+        if (polyad.getArgCount() == 0) {
+            throw new WrongArgCountException(DROP + " requires an argument", polyad);
+        }
+        if (1 < polyad.getArgCount()) {
+            throw new WrongArgCountException(DROP + " requires at most one argument", polyad);
         }
         Object arg0 = polyad.evalArg(0, state);
         boolean isScalarArg = false;
@@ -627,6 +673,12 @@ public class ModuleEvaluator extends AbstractEvaluator {
             polyad.setEvaluated(true);
             return;
         }
+        if (polyad.getArgCount() == 0) {
+            throw new WrongArgCountException(USE + " requires an argument", polyad);
+        }
+        if (2 < polyad.getArgCount()) {
+            throw new WrongArgCountException(USE + " requires at most two arguments", polyad.getArgAt(2));
+        }
         Object arg = polyad.evalArg(0, state);
         checkNull(arg, polyad.getArgAt(0), state);
         if (arg == QDLNull.getInstance()) {
@@ -678,7 +730,12 @@ public class ModuleEvaluator extends AbstractEvaluator {
             polyad.setEvaluated(true);
             return;
         }
-
+        if (polyad.getArgCount() == 0) {
+            throw new WrongArgCountException(LOAD + " requires an argument", polyad);
+        }
+        if (2 < polyad.getArgCount()) {
+            throw new WrongArgCountException(LOAD + " requires at most two arguments", polyad.getArgAt(2));
+        }
         Object arg = polyad.evalArg(0, state);
 
         if (arg == QDLNull.getInstance()) {
@@ -713,7 +770,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
             JavaModuleConfig jmc = new JavaModuleConfig();
             jmc.setImportOnStart(false);
             jmc.setUse(false);
-            jmc.setVersion(SerializationConstants.VERSION_2_1_TAG);
+            jmc.setVersion(MODULE_ATTR_VERSION_2_0);
             switch (loadTarget) {
                 case LOAD_JAVA:
                     loadedQNames = moduleUtils.doJavaModuleLoad(state, resourceName, jmc);
@@ -825,6 +882,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
      *     <li>import(string, mode) - mode is a string or integer</li>
      * </ul>
      * returns the instance of the module.
+     *
      * @param polyad
      * @param state
      */
@@ -833,6 +891,12 @@ public class ModuleEvaluator extends AbstractEvaluator {
             polyad.setResult(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
+        }
+        if (polyad.getArgCount() == 0) {
+            throw new WrongArgCountException(IMPORT + " requires an argument", polyad);
+        }
+        if (2 < polyad.getArgCount()) {
+            throw new WrongArgCountException(IMPORT + " requires at most two arguments", polyad.getArgAt(2));
         }
         // Basic is to import a single module
         Object arg = polyad.evalArg(0, state);
@@ -948,6 +1012,12 @@ public class ModuleEvaluator extends AbstractEvaluator {
             polyad.setResult(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
+        }
+        if (polyad.getArgCount() == 0) {
+            throw new WrongArgCountException((isLoad ? JAVA_MODULE_LOAD : JAVA_MODULE_USE) + " requires an argument", polyad);
+        }
+        if (2 < polyad.getArgCount()) {
+            throw new WrongArgCountException((isLoad ? JAVA_MODULE_LOAD : JAVA_MODULE_USE) + " requires at most two arguments", polyad.getArgAt(2));
         }
         Object arg = polyad.evalArg(0, state);
         boolean hasAlias = false;

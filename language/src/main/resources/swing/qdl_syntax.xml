@@ -76,7 +76,9 @@ By Jeff Gaynor</classComment>
     <function>dim</function>
     <function>dir</function>
     <function>display</function>
+    <function>docs</function>
     <function>encode</function>
+    <function>excise</function>
     <function>exclude_keys</function>
     <function>execute</function>
     <function>exp</function>
@@ -91,6 +93,7 @@ By Jeff Gaynor</classComment>
     <function>fork</function>
     <function>from_json</function>
     <function>from_uri</function>
+    <function>funcs</function>
     <function>gcd</function>
     <function>halt</function>
     <function>has_key</function>
@@ -101,6 +104,7 @@ By Jeff Gaynor</classComment>
     <function>i</function>
     <function>identity</function>
     <function>include_keys</function>
+    <function>import</function>
     <function>index_of</function>
     <function>indices</function>
     <function>info</function>
@@ -111,11 +115,15 @@ By Jeff Gaynor</classComment>
     <function>is_function</function>
     <function>is_list</function>
     <function>is_null</function>
-    <function>jload</function>
+    <function>j_load</function>
+    <function>j_use</function>
     <function>join</function>
     <function>keys</function>
     <function>kill</function>
+    <function>load</function>
+    <function>loaded</function>
     <function>lcm</function>
+    <function>lib_entries</function>
     <function>list_copy</function>
     <function>list_keys</function>
     <function>ln</function>
@@ -144,6 +152,7 @@ By Jeff Gaynor</classComment>
     <function>reduce</function>
     <function>remap</function>
     <function>remove</function>
+    <function>rename</function>
     <function>rename_keys</function>
     <function>replace</function>
     <function>return</function>
@@ -181,8 +190,11 @@ By Jeff Gaynor</classComment>
     <function>unbox</function>
     <function>union</function>
     <function>unique</function>
+    <function>unload</function>
+    <function>use</function>
     <function>values</function>
     <function>var_type</function>
+    <function>vars</function>
     <function>vfs_mount</function>
     <function>vfs_unmount</function>
     <function>ws_macro</function>
@@ -257,5 +269,6 @@ By Jeff Gaynor</classComment>
     <operator>⟦</operator>
     <operator>⟧</operator>
     <operator>∌</operator>
+    <operator>⍺</operator>
   </operators>
 </TokenMakerDefinition>

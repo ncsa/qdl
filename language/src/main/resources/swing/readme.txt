@@ -24,6 +24,8 @@ Load the syntax file
 
 /home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/swing/qdl_syntax.xml
 
+by using file->open and pasting it in the filename box
+
 Note that the tool generates ok TokenMaker grammar BUT it is kind of broken in the sense
 that the GUI is woefully incomplete and it does not seem to store its own state right,
 you must add each token/function/whatever individually or with a file (caveat! if you use
@@ -39,10 +41,20 @@ There are complete lists of functions and operators at
 If there are changes to QDl that need to show up in the GUI text editor, then reload the
 qdl_syntax file and make additions etc. The bottom >>generate<< button should be pressed!!
 This generates the qdl_syntax.xml file ***AND*** it generates classes in the QDLSyntax.class
-in the correct directory. After the tool generates everything,  it
+in the correct directory.
+
+It should have the line
+
+Writing code to "/home/ncsa/dev/ncsa-git/qdl/language/src/main/java/edu/uiuc/ncsa/qdl/gui/flex/QDLSyntax.java"
+
+in the output window. This means it worked and the GUI is ready for use.
+
+After the tool generates everything,  it
 will nicely bring up a RSyntax window and let yo try out the new QDLSyntax.class. This is one
 very nice feature of this tool.
 
 In theory we can use ANTLR and pass its output through to a TokenMaker class, but no online attempts
 I read to do it seemed to work right and ANTLR's model for issuing tokens is very different
 from JFlex. Nobody seems to be able to bridge the gap, so I'm not even going to bother.
+
+DON'T FORGET TO REVERT THE JVM TO THE RIGHT VERSION!!   

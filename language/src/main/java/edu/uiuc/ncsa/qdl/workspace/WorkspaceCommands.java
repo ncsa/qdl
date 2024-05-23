@@ -6039,7 +6039,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             return;
         }
         // Old input line  Jan. 2020
-        // -ext "edu.uiuc.ncsa.qdl.extensions.QDLLoaderImpl" -qdlroot /home/ncsa/dev/qdl -env etc/qdl.properties -log log/qdl.log -v
+        // -ext "edu.uiuc.ncsa.qdl.extensions.EGLoaderImpl" -qdlroot /home/ncsa/dev/qdl -env etc/qdl.properties -log log/qdl.log -v
         fromCommandLine(inputLine);
 
     }
@@ -6179,7 +6179,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         interpreter = new QDLInterpreter(env, getState());
         if (inputLine.hasArg(CLA_MODULES)) {
-            // -ext "edu.uiuc.ncsa.qdl.extensions.QDLLoaderImpl"
+            // -ext "edu.uiuc.ncsa.qdl.extensions.EGLoaderImpl"
             String loaderClasses = inputLine.getNextArgFor(CLA_MODULES);
             inputLine.removeSwitchAndValue(CLA_MODULES);
             StringTokenizer st = new StringTokenizer(loaderClasses, ",");

@@ -1,6 +1,7 @@
 package edu.uiuc.ncsa.qdl.evaluate;
 
 import edu.uiuc.ncsa.qdl.config.JavaModuleConfig;
+import edu.uiuc.ncsa.qdl.config.QDLConfigurationConstants;
 import edu.uiuc.ncsa.qdl.config.QDLConfigurationLoaderUtils;
 import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.expressions.*;
@@ -27,7 +28,6 @@ import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.variables.*;
 import edu.uiuc.ncsa.qdl.vfs.VFSPaths;
 import edu.uiuc.ncsa.qdl.workspace.QDLWorkspace;
-import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.*;
 import java.util.logging.Level;
 
+import static edu.uiuc.ncsa.qdl.config.QDLConfigurationConstants.MODULE_ATTR_VERSION_1_0;
 import static edu.uiuc.ncsa.qdl.variables.StemUtility.axisWalker;
 import static edu.uiuc.ncsa.qdl.vfs.VFSPaths.SCHEME_DELIMITER;
 import static edu.uiuc.ncsa.security.core.util.DebugConstants.*;
@@ -2482,7 +2483,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             }
             JavaModuleConfig jmc = new JavaModuleConfig();
             jmc.setImportOnStart(false);
-            jmc.setVersion(SerializationConstants.VERSION_2_0_TAG);
+            jmc.setVersion(MODULE_ATTR_VERSION_1_0);
 
             List<String> names = QDLConfigurationLoaderUtils.setupJavaModule(state, qdlLoader, jmc);
             if (names.isEmpty()) {

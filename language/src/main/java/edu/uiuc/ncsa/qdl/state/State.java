@@ -6,6 +6,7 @@ import edu.uiuc.ncsa.qdl.extensions.JavaModule;
 import edu.uiuc.ncsa.qdl.extensions.convert.QDLConvertLoader;
 import edu.uiuc.ncsa.qdl.extensions.crypto.CryptoLoader;
 import edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader;
+import edu.uiuc.ncsa.qdl.extensions.example.EGLoaderImpl;
 import edu.uiuc.ncsa.qdl.extensions.http.QDLHTTPLoader;
 import edu.uiuc.ncsa.qdl.extensions.inputLine.QDLCLIToolsLoader;
 import edu.uiuc.ncsa.qdl.extensions.mail.QDLMailLoader;
@@ -372,6 +373,7 @@ public class State extends FunctionState implements QDLConstants {
         map.put("convert", QDLConvertLoader.class.getCanonicalName());
         map.put("cli", QDLCLIToolsLoader.class.getCanonicalName());
         map.put("mail", QDLMailLoader.class.getCanonicalName());
+        map.put("eg", EGLoaderImpl.class.getCanonicalName());
         return map;
     }
 

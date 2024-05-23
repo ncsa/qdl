@@ -67,16 +67,17 @@ syntax match qdlOperator "\v⍺"
 
 
 
+syntax keyword qdlKeyword  i
 syntax keyword qdlKeyword abs
 syntax keyword qdlKeyword acos
 syntax keyword qdlKeyword acosh
 syntax keyword qdlKeyword append
+syntax keyword qdlKeyword args
 syntax keyword qdlKeyword asin
 syntax keyword qdlKeyword asinh
-syntax keyword qdlKeyword args
-syntax keyword qdlKeyword axis
 syntax keyword qdlKeyword atan
 syntax keyword qdlKeyword atanh
+syntax keyword qdlKeyword axis
 syntax keyword qdlKeyword box
 syntax keyword qdlKeyword break
 syntax keyword qdlKeyword cb_exists
@@ -96,12 +97,14 @@ syntax keyword qdlKeyword date_ms
 syntax keyword qdlKeyword debug
 syntax keyword qdlKeyword decode_b64
 syntax keyword qdlKeyword detokenize
-syntax keyword qdlKeyword differ_at
 syntax keyword qdlKeyword diff
+syntax keyword qdlKeyword differ_at
 syntax keyword qdlKeyword dim
 syntax keyword qdlKeyword dir
 syntax keyword qdlKeyword display
+syntax keyword qdlKeyword docs
 syntax keyword qdlKeyword encode_b64
+syntax keyword qdlKeyword excise
 syntax keyword qdlKeyword exclude_keys
 syntax keyword qdlKeyword execute
 syntax keyword qdlKeyword exp
@@ -109,20 +112,21 @@ syntax keyword qdlKeyword expand
 syntax keyword qdlKeyword file_read
 syntax keyword qdlKeyword file_write
 syntax keyword qdlKeyword floor
-syntax keyword qdlKeyword fork
 syntax keyword qdlKeyword for_each
 syntax keyword qdlKeyword for_keys
 syntax keyword qdlKeyword for_next
+syntax keyword qdlKeyword fork
 syntax keyword qdlKeyword from_hex
 syntax keyword qdlKeyword from_json
 syntax keyword qdlKeyword from_uri
+syntax keyword qdlKeyword funcs
 syntax keyword qdlKeyword halt
 syntax keyword qdlKeyword has_key
 syntax keyword qdlKeyword has_value
 syntax keyword qdlKeyword hash
 syntax keyword qdlKeyword head
-syntax keyword qdlKeyword  i
 syntax keyword qdlKeyword identity
+syntax keyword qdlKeyword import
 syntax keyword qdlKeyword include_keys
 syntax keyword qdlKeyword index_of
 syntax keyword qdlKeyword indices
@@ -133,13 +137,18 @@ syntax keyword qdlKeyword insert_at
 syntax keyword qdlKeyword is_defined
 syntax keyword qdlKeyword is_function
 syntax keyword qdlKeyword is_list
+syntax keyword qdlKeyword j_load
+syntax keyword qdlKeyword j_use
 syntax keyword qdlKeyword join
 syntax keyword qdlKeyword keys
+syntax keyword qdlKeyword lib_entries
 syntax keyword qdlKeyword list_copy
 syntax keyword qdlKeyword list_keys
 syntax keyword qdlKeyword list_starts_with
 syntax keyword qdlKeyword list_subset
 syntax keyword qdlKeyword ln
+syntax keyword qdlKeyword load
+syntax keyword qdlKeyword loaded
 syntax keyword qdlKeyword log
 syntax keyword qdlKeyword log_entry
 syntax keyword qdlKeyword mask
@@ -162,6 +171,7 @@ syntax keyword qdlKeyword reduce
 syntax keyword qdlKeyword remap
 syntax keyword qdlKeyword remove
 syntax keyword qdlKeyword rename_keys
+syntax keyword qdlKeyword rename
 syntax keyword qdlKeyword replace
 syntax keyword qdlKeyword return
 syntax keyword qdlKeyword reverse
@@ -188,8 +198,8 @@ syntax keyword qdlKeyword to_json
 syntax keyword qdlKeyword to_list
 syntax keyword qdlKeyword to_lower
 syntax keyword qdlKeyword to_number
-syntax keyword qdlKeyword to_string
 syntax keyword qdlKeyword to_set
+syntax keyword qdlKeyword to_string
 syntax keyword qdlKeyword to_upper
 syntax keyword qdlKeyword to_uri
 syntax keyword qdlKeyword tokenize
@@ -198,17 +208,13 @@ syntax keyword qdlKeyword trim
 syntax keyword qdlKeyword unbox
 syntax keyword qdlKeyword union
 syntax keyword qdlKeyword unique
+syntax keyword qdlKeyword use
 syntax keyword qdlKeyword var_type
 syntax keyword qdlKeyword vdecode
 syntax keyword qdlKeyword vencode
 syntax keyword qdlKeyword vfs_mount
 syntax keyword qdlKeyword vfs_unmount
 syntax keyword qdlKeyword ws_macro
-syntax keyword qdlKeyword import
-syntax keyword qdlKeyword load
-syntax keyword qdlKeyword use
-syntax keyword qdlKeyword jUse
-syntax keyword qdlKeyword jLoad
 
 highlight link qdlOperator Operator
 

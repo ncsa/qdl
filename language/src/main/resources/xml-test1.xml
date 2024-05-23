@@ -111,7 +111,7 @@ return(n-1)
       </state>
     </module>
     <module alias="java"
-      class_name="edu.uiuc.ncsa.qdl.extensions.example.MyModule"
+      class_name="edu.uiuc.ncsa.qdl.extensions.example.EGModule"
       namespace="qdl:/examples/java" type="java"/>
   </templates>
   <state internal_id="dedffa37-f7de-4e87-8fc3-a2462314cdd3">
@@ -164,7 +164,7 @@ return(n-1)
       </module>
       <!--The imported modules with their state and alias.-->
       <module alias="java"
-        class_name="edu.uiuc.ncsa.qdl.extensions.example.MyModule"
+        class_name="edu.uiuc.ncsa.qdl.extensions.example.EGModule"
         namespace="qdl:/examples/java" type="java"/>
     </imports>
     <stacks>

@@ -12,12 +12,12 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 1/27/20 at  5:44 PM
  */
-public class QDLLoaderImpl implements QDLLoader {
+public class EGLoaderImpl implements QDLLoader {
     @Override
     public List<Module> load(){
-        MyModule myModule = new MyModule();
+        EGModule EGModule = new EGModule();
         ArrayList<Module> modules = new ArrayList<>();
-        modules.add(myModule.newInstance(null));
+        modules.add(EGModule.newInstance(null));
         // Return this list of modules.
         return modules;
     }

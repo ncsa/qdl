@@ -3571,10 +3571,49 @@ module[uri, alias
 Modules may have intrinsic (called private in other languages)
 variables and functions if they start with __ to hide them.
 To see the general comments for a module in the workspace type
-   )modules uri|alias -help
+   )help -m uri|alias
 
-See also: body, module_load, module_import, intrinsic.]]>
+ There is also the full documentation module_reference.pdf in the
+ distro docs directory or on the main QDL website.
+
+See also: body, load, import, intrinsic.]]>
         </body>
+        <example>
+      <![CDATA[An example of loading a module and querying various
+bits of information about. There is an example module shipped in the
+standard QDL distro, so we will use that. First round is how to look
+at everything using functions
+
+   eg := j_load('eg'); // instance creates and put in variable eg
+  loaded(); // list every loaded module in this workspace
+[qdl:/examples/java]
+   vars(eg); // list the variable in this module
+[eg.]
+   funcs(eg); // list the functions in this module
+[concat([2]),f_ref([2])]
+   print(docs(eg)); // print the module documentation, make it readable
+   print(docs(eg))
+    0 :   module name : EGModule
+    1 :     namespace : qdl:/examples/java
+    2 : default alias : eg
+    3 :    java class : edu.uiuc.ncsa.qdl.extensions.example.EGModule
+... more lines
+
+The workspace allows for interactive versions of this.
+   )modules
+qdl:/examples/java -
+  )vars eg
+eg.
+  )funcs eg
+concat([2])  f_ref([2])
+2 total functions
+  )help -m eg
+  module name : EGModule
+    namespace : qdl:/examples/java
+default alias : eg
+   java class : edu.uiuc.ncsa.qdl.extensions.example.EGModule
+... more lines]]>
+           </example>
     </entry>
     <entry id="body">
         <body>
@@ -6146,7 +6185,9 @@ supplied with QDL).
 
 This puts the module into the current scope, which means that whatever
 the scope has can import modules local to the scope and these are
-not kknown outside of the scope.
+not known outside of the scope.
+
+See also: j_load, j_use, unload, rename
   ]]>
        </body>
        <example>
@@ -6315,6 +6356,174 @@ oops
    ]]>
         </example>
     </entry>
+    <entry id="unload">
+       <body>
+  <![CDATA[unload(uri | arg.) - unload modules.
+This returns a conformable result to the argument consisting of
+true if the module was unloaded or false otherwise.
+uri is a string that is the namespace of the module.
+
+See also: rename
+  ]]>
+       </body>
+       <example>
+   <![CDATA[print(loaded())
+       0 : qdl:/ext/math
+       1 : qdl:/extensions
+       2 : qdl:/tools/crypto
+       3 : qdl:/tools/db
+       4 : qdl:/tools/cli
+
+   unload(['qdl:/tools/db','qdl:/tools/crypto','not:loaded'])
+[true,true,true]
+
+In this case, the reseult is that all of the listed modules are not loaded.
+Note that the shape of the result is the shape of the argument. The
+final module was not loaded, but the contract is to report if the
+listed modules are still loaded at the end of processing.]]>
+        </example>
+    </entry>
+
+    <entry id="rename">
+       <body>
+  <![CDATA[rename(old_ns, new_ns) - old_ns replaced by new_ns
+rename(arg.) - arg.old_ns := new_ns
+rename(old_ns., new_ns.) - old_ns.k replaced by new_ns.k
+
+For modules only. This takes a loaded module and changes the
+namespace in the system. A rename only affects the import of
+modules going forward from that point.
+
+Why have this? Because even though modules namespaces are globally
+unique, there is no reason someone can't re-use a namespace for
+a completely unrelated module. In this case, you can load the
+module, rename it, then load a different module and reuse the
+namespace.
+
+See also: unload
+
+  ]]>
+       </body>
+       <example>
+   <![CDATA[Example in a completely clean workspace. Load a couple of modules
+then rename them
+     loaded()
+   []
+     cli:=j_load('cli')
+     crypto:=j_load('crypto')
+     rename({'qdl:/tools/crypto':'qdl:/tools/crypto2','qdl:/tools/cli':'my:/cli','my:foo':'my:bar'})
+   {my:foo:false, qdl:/tools/cli:true, qdl:/tools/crypto:true}
+
+Note that the actual loaded modules were renamed (so the values for them are true)
+whereas the non-existent module my:foo dutifully returned false. The loaded modules
+are now
+
+  loaded()
+[my:/cli,qdl:/tools/crypto2]
+
+Note especially that the two instances of the modules, cli and crypto are unaltered.
+   ]]>
+        </example>
+    </entry>
+
+    <entry id="vars">
+       <body>
+  <![CDATA[         vars() - list all of the variables in the current scope
+   vars(module) - list the variables in the module
+
+This allows for programatically listing the variables vs. the workspace command
+
+)vars
+
+You may supply an instance of a module or if the module has been loaded and
+you want to query it, supply the namespace.
+  ]]>
+       </body>
+       <example>
+   <![CDATA[vars()
+   [a,b,phi]
+
+There are three variables in the current workspace named a, b and phi.
+Compare
+   )vars
+a  b  phi
+
+   math := load('qdl:/ext/math'); // assuming the math module was imported
+   vars(math)
+[primes.]
+
+This tells you that the math module has a single variable named primes.
+Contrast with the workspace command that does the same thing
+  )vars  math
+primes.
+
+   ]]>
+        </example>
+    </entry>
+
+    <entry id="funcs">
+       <body>
+  <![CDATA[         funcs() - list all of the functions in the current scope
+   funcs(module) - list all of the functions in the imported module
+
+This allows for programatically listing the functions vs. the workspace command
+   )funcs
+
+  ]]>
+       </body>
+       <example>
+   <![CDATA[  funcs()
+   [f([1]),g([2])]
+
+ compare with the workspace command
+
+     )funcs
+   f([1])  g([2])
+   2 total functions
+
+ For an imported module
+
+   math:=import('qdl:/ext/math')
+   funcs(math)
+[acot([1]),acoth([1]),acsc([1]),acsch([1]),asec([1]),asech([1]), ...
+  )funcs math
+acot([1])        acsch([1])       cot([1])         csch([1])
+(lots more)
+   
+   ]]>
+        </example>
+    </entry>
+
+    <entry id="docs">
+       <body>
+  <![CDATA[docs(module) - list the module documentation for the module.
+docs(uri) -list the module documentation for the namespace
+
+This is similar to the workspace command
+)help -m namespace | variable
+
+The output of this function is a list of the module level help
+with each line being an entry. The workspace command just dumps
+this text to the console.
+  ]]>
+       </body>
+       <example>
+   <![CDATA[If
+   c := j_load('custom:ns')
+
+for a loaded module, then all the following will produce the same
+output
+   docs(c)
+   docs('custom:ns')
+
+as will the workspace commands
+
+   )help -m c
+   )help -m custom:ns]]>
+        </example>
+    </entry>
+
+
 
     <!--
     <entry id="">

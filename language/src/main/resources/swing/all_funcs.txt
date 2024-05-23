@@ -30,6 +30,7 @@ differ_at
 dim
 dir
 display
+docs
 encode
 exclude_keys
 execute
@@ -45,6 +46,7 @@ for_next
 fork
 from_json
 from_uri
+funcs
 gcd
 halt
 has_key
@@ -54,6 +56,7 @@ hash
 head
 i
 identity
+import
 include_keys
 index_of
 indices
@@ -65,11 +68,15 @@ is_defined
 is_function
 is_list
 is_null
-jload
+j_load
+j_use
 join
 keys
 kill
+load
+loaded
 lcm
+lib_entries
 list_copy
 list_keys
 ln
@@ -99,6 +106,7 @@ reduce
 remap
 remove
 rename_keys
+rename
 replace
 return
 reverse
@@ -135,7 +143,9 @@ trim
 unbox
 union
 unique
+use
 values
+vars
 var_type
 vfs_mount
 vfs_unmount

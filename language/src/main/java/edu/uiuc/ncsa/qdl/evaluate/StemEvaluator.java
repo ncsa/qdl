@@ -546,12 +546,7 @@ public class StemEvaluator extends AbstractEvaluator {
             return;
         }
         QDLStem stem = (QDLStem) arg0;
-/*        if(returnAsString){
-            polyad.setEvaluated(true);
-            polyad.setResult(rFormatStem(stem,keySubset,sortKeys,multilineMode,indent,width));
-            polyad.setResultType(STRING_TYPE);
-          return;
-        }*/
+
         Map map = new HashMap<>();
         for (Object key : stem.keySet()) {
             map.put(key, stem.get(key));
@@ -630,9 +625,6 @@ public class StemEvaluator extends AbstractEvaluator {
 
     }
 
-    /*
-
-     */
     /*
      This should have a signature of
      diff(x.,y.{,true|false})
@@ -768,12 +760,6 @@ public class StemEvaluator extends AbstractEvaluator {
             polyad.setEvaluated(true);
             return;
         }
-  /*      if (polyad.getArgCount() < 2) {
-            throw new MissingArgException(REMAP + " requires at least two arguments", polyad.getArgCount() == 1 ? polyad.getArgAt(0) : polyad);
-        }
-        if (3 < polyad.getArgCount()) {
-            throw new ExtraArgException(REMAP + " takes at most 3 arguments", polyad.getArgAt(3));
-        }*/
         Object arg1 = polyad.evalArg(0, state);
         checkNull(arg1, polyad.getArgAt(0));
         if (!isStem(arg1)) {
@@ -941,25 +927,7 @@ public class StemEvaluator extends AbstractEvaluator {
             return;
         }
         QDLStem output = new QDLStem();
-        // special case single args. Otherwise, have to special case a bunch of stuff in forEachRecursion
 
-  /*      if (stems.length == 1) {
-            // Must be a stem since we tested for scalars above.
-            QDLStem inStem = (QDLStem) stems[0];
-            for (Object key0 : inStem.keySet()) {
-                Object obj = inStem.get(key0);
-                ArrayList<Object> rawArgs = new ArrayList<>();
-                rawArgs.add(obj);
-                f.setArguments(toConstants(rawArgs));
-                f.evaluate(state);
-                output.putLongOrString(key0, f.getResult());
-            }
-            polyad.setResult(output);
-            polyad.setResultType(STEM_TYPE);
-            polyad.setEvaluated(true);
-            return;
-
-        }*/
         // Fixes https://github.com/ncsa/qdl/issues/17
         forEachRecursion(output, f, state, stems, new IndexList(), new ArrayList(), 0);
         polyad.setResult(output);
@@ -1400,7 +1368,6 @@ public class StemEvaluator extends AbstractEvaluator {
                 Object value = stem.get(key);
                 if (!isString(value)) {
                     continue;
-//                    throw new BadArgException(FROM_JSON + " requires a string or stem of strings as its first argument", polyad.getArgAt(0));
                 }
                 try {
                     QDLStem nextStem = new QDLStem();
