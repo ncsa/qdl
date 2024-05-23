@@ -1,5 +1,5 @@
 /*
- * Generated on 3/3/23, 10:01 AM
+ * Generated on 5/23/24, 5:14 PM
  */
 package edu.uiuc.ncsa.qdl.gui.flex;
 
@@ -296,7 +296,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "cosh" |
 "date_iso" |
 "date_ms" |
-"debugger" |
+"debug" |
 "decode" |
 "detokenize" |
 "diff" |
@@ -304,7 +304,9 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "dim" |
 "dir" |
 "display" |
+"docs" |
 "encode" |
+"excise" |
 "exclude_keys" |
 "execute" |
 "exp" |
@@ -319,6 +321,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "fork" |
 "from_json" |
 "from_uri" |
+"funcs" |
 "gcd" |
 "halt" |
 "has_key" |
@@ -328,6 +331,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "head" |
 "i" |
 "identity" |
+"import" |
 "include_keys" |
 "index_of" |
 "indices" |
@@ -339,17 +343,20 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "is_function" |
 "is_list" |
 "is_null" |
-"jload" |
+"j_load" |
+"j_use" |
 "join" |
 "keys" |
 "kill" |
 "lcm" |
+"lib_entries" |
 "list_copy" |
 "list_keys" |
 "ln" |
+"load" |
+"loaded" |
 "log" |
-"logger" |
-"script_name" |
+"log_entry" |
 "mask" |
 "max" |
 "min" |
@@ -373,6 +380,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "reduce" |
 "remap" |
 "remove" |
+"rename" |
 "rename_keys" |
 "replace" |
 "return" |
@@ -410,13 +418,19 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "unbox" |
 "union" |
 "unique" |
+"unload" |
+"use" |
 "values" |
 "var_type" |
+"vars" |
 "vfs_mount" |
 "vfs_unmount" |
 "ws_macro" |
 "π" |
-"τ"		{ addToken(Token.FUNCTION); }
+"⊕" |
+"⊙" |
+"⌆" |
+"⦰"		{ addToken(Token.FUNCTION); }
 
 	{BooleanLiteral}			{ addToken(Token.LITERAL_BOOLEAN); }
 
@@ -468,17 +482,20 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "~" |
 "¬" |
 "¯" |
+"¿" |
 "×" |
 "÷" |
 "⁺" |
 "→" |
+"⇒" |
+"∀" |
 "∃" |
 "∄" |
 "∆" |
 "∈" |
 "∉" |
 "∋" |
-"¿" |
+"∌" |
 "∧" |
 "∨" |
 "∩" |
@@ -495,9 +512,9 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "⊨" |
 "⌈" |
 "⌊" |
+"⍺" |
 "⟦" |
-"⟧" |
-"∌"		{ addToken(Token.OPERATOR); }
+"⟧"		{ addToken(Token.OPERATOR); }
 
 	/* Numbers */
 	{IntegerLiteral}				{ addToken(Token.LITERAL_NUMBER_DECIMAL_INT); }
