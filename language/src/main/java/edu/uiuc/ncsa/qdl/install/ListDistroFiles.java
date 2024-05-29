@@ -71,17 +71,16 @@ public class ListDistroFiles {
      * to the distribution and normalized. Later this list is used to get them
      * as resources from the class loader.
      *
-     * @param roottDirectory
+     * @param rootDirectory
      * @return
      */
-    protected void createFileList(File roottDirectory) {
+    protected void createFileList(File rootDirectory) {
         fileList = new ArrayList<>();
         dirList = new ArrayList<>();
-        rootPathLength = roottDirectory.getAbsolutePath().toString().length();
+        rootPathLength = rootDirectory.getAbsolutePath().toString().length();
         List<String> excludeList = Arrays.asList("installer.mf", "Installer.class", "qdl-installer.jar");
-        File[] files = roottDirectory.listFiles();
+        File[] files = rootDirectory.listFiles();
         for (File f : files) {
-            say("processing " + f);
             if (excludeList.contains(f.getName())) {
                 continue;
             }
@@ -105,7 +104,6 @@ public class ListDistroFiles {
         dirList.add(rootDirectory.getAbsolutePath().substring(rootPathLength));
         File[] files = rootDirectory.listFiles();
         for (File f : files) {
-            say("processing " + f);
             if (f.isDirectory()) {
                 recurse(f);
             } else {
