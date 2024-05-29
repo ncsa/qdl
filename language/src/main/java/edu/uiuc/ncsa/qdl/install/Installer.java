@@ -506,7 +506,8 @@ public class Installer {
                 trace("   setting up qdl script to be executable");
                 doSetupExec(f, rootDir);
             }
-            if (file.equals("/etc/cfg-min.xml")) {
+            if (file.startsWith("/etc/") && file.endsWith(".xml")) {
+                // process xml config files in /etc only.
                 trace("  setting up basic configuration");
                 doSetupConfig(f, rootDir);
             }
