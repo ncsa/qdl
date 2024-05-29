@@ -7,7 +7,6 @@
 
 QDL_SOURCES=$NCSA_DEV_INPUT/qdl/language
 QDL_ROOT=$NCSA_DEV_INPUT/qdl
-QDL_SOURCES=$NCSA_DEV_INPUT/qdl/language
 TARGET_ROOT=$NCSA_DEV_OUTPUT/qdl
 DEFAULT_JAR_NAME="qdl-installer.jar"
 
@@ -31,7 +30,8 @@ fi
 cp "$QDL_SOURCES/target/qdl-jar-with-dependencies.jar" $TARGET_ROOT/lib/qdl.jar
 unzip -p target/qdl-jar-with-dependencies.jar META-INF/MANIFEST.MF > $TARGET_ROOT/lib/build-info.txt
 
-cd $TARGET_ROOT || exit
 # Get the actual manifest so that build info is available.
-jar cmf installer.mf "$JAR_NAME" edu/uiuc/ncsa/qdl/install/Installer.class version.txt  bin docs etc lib log var examples
+cd $TARGET_ROOT || exit
+java  edu.uiuc.ncsa.qdl.install.ListDistroFiles $TARGET_ROOT
+jar cmf installer.mf "$JAR_NAME" edu/uiuc/ncsa/qdl/install/Installer.class version.txt dir_list.txt file_list.txt bin docs etc lib log var examples
 echo '     ... done!'

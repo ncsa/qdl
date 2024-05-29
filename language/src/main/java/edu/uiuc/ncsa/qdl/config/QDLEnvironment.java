@@ -56,7 +56,8 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
                           boolean allowOverwriteBaseFunctions,
                           LibLoader libLoader,
                           boolean ansiModeOn,
-                          String logo) {
+                          String logo,
+                          String terminalType) {
         super(myLogger);
         this.cfgFile = cfgFile;
         this.name = name;
@@ -91,6 +92,17 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
         this.libLoader = libLoader;
         this.ansiModeOn = ansiModeOn;
         this.logo = logo;
+        this.terminalType = terminalType;
+    }
+
+    String terminalType=WS_TERMINAL_TYPE_TEXT; // default
+
+    public String getTerminalType() {
+        return terminalType;
+    }
+
+    public void setTerminalType(String terminalType) {
+        this.terminalType = terminalType;
     }
 
     public String getLogoName() {

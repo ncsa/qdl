@@ -1,5 +1,5 @@
 /*
-   Test that returns from a block statement work. This just echos the zeroth parameter.
+   Test that nested returns from a block statement work. This should return 1.
 */
 block[
   block[

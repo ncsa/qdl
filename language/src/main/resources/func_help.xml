@@ -1164,11 +1164,25 @@ See also: rm - remove a single file]]>
 say(arg) - print anything, invoking arg's to_string.
 say(arg, pretty_print) - print anything, but make the format more vertical (if
                          it's a stem.)
-Note: say returns the value of its argument so this can be used in statements
-for debugging too.
+Note: say returns the value of its argument __before invoking to_string__
+so this can be used in statements for debugging too.
 
 See also: print]]>
         </body>
+        <example>
+             <![CDATA[E.g.
+   a := say(2+2)
+4
+   a+4
+8
+
+In this case, the value of the argument to say, 2+2 is evaluated. This is returned
+before it is converted to a string. Note that it is indeed a numeric value and
+we add 4 to it to prove a point. This lets you embed debug statements in the
+middle of expressions for instance.
+]]>
+        </example>
+
     </entry>
     <entry id="file_read">
         <body>
@@ -4728,6 +4742,11 @@ Stems are extremely flexible objects and can effectively provide any data
 structure you want. Sets are a convenience mostly since emulating sets
 with stems is a bit clunky.
 
+Also do note that some functions change the stem itself vs. returning a
+new stem. Such functions, e.g. excise, remove, etc. operate "in situ" meaning
+"in place or in position" so that they may be used to do surgery
+on stems.
+
 See also: slice, set]]>
         </body>
     </entry>
@@ -5452,7 +5471,10 @@ Output is columnar and of the form
 Where the values may span multiple lines.
 
 Caveat: This is intended for printing information in tabular format for reports, e.g.
-        and is not a general purpose stem formatting function.
+        and is not a general purpose stem formatting function. You use this
+        to format parts of stems that are interesting, since a generic formatting
+        tool for stems would be massively complex to configure, overpowering to
+        view and with maddeningly large output.
 ]]>
         </body>
         <example>

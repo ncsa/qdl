@@ -1,3 +1,4 @@
+#! /usr/bin/env -S qdl-run
 /*
   A test for the switch statement.
   Jeff Gaynor

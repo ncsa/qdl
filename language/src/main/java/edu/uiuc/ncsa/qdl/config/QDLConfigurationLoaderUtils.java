@@ -8,6 +8,7 @@ import edu.uiuc.ncsa.qdl.module.MIWrapper;
 import edu.uiuc.ncsa.qdl.module.MTKey;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
+import edu.uiuc.ncsa.qdl.scripting.QDLScript;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.vfs.*;
@@ -25,6 +26,7 @@ import java.net.URI;
 import java.util.*;
 
 import static edu.uiuc.ncsa.qdl.config.QDLConfigurationConstants.*;
+import static edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.resolveScript;
 import static edu.uiuc.ncsa.security.storage.sql.ConnectionPoolProvider.*;
 
 /**
@@ -196,7 +198,15 @@ public class QDLConfigurationLoaderUtils {
                     String module = null; // actual code in the module
                     if (moduleConfig instanceof QDLModuleConfig) {
                         qmc = (QDLModuleConfig) moduleConfig;
-                        module = QDLFileUtil.readFileAsString(qmc.getPath());
+                        if(QDLFileUtil.isAbsolute(qmc.getPath())){
+                            module = QDLFileUtil.readFileAsString(qmc.getPath());
+
+                        }else{
+                            // try to resolve it against the module path
+                            //  Fixes https://github.com/ncsa/qdl/issues/51
+                            QDLScript script = resolveScript(qmc.getPath(), state.getModulePaths(), state);
+                            module = script == null ? null : script.getText();
+                        }
                     }
                     if (moduleConfig instanceof ResourceModule) {
                         // read it from a resource in the distro, not from a file.

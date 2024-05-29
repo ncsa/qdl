@@ -1,5 +1,8 @@
 /*
   This will generate the first n Fibonaaci numbers and stick the value in a stem
+  This is a procedural example to show how to do this. If you need to compute
+  Fibinacci numbers, loads the math-x module and use the fibonacci(arg) function
+  that can handle extremely large values using Binet's formula.
   Jeff Gaynor
   1/25/2020
 */

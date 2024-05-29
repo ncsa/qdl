@@ -1,3 +1,4 @@
+#! /usr/bin/env -S qdl-run
 /*
   test the scan function in context.
   Jeff Gaynor
@@ -10,3 +11,4 @@ while[
    ]do[
       stop_looping := scan('stop looping? (y/n):');
  ]; //end do
+ say('done!');

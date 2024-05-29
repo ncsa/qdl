@@ -177,6 +177,15 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
         return logo;
     }
 
+    protected String getTerminalType() {
+        ConfigurationNode node = getFirstNode(cn, WS_TAG);
+        String terminalType = getFirstAttribute(node, WS_ATTR_TERMINAL_TYPE);
+        if(StringUtils.isTrivial(terminalType)){
+             terminalType = getFirstAttribute(node, WS_ATTR_TERMINAL_TYPE2); // in case they used the alternate
+        }
+        if (StringUtils.isTrivial(terminalType)) return WS_TERMINAL_TYPE_TEXT; // still nothing. Use default
+        return terminalType;
+    }
     protected boolean isEnabled() {
         return getFirstBooleanValue(cn, CONFG_ATTR_ENABLED, true);
     }
@@ -445,7 +454,8 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
                 isOverwriteBaseFunctionsOn(),
                 getLibLoader(),
                 isAnsiModeOn(),
-                useLogo());
+                useLogo(),
+                getTerminalType());
     }
 
     @Override

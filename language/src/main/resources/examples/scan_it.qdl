@@ -1,3 +1,4 @@
+#! /usr/bin/env -S qdl-run
 /*
   An example to show how to use the scan call.
 */
@@ -10,3 +11,4 @@ while[
     if[input == 'exit']then[return();];
     say('You entered \'' + input + '\'');
   ];
+  say('exiting...');

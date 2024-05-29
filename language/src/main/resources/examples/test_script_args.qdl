@@ -1,12 +1,13 @@
+#! /usr/bin/env -S qdl-run
 /*
    A script to show how to interpret script arguments. This will print how many arguments and
    if there are any, print the first one.
    Jeff Gaynor
    April 30, 2020
 */
-say('You entered ' + script_args() + ' argument(s)');
+say('You entered ' + size(args()) + ' argument(s)');
 if[
-    0 < script_args()
+    0 < size(args())
   ]then[
-    say('The first argument is ' + script_args(0));
+    say('The first argument is ' + args().0);
   ];

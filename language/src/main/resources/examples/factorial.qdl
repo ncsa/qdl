@@ -1,0 +1,10 @@
+/*
+   How to write a factorial function in QDL. Either cut and paste this into your workspace or
+   load it.
+   Jeff Gaynor
+   1/25/2020
+*/
+fac(n)->1<n?n*fac(n-1):1;
+
+
+

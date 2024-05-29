@@ -28,4 +28,5 @@ lowriter --headless --convert-to pdf ${args[0]}/xml-extension.odt        > /dev/
 lowriter --headless --convert-to pdf ${args[0]}/cli-extension.odt        > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/crypto.odt               > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/qdl_mail.odt             > /dev/null
+lowriter --headless --convert-to pdf ${args[0]}/installer.odt             > /dev/null
 echo "   ... done with QDL docs"

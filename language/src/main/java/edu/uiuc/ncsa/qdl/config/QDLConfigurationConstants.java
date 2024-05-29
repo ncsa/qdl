@@ -60,6 +60,12 @@ public interface QDLConfigurationConstants {
     String WS_ATTR_AUTOSAVE_ON = "autoSaveOn";
     String WS_ATTR_AUTOSAVE_INTERVAL = "autoSaveInterval";
     String WS_ATTR_AUTOSAVE_MESSAGES_ON = "autoSaveMessagesOn";
+    String WS_ATTR_TERMINAL_TYPE = "terminalType";
+    String WS_ATTR_TERMINAL_TYPE2 = "tty";
+    String WS_TERMINAL_TYPE_TEXT = "text";
+    String WS_TERMINAL_TYPE_ANSI = "ansi";
+    String WS_TERMINAL_TYPE_SWING = "swing";
+
     String WS_ENV = "env";
     String WS_HOME_DIR_TAG = "home_dir";
     String WS_SAVE_DIR = "save_dir"; // for specifying the initial WS directory.

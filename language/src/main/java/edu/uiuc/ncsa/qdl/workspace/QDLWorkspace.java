@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl.workspace;
 
+import edu.uiuc.ncsa.qdl.config.QDLEnvironment;
 import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.gui.SwingTerminal;
 import edu.uiuc.ncsa.qdl.statements.Statement;
@@ -19,6 +20,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.*;
 
+import static edu.uiuc.ncsa.qdl.config.QDLConfigurationConstants.*;
 import static edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands.*;
 
 /**
@@ -89,13 +91,13 @@ public class QDLWorkspace implements Serializable {
         if (t instanceof ParsingException) {
             ParsingException parsingException = (ParsingException) t;
             String message = parsingException.getType() + " error";
-              if(parsingException.hasScriptName()){
-                  message = message + " in script '" + parsingException.getScriptName() + "'";
-              }
+            if (parsingException.hasScriptName()) {
+                message = message + " in script '" + parsingException.getScriptName() + "'";
+            }
             if (parsingException.getLineNumber() == -1) {
                 message = message + ":";
-            }else{
-                message = message + " at ("+ parsingException.getLineNumber() + "," + parsingException.getCharacterPosition() + ") ";
+            } else {
+                message = message + " at (" + parsingException.getLineNumber() + "," + parsingException.getCharacterPosition() + ") ";
             }
             message = message + (workspaceCommands.isDebugOn() ? t.getMessage() : "could not parse input");
             workspaceCommands.say(message);
@@ -514,13 +516,49 @@ public class QDLWorkspace implements Serializable {
             vector.add(arg);
         }
         InputLine argLine = new InputLine(vector); // now we have a bunch of utilities for this
-        WorkspaceCommands workspaceCommands = null;
-        boolean isoTerminal = argLine.hasArg("-ansi");
-        argLine.removeSwitch("-ansi");
-        boolean isSwingGui = argLine.hasArg("-gui");
-        argLine.removeSwitch("-gui");
-        if (isSwingGui && isoTerminal) {
-            isoTerminal = false; // can't have both. GUI wins
+        WorkspaceCommands workspaceCommands = new WorkspaceCommands();
+        if (argLine.hasArg(CONFIG_FILE_FLAG)) {
+            String cfgname = argLine.hasArg(CONFIG_NAME_FLAG) ? argLine.getNextArgFor(CONFIG_NAME_FLAG) : "default";
+            workspaceCommands.loadQE(argLine, cfgname);
+        }
+        String terminalType = WS_TERMINAL_TYPE_TEXT;
+        if (null != workspaceCommands.qdlEnvironment) {
+            // if there is no config file, e.g. command line startup only, then
+            // the environment might be null.
+            QDLEnvironment qdlEnvironment = workspaceCommands.qdlEnvironment;
+            terminalType = qdlEnvironment.getTerminalType(); // has default text
+        }
+
+        boolean isSwingGui = false;
+        boolean isoTerminal = false;
+        // Old format had individual flags for each mode.
+        if (argLine.hasArg("-text")) {
+            terminalType = WS_TERMINAL_TYPE_TEXT;
+            argLine.removeSwitch("-text");
+        }
+        if (argLine.hasArg("-ansi")) {
+            terminalType = WS_TERMINAL_TYPE_ANSI;
+            argLine.removeSwitch("-ansi");
+        }
+        if (argLine.hasArg("-gui")) {
+            terminalType = WS_TERMINAL_TYPE_SWING;
+            argLine.removeSwitch("-gui");
+        }
+        // Fix https://github.com/ncsa/qdl/issues/52 let it be overrideable from CLU
+        if (argLine.hasArg("-tty")) {
+            terminalType = argLine.getNextArgFor("-tty");
+            argLine.removeSwitchAndValue("-tty");
+        }
+        switch (terminalType) {
+            case WS_TERMINAL_TYPE_TEXT:
+            default:
+                break;
+            case WS_TERMINAL_TYPE_ANSI:
+                isoTerminal = true;
+                break;
+            case WS_TERMINAL_TYPE_SWING:
+                isSwingGui = true;
+                break;
         }
         //System.setProperty("org.jline.terminal.dumb", "true"); // kludge for jline
         ISO6429IO iso6429IO = null; // only make one of these if you need it because jLine takes over all IO!
@@ -529,14 +567,16 @@ public class QDLWorkspace implements Serializable {
         if (supportsGUI && isSwingGui) {
             try {
                 swingTerminal = new SwingTerminal();
-                
-                workspaceCommands = new WorkspaceCommands(swingTerminal.getQdlSwingIO());
-               workspaceCommands.setSwingTerminal(swingTerminal);
+
+                //workspaceCommands = new WorkspaceCommands(swingTerminal.getQdlSwingIO());
+                workspaceCommands.setIoInterface(swingTerminal.getQdlSwingIO());
+                workspaceCommands.setSwingTerminal(swingTerminal);
             } catch (AWTError awtError) {
                 System.out.println("warning -- could not start graphical environment: " + awtError.getMessage());
                 isSwingGui = false;
                 isoTerminal = false;
-                workspaceCommands = new WorkspaceCommands(new BasicIO());
+                //workspaceCommands = new WorkspaceCommands(new BasicIO());
+                workspaceCommands.setIoInterface(new BasicIO());
             }
         } else {
             if (isSwingGui) {
@@ -548,13 +588,13 @@ public class QDLWorkspace implements Serializable {
                 try {
                     QDLTerminal qdlTerminal = new QDLTerminal(null);
                     iso6429IO = new ISO6429IO(qdlTerminal, true);
-                    workspaceCommands = new WorkspaceCommands(iso6429IO);
+                    workspaceCommands.setIoInterface(iso6429IO);
                     workspaceCommands.setAnsiModeOn(true);
                     isoTerminal = true;
                 } catch (Throwable t) {
                     System.out.println("could not load ANSI terminal: " + t.getMessage());
                     isoTerminal = false;
-                    workspaceCommands = new WorkspaceCommands(new BasicIO());
+                    workspaceCommands.setIoInterface(new BasicIO());
                 }
             } else {
                 workspaceCommands = new WorkspaceCommands(new BasicIO());

@@ -3092,9 +3092,10 @@ public class WorkspaceCommands implements Logable, Serializable {
                 return RC_CONTINUE;
             }
             // if it's a regex, we have no idea what the display function will do, so don't have a count.
-            say("Help is available for the following " + (isRegex ? "" : treeSet.size()) + " topics:");
-            return printList(inputLine, treeSet);
-
+            say("Help is available for the following topics:");
+            Object out = printList(inputLine, treeSet);
+            say( (isRegex ? "" : treeSet.size()) + " topics.");
+                       return out;
         }
         String[] names = resolveRealHelpName(name);
 
@@ -5740,25 +5741,31 @@ public class WorkspaceCommands implements Logable, Serializable {
             logo = getLogo(logoName);
             inputLine.removeSwitchAndValue(CLA_LOGO);
         }
-//      Old style -- single inheritance
-/*
-        ConfigurationNode node = ConfigUtil.findConfiguration(
-                inputLine.getNextArgFor(CONFIG_FILE_FLAG),
-                cfgname, CONFIG_TAG_NAME);
-*/
-        // New style -- multi-inheritance.
-        ConfigurationNode node = XMLConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgname, CONFIG_TAG_NAME);
+        if (!isQELoaded()) {
+            loadQE(inputLine, cfgname);
+        }
 
-        fromConfigFile(inputLine, node);
+        fromConfigFile(inputLine, qdlEnvironment);
     }
 
-    public void fromConfigFile(InputLine inputLine, ConfigurationNode node) throws Throwable {
+    QDLEnvironment qdlEnvironment = null;
 
-        // New style -- multi-inheritance.
-        //     ConfigurationNode node = ConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgname, CONFIG_TAG_NAME );
-        QDLConfigurationLoader loader = new QDLConfigurationLoader(inputLine.getNextArgFor(CONFIG_FILE_FLAG), node);
+    public void loadQE(InputLine inputLine, String cfgName) throws Throwable {
+        if (qdlEnvironment == null) {
+            // New style -- multi-inheritance.
+            //     ConfigurationNode node = ConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgname, CONFIG_TAG_NAME );
+            ConfigurationNode node = XMLConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgName, CONFIG_TAG_NAME);
+            QDLConfigurationLoader loader = new QDLConfigurationLoader(inputLine.getNextArgFor(CONFIG_FILE_FLAG), node);
 
-        QDLEnvironment qe = loader.load();
+            qdlEnvironment = loader.load();
+        }
+    }
+
+    protected boolean isQELoaded() {
+        return qdlEnvironment != null;
+    }
+
+    public void fromConfigFile(InputLine inputLine, QDLEnvironment qe) throws Throwable {
         // The state probably exists at this point if the user had to set the terminal type.
         // Make sure the logger ends up in the actual state.
         // The logger is created in the loader, so it happens automatically if there is a logging block in the config.
@@ -5805,6 +5812,11 @@ public class WorkspaceCommands implements Logable, Serializable {
         boolean isVerbose = qe.isWSVerboseOn();
         showBanner = qe.isShowBanner();
         logoName = qe.getLogoName();
+        if (inputLine.hasArg(CLA_LOGO)) {
+            // allow override of logo from command line
+             logoName = inputLine.getNextArgFor(CLA_LOGO).toLowerCase();
+             inputLine.removeSwitchAndValue(CLA_LOGO);
+         }
         logo = getLogo(logoName); // check for logo after show banner since they can select none and turn it anyway.
 
         logger = qe.getMyLogger();
@@ -5873,6 +5885,8 @@ public class WorkspaceCommands implements Logable, Serializable {
 
         setEchoModeOn(qe.isEchoModeOn());
         setPrettyPrint(qe.isPrettyPrint());
+        getState().setLibPath(qe.getLibPath());
+        getState().setModulePaths(qe.getModulePath());
         String[] foundModules = setupModules(qe, getState());
         // Just so the user can see it in the properties after load.
         if (foundModules[JAVA_MODULE_INDEX] != null && !foundModules[JAVA_MODULE_INDEX].isEmpty()) {
@@ -5918,8 +5932,6 @@ public class WorkspaceCommands implements Logable, Serializable {
         interpreter.setPrettyPrint(qe.isPrettyPrint());
         getState().setScriptPaths(qe.getScriptPath());
         getState().setEnableLibrarySupport(qe.isEnableLibrarySupport());
-        getState().setLibPath(qe.getLibPath());
-        getState().setModulePaths(qe.getModulePath());
         defaultInterpreter = interpreter;
         getState().setEnableLibrarySupport(qe.isEnableLibrarySupport());
         defaultState = state;
@@ -6024,13 +6036,13 @@ public class WorkspaceCommands implements Logable, Serializable {
             // now add the editor help
             helpStream = getClass().getResourceAsStream("/editor_help.txt");
             String x = "(missing help)";
-            try{
-                x= QDLFileUtil.isToString(helpStream);
+            try {
+                x = QDLFileUtil.isToString(helpStream);
                 helpStream.close();
-            }catch(IOException iox){
-                 if(isDebugOn()){
-                     iox.printStackTrace();
-                 }
+            } catch (IOException iox) {
+                if (isDebugOn()) {
+                    iox.printStackTrace();
+                }
             }
             onlineHelp.put("editor", x);
         }

@@ -3,7 +3,8 @@
 /*
   This is a pretty complete procedural style QDL program to test if the numbers up
    to m, 100 < m < 1000 are Armstrong numbers. A much better way to do this is in
-   the reference manual or in the file armstrong2.qdl.
+   the reference manual or in the file armstrong2.qdl. Mostly this just shows how
+   to do it procedurely so you compare the elegant QDL way.
   Jeff Gaynor
   1/29/2020
 */

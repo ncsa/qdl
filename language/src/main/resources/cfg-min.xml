@@ -1,0 +1,48 @@
+<config>
+    <!--
+    A few example configurations.
+    "default" is the most minimal configuration possible: Just an editor and basic WS formatting.
+    This uses the current directory as the root. Not great.
+    Be sure to read  the documentation, qdl_configuration.pdf,  in the docs directory of this distribution
+    or on the main website: https://qdl-lang.org/pdf/qdl_configuration.pdf
+    -->
+    <qdl name="default">
+        <workspace logo="times"
+                   editor_name="${EDITOR}"
+                   use_editor="true"
+                   prettyPrint="true"
+                   tty="ansi"
+                   echoModeOn="true">
+            <home_dir>${QDL_HOME}</home_dir>
+            <env>etc/qdl.properties</env>
+        </workspace>
+
+        <logging
+                logFileName="${QDL_HOME}log/qdl.log"
+                logName="qdl"
+                logSize="100000"
+                logFileCount="2"
+                debug="false"/>
+
+    </qdl>
+
+    <!--
+         A very minimal but reasonable configuration for running scripts from the command
+         line. This turns off all verbosity, pretty printing etc.
+    -->
+    <qdl name="run-it">
+           <workspace echoModeOn="false"
+                      prettyPrint="false">
+               <home_dir>${QDL_HOME}</home_dir>
+               <env>etc/qdl.properties</env>
+           </workspace>
+
+            <logging
+                   logFileName="${QDL_HOME}log/qdl.log"
+                   logName="run-it"
+                   disableLog4j="true"
+                   logSize="100000"
+                   logFileCount="2"
+                   debug="false"/>
+    </qdl>
+</config>
