@@ -31,7 +31,6 @@ if [ ! -d "$TARGET_ROOT" ]
 fi
 
 cd $TARGET_ROOT
-echo "$TARGET_ROOT"
 rm -Rf *
 
 mkdir edu
@@ -45,12 +44,7 @@ cd $TARGET_ROOT
 cp $QDL_SOURCES/src/main/scripts/installer.mf .
 cp $QDL_SOURCES/src/main/scripts/version.txt .
 # following class has to be installed here so it executes later.
-ls "$QDL_SOURCES"/target/classes/edu/uiuc/ncsa/qdl/install
 cp "$QDL_SOURCES"/target/classes/edu/uiuc/ncsa/qdl/install/*.class edu/uiuc/ncsa/qdl/install
-#cp $QDL_SOURCES/target/classes/edu/uiuc/ncsa/qdl/install/Installer.class edu/uiuc/ncsa/qdl/install
-#cp $QDL_SOURCES/target/classes/edu/uiuc/ncsa/qdl/install/ListDistroFiles.class edu/uiuc/ncsa/qdl/install
-#cp $QDL_SOURCES/target/classes/edu/uiuc/ncsa/qdl/install/Installer$ArgMap.class edu/uiuc/ncsa/qdl/install
-#cp $QDL_SOURCES/target/classes/edu/uiuc/ncsa/qdl/install/Installer$1.class edu/uiuc/ncsa/qdl/install
 
 # Now make the directories
 mkdir "bin"

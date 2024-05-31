@@ -117,7 +117,7 @@ public class Installer {
         if (isQDL()) {
             installQDL(rootDir);
             say("Done! You should add");
-            say("   export QDL_HOME=\"" + rootDir.getAbsolutePath() +"\"");
+            say("   export QDL_HOME=\"" + rootDir.getAbsolutePath() + "\"");
             say("to your environment and");
             say("   $QDL_HOME" + File.separator + "bin\"");
             say("to your PATH");
@@ -280,15 +280,11 @@ public class Installer {
         }
         if (ftDetect.exists()) {
             File qdlVim = new File(ftDetect, "qdl.vim");
-            if (qdlVim.exists()) {
-                qdlVim.delete();
-            }
+            qdlVim.delete(); // removes if a file or link.
         }
         if (syntax.exists()) {
             File qdlVim = new File(syntax, "qdl.vim");
-            if (qdlVim.exists()) {
-                qdlVim.delete();
-            }
+            qdlVim.delete();
         }
         say("vim support has been removed");
     }
@@ -364,7 +360,6 @@ public class Installer {
         }
         return userHome;
     }
-
 
 
     /**
@@ -444,8 +439,8 @@ public class Installer {
         setupDirs(rootDir);
 
         for (String file : fileList) {
-            if (file.startsWith("/bin")) {
-                // On upgrades, do NOT touch the bin directory since it the files are
+            if (file.startsWith("/bin") || (file.startsWith("/etc") && file.endsWith(".xml"))) {
+                // On upgrades, do NOT touch the bin or etc config files  since the files are
                 // edited in the installation and overwriting them breaks their QDL install.
                 continue;
             }
@@ -455,6 +450,9 @@ public class Installer {
             }
             trace("  " + file + " --> " + f.getCanonicalPath());
             cp(file, f);
+            if (file.endsWith(".qdl")) {
+                doSetupScript(f, rootDir);
+            }
         }
     }
 
@@ -485,7 +483,7 @@ public class Installer {
             return;
         }
         InputStream is = getClass().getResourceAsStream(resourceName); // start with something we know is there
-        Files.copy(is, target.toPath());
+        Files.copy(is, target.toPath()); // binary copy.
     }
 
 
@@ -506,6 +504,9 @@ public class Installer {
                 trace("   setting up qdl script to be executable");
                 doSetupExec(f, rootDir);
             }
+            if (file.endsWith(".qdl")) {
+                doSetupScript(f, rootDir);
+            }
             if (file.startsWith("/etc/") && file.endsWith(".xml")) {
                 // process xml config files in /etc only.
                 trace("  setting up basic configuration");
@@ -513,8 +514,6 @@ public class Installer {
             }
         }
     }
-
-
 
 
     /**
@@ -535,28 +534,70 @@ public class Installer {
         f.setExecutable(true);
     }
 
+    public static String SHEBANG = "#!";
+
+    /**
+     * QDL files that start with a shebang (#!) should be set executable.
+     *
+     * @param f
+     * @param rootDir
+     * @throws IOException
+     */
+    private void doSetupScript(File f, File rootDir) throws IOException {
+        trace("setting up script: " + f.getAbsolutePath());
+        List<String> lines = Files.readAllLines(f.toPath());
+        for (String line : lines) {
+            if (!line.isBlank()) {
+                if (line.trim().startsWith(SHEBANG)) {
+                    f.setExecutable(true);
+                    trace("   >> was set executable!");
+                }
+                // only sniff first non-blank line. Don't care about anything else,
+                // so don't process the rest of the file.
+                return;
+            }
+        }
+
+    }
+
     private void doSetupConfig(File f, File rootDir) throws IOException {
         List<String> lines = Files.readAllLines(f.toPath());
+        List<String> config = new ArrayList<>(lines.size() + 20);
         for (int i = 0; i < lines.size(); i++) {
             String currentLine = lines.get(i);
             if (currentLine.contains("${QDL_HOME}")) {
                 currentLine = currentLine.replace("${QDL_HOME}", rootDir.getCanonicalPath() + File.separator);
-                lines.set(i, currentLine);
             }
-            if(currentLine.contains("${EDITOR}")){
+            if (currentLine.contains("${EDITOR}")) { // sets the external editor in the workspace
                 String editor = "line"; // default
-                if(isNano()){
+                if (isNano()) {
                     editor = "nano";
                 }
-                if(isVim()){
-                    editor="vim";
+                if (isVim()) {
+                    editor = "vim";
                 }
                 currentLine = currentLine.replace("${EDITOR}", editor);
-                lines.set(i, currentLine);
+            }
+            if (currentLine.contains("${EDITORS}")) {
+                // writes a block of code for the editor
+                if (isVim() || isNano()) {
+                    String indent = currentLine.substring(0, currentLine.indexOf("$"));
+                    config.add(indent + "<editors>");
+                    if (isVim()) {
+                        config.add(indent + "   " + "<editor name=\"vim\" exec=\"vim\"/>");
+                    }
+                    if (isNano()) {
+                        config.add(indent + "   " + "<editor name=\"nano\" exec=\"nano\"/>");
+                    }
+                    config.add(indent + "</editors>");
+                }
+                // note that if there are no editors, this line is skipped.
+            } else {
 
+                config.add(currentLine);
             }
         }
-        Files.write(f.toPath(), lines, Charset.defaultCharset());
+        Files.write(f.toPath(), config, Charset.defaultCharset());
     }
 
     /**
@@ -623,12 +664,12 @@ public class Installer {
     protected void setupMap(String[] args) {
         argMap = new HashMap<>();
 
-        if(args.length == 0
+        if (args.length == 0
                 || args[0].equals(HELP_OPTION)
-                || args[0].equals(HELP_FLAG)){
+                || args[0].equals(HELP_FLAG)) {
             // if there are no options or the only one is help, just print help
             argMap.put(Installer.HELP_OPTION, true);
-             return;
+            return;
         }
         argMap.put(operationKey, args[0]);
         for (int i = 1; i < args.length; i++) {

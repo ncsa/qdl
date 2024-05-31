@@ -1,12 +1,20 @@
 <config>
     <!--
     A few example configurations.
-    "default" is the most minimal configuration possible: Just an editor and basic WS formatting.
-    This uses the current directory as the root. Not great.
-    Be sure to read  the documentation, qdl_configuration.pdf,  in the docs directory of this distribution
+    "default" : uses an alias that points to one of the other configurations.
+                aliases are a great tool that lets you experiment between
+                various configurations easily
+     "basic" : just an editor and basic WS formatting. It starts in ANSI mode
+     "run-it" : for QDL shell scripts. This turns off, e.g. echoing to the console
+
+    Be sure to read  the documentation, qdl_configuration.pdf,  in the
+    ${QDL_HOME}/docs directory of this distribution
     or on the main website: https://qdl-lang.org/pdf/qdl_configuration.pdf
     -->
-    <qdl name="default">
+    <qdl name="default" alias="basic"/>
+
+    <qdl name="basic"
+         module_path="${QDL_HOME}etc/modules/">
         <workspace logo="times"
                    editor_name="${EDITOR}"
                    use_editor="true"
@@ -23,14 +31,12 @@
                 logSize="100000"
                 logFileCount="2"
                 debug="false"/>
-
+        ${EDITORS}
     </qdl>
 
-    <!--
-         A very minimal but reasonable configuration for running scripts from the command
-         line. This turns off all verbosity, pretty printing etc.
-    -->
-    <qdl name="run-it">
+
+    <qdl name="run-it"
+         module_path="${QDL_HOME}etc/modules/">
            <workspace echoModeOn="false"
                       prettyPrint="false">
                <home_dir>${QDL_HOME}</home_dir>
@@ -44,5 +50,6 @@
                    logSize="100000"
                    logFileCount="2"
                    debug="false"/>
+           ${EDITORS}
     </qdl>
 </config>

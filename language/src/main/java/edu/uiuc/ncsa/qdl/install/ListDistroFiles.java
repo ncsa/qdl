@@ -39,22 +39,10 @@ public class ListDistroFiles {
 
     protected void runnit(File rootDirectory) throws IOException {
         createFileList(rootDirectory);
-        printLists();
         writeFiles(rootDirectory, dirList, DIR_LIST);
         writeFiles(rootDirectory, fileList, FILE_LIST);
     }
-
-    protected void printLists() {
-        say("dirs:");
-        for (String x : dirList) {
-            say(x);
-        }
-        say("files:");
-        for (String x : fileList) {
-            say(x);
-        }
-
-    }
+    
 
     List<String> fileList;
     List<String> dirList;

@@ -5649,35 +5649,49 @@ and are just a regular function there. No namespace qualification is needed.
     <entry id="j_load">
         <body>
             <![CDATA[j_load(class_name | moniker | path, {alias}) - this is a convenience method to load a single
-class with an alias. The result is the name of the alias. It
+class with an alias. This requires that the libraries in question be loaded into the
+info().lib using either the lib_entries function or setting the lib_loader in the
+modules element of the XML configuration. The result is the name of the alias. It
 is equivalent to
-  module_import(module_load(class_name,'java'), alias)
+  import(load(class_name,'java'), alias)
 If the alias argument is missing, then the default for the module is used.
 
 There are two special cases.
 1. suppply the key in the info().'lib'.'tools' object,
 E.g.
-   j_load('http');
+   http := j_load('http');
 is equivalent to
-   j_load(info().'lib'.'tools'.'http');
+   http := j_load(info().'lib'.'tools'.'http');
+Note that a single component will be resolved against info().'lib'.'tools'.
+More than a single component will resolve against info().'lib'. So these
+are all equivalent for a system module
 
-2. supply a stem path to the module
+j_load('http')
+j_load(['http'])
+j_load('tools.http')
+j_load(['tools','http'])
+
+2. supply a relative path to the module as a string
 E.g.
-   j_load('tools.cli');
-cli
+   my_module := j_load('a.b.c.my_module');
 
-#2 is particularly useful if QDL has extensions to the library. For instance,
+3. supply an index list
+E.g.
+   my_module := j_load(['a','b','c','my_module']);
+
+#2 and #3 are particularly useful if QDL has extensions to the library. For instance,
 in OA4MP  you might issue
-   j_load('oa2.jwt')
+   jwt := j_load('oa2.util.jwt')
 
 See also: j_use]]>
         </body>
         <example>
-            <![CDATA[E.g. to load the db module with the alias of mySQL
-   j_load('db', 'mySQL')
-mySQL
+            <![CDATA[E.g. to load the db module
+   mySQL := j_load('db');
+
 versus issuing the full
-  module_import(module_load('edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader','java'), 'mySQL')]]>
+  mySQL := import(load('edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader','java'));
+]]>
         </example>
     </entry>
     <entry id="∃">
@@ -6544,7 +6558,34 @@ as will the workspace commands
    )help -m custom:ns]]>
         </example>
     </entry>
+    <entry id="lib_entries">
+        <body>
+   <![CDATA[lib_entries() - list all library entries
+lib_entries(key, stem.) - add a set of library entries
 
+The system has a library in info().'lib' of names and classpaths
+for java modules.  It comes pre-populated with various tools
+so
+    print(info().'lib'.'tools')
+
+           cli : edu.uiuc.ncsa.qdl.extensions.inputLine.QDLCLIToolsLoader
+       convert : edu.uiuc.ncsa.qdl.extensions.convert.QDLConvertLoader
+        crypto : edu.uiuc.ncsa.qdl.extensions.crypto.CryptoLoader
+            db : edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader
+   description : System tools for http, conversions and other very useful things.
+            eg : edu.uiuc.ncsa.qdl.extensions.example.EGLoaderImpl
+          http : edu.uiuc.ncsa.qdl.extensions.http.QDLHTTPLoader
+          mail : edu.uiuc.ncsa.qdl.extensions.mail.QDLMailLoader
+
+You can then access these as relative paths to info().'lib' using
+j_load or j_use very conveniently.
+   ]]>
+        </body>
+        <example>
+    <![CDATA[
+    ]]>
+         </example>
+     </entry>
 
 
     <!--

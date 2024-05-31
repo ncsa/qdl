@@ -5736,11 +5736,11 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     public void fromConfigFile(InputLine inputLine) throws Throwable {
         String cfgname = inputLine.hasArg(CONFIG_NAME_FLAG) ? inputLine.getNextArgFor(CONFIG_NAME_FLAG) : "default";
-        if (inputLine.hasArg(CLA_LOGO)) {
+/*        if (inputLine.hasArg(CLA_LOGO)) {
             String logoName = inputLine.getNextArgFor(CLA_LOGO).toLowerCase();
             logo = getLogo(logoName);
             inputLine.removeSwitchAndValue(CLA_LOGO);
-        }
+        }*/
         if (!isQELoaded()) {
             loadQE(inputLine, cfgname);
         }

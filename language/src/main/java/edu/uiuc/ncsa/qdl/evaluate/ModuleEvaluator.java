@@ -2,6 +2,7 @@ package edu.uiuc.ncsa.qdl.evaluate;
 
 import edu.uiuc.ncsa.qdl.config.JavaModuleConfig;
 import edu.uiuc.ncsa.qdl.exceptions.BadArgException;
+import edu.uiuc.ncsa.qdl.exceptions.IndexError;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.exceptions.WrongArgCountException;
 import edu.uiuc.ncsa.qdl.expressions.ConstantNode;
@@ -184,11 +185,11 @@ public class ModuleEvaluator extends AbstractEvaluator {
             return;
         }
         if (polyad.getArgCount() == 1) {
-           throw new WrongArgCountException(ADD_LIB_ENTRIES + " requires either no or two arguments", polyad.getArgAt(0));
-       }
-       if (2 < polyad.getArgCount()) {
-           throw new WrongArgCountException(ADD_LIB_ENTRIES + " requires at most two arguments", polyad.getArgAt(2));
-       }
+            throw new WrongArgCountException(ADD_LIB_ENTRIES + " requires either no or two arguments", polyad.getArgAt(0));
+        }
+        if (2 < polyad.getArgCount()) {
+            throw new WrongArgCountException(ADD_LIB_ENTRIES + " requires at most two arguments", polyad.getArgAt(2));
+        }
         Object x = polyad.evalArg(0, state);
         if (!isString(x)) {
             throw new BadArgException("the first argument of " + ADD_LIB_ENTRIES + " must be a (string) key", polyad.getArgAt(0));
@@ -996,7 +997,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
     }
 
     /**
-     * This is just module_import(module_load(x, 'java')). It happens so much we need an idiom.
+     * This is just import(load(x, 'java')). It happens so much we need an idiom.
      * this will try to look up the argument in the system lib table, so you can do things like
      * <pre>
      *     jload('http')
@@ -1030,36 +1031,60 @@ public class ModuleEvaluator extends AbstractEvaluator {
             alias = (String) object;
             hasAlias = true;
         }
-        String possibleName = arg.toString();
-        // Meaning of next: if like .tools.oa2.woof, shave off leading .
-        // if there is an embedded ., process that.
-        possibleName = possibleName.indexOf(STEM_INDEX_MARKER) == 0 ? possibleName.substring(1) : possibleName;
-        if (state.getLibMap().containsKey(possibleName)) { // look for it directly in tools
-            possibleName = state.getLibMap().getString(possibleName);
-        } else {
-            // This looks in the extensions added to the lib element, e.g. oa2.woof in OA4MP
-            // These can be defined in extensions to QDL and can be arbitrarily complex.
-            // Do a path lookup
-            if (0 < possibleName.indexOf(STEM_INDEX_MARKER)) {
-                StringTokenizer stringTokenizer = new StringTokenizer(possibleName, "."); // NOT the stem marker!
-                ArrayList<String> toolPath = new ArrayList<>();
-                while (stringTokenizer.hasMoreTokens()) {
-                    toolPath.add(stringTokenizer.nextToken());
+        String possibleName = null;
+        if (isStem(arg)) {
+            // allow for index stem, so [a,b,c] -> a.b.c -> lib.a.b.c for lookup
+            QDLStem args = (QDLStem) arg;
+            if (!args.isList()) {
+                throw new BadArgException((isLoad ? JAVA_MODULE_LOAD : JAVA_MODULE_USE) + " requires an index list as its argument if present", polyad.getArgAt(0));
+            }
+            QDLList list = args.getQDLList();
+            // special case, there is one element. It is assumed that is in tools
+            if (list.size() == 1) {
+                Object obj = state.getLibMap().get(list.get(0L));
+                if (isString(obj)) {
+                    // It is possible they mis-state the path and the result is a stem
+                    // E.g. they give the path as 'oa2' assuming everything get loaded.
+                    // That is not the contract for this function!
+                    possibleName = (String) obj;
                 }
-                QDLStem libStem = state.getSystemInfo().getStem("lib");
-                try {
-                    for (int i = 0; i < toolPath.size() - 1; i++) {
-                        libStem = libStem.getStem(toolPath.get(i));
+
+            } else {
+                possibleName = getClassPathFromToolPath(args.getQDLList(), state);
+            }
+            if (possibleName == null) {
+                // This means lookup failed.
+                throw new IndexError("no such index found", polyad.getArgAt(0));
+            }
+        } else {
+            // process it as a string
+            if (!isString(arg)) {
+                throw new BadArgException((isLoad ? JAVA_MODULE_LOAD : JAVA_MODULE_USE) + " requires an string or index list as its argument if present", polyad.getArgAt(0));
+            }
+            possibleName = arg.toString();
+            // Meaning of next: if like .tools.oa2.woof, shave off leading .
+            // if there is an embedded ., process that.
+            possibleName = possibleName.indexOf(STEM_INDEX_MARKER) == 0 ? possibleName.substring(1) : possibleName;
+            if (state.getLibMap().containsKey(possibleName)) { // look for it directly in tools
+                possibleName = state.getLibMap().getString(possibleName);
+            } else {
+                // This looks in the extensions added to the lib element, e.g. oa2.woof in OA4MP
+                // These can be defined in extensions to QDL and can be arbitrarily complex.
+                // Do a path lookup
+                if (0 < possibleName.indexOf(STEM_INDEX_MARKER)) {
+                    StringTokenizer stringTokenizer = new StringTokenizer(possibleName, "."); // NOT the stem marker!
+                    ArrayList<String> toolPath = new ArrayList<>();
+                    while (stringTokenizer.hasMoreTokens()) {
+                        toolPath.add(stringTokenizer.nextToken());
                     }
-                    if (libStem.containsKey(toolPath.get(toolPath.size() - 1))) {
-                        possibleName = libStem.getString(toolPath.get(toolPath.size() - 1));
+                    String cp = getClassPathFromToolPath(toolPath, state);
+                    if (cp != null) {
+                        possibleName = cp;
                     }
-                } catch (Throwable t) {
-                    // ok, so parsing the path failed. This probably means they passed in the actual
-                    // full java path, so try to process what they sent.
                 }
             }
         }
+
         Polyad module_load = new Polyad(ModuleEvaluator.LOAD);
         module_load.addArgument(new ConstantNode(possibleName));
         module_load.addArgument(new ConstantNode(MODULE_TYPE_JAVA));
@@ -1073,10 +1098,24 @@ public class ModuleEvaluator extends AbstractEvaluator {
         polyad.setEvaluated(true);
         polyad.setResult(module_import.getResult());
         polyad.setResultType(module_import.getResultType());
-        return;
-
     }
 
+    protected String getClassPathFromToolPath(List<String> toolPath, State state) {
+        String possibleCP = null;
+        QDLStem libStem = state.getSystemInfo().getStem("lib");
+        try {
+            for (int i = 0; i < toolPath.size() - 1; i++) {
+                libStem = libStem.getStem(toolPath.get(i));
+            }
+            if (libStem.containsKey(toolPath.get(toolPath.size() - 1))) {
+                possibleCP = libStem.getString(toolPath.get(toolPath.size() - 1));
+            }
+        } catch (Throwable t) {
+            // ok, so parsing the path failed. This probably means they passed in the actual
+            // full java path, so try to process what they sent.
+        }
+        return possibleCP;
+    }
     /*
   module['A:X'][f(x)->x;s:='foo';];
   z := import('A:X')

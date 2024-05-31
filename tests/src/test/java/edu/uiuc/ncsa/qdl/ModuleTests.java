@@ -71,6 +71,25 @@ public class ModuleTests extends AbstractQDLTester {
 
     }
 
+    /**
+     * Make sure machinery for j_load works using simple paths. Regression test mostly.
+     * @throws Throwable
+     */
+    public void testJLoadForSystemTools() throws Throwable {
+        State state = testUtils.getNewState();
+        state.createSystemInfo(null);    // make sure it is populated first!
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok0 := null != j_load('cli');");
+        addLine(script, "ok1 := null != j_load('tools.cli');");
+        addLine(script, "ok2 := null != j_load(['cli']);");
+        addLine(script, "ok3 := null != j_load(['tools','cli']);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "failed to load standard module using j_load";
+        assert getBooleanValue("ok1", state) : "failed to load standard module using j_load";
+        assert getBooleanValue("ok2", state) : "failed to load standard module using j_load";
+        assert getBooleanValue("ok3", state) : "failed to load standard module using j_load";
+    }
     protected void testSerializingJavaArguments(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
