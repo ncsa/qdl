@@ -3195,7 +3195,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             if (-1 < argCount) {
                 say("sorry, no help for " + name + "(" + argCount + ")");
             } else {
-                say("sorry, no help for \"" + name + "\"");
+                say("sorry, no help for '" + name + "'");
             }
         } else {
             for (String x : doxx) {
@@ -3376,7 +3376,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         File currentFile = new File(fullPath);
         if (currentFile.isFile()) {
             if (!forceDeletes) {
-                forceDeletes = readline("Are you sure you want to delete the workspace \"" + currentFile.getAbsolutePath() + "\" (y/n)?").equals("y");
+                forceDeletes = readline("Are you sure you want to delete the workspace '" + currentFile.getAbsolutePath() + "' (y/n)?").equals("y");
             }
             if (forceDeletes) {
                 boolean rc = currentFile.delete();
@@ -3398,7 +3398,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             try {
                 pattern = Pattern.compile(regex);
             } catch (PatternSyntaxException patternSyntaxException) {
-                say("sorry, there is a problem with your regex: \"" + regex + "\":" + patternSyntaxException.getMessage());
+                say("sorry, there is a problem with your regex: '" + regex + "':" + patternSyntaxException.getMessage());
                 return RC_NO_OP;
             }
             regexff = new RegexFileFilter(pattern);
@@ -3425,7 +3425,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         for (File f : files) {
             if (f.isFile()) {
-                boolean doDelete = readline("Are you sure you want to delete the workspace \"" + f.getAbsolutePath() + "\" (y/n)?").equals("y");
+                boolean doDelete = readline("Are you sure you want to delete the workspace '" + f.getAbsolutePath() + "' (y/n)?").equals("y");
                 if (doDelete) {
                     if (f.delete()) {
                         deletedFiles.add(f.getAbsolutePath());
@@ -3815,7 +3815,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             try {
                 pattern = Pattern.compile(rx);
             } catch (PatternSyntaxException patternSyntaxException) {
-                say("sorry, there is a problem with your regex: \"" + rx + "\":" + patternSyntaxException.getMessage());
+                say("sorry, there is a problem with your regex: '" + rx + "':" + patternSyntaxException.getMessage());
                 return RC_NO_OP;
             }
             regexff = new RegexFileFilter(pattern);
@@ -4365,7 +4365,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                         getIoInterface().setBufferingOn(true);
                         ansiModeOn = true;
                     } catch (IOException iox) {
-                        say("sorry, could not switch to ansi mode:\"" + iox.getMessage() + "\"");
+                        say("sorry, could not switch to ansi mode:'" + iox.getMessage() + "'");
                     }
                 } else {
                     setIoInterface(new BasicIO());
@@ -4382,7 +4382,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 if (!value.equals(LINE_EDITOR_NAME)) {
                     EditorEntry x = getQdlEditors().get(value);
                     if (x == null) {
-                        say("Sorry, but there is no such editor \"" + value + "\" available. Make sure it is configured.");
+                        say("Sorry, but there is no such editor '" + value + "' available. Make sure it is configured.");
                         listEditors();
                         break;
                     }
@@ -4417,7 +4417,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                     try {
                         Iso8601.string2Date(value);
                     } catch (ParseException e) {
-                        say("sorry but \"" + value + "\" could not be parsed as a date");
+                        say("sorry but '" + value + "' could not be parsed as a date");
                     }
                 }
                 say("start time for workspace changed to " + Iso8601.date2String(startTimeStamp));
@@ -4450,7 +4450,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 saveDir = value;
                 try {
                     if (!exists(getState(), saveDir)) {
-                        say("warning the directory \"" + saveDir + "\" does not exist");
+                        say("warning the directory '" + saveDir + "' does not exist");
                         return RC_NO_OP;
                     }
                 } catch (Throwable e) {
@@ -4462,7 +4462,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 }
                 try {
                     if (!isDirectory(getState(), saveDir)) {
-                        say("warning  \"" + saveDir + "\" is not a directory");
+                        say("warning  '" + saveDir + "' is not a directory");
                         return RC_NO_OP;
                     }
                     say("default save directory is now " + saveDir);
@@ -4477,11 +4477,11 @@ public class WorkspaceCommands implements Logable, Serializable {
                 rootDir = value;
                 try {
                     if (!exists(getState(), rootDir)) {
-                        say("warning the directory \"" + rootDir + "\" does not exist");
+                        say("warning the directory '" + rootDir + "' does not exist");
                         return RC_NO_OP;
                     }
                     if (!isDirectory(getState(), rootDir)) {
-                        say("warning  \"" + rootDir + "\" is not a directory");
+                        say("warning  '" + rootDir + "' is not a directory");
                         return RC_NO_OP;
                     }
                     say("root directory is now " + rootDir);
@@ -4757,7 +4757,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("size: " + sizes[UNCOMPRESSED_INDEX] + "\n  elapsed time:" + ((System.currentTimeMillis() - startTime) / 1000.0D) + " sec.");
                 return RC_CONTINUE;
             } catch (Throwable throwable) {
-                say("warning. could not show file \"" + throwable.getMessage() + "\"");
+                say("warning. could not show file '" + throwable.getMessage() + "'");
                 return RC_NO_OP;
             }
 
@@ -4771,7 +4771,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 try {
                     int index = Integer.parseInt(fName);
                     if (bufferManager.hasBR(index)) {
-                        say("warning: There is a buffer \"" + index + "\". If you want to save that, then use the buffer save command.");
+                        say("warning: There is a buffer '" + index + "'. If you want to save that, then use the buffer save command.");
                         if (!readline("save as workspace? (y/n)").equals("y")) {
                             say("ok. aborting save.");
                             return RC_NO_OP;
@@ -5240,7 +5240,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
         }
         if (xer == null) {
-            //say("sorry, cannot get the file \"" + f.getAbsolutePath() + "\"");
+            //say("sorry, cannot get the file '" + f.getAbsolutePath() + "'");
             return false;
         }
 
@@ -5251,7 +5251,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             return true;
         } catch (XMLStreamException e) {
             say("error reading XML at line " + e.getLocation().getLineNumber() + ", col " + e.getLocation().getColumnNumber()
-                    + ":\"" + e.getMessage() + "\"");
+                    + ":'" + e.getMessage() + "'");
         } catch (Throwable t) {
             say("error reading XML file: " + t.getMessage());
         }
@@ -5458,19 +5458,19 @@ public class WorkspaceCommands implements Logable, Serializable {
         }         //     file_write('/tmp/data.csv',  to_cvs([['x','y']]~y.))
 
         if (fullPath == null) {
-            say("sorry, could not determine file for \"" + fName + "\"");
+            say("sorry, could not determine file for '" + fName + "'");
             return RC_NO_OP;
         }
         if (!exists(getState(), fullPath)) {
-            say("sorry, the target file \"" + fullPath + "\" does not exist");
+            say("sorry, the target file '" + fullPath + "' does not exist");
             return RC_NO_OP;
         }
         if (isDirectory(getState(), fullPath)) {
-            say("sorry, the target  \"" + fullPath + "\" is not a file");
+            say("sorry, the target  '" + fullPath + "' is not a file");
             return RC_NO_OP;
         }
         if (!canRead(getState(), fullPath)) {
-            say("sorry, cannot read  \"" + fullPath + "\"");
+            say("sorry, cannot read  '" + fullPath + "'");
             return RC_NO_OP;
         }
         if (doQDL || fullPath.endsWith(QDLVersion.DEFAULT_FILE_EXTENSION)) {
@@ -5502,7 +5502,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 if (DebugUtil.isEnabled()) {
                     throwable.printStackTrace();
                 }
-                say("sorry, could not load QDL \"" + fullPath + "\": " + throwable.getMessage());
+                say("sorry, could not load QDL '" + fullPath + "': " + throwable.getMessage());
                 return RC_NO_OP;
             }
         }
@@ -5923,7 +5923,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         String bf = QDLConfigurationLoaderUtils.runBootScript(qe, getState());
         if (bf != null) {
             if (isVerbose) {
-                say("loaded boot script \"" + bf + "\"");
+                say("loaded boot script '" + bf + "'");
             }
             env.put("boot_script", bf);
         }
@@ -6225,7 +6225,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                             tt.printStackTrace();
                         }
 
-                        say("WARNING: module \"" + targetModule + "\" could not be loaded:" + tt.getMessage());
+                        say("WARNING: module '" + targetModule + "' could not be loaded:" + tt.getMessage());
                     }
                 }
             }
@@ -6250,7 +6250,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 if (isDebug) {
                     t.printStackTrace();
                 }
-                say("warning: Could not load boot script\"" + bootFile + "\": " + t.getMessage());
+                say("warning: Could not load boot script'" + bootFile + "': " + t.getMessage());
             }
         }
         if (inputLine.hasArg(CLA_SCRIPT_PATH)) {
