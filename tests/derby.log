@@ -1,0 +1,29 @@
+----------------------------------------------------------------
+Fri May 31 23:36:12 CDT 2024:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-018f-d215-7300-000029b1eb30 
+on database directory /home/ncsa/dev/derby/qdl_vfs with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@55054057 
+Loaded from file:/home/ncsa/.m2/repository/org/apache/derby/derby/10.14.2.0/derby-10.14.2.0.jar
+java.vendor=Ubuntu
+java.runtime.version=11.0.22+7-post-Ubuntu-0ubuntu220.04.1
+user.dir=/home/ncsa/dev/ncsa-git/qdl/tests
+os.name=Linux
+os.arch=amd64
+os.version=5.4.0-182-generic
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Fri May 31 23:36:13 CDT 2024:
+Shutting down instance a816c00e-018f-d215-7300-000029b1eb30 on database directory /home/ncsa/dev/derby/qdl_vfs with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@55054057 
+----------------------------------------------------------------
+Fri May 31 23:36:13 CDT 2024:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance 601a400f-018f-d215-7300-000029b1eb30 
+on database directory /home/ncsa/dev/derby/qdl_vfs with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@55054057 
+Loaded from file:/home/ncsa/.m2/repository/org/apache/derby/derby/10.14.2.0/derby-10.14.2.0.jar
+java.vendor=Ubuntu
+java.runtime.version=11.0.22+7-post-Ubuntu-0ubuntu220.04.1
+user.dir=/home/ncsa/dev/ncsa-git/qdl/tests
+os.name=Linux
+os.arch=amd64
+os.version=5.4.0-182-generic
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''

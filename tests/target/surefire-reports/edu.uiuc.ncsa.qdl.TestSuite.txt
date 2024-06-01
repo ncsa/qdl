@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: edu.uiuc.ncsa.qdl.TestSuite
+-------------------------------------------------------------------------------
+Tests run: 551, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 24.052 s - in edu.uiuc.ncsa.qdl.TestSuite

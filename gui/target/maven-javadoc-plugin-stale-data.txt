@@ -1,0 +1,49 @@
+@options
+@packages
+-encoding
+'UTF-8'
+-protected
+-source
+'11'
+-sourcepath
+'/home/ncsa/dev/ncsa-git/qdl/gui/src/main/java:/home/ncsa/dev/ncsa-git/qdl/gui/target/generated-sources/annotations'
+-author
+-bottom
+'Copyright &#169; 2024. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'gui 1.5-QDL-SNAPSHOT API'
+-linkoffline
+'https://docs.oracle.com/en/java/javase/11/docs/api' '/home/ncsa/dev/ncsa-git/qdl/gui/target/javadoc-bundle-options'
+-use
+-version
+-windowtitle
+'gui 1.5-QDL-SNAPSHOT API'
+edu.uiuc.ncsa.qdl.sat
+/home/ncsa/dev/ncsa-git/qdl/gui/src/main/java = 1692302803806
+/home/ncsa/dev/ncsa-git/qdl/gui/target/generated-sources/annotations = 1717216575052
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/index.html = 1717216577324
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/type-search-index.js = 1717216577292
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/stylesheet.css = 1717216577328
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/member-search-index.js = 1717216577296
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/search.js = 1717216577332
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/overview-tree.html = 1717216577268
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/constant-values.html = 1717216577244
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/allclasses-index.html = 1717216577304
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/member-search-index.zip = 1717216577296
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/allclasses.html = 1717216577320
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/type-search-index.zip = 1717216577296
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/jquery-ui.overrides.css = 1717216577340
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/help-doc.html = 1717216577328
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/element-list = 1717216577220
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/script.js = 1717216577332
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/package-search-index.zip = 1717216577292
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/index-all.html = 1717216577296
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/package-search-index.js = 1717216577280
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/deprecated-list.html = 1717216577316
+/home/ncsa/dev/ncsa-git/qdl/gui/target/apidocs/allpackages-index.html = 1717216577308

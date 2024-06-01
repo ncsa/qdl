@@ -1,0 +1,222 @@
+May 29, 2024 10:27:13 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 30, 2024 7:04:33 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 30, 2024 7:05:55 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade error
+SEVERE: could not parse module 'math-x.qdl (No such file or directory)'
+edu.uiuc.ncsa.qdl.exceptions.BadArgException: could not parse module 'math-x.qdl (No such file or directory)'
+	at edu.uiuc.ncsa.qdl.util.ModuleUtils.doQDLModuleLoad(ModuleUtils.java:207)
+	at edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator.doLoad(ModuleEvaluator.java:779)
+	at edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator.dispatch(ModuleEvaluator.java:134)
+	at edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.evaluate(AbstractEvaluator.java:84)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluateOLD(MetaEvaluator.java:235)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluate(MetaEvaluator.java:165)
+	at edu.uiuc.ncsa.qdl.expressions.Polyad.evaluate(Polyad.java:82)
+	at edu.uiuc.ncsa.qdl.expressions.ExpressionImpl.evalArg(ExpressionImpl.java:118)
+	at edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.doSay(SystemEvaluator.java:2949)
+	at edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.dispatch(SystemEvaluator.java:428)
+	at edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.evaluate(AbstractEvaluator.java:84)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluateOLD(MetaEvaluator.java:235)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluate(MetaEvaluator.java:165)
+	at edu.uiuc.ncsa.qdl.expressions.Polyad.evaluate(Polyad.java:82)
+	at edu.uiuc.ncsa.qdl.parsing.QDLRunner.run(QDLRunner.java:150)
+	at edu.uiuc.ncsa.qdl.parsing.QDLRunner.run(QDLRunner.java:90)
+	at edu.uiuc.ncsa.qdl.parsing.QDLInterpreter.execute(QDLInterpreter.java:84)
+	at edu.uiuc.ncsa.qdl.parsing.QDLInterpreter.execute(QDLInterpreter.java:63)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.execute(QDLWorkspace.java:245)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.mainLoop(QDLWorkspace.java:273)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.main(QDLWorkspace.java:633)
+
+May 30, 2024 7:08:34 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade error
+SEVERE:  the function 'hypotenuse' with 2 arguments was not found.
+edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace:  the function 'hypotenuse' with 2 arguments was not found.
+	at edu.uiuc.ncsa.qdl.evaluate.FunctionEvaluator.evaluate(FunctionEvaluator.java:94)
+	at edu.uiuc.ncsa.qdl.evaluate.FunctionEvaluator.dispatch(FunctionEvaluator.java:420)
+	at edu.uiuc.ncsa.qdl.evaluate.FunctionEvaluator.evaluate(FunctionEvaluator.java:416)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluateOLD(MetaEvaluator.java:235)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluate(MetaEvaluator.java:165)
+	at edu.uiuc.ncsa.qdl.expressions.Polyad.evaluate(Polyad.java:82)
+	at edu.uiuc.ncsa.qdl.expressions.ExpressionImpl.evalArg(ExpressionImpl.java:118)
+	at edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.doSay(SystemEvaluator.java:2949)
+	at edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.dispatch(SystemEvaluator.java:428)
+	at edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.evaluate(AbstractEvaluator.java:84)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluateOLD(MetaEvaluator.java:235)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluate(MetaEvaluator.java:165)
+	at edu.uiuc.ncsa.qdl.expressions.Polyad.evaluate(Polyad.java:82)
+	at edu.uiuc.ncsa.qdl.parsing.QDLRunner.run(QDLRunner.java:150)
+	at edu.uiuc.ncsa.qdl.parsing.QDLRunner.run(QDLRunner.java:90)
+	at edu.uiuc.ncsa.qdl.parsing.QDLInterpreter.execute(QDLInterpreter.java:84)
+	at edu.uiuc.ncsa.qdl.parsing.QDLInterpreter.execute(QDLInterpreter.java:63)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.execute(QDLWorkspace.java:245)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.mainLoop(QDLWorkspace.java:273)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.main(QDLWorkspace.java:633)
+Caused by: edu.uiuc.ncsa.qdl.exceptions.UndefinedFunctionException:  the function 'hypotenuse' with 2 arguments was not found.
+	at edu.uiuc.ncsa.qdl.evaluate.FunctionEvaluator.doFunctionEvaluation(FunctionEvaluator.java:520)
+	at edu.uiuc.ncsa.qdl.evaluate.FunctionEvaluator.figureOutEvaluation(FunctionEvaluator.java:505)
+	at edu.uiuc.ncsa.qdl.evaluate.FunctionEvaluator.evaluate(FunctionEvaluator.java:90)
+	... 19 more
+
+May 31, 2024 6:36:19 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 31, 2024 6:37:46 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade error
+SEVERE: class not found for oa2
+edu.uiuc.ncsa.qdl.exceptions.BadArgException: class not found for oa2
+	at edu.uiuc.ncsa.qdl.util.ModuleUtils.doJavaModuleLoad(ModuleUtils.java:158)
+	at edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator.doLoad(ModuleEvaluator.java:776)
+	at edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator.dispatch(ModuleEvaluator.java:134)
+	at edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.evaluate(AbstractEvaluator.java:84)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluateOLD(MetaEvaluator.java:235)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluate(MetaEvaluator.java:165)
+	at edu.uiuc.ncsa.qdl.expressions.Polyad.evaluate(Polyad.java:82)
+	at edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator.doJLoad(ModuleEvaluator.java:1066)
+	at edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator.dispatch(ModuleEvaluator.java:158)
+	at edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.evaluate(AbstractEvaluator.java:84)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluateOLD(MetaEvaluator.java:235)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluate(MetaEvaluator.java:165)
+	at edu.uiuc.ncsa.qdl.expressions.Polyad.evaluate(Polyad.java:82)
+	at edu.uiuc.ncsa.qdl.expressions.ExpressionImpl.evalArg(ExpressionImpl.java:118)
+	at edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.doSay(SystemEvaluator.java:2949)
+	at edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.dispatch(SystemEvaluator.java:428)
+	at edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.evaluate(AbstractEvaluator.java:84)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluateOLD(MetaEvaluator.java:235)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluate(MetaEvaluator.java:165)
+	at edu.uiuc.ncsa.qdl.expressions.Polyad.evaluate(Polyad.java:82)
+	at edu.uiuc.ncsa.qdl.parsing.QDLRunner.run(QDLRunner.java:150)
+	at edu.uiuc.ncsa.qdl.parsing.QDLRunner.run(QDLRunner.java:90)
+	at edu.uiuc.ncsa.qdl.parsing.QDLInterpreter.execute(QDLInterpreter.java:84)
+	at edu.uiuc.ncsa.qdl.parsing.QDLInterpreter.execute(QDLInterpreter.java:63)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.execute(QDLWorkspace.java:245)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.mainLoop(QDLWorkspace.java:273)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.main(QDLWorkspace.java:633)
+Caused by: java.lang.ClassNotFoundException: oa2
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:581)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:178)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:527)
+	at java.base/java.lang.Class.forName0(Native Method)
+	at java.base/java.lang.Class.forName(Class.java:315)
+	at edu.uiuc.ncsa.qdl.util.ModuleUtils.doJavaModuleLoad(ModuleUtils.java:125)
+	... 26 more
+
+May 31, 2024 6:39:48 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade error
+SEVERE: class not found for oa2.jwt
+edu.uiuc.ncsa.qdl.exceptions.BadArgException: class not found for oa2.jwt
+	at edu.uiuc.ncsa.qdl.util.ModuleUtils.doJavaModuleLoad(ModuleUtils.java:158)
+	at edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator.doLoad(ModuleEvaluator.java:785)
+	at edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator.dispatch(ModuleEvaluator.java:134)
+	at edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.evaluate(AbstractEvaluator.java:84)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluateOLD(MetaEvaluator.java:235)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluate(MetaEvaluator.java:165)
+	at edu.uiuc.ncsa.qdl.expressions.Polyad.evaluate(Polyad.java:82)
+	at edu.uiuc.ncsa.qdl.expressions.ExpressionImpl.evalArg(ExpressionImpl.java:118)
+	at edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.doSay(SystemEvaluator.java:2949)
+	at edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.dispatch(SystemEvaluator.java:428)
+	at edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.evaluate(AbstractEvaluator.java:84)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluateOLD(MetaEvaluator.java:235)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluate(MetaEvaluator.java:165)
+	at edu.uiuc.ncsa.qdl.expressions.Polyad.evaluate(Polyad.java:82)
+	at edu.uiuc.ncsa.qdl.parsing.QDLRunner.run(QDLRunner.java:150)
+	at edu.uiuc.ncsa.qdl.parsing.QDLRunner.run(QDLRunner.java:90)
+	at edu.uiuc.ncsa.qdl.parsing.QDLInterpreter.execute(QDLInterpreter.java:84)
+	at edu.uiuc.ncsa.qdl.parsing.QDLInterpreter.execute(QDLInterpreter.java:63)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.execute(QDLWorkspace.java:245)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.mainLoop(QDLWorkspace.java:273)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.main(QDLWorkspace.java:633)
+Caused by: java.lang.ClassNotFoundException: oa2.jwt
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:581)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:178)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:527)
+	at java.base/java.lang.Class.forName0(Native Method)
+	at java.base/java.lang.Class.forName(Class.java:315)
+	at edu.uiuc.ncsa.qdl.util.ModuleUtils.doJavaModuleLoad(ModuleUtils.java:125)
+	... 20 more
+
+May 31, 2024 7:20:57 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 31, 2024 7:21:42 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade error
+SEVERE: no such index found
+edu.uiuc.ncsa.qdl.exceptions.IndexError: no such index found
+	at edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator.doJLoad(ModuleEvaluator.java:1044)
+	at edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator.dispatch(ModuleEvaluator.java:159)
+	at edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.evaluate(AbstractEvaluator.java:84)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluateOLD(MetaEvaluator.java:235)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluate(MetaEvaluator.java:165)
+	at edu.uiuc.ncsa.qdl.expressions.Polyad.evaluate(Polyad.java:82)
+	at edu.uiuc.ncsa.qdl.expressions.ANode2.newAssign(ANode2.java:113)
+	at edu.uiuc.ncsa.qdl.expressions.ANode2.evaluate(ANode2.java:91)
+	at edu.uiuc.ncsa.qdl.parsing.QDLRunner.run(QDLRunner.java:150)
+	at edu.uiuc.ncsa.qdl.parsing.QDLRunner.run(QDLRunner.java:90)
+	at edu.uiuc.ncsa.qdl.parsing.QDLInterpreter.execute(QDLInterpreter.java:84)
+	at edu.uiuc.ncsa.qdl.parsing.QDLInterpreter.execute(QDLInterpreter.java:63)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.execute(QDLWorkspace.java:245)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.mainLoop(QDLWorkspace.java:273)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.main(QDLWorkspace.java:633)
+
+May 31, 2024 7:22:53 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade error
+SEVERE: no such index found
+edu.uiuc.ncsa.qdl.exceptions.IndexError: no such index found
+	at edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator.doJLoad(ModuleEvaluator.java:1044)
+	at edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator.dispatch(ModuleEvaluator.java:159)
+	at edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.evaluate(AbstractEvaluator.java:84)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluateOLD(MetaEvaluator.java:235)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluate(MetaEvaluator.java:165)
+	at edu.uiuc.ncsa.qdl.expressions.Polyad.evaluate(Polyad.java:82)
+	at edu.uiuc.ncsa.qdl.expressions.ANode2.newAssign(ANode2.java:113)
+	at edu.uiuc.ncsa.qdl.expressions.ANode2.evaluate(ANode2.java:91)
+	at edu.uiuc.ncsa.qdl.parsing.QDLRunner.run(QDLRunner.java:150)
+	at edu.uiuc.ncsa.qdl.parsing.QDLRunner.run(QDLRunner.java:90)
+	at edu.uiuc.ncsa.qdl.parsing.QDLInterpreter.execute(QDLInterpreter.java:84)
+	at edu.uiuc.ncsa.qdl.parsing.QDLInterpreter.execute(QDLInterpreter.java:63)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.execute(QDLWorkspace.java:245)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.mainLoop(QDLWorkspace.java:273)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.main(QDLWorkspace.java:633)
+
+May 31, 2024 7:29:34 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 31, 2024 11:26:03 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 31, 2024 11:30:17 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 31, 2024 11:30:30 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade error
+SEVERE: Extraction operator only applies to stems.
+edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace: Extraction operator only applies to stems.
+	at edu.uiuc.ncsa.qdl.expressions.StemExtractionNode.evaluate(StemExtractionNode.java:99)
+	at edu.uiuc.ncsa.qdl.expressions.ExpressionImpl.evalArg(ExpressionImpl.java:118)
+	at edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.doSay(SystemEvaluator.java:2949)
+	at edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.dispatch(SystemEvaluator.java:428)
+	at edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.evaluate(AbstractEvaluator.java:84)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluateOLD(MetaEvaluator.java:235)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluate(MetaEvaluator.java:165)
+	at edu.uiuc.ncsa.qdl.expressions.Polyad.evaluate(Polyad.java:82)
+	at edu.uiuc.ncsa.qdl.parsing.QDLRunner.run(QDLRunner.java:150)
+	at edu.uiuc.ncsa.qdl.parsing.QDLRunner.run(QDLRunner.java:90)
+	at edu.uiuc.ncsa.qdl.parsing.QDLInterpreter.execute(QDLInterpreter.java:84)
+	at edu.uiuc.ncsa.qdl.parsing.QDLInterpreter.execute(QDLInterpreter.java:63)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.execute(QDLWorkspace.java:245)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.mainLoop(QDLWorkspace.java:273)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.main(QDLWorkspace.java:633)
+
+May 31, 2024 11:30:34 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade error
+SEVERE: divide by zero
+edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace: divide by zero
+	at edu.uiuc.ncsa.qdl.evaluate.OpEvaluator.evaluate(OpEvaluator.java:365)
+	at edu.uiuc.ncsa.qdl.expressions.Dyad.evaluate(Dyad.java:54)
+	at edu.uiuc.ncsa.qdl.expressions.ExpressionImpl.evalArg(ExpressionImpl.java:118)
+	at edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.doSay(SystemEvaluator.java:2949)
+	at edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.dispatch(SystemEvaluator.java:428)
+	at edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.evaluate(AbstractEvaluator.java:84)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluateOLD(MetaEvaluator.java:235)
+	at edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator.evaluate(MetaEvaluator.java:165)
+	at edu.uiuc.ncsa.qdl.expressions.Polyad.evaluate(Polyad.java:82)
+	at edu.uiuc.ncsa.qdl.parsing.QDLRunner.run(QDLRunner.java:150)
+	at edu.uiuc.ncsa.qdl.parsing.QDLRunner.run(QDLRunner.java:90)
+	at edu.uiuc.ncsa.qdl.parsing.QDLInterpreter.execute(QDLInterpreter.java:84)
+	at edu.uiuc.ncsa.qdl.parsing.QDLInterpreter.execute(QDLInterpreter.java:63)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.execute(QDLWorkspace.java:245)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.mainLoop(QDLWorkspace.java:273)
+	at edu.uiuc.ncsa.qdl.workspace.QDLWorkspace.main(QDLWorkspace.java:633)
+Caused by: java.lang.ArithmeticException: divide by zero
+	at edu.uiuc.ncsa.qdl.evaluate.OpEvaluator.doDyadTimesOrDivide(OpEvaluator.java:1607)
+	at edu.uiuc.ncsa.qdl.evaluate.OpEvaluator.evaluate2(OpEvaluator.java:422)
+	at edu.uiuc.ncsa.qdl.evaluate.OpEvaluator.evaluate(OpEvaluator.java:361)
+	... 15 more
+
