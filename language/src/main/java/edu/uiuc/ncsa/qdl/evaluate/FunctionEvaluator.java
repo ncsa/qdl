@@ -71,16 +71,9 @@ public class FunctionEvaluator extends AbstractEvaluator {
 
     @Override
     public boolean evaluate(String alias, Polyad polyad, State state) {
-        /*
-        To do. If this state.hasModule() == true, then figure out evaluation first.
-        This allows for local modules to have names that are keywords.
-        E.g. a module foo,  with a function size(x), should be able to
-        issue foo#size(x) without getting an exception because it is scoped.
-        Essentially, this next condition  lets modules locally override system
-        names. This is ok since system names can be explicitly scoped as e.g.
-        function#names()
-         */
- /*       if (state != null && state.hasModule()) {
+        // Fix https://github.com/ncsa/qdl/issues/57 If it's a java module, check the name first.
+        // We do NOT want to do this all the time since it really slows down system performance.
+        if (state != null && state.hasModule()) {
             try {
                 figureOutEvaluation(polyad, state, !polyad.hasAlias());
                 return true;
@@ -94,7 +87,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 QDLExceptionWithTrace qq = new QDLExceptionWithTrace(t, polyad);
                 throw qq;
             }
-        }*/
+        }
         switch (polyad.getName()) {
             case IS_FUNCTION:
                 doIsFunction(polyad, state);
@@ -110,7 +103,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 return true;
 
         }
-        // not a module and see if the function is defined in the ambient space.
+        // not a module, not built in and see if the function is defined in the ambient space.
         try {
             figureOutEvaluation(polyad, state, !polyad.hasAlias());
             return true;

@@ -249,7 +249,7 @@ public class MetaEvaluator extends AbstractEvaluator {
         // If there is state (so not loading a template), it is built in and there is a like-named top-level
         // function. throw and ambiguous function error
         if (state != null &&
-                //      !state.hasModule() && // allow overrides in modules. So foo#bar() should resolve even if there is a system function bar()
+                      !state.hasModule() && // allow overrides in modules. So foo#bar() should resolve even if there is a system function bar()
                 polyad.isBuiltIn() &&
                 null != state.getFTStack().get(new FKey(polyad.getName(), polyad.getArgCount()))) {
             throw new QDLExceptionWithTrace("ambiguous function. There are multiple definitions of " + polyad.getName() + "(" + polyad.getArgCount() + ")",
@@ -268,12 +268,12 @@ public class MetaEvaluator extends AbstractEvaluator {
           module['a:b'][size(x)->stem#size(x)+1;];
           b≔import('a:b');
           b#size([;5])
-
+          */
               if(state!= null && state.hasModule()){
                     if (getFunctionEvaluator().evaluate(polyad, state)) {
                         return true;
                     }
-                }*/
+                }
                 if (evaluator.evaluate(polyad, state)) return true;
             } catch (FunctionArgException functionArgException) {
                 farg = functionArgException;

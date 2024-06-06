@@ -129,6 +129,30 @@ public class ModuleTests extends AbstractQDLTester {
         assert getBooleanValue("ok2", state) : "loaded() does not return the loaded module";
     }
 
+    /*
+          module['a:b'][size(x)->stem#size(x)+1;];
+          b≔import('a:b');
+          b#size([;5])
+     */
+
+    /**
+     * In this test, a module creates a function name size which overrides the
+     * like-named system function. This is a regression test that such
+     * overrides work.
+     * @throws Throwable
+     */
+    public void testOverloadOfSystemFunction() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script,"module['a:b'][size(x)->stem#size(x)+1;];");
+        addLine(script,"b≔import('a:b');");
+        addLine(script,"ok := 6 == b#size([;5]);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "override of system function inside module failed";
+    }
+
+
     /**
      * In this test, a module is loaded and the ambient state has other named objects.
      * the test is that these are kept straight
