@@ -1,0 +1,12 @@
+#! /usr/bin/env -S qdl-run
+/*
+  This just returns the arguments passed in.
+  Jeff Gaynor
+  04/04/2021
+*/
+if[
+   size(args()) == 0
+  ][
+   return();
+ ];
+return(args());

@@ -1,0 +1,146 @@
+module[
+     'qdl:/ext/anaphora','scriptlets'
+    ]
+body[
+» This module defines several functions for working with scriptlets
+» aka anaphora aka anaphoric macros.
+» An anaphor or scriptlet is a JSON representation
+» of a QDL script that can be used as e.g. part of another system
+» that needs to call QDL for processing. This allows other processes
+» that are not QDL aware to send around references to QDL scripts that
+» then may be invoked.
+» These utilities let you read the JSON and run the resulting scriptlet
+» locally. This is a very valuable debugging tool.
+»
+» The basic JSON format is
+»    {"qdl":{"load":"path/to/script", "args":arg | json}}
+»    {"qdl":{"code":expression  | [expressions] }}
+» where in the first, there is a reference to a script. Ultimately
+» this is invoked as
+»    script_load('path/to/script', args.0, args.1, ...)
+» The second is run as
+»   interpret(expressions.);
+» It is possible to have lists of these scriptlets that will be run in
+» sequence, so
+»    {"qdl":[
+»        {"load":"path/to/script1", "args":arg1 | json1},
+»        {"load":...}
+»        ]
+»     }
+» To run them here, they are turned into simple stems
+» and may be executed with the exec function. Such a stem
+» is of the form (to execute a script)
+»
+»  {'load' : 'path/to/script', 'args':args.}
+»
+» or a list of these. QDL code can be run directly as
+»
+»  {'code':[{QDL statements}]}
+»
+
+define[to_code(s)]
+  body[
+» to_code(s) - create a code scriplet from a script name and argument list.
+  return(to_json({'qdl':{'code':s}}));
+      ]; // end to_code
+
+
+to_load(s)->block[
+» to_load(path) - create a load scriptlet with no arguments.
+    to_load(s, null);
+ ];
+define[to_load(s, arg)]
+  body[
+» to_load(s, arg) - create a load scriplet from a script name and argument list.
+» If arg is empty, then no arguments are given
+if[var_type(arg) == constants.'var_type'.'stem'][
+   if[size(arg) == 0]
+   then[// empty arg list, so don't pass it
+        return(to_json({'qdl':{'load':s}}));
+       ]
+   else[// has args, pass everything
+        return(to_json({'qdl':{'load':s, 'args':arg}}));
+       ];
+];
+  if[is_null(arg)]
+  then[ // trivial arg, don't pass it
+        return(to_json({'qdl':{'load':s}}));
+      ]
+  else[ // arg is just a scalar, so pass it as one
+     return(to_json({'qdl':{'load':s, 'args':arg}}));
+      ];
+      ]; // end load_out
+
+define[json_in(string)]
+  body[
+  » Take the JSON representation of a scriptlet and turn it into an executable scriptlet
+  » E.g. The JSON
+  » {"qdl" : {"load" : "path/my.qdl", "args":[1,"foo"]}}
+  » would be turned into the stem
+  » {'load':'path/my.qdl', 'args' : [1,'foo']}
+        s. ≔ from_json(string);
+        ⊨∃s.'qdl' : 'no anaphor found';
+        in. ≔ s.'qdl'; // either a singleton or list
+        if[¬is_list(in.)]
+      then[
+           out. ≔ null; // initialize it
+             if[∃in.'load']
+           then[
+              out.'load' ≔ in.'load';
+              ∃in.'args' ⇒ out.'args'≔in.'args';
+               ]
+           else[
+              ⊨∃in.'code' :  'not an anaphor';
+              out.'code'≔in.'code';
+              ];
+           return(out.);
+        ];
+        // so we have a list of these
+     ]; //end json_in
+
+exec(s.)->
+block[
+» exec(s.) - execute a generic scriplet (includes lists of them).
+   if[is_list(s.)]
+   then[
+          while[a∈s.][simple_exec(a);];
+       ]
+   else[
+         return(simple_exec(s.));
+       ];
+]; //end exec
+
+
+simple_exec(s.)->
+block[
+» simple_exec(s.) - execute a single scriptlet.
+» It is a utility but could be used alone.
+      if[∃s.'load']
+    then[
+           if[∃s.'args']
+         then[
+              if[is_list(s.'args')]
+            then[
+                 // case of {'load':path, 'args':[x0,x1,...])
+                 // Execute as script_load(path, x0,x1,...)
+                 return((s.'load' ~ s.'args')⍺⊗script_load);
+               ]
+            else[
+                // case of {'load':path, singleton}
+                // execute as script_load(path, arg)
+                return([s.'load', s.'args']⍺⊗script_load);
+             ];
+           ]
+         else[
+              // case there are no arguments, just load the script
+                return(script_load(s.'load'));
+             ];
+        ];
+       if[ ∃s.'code']
+     then[
+         ⊨ var_type(s.'code') ∈ [constants().'var_type'.'string', constants().'var_type'.'stem'] : 'unknown code entry type';
+             return(interpret(s.'code'));
+      ];
+      raise_error('unknown anaphor');
+   ];
+    ]; // end module

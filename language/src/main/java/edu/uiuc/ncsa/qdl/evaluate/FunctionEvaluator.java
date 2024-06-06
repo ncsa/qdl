@@ -71,6 +71,30 @@ public class FunctionEvaluator extends AbstractEvaluator {
 
     @Override
     public boolean evaluate(String alias, Polyad polyad, State state) {
+        /*
+        To do. If this state.hasModule() == true, then figure out evaluation first.
+        This allows for local modules to have names that are keywords.
+        E.g. a module foo,  with a function size(x), should be able to
+        issue foo#size(x) without getting an exception because it is scoped.
+        Essentially, this next condition  lets modules locally override system
+        names. This is ok since system names can be explicitly scoped as e.g.
+        function#names()
+         */
+ /*       if (state != null && state.hasModule()) {
+            try {
+                figureOutEvaluation(polyad, state, !polyad.hasAlias());
+                return true;
+            } catch (UndefinedFunctionException ufe) {
+                // special case this one QDLException so it gives useful user feedback.
+                QDLExceptionWithTrace qq = new QDLExceptionWithTrace(ufe, polyad);
+                throw qq;
+            } catch (QDLException qe) {
+                throw qe;
+            } catch (Throwable t) {
+                QDLExceptionWithTrace qq = new QDLExceptionWithTrace(t, polyad);
+                throw qq;
+            }
+        }*/
         switch (polyad.getName()) {
             case IS_FUNCTION:
                 doIsFunction(polyad, state);
@@ -86,11 +110,12 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 return true;
 
         }
+        // not a module and see if the function is defined in the ambient space.
         try {
             figureOutEvaluation(polyad, state, !polyad.hasAlias());
             return true;
         } catch (UndefinedFunctionException ufe) {
-            // special case this one QDLException so it gives usedful user feedback.
+            // special case this one QDLException so it gives useful user feedback.
             QDLExceptionWithTrace qq = new QDLExceptionWithTrace(ufe, polyad);
             throw qq;
         } catch (QDLException qe) {
@@ -147,6 +172,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
     }
 
     public static final String DUMMY_BUILT_IN_FUNCTION_NAME_CAPUT = "x_";
+
     private void doMonadicArgNames(Polyad polyad, State state) {
         fPointer pointer = new fPointer() {
             @Override
@@ -629,7 +655,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
             // the alias of f is not and should not be overwritten.
             // The net effect will be much later, mm will be resolved against the
             // ambient space.
-            if (statement instanceof ExpressionInterface && polyad.getAlias()!=null) {
+            if (statement instanceof ExpressionInterface && polyad.getAlias() != null) {
                 ((ExpressionInterface) statement).setAlias(polyad.getAlias());
             }
             try {

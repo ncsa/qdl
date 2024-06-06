@@ -1397,11 +1397,20 @@ has 0->2, 1->1, 2->3, 3->0. This works generally with stems too.]]>
     <entry id="interpret">
         <body>
             <![CDATA[interpret(arg) - take the argument which is a string and run/execute it as if it
-               were typed in.]]>
+               were typed in to the current session.]]>
         </body>
         <example>
             <![CDATA[   interpret('2+2');
-4]]>
+4
+
+Note that this is run in the current environment, so
+   a:=3
+   interpret(['b:=2+2;', 'b^a;'])
+64
+   b
+4
+The value of the last statement is returned as the result.]]>
+
         </example>
 
     </entry>
@@ -5030,11 +5039,14 @@ but global variables are always there
 10
 
 Lambdas.
-Using lambdas there is a hierarchy for blocks
+Using lambdas there is a hierarchy of visibility for blocks
 
- local  - only arguments passed in are visible
+  local - only arguments passed in are visible
   block - ambient is visible, but new definitions stay local
 ambient - new functions and variables are available everywhere
+
+Note that local and block are keywords, ambient refers to the current
+scope.
 
 Local block examples. This gives the least visibility of all the options
 
@@ -5054,6 +5066,8 @@ than a define statement.
 6
    is_defined(y)
 false
+
+The block keyword is used in lambdas to allow for more statements.
 
 Lambdas have the same state as an block statement, so
   zz(x)->y:=x^2;
@@ -6581,11 +6595,49 @@ You can then access these as relative paths to info().'lib' using
 j_load or j_use very conveniently.
    ]]>
         </body>
-        <example>
-    <![CDATA[
-    ]]>
-         </example>
      </entry>
+
+    <entry id="lambda">
+      <body>
+ <![CDATA[A lambda function (from Church's λ-calculus) is a formal
+ expression of the form
+
+    signature -> expression | expressions
+
+ where the signature allows for binding variables to expressions. In QDL
+ they may be anonymous as well.
+
+ E.g.
+   f(x)->x^2; // defines a lambda function
+   f(3); // evaluate it at x =3.
+ 9
+
+ The general contract is that if there is a single expression, the result of that
+ is returned (so no return() call is needed). Multiple expressions must be in
+ a block or local statement. So to be very formal, we could have written
+
+    f(x)->block[return(x^2);];
+
+ Scope refers to where the variables are visible. See visibility for a
+ more thorough discussion.
+
+ Functions may be referenced with the @ operator and sent as arguments to other
+ functions:
+    g(@h, x)->h(x)
+    g(@f,4)
+ 16
+
+ Anonymous lambdas may be used directly in function signatures:
+    g((x)->x^3, 2)
+ 8
+
+ See also: visibility, define, ⍺ or apply]]>
+      </body>
+      <example>
+  <![CDATA[
+  ]]>
+       </example>
+   </entry>
 
 
     <!--

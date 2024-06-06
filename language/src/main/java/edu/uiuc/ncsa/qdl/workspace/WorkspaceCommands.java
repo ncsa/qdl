@@ -366,6 +366,9 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("System exit cancelled.");
                 return RC_CONTINUE;
             case VARS_COMMAND:
+
+
+
                 return doVars(inputLine);
             case WS_COMMAND:
                 return doWS(inputLine);
@@ -1536,7 +1539,6 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     private List<String> _doExternalEdit(File tempFile) {
-
         EditorEntry qdlEditor = getQdlEditors().get(getExternalEditorName());
         List<String> content = new ArrayList<>();
 
@@ -1560,7 +1562,6 @@ public class WorkspaceCommands implements Logable, Serializable {
             }
         }
         return content;
-
     }
 
     private List<String> _doExternalEdit(List<String> content) {
@@ -2886,34 +2887,22 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         List<String> output = new ArrayList<>();
         Object rc = editVariable(content, output, varName, isText, isStem);
+
         if (rc instanceof Response) {
             return rc;
         }
         if (rc.equals(RC_CONTINUE)) {
             return rc;
         }
-/*
-        if (useExternalEditor()) {
-            content = _doExternalEdit(content);
-        } else {
-            if (isSwingGUI()) {
-                QDLEditor qdlEditor = new QDLEditor();
-                qdlEditor.setType(EditDoneEvent.TYPE_VARIABLE);
-                qdlEditor.setLocalName(varName);
-                qdlEditor.setArgState((isText ? 1 : 0) + (isStem ? 2 : 0));
-                qdlEditor.setup(StringUtils.listToString(content));
-                return RC_CONTINUE;
-            }
-            content = _doLineEditor(content);
-        }
 
-*/
-        return restoreVariable(varName, content, isText, isStem);
+        return restoreVariable(varName, output, isText, isStem);
     }
 
     public Object editVariable(List<String> inputForm, List<String> output, String varName, boolean isText, boolean isStem) {
+        // Fixed https://github.com/ncsa/qdl/issues/55 update the returned output from the editor.
         if (useExternalEditor()) {
-            output = _doExternalEdit(inputForm);
+            output.clear();
+            output.addAll(_doExternalEdit(inputForm));
         } else {
             if (isSwingGUI()) {
                 QDLEditor qdlEditor = new QDLEditor();
@@ -2923,7 +2912,8 @@ public class WorkspaceCommands implements Logable, Serializable {
                 qdlEditor.setup(StringUtils.listToString(inputForm));
                 return RC_CONTINUE;
             }
-            output = _doLineEditor(inputForm);
+            output.clear();
+            output.addAll( _doLineEditor(inputForm));
         }
         return RC_NO_OP;
     }

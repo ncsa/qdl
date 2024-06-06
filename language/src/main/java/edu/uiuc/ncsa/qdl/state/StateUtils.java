@@ -7,7 +7,6 @@ import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.module.MIStack;
 import edu.uiuc.ncsa.qdl.module.MTStack;
 import edu.uiuc.ncsa.qdl.variables.VStack;
-import edu.uiuc.ncsa.qdl.workspace.WSJSONSerializer;
 import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
@@ -37,13 +36,19 @@ public abstract class StateUtils {
      * @throws ClassNotFoundException
      */
     public static State clone(State state)  {
-        WSJSONSerializer serializer = new WSJSONSerializer();
         SerializationState serializationState = new SerializationState();
         serializationState.setVersion(SerializationConstants.VERSION_2_1_TAG);
         try {
-            JSONObject json = state.serializeToJSON(serializationState);
-            State newState = state.newInstance();
-            newState.deserializeFromJSON(json, serializationState);
+            State newState;
+            if(state == null){
+                // in the case of, e.g., a new module that is being created, there is no state,
+                // in that case, create one from the current factory.
+                newState = State.getFactory().newInstance();
+            }else{
+                newState = state.newInstance();
+                JSONObject json = state.serializeToJSON(serializationState);
+                newState.deserializeFromJSON(json, serializationState);
+            }
             return newState;
         } catch (Throwable e) {
             if(e instanceof RuntimeException){

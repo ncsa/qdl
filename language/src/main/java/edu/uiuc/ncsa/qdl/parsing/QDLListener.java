@@ -1,8 +1,10 @@
 package edu.uiuc.ncsa.qdl.parsing;
 
+import edu.uiuc.ncsa.qdl.evaluate.MetaEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.IntrinsicViolation;
+import edu.uiuc.ncsa.qdl.exceptions.NamespaceException;
 import edu.uiuc.ncsa.qdl.exceptions.ParsingException;
 import edu.uiuc.ncsa.qdl.expressions.*;
 import edu.uiuc.ncsa.qdl.functions.FunctionDefinitionStatement;
@@ -2140,7 +2142,17 @@ illegal argument:no module named "b" was  imported at (1, 67)
             if (!(var instanceof VariableNode)) {
                 throw new IllegalArgumentException("unexpected argument for alias");
             }
-            moduleExpression.setAlias(((VariableNode) var).getVariableReference());
+            // Fix https://github.com/ncsa/qdl/issues/56
+            String moduleName = ((VariableNode) var).getVariableReference();
+            if (MetaEvaluator.isSystemNS(moduleName)) {
+                if (statement instanceof Polyad) {
+                    String functionName = ((Polyad) statement).getName();
+                    if (!state.getMetaEvaluator().isBuiltIin(moduleName, functionName)) {
+                        throw new NamespaceException("no function named '" + functionName + "' exists in the system module '" + moduleName + "'");
+                    }
+                }
+            }
+            moduleExpression.setAlias(moduleName);
         }
         moduleExpression.setExpression((ExpressionInterface) statement);
 

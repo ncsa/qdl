@@ -529,9 +529,9 @@ public class State extends FunctionState implements QDLConstants {
         systemConstants.put(SYS_LOG_LEVELS, logLevels);
 
         QDLStem moduleImportModes = new QDLStem();
-        moduleImportModes.put(IMPORT_STATE_SNAPSHOT, (long)IMPORT_STATE_SNAPSHOT_VALUE);
-        moduleImportModes.put(IMPORT_STATE_SHARE, (long)IMPORT_STATE_SHARE_VALUE);
-        moduleImportModes.put(IMPORT_STATE_NONE, (long)IMPORT_STATE_NONE_VALUE);
+        moduleImportModes.put(IMPORT_STATE_SNAPSHOT, (long) IMPORT_STATE_SNAPSHOT_VALUE);
+        moduleImportModes.put(IMPORT_STATE_SHARE, (long) IMPORT_STATE_SHARE_VALUE);
+        moduleImportModes.put(IMPORT_STATE_NONE, (long) IMPORT_STATE_NONE_VALUE);
         systemConstants.put(SYS_MODULE_IMPORT_MODES, moduleImportModes);
 
     }
@@ -587,6 +587,23 @@ public class State extends FunctionState implements QDLConstants {
             return versionInfo;
         }
 
+        /*
+            public static void main(String[] args) {
+        State state = new State();
+        MyLoggingFacade logger = new MyLoggingFacade("State");
+        state.setLogger(logger);
+        QDLStem stem =state.addManifestConstants("/home/ncsa/apps/qdl");
+        System.out.println(stem);
+    }
+
+
+         */
+
+        return versionInfo = processManifest2(versionInfo, manifest);
+    }
+   // Old version was too restrictive. Should just read all manifest constants
+    // and have special handling of the few items like class path that are constant.
+    protected QDLStem processManifest(QDLStem versionInfo, ArrayList<String> manifest) {
         for (int i = 0; i < manifest.size(); i++) {
             String linein = manifest.get(i);
 
@@ -650,6 +667,69 @@ public class State extends FunctionState implements QDLConstants {
         }
         return versionInfo;
     }
+
+    protected QDLStem processManifest2(QDLStem versionInfo, ArrayList<String> manifest) {
+        for (int i = 0; i < manifest.size(); i++) {
+            String linein = manifest.get(i);
+            if(StringUtils.isTrivial(linein)){
+                continue;
+            }
+            String head = linein.substring(0, linein.indexOf(":")).trim();
+            switch (head) {
+                case "Class-Path":
+                    StringBuffer stringBuffer = new StringBuffer();
+                    stringBuffer.append(truncateLine("Class-Path:", linein));
+                    int j;
+
+                    for (j = i + 1; j < manifest.size(); j++) {
+                        String currentLine = manifest.get(j);
+                        if (currentLine.startsWith(" ")) {
+                            stringBuffer.append(currentLine.substring(1)); // starts with a single added blank.
+                        } else {
+                            i = j - 1;
+                            break;
+                        }
+                    }
+                    versionInfo.put(SYS_QDL_BUILD_CLASS_PATH, stringBuffer.toString());
+                    break;
+                case "build-time":
+                    try {
+                        Long ts = Long.parseLong(truncateLine("build-time:", linein));
+                        versionInfo.put(SYS_QDL_VERSION_BUILD_TIME, Iso8601.date2String(ts));
+                    } catch (Throwable t) {
+                        versionInfo.put(SYS_QDL_VERSION_BUILD_TIME, "?");
+                    }
+                    break;
+                default:
+                    versionInfo.put(head, truncateLine(head + ":", linein));
+
+
+            }
+
+        }
+        return versionInfo;
+    }
+
+        /*
+          OA4MP
+                                    <manifestEntries>
+                                    <application-version>${project.version}</application-version>
+                                    <application-name>${project.name}</application-name>
+                                    <application-title>OA4MP</application-title>
+                                    <build-time>${timestamp}</build-time>
+                                    <implementation-version>1.5-QDL-SNAPSHOT</implementation-version>
+                                    <implementation-build>${buildNumber}</implementation-build>
+                                    <implementation-title>QDL</implementation-title>
+                                </manifestEntries>
+
+         QDL                                 <manifestEntries>
+                                             <application-version>${project.version}</application-version>
+                                             <application-name>${project.name}</application-name>
+                                             <build-time>${timestamp}</build-time>
+                                             <implementation-version>${project.version}</implementation-version>
+                                             <implementation-build>${buildNumber}</implementation-build>
+                                         </manifestEntries>
+         */
 
     /**
      * Truncate the line by dropping the head from it.
@@ -878,8 +958,8 @@ public class State extends FunctionState implements QDLConstants {
                 newStack.appendTables(moduleState.vStack);
             }
             if (!vStack.isEmpty()) {
-                       newStack.appendTables(vStack);
-                   }
+                newStack.appendTables(vStack);
+            }
         }
 
         FStack<? extends FTable<? extends FKey, ? extends FunctionRecordInterface>> ftStack = new FStack();
@@ -1523,7 +1603,7 @@ public class State extends FunctionState implements QDLConstants {
         addJSONtoState(jsonObject, VARIABLE_STACK, getVStack(), s);
         if (!getUsedModules().isEmpty()) {
             ModuleUtils moduleUtils = new ModuleUtils();
-            JSONArray array = moduleUtils.serializeUsedModules(this, serializationState );
+            JSONArray array = moduleUtils.serializeUsedModules(this, serializationState);
             if (array != null && !array.isEmpty()) {
                 jsonObject.put(USED_MODULES, array);
             }
@@ -1566,4 +1646,13 @@ public class State extends FunctionState implements QDLConstants {
         }
         return xStack;
     }
+
+
+    public static void main(String[] args) {
+     State state = new State();
+     MyLoggingFacade logger = new MyLoggingFacade("State");
+     state.setLogger(logger);
+     QDLStem stem =state.addManifestConstants("/home/ncsa/apps/qdl");
+     System.out.println(stem);
+ }
 }

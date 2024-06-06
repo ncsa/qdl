@@ -56,6 +56,7 @@ public class MetaEvaluator extends AbstractEvaluator {
 
     /**
      * Add evaluator at a given index in the list
+     *
      * @param index
      * @param evaluator
      */
@@ -67,6 +68,7 @@ public class MetaEvaluator extends AbstractEvaluator {
 
     /**
      * Add evaluator to the end of the list.
+     *
      * @param evaluator
      */
     static protected void addE(AbstractEvaluator evaluator) {
@@ -222,16 +224,56 @@ public class MetaEvaluator extends AbstractEvaluator {
         throw new UndefinedFunctionException("unknown function '" + polyad.getName() + "'", polyad);
     }
 
+    /**
+     * Check that a FQ function exists. This is used withj {@link  #isSystemNS(String)} to check if
+     * the namespace exists in the first place.
+     * @param moduleName
+     * @param functionName
+     * @return
+     */
+    public  boolean isBuiltIin(String moduleName, String functionName) {
+        if (!isSystemNS(moduleName)) return false;
+        for (AbstractEvaluator evaluator : evaluators) {
+            if (evaluator.getNamespace().equals(moduleName)) {
+                for(String name : evaluator.getFunctionNames()){
+                    if(name.equals(functionName)) return true;
+                }
+            }
+        }
+        return false;
+
+    }
+
     public boolean evaluateOLD(Polyad polyad, State state) {
         FunctionArgException farg = null;
         // If there is state (so not loading a template), it is built in and there is a like-named top-level
         // function. throw and ambiguous function error
-        if (state != null && polyad.isBuiltIn() && null != state.getFTStack().get(new FKey(polyad.getName(), polyad.getArgCount()))) {
+        if (state != null &&
+                //      !state.hasModule() && // allow overrides in modules. So foo#bar() should resolve even if there is a system function bar()
+                polyad.isBuiltIn() &&
+                null != state.getFTStack().get(new FKey(polyad.getName(), polyad.getArgCount()))) {
             throw new QDLExceptionWithTrace("ambiguous function. There are multiple definitions of " + polyad.getName() + "(" + polyad.getArgCount() + ")",
                     polyad);
         }
         for (AbstractEvaluator evaluator : evaluators) {
             try {
+          /*  See also FunctionEvaluator.evaluate
+              'a:a' no such built in causes stack over flow. Should just stop
+
+          )ws set java_trace on
+          module['a:a'][size(x)->function#size(x)+1;];
+          a≔import('a:a');
+          a#size([;5])
+          
+          module['a:b'][size(x)->stem#size(x)+1;];
+          b≔import('a:b');
+          b#size([;5])
+
+              if(state!= null && state.hasModule()){
+                    if (getFunctionEvaluator().evaluate(polyad, state)) {
+                        return true;
+                    }
+                }*/
                 if (evaluator.evaluate(polyad, state)) return true;
             } catch (FunctionArgException functionArgException) {
                 farg = functionArgException;
