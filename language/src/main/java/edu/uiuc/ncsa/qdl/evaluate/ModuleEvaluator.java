@@ -1102,6 +1102,11 @@ public class ModuleEvaluator extends AbstractEvaluator {
 
     protected String getClassPathFromToolPath(List<String> toolPath, State state) {
         String possibleCP = null;
+        if(state == null){
+            // it is possible in a module there is no state
+            // default to ambient state for resolving path
+            state = State.getRootState();
+        }
         QDLStem libStem = state.getSystemInfo().getStem("lib");
         try {
             for (int i = 0; i < toolPath.size() - 1; i++) {

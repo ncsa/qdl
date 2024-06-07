@@ -53,7 +53,7 @@ define[to_load(s, arg)]
   body[
 » to_load(s, arg) - create a load scriplet from a script name and argument list.
 » If arg is empty, then no arguments are given
-if[var_type(arg) == constants.'var_type'.'stem'][
+if[var_type(arg) == constants().'var_type'.'stem'][
    if[size(arg) == 0]
    then[// empty arg list, so don't pass it
         return(to_json({'qdl':{'load':s}}));

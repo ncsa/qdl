@@ -63,11 +63,12 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
     }
 
     /**
-     * Take an XStack and add all of the tables in this stack in the correct order
-     * to the front of the stack. If XStack is [A,B,C,...] And the existing stack is
+     * Take an XStack and prepend in the correct order
+     * to the front of the stack. If xStack is [A,B,C,...] And the existing stack is
      * [P,Q,...] the result is [A,B,C,...,P,Q,...]
      * This is needed when, e.g., creating new local state for function reference resolution
-     *
+     * <br/><br/>
+       * <b>Note:</b> {@link #get(XKey)} starts from index 0, so local overrides are first!
      * @param xStack
      */
     public void addTables(XStack xStack) {
@@ -90,6 +91,8 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
      * Similar to {@link #addTables(XStack)}, but this appends them to the existing
      * set of tables. If XStack is [A,B,C,...] And the existing stack is
      * [P,Q,...] the result is [P,Q,...,A,B,C,...,]
+     * <br/><br/>
+     * <b>Note:</b> {@link #get(XKey)} starts from index 0, so local overrides are first!
      *
      * @param xStack
      */
@@ -103,9 +106,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
             if (!xt.isEmpty()) {
                 append((V) xStack.getStack().get(i)); // puts at 0th elements each time
                 addedTables.add(xt.getID());
-
             }
-
         }
     }
 

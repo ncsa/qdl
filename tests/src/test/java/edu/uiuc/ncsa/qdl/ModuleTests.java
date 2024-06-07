@@ -2,6 +2,7 @@ package edu.uiuc.ncsa.qdl;
 
 import edu.uiuc.ncsa.qdl.evaluate.ModuleEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.IntrinsicViolation;
+import edu.uiuc.ncsa.qdl.exceptions.NamespaceException;
 import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.exceptions.UndefinedFunctionException;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
@@ -73,6 +74,7 @@ public class ModuleTests extends AbstractQDLTester {
 
     /**
      * Make sure machinery for j_load works using simple paths. Regression test mostly.
+     *
      * @throws Throwable
      */
     public void testJLoadForSystemTools() throws Throwable {
@@ -90,6 +92,7 @@ public class ModuleTests extends AbstractQDLTester {
         assert getBooleanValue("ok2", state) : "failed to load standard module using j_load";
         assert getBooleanValue("ok3", state) : "failed to load standard module using j_load";
     }
+
     protected void testSerializingJavaArguments(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -139,19 +142,39 @@ public class ModuleTests extends AbstractQDLTester {
      * In this test, a module creates a function name size which overrides the
      * like-named system function. This is a regression test that such
      * overrides work.
+     *
      * @throws Throwable
      */
     public void testOverloadOfSystemFunction() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script,"module['a:b'][size(x)->stem#size(x)+1;];");
-        addLine(script,"b≔import('a:b');");
-        addLine(script,"ok := 6 == b#size([;5]);");
+        addLine(script, "module['a:b'][size(x)->stem#size(x)+1;];");
+        addLine(script, "b≔import('a:b');");
+        addLine(script, "ok := 6 == b#size([;5]);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "override of system function inside module failed";
     }
 
+    /**
+     * Attempts to use a non-existent function for a given system namespace should
+     * be caught with a NamespaceException
+     *
+     * @throws Throwable
+     */
+    public void testBadSystemNamespace() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module['a:b'][size(x)->function#size(x)+1;];"); // function as a NS is reserved, no such size()
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        try {
+            interpreter.execute(script.toString());
+            assert false : "Using a non-existent function in a system namespace should fail";
+        } catch (NamespaceException namespaceException) {
+            assert true;
+        }
+
+    }
 
     /**
      * In this test, a module is loaded and the ambient state has other named objects.
@@ -705,25 +728,25 @@ public class ModuleTests extends AbstractQDLTester {
         // evaluation time.
         addLine(script,
                 "module['a:c'][\n" +
-                "   module['a:b'][\n" +
-                "      module['a:a'][\n" +
-                "        t(u,v,w,x,y,z)->u+v+w+x+y+z;\n" +
-                "      ]; // end a:a\n" +
-                "     A:= import('a:a');\n" +
-                "     a:='a';\n" +
-                "     b:='b';\n" +
-                "     s(u,v,w,x)->A#t(u,v,w,x,a,b);\n" +
-                "   ]; // end a:b\n" +
-                "  B:=import('a:b');\n" +
-                "  c:='c';\n" +
-                "  r(u,v,w)->B#s(u,v,w,c);\n" +
-                "]; // end a:c\n" +
-                " // pqrst\n" +
-                "C:=import('a:c');\n" +
-                "d:='d';\n" +
-                "e:='e';\n" +
-                "q(u)->C#r(u,d,e);\n" +
-                "zz:='zz';");
+                        "   module['a:b'][\n" +
+                        "      module['a:a'][\n" +
+                        "        t(u,v,w,x,y,z)->u+v+w+x+y+z;\n" +
+                        "      ]; // end a:a\n" +
+                        "     A:= import('a:a');\n" +
+                        "     a:='a';\n" +
+                        "     b:='b';\n" +
+                        "     s(u,v,w,x)->A#t(u,v,w,x,a,b);\n" +
+                        "   ]; // end a:b\n" +
+                        "  B:=import('a:b');\n" +
+                        "  c:='c';\n" +
+                        "  r(u,v,w)->B#s(u,v,w,c);\n" +
+                        "]; // end a:c\n" +
+                        " // pqrst\n" +
+                        "C:=import('a:c');\n" +
+                        "d:='d';\n" +
+                        "e:='e';\n" +
+                        "q(u)->C#r(u,d,e);\n" +
+                        "zz:='zz';");
         state = rountripState(state, script, testCase);
         addLine(script, "ok := q(zz)=='zzdecab';");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);

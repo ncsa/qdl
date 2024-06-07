@@ -187,7 +187,7 @@ public class ModuleExpression extends ExpressionImpl {
                 newState.getVStack().appendTables(getAmbientState().getVStack());  // add in the state of the module
                 // Partial fix for https://github.com/ncsa/qdl/issues/45
                 
-                // Fuller discussion:
+                // (OLD!)Fuller discussion:
                 // There is good argument that the next should add in all of the ambient state.
                 // But probably not here. The local part definitely should be on the top of the stack,
                 // Now we have
@@ -206,8 +206,15 @@ public class ModuleExpression extends ExpressionImpl {
                 // a(x) -> Q#f(x,3) -> W#g(1,x,4)
                 // I.e. to have the RHS be a lambda function that does this and is called by another lambda function.
                 //
+                // NEW: Add full stacks or we cannot work with functions and variables defined within a module.
+                // constructs like mutators then don't work. E.g. inside a module
+                //  f(x)->x^2;
+                //  g(x)->f(x)-x; // fails unless f is included in its state.
 
-                newState.getVStack().append(ambientState.getVStack().getLocal()); // add in any passed in state (e.g. function arguments to module functions)
+                //newState.getVStack().append(ambientState.getVStack().getLocal()); // add in any passed in state (e.g. function arguments to module functions)
+
+                newState.getFTStack().appendTables(ambientState.getFTStack()); // add in any passed in state for functions
+                newState.getVStack().appendTables(ambientState.getVStack()); // add in any passed in state for variables
                 newState.setModuleState(true);
 
                 Object r = null;

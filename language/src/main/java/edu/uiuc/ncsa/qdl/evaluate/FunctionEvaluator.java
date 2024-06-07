@@ -2,6 +2,7 @@ package edu.uiuc.ncsa.qdl.evaluate;
 
 import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.expressions.*;
+import edu.uiuc.ncsa.qdl.extensions.JavaModule;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunctionRecord;
 import edu.uiuc.ncsa.qdl.functions.*;
 import edu.uiuc.ncsa.qdl.state.*;
@@ -73,7 +74,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
     public boolean evaluate(String alias, Polyad polyad, State state) {
         // Fix https://github.com/ncsa/qdl/issues/57 If it's a java module, check the name first.
         // We do NOT want to do this all the time since it really slows down system performance.
-        if (state != null && state.hasModule()) {
+        if (state != null && state.hasModule() && (state.getModule() instanceof JavaModule)) {
             try {
                 figureOutEvaluation(polyad, state, !polyad.hasAlias());
                 return true;
@@ -661,6 +662,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 polyad.setResult(rx.result);
                 polyad.setResultType(rx.resultType);
                 polyad.setEvaluated(true);
+
                 for (int i = 0; i < functionRecord.getArgCount(); i++) {
                     localState.getVStack().localRemove(new XKey(functionRecord.getArgNames().get(i)));
                 }
