@@ -10,23 +10,24 @@ cd ${args[1]} || exit
 
 echo "converting QDL docs to PDF"
 
+lowriter --headless --convert-to pdf ${args[0]}/anaphors.odt             > /dev/null
+lowriter --headless --convert-to pdf ${args[0]}/cli-extension.odt        > /dev/null
+lowriter --headless --convert-to pdf ${args[0]}/crypto.odt               > /dev/null
+lowriter --headless --convert-to pdf ${args[0]}/http-extension.odt       > /dev/null
+lowriter --headless --convert-to pdf ${args[0]}/installer.odt            > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/iso6429.odt              > /dev/null
+lowriter --headless --convert-to pdf ${args[0]}/module_reference.odt     > /dev/null
+lowriter --headless --convert-to pdf ${args[0]}/old-module-reference.odt > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/qdl_configuration.odt    > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/qdl_extensions.odt       > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/qdl_ini_file.odt         > /dev/null
+lowriter --headless --convert-to pdf ${args[0]}/qdl_mail.odt             > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/qdl_reference.odt        > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/qdl_scripting.odt        > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/qdl_server_scripts.odt   > /dev/null
-lowriter --headless --convert-to pdf ${args[0]}/old-module-reference.odt > /dev/null
-lowriter --headless --convert-to pdf ${args[0]}/module_reference.odt     > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/qdl_swing_gui.odt        > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/qdl_workspace.odt        > /dev/null
-lowriter --headless --convert-to pdf ${args[0]}/tutorial.odt             > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/qdldb-extension.odt      > /dev/null
-lowriter --headless --convert-to pdf ${args[0]}/http-extension.odt       > /dev/null
+lowriter --headless --convert-to pdf ${args[0]}/tutorial.odt             > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/xml-extension.odt        > /dev/null
-lowriter --headless --convert-to pdf ${args[0]}/cli-extension.odt        > /dev/null
-lowriter --headless --convert-to pdf ${args[0]}/crypto.odt               > /dev/null
-lowriter --headless --convert-to pdf ${args[0]}/qdl_mail.odt             > /dev/null
-lowriter --headless --convert-to pdf ${args[0]}/installer.odt             > /dev/null
 echo "   ... done with QDL docs"

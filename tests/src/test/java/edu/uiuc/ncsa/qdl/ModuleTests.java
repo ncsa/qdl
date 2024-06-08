@@ -717,9 +717,85 @@ public class ModuleTests extends AbstractQDLTester {
         testGithub45(ROUNDTRIP_JSON);
         testGithub45(ROUNDTRIP_QDL);
     }
+    public void testGithub45λ() throws Throwable {
+        testGithub45λ(ROUNDTRIP_NONE);
+        testGithub45λ(ROUNDTRIP_JSON);
+        testGithub45λ(ROUNDTRIP_QDL);
+    }
+    /**
+     * <h3>Test for https://github.com/ncsa/qdl/issues/45, λ functions</h3>
+     * λ functions should have visibility down the hierarchy.  If not, then certain
+     * standard patterns, such as creating setters and getters and referencing them inside
+     * functions -- necessary for controlling module state -- fail.
+     * @param testCase
+     * @throws Throwable
+     */
+    public void testGithub45λ(int testCase) throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script,
+                "    module['a:a'][\n" +
+                        "      g(x)→x^2;\n" +
+                        "      f0(x)→\n" +
+                        "      block[\n" +
+                        "           f1(x)→\n" +
+                        "           block[\n" +
+                        "             f2(x)→\n" +
+                        "             block[\n" +
+                        "                f3(x)→\n" +
+                        "                block[\n" +
+                        "                return(g(x+1));            \n" +
+                        "                ];\n" +
+                        "                return(f3(x+1));\n" +
+                        "             ]; //end f2\n" +
+                        "             return(f2(x+2));\n" +
+                        "           ]; //end f1\n" +
+                        "           return(f1(x));\n" +
+                        "       ];//end f0\n" +
+                        "    ];\n" +
+                        "    a:=import('a:a');"
+                );
+        state = rountripState(state, script, testCase);
+        addLine(script, "ok := 36==a#f0(2);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "regression for GitLab issue 45, module state bug accessing module λ functions";
+    }
+    /*
+    module['a:a'][
+      g(x)→x^2;
+      f0(x)→
+      block[
+           f1(x)→
+           block[
+             f2(x)→
+             block[
+                f3(x)→
+                block[
+                return(g(x+1));
+                ];
+                return(f3(x+1));
+             ]; //end f2
+             return(f2(x+2));
+           ]; //end f1
+           return(f1(x));
+       ];//end f0
+    ];
+    a:=import('a:a');
+     */
 
-    // test for https://github.com/ncsa/qdl/issues/45
-    // A module state bug
+
+    /**
+     * <h3>Test for https://github.com/ncsa/qdl/issues/45 variables</h3>
+     * Passing along variables defined inside the module to other functions
+     * is critical to being able to use them. In this case, nested modules
+     * define functions and variables and a top-level call references them.
+     * This emulates a common construct of having several modules inside another
+     * and managing the state.
+     *
+     * @param testCase
+     * @throws Throwable
+     */
     public void testGithub45(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -751,7 +827,7 @@ public class ModuleTests extends AbstractQDLTester {
         addLine(script, "ok := q(zz)=='zzdecab';");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
-        assert getBooleanValue("ok", state) : "regression for GitLab issue 45, module state bug accessing module functions";
+        assert getBooleanValue("ok", state) : "regression for GitLab issue 45, module state bug accessing module variables and functions";
     }
 
     /*

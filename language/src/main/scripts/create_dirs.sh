@@ -62,8 +62,9 @@ cp $QDL_SOURCES/src/main/resources/nano/qdl.nanorc-2.3.1 etc/qdl.nanorc-2.3.1
 cp $QDL_SOURCES/src/main/resources/cfg-min.xml etc/cfg-min.xml
 
 mkdir "etc/modules"
-cp $QDL_SOURCES/src/main/resources/modules/math-x.mdl etc/modules
+cp $QDL_SOURCES/src/main/resources/modules/anaphors.mdl etc/modules
 cp $QDL_SOURCES/src/main/resources/modules/ext.mdl etc/modules
+cp $QDL_SOURCES/src/main/resources/modules/math-x.mdl etc/modules
 cp $QDL_SOURCES/src/main/resources/modules/readme.txt etc/modules
 mkdir "etc/vim"
 cp $QDL_SOURCES/src/main/resources/vim/readme.txt etc/vim
