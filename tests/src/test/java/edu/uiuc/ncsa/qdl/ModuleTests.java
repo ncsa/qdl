@@ -734,34 +734,36 @@ public class ModuleTests extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script,
+                "g(x)→1/x; // should be ignored\n" +
                 "    module['a:a'][\n" +
                         "      g(x)→x^2;\n" +
                         "      f0(x)→\n" +
-                        "      block[\n" +
+                        "       block[\n" +
                         "           f1(x)→\n" +
-                        "           block[\n" +
+                        "            block[\n" +
                         "             f2(x)→\n" +
-                        "             block[\n" +
+                        "              block[\n" +
                         "                f3(x)→\n" +
-                        "                block[\n" +
-                        "                return(g(x+1));            \n" +
-                        "                ];\n" +
+                        "                 block[\n" +
+                        "                  return(g(x+1));\n" +
+                        "                 ];\n" +
                         "                return(f3(x+1));\n" +
-                        "             ]; //end f2\n" +
+                        "              ]; //end f2\n" +
                         "             return(f2(x+2));\n" +
-                        "           ]; //end f1\n" +
+                        "            ]; //end f1\n" +
                         "           return(f1(x));\n" +
-                        "       ];//end f0\n" +
+                        "        ];//end f0\n" +
                         "    ];\n" +
-                        "    a:=import('a:a');"
+                        "    a ≔ import('a:a');"
                 );
         state = rountripState(state, script, testCase);
-        addLine(script, "ok := 36==a#f0(2);");
+        addLine(script, "ok ≔ 36≡a#f0(2);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "regression for GitLab issue 45, module state bug accessing module λ functions";
     }
     /*
+    g(x)->1/x; // should be ignored
     module['a:a'][
       g(x)→x^2;
       f0(x)→
@@ -782,6 +784,7 @@ public class ModuleTests extends AbstractQDLTester {
        ];//end f0
     ];
     a:=import('a:a');
+    a#f0(2); // returns a#g(6);
      */
 
 

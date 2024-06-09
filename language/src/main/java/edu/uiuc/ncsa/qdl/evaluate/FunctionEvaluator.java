@@ -73,7 +73,17 @@ public class FunctionEvaluator extends AbstractEvaluator {
     @Override
     public boolean evaluate(String alias, Polyad polyad, State state) {
         // Fix https://github.com/ncsa/qdl/issues/57 If it's a java module, check the name first.
-        // We do NOT want to do this all the time since it really slows down system performance.
+        // We ended up here because we may have an overridden name for one of the functions
+        // in this module. Check first if it is overridden.
+        // However, we do NOT want to do this all the time, i.e. for every call,
+        // since it really slows down system performance.
+        // this next conditional won't apply unless the call has either
+        // (1) a fully qualified call, like function#apply (but not apply, which is unqualified)
+        // (2) the same name as one of these built-ins but in a Java module. QDL modules are
+        //     handled with their overrides elsewhere (in the parser, actually, since there is a
+        //     static list of built in system names, see tests at
+        //     {@link ModuleTests#testOverloadOfSystemFunction)}
+        //     {@link ModuleTests#testBadSystemNamespace}.
         if (state != null && state.hasModule() && (state.getModule() instanceof JavaModule)) {
             try {
                 figureOutEvaluation(polyad, state, !polyad.hasAlias());

@@ -53,6 +53,7 @@ define[to_load(s, arg)]
   body[
 » to_load(s, arg) - create a load scriplet from a script name and argument list.
 » If arg is empty, then no arguments are given
+» Returns a JSON string that is the anaphor.
 if[var_type(arg) == constants().'var_type'.'stem'][
    if[size(arg) == 0]
    then[// empty arg list, so don't pass it
@@ -96,11 +97,22 @@ define[json_in(string)]
            return(out.);
         ];
         // so we have a list of these
+
+
      ]; //end json_in
 
-exec(s.)->
+exec(x)->
 block[
-» exec(s.) - execute a generic scriplet (includes lists of them).
+» exec(x) - execute a generic scriplet (includes lists of them).
+» x is one of
+»   * the JSON string for this anaphor
+»   * The full anaphor,e.g. {'qdl':{'load':....}}
+»   * The executable part of the anaphor, e.g. {'load:'...}
+»     or a list of these
+» The result is the result of running the anaphor.
+s. := (var_type(x) == constants().'var_type'.'string') ⇒ from_json(x) : x;
+s. := (∃s.'qdl') ⇒ (s.'qdl') : s.;
+
    if[is_list(s.)]
    then[
           while[a∈s.][simple_exec(a);];
