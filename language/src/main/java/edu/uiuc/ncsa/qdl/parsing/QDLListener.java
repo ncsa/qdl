@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import static edu.uiuc.ncsa.qdl.exceptions.ParsingException.*;
+import static edu.uiuc.ncsa.qdl.statements.ExpressionInterface.*;
 import static edu.uiuc.ncsa.qdl.variables.QDLStem.STEM_INDEX_MARKER;
 
 /**
@@ -1390,51 +1391,6 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
 
     @Override
-    public void enterF_ref(QDLParserParser.F_refContext ctx) {
-        FunctionReferenceNode frn = new FunctionReferenceNode();
-        frn.setTokenPosition(tp(ctx));
-        stash(ctx, frn);
-
-    }
-
-    @Override
-    public void exitF_ref(QDLParserParser.F_refContext ctx) {
-        FunctionReferenceNode frn = (FunctionReferenceNode) parsingMap.getStatementFromContext(ctx);
-        String name = ctx.getText();
-        if (StringUtils.isTrivial(name)) {
-            throw new ParsingException("could not resolve function reference name in this scope");
-        }
-        frn.setTokenPosition(tp(ctx));
-        frn.setSourceCode(getSource(ctx));
-        if (name.contains(QDLConstants.FUNCTION_REFERENCE_MARKER2)) {
-            name = name.substring(QDLConstants.FUNCTION_REFERENCE_MARKER2.length());
-        } else {
-            name = name.substring(QDLConstants.FUNCTION_REFERENCE_MARKER.length());
-        }
-    /*    if(name.contains(NS_DELIMITER)){
-            name = name.substring(1+name.lastIndexOf(NS_DELIMITER));
-        }*/
-        int parenIndex = name.indexOf("(");
-        if (-1 < parenIndex) {
-            // whack off any dangling parenthese
-            name = name.substring(0, name.indexOf("("));
-        }
-        frn.setFunctionName(name);
-    }
-
-    @Override
-    public void enterF_arg(QDLParserParser.F_argContext ctx) {
-        //  System.out.println("enter f_arg");
-
-    }
-
-    @Override
-    public void exitF_arg(QDLParserParser.F_argContext ctx) {
-        //  System.out.println("exit f_arg");
-
-    }
-
-    @Override
     public void enterF_args(QDLParserParser.F_argsContext ctx) {
         // System.out.println("enter f_argS");
 
@@ -1993,7 +1949,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
                 functionRecord.statements.add(resolveChild(expressionBlockContext.getChild(i)));
             }
         }*/
-        
+
         QDLParserParser.ExpressionContext expressionContext = lambdaContext.expression();
         if (expressionContext != null && !expressionContext.isEmpty()) {
 
@@ -2512,7 +2468,46 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
     @Override
     public void enterFunctionReference(QDLParserParser.FunctionReferenceContext ctx) {
+    }
 
+    @Override
+    public void enterOp_ref(QDLParserParser.Op_refContext ctx) {
+        FunctionReferenceNode frn = new FunctionReferenceNode();
+        frn.setTokenPosition(tp(ctx));
+        stash(ctx, frn);
+    }
+
+    @Override
+    public void exitOp_ref(QDLParserParser.Op_refContext ctx) {
+        FunctionReferenceNode frn = (FunctionReferenceNode) parsingMap.getStatementFromContext(ctx);
+        String name = ctx.getText();
+        if (StringUtils.isTrivial(name)) {
+            throw new ParsingException("could not resolve function reference name in this scope");
+        }
+        frn.setTokenPosition(tp(ctx));
+        frn.setSourceCode(getSource(ctx));
+        if (name.contains(QDLConstants.FUNCTION_REFERENCE_MARKER2)) {
+            name = name.substring(QDLConstants.FUNCTION_REFERENCE_MARKER2.length());
+        } else {
+            name = name.substring(QDLConstants.FUNCTION_REFERENCE_MARKER.length());
+        }
+//   if(name.contains(NS_DELIMITER)){
+//     name = name.substring(1+name.lastIndexOf(NS_DELIMITER));
+// }
+        int parenIndex = name.indexOf("(");
+        if (-1 < parenIndex) {
+            // whack off any dangling parenthese
+            name = name.substring(0, name.indexOf("("));
+        }
+        frn.setFunctionName(name);
+    }
+
+    @Override
+    public void enterOperatorReference(QDLParserParser.OperatorReferenceContext ctx) {
+    }
+
+    @Override
+    public void exitOperatorReference(QDLParserParser.OperatorReferenceContext ctx) {
     }
 
     @Override
@@ -2520,9 +2515,23 @@ illegal argument:no module named "b" was  imported at (1, 67)
         FunctionReferenceNode fNode = null;
         fNode = new FunctionReferenceNode();
         // The symbol always includes the @ or ⊗ for the function reference. Strip it.
-        String symbol = ctx.f_ref().F_REF().getSymbol().getText();
-        symbol = (symbol.startsWith("@") || symbol.startsWith("⊗")) ? symbol.substring(1) : symbol;
-        //  symbol = symbol.substring(1+symbol.lastIndexOf(NS_DELIMITER));
+        String marker = ctx.FunctionMarker().getText();
+        String symbol;
+        ExpressionInterface expression = (ExpressionInterface) resolveChild(ctx.expression());
+        switch (expression.getNodeType()) {
+            case VARIABLE_NODE:
+                symbol = ((VariableNode) expression).getVariableReference();
+                break;
+            case POLYAD_NODE:
+                symbol = ((Polyad) expression).getName();
+                break;
+            case MODULE_NODE:
+                symbol = ((ModuleExpression) expression).getAlias();
+                break;
+            default:
+                throw new ParsingException("unknown node type:" + expression.getClass().getCanonicalName());
+        }
+
         int parenIndex = symbol.indexOf("(");
         if (-1 < parenIndex) {
             // whack off any dangling parenthese
@@ -2533,7 +2542,65 @@ illegal argument:no module named "b" was  imported at (1, 67)
         fNode.setSourceCode(getSource(ctx));
         stash(ctx, fNode);
     }
-    /*
+
+
+
+ /*     @Override
+      public void enterF_ref(QDLParserParser.F_refContext ctx) {
+          FunctionReferenceNode frn = new FunctionReferenceNode();
+          frn.setTokenPosition(tp(ctx));
+          stash(ctx, frn);
+
+      }*/
+
+/*     @Override
+      public void exitF_ref(QDLParserParser.F_refContext ctx) {
+          FunctionReferenceNode frn = (FunctionReferenceNode) parsingMap.getStatementFromContext(ctx);
+          String name = ctx.getText();
+          if (StringUtils.isTrivial(name)) {
+              throw new ParsingException("could not resolve function reference name in this scope");
+          }
+          frn.setTokenPosition(tp(ctx));
+          frn.setSourceCode(getSource(ctx));
+          if (name.contains(QDLConstants.FUNCTION_REFERENCE_MARKER2)) {
+              name = name.substring(QDLConstants.FUNCTION_REFERENCE_MARKER2.length());
+          } else {
+              name = name.substring(QDLConstants.FUNCTION_REFERENCE_MARKER.length());
+          }
+         //   if(name.contains(NS_DELIMITER)){
+         //     name = name.substring(1+name.lastIndexOf(NS_DELIMITER));
+         // }
+          int parenIndex = name.indexOf("(");
+          if (-1 < parenIndex) {
+              // whack off any dangling parenthese
+              name = name.substring(0, name.indexOf("("));
+          }
+          frn.setFunctionName(name);
+      }*/
+
+  /*    @Override
+      public void enterF_arg(QDLParserParser.F_argContext ctx) {
+          //  System.out.println("enter f_arg");
+
+      }
+
+      @Override
+      public void exitF_arg(QDLParserParser.F_argContext ctx) {
+          //  System.out.println("exit f_arg");
+
+      }*/
+
+
+    @Override
+    public void enterFref1(QDLParserParser.Fref1Context ctx) {
+
+    }
+
+    @Override
+    public void exitFref1(QDLParserParser.Fref1Context ctx) {
+
+    }
+/*
       module['a:x'][g(x,y)->x*y;]
   z:=import('a:x')
   ⍺z#@g

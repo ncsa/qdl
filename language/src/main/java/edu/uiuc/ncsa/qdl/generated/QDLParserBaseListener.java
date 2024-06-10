@@ -364,13 +364,13 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterF_arg(QDLParserParser.F_argContext ctx) { }
+	@Override public void enterOp_ref(QDLParserParser.Op_refContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitF_arg(QDLParserParser.F_argContext ctx) { }
+	@Override public void exitOp_ref(QDLParserParser.Op_refContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -383,18 +383,6 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitF_args(QDLParserParser.F_argsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterF_ref(QDLParserParser.F_refContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitF_ref(QDLParserParser.F_refContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -592,6 +580,18 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterOperatorReference(QDLParserParser.OperatorReferenceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitOperatorReference(QDLParserParser.OperatorReferenceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterDotOp2(QDLParserParser.DotOp2Context ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -731,6 +731,18 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitAddExpression(QDLParserParser.AddExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterFref1(QDLParserParser.Fref1Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitFref1(QDLParserParser.Fref1Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -298,15 +298,15 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitFunction(QDLParserParser.FunctionContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link QDLParserParser#f_arg}.
+	 * Enter a parse tree produced by {@link QDLParserParser#op_ref}.
 	 * @param ctx the parse tree
 	 */
-	void enterF_arg(QDLParserParser.F_argContext ctx);
+	void enterOp_ref(QDLParserParser.Op_refContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link QDLParserParser#f_arg}.
+	 * Exit a parse tree produced by {@link QDLParserParser#op_ref}.
 	 * @param ctx the parse tree
 	 */
-	void exitF_arg(QDLParserParser.F_argContext ctx);
+	void exitOp_ref(QDLParserParser.Op_refContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link QDLParserParser#f_args}.
 	 * @param ctx the parse tree
@@ -317,16 +317,6 @@ public interface QDLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitF_args(QDLParserParser.F_argsContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link QDLParserParser#f_ref}.
-	 * @param ctx the parse tree
-	 */
-	void enterF_ref(QDLParserParser.F_refContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link QDLParserParser#f_ref}.
-	 * @param ctx the parse tree
-	 */
-	void exitF_ref(QDLParserParser.F_refContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code functions}
 	 * labeled alternative in {@link QDLParserParser#expression}.
@@ -520,6 +510,18 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitModuleExpression(QDLParserParser.ModuleExpressionContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code operatorReference}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterOperatorReference(QDLParserParser.OperatorReferenceContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code operatorReference}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitOperatorReference(QDLParserParser.OperatorReferenceContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code dotOp2}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
@@ -663,6 +665,18 @@ public interface QDLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitAddExpression(QDLParserParser.AddExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code fref1}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterFref1(QDLParserParser.Fref1Context ctx);
+	/**
+	 * Exit a parse tree produced by the {@code fref1}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitFref1(QDLParserParser.Fref1Context ctx);
 	/**
 	 * Enter a parse tree produced by the {@code is_a}
 	 * labeled alternative in {@link QDLParserParser#expression}.

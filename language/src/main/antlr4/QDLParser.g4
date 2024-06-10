@@ -87,9 +87,10 @@ assertStatement2:
               | stemList;
 
      function : FuncStart f_args* ')';
-        f_arg : (stemValue | f_ref);
-       f_args : f_arg (',' f_arg)* ;
-        f_ref : F_REF;                                                 
+       op_ref : OP_REF;
+ //       f_arg : (stemValue | f_ref);
+       f_args : stemValue (',' stemValue)* ;
+    //    f_ref : F_REF;
 //         url : (Identifier Colon)  ((Identifier) Divide)* (Identifier)?;
    //      url : URL;
         // The next few lines are kept for reference to see what not to do.
@@ -111,6 +112,8 @@ expression
    function                                                                    #functions
  |  variable? Hash expression                                                  #moduleExpression
  | expression StemDot+ expression                                              #dotOp
+ | expression  FunctionMarker expression                                       #fref1
+ | FunctionMarker expression                                                   #functionReference // REUSED
  | expression postfix=StemDot                                                  #dotOp2
  | expression Backslash  expression                                            #extract
  | expression postfix=Backslash2                                               #extract2
@@ -161,15 +164,15 @@ expression
  | expression op=ContainsKey expression                                        #containsKey  // unicode 220b, 220c
  // Note that we cannot have something like a lambda on the lhs of ∀
  // because the parser won't quite flag it right.
- | f_ref op=ForAll expression                                                  #forAll  // unicode 2200
+ | expression op=ForAll expression                                                  #forAll  // unicode 2200
  | expression op=Transpose expression                                          #transposeOperator
  | expression op=ExprDyadicOps expression                                      #expressionDyadicOps
- | f_ref op=FRefDyadicOps expression                                           #frefDyadicOps
+ | expression op=FRefDyadicOps expression                                           #frefDyadicOps
  | (Tilde | TildeRight) expression                                             #unaryTildeExpression
  | Transpose expression                                                        #unaryTransposeExpression
  | STRING                                                                      #strings
- | f_ref                                                                       #functionReference
- | integer                                                                     #integers
+ | op_ref                                                                      #operatorReference
+  | integer                                                                     #integers
  | number                                                                      #numbers
  | variable                                                                    #variables
  | keyword                                                                     #keywords

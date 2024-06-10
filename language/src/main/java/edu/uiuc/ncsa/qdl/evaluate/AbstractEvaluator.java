@@ -1001,6 +1001,9 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             frn.setAnonymous(lds.getFunctionRecord().isAnonymous());
 
         }
+        while(arg0 instanceof ParenthesizedExpression){
+            arg0 = ((ParenthesizedExpression)arg0).getExpression();
+        } //   g(x,y,n)->x^n+y^n ;(@g)∀[4,[;5],1]
         if (arg0 instanceof FunctionReferenceNode) {
             frn = (FunctionReferenceNode) arg0;
         }

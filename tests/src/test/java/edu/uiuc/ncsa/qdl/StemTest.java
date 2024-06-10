@@ -2107,7 +2107,7 @@ public class StemTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "x. := ⦰n(3,4,n(12));");
-        addLine(script, "ok := ⊗∧⊙⊗∧⊙(x.==[[0,4,8],[1,5,9],[2,6,10],[3,7,11]]);");
+        addLine(script, "ok := ⊗∧⊙(⊗∧⊙(x.==[[0,4,8],[1,5,9],[2,6,10],[3,7,11]]));");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
 
         interpreter.execute(script.toString());
@@ -2171,7 +2171,7 @@ public class StemTest extends AbstractQDLTester {
     public void testForEachScalar2() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, " ok := 3 == @size" + OpEvaluator.FOR_ALL_KEY + "['asd']; ");
+        addLine(script, " ok := 3 == (@size" + OpEvaluator.FOR_ALL_KEY + "['asd']); ");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : OpEvaluator.FOR_ALL_KEY + " failed to process single scalar case.";
@@ -2186,7 +2186,7 @@ public class StemTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "g(x,y,n)->x^n+y^n;");
-        addLine(script, " ok := 5 == @g" + OpEvaluator.FOR_ALL_KEY + "[3,2,1]; ");
+        addLine(script, " ok := 5 == (@g" + OpEvaluator.FOR_ALL_KEY + "[3,2,1]); ");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : OpEvaluator.FOR_ALL_KEY + " failed to process single scalar case.";
@@ -2202,7 +2202,7 @@ public class StemTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "g(x,y,n)->x^n+y^n;");
-        addLine(script, " ok := reduce(@&&, [4,5,6,7,8] == @g" + OpEvaluator.FOR_ALL_KEY + "[4,[;5],1]); ");
+        addLine(script, " ok := reduce(@&&, [4,5,6,7,8] == (@g" + OpEvaluator.FOR_ALL_KEY + "[4,[;5],1])); ");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : OpEvaluator.FOR_ALL_KEY + " failed to process initial scalar case.";
@@ -2212,7 +2212,7 @@ public class StemTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "g(x,y,n)->x^n+y^n;");
-        addLine(script, " ok := reduce(@&&, [16,17,20,25,32] == @g" + OpEvaluator.FOR_ALL_KEY + "[[;5],4,2]); ");
+        addLine(script, " ok := reduce(@&&, [16,17,20,25,32] == (@g" + OpEvaluator.FOR_ALL_KEY + "[[;5],4,2])); ");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : OpEvaluator.FOR_ALL_KEY + " failed to process multiple trailing scalar case.";
