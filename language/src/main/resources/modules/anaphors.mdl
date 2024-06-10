@@ -103,10 +103,10 @@ define[json_in(string)]
 
 exec(x)->
 block[
-» exec(x) - execute a generic scriplet (includes lists of them).
+» exec(x) - execute a generic anaphor`` (includes lists of them).
 » x is one of
 »   * the JSON string for this anaphor
-»   * The full anaphor,e.g. {'qdl':{'load':....}}
+»   * The full anaphor, e.g. {'qdl':{'load':....}}
 »   * The executable part of the anaphor, e.g. {'load:'...}
 »     or a list of these
 » The result is the result of running the anaphor.
@@ -125,7 +125,7 @@ s. := (∃s.'qdl') ⇒ (s.'qdl') : s.;
 
 simple_exec(s.)->
 block[
-» simple_exec(s.) - execute a single scriptlet.
+» simple_exec(s.) - execute a single anaphor.
 » It is a utility but could be used alone.
       if[∃s.'load']
     then[
