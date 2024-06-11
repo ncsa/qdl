@@ -12,9 +12,7 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 
 import static edu.uiuc.ncsa.qdl.xml.SerializationConstants.FUNCTION_TABLE_STACK_TAG;
 
@@ -30,18 +28,19 @@ public class FStack<V extends FTable<? extends FKey, ? extends FunctionRecord>> 
 
 
     public FunctionRecord getFunctionReference(String name) {
-         for (XTable functionTable : getStack()) {
-             FunctionRecord fr = (FunctionRecord) functionTable.get(new FKey(name, -1));
-             if (fr != null) {
-                 return fr;
-             }
-         }
-         return null;
-     }
+        for (XTable functionTable : getStack()) {
+            FunctionRecord fr = (FunctionRecord) functionTable.get(new FKey(name, -1));
+            if (fr != null) {
+                return fr;
+            }
+        }
+        return null;
+    }
 
     /**
      * Returns all of the named functions for any arg count. This is needed
      * to populate copies of local state.
+     *
      * @param name
      * @return
      */
@@ -49,53 +48,12 @@ public class FStack<V extends FTable<? extends FKey, ? extends FunctionRecord>> 
         List<FunctionRecordInterface> all = new ArrayList<>();
         // Note this walks backwards through the stack.
         for (int i = getStack().size() - 1; 0 <= i; i--) {
-            all.addAll(((FTable)getStack().get(i)).getByAllName(name));
+            all.addAll(((FTable) getStack().get(i)).getByAllName(name));
         }
         return all;
 
     }
 
-    /**
-     * Writes each table. Resulting serialization is
-     * <pre>
-     *  &lt;function_stack&gt;
-     *           &lt;!--The functions for this state.--&gt;
-     *           &lt;functions&gt;
-     *             &lt;func name="f" arg_count="2"&gt;&lt;![CDATA[...
-     *             &lt;func name="g" arg_count="2"&gt;&lt;![CDATA[...
-     *           &lt;/functions&gt;
-     *           &lt;functions&gt;
-     *           ...
-     *           &lt;/functions&gt;
-     *  &lt;/function_stack&gt;
-     * </pre>
-     * Each <code>functions</code> tags is a table of functions. These are serialized
-     * in reverse order n,n-1,...0 so that at deserialization they can be read in the
-     * correct order and the stack can be faithfully reconstructed. As such the serialization
-     * format is not quite XML -- order matters.
-     * @throws XMLStreamException
-     */
-/*    @Override
-    public void toXML(XMLStreamWriter xsw, SerializationObjects serializationObjects) throws XMLStreamException {
-        if (isEmpty()) {
-            return;
-        }
-//        xsw.writeStartElement(SerializationConstants.FUNCTION_TABLE_STACK_TAG);
-        xsw.writeStartElement(getXMLStackTag());
-        xsw.writeComment("The functions for this state.");
-        for (int i = getStack().size() - 1; 0 <= i; i--) {
-            XTable xTable =  getStack().get(i);
-            if(xTable.isEmpty()){
-                continue;
-            }
-            xsw.writeStartElement(getXMLTableTag());
-            xsw.writeAttribute(SerializationConstants.LIST_INDEX_ATTR, Integer.toString(i));
-            xTable.toXML(xsw, serializationObjects);
-            xsw.writeEndElement(); // end of table.
-
-          }
-        xsw.writeEndElement(); // end of tables.
-    }*/
 
     @Override
     public String getXMLStackTag() {
@@ -138,13 +96,24 @@ public class FStack<V extends FTable<? extends FKey, ? extends FunctionRecord>> 
 
 
     }
+
     @Override
     public TreeSet<String> listFunctions(String regex) {
         TreeSet<String> all = new TreeSet<>();
         // Note this walks backwards through the stack since this means that if
         // there is local documentation it overwrites the global documentation.
         for (int i = getStack().size() - 1; 0 <= i; i--) {
-            all.addAll(((V)getStack().get(i)).listFunctions(regex));
+            all.addAll(((V) getStack().get(i)).listFunctions(regex));
+        }
+        return all;
+    }
+
+    public Set<DyadicFunctionReferenceNode> listFunctionReferences(String regex) {
+        Set<DyadicFunctionReferenceNode> all = new HashSet<>();
+        // Note this walks backwards through the stack since this means that if
+        // there is local documentation it overwrites the global documentation.
+        for (int i = getStack().size() - 1; 0 <= i; i--) {
+            all.addAll(((V) getStack().get(i)).listFunctionReferences(regex));
         }
         return all;
     }
@@ -155,7 +124,7 @@ public class FStack<V extends FTable<? extends FKey, ? extends FunctionRecord>> 
         // Note this walks backwards through the stack since this means that if
         // there is local documentation it overwrites the global documentation.
         for (int i = getStack().size() - 1; 0 <= i; i--) {
-            all.addAll(((V)getStack().get(i)).listAllDocs());
+            all.addAll(((V) getStack().get(i)).listAllDocs());
         }
         return all;
     }
@@ -166,14 +135,14 @@ public class FStack<V extends FTable<? extends FKey, ? extends FunctionRecord>> 
         // Note this walks backwards through the stack since this means that if
         // there is local documentation it overwrites the global documentation.
         for (int i = getStack().size() - 1; 0 <= i; i--) {
-            all.addAll(((V)getStack().get(i)).listAllDocs(functionName));
+            all.addAll(((V) getStack().get(i)).listAllDocs(functionName));
         }
         return all;
     }
 
     @Override
     public List<String> getDocumentation(String fName, int argCount) {
-    throw new NotImplementedException("not implemented in XStack");
+        throw new NotImplementedException("not implemented in XStack");
     }
 
     @Override
@@ -182,7 +151,7 @@ public class FStack<V extends FTable<? extends FKey, ? extends FunctionRecord>> 
         // Note this walks backwards through the stack since this means that if
         // there is local documentation it overwrites the global documentation.
         for (int i = getStack().size() - 1; 0 <= i; i--) {
-            all.addAll(((V)getStack().get(i)).getDocumentation(key));
+            all.addAll(((V) getStack().get(i)).getDocumentation(key));
         }
         return all;
     }
@@ -199,12 +168,20 @@ public class FStack<V extends FTable<? extends FKey, ? extends FunctionRecord>> 
 
     @Override
     public void setStateStack(State state, XStack xStack) {
-         state.setFTStack((FStack<? extends FTable<? extends FKey,? extends FunctionRecordInterface>>) xStack);
+        state.setFTStack((FStack<? extends FTable<? extends FKey, ? extends FunctionRecordInterface>>) xStack);
     }
 
     @Override
     public XStack getStateStack(State state) {
         return state.getFTStack();
     }
-
+  /*  public TreeSet<FunctionReferenceNode> listFunctionRefs(String regex) {
+     TreeSet<FunctionReferenceNode> all = new TreeSet<>();
+     // Note this walks backwards through the stack since this means that if
+     // there is local documentation it overwrites the global documentation.
+     for (int i = getStack().size() - 1; 0 <= i; i--) {
+         all.addAll(((V)getStack().get(i)).listFunctions(regex));
+     }
+     return all;
+ }*/
 }

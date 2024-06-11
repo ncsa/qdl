@@ -1,9 +1,11 @@
 package edu.uiuc.ncsa.qdl.functions;
 
+import edu.uiuc.ncsa.qdl.expressions.ConstantNode;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.XKey;
 import edu.uiuc.ncsa.qdl.state.XTable;
 import edu.uiuc.ncsa.qdl.statements.Documentable;
+import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.qdl.xml.SerializationState;
 import edu.uiuc.ncsa.qdl.xml.XMLMissingCloseTagException;
@@ -89,6 +91,37 @@ public class FTable<K extends FKey, V extends FunctionRecord> extends XTable<K, 
         }
         return super.containsKey(key);
     }
+
+    /**
+     * Return every function in this tables as a set of {@link DyadicFunctionReferenceNode}s.
+     *
+     * @param regex
+     * @return
+     */
+    public Set<DyadicFunctionReferenceNode> listFunctionReferences(String regex) {
+        HashMap<String, Set<Integer>> fAndArgs = new HashMap<>();
+        Set<DyadicFunctionReferenceNode> fRefs = new HashSet<>();
+        for (XKey key : keySet()) {
+            String name = ((FKey) key).getfName(); // de-munge
+            FunctionRecordInterface fr = get(key);
+            if (!(regex == null || regex.isEmpty() || name.matches(regex))) {
+                continue;
+            }
+
+            DyadicFunctionReferenceNode dyadicFunctionReferenceNode = new DyadicFunctionReferenceNode();
+            dyadicFunctionReferenceNode.setFunctionName(fr.getName());
+            // Module stuff here?
+            ArrayList<ExpressionInterface> args = new ArrayList<>();
+            args.add(new ConstantNode(Long.valueOf(fr.getArgCount())));
+            args.add(new ConstantNode(fr.getName()));
+            dyadicFunctionReferenceNode.setArguments(args);
+            dyadicFunctionReferenceNode.setFunctionRecord(fr);
+            dyadicFunctionReferenceNode.setEvaluated(true);
+            fRefs.add(dyadicFunctionReferenceNode);
+        }
+        return fRefs;
+    }
+
 
     @Override
     public TreeSet<String> listFunctions(String regex) {
@@ -343,14 +376,16 @@ public class FTable<K extends FKey, V extends FunctionRecord> extends XTable<K, 
         String src = StringUtils.listToString(xThing.sourceCode);
         return Base64.encodeBase64URLSafeString(src.getBytes(UTF_8));
     }
+
     public static final String FUNCTION_ENTRY_KEY = "entry";
+
     @Override
     public JSONObject serializeToJSON(V xThing, SerializationState serializationState) {
         JSONObject jsonObject = new JSONObject();
         String src = StringUtils.listToString(xThing.sourceCode);
-        if(StringUtils.isTrivial(src)) {
+        if (StringUtils.isTrivial(src)) {
             return null;
-        }else{
+        } else {
             jsonObject.put(FUNCTION_ENTRY_KEY, Base64.encodeBase64URLSafeString(src.getBytes(UTF_8)));
         }
         return jsonObject;
@@ -359,16 +394,16 @@ public class FTable<K extends FKey, V extends FunctionRecord> extends XTable<K, 
 
     @Override
     public void deserializeFromJSON(JSONObject json, QDLInterpreter qi, SerializationState serializationState) {
-          String raw = new String(Base64.decodeBase64(json.getString(FUNCTION_ENTRY_KEY)), UTF_8);
-          if(!StringUtils.isTrivial(raw)){
-              try {
-                  qi.execute(raw);
-              } catch (Throwable t) {
-                  // should do something else??
-                  System.err.println("Error deserializing function '" + raw + "': " + t.getMessage());
-              }
+        String raw = new String(Base64.decodeBase64(json.getString(FUNCTION_ENTRY_KEY)), UTF_8);
+        if (!StringUtils.isTrivial(raw)) {
+            try {
+                qi.execute(raw);
+            } catch (Throwable t) {
+                // should do something else??
+                System.err.println("Error deserializing function '" + raw + "': " + t.getMessage());
+            }
 
-          }
+        }
     }
 
     @Override

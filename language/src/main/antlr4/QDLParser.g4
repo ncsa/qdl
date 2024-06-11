@@ -110,9 +110,9 @@ assertStatement2:
 expression
  :
    function                                                                    #functions
+ | expression  FunctionMarker expression                                       #dyadicFunctionRefernce
  |  variable? Hash expression                                                  #moduleExpression
  | expression StemDot+ expression                                              #dotOp
- | expression  FunctionMarker expression                                       #fref1
  | FunctionMarker expression                                                   #functionReference // REUSED
  | expression postfix=StemDot                                                  #dotOp2
  | expression Backslash  expression                                            #extract
@@ -153,8 +153,8 @@ expression
  | ('!'  | '¬') expression                                                     #notExpression
 // | expression '<<' typeList                                                    #is_a
  | '(' expression ')'                                                          #association
- | expression AltIfMarker expression (':' expression)?                            #altIFExpression
- | expression SwitchMarker expression (':' expression)?                           #switchExpression
+ | expression AltIfMarker expression (':' expression)?                         #altIFExpression
+ | expression SwitchMarker expression (':' expression)?                        #switchExpression
 //| expression '&'+ expression                                                  #typeCheck
 // | expression '`'+ expression                                                  #index
 // | expression '|'+ expression                                                  #stile
@@ -164,10 +164,10 @@ expression
  | expression op=ContainsKey expression                                        #containsKey  // unicode 220b, 220c
  // Note that we cannot have something like a lambda on the lhs of ∀
  // because the parser won't quite flag it right.
- | expression op=ForAll expression                                                  #forAll  // unicode 2200
+ | expression op=ForAll expression                                             #forAll  // unicode 2200
  | expression op=Transpose expression                                          #transposeOperator
  | expression op=ExprDyadicOps expression                                      #expressionDyadicOps
- | expression op=FRefDyadicOps expression                                           #frefDyadicOps
+ | expression op=FRefDyadicOps expression                                      #frefDyadicOps
  | (Tilde | TildeRight) expression                                             #unaryTildeExpression
  | Transpose expression                                                        #unaryTransposeExpression
  | STRING                                                                      #strings

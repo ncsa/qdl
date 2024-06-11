@@ -22,7 +22,7 @@ import java.util.List;
  * This is a completely standalone class -- no dependencies but plain Old Java -- because
  * otherwise you have to manage dependencies (might involve writing your own class loader!)
  * for this installer program which can get very hard. The idea is that this is a lean,
- * single class.
+ * single class. Even inheritance doesn't work.
  * <p>Created by Jeff Gaynor<br>
  * on 3/30/20 at  7:23 AM
  */

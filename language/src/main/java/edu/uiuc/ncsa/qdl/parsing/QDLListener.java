@@ -7,10 +7,7 @@ import edu.uiuc.ncsa.qdl.exceptions.IntrinsicViolation;
 import edu.uiuc.ncsa.qdl.exceptions.NamespaceException;
 import edu.uiuc.ncsa.qdl.exceptions.ParsingException;
 import edu.uiuc.ncsa.qdl.expressions.*;
-import edu.uiuc.ncsa.qdl.functions.FunctionDefinitionStatement;
-import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
-import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNode;
-import edu.uiuc.ncsa.qdl.functions.LambdaDefinitionNode;
+import edu.uiuc.ncsa.qdl.functions.*;
 import edu.uiuc.ncsa.qdl.generated.QDLParserListener;
 import edu.uiuc.ncsa.qdl.generated.QDLParserParser;
 import edu.uiuc.ncsa.qdl.module.QDLModule;
@@ -2590,15 +2587,50 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
       }*/
 
-
     @Override
-    public void enterFref1(QDLParserParser.Fref1Context ctx) {
-
+    public void enterDyadicFunctionRefernce(QDLParserParser.DyadicFunctionRefernceContext ctx) {
+        DyadicFunctionReferenceNode frn = new DyadicFunctionReferenceNode();
+        frn.setTokenPosition(tp(ctx));
+        stash(ctx, frn);
     }
 
     @Override
-    public void exitFref1(QDLParserParser.Fref1Context ctx) {
+    public void exitDyadicFunctionRefernce(QDLParserParser.DyadicFunctionRefernceContext ctx) {
+        DyadicFunctionReferenceNode fNode = (DyadicFunctionReferenceNode) resolveChild(ctx);
+        ExpressionInterface lArg = (ExpressionInterface) resolveChild(ctx.expression(0));
+        ExpressionInterface expression = (ExpressionInterface) resolveChild(ctx.expression(1));
+               ArrayList<ExpressionInterface> args = new ArrayList<>();
+               args.add(lArg);
+               args.add(expression);
+        fNode.setArguments(args);
+        // The symbol always includes the @ or ⊗ for the function reference. Strip it.
+        String marker = ctx.FunctionMarker().getText();
+        String symbol;
+        switch (expression.getNodeType()) {
+            case VARIABLE_NODE:
+                symbol = ((VariableNode) expression).getVariableReference();
+                break;
+            case POLYAD_NODE:
+                symbol = ((Polyad) expression).getName();
+                break;
+            case MODULE_NODE:
+                symbol = ((ModuleExpression) expression).getAlias();
+                break;
+            default:
+                throw new ParsingException("unknown node type:" + expression.getClass().getCanonicalName());
+        }
 
+/*
+        int parenIndex = symbol.indexOf("(");
+        if (-1 < parenIndex) {
+            // whack off any dangling parenthese
+            symbol = symbol.substring(0, symbol.indexOf("("));
+        }
+*/
+        fNode.setFunctionName(symbol);
+        fNode.setTokenPosition(tp(ctx));
+        fNode.setSourceCode(getSource(ctx));
+        stash(ctx, fNode);
     }
 /*
       module['a:x'][g(x,y)->x*y;]

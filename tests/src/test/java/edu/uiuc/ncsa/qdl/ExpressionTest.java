@@ -300,5 +300,38 @@ public class ExpressionTest extends AbstractQDLTester {
         interpreter.execute(script.toString());
         assert !getBooleanValue("x_not_ok", state);
     }
+/*
+f(x)->x^2;
+f(1@z,p)->z(p);
+ff(@z,p)->z(p);
+f(@f,5);
+ff(@f,5);
+f(1@f, 5);
+ff(1@f,5);
+ */
+
+    /**
+     * Super-simple regression test for dyadic @, showing that it behaves as expected
+     * vis a vis monadic @
+     * @throws Throwable
+     */
+    public void testDyadicReferenceOperator() throws Throwable {
+    State state = testUtils.getNewState();
+    StringBuffer script = new StringBuffer();
+    QDLInterpreter interpreter = new QDLInterpreter(null, state);
+    addLine(script,
+            "f(x)->x^2;\n" +
+            "f(1@z,p)->z(p);\n" +
+            "ff(@z,p)->z(p);\n" +
+            "ok0:= 25 == f(@f,5);\n" +
+            "ok1:= 25 == ff(@f,5);\n" +
+            "ok2:= 25 == f(1@f, 5);\n" +
+            "ok3:= 25 == ff(1@f,5);\n"); // tests very basic resoluition of dyadic @ and compares with monadic @
+    interpreter.execute(script.toString());
+    assert getBooleanValue("ok0", state) : "Failed to resolve @ correctly.";
+    assert getBooleanValue("ok1", state) : "Failed to resolve @ correctly.";
+    assert getBooleanValue("ok2", state) : "Failed to resolve @ correctly.";
+    assert getBooleanValue("ok3", state) : "Failed to resolve @ correctly.";
+}
 
 }

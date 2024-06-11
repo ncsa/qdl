@@ -6,7 +6,9 @@ import edu.uiuc.ncsa.qdl.exceptions.IndexError;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.exceptions.WrongArgCountException;
 import edu.uiuc.ncsa.qdl.expressions.ConstantNode;
+import edu.uiuc.ncsa.qdl.expressions.ModuleExpression;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
+import edu.uiuc.ncsa.qdl.functions.DyadicFunctionReferenceNode;
 import edu.uiuc.ncsa.qdl.module.MTKey;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
@@ -18,10 +20,7 @@ import edu.uiuc.ncsa.qdl.variables.QDLNull;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
+import java.util.*;
 
 import static edu.uiuc.ncsa.qdl.config.QDLConfigurationConstants.MODULE_ATTR_VERSION_2_0;
 import static edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.MODULE_TYPE_JAVA;
@@ -395,8 +394,17 @@ public class ModuleEvaluator extends AbstractEvaluator {
      * @return
      */
     private Module getMorT(Polyad polyad, State state) {
-        Object obj = polyad.evalArg(0, state);
+        for(int i  = 0; i< polyad.getArgCount(); i++){
+            polyad.evalArg(i, state);
+        }
+        Object obj = polyad.getArgAt(0).getResult();
+        if(obj instanceof ModuleExpression){
+            return ((ModuleExpression)obj).getModule();
+        }
         Module m = null;
+        if(obj instanceof DyadicFunctionReferenceNode){
+            return ((DyadicFunctionReferenceNode)obj).getModule();
+        }
         if (Constant.isModule(obj)) {
             return (Module) obj;
         }
@@ -428,7 +436,14 @@ public class ModuleEvaluator extends AbstractEvaluator {
         }
         Module m = getMorT(polyad, state);
         QDLList outList = new QDLList();
-        outList.addAll(m.getDocumentation());
+        if(polyad.getArgAt(0).getResult() instanceof DyadicFunctionReferenceNode){
+            DyadicFunctionReferenceNode df = (DyadicFunctionReferenceNode) polyad.getArgAt(0).getResult();
+            // they want the documentation for a function from the module
+            outList.addAll(df.getFunctionRecord().getDocumentation());
+        }else{
+             // return just the documentation for the module.
+            outList.addAll(m.getDocumentation());
+        }
         QDLStem outStem = new QDLStem();
         outStem.setQDLList(outList);
         polyad.setEvaluated(true);
@@ -436,7 +451,20 @@ public class ModuleEvaluator extends AbstractEvaluator {
         polyad.setResultType(Constant.getType(outStem));
 
     }
+      /*
+        module['a:a'][ff(x)->x^2;gg(x)->x^3;]
+    A := import('a:a')
+        A#1@ff
+    [4,5]⍺funcs(A)
+1@ff
+    docs(A#1@ff)
 
+    
+     c := j_load('convert');
+  funcs(c)  ;
+  docs(c#2@ini_out) ;
+
+       */
     private void doGetVariables(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{0, 1, 2});
@@ -540,7 +568,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
         }
         if (polyad.getArgCount() == 0) {
             QDLStem qdlStem = new QDLStem();
-            qdlStem.getQDLList().addAll(state.getFTStack().listFunctions(null));
+            qdlStem.getQDLList().addAll(state.getFTStack().listFunctionReferences(null));
             polyad.setEvaluated(true);
             polyad.setResult(qdlStem);
             polyad.setResultType(Constant.getType(polyad.getResult()));
@@ -583,7 +611,14 @@ public class ModuleEvaluator extends AbstractEvaluator {
             }
         }
         QDLList outList = new QDLList();
-        TreeSet<String> funcs = m.getState().getFTStack().listFunctions(regex);
+
+        //TreeSet<String> funcs = m.getState().getFTStack().listFunctions(regex);
+        Set<DyadicFunctionReferenceNode> funcs = m.getState().getFTStack().listFunctionReferences(regex);
+        for(DyadicFunctionReferenceNode ddd : funcs){
+            ddd.setModule(m);
+            ddd.setModuleState(m.getState());
+
+        }
         outList.addAll(funcs);
         QDLStem outStem = new QDLStem();
         outStem.setQDLList(outList);
@@ -593,6 +628,11 @@ public class ModuleEvaluator extends AbstractEvaluator {
 
     }
 
+    /*
+  module['a:a'][ff(x)->x^2;gg(x)->x^3;]
+    A := import('a:a')
+    [4,5]⍺funcs(A)
+     */
     /**
      * Drop i.e., remove a loaded template from the system. This returns a list of uris that were
      * removed.<br/><br/>

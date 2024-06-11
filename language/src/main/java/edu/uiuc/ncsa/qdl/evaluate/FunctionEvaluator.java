@@ -571,8 +571,8 @@ public class FunctionEvaluator extends AbstractEvaluator {
                  At this point there is not much of a chance to avoid java serialization here.
                  The reason is that the state at this point may have function references with state
                  (as arguments to functions) which contain the full set of executable statements
-                 and the local state it should run over. It takes a lot fo work to figure out the
-                 right scope, state object and funcion reference and that is why it is captured.
+                 and the local state it should run over. It takes a lot of work to figure out the
+                 right scope, state object and function reference and that is why it is captured.
                  However, evaluating it means that it may be used repeatedly (e.g. in an embedded loop
                  or a recursive function that needs its own stack)
                  and we cannot have the original state altered, hence we need a local copy for
@@ -734,9 +734,15 @@ public class FunctionEvaluator extends AbstractEvaluator {
             String localName = functionRecord.getArgNames().get(i);
 
             if (isFunctionReference(localName)) {
-                localName = dereferenceFunctionName(localName);
+                int argCount = -1;
+                String[] dereffed = dereferenceFunctionName(localName);
+                localName = dereffed[1];
+                if(dereffed[0] != null){
+                    // this might blow up? Parser should prevent that
+                    argCount = Integer.parseInt(dereffed[0]);
+                }
                 // This is the local name of the function.
-                FunctionReferenceNode frn = getFunctionReferenceNode(state, polyad.getArguments().get(i), false);
+                FunctionReferenceNodeInterface frn = getFunctionReferenceNode(state, polyad.getArguments().get(i), false);
 
                 String xname = frn.getFunctionName(); // dereferenced in the parser
                 boolean isOp = state.getOpEvaluator().isMathOperator(xname);
@@ -791,14 +797,35 @@ public class FunctionEvaluator extends AbstractEvaluator {
                             }
                             //localState.getVStack().push(frn.getModuleState().getVStack().getLocal());
                         } else {
-                            functionRecordList = localState.getAllFunctionsByName(xname);
+                            if(-1 < argCount){
+                                functionRecordList=new ArrayList<>();
+                                FR_WithState frWithState = localState.resolveFunction(xname, argCount, false);
+                                if(frWithState == null){
+                                    throw new BadArgException("no such function '" + xname + "' with " + argCount + " arguments", polyad);
+                                }
+                                // Next bit clones the record so it can be used as a template for functions.
+                                frWithState = new FR_WithState(frWithState.functionRecord.clone(),frWithState.state, frWithState.isModule );
+                                functionRecordList.add(frWithState);
+                            }else {
+                                functionRecordList = localState.getAllFunctionsByName(xname);
+                            }
                         }
                     } catch (CloneNotSupportedException e) {
                         e.printStackTrace();
                         throw new NFWException("Somehow function records are no longer clonable. Check signatures.");
                     }
 
+                 /*
+                    f(x)->x^2
+                    f(1@z,p)->z(p)
+                    ff(@z,p)->z(p)
+                    f(@f,5)
+                    ff(@f,5)
+                    f(1@f, 5)
+                    ff(1@f,5)
 
+
+                  */
                 }
                 // The next block only gets used if there are references to function in modules
                 // E.g. @w#z#f
@@ -889,15 +916,25 @@ public class FunctionEvaluator extends AbstractEvaluator {
 
      */
     protected boolean isFunctionReference(String name) {
-        return name.startsWith(FUNCTION_REFERENCE_MARKER) || name.startsWith(FUNCTION_REFERENCE_MARKER2);
+        // return name.startsWith(FUNCTION_REFERENCE_MARKER) || name.startsWith(FUNCTION_REFERENCE_MARKER2);
+        // @ is now dyadic, so 3@f is perfectly fine as a name.
+        return name.contains(FUNCTION_REFERENCE_MARKER) || name.contains(FUNCTION_REFERENCE_MARKER2);
     }
 
-    protected String dereferenceFunctionName(String name) {
-        String x = name.substring(FUNCTION_REFERENCE_MARKER.length());
+    protected String[] dereferenceFunctionName(String name) {
+        //String x = name.substring(FUNCTION_REFERENCE_MARKER.length());
+        int index = name.indexOf(FUNCTION_REFERENCE_MARKER);
+        if (index < 0) { // not found, try the other marker
+            index = name.indexOf(FUNCTION_REFERENCE_MARKER2);
+        }
+        String x = name.substring(index + 1);
+
+        //String x = name.substring(FUNCTION_REFERENCE_MARKER.length());
         if (x.endsWith("()")) {
             x = x.substring(0, x.length() - 2); // * ... ( are bookends for the reference
         }
-        return x;
+        String argCount = index <= 0 ? null : name.substring(0, index);
+        return new String[]{argCount, x};
     }
 }
 

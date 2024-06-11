@@ -3,6 +3,7 @@ package edu.uiuc.ncsa.qdl.evaluate;
 
 import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.expressions.*;
+import edu.uiuc.ncsa.qdl.functions.DyadicFunctionReferenceNode;
 import edu.uiuc.ncsa.qdl.functions.FunctionRecordInterface;
 import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNode;
 import edu.uiuc.ncsa.qdl.state.State;
@@ -556,7 +557,12 @@ public class OpEvaluator extends AbstractEvaluator {
                 if (rArg instanceof FunctionReferenceNode) {
                     result = doSingleApply(lArg, (FunctionReferenceNode) rArg, defaultValue, state, dyad);
                 } else {
-                    result = rArg;
+                    if (rArg instanceof DyadicFunctionReferenceNode) {
+                        result = doSingleApply(lArg, (DyadicFunctionReferenceNode) rArg, defaultValue, state, dyad);
+
+                    } else {
+                        result = rArg;
+                    }
                 }
             }
         }
@@ -590,6 +596,7 @@ public class OpEvaluator extends AbstractEvaluator {
         }
         return output;
     }
+
     /*
       f(x)->x^2
 g(x)->x^3
@@ -616,6 +623,120 @@ apply([@f,@g],[2])
 [[-11,6,7,6],[7,6,7,6],[7,-1,7,-1]]
 
      */
+    protected Object doSingleApply(Object lArg, DyadicFunctionReferenceNode fNode, Object defaultValue, State state, Dyad dyad) {
+        State actualState = fNode.hasModuleState() ? fNode.getModuleState() : state; // determined per fNode
+        return doSingleApply(lArg, fNode.getFunctionRecord(), fNode.getArgCount(),
+                defaultValue,
+                actualState, dyad);
+    }
+/*
+   f(x)->x^2
+  f(x,y)->x*y
+  [3,4]⍺2@f
+  [3,4]⍺@f;
+    3⍺1@f
+  
+  [2,3]⍺2@*; // built in
+ */
+
+protected Object doSingleApply(Object lArg, FunctionRecordInterface fNode,
+                               int argCount,
+                               Object defaultValue, State actualState, Dyad dyad) {
+  //  State actualState = fNode.hasModuleState() ? fNode.getModuleState() : state; // determined per fNode
+    boolean isBuiltin = fNode == null;
+
+    if (lArg == null) {
+        lArg = defaultValue;
+    }
+    if (lArg instanceof QDLStem) {
+        QDLStem lStem = (QDLStem) lArg;
+        if (lStem.isEmpty()) {
+            if (lStem.hasDefaultValue()) {
+                if (!(lStem.getDefaultValue() instanceof QDLStem)) {
+                    // So they used a scalar as the default value. Assume they mean it.
+                    Polyad polyad = new Polyad(fNode.getName());
+                    polyad.setBuiltIn(false);
+                    polyad.addArgument(new ConstantNode(lStem.getDefaultValue()));
+                    return polyad.evaluate(actualState);
+                }
+                lStem = (QDLStem) lStem.getDefaultValue();
+            }
+        }
+        ExpressionImpl expression = null;
+        boolean isOperator = false;
+        if (isBuiltin) {
+            Polyad polyad = new Polyad(fNode.getName());
+            polyad.setBuiltIn(true);
+            if (actualState.getMetaEvaluator().isBuiltInFunction(fNode.getName())) {
+                expression = polyad;
+            } else {
+                if (!actualState.getOpEvaluator().isMathOperator(fNode.getName())) {
+                    throw new UnknownSymbolException("unknown function '" + fNode.getName() + "'", dyad.getLeftArgument());
+                }
+                // so it's an operator.
+                if (lStem.size() == 1) {
+                    Monad monad = new Monad(actualState.getOperatorType(fNode.getName()), null); // arg set later
+                    expression = monad;
+                }
+                if (lStem.size() == 2) {
+                    Dyad dyad1 = new Dyad(actualState.getOperatorType(fNode.getName()), null, null);
+                    expression = dyad1;
+                }
+                expression.setArguments(new ArrayList<>()); // zero this out since we are adding argument later and just set them to null
+                isOperator = true;
+                isBuiltin = true;
+            }
+        } else {
+            // user-defined case
+            Polyad polyad = new Polyad(fNode.getName());
+            polyad.setBuiltIn(false);
+            expression = polyad;
+        }
+        if (lStem.isList()) {
+            for (Object key : lStem.keySet()) {
+                expression.getArguments().add(new ConstantNode(lStem.get(key)));
+            }
+
+        } else {
+            if (isBuiltin) {
+                for (int i = 0; i < lStem.size(); i++) {
+                    Object obj = lStem.get(FunctionEvaluator.DUMMY_BUILT_IN_FUNCTION_NAME_CAPUT + i);
+                    if (obj == null) {
+                        throw new BadArgException("missing argument for '" + FunctionEvaluator.DUMMY_BUILT_IN_FUNCTION_NAME_CAPUT + i + "'", dyad.getLastArg());
+                    }
+                    expression.getArguments().add(new ConstantNode(obj));
+                }
+            } else {
+                //FunctionRecordInterface fRec = fNode.getByArgCount(lStem.size());
+                for (String name : fNode.getArgNames()) {
+                    Object object = lStem.get(name);
+                    if (object == null) {
+                        throw new BadArgException(APPLY_OP_KEY + " '" + fNode.getName() + "' missing value for " + name, dyad.getLeftArgument());
+                    }
+                    expression.getArguments().add(new ConstantNode(object));
+                }
+
+            }
+        }
+
+        if (isOperator) {
+            if (expression instanceof Monad) {
+                actualState.getOpEvaluator().evaluate((Monad) expression, actualState);
+            }
+            if (expression instanceof Dyad) {
+                actualState.getOpEvaluator().evaluate((Dyad) expression, actualState);
+            }
+            return expression.getResult();
+        }
+        return expression.evaluate(actualState);
+    }
+    // so this is a scalar
+    Polyad polyad = new Polyad(fNode.getName());
+    polyad.setBuiltIn(false);
+    polyad.addArgument(new ConstantNode(lArg));
+    return polyad.evaluate(actualState);
+
+}
 
     /**
      * apply the argument to a single function. Note that the dyad here is passed along to make
@@ -704,11 +825,11 @@ apply([@f,@g],[2])
             }
 
             if (isOperator) {
-                if(expression instanceof Monad){
-                    actualState.getOpEvaluator().evaluate((Monad)expression, actualState);
+                if (expression instanceof Monad) {
+                    actualState.getOpEvaluator().evaluate((Monad) expression, actualState);
                 }
-                if(expression instanceof Dyad){
-                    actualState.getOpEvaluator().evaluate((Dyad)expression, actualState);
+                if (expression instanceof Dyad) {
+                    actualState.getOpEvaluator().evaluate((Dyad) expression, actualState);
                 }
                 return expression.getResult();
             }

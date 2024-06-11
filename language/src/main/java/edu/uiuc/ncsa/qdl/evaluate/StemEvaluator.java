@@ -7,6 +7,7 @@ import com.jayway.jsonpath.Option;
 import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.expressions.*;
 import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNode;
+import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNodeInterface;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.statements.Statement;
@@ -899,7 +900,7 @@ public class StemEvaluator extends AbstractEvaluator {
         if (polyad.getArgCount() == 0) {
             throw new MissingArgException(FOR_EACH + " requires at least 2 arguments", polyad);
         }
-        FunctionReferenceNode frn = getFunctionReferenceNode(state, polyad.getArgAt(0), true);
+        FunctionReferenceNodeInterface frn = getFunctionReferenceNode(state, polyad.getArgAt(0), true);
         if (polyad.getArgCount() == 1) {
             throw new MissingArgException(FOR_EACH + " requires at least 2 arguments", polyad.getArgAt(0));
         }

@@ -1,7 +1,6 @@
 package edu.uiuc.ncsa.qdl.evaluate;
 
 import edu.uiuc.ncsa.qdl.config.JavaModuleConfig;
-import edu.uiuc.ncsa.qdl.config.QDLConfigurationConstants;
 import edu.uiuc.ncsa.qdl.config.QDLConfigurationLoaderUtils;
 import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.expressions.*;
@@ -11,7 +10,7 @@ import edu.uiuc.ncsa.qdl.extensions.QDLFunctionRecord;
 import edu.uiuc.ncsa.qdl.extensions.QDLLoader;
 import edu.uiuc.ncsa.qdl.functions.FR_WithState;
 import edu.uiuc.ncsa.qdl.functions.FunctionRecordInterface;
-import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNode;
+import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNodeInterface;
 import edu.uiuc.ncsa.qdl.module.MIWrapper;
 import edu.uiuc.ncsa.qdl.module.MTKey;
 import edu.uiuc.ncsa.qdl.module.Module;
@@ -918,7 +917,7 @@ public class SystemEvaluator extends AbstractEvaluator {
         }
 
         State state = state0.newLocalState();
-        FunctionReferenceNode frn;
+        FunctionReferenceNodeInterface frn;
         ExpressionInterface arg0 = polyad.getArguments().get(0);
 
         frn = getFunctionReferenceNode(state, polyad.getArguments().get(0), true);

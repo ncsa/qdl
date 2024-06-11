@@ -3,6 +3,7 @@ package edu.uiuc.ncsa.qdl.expressions;
 import edu.uiuc.ncsa.qdl.exceptions.IntrinsicViolation;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.exceptions.UnknownSymbolException;
+import edu.uiuc.ncsa.qdl.functions.DyadicFunctionReferenceNode;
 import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
@@ -227,6 +228,10 @@ public class ModuleExpression extends ExpressionImpl {
                     r = getExpression().evaluate(getModuleState());
                 } else {
                     r = getExpression().evaluate(newState); // gets local overrides from ambient state
+                    if(getExpression() instanceof DyadicFunctionReferenceNode){
+                        ((DyadicFunctionReferenceNode) getExpression()).setModule(getModule());
+                    }
+
                 }
 
                 if (r == null) {

@@ -877,7 +877,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param frNode
      * @return
      */
-    public static ExpressionImpl getOperator(State state, FunctionReferenceNode frNode, int nAry) {
+    public static ExpressionImpl getOperator(State state, FunctionReferenceNodeInterface frNode, int nAry) {
         ExpressionImpl operator;
         String operatorName = frNode.getFunctionName();
         if (state.getOpEvaluator().isMathOperator(operatorName)) {
@@ -962,8 +962,8 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param arg0
      * @return
      */
-    public FunctionReferenceNode getFunctionReferenceNode(State state, ExpressionInterface arg0, boolean pushNewState) {
-        FunctionReferenceNode frn = null;
+    public FunctionReferenceNodeInterface getFunctionReferenceNode(State state, ExpressionInterface arg0, boolean pushNewState) {
+        FunctionReferenceNodeInterface frn = null;
         if (arg0 instanceof LambdaDefinitionNode) {
             LambdaDefinitionNode lds = (LambdaDefinitionNode) arg0;
             if (!lds.hasName()) {
@@ -1004,8 +1004,8 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         while(arg0 instanceof ParenthesizedExpression){
             arg0 = ((ParenthesizedExpression)arg0).getExpression();
         } //   g(x,y,n)->x^n+y^n ;(@g)∀[4,[;5],1]
-        if (arg0 instanceof FunctionReferenceNode) {
-            frn = (FunctionReferenceNode) arg0;
+        if (arg0 instanceof FunctionReferenceNodeInterface) {
+            frn = (FunctionReferenceNodeInterface) arg0;
         }
         if(arg0 instanceof ModuleExpression){
             ModuleExpression moduleExpression = (ModuleExpression)  arg0;
@@ -1015,8 +1015,8 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
                    r = ((ModuleExpression)r).getExpression();
                }
             }
-            if(r instanceof FunctionReferenceNode){
-                frn = (FunctionReferenceNode) r;
+            if(r instanceof FunctionReferenceNodeInterface){
+                frn = (FunctionReferenceNodeInterface) r;
             }
 
         }
@@ -1026,7 +1026,11 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         }
         return frn;
     }
-
+        /*
+         f(x)->x^2
+  g(@z, y)->y*z(y)
+  g(1@f, 2)
+         */
     public boolean isScalar(Object arg) {
         return !isStem(arg) && !isSet(arg);
     }
@@ -1051,7 +1055,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         return args;
     }
 
-    protected FunctionReferenceNode getFunctionReferenceNode(State state, ExpressionInterface arg0) {
+    protected FunctionReferenceNodeInterface getFunctionReferenceNode(State state, ExpressionInterface arg0) {
         return getFunctionReferenceNode(state, arg0, false);
     }
 

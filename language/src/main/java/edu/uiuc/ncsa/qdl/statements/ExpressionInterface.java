@@ -56,4 +56,5 @@ public interface ExpressionInterface extends Statement, HasResultInterface {
     int STEM_EXTRACTION_NODE = 25;
     int STEM_NODE = 26;
     int VARIABLE_NODE = 27;
+    int DYADIC_FUNCTION_REFERENCE_NODE = 28;
 }

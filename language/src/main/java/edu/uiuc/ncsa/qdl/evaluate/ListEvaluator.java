@@ -6,7 +6,7 @@ import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.expressions.VariableNode;
 import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.functions.FunctionRecordInterface;
-import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNode;
+import edu.uiuc.ncsa.qdl.functions.FunctionReferenceNodeInterface;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
 import edu.uiuc.ncsa.qdl.variables.*;
@@ -526,7 +526,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
         if (2 < polyad.getArgCount()) {
             throw new ExtraArgException(PICK + " requires 2 arguments", polyad.getArgAt(3));
         }
-        FunctionReferenceNode frn = getFunctionReferenceNode(state, polyad.getArgAt(0), true);
+        FunctionReferenceNodeInterface frn = getFunctionReferenceNode(state, polyad.getArgAt(0), true);
         Object arg1 = polyad.evalArg(1, state);
         ExpressionImpl f = null;
         int argCount = 1;

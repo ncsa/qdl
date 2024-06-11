@@ -2502,6 +2502,24 @@ public class QDLParserParser extends Parser {
 			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitOperatorReference(this);
 		}
 	}
+	public static class DyadicFunctionRefernceContext extends ExpressionContext {
+		public List<ExpressionContext> expression() {
+			return getRuleContexts(ExpressionContext.class);
+		}
+		public ExpressionContext expression(int i) {
+			return getRuleContext(ExpressionContext.class,i);
+		}
+		public TerminalNode FunctionMarker() { return getToken(QDLParserParser.FunctionMarker, 0); }
+		public DyadicFunctionRefernceContext(ExpressionContext ctx) { copyFrom(ctx); }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterDyadicFunctionRefernce(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitDyadicFunctionRefernce(this);
+		}
+	}
 	public static class DotOp2Context extends ExpressionContext {
 		public Token postfix;
 		public ExpressionContext expression() {
@@ -2723,24 +2741,6 @@ public class QDLParserParser extends Parser {
 		@Override
 		public void exitRule(ParseTreeListener listener) {
 			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitAddExpression(this);
-		}
-	}
-	public static class Fref1Context extends ExpressionContext {
-		public List<ExpressionContext> expression() {
-			return getRuleContexts(ExpressionContext.class);
-		}
-		public ExpressionContext expression(int i) {
-			return getRuleContext(ExpressionContext.class,i);
-		}
-		public TerminalNode FunctionMarker() { return getToken(QDLParserParser.FunctionMarker, 0); }
-		public Fref1Context(ExpressionContext ctx) { copyFrom(ctx); }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).enterFref1(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof QDLParserListener ) ((QDLParserListener)listener).exitFref1(this);
 		}
 	}
 	public static class Is_aContext extends ExpressionContext {
@@ -3230,7 +3230,7 @@ public class QDLParserParser extends Parser {
 				setState(338);
 				match(Hash);
 				setState(339);
-				expression(56);
+				expression(55);
 				}
 				break;
 			case 3:
@@ -3574,36 +3574,36 @@ public class QDLParserParser extends Parser {
 					switch ( getInterpreter().adaptivePredict(_input,36,_ctx) ) {
 					case 1:
 						{
-						_localctx = new DotOpContext(new ExpressionContext(_parentctx, _parentState));
+						_localctx = new DyadicFunctionRefernceContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(392);
-						if (!(precpred(_ctx, 55))) throw new FailedPredicateException(this, "precpred(_ctx, 55)");
-						setState(394); 
+						if (!(precpred(_ctx, 56))) throw new FailedPredicateException(this, "precpred(_ctx, 56)");
+						setState(393);
+						match(FunctionMarker);
+						setState(394);
+						expression(57);
+						}
+						break;
+					case 2:
+						{
+						_localctx = new DotOpContext(new ExpressionContext(_parentctx, _parentState));
+						pushNewRecursionContext(_localctx, _startState, RULE_expression);
+						setState(395);
+						if (!(precpred(_ctx, 54))) throw new FailedPredicateException(this, "precpred(_ctx, 54)");
+						setState(397); 
 						_errHandler.sync(this);
 						_la = _input.LA(1);
 						do {
 							{
 							{
-							setState(393);
+							setState(396);
 							match(StemDot);
 							}
 							}
-							setState(396); 
+							setState(399); 
 							_errHandler.sync(this);
 							_la = _input.LA(1);
 						} while ( _la==StemDot );
-						setState(398);
-						expression(56);
-						}
-						break;
-					case 2:
-						{
-						_localctx = new Fref1Context(new ExpressionContext(_parentctx, _parentState));
-						pushNewRecursionContext(_localctx, _startState, RULE_expression);
-						setState(399);
-						if (!(precpred(_ctx, 54))) throw new FailedPredicateException(this, "precpred(_ctx, 54)");
-						setState(400);
-						match(FunctionMarker);
 						setState(401);
 						expression(55);
 						}
@@ -4210,7 +4210,7 @@ public class QDLParserParser extends Parser {
 	private boolean expression_sempred(ExpressionContext _localctx, int predIndex) {
 		switch (predIndex) {
 		case 0:
-			return precpred(_ctx, 55);
+			return precpred(_ctx, 56);
 		case 1:
 			return precpred(_ctx, 54);
 		case 2:
@@ -4303,7 +4303,7 @@ public class QDLParserParser extends Parser {
 		"!\5!\u0153\n!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3"+
 		"!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3"+
 		"!\7!\u017f\n!\f!\16!\u0182\13!\3!\5!\u0185\n!\3!\3!\5!\u0189\n!\3!\3!"+
-		"\6!\u018d\n!\r!\16!\u018e\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3"+
+		"\3!\3!\3!\6!\u0190\n!\r!\16!\u0191\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3"+
 		"!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3"+
 		"!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3"+
 		"!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\5"+
@@ -4395,7 +4395,7 @@ public class QDLParserParser extends Parser {
 		"\u0148\3\2\2\2\u014b\u014e\3\2\2\2\u014c\u014a\3\2\2\2\u014c\u014d\3\2"+
 		"\2\2\u014d?\3\2\2\2\u014e\u014c\3\2\2\2\u014f\u0150\b!\1\2\u0150\u0189"+
 		"\5:\36\2\u0151\u0153\5B\"\2\u0152\u0151\3\2\2\2\u0152\u0153\3\2\2\2\u0153"+
-		"\u0154\3\2\2\2\u0154\u0155\7S\2\2\u0155\u0189\5@!:\u0156\u0157\7[\2\2"+
+		"\u0154\3\2\2\2\u0154\u0155\7S\2\2\u0155\u0189\5@!9\u0156\u0157\7[\2\2"+
 		"\u0157\u0189\5@!\67\u0158\u0159\7G\2\2\u0159\u0189\5@!\60\u015a\u0189"+
 		"\5\62\32\2\u015b\u0189\5\66\34\2\u015c\u0189\5\60\31\2\u015d\u0189\5."+
 		"\30\2\u015e\u0189\5,\27\2\u015f\u0160\79\2\2\u0160\u0189\5@!*\u0161\u0162"+
@@ -4418,9 +4418,9 @@ public class QDLParserParser extends Parser {
 		"\2\2\u0188\u0173\3\2\2\2\u0188\u0174\3\2\2\2\u0188\u0175\3\2\2\2\u0188"+
 		"\u0176\3\2\2\2\u0188\u0177\3\2\2\2\u0188\u0178\3\2\2\2\u0188\u0179\3\2"+
 		"\2\2\u0188\u017a\3\2\2\2\u0188\u0184\3\2\2\2\u0189\u01ee\3\2\2\2\u018a"+
-		"\u018c\f9\2\2\u018b\u018d\7V\2\2\u018c\u018b\3\2\2\2\u018d\u018e\3\2\2"+
-		"\2\u018e\u018c\3\2\2\2\u018e\u018f\3\2\2\2\u018f\u0190\3\2\2\2\u0190\u01ed"+
-		"\5@!:\u0191\u0192\f8\2\2\u0192\u0193\7[\2\2\u0193\u01ed\5@!9\u0194\u0195"+
+		"\u018b\f:\2\2\u018b\u018c\7[\2\2\u018c\u01ed\5@!;\u018d\u018f\f8\2\2\u018e"+
+		"\u0190\7V\2\2\u018f\u018e\3\2\2\2\u0190\u0191\3\2\2\2\u0191\u018f\3\2"+
+		"\2\2\u0191\u0192\3\2\2\2\u0192\u0193\3\2\2\2\u0193\u01ed\5@!9\u0194\u0195"+
 		"\f\65\2\2\u0195\u0196\7O\2\2\u0196\u01ed\5@!\66\u0197\u0198\f\63\2\2\u0198"+
 		"\u0199\7Q\2\2\u0199\u01ed\5@!\64\u019a\u019b\f\61\2\2\u019b\u019c\7G\2"+
 		"\2\u019c\u01ed\5@!\62\u019d\u019e\f)\2\2\u019e\u019f\t\7\2\2\u019f\u01ed"+
@@ -4445,7 +4445,7 @@ public class QDLParserParser extends Parser {
 		"@!\2\u01e1\u01e2\7)\2\2\u01e2\u01e4\5@!\2\u01e3\u01e1\3\2\2\2\u01e3\u01e4"+
 		"\3\2\2\2\u01e4\u01ed\3\2\2\2\u01e5\u01e6\f\25\2\2\u01e6\u01e7\7]\2\2\u01e7"+
 		"\u01ea\5@!\2\u01e8\u01e9\7)\2\2\u01e9\u01eb\5@!\2\u01ea\u01e8\3\2\2\2"+
-		"\u01ea\u01eb\3\2\2\2\u01eb\u01ed\3\2\2\2\u01ec\u018a\3\2\2\2\u01ec\u0191"+
+		"\u01ea\u01eb\3\2\2\2\u01eb\u01ed\3\2\2\2\u01ec\u018a\3\2\2\2\u01ec\u018d"+
 		"\3\2\2\2\u01ec\u0194\3\2\2\2\u01ec\u0197\3\2\2\2\u01ec\u019a\3\2\2\2\u01ec"+
 		"\u019d\3\2\2\2\u01ec\u01a0\3\2\2\2\u01ec\u01a3\3\2\2\2\u01ec\u01a6\3\2"+
 		"\2\2\u01ec\u01a9\3\2\2\2\u01ec\u01ac\3\2\2\2\u01ec\u01af\3\2\2\2\u01ec"+
@@ -4459,7 +4459,7 @@ public class QDLParserParser extends Parser {
 		"\u01f4\t\r\2\2\u01f4E\3\2\2\2\u01f5\u01f6\7!\2\2\u01f6G\3\2\2\2\u01f7"+
 		"\u01f8\7\r\2\2\u01f8I\3\2\2\2(Maejqz\u0085\u008f\u0096\u009f\u00a3\u00be"+
 		"\u00c6\u00cf\u00d7\u00e3\u00ef\u00f6\u00fc\u0103\u010d\u0114\u011c\u0123"+
-		"\u012e\u0135\u013a\u0140\u014c\u0152\u0180\u0184\u0188\u018e\u01e3\u01ea"+
+		"\u012e\u0135\u013a\u0140\u014c\u0152\u0180\u0184\u0188\u0191\u01e3\u01ea"+
 		"\u01ec\u01ee";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());

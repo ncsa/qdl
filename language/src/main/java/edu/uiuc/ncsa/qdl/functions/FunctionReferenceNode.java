@@ -13,7 +13,7 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 3/14/21 at  3:26 PM
  */
-public class FunctionReferenceNode extends ExpressionImpl {
+public class FunctionReferenceNode extends ExpressionImpl implements FunctionReferenceNodeInterface {
 
     public String getFunctionName() {
         return functionName;

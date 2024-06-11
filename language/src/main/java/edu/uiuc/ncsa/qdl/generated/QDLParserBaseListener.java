@@ -592,6 +592,18 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterDyadicFunctionRefernce(QDLParserParser.DyadicFunctionRefernceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDyadicFunctionRefernce(QDLParserParser.DyadicFunctionRefernceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterDotOp2(QDLParserParser.DotOp2Context ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -731,18 +743,6 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitAddExpression(QDLParserParser.AddExpressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterFref1(QDLParserParser.Fref1Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitFref1(QDLParserParser.Fref1Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
