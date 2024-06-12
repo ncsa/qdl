@@ -99,8 +99,7 @@ public class FTable<K extends FKey, V extends FunctionRecord> extends XTable<K, 
      * @return
      */
     public Set<DyadicFunctionReferenceNode> listFunctionReferences(String regex) {
-        HashMap<String, Set<Integer>> fAndArgs = new HashMap<>();
-        Set<DyadicFunctionReferenceNode> fRefs = new HashSet<>();
+        Set<DyadicFunctionReferenceNode> fRefs = new TreeSet<>();
         for (XKey key : keySet()) {
             String name = ((FKey) key).getfName(); // de-munge
             FunctionRecordInterface fr = get(key);

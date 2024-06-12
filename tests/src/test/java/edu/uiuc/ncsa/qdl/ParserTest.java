@@ -3095,6 +3095,69 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         assert getBooleanValue("ok", state) : FunctionEvaluator.ARG_COUNT + " failed ";
     }
 
+    public void testArgNamesFunctionModule() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script,
+                " module['a:a'][f(x,y)->x+y;];\n" +
+                "  A := import('a:a');\n" +
+                "  args. := names(A#@f,2);");
+        addLine(script, "ok0:= size(args.) == 2 ;");
+        addLine(script, "ok1:= args.0=='x' ;");
+        addLine(script, "ok2:= args.1 == 'y';");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : FunctionEvaluator.NAMES + " failed, wrong number of arguments ";
+        assert getBooleanValue("ok1", state) : FunctionEvaluator.NAMES + " failed, incorrect variable name, should be x ";
+        assert getBooleanValue("ok2", state) : FunctionEvaluator.NAMES + " failed, incorrect variable name, should be y ";
+    }
+
+    public void testArgNamesFunctionJavaModule() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script,
+                " eg := import(load('edu.uiuc.ncsa.qdl.extensions.example.EGLoaderImpl', 'java'));\n" +
+                "  args. := names(eg#@concat,2);");
+        addLine(script, "ok0:= size(args.) == 2 ;");
+        addLine(script, "ok1:= args.0=='x_0' ;");
+        addLine(script, "ok2:= args.1 == 'x_1';");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : FunctionEvaluator.NAMES + " failed, wrong number of arguments ";
+        assert getBooleanValue("ok1", state) : FunctionEvaluator.NAMES + " failed, incorrect variable name, should be x_0 ";
+        assert getBooleanValue("ok2", state) : FunctionEvaluator.NAMES + " failed, incorrect variable name, should be x_1 ";
+    }
+
+    public void testArgNamesApplyModule() throws Throwable {
+         State state = testUtils.getNewState();
+         StringBuffer script = new StringBuffer();
+         addLine(script,
+                 " module['a:a'][f(x,y)->x+y;];\n" +
+                 "  A := import('a:a');");
+        addLine(script, "ok0:= 7 == [3,4]⍺A#2@f;");
+        addLine(script, "ok1:= 7 == {'x':3,'y':4}⍺A#2@f;");
+        addLine(script, "ok2:= 7 == {'y':4, 'x':3}⍺A#2@f;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : FunctionEvaluator.APPLY + " failed, for list on  module function ";
+        assert getBooleanValue("ok1", state) : FunctionEvaluator.APPLY + " failed, for stem on  module function ";
+        assert getBooleanValue("ok2", state) : FunctionEvaluator.APPLY + " failed, for permuted stem on  module function ";
+     }
+
+    public void testArgNamesApplyJavaModule() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script,
+                " eg := import(load('edu.uiuc.ncsa.qdl.extensions.example.EGLoaderImpl', 'java'));");
+        addLine(script, "ok0:= 'ab' == ['a','b']⍺eg#2@concat;");
+        addLine(script, "ok1:= 'ab' == {'x_0':'a','x_1':'b'}⍺eg#2@concat;");
+        addLine(script, "ok2:= 'ab' == {'x_1':'b', 'x_0':'a'}⍺eg#2@concat;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : FunctionEvaluator.APPLY + " failed, for list on java module function ";
+        assert getBooleanValue("ok1", state) : FunctionEvaluator.APPLY + " failed, for stem on java module function ";
+        assert getBooleanValue("ok2", state) : FunctionEvaluator.APPLY + " failed, for permuted stem on java module function ";
+    }
     /**
      * Messy case to kick the tires hard. This will create a stem with a default
      * and various function then run the whole thing.

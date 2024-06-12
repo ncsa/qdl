@@ -3,8 +3,13 @@ package edu.uiuc.ncsa.qdl.extensions.http;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
 import edu.uiuc.ncsa.qdl.extensions.QDLModuleMetaClass;
 import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
+import edu.uiuc.ncsa.qdl.variables.Constant;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
+import edu.uiuc.ncsa.qdl.vfs.VFSFileProvider;
+import edu.uiuc.ncsa.qdl.vfs.VFSPassThruFileProvider;
+import edu.uiuc.ncsa.security.core.exceptions.IllegalAccessException;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import net.sf.json.JSONArray;
@@ -33,8 +38,9 @@ import org.apache.http.ssl.TrustStrategy;
 import org.apache.http.util.EntityUtils;
 
 import javax.net.ssl.SSLContext;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
@@ -97,6 +103,7 @@ public class HTTPClient implements QDLModuleMetaClass {
     public String CLOSE_METHOD = "close";
     public String OPEN_METHOD = "open";
     public String IS_OPEN_METHOD = "is_open";
+    public String DOWNLOAD_METHOD = "download";
     public static final String CONTENT_FORM = "application/x-www-form-urlencoded";
     public static final int CONTENT_FORM_VALUE = 0;
     public static final String CONTENT_JSON = "application/json";
@@ -919,6 +926,74 @@ public class HTTPClient implements QDLModuleMetaClass {
         }
     }
 
+    public class Download implements QDLFunction{
+        @Override
+        public String getName() {
+            return DOWNLOAD_METHOD;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{2};
+        }
+
+        @Override
+        public Object evaluate(Object[] objects, State state) throws Throwable {
+            if(!Constant.isString(objects[0])) throw new IllegalArgumentException("zeroth argument must be a string");
+            if(!Constant.isString(objects[1])) throw new IllegalArgumentException("first argument must be a string");
+            String targetPath = (String)objects[1];
+            if(QDLFileUtil.isVFSPath(targetPath)){
+                VFSFileProvider vfs = state.getVFS((String)objects[1]);
+                if(!vfs.canWrite()) throw new IllegalAccessException("VFS is read only");
+                if(vfs instanceof VFSPassThruFileProvider){
+                    VFSPassThruFileProvider vfsPassThruFileProvider = (VFSPassThruFileProvider) vfs;
+                    targetPath = vfsPassThruFileProvider.getRealPath(targetPath);
+                }else{
+                  throw new IllegalArgumentException("can only download to a physical file");
+                }
+            }else{
+                if(state.isServerMode()) throw new IllegalAccessException("cannot download in server mode");
+            }
+            URL url = new URL((String)objects[0]);
+            File targetFile = new File(targetPath);
+            Long totalBytes = -1L;
+            try {
+                totalBytes = download(url, targetFile);
+            }catch(IOException iox){
+               if(state.isDebugOn()){
+                   iox.printStackTrace();
+               }
+               return -1L;
+            }
+            return totalBytes;
+        }
+
+        protected  Long download(URL url, File targetFile) throws IOException {
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            DataInputStream dis = new DataInputStream(connection.getInputStream());
+            FileOutputStream fos = new FileOutputStream(targetFile);
+            byte[] buffer = new byte[1024];
+            long totalBytes = 0;
+            int offset =0;
+            int bytes;
+            while(0 < (bytes = dis.read(buffer, offset, buffer.length)) ){
+                fos.write(buffer, 0, bytes);
+                totalBytes = totalBytes + bytes;
+            }
+            fos.close();
+            dis.close();
+            return totalBytes;
+        }
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> d = new ArrayList<>();
+            d.add(getName() + "(url, target_file) - download from a site to a file");
+            d.add("Note that this restricts the target file to a  physical file on your system,");
+            d.add("which includes VFS files. The reason is that many VFS's ");
+            d.add("This returns the total number of bytes downloaded, or -1 if the operation failed.");
+            return d;
+        }
+    }
     /**
      * Given a uriPath, return the actual path to the service. This does the nitpicky things
      * to create the path.

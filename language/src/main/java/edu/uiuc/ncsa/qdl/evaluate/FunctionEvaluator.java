@@ -182,8 +182,18 @@ public class FunctionEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
-                if (!(objects[0] instanceof FunctionReferenceNode)) {
+                if (!(objects[0] instanceof FunctionReferenceNodeInterface)) {
                     throw new QDLExceptionWithTrace(NAMES + " requires an function reference as its argument.", polyad.getArgAt(0));
+                }
+                if(objects[0] instanceof DyadicFunctionReferenceNode){
+                    DyadicFunctionReferenceNode df = (DyadicFunctionReferenceNode) objects[0];
+                    QDLStem current = new QDLStem();
+                    List argNames = df.getFunctionRecord().getArgNames();
+                    current.getQDLList().addAll(argNames);
+                    r.result = current;
+                                r.resultType = STEM_TYPE;
+                                return r;
+
                 }
                 FunctionReferenceNode fNode = (FunctionReferenceNode) objects[0];
                 TreeMap<Integer, QDLStem> args = new TreeMap<>(); // sort them!

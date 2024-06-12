@@ -117,6 +117,12 @@ public abstract class JavaModule extends Module {
                 fr.qdlFunction = f;
                 fr.argCount = i;
                 fr.name = f.getName();
+                // There are no names for these, so these are created
+                List<String> names = new ArrayList<>();
+                for(int k = 0 ; k < i; k++){
+                    names.add("x_" + k);
+                }
+                fr.setArgNames(names);
                 if (f.getDocumentation(i) != null && !f.getDocumentation(i).isEmpty()) {
                     fr.documentation = f.getDocumentation(i);
                 }

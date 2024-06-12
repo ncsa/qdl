@@ -109,7 +109,7 @@ public class FStack<V extends FTable<? extends FKey, ? extends FunctionRecord>> 
     }
 
     public Set<DyadicFunctionReferenceNode> listFunctionReferences(String regex) {
-        Set<DyadicFunctionReferenceNode> all = new HashSet<>();
+        Set<DyadicFunctionReferenceNode> all = new TreeSet<>();
         // Note this walks backwards through the stack since this means that if
         // there is local documentation it overwrites the global documentation.
         for (int i = getStack().size() - 1; 0 <= i; i--) {

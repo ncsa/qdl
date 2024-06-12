@@ -37,6 +37,7 @@ public class QDLHTTPModule extends JavaModule {
         funcs.add(httpModule.new Put());
         funcs.add(httpModule.new IsJSON());
         funcs.add(httpModule.new IsText());
+        funcs.add(httpModule.new Download());
         qdlhttp.addFunctions(funcs);
         if(state != null){
             qdlhttp.init(state);

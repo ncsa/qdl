@@ -3,6 +3,7 @@ package edu.uiuc.ncsa.qdl.expressions;
 import edu.uiuc.ncsa.qdl.exceptions.IntrinsicViolation;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.exceptions.UnknownSymbolException;
+import edu.uiuc.ncsa.qdl.extensions.JavaModule;
 import edu.uiuc.ncsa.qdl.functions.DyadicFunctionReferenceNode;
 import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.module.Module;
@@ -185,9 +186,8 @@ public class ModuleExpression extends ExpressionImpl {
                 // in the module (or encapsulation breaks!!)
                 State newState = null;
                 newState = StateUtils.clone(getModuleState());
-                newState.getVStack().appendTables(getAmbientState().getVStack());  // add in the state of the module
                 // Partial fix for https://github.com/ncsa/qdl/issues/45
-                
+
                 // (OLD!)Fuller discussion:
                 // There is good argument that the next should add in all of the ambient state.
                 // But probably not here. The local part definitely should be on the top of the stack,
@@ -201,7 +201,7 @@ public class ModuleExpression extends ExpressionImpl {
                 //
                 // Or something else?? This was discovered by the call
 
-                 // λat(requested)->test_util#at_lifetime(server_defaults., client., requested);
+                // λat(requested)->test_util#at_lifetime(server_defaults., client., requested);
                 //
                 // where the LHS argument of requested was not getting set. But it would be possible to have something like
                 // a(x) -> Q#f(x,3) -> W#g(1,x,4)
@@ -214,10 +214,21 @@ public class ModuleExpression extends ExpressionImpl {
 
                 //newState.getVStack().append(ambientState.getVStack().getLocal()); // add in any passed in state (e.g. function arguments to module functions)
 
+                newState.getVStack().appendTables(getAmbientState().getVStack());  // add in the state of the module
                 newState.getFTStack().appendTables(ambientState.getFTStack()); // add in any passed in state for functions
                 newState.getVStack().appendTables(ambientState.getVStack()); // add in any passed in state for variables
                 newState.setModuleState(true);
-
+                if (mm != null) {
+                    if (mm instanceof JavaModule) {
+                        // the point is that these are added to the module state because the functions for the module
+                        // live in the state for that module.
+                        State state = ((JavaModule) mm).getState();
+                        if (state != null) {
+                            newState.getVStack().appendTables(state.getVStack());
+                            newState.getFTStack().appendTables(state.getFTStack());
+                        }
+                    }
+                }
                 Object r = null;
                 if (getExpression() instanceof Polyad) {
                     ((Polyad) getExpression()).evaluatedArgs(newState);
@@ -228,7 +239,7 @@ public class ModuleExpression extends ExpressionImpl {
                     r = getExpression().evaluate(getModuleState());
                 } else {
                     r = getExpression().evaluate(newState); // gets local overrides from ambient state
-                    if(getExpression() instanceof DyadicFunctionReferenceNode){
+                    if (getExpression() instanceof DyadicFunctionReferenceNode) {
                         ((DyadicFunctionReferenceNode) getExpression()).setModule(getModule());
                     }
 

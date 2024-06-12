@@ -12,7 +12,18 @@ import edu.uiuc.ncsa.qdl.variables.Constant;
  * <p>Created by Jeff Gaynor<br>
  * on 6/10/24 at  12:43 PM
  */
-public class DyadicFunctionReferenceNode extends ExpressionImpl implements FunctionReferenceNodeInterface{
+public class DyadicFunctionReferenceNode extends ExpressionImpl implements FunctionReferenceNodeInterface, Comparable{
+    @Override
+    public int compareTo(Object object) {
+        if(object instanceof DyadicFunctionReferenceNode){
+            DyadicFunctionReferenceNode df = (DyadicFunctionReferenceNode)object;
+            String x = toString();
+            String y = df.toString();
+            return x.compareTo(y);
+        }
+        throw new ClassCastException("the object '" + object.getClass().getSimpleName() + "' is not comparable.");
+    }
+
     @Override
     public ExpressionInterface makeCopy() {
         return null;
@@ -50,6 +61,7 @@ public class DyadicFunctionReferenceNode extends ExpressionImpl implements Funct
         }
         int argCount = ((Long) lArg).intValue();
         FunctionRecord functionRecord = (FunctionRecord) state.getFTStack().get(new FKey(getFunctionName(), argCount));
+
         setFunctionRecord(functionRecord); // may be null for an operator, e.g. name is * or ^
         // if this was e.g. in a module, it might have an arbitraily complex path to get here.
         // set the state that was finally constructed elsewhere for this specific call.

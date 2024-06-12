@@ -9,6 +9,7 @@ import edu.uiuc.ncsa.qdl.expressions.ConstantNode;
 import edu.uiuc.ncsa.qdl.expressions.ModuleExpression;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.functions.DyadicFunctionReferenceNode;
+import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.module.MTKey;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
@@ -394,16 +395,16 @@ public class ModuleEvaluator extends AbstractEvaluator {
      * @return
      */
     private Module getMorT(Polyad polyad, State state) {
-        for(int i  = 0; i< polyad.getArgCount(); i++){
+        for (int i = 0; i < polyad.getArgCount(); i++) {
             polyad.evalArg(i, state);
         }
         Object obj = polyad.getArgAt(0).getResult();
-        if(obj instanceof ModuleExpression){
-            return ((ModuleExpression)obj).getModule();
+        if (obj instanceof ModuleExpression) {
+            return ((ModuleExpression) obj).getModule();
         }
         Module m = null;
-        if(obj instanceof DyadicFunctionReferenceNode){
-            return ((DyadicFunctionReferenceNode)obj).getModule();
+        if (obj instanceof DyadicFunctionReferenceNode) {
+            return ((DyadicFunctionReferenceNode) obj).getModule();
         }
         if (Constant.isModule(obj)) {
             return (Module) obj;
@@ -434,37 +435,75 @@ public class ModuleEvaluator extends AbstractEvaluator {
         if (1 < polyad.getArgCount()) {
             throw new WrongArgCountException(GET_DOCUMENTATION + " requires at most one arguments", polyad.getArgAt(1));
         }
-        Module m = getMorT(polyad, state);
-        QDLList outList = new QDLList();
-        if(polyad.getArgAt(0).getResult() instanceof DyadicFunctionReferenceNode){
-            DyadicFunctionReferenceNode df = (DyadicFunctionReferenceNode) polyad.getArgAt(0).getResult();
-            // they want the documentation for a function from the module
-            outList.addAll(df.getFunctionRecord().getDocumentation());
-        }else{
-             // return just the documentation for the module.
-            outList.addAll(m.getDocumentation());
+        Object output = polyad.evalArg(0, state);
+        QDLStem outStem;
+        switch (Constant.getType(output)){
+            case Constant.MODULE_TYPE:
+                outStem =getDoc((Module) output);
+                break;
+            case Constant.DYADIC_FUNCTION_TYPE:
+                outStem =getDoc((DyadicFunctionReferenceNode) output);
+                break;
+            case Constant.STEM_TYPE:
+                outStem = getDoc((QDLStem) output);
+                break;
+            default:
+                throw new BadArgException("wrong argument type, must be a stem, module or function reference", polyad.getArgAt(0));
         }
-        QDLStem outStem = new QDLStem();
-        outStem.setQDLList(outList);
         polyad.setEvaluated(true);
         polyad.setResult(outStem);
-        polyad.setResultType(Constant.getType(outStem));
-
+        polyad.setResultType(Constant.STEM_TYPE);
     }
-      /*
-        module['a:a'][ff(x)->x^2;gg(x)->x^3;]
-    A := import('a:a')
-        A#1@ff
-    [4,5]⍺funcs(A)
+
+    protected QDLStem getDoc(Module m) {
+        QDLList outList = new QDLList();
+        outList.addAll(m.getDocumentation());
+        QDLStem outStem = new QDLStem();
+        outStem.setQDLList(outList);
+        return outStem;
+    }
+
+    protected QDLStem getDoc(DyadicFunctionReferenceNode df) {
+        QDLList outList = new QDLList();
+        outList.addAll(df.getModule().getState().getFTStack().getDocumentation(new FKey(df.getFunctionName(), df.getFunctionArgCount())));
+        QDLStem outStem = new QDLStem();
+        outStem.setQDLList(outList);
+        return outStem;
+    }
+     protected QDLStem getDoc(QDLStem inStem){
+        QDLStem out = new QDLStem();
+        for(Object key : inStem.keySet()){
+            Object v = inStem.get(key);
+             switch (Constant.getType(v)){
+                 case Constant.STEM_TYPE:
+                     out.putLongOrString(key, getDoc((QDLStem) v));
+                     break;
+                     case Constant.MODULE_TYPE:
+                         out.putLongOrString(key, getDoc((Module) v));
+                         break;
+                 case Constant.DYADIC_FUNCTION_TYPE:
+                     out.putLongOrString(key, getDoc((DyadicFunctionReferenceNode) v));
+                     break;
+                 default:
+                     out.putLongOrString(key, v); // don't touch it
+             }
+        }
+        return out;
+     }
+    /*
+      module['a:a'][ff(x)->x^2;gg(x)->x^3;]
+  A := import('a:a')
+      A#1@ff
+  [4,5]⍺funcs(A)
 1@ff
-    docs(A#1@ff)
+  docs(A#1@ff)
 
-    
-     c := j_load('convert');
-  funcs(c)  ;
-  docs(c#2@ini_out) ;
 
-       */
+   c := j_load('convert');
+funcs(c)  ;
+docs(c#2@ini_out) ;
+
+     */
     private void doGetVariables(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{0, 1, 2});
@@ -614,7 +653,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
 
         //TreeSet<String> funcs = m.getState().getFTStack().listFunctions(regex);
         Set<DyadicFunctionReferenceNode> funcs = m.getState().getFTStack().listFunctionReferences(regex);
-        for(DyadicFunctionReferenceNode ddd : funcs){
+        for (DyadicFunctionReferenceNode ddd : funcs) {
             ddd.setModule(m);
             ddd.setModuleState(m.getState());
 
@@ -633,6 +672,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
     A := import('a:a')
     [4,5]⍺funcs(A)
      */
+
     /**
      * Drop i.e., remove a loaded template from the system. This returns a list of uris that were
      * removed.<br/><br/>
@@ -1142,7 +1182,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
 
     protected String getClassPathFromToolPath(List<String> toolPath, State state) {
         String possibleCP = null;
-        if(state == null){
+        if (state == null) {
             // it is possible in a module there is no state
             // default to ambient state for resolving path
             state = State.getRootState();
