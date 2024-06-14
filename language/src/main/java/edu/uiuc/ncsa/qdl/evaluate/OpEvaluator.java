@@ -623,28 +623,36 @@ apply([@f,@g],[2])
 [[-11,6,7,6],[7,6,7,6],[7,-1,7,-1]]
 
      */
+
+    /*
+       f(x)->x^2
+      f(x,y)->x*y
+      [3,4]⍺2@f
+      [3,4]⍺@f;
+      [3,4]⍺1@f;
+        3⍺1@f
+
+      [2,3]⍺2@*; // built in
+
+     */
     protected Object doSingleApply(Object lArg, DyadicFunctionReferenceNode fNode, Object defaultValue, State state, Dyad dyad) {
+
         State actualState = fNode.hasModuleState() ? fNode.getModuleState() : state; // determined per fNode
-        return doSingleApply(lArg, fNode.getFunctionRecord(), fNode.getArgCount(),
+/*        return doSingleApply(lArg, fNode.getFunctionRecord(), fNode.getFunctionArgCount(),
                 defaultValue,
-                actualState, dyad);
-    }
-/*
-   f(x)->x^2
-  f(x,y)->x*y
-  [3,4]⍺2@f
-  [3,4]⍺@f;
-    3⍺1@f
-  
-  [2,3]⍺2@*; // built in
- */
+                actualState, dyad);*/
+//    }
 
-protected Object doSingleApply(Object lArg, FunctionRecordInterface fNode,
-                               int argCount,
+
+
+/*protected Object doSingleApply(Object lArg,
+                               FunctionReferenceNodeInterface fNode,
+
                                Object defaultValue, State actualState, Dyad dyad) {
-  //  State actualState = fNode.hasModuleState() ? fNode.getModuleState() : state; // determined per fNode
-    boolean isBuiltin = fNode == null;
-
+ */
+        //State actualState = fRecord.hasModuleState() ? fRecord.getModuleState() : state; // determined per fRecord
+    FunctionRecordInterface fRecord = fNode.getFunctionRecord();
+    boolean isBuiltin = fRecord == null;
     if (lArg == null) {
         lArg = defaultValue;
     }
@@ -654,7 +662,7 @@ protected Object doSingleApply(Object lArg, FunctionRecordInterface fNode,
             if (lStem.hasDefaultValue()) {
                 if (!(lStem.getDefaultValue() instanceof QDLStem)) {
                     // So they used a scalar as the default value. Assume they mean it.
-                    Polyad polyad = new Polyad(fNode.getName());
+                    Polyad polyad = new Polyad(fRecord.getName());
                     polyad.setBuiltIn(false);
                     polyad.addArgument(new ConstantNode(lStem.getDefaultValue()));
                     return polyad.evaluate(actualState);
@@ -665,21 +673,21 @@ protected Object doSingleApply(Object lArg, FunctionRecordInterface fNode,
         ExpressionImpl expression = null;
         boolean isOperator = false;
         if (isBuiltin) {
-            Polyad polyad = new Polyad(fNode.getName());
+            Polyad polyad = new Polyad(fRecord.getName());
             polyad.setBuiltIn(true);
-            if (actualState.getMetaEvaluator().isBuiltInFunction(fNode.getName())) {
+            if (actualState.getMetaEvaluator().isBuiltInFunction(fRecord.getName())) {
                 expression = polyad;
             } else {
-                if (!actualState.getOpEvaluator().isMathOperator(fNode.getName())) {
-                    throw new UnknownSymbolException("unknown function '" + fNode.getName() + "'", dyad.getLeftArgument());
+                if (!actualState.getOpEvaluator().isMathOperator(fRecord.getName())) {
+                    throw new UnknownSymbolException("unknown function '" + fRecord.getName() + "'", dyad.getLeftArgument());
                 }
                 // so it's an operator.
                 if (lStem.size() == 1) {
-                    Monad monad = new Monad(actualState.getOperatorType(fNode.getName()), null); // arg set later
+                    Monad monad = new Monad(actualState.getOperatorType(fRecord.getName()), null); // arg set later
                     expression = monad;
                 }
                 if (lStem.size() == 2) {
-                    Dyad dyad1 = new Dyad(actualState.getOperatorType(fNode.getName()), null, null);
+                    Dyad dyad1 = new Dyad(actualState.getOperatorType(fRecord.getName()), null, null);
                     expression = dyad1;
                 }
                 expression.setArguments(new ArrayList<>()); // zero this out since we are adding argument later and just set them to null
@@ -688,7 +696,12 @@ protected Object doSingleApply(Object lArg, FunctionRecordInterface fNode,
             }
         } else {
             // user-defined case
-            Polyad polyad = new Polyad(fNode.getName());
+            // May need to pass in argCount = -1 for general case?
+                if(lStem.size() != fNode.getFunctionArgCount()){
+                    throw new BadArgException("incompatible argument list length, function requires " + fNode.getFunctionArgCount(), dyad.getArgAt(0));
+                }
+            Polyad polyad = new Polyad(fRecord.getName());
+
             polyad.setBuiltIn(false);
             expression = polyad;
         }
@@ -707,11 +720,11 @@ protected Object doSingleApply(Object lArg, FunctionRecordInterface fNode,
                     expression.getArguments().add(new ConstantNode(obj));
                 }
             } else {
-                //FunctionRecordInterface fRec = fNode.getByArgCount(lStem.size());
-                for (String name : fNode.getArgNames()) {
+                //FunctionRecordInterface fRec = fRecord.getByArgCount(lStem.size());
+                for (String name : fRecord.getArgNames()) {
                     Object object = lStem.get(name);
                     if (object == null) {
-                        throw new BadArgException(APPLY_OP_KEY + " '" + fNode.getName() + "' missing value for " + name, dyad.getLeftArgument());
+                        throw new BadArgException(APPLY_OP_KEY + " '" + fRecord.getName() + "' missing value for " + name, dyad.getLeftArgument());
                     }
                     expression.getArguments().add(new ConstantNode(object));
                 }
@@ -731,7 +744,7 @@ protected Object doSingleApply(Object lArg, FunctionRecordInterface fNode,
         return expression.evaluate(actualState);
     }
     // so this is a scalar
-    Polyad polyad = new Polyad(fNode.getName());
+    Polyad polyad = new Polyad(fRecord.getName());
     polyad.setBuiltIn(false);
     polyad.addArgument(new ConstantNode(lArg));
     return polyad.evaluate(actualState);

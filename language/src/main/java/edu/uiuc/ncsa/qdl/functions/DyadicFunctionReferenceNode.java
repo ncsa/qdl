@@ -1,8 +1,8 @@
 package edu.uiuc.ncsa.qdl.functions;
 
 import edu.uiuc.ncsa.qdl.exceptions.BadArgException;
+import edu.uiuc.ncsa.qdl.exceptions.UndefinedFunctionException;
 import edu.uiuc.ncsa.qdl.expressions.ExpressionImpl;
-import edu.uiuc.ncsa.qdl.expressions.UnevaluatedExpressionException;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.ExpressionInterface;
@@ -37,9 +37,11 @@ public class DyadicFunctionReferenceNode extends ExpressionImpl implements Funct
      * @return
      */
     public int getFunctionArgCount(){
+/*
         if(!isEvaluated()){
             throw new UnevaluatedExpressionException();
         }
+*/
         return ((Long)getArgAt(0).getResult()).intValue();
     }
     @Override
@@ -61,7 +63,12 @@ public class DyadicFunctionReferenceNode extends ExpressionImpl implements Funct
         }
         int argCount = ((Long) lArg).intValue();
         FunctionRecord functionRecord = (FunctionRecord) state.getFTStack().get(new FKey(getFunctionName(), argCount));
-
+         if(functionRecord == null){
+             if(!state.getFTStack().getByAllName(getFunctionName()).isEmpty()){
+               throw new UndefinedFunctionException("unknown valence of " + getFunctionArgCount() + " for " + getFunctionName(), getArgAt(0));
+             }
+             throw new UndefinedFunctionException("no such function " + getFunctionName(), getArgAt(1));
+         }
         setFunctionRecord(functionRecord); // may be null for an operator, e.g. name is * or ^
         // if this was e.g. in a module, it might have an arbitraily complex path to get here.
         // set the state that was finally constructed elsewhere for this specific call.
@@ -100,6 +107,19 @@ public class DyadicFunctionReferenceNode extends ExpressionImpl implements Funct
 
     public void setFunctionRecord(FunctionRecordInterface functionRecord) {
         this.functionRecord = functionRecord;
+    }
+
+    @Override
+    public FunctionRecordInterface getFunctionRecord(int argCount) {
+        if(functionRecord == null ) return null;
+         if(functionRecord.getArgCount() == argCount) return functionRecord;
+        return null;
+    }
+
+    @Override
+    public boolean hasFunctionRecord(int argCount) {
+        if(functionRecord == null) return false;
+        return functionRecord.getArgCount() == argCount;
     }
 
     FunctionRecordInterface functionRecord = null;

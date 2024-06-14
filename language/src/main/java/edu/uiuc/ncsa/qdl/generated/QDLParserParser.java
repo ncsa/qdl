@@ -2503,6 +2503,7 @@ public class QDLParserParser extends Parser {
 		}
 	}
 	public static class DyadicFunctionRefernceContext extends ExpressionContext {
+		public Token op;
 		public List<ExpressionContext> expression() {
 			return getRuleContexts(ExpressionContext.class);
 		}
@@ -3579,7 +3580,7 @@ public class QDLParserParser extends Parser {
 						setState(392);
 						if (!(precpred(_ctx, 56))) throw new FailedPredicateException(this, "precpred(_ctx, 56)");
 						setState(393);
-						match(FunctionMarker);
+						((DyadicFunctionRefernceContext)_localctx).op = match(FunctionMarker);
 						setState(394);
 						expression(57);
 						}

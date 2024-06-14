@@ -20,4 +20,6 @@ public interface FunctionReferenceNodeInterface {
      void setModuleState(State moduleState);
 
      boolean hasModuleState();
+     FunctionRecordInterface getFunctionRecord(int argCount);
+     boolean hasFunctionRecord(int argCount);
 }

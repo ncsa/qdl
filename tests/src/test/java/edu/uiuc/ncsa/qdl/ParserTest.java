@@ -2,9 +2,7 @@ package edu.uiuc.ncsa.qdl;
 
 import edu.uiuc.ncsa.qdl.evaluate.FunctionEvaluator;
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
-import edu.uiuc.ncsa.qdl.exceptions.IndexError;
-import edu.uiuc.ncsa.qdl.exceptions.ParsingException;
-import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
+import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
@@ -3223,6 +3221,53 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : OpEvaluator.APPLY_OP_KEY + " returned wrong result for built in operator ";
+    }
+
+    public void testDyadicAppliesFail1() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "1@f;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        boolean bad = false;
+        try {
+            interpreter.execute(script.toString());
+            bad = true;
+        }catch(UndefinedFunctionException efx){
+
+        }
+        assert !bad : "was able to create reference for undefined function with dyadic applies";
+    }
+    public void testDyadicAppliesFail2() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)->x^2;");
+        addLine(script, "2@f;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        boolean bad = false;
+        try {
+            interpreter.execute(script.toString());
+            bad = true;
+        }catch(UndefinedFunctionException efx){
+
+        }
+        assert !bad : "was able to create reference for function with wrong arguments with dyadic applies";
+    }
+
+    public void testDyadicAppliesFail3() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x)->x^2;");
+        addLine(script, "f(x,y)->x^2+y^2;");
+        addLine(script, "[2,3]⍺1@f;"); // sending 2 args, f accepts one
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        boolean bad = false;
+        try {
+            interpreter.execute(script.toString());
+            bad = true;
+        }catch(BadArgException bax){
+
+        }
+        assert !bad : "was able to invoke monadic function with 2 arguments using ⍺ (apply)";
     }
     /*
    f(x)->x^2-1;

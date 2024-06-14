@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Just a pointer to the function. Just has the name.
+ * Just a pointer to the collection of functions for a given name. Just has the name.
  * <p>Created by Jeff Gaynor<br>
  * on 3/14/21 at  3:26 PM
  */
@@ -45,6 +45,20 @@ public class FunctionReferenceNode extends ExpressionImpl implements FunctionRef
     }
 
     List<FunctionRecordInterface> functionRecords= null;
+
+    public FunctionRecordInterface getFunctionRecord(int argCount){
+        if(functionRecords == null || functionRecords.isEmpty()) return null;
+        for(FunctionRecordInterface fri : functionRecords){
+            if(fri.getArgCount() == argCount) return fri;
+        }
+        return null;
+    }
+
+    @Override
+    public boolean hasFunctionRecord(int argCount) {
+        return getFunctionRecord(argCount) != null;
+    }
+
     @Override
     public Object evaluate(State state) {
         setFunctionRecords(state.getFTStack().getByAllName(getFunctionName()));

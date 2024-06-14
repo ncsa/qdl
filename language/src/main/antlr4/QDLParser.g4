@@ -110,8 +110,8 @@ assertStatement2:
 expression
  :
    function                                                                    #functions
- | expression  FunctionMarker expression                                       #dyadicFunctionRefernce
- |  variable? Hash expression                                                  #moduleExpression
+ | expression op=FunctionMarker expression                                     #dyadicFunctionRefernce
+ | variable? Hash expression                                                   #moduleExpression
  | expression StemDot+ expression                                              #dotOp
  | FunctionMarker expression                                                   #functionReference // REUSED
  | expression postfix=StemDot                                                  #dotOp2
@@ -119,9 +119,6 @@ expression
  | expression postfix=Backslash2                                               #extract2
  | expression Backslash3  expression                                           #extract3
  | expression postfix=Backslash4                                               #extract4
-// | (function | '(' f_args* ')')
-//         LambdaConnector (expression | expressionBlock)                          #lambdaDef
- //      LambdaConnector expression                                              #lambdaDef
  | expression op=Apply expression                                              #appliesOperator
  | Apply expression                                                            #unaryApplyExpression
  | stemVariable                                                                #stemVar
@@ -171,8 +168,8 @@ expression
  | (Tilde | TildeRight) expression                                             #unaryTildeExpression
  | Transpose expression                                                        #unaryTransposeExpression
  | STRING                                                                      #strings
- | op_ref                                                                      #operatorReference
-  | integer                                                                     #integers
+ |  op_ref                                                                     #operatorReference
+  | integer                                                                    #integers
  | number                                                                      #numbers
  | variable                                                                    #variables
  | keyword                                                                     #keywords
@@ -195,4 +192,5 @@ expression
         integer : Integer;
 
    keyword : ConstantKeywords;
+
 
