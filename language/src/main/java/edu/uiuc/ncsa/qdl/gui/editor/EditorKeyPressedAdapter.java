@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl.gui.editor;
 
+import edu.uiuc.ncsa.qdl.gui.FontUtil;
 import edu.uiuc.ncsa.qdl.gui.LineUtil;
 import edu.uiuc.ncsa.qdl.parsing.QDLParserDriver;
 import edu.uiuc.ncsa.qdl.parsing.QDLRunner;
@@ -10,6 +11,7 @@ import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
+import org.drjekyll.fontchooser.FontDialog;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import javax.swing.*;
@@ -20,9 +22,12 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 
 import static edu.uiuc.ncsa.qdl.gui.LineUtil.getClipboard;
+import static edu.uiuc.ncsa.qdl.state.QDLConstants.ALL_CHARS;
 import static edu.uiuc.ncsa.security.core.util.StringUtils.isTrivial;
 
 /**
@@ -161,7 +166,21 @@ public class EditorKeyPressedAdapter extends KeyAdapter {
 
 
         switch (e.getKeyCode()) {
-
+            case KeyEvent.VK_ADD:
+            case KeyEvent.VK_SUBTRACT:
+                if (e.getKeyLocation() == KeyEvent.KEY_LOCATION_NUMPAD && e.isControlDown() && !e.isAltDown() && !e.isShiftDown()) {
+                    Font oldFont = input.getFont();
+                    int increment = KeyEvent.VK_ADD == e.getKeyCode() ? 2 : -2;
+                    Font newFont = new Font(oldFont.getName(), oldFont.getStyle(), oldFont.getSize() + increment);
+                    input.setFont(newFont);
+                    if (output != null) {
+                        // if just the editor window, there is no output, so don't try to change it
+                        oldFont = output.getFont();
+                        newFont = new Font(oldFont.getName(), oldFont.getStyle(), oldFont.getSize() + increment);
+                        output.setFont(newFont);
+                    }
+                }
+                break;
             case KeyEvent.VK_I:
                 // Insert in input form
                 if (e.isControlDown()) {
@@ -305,6 +324,38 @@ public class EditorKeyPressedAdapter extends KeyAdapter {
                         helpMessage = x;
                     }
                     showHelp(title, getHelp(text));
+                }
+                break;
+            case KeyEvent.VK_F:
+                // choose font
+                if (e.isControlDown()) {
+                    Font oldFont = input.getFont();
+                    FontDialog.showDialog(input);
+                    Font newFont = input.getFont();
+                    char[] allChars = ALL_CHARS.toCharArray();
+                    if (!newFont.getName().equals(oldFont.getName())) {
+                        String unSupportedChars = FontUtil.findUnsupportedCharacters(newFont, allChars);
+                        if (!unSupportedChars.isEmpty()) {
+                            double qdlness = (100.00D * unSupportedChars.length()) / (ALL_CHARS.length());
+                            qdlness = 100.00D - qdlness; //normalize
+                            String fName = newFont.getName();
+
+                            int out = JOptionPane.showConfirmDialog(frame, "'" + fName + "' has a QDLness of " +
+                                    String.format( "%.2f", qdlness ) +"%\n" +
+                                    " It cannot display the following characters:\n" + unSupportedChars + "\n"+
+                                    "Use " + fName + "?", "QDLNess alert!", JOptionPane.WARNING_MESSAGE);
+                            if (out != JOptionPane.YES_OPTION && out != JOptionPane.OK_OPTION) {
+                                input.setFont(oldFont);
+                                return;
+                            }
+                        }
+                    }
+                    if (output != null) {
+                        output.setFont(input.getFont());
+                        //update the default font, but only if there is an output window, since no output means it is the editor, not the GUI.
+                        workspaceCommands.setFont(input.getFont());
+                    }
+
                 }
                 break;
             case KeyEvent.VK_Q:

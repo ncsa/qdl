@@ -123,8 +123,8 @@ SCIENTIFIC_NUMBER : Decimal (E SIGN? Integer)?;
             ForAll : '∀' ;       // unicode 2200
        ContainsKey : '∋' | '∌';  // unicode 220B, 220C
     Exponentiation : '^';
-         Transpose : '⦰';  // unicode 29b0
-             Apply : '⍺';  // unicode 237A
+         Transpose : 'µ';  // unicode 00B5
+             Apply : '∂';  // unicode 2202
      ExprDyadicOps : '⌆' ; // unicode 2306
      FRefDyadicOps : '⊙' | '⊕' ; //  2297 2295  ops that have a function ref for LHS
                And : '&&'  | '∧'  ; // unicode  2227

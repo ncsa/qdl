@@ -6,6 +6,7 @@ import edu.uiuc.ncsa.security.core.util.AbstractEnvironment;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
 import edu.uiuc.ncsa.security.util.cli.editing.Editors;
 
+import java.awt.*;
 import java.io.Serializable;
 import java.util.List;
 
@@ -57,7 +58,8 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
                           LibLoader libLoader,
                           boolean ansiModeOn,
                           String logo,
-                          String terminalType) {
+                          String terminalType,
+                          Font font) {
         super(myLogger);
         this.cfgFile = cfgFile;
         this.name = name;
@@ -93,6 +95,7 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
         this.ansiModeOn = ansiModeOn;
         this.logo = logo;
         this.terminalType = terminalType;
+        this.font = font;
     }
 
     String terminalType=WS_TERMINAL_TYPE_TEXT; // default
@@ -373,4 +376,14 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
     public boolean hasLibLoader(){
         return libLoader!=null;
     }
+
+    public Font getFont() {
+        return font;
+    }
+
+    public void setFont(Font font) {
+        this.font = font;
+    }
+
+    Font font = null;
 }

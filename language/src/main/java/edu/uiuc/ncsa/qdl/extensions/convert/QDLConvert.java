@@ -949,6 +949,11 @@ public class QDLConvert implements QDLModuleMetaClass {
                 exportToFile = true;
                 fileName = (String) objects[1];
             }
+            if(stem.isList()){
+                QDLStem wrapper = new QDLStem();
+                wrapper.put("root", stem);
+                stem = wrapper;
+            }
             StringReader stringReader = new StringReader(stem.toJSON().toString());
             Config conf = ConfigFactory.parseReader(stringReader);
             //String rawJSON = conf.root().render(ConfigRenderOptions.concise());
@@ -974,6 +979,8 @@ public class QDLConvert implements QDLModuleMetaClass {
             if (doxx.isEmpty()) {
                 doxx.add(getName() + "(arg.{,file_path} - convert the stem to HOCON. If file_path is present, write to the file.");
                 doxx.add("Otherwise, return the result as a string.");
+                doxx.add("Note that HOCON does not support serializing just an array, so that will be added to");
+                doxx.add("a stem as the single entry 'root'. Sorry, best we can do");
             }
             return doxx;
         }

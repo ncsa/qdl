@@ -162,8 +162,8 @@ public class DyadicFunctionReferenceNode extends ExpressionImpl implements Funct
     /*
         f(x)->x^2
   f(x,y)->x*y
-  [3,4]⍺@f; // does dyadic automatically
-  [3,4]⍺2@f;
-  [3,4]⍺1@f; // should return applied to each element
+  [3,4]∂@f; // does dyadic automatically
+  [3,4]∂2@f;
+  [3,4]∂1@f; // should return applied to each element
 
      */

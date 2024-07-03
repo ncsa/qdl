@@ -373,7 +373,7 @@ public class WSXMLSerializer {
             }
         }
 
-        WorkspaceCommands testCommands = new WorkspaceCommands();
+        WorkspaceCommands testCommands = WorkspaceCommands.getInstance().newInstance();
         State state = StateUtils.newInstance();
         testCommands.state = state;
         try {

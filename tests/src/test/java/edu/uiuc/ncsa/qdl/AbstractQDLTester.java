@@ -253,7 +253,8 @@ public class AbstractQDLTester extends TestBase {
         // Serialize the workspace
         StringWriter stringWriter = new StringWriter();
         XMLStreamWriter xsw = createXSW(stringWriter);
-        WorkspaceCommands workspaceCommands = new WorkspaceCommands();
+
+        WorkspaceCommands workspaceCommands = WorkspaceCommands.getInstance().newInstance();
         workspaceCommands.setState(state);
         workspaceCommands.toXML(xsw);
 
@@ -269,17 +270,18 @@ public class AbstractQDLTester extends TestBase {
 
     protected State pickleJSONState(State state) throws Throwable {
         // Serialize the workspace
-        WorkspaceCommands workspaceCommands = new WorkspaceCommands();
+        WorkspaceCommands workspaceCommands = WorkspaceCommands.getInstance().newInstance();
         workspaceCommands.setState(state);
         JSONObject json = workspaceCommands.toJSON();
         // Deserialize the workspace
-        return workspaceCommands.fromJSON(json).getState();
+        State newState = workspaceCommands.fromJSON(json).getState();
+        return newState;
     }
 
     protected State pickleJavaState(State state) throws Throwable {
         // Serialize the workspace
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        WorkspaceCommands workspaceCommands = new WorkspaceCommands();
+        WorkspaceCommands workspaceCommands = WorkspaceCommands.getInstance().newInstance();
         workspaceCommands.setState(state);
         workspaceCommands._xmlWSJavaSave(baos);
 
@@ -304,7 +306,7 @@ public class AbstractQDLTester extends TestBase {
         // Serialize the workspace
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         OutputStreamWriter osw = new OutputStreamWriter(baos);
-        WorkspaceCommands workspaceCommands = new WorkspaceCommands();
+        WorkspaceCommands workspaceCommands = WorkspaceCommands.getInstance().newInstance();
         workspaceCommands.setState(state);
         workspaceCommands._xmlWSQDLSave(osw);
        //System.out.println(new String(baos.toByteArray()));

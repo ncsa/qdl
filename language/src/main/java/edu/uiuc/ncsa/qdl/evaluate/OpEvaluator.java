@@ -82,10 +82,10 @@ public class OpEvaluator extends AbstractEvaluator {
     public static final String NOT_CONTAINS_KEY = "∌"; //220c
     public static final String FOR_ALL_KEY = "∀"; //2200
     public static final String MASK_OP_KEY = "⌆"; // 2306
-    public static final String TRANSPOSE_OP_KEY = "⦰"; //29b0
+    public static final String TRANSPOSE_OP_KEY = "µ"; //00B5
     public static final String REDUCE_OP_KEY = "⊙"; //2299
     public static final String EXPAND_OP_KEY = "⊕"; //2295
-    public static final String APPLY_OP_KEY = "⍺"; // 	U+237A
+    public static final String APPLY_OP_KEY = "∂"; // 	U+2202
 
 
     public static final int ASSIGNMENT_VALUE = 10;
@@ -125,11 +125,22 @@ public class OpEvaluator extends AbstractEvaluator {
     public static final int FOR_ALL_KEY_VALUE = 229;
 
     public static final int MASK_OP_VALUE = 230; // 2306
-    public static final int TRANSPOSE_OP_VALUE = 231; //29b0
+    public static final int TRANSPOSE_OP_VALUE = 231; //00b5
 
     public static final int REDUCE_OP_VALUE = 232; //2a00
     public static final int EXPAND_OP_VALUE = 233; //2a01
-    public static final int APPLY_OP_VALUE = 234; // 	U+237A
+    public static final int APPLY_OP_VALUE = 234; // 	U+2202
+    /**
+     * This is for operators that are in the parser and never are created directly, e.g.
+     * → or #. "->"
+     */
+    public static String[] OTHER_MATH_OPS = new String[]{
+            "->","→",State.NS_DELIMITER,
+            "⊨",
+            "|^", "⊢","\\",QDLStem.STEM_INDEX_MARKER,
+            "¿","?",
+         "≔",":=","≕","=:" ,"+=","-=","^=","*=","~=", "×=","÷=","%="
+    };
 
     /**
      * All Math operators. These are used in function references.
@@ -494,8 +505,8 @@ public class OpEvaluator extends AbstractEvaluator {
         f(x)->x^2
   f(x,y)->x*y
   g(x)->x^2
-  ⍺[@f,@g]
-  {'a':[1,2],'b':1}⍺{'a':@f, 'b':@g}
+  ∂[@f,@g]
+  {'a':[1,2],'b':1}∂{'a':@f, 'b':@g}
      */
     private void doDyadicApply(Dyad dyad, State state) {
         Object lArg = dyad.getLeftArgument().evaluate(state); // evaluated in ambient state
@@ -601,9 +612,9 @@ public class OpEvaluator extends AbstractEvaluator {
       f(x)->x^2
 g(x)->x^3
 apply([@f,@g],[2])
-[2]⍺[@f,@g]
+[2]∂[@f,@g]
 
-     [3]⍺@f
+     [3]∂@f
       <==> f(3.4)
      -----
      Complex example: This sets up a matrix fo function refs with a default value an specific values.
@@ -619,7 +630,7 @@ apply([@f,@g],[2])
 [[-11,3.60555127546399,7,3.60555127546399],[7,3.60555127546399,7,3.60555127546399],[7,1.4142135623731,7,1.4142135623731]]
 
     g(p,q)->p*q;
-    (zz.)⍺ff.
+    (zz.)∂ff.
 [[-11,6,7,6],[7,6,7,6],[7,-1,7,-1]]
 
      */
@@ -627,12 +638,12 @@ apply([@f,@g],[2])
     /*
        f(x)->x^2
       f(x,y)->x*y
-      [3,4]⍺2@f
-      [3,4]⍺@f;
-      [3,4]⍺1@f;
-        3⍺1@f
+      [3,4]∂2@f
+      [3,4]∂@f;
+      [3,4]∂1@f;
+        3∂1@f
 
-      [2,3]⍺2@*; // built in
+      [2,3]∂2@*; // built in
 
      */
     protected Object doSingleApply(Object lArg, DyadicFunctionReferenceNode fNode, Object defaultValue, State state, Dyad dyad) {

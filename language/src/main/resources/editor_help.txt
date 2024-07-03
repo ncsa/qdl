@@ -18,6 +18,8 @@ and hit F1.
 +------------+-------+---------------------------------------------+
 |^d          | E     | delete current line                         |
 +------------+-------+---------------------------------------------+
+|^f          | B     | Select font (default is monospaced)         |
++------------+-------+---------------------------------------------+
 |^h          | B     | check syntax for input or selection         |
 +------------+-------+---------------------------------------------+
 |^i          | B     | paste input form                            |
@@ -65,14 +67,23 @@ and hit F1.
 +------------+-------+---------------------------------------------+
 |@+down      | B     | Move line down in buffer.                   |
 +------------+-------+---------------------------------------------+
+|^plus       | B     | numberpad +, increase font size by 2        |
+|            |       | points.                                     |
++------------+-------+---------------------------------------------+
+|^minus      | B     | numberpad -, decrease font size by 2        |
+|            |       | points.                                     |
++------------+-------+---------------------------------------------+
 |F1          | E     | Help for selected text or help for the      |
 |            |       | editor is no selected text.                 |
 +------------+-------+---------------------------------------------+
 |^F1         | E     | Show QDL keyboard layout.                   |
 +------------+-------+---------------------------------------------+
-| !mouseclick| E     | ctrl + mouse left click on the result window|
-|            |       | will open the result in a dumb edit window  |
+| ^mouseclick| E     | ctrl + mouse left click on the result window|
+|            |       | will open the result in a dumb edit window. |
 +------------+-------+---------------------------------------------+
+
+A dumb edit window is just for editing -- you need to cut and paste
+the contents someplace to keep them.
 
 Keys:
  ^a = ctrl + a
@@ -84,3 +95,16 @@ Types:
 B = buffer operation
 E = edit operation
 W = workspace operation
+
+Note that while you can choose fonts, QDL uses unicode and support for characters
+is, well, hit or miss. If you select a font and want to see what it supports
+directly, type
+
+constants().characters.all
+
+which will show every character QDL can use. Any place you get boxes rather than
+symbols means that your font does not have that. Any font with reasonably good
+support of Math symbols should work fine.
+
+Edit windows inherit the default font from the GUI, but you can change
+their fonts independently with ^f..

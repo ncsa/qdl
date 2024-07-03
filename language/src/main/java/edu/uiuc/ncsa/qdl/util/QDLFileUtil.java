@@ -469,4 +469,24 @@ public class QDLFileUtil extends FileUtil {
         System.out.println(resolvePath("vfs#/a/b/c", "abc#p/q"));
         System.out.println(resolvePath("/a/b/c", "abc#p/q"));
     }
+    /**
+     * Copies one stream to another. Does <b>not</b> close or flush! This returns the
+     * total number of bytes copied.
+     *
+     * @param inputStream
+     * @param outputStream
+     * @return
+     * @throws IOException
+     */
+    public static long copyStream(InputStream inputStream, OutputStream outputStream) throws IOException {
+        long totalBytes = 0;
+        byte[] buffer = new byte[1024];
+        int offset = 0;
+        int bytes;
+        while (0 < (bytes = inputStream.read(buffer, offset, buffer.length))) {
+            outputStream.write(buffer, 0, bytes);
+            totalBytes = totalBytes + bytes;
+        }
+        return totalBytes;
+    }
 }

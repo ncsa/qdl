@@ -430,7 +430,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "⊕" |
 "⊙" |
 "⌆" |
-"⦰"		{ addToken(Token.FUNCTION); }
+"µ"		{ addToken(Token.FUNCTION); }
 
 	{BooleanLiteral}			{ addToken(Token.LITERAL_BOOLEAN); }
 
@@ -512,7 +512,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "⊨" |
 "⌈" |
 "⌊" |
-"⍺" |
+"∂" |
 "⟦" |
 "⟧"		{ addToken(Token.OPERATOR); }
 

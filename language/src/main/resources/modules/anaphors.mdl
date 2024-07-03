@@ -1,5 +1,5 @@
 module[
-     'qdl:/ext/anaphora','scriptlets'
+     'qdl:/ext/anaphor','scriptlets'
     ]
 body[
 » This module defines several functions for working with scriptlets
@@ -135,12 +135,12 @@ block[
             then[
                  // case of {'load':path, 'args':[x0,x1,...])
                  // Execute as script_load(path, x0,x1,...)
-                 return((s.'load' ~ s.'args')⍺⊗script_load);
+                 return((s.'load' ~ s.'args')∂⊗script_load);
                ]
             else[
                 // case of {'load':path, singleton}
                 // execute as script_load(path, arg)
-                return([s.'load', s.'args']⍺⊗script_load);
+                return([s.'load', s.'args']∂⊗script_load);
              ];
            ]
          else[

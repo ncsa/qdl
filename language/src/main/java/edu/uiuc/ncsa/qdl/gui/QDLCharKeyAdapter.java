@@ -2,6 +2,7 @@ package edu.uiuc.ncsa.qdl.gui;
 
 import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
 
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
@@ -35,7 +36,14 @@ public class QDLCharKeyAdapter extends KeyAdapter {
         String keyValue = String.valueOf(e.getKeyChar());
         int position = swingTerminal.getInput().getCaretPosition();
         switch (e.getKeyChar()) {
-
+            case KeyEvent.VK_PLUS:
+           if (e.getKeyLocation() == KeyEvent.KEY_LOCATION_NUMPAD && e.isControlDown()) {
+               System.out.println("Numpad pressed!");
+               Font oldFont = swingTerminal.getInput().getFont();
+               Font newFont = new Font(oldFont.getName(), oldFont.getStyle(), oldFont.getSize() + 2);
+               swingTerminal.getInput().setFont(newFont);
+           }
+           break;
             case KeyEvent.VK_ENTER:
                 //if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
                 if (e.isControlDown() && e.isAltDown()) {

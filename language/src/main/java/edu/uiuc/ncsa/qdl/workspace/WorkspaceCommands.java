@@ -12,6 +12,7 @@ import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.functions.FR_WithState;
 import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
+import edu.uiuc.ncsa.qdl.gui.FontUtil;
 import edu.uiuc.ncsa.qdl.gui.SwingTerminal;
 import edu.uiuc.ncsa.qdl.gui.editor.EditDoneEvent;
 import edu.uiuc.ncsa.qdl.gui.editor.QDLEditor;
@@ -22,10 +23,7 @@ import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.parsing.QDLParserDriver;
 import edu.uiuc.ncsa.qdl.parsing.QDLRunner;
-import edu.uiuc.ncsa.qdl.state.SIEntry;
-import edu.uiuc.ncsa.qdl.state.State;
-import edu.uiuc.ncsa.qdl.state.StateUtils;
-import edu.uiuc.ncsa.qdl.state.XKey;
+import edu.uiuc.ncsa.qdl.state.*;
 import edu.uiuc.ncsa.qdl.util.InputFormUtil;
 import edu.uiuc.ncsa.qdl.util.QDLFileUtil;
 import edu.uiuc.ncsa.qdl.util.QDLVersion;
@@ -49,8 +47,8 @@ import edu.uiuc.ncsa.security.util.cli.editing.EditorEntry;
 import edu.uiuc.ncsa.security.util.cli.editing.EditorUtils;
 import edu.uiuc.ncsa.security.util.cli.editing.Editors;
 import edu.uiuc.ncsa.security.util.cli.editing.LineEditor;
-import edu.uiuc.ncsa.security.util.configuration.XMLConfigUtil;
 import edu.uiuc.ncsa.security.util.configuration.TemplateUtil;
+import edu.uiuc.ncsa.security.util.configuration.XMLConfigUtil;
 import edu.uiuc.ncsa.security.util.terminal.ISO6429IO;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -65,6 +63,7 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import java.awt.*;
 import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
@@ -72,6 +71,7 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.List;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -80,6 +80,8 @@ import java.util.zip.GZIPOutputStream;
 
 import static edu.uiuc.ncsa.qdl.config.QDLConfigurationConstants.*;
 import static edu.uiuc.ncsa.qdl.config.QDLConfigurationLoaderUtils.*;
+import static edu.uiuc.ncsa.qdl.evaluate.SystemEvaluator.SHEBANG;
+import static edu.uiuc.ncsa.qdl.gui.FontUtil.findQDLFonts;
 import static edu.uiuc.ncsa.qdl.util.InputFormUtil.*;
 import static edu.uiuc.ncsa.qdl.util.QDLFileUtil.*;
 import static edu.uiuc.ncsa.qdl.vfs.VFSPaths.SCHEME_DELIMITER;
@@ -147,6 +149,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     protected static final String HELP_COMMAND = ")help"; // show various types of help
     public static final String OFF_COMMAND = ")off";
     protected static final String BUFFER2_COMMAND = ")buffer";
+    protected static final String FONTS_COMMAND = ")fonts";
     protected static final String SHORT_BUFFER2_COMMAND = ")b";
     protected static final String EXECUTE_COMMAND = ")";
     protected static final String RESUME_COMMAND = "))";
@@ -251,6 +254,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         sayi(RJustify(MODULES_COMMAND, length) + " - lists all the loaded modules this workspace knows about.");
         sayi(RJustify(OFF_COMMAND, length) + " - exit the workspace.");
         sayi(RJustify(LOAD_COMMAND, length) + " - Load a file of QDL commands and execute it immediately in the current workspace.");
+        sayi(RJustify(FONTS_COMMAND, length) + " - (Swing GUI only) list all of the QDL complete fonts on your system).");
         sayi(RJustify(STATE_INDICATOR_COMMAND, length) + " - commands relating to the state indicator.");
         sayi(RJustify(VARS_COMMAND, length) + " - lists all of the variables this workspace knows about.");
         sayi(RJustify(WS_COMMAND, length) + " - commands relating to this workspace.");
@@ -315,6 +319,8 @@ public class WorkspaceCommands implements Logable, Serializable {
         InputLine inputLine = new InputLine(CLT.tokenize(inline));
         inputLine = variableLookup(inputLine);
         switch (inputLine.getCommand()) {
+            case FONTS_COMMAND:
+                return doFontCommand(inputLine);
             case FILE_COMMAND:
                 return doFileCommands(inputLine);
             case SHORT_BUFFER2_COMMAND:
@@ -368,7 +374,6 @@ public class WorkspaceCommands implements Logable, Serializable {
             case VARS_COMMAND:
 
 
-
                 return doVars(inputLine);
             case WS_COMMAND:
                 return doWS(inputLine);
@@ -407,6 +412,110 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     Map<UUID, Integer> currentEditorSessions = new HashMap<>();
+    public static String FONT_CHECK_COMMAND = "check";
+    public static String FONT_LIST_COMMAND = "list";
+
+    protected Object doFontCommand(InputLine inputLine) {
+        if (inputLine.hasArg(HELP_SWITCH)) {
+            say(FONTS_COMMAND + " " + FONT_LIST_COMMAND + " {weight} - list every file on the system that is QDL capable");
+            say("      weight is a percent and if given all fonts that have QDLness creater than or equal to ");
+            say("      the weight will be returned with a listing of how many characters fail and what they are");
+            say("E.g. ");
+            say(FONTS_COMMAND + " " + FONT_LIST_COMMAND + " 90");
+            say("would list all fonts that support 90% or more of QDLs character set.");
+            say("E.g. ");
+            say(FONTS_COMMAND);
+            say("(no argument) Lists all the fonts on your system that are 100% QDL compatible");
+            say("\n" + FONTS_COMMAND + " " + FONT_CHECK_COMMAND + " {name} = check the named  font for QDLness. No name means check the current font.");
+            return RC_CONTINUE;
+        }
+        if (GraphicsEnvironment.isHeadless()) {
+            say("font operations unsupported in text mode");
+            return RC_NO_OP;
+        }
+        // If they just issue ")fonts 97" assume they mean ")fonts list 97"
+        boolean listFonts = inputLine.hasArg(FONT_LIST_COMMAND) || inputLine.getArgCount() == 0;
+        if(inputLine.getArgCount() ==1 ){
+            try{
+                Double.parseDouble(inputLine.getLastArg());
+                listFonts = true;
+            } catch(NumberFormatException nfx){
+                       // no problem
+            }
+        }
+        if (listFonts) {
+            try {
+                _doFontList(inputLine);
+                return RC_CONTINUE;
+
+            } catch (Throwable throwable) {
+                if (isDebugOn()) {
+                    throwable.printStackTrace();
+                }
+                say("That didn't work: '" + throwable.getMessage() + "'");
+                return RC_NO_OP;
+            }
+        }
+        if (inputLine.hasArg(FONT_CHECK_COMMAND)) {
+            Font font;
+            boolean defaultFont = !inputLine.hasNextArgFor("check");
+            if (defaultFont) {
+                font = getFont();
+                say("current font: " + fontReport(font));
+            } else {
+                font = new Font(inputLine.getNextArgFor("check"), Font.PLAIN, 12);
+                say("checking font: " + fontReport(font));
+            }
+            String unsupported = FontUtil.findUnsupportedCharacters(font, QDLConstants.ALL_CHARS);
+            if (unsupported.isEmpty()) {
+                say("all characters are supported");
+                return RC_CONTINUE;
+            }
+            if (defaultFont) {
+                say(unsupported.length() + " characters are not supported"); // can't print unsupported characters
+            } else {
+                say(unsupported.length() + " characters are not supported:" + unsupported); // assume default font can show unsupported characters
+            }
+            return RC_CONTINUE;
+        }
+        say("unrecognized font command");
+        return RC_CONTINUE;
+    }
+
+    protected String fontReport(Font font) {
+        return font.getName() + " " + FontUtil.getStyle(font) + " at " + font.getSize() + " pts.";
+    }
+
+    protected void _doFontList(InputLine inputLine) throws Throwable {
+        inputLine.removeSwitch("list");
+        List<String> fonts;
+        boolean weighted = false;
+        double weight = 100.00;
+        if (inputLine.getArgCount() == 1) {
+            try {
+                weight = Double.parseDouble(inputLine.getLastArg());
+                weighted = true;
+                fonts = findQDLFonts(weight);
+            } catch (NumberFormatException bfx) {
+                fonts = findQDLFonts();
+            }
+        } else {
+            fonts = findQDLFonts();
+        }
+        if (fonts.isEmpty()) {
+            say("no founts found");
+        } else {
+            if (weighted) {
+                say("list of fonts that can display " + weight + "% or more of the QDL character set:");
+            } else {
+                say("list of fonts that can display the entire QDL character set:");
+            }
+            for (String s : fonts) {
+                say(s);
+            }
+        }
+        say("current font: " + fontReport(getFont()));
+    }
 
     protected void _doGUIEditor(BufferManager.BufferRecord br) {
 
@@ -770,8 +879,16 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     protected Object _doFileEdit(InputLine inputLine) throws Throwable {
+        if (qdlEditors == null) {
+            getQdlEditors();
+        }
         String source = inputLine.getArg(FIRST_ARG_INDEX);
-        List<String> content = QDLFileUtil.readTextFileAsLines(getState(), source);
+        List<String> content;
+        if (QDLFileUtil.exists(getState(), source)) {
+            content = QDLFileUtil.readTextFileAsLines(getState(), source);
+        } else {
+            content = new ArrayList<>();
+        }
         if (useExternalEditor()) {
             _doExternalEdit(content);
         } else {
@@ -799,6 +916,22 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("Error editing file '" + f.getAbsolutePath() + "', " + e.getMessage());
             }
             return RC_CONTINUE;
+        } else {
+            LineEditor lineEditor = new LineEditor(input);
+
+            try {
+                lineEditor.execute();
+                if (!QDLFileUtil.isVFSPath(fileName)) {
+                    lineEditor.setTargetFile(new File(fileName));// in case they issue a write in the editor.
+                }
+                List<String> out = lineEditor.getBuffer();
+                output.addAll(out);
+                QDLFileUtil.writeTextFile(getState(), fileName, out);
+                return RC_CONTINUE;
+            } catch (Throwable e) {
+                say("there was a problem editing the file " + e.getMessage());
+                e.printStackTrace();
+            }
         }
 
         return RC_CONTINUE;
@@ -1091,7 +1224,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                         content = bufferManager.readFile(br.link);
                     }
                 } else {
-                    content = bufferManager.readFile(br.src);
+                    content = bufferManager.readFile(br.srcSavePath);
                 }
             } catch (Throwable t) {
                 say("sorry, could not read the file:" + t.getMessage());
@@ -1102,6 +1235,8 @@ public class WorkspaceCommands implements Logable, Serializable {
             say("empty buffer");
             return RC_NO_OP;
         }
+        content = stripShebang(content);
+
         StringBuffer stringBuffer = new StringBuffer();
         for (String x : content) {
             stringBuffer.append(x + "\n");
@@ -1185,7 +1320,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                     if (br.isLink()) {
                         content = bufferManager.readFile(br.link);
                     } else {
-                        content = bufferManager.readFile(br.src);
+                        content = bufferManager.readFile(br.srcSavePath);
                     }
                 } catch (Throwable t) {
                     say("sorry, could not read the file:" + t.getMessage());
@@ -1194,7 +1329,8 @@ public class WorkspaceCommands implements Logable, Serializable {
             }
         }
         // flag & = start new one
-        // !
+        // Lead shebang for scripts is removed at execution
+        content = stripShebang(content);
         int flag = (inputLine.hasArg("&") ? 1 : 0) + (inputLine.hasArg("!") ? 2 : 0);
         if (flag == 3) {
             say("sorry, you have specified both to clone the workspace and ignore it. You can only do one of these.");
@@ -1239,6 +1375,14 @@ public class WorkspaceCommands implements Logable, Serializable {
         } catch (Throwable t) {
             interpreter.setEchoModeOn(origEchoMode);
             interpreter.setPrettyPrint(ppOn);
+            if (t instanceof ReturnException) {
+                ReturnException rx = (ReturnException) t;
+                if (rx.hasResult()) {
+                    say(rx.result.toString());
+                }
+                return RC_CONTINUE;
+            }
+
             if (!isSI) {
                 boolean isHalt = t instanceof InterruptException;
                 if (isHalt) {
@@ -1264,11 +1408,62 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
+    private List<String> stripShebang(List<String> content) {
+        if (!content.isEmpty()) {
+            if (content.get(0).startsWith(SHEBANG)) {
+                content.remove(0);
+            }
+        }
+        return content;
+    }
+
     QDLInterpreter defaultInterpreter;
     State defaultState;
     int currentPID = 0;
 
+    /**
+     * Save all of the buffers. This just invokes the save method since there is a lot of state to ferret out
+     * and it is best to hand it off.
+     * @throws Throwable
+     */
+    protected void _saveAllBuffers() throws Throwable {
+        ArrayList<BufferManager.BufferRecord> bufferRecords = getBufferManager().getBufferRecords();
+        List<String> successes = new ArrayList<>();
+        List<String> failures = new ArrayList<>();
+        for (BufferManager.BufferRecord br : bufferRecords) {
+            if (br.edited) {
+                if (!br.memoryOnly) {
+                    InputLine inputLine = new InputLine(BUFFER2_COMMAND, "save",  Integer.toString(getBufferManager().getIndex(br)));
+                    try {
+                        _doBufferWrite(inputLine, false);
+                        successes.add(br.alias);
+                    } catch (Throwable t) {
+                        failures.add(br.alias);
+                        // do nothing
+                    }
+                }
+            }
+        }
+        if (!successes.isEmpty()) {
+            say("saved " + successes.size() + " buffers:" + successes);
+        }
+        if (!failures.isEmpty()) {
+            say("failed to save " + failures.size() + " buffers: " + failures);
+        }
+    }
+
     protected Object _doBufferWrite(InputLine inputLine) throws Throwable {
+          return _doBufferWrite(inputLine, true);
+    }
+
+    /**
+     * Used internally, This has a flag to suppress certain messages.
+     * @param inputLine
+     * @param doOuput
+     * @return
+     * @throws Throwable
+     */
+    protected Object _doBufferWrite(InputLine inputLine, boolean doOuput) throws Throwable {
         if (_doHelp(inputLine)) {
             say("(write | save) (index | alias) {path}");
             sayi("Write (aka save) the buffer. If there is a link, the target is written to the source.");
@@ -1315,9 +1510,9 @@ public class WorkspaceCommands implements Logable, Serializable {
         boolean ok = bufferManager.write(br);
 
         if (ok) {
-            say("done");
+            if(doOuput)say("done");
         } else {
-            say("nothing was found to write.");
+            if(doOuput)say("nothing was found to write.");
         }
         return RC_CONTINUE;
 
@@ -1471,7 +1666,13 @@ public class WorkspaceCommands implements Logable, Serializable {
             if (br.memoryOnly) {
                 content = br.getContent();
             } else {
-                content = bufferManager.readFile(fName);
+                try {
+                    content = bufferManager.readFile(fName);
+                } catch (FileNotFoundException fileNotFoundException) {
+                    // ok. Means create the file
+                    say("new file '" + fName + "'");
+                    content = new ArrayList<>();
+                }
             }
         }
         br.setContent(content);
@@ -2913,7 +3114,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 return RC_CONTINUE;
             }
             output.clear();
-            output.addAll( _doLineEditor(inputForm));
+            output.addAll(_doLineEditor(inputForm));
         }
         return RC_NO_OP;
     }
@@ -3084,8 +3285,8 @@ public class WorkspaceCommands implements Logable, Serializable {
             // if it's a regex, we have no idea what the display function will do, so don't have a count.
             say("Help is available for the following topics:");
             Object out = printList(inputLine, treeSet);
-            say( (isRegex ? "" : treeSet.size()) + " topics.");
-                       return out;
+            say((isRegex ? "" : treeSet.size()) + " topics.");
+            return out;
         }
         String[] names = resolveRealHelpName(name);
 
@@ -3094,7 +3295,9 @@ public class WorkspaceCommands implements Logable, Serializable {
             altName = names[1];
         }
 
-        if (names != null) {
+        if (names == null) {
+            checkAsModule = true; // assume it might be a module and check it.
+        }else{
             String realName = names[0];
             if (doOnlineExample) {
                 String x = getHelpTopicExample(realName);
@@ -4665,6 +4868,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     String JSON_FLAG = "-json";
     String SAVE_AS_XML_FLAG = "-xml";
     public static String SILENT_SAVE_FLAG = "-silent";
+    public static String NO_BUFFERS_SAVE_FLAG = "-no_buffers";
 
     /*
     Has to be public so save thread can access it.
@@ -4683,6 +4887,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             sayi(SHOW_FLAG + " = (XML format only) dump the (uncompressed) result to the console instead. No file is needed.");
             sayi(COMPRESS_FLAG + " = use to override compression setting of workspace. The resulting file will be a binary file.");
             sayi(KEEP_WSF + " = keep the current " + CURRENT_WORKSPACE_FILE + " rather than automatically updating it");
+            sayi(NO_BUFFERS_SAVE_FLAG + " = do not save buffers when saving workspace. Default is to save open buffers. ");
             sayi(SILENT_SAVE_FLAG + " = print no messages when saving.");
             sayi("Note that a dump does not save any of the current workspace state, just the variables, functions and modules.");
             sayi("See the corresponding load command to recover it. It will print error messages, however.");
@@ -4698,6 +4903,8 @@ public class WorkspaceCommands implements Logable, Serializable {
         boolean compressionOn = isCompressXML();
         boolean doJSON = inputLine.hasArg(JSON_FLAG);
         boolean doXML = inputLine.hasArg(SAVE_AS_XML_FLAG);
+        boolean doNotsaveBuffers = inputLine.hasArg(NO_BUFFERS_SAVE_FLAG);
+
 
         if (inputLine.hasArg(COMPRESS_FLAG)) {
             compressionOn = inputLine.getNextArgFor(COMPRESS_FLAG).equalsIgnoreCase("on");
@@ -4714,6 +4921,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         inputLine.removeSwitch(QDL_DUMP_FLAG);
         inputLine.removeSwitch(JSON_FLAG);
         inputLine.removeSwitch(SAVE_AS_XML_FLAG);
+        inputLine.removeSwitch(NO_BUFFERS_SAVE_FLAG);
 
         if (!(doXML || doJava || doQDL)) {
             doJSON = true; // set as default
@@ -4834,7 +5042,9 @@ public class WorkspaceCommands implements Logable, Serializable {
 
             }
 
-
+            if(!doNotsaveBuffers) {
+                _saveAllBuffers();
+            }
             if (doQDL || fullPath.endsWith(QDLVersion.DEFAULT_FILE_EXTENSION)) {
                 //_doQDLDump(target);
                 long length = _xmlWSQDLSave(fullPath);
@@ -5716,6 +5926,10 @@ public class WorkspaceCommands implements Logable, Serializable {
     public Editors getQdlEditors() {
         if (qdlEditors == null) {
             qdlEditors = new Editors();
+            EditorEntry ee = new EditorEntry();
+            ee.name = "line";
+            ee.exec = "line";
+            qdlEditors.put(new EditorEntry());
         }
         return qdlEditors;
     }
@@ -5736,6 +5950,14 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
 
         fromConfigFile(inputLine, qdlEnvironment);
+    }
+
+    public QDLEnvironment getQdlEnvironment() {
+        return qdlEnvironment;
+    }
+
+    public void setQdlEnvironment(QDLEnvironment qdlEnvironment) {
+        this.qdlEnvironment = qdlEnvironment;
     }
 
     QDLEnvironment qdlEnvironment = null;
@@ -5777,6 +5999,8 @@ public class WorkspaceCommands implements Logable, Serializable {
             DebugUtil.setDebugLevel(DebugConstants.DEBUG_LEVEL_TRACE);
 
         }
+        setFont(qe.getFont());
+        figureOutFont(inputLine);
         MetaDebugUtil du = new MetaDebugUtil(WorkspaceCommands.class.getSimpleName(), MetaDebugUtil.DEBUG_LEVEL_OFF, true);
         state.setDebugUtil(du);
         state.setServerMode(qe.isServerModeOn());
@@ -5804,9 +6028,9 @@ public class WorkspaceCommands implements Logable, Serializable {
         logoName = qe.getLogoName();
         if (inputLine.hasArg(CLA_LOGO)) {
             // allow override of logo from command line
-             logoName = inputLine.getNextArgFor(CLA_LOGO).toLowerCase();
-             inputLine.removeSwitchAndValue(CLA_LOGO);
-         }
+            logoName = inputLine.getNextArgFor(CLA_LOGO).toLowerCase();
+            inputLine.removeSwitchAndValue(CLA_LOGO);
+        }
         logo = getLogo(logoName); // check for logo after show banner since they can select none and turn it anyway.
 
         logger = qe.getMyLogger();
@@ -5933,6 +6157,24 @@ public class WorkspaceCommands implements Logable, Serializable {
         setUseExternalEditor(qe.isUseExternalEditor());
         setQdlEditors(qe.getQdlEditors());
         initAutosave();
+    }
+
+    protected void figureOutFont(InputLine inputLine) {
+        if (inputLine.hasArg("-font")) {
+            String fontName = inputLine.getNextArgFor("-font");
+            inputLine.removeSwitchAndValue("-font");
+            Font currentFont = getFont();
+            if (!currentFont.getName().equals(fontName)) {
+                try {
+                    Font newFont = new Font(fontName, currentFont.getStyle(), currentFont.getSize());
+                    setFont(newFont);
+                } catch (Throwable t) {
+                    if (isDebugOn()) {
+                        t.printStackTrace();
+                    }
+                }
+            }
+        }
     }
 
     AutosaveThread autosaveThread;
@@ -6116,7 +6358,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         } else {
             rootDir = System.getProperty("user.dir");
         }
-
+        figureOutFont(inputLine);
         if (inputLine.hasArg(CLA_LOG_DIR)) {
             // create the logger for this
             String rawLog = inputLine.getNextArgFor(CLA_LOG_DIR);
@@ -6570,4 +6812,67 @@ public class WorkspaceCommands implements Logable, Serializable {
 
 
     transient SwingTerminal swingTerminal;
+
+    static WorkspaceCommands workspaceCommands = null;
+
+    /**
+     * Factory method to create an instance. This is needed if you intend to override
+     * this class, since there is a bootstrapping issue with the QDLWorkspace
+     * otherwise. set this as needed first.
+     *
+     * @return
+     */
+    public static WorkspaceCommands getInstance() {
+        if (workspaceCommands == null) {
+            workspaceCommands = new WorkspaceCommands();
+        }
+        return workspaceCommands;
+    }
+
+    public static WorkspaceCommands getInstance(IOInterface ioInterface) {
+        if (workspaceCommands == null) {
+            workspaceCommands = new WorkspaceCommands(ioInterface);
+        }
+        return workspaceCommands;
+    }
+
+    public static void setInstance(WorkspaceCommands wc) {
+        workspaceCommands = wc;
+    }
+
+    /**
+     * Use this to create new instances of this with same {@link IOInterface} as the instance. The idea is that the static factory creates
+     * a single instance and that can be used to create others. This allows for overrides
+     * to be used in the base classes. Set the static method once and override the non-static methods.
+     *
+     * @return
+     */
+    public WorkspaceCommands newInstance() {
+        WorkspaceCommands ww = new WorkspaceCommands(getInstance().getIoInterface());
+        //    ww.getState().setIoInterface(getInstance().getIoInterface());
+        return ww;
+    }
+
+    public WorkspaceCommands newInstance(IOInterface ioInterface) {
+        return new WorkspaceCommands(ioInterface);
+    }
+
+    public Font getFont() {
+        if (font == null) {
+            font = new Font("Monospaced", Font.BOLD, 14);
+        }
+        return font;
+    }
+
+    public void setFont(Font font) {
+        this.font = font;
+    }
+
+    Font font = null;
+
+    /*
+         public WorkspaceCommands(IOInterface ioInterface) {
+        setIoInterface(ioInterface);
+    }
+     */
 }

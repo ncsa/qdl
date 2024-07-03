@@ -1720,4 +1720,6 @@ public class QDLStem implements Map<String, Object>, Serializable {
          StemMultiIndex stemMultiIndex = new StemMultiIndex("^^^" + QDLStem.STEM_INDEX_MARKER +  index);
          return get(stemMultiIndex);
     }
+
+
 } // end class

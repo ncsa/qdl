@@ -1282,6 +1282,7 @@ public class SystemEvaluator extends AbstractEvaluator {
     }
 
 
+    public static final String SHEBANG = "#!";
     private void doCheckSyntax(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{1});
@@ -1301,7 +1302,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             throw new BadArgException("argument to " + CHECK_SYNTAX + " must be a string.", polyad.getArgAt(0));
         }
         String rawString = ((String) arg0).trim();
-        if (rawString.startsWith("#!")) {
+        if (rawString.startsWith(SHEBANG)) {
             // if it's a script, drop the very first line or the parser chokes.
             rawString = rawString.substring(rawString.indexOf("\n"));
         }

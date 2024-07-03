@@ -379,7 +379,7 @@ public class ModuleTests extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "module['a:y'][f(x)->x^2;];y:=import('a:y');");
-        addLine(script, "out.:= ⍺y#@f;");
+        addLine(script, "out.:= ∂y#@f;");
         addLine(script, "ok := (1 ∈ out.) && (size(out.)==1);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
@@ -391,7 +391,7 @@ public class ModuleTests extends AbstractQDLTester {
         StringBuffer script = new StringBuffer();
         addLine(script, "module['a:y'][f(x)->x^2;];y:=import('a:y');");
         addLine(script, "f(x)->x^3; x:=10;"); // make sure that module state is used right
-        addLine(script, "ok := 4 == [2]⍺y#@f;");
+        addLine(script, "ok := 4 == [2]∂y#@f;");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "calling applies to module function failed.";
@@ -402,7 +402,7 @@ public class ModuleTests extends AbstractQDLTester {
         StringBuffer script = new StringBuffer();
         addLine(script, "module['a:y'][f(x)->x^2;];y:=import('a:y');");
         addLine(script, "f(x)->x^3; x:=10;"); // make sure that module state is used right
-        addLine(script, "ok := 4 == {'x':2}⍺y#@f;");
+        addLine(script, "ok := 4 == {'x':2}∂y#@f;");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "calling applies to module function failed.";
@@ -413,7 +413,7 @@ public class ModuleTests extends AbstractQDLTester {
         StringBuffer script = new StringBuffer();
         addLine(script, "module['a:x'][module['a:y'][f(x)->x^2+1;f(x,y)->x*y;];y:=import('a:y');];");
         addLine(script, "x:=import('a:x');");
-        addLine(script, "out.:= ⍺x#y#@f;");
+        addLine(script, "out.:= ∂x#y#@f;");
         addLine(script, "ok := (⊗∧⊙[1,2] ∈ out.) && (size(out.)==2);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
@@ -433,8 +433,8 @@ public class ModuleTests extends AbstractQDLTester {
         addLine(script, "f(x)->x^3;"); // make sure that module state is used right
         addLine(script, "f(x,y)->x/y; y:=11;");
         state = rountripState(state, script, testCase);
-        addLine(script, "okf := 5 == [2]⍺x#y#@f;");
-        addLine(script, "okg := 6 == [2,3]⍺x#y#@f;");
+        addLine(script, "okf := 5 == [2]∂x#y#@f;");
+        addLine(script, "okg := 6 == [2,3]∂x#y#@f;");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("okf", state) : "calling applies to module function failed.";
@@ -448,8 +448,8 @@ public class ModuleTests extends AbstractQDLTester {
         addLine(script, "x:=import('a:x');");
         addLine(script, "f(x)->x^3;"); // make sure that module state is used right
         addLine(script, "f(x,y)->x/y; y:=11;");
-        addLine(script, "okf := 5 == {'x':2}⍺x#y#@f;");
-        addLine(script, "okg := 6 == {'y':3,'x':2}⍺x#y#@f;");
+        addLine(script, "okf := 5 == {'x':2}∂x#y#@f;");
+        addLine(script, "okg := 6 == {'y':3,'x':2}∂x#y#@f;");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("okf", state) : "calling applies to module function failed.";
@@ -877,8 +877,8 @@ public class ModuleTests extends AbstractQDLTester {
           module['a:x'][module['a:y'][f(x)->x;];y:=import('a:y');]
        x:=import('a:x');
        x#y#f(3)
-       ⍺x#y#@f
-  [3]⍺x#y#@f
+       ∂x#y#@f
+  [3]∂x#y#@f
 
 
        module['p:q'][f(x)->x^2;q:=3;]

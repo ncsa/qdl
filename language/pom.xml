@@ -96,8 +96,6 @@
                 <configuration>
                     <doCheck>false</doCheck>
                     <doUpdate>false</doUpdate>
-
-
                     <!--
                      Generate sequence build number based on:
                      build number and timestamp
@@ -113,6 +111,12 @@
         </plugins>
     </build>
     <dependencies>
+        <dependency>
+            <groupId>org.drjekyll</groupId>
+            <artifactId>fontchooser</artifactId>
+            <version>2.4</version>
+         </dependency>
+
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
@@ -266,6 +270,11 @@
             <artifactId>sas-server</artifactId>
             <version>5.3-SNAPSHOT</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>apache-client</artifactId>
+            <version>2.25.36</version>
         </dependency>
     </dependencies>
 

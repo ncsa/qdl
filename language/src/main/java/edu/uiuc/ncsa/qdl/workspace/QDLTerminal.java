@@ -44,7 +44,7 @@ public class QDLTerminal extends ISO6429Terminal  {
             charMap['\''] = '»';
             charMap['\\'] = '≠';
             charMap['A'] = '∀';
-            charMap['a'] = '⍺';
+            charMap['a'] = '∂';//⍺ ==> ∂ since few fonts support it.
             charMap['D'] = '∆';
             charMap['d'] = '→';
             charMap['E'] = '∉';
@@ -61,7 +61,7 @@ public class QDLTerminal extends ISO6429Terminal  {
             charMap['r'] = '≈';
             charMap['s'] = '⊢';
             charMap['S'] = '⊨';
-            charMap['t'] = '⦰';
+            charMap['t'] = 'µ';
             charMap['x'] = '⊙';
             charMap['X'] = '⊕';
             charMap['U'] = '∩';

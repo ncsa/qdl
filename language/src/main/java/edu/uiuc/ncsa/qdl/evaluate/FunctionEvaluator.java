@@ -950,9 +950,9 @@ public class FunctionEvaluator extends AbstractEvaluator {
 
 /*
 Support for apply operator. Close to introspection...
- 	U+237A ⍺
- 	 ⍺f = return list of arg counts, e.g. [0,1,3]
- 	 3⍺f = return list of arg names e.g., 2⍺f = ['x','pressure']
- 	 list.⍺f = invoke f with arg list, e.g. [1/2, 14]⍺f <==> f(1/2, 14)
- 	 stem.⍺f = invoke with named args, e.g. {'pressure':14,'x':1/2}⍺f <==> f(1/2, 14)
+ 	U+2202 ∂
+ 	 ∂f = return list of arg counts, e.g. [0,1,3]
+ 	 3∂f = return list of arg names e.g., 2∂f = ['x','pressure']
+ 	 list.∂f = invoke f with arg list, e.g. [1/2, 14]∂f <==> f(1/2, 14)
+ 	 stem.∂f = invoke with named args, e.g. {'pressure':14,'x':1/2}∂f <==> f(1/2, 14)
  */

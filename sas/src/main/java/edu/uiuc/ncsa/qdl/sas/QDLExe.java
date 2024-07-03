@@ -10,6 +10,7 @@ import edu.uiuc.ncsa.qdl.sas.response.ListFunctionsResponse;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.workspace.BufferManager;
 import edu.uiuc.ncsa.qdl.workspace.QDLWorkspace;
+import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
 import edu.uiuc.ncsa.sas.Executable;
 import edu.uiuc.ncsa.sas.StringIO;
 import edu.uiuc.ncsa.sas.exceptions.SASException;
@@ -53,7 +54,8 @@ public class QDLExe implements Executable, QDLSASConstants {
     }
     protected void init(){
         State state = createState();
-        workspaceCommands = new QDLSASWorkspaceCommands();
+        WorkspaceCommands.setInstance(new QDLSASWorkspaceCommands());
+        workspaceCommands = (QDLSASWorkspaceCommands) WorkspaceCommands.getInstance();
         workspaceCommands.setState(state);
         // bootstrapping issue. Need workspace commands to exist to set itin the qdlWorkspace,
         // so load it here usign default configuration, set the IO then call init() to

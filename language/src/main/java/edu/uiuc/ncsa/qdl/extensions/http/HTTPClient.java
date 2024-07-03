@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl.extensions.http;
 
+import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
 import edu.uiuc.ncsa.qdl.extensions.QDLModuleMetaClass;
 import edu.uiuc.ncsa.qdl.state.State;
@@ -47,6 +48,8 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipEntry;
 
 /**
  * Class that is the workhorse for {@link QDLHTTPModule}. See the blurb <br/>
@@ -369,7 +372,7 @@ public class HTTPClient implements QDLModuleMetaClass {
 
     protected QDLStem jsonToStemJSON(String rawJSON) {
         QDLStem stemVariable = new QDLStem();
-        if(StringUtils.isTrivial(rawJSON)){
+        if (StringUtils.isTrivial(rawJSON)) {
             return stemVariable; // trivial response should be trivial JSON.
         }
         // So there is something there and it is asserted to be JSON.
@@ -926,7 +929,7 @@ public class HTTPClient implements QDLModuleMetaClass {
         }
     }
 
-    public class Download implements QDLFunction{
+    public class Download implements QDLFunction {
         @Override
         public String getName() {
             return DOWNLOAD_METHOD;
@@ -934,66 +937,135 @@ public class HTTPClient implements QDLModuleMetaClass {
 
         @Override
         public int[] getArgCount() {
-            return new int[]{2};
+            return new int[]{2, 3};
         }
 
         @Override
         public Object evaluate(Object[] objects, State state) throws Throwable {
-            if(!Constant.isString(objects[0])) throw new IllegalArgumentException("zeroth argument must be a string");
-            if(!Constant.isString(objects[1])) throw new IllegalArgumentException("first argument must be a string");
-            String targetPath = (String)objects[1];
-            if(QDLFileUtil.isVFSPath(targetPath)){
-                VFSFileProvider vfs = state.getVFS((String)objects[1]);
-                if(!vfs.canWrite()) throw new IllegalAccessException("VFS is read only");
-                if(vfs instanceof VFSPassThruFileProvider){
+            if (!Constant.isString(objects[0])) throw new IllegalArgumentException("zeroth argument must be a string");
+            if (!Constant.isString(objects[1])) throw new IllegalArgumentException("first argument must be a string");
+            boolean isZip = false;
+            if (objects.length == 3) {
+                if (!(objects[2] instanceof Boolean)) {
+                    throw new IllegalArgumentException(getName() + " must have a boolean as its third argument if present");
+                }
+                isZip = (Boolean) objects[2];
+            }
+            String targetPath = (String) objects[1];
+            if (QDLFileUtil.isVFSPath(targetPath)) {
+                VFSFileProvider vfs = state.getVFS((String) objects[1]);
+                if (!vfs.canWrite()) throw new IllegalAccessException("VFS is read only");
+                if (vfs instanceof VFSPassThruFileProvider) {
                     VFSPassThruFileProvider vfsPassThruFileProvider = (VFSPassThruFileProvider) vfs;
                     targetPath = vfsPassThruFileProvider.getRealPath(targetPath);
-                }else{
-                  throw new IllegalArgumentException("can only download to a physical file");
+                } else {
+                    throw new IllegalArgumentException("can only download to a physical file");
                 }
-            }else{
-                if(state.isServerMode()) throw new IllegalAccessException("cannot download in server mode");
+            } else {
+                if (state.isServerMode()) throw new IllegalAccessException("cannot download in server mode");
             }
-            URL url = new URL((String)objects[0]);
+            URL url = new URL((String) objects[0]);
             File targetFile = new File(targetPath);
             Long totalBytes = -1L;
             try {
-                totalBytes = download(url, targetFile);
-            }catch(IOException iox){
-               if(state.isDebugOn()){
-                   iox.printStackTrace();
-               }
-               return -1L;
+                if (isZip) {
+                    totalBytes = downloadZip(url, targetFile);
+                } else {
+                    totalBytes = download(url, targetFile);
+                }
+            } catch (IOException iox) {
+                if (state.isDebugOn()) {
+                    iox.printStackTrace();
+                }
+                return -1L;
             }
             return totalBytes;
         }
 
-        protected  Long download(URL url, File targetFile) throws IOException {
+        protected Long download(URL url, File targetFile) throws IOException {
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             DataInputStream dis = new DataInputStream(connection.getInputStream());
             FileOutputStream fos = new FileOutputStream(targetFile);
-            byte[] buffer = new byte[1024];
-            long totalBytes = 0;
-            int offset =0;
-            int bytes;
-            while(0 < (bytes = dis.read(buffer, offset, buffer.length)) ){
-                fos.write(buffer, 0, bytes);
-                totalBytes = totalBytes + bytes;
-            }
+            long totalBytes = QDLFileUtil.copyStream(dis, fos);
             fos.close();
             dis.close();
             return totalBytes;
         }
+
+        protected Long downloadZip(URL url, File targetFile) throws IOException {
+            long totalSize = 0L;
+            if (targetFile.exists()) {
+                if (!targetFile.isDirectory()) {
+                    throw new QDLException("The target of the download for a zip file must be a directory");
+                }
+            } else {
+                if (!targetFile.mkdirs()) {
+                    throw new QDLException("unable to create directory '" + targetFile.getAbsolutePath() + "\'");
+                }
+            }
+
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            DataInputStream dis = new DataInputStream(connection.getInputStream());
+            String targetName = targetFile.getAbsolutePath();
+            targetName = targetName.endsWith(File.separator) ? targetName : (targetName + File.separator);
+            ZipInputStream stream = new ZipInputStream(dis);
+            byte[] buffer = new byte[2048];
+            try {
+                ZipEntry entry;
+                while ((entry = stream.getNextEntry()) != null) {
+                    File outFile = new File(targetName + entry.getName());
+                    if (entry.getName().endsWith("/")) {
+                        outFile.mkdirs();
+                        continue;
+                    }
+                    outFile.getParentFile().mkdirs();
+                    FileOutputStream output = null;
+                    try {
+                        output = new FileOutputStream(outFile);
+                        int len = 0;
+                        while ((len = stream.read(buffer)) > 0) {
+                            output.write(buffer, 0, len);
+                        }
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                    } finally {
+                        // we must always close the output file
+                        if (output != null) output.close();
+                    }
+                    totalSize = totalSize + outFile.length();
+
+                }
+            } finally {
+                // we must always close the zip file.
+                stream.close();
+            }
+            return totalSize;
+        }
+
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> d = new ArrayList<>();
-            d.add(getName() + "(url, target_file) - download from a site to a file");
+            switch (argCount) {
+                case 2:
+                    d.add(getName() + "(url, target_file) - download from a site to a file");
+                    d.add("Download a file from a site to a file.");
+                    break;
+                case 3:
+                    d.add(getName() + "(url, target_file, is_zip) - download from a site to a file");
+                    d.add("Download a zipped file (includes jars) directory. This will unzip the");
+                    d.add("entire archive to the location you specify; If you just want the unzipped");
+                    d.add("file, use the dyadic version or set is_zip to false.");
+                    d.add("If the target directory does not exist, it will be created.");
+                    break;
+            }
             d.add("Note that this restricts the target file to a  physical file on your system,");
-            d.add("which includes VFS files. The reason is that many VFS's ");
+            d.add("which includes VFS files. The reason is that many VFS's are not writeable reliably");
+            d.add("for large amounts of data.");
             d.add("This returns the total number of bytes downloaded, or -1 if the operation failed.");
             return d;
         }
     }
+
     /**
      * Given a uriPath, return the actual path to the service. This does the nitpicky things
      * to create the path.

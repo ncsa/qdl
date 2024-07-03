@@ -22,7 +22,7 @@
             <properties>
               <background color="-16776961"/>
               <editable value="false"/>
-              <font name="Ubuntu Mono" size="14" style="1"/>
+              <font name="Dialog" size="14" style="1"/>
               <foreground color="-256"/>
               <text value=""/>
             </properties>
@@ -56,9 +56,10 @@
               <background color="-65537"/>
               <closeCurlyBraces value="false"/>
               <codeFoldingEnabled value="true"/>
-              <font name="Ubuntu Mono" size="14" style="1"/>
+              <font name="Dialog" size="14" style="1"/>
               <fractionalFontMetricsEnabled value="true"/>
               <rows value="0"/>
+              <text value=""/>
             </properties>
           </component>
         </children>

@@ -310,6 +310,8 @@ public class QDLEditor {
         AutoCompletion ac = new AutoCompletion(provider);
         ac.install(input);
         input.setSyntaxEditingStyle("text/qdl");
+        Font font = workspaceCommands.getFont();
+        input.setFont(font);
         if (content != null) {
             input.setText(content);
         }

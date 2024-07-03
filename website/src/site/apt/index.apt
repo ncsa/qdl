@@ -74,6 +74,11 @@ User Interfaces to QDL
     a wide array of use shortcuts (such as ctrl+i to paste input form, ctrl+x to copy a line or selected area), special
     characters and a bevy of other things.
 
+    *{{{./pdf/fonts.pdf}Using fonts in QDL}} A guide to font support in QDL
+
+    *{{{./pdf/intellij.pdf}Using IntelliJ for QDL}} How to set up your JetBrains IntelliJ IDE to be QDL aware.
+    This allows for syntax highlighting, bracket matching and such with the editor.
+
 Standard Extensions
 
     These extensions are the building blocks for applications. For instance, the database extension

@@ -1060,7 +1060,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     }
 
     /**
-     * If a function gets an argument whichs should not be a Java null, then this will
+     * If a function gets an argument which should not be a Java null, then this will
      * try to track down the variable reference.
      *
      * @param arg

@@ -74,7 +74,7 @@ public class QDLParserLexer extends Lexer {
 			"'while'", null, null, null, null, null, "'['", "']'", "','", "':'", 
 			"';'", null, null, null, null, null, "'++'", "'+'", "'--'", "'-'", "'<'", 
 			"'>'", "'='", "'\"'", "'''", null, null, null, "'<<'", null, null, null, 
-			null, null, null, "'\u2200'", null, "'^'", "'\u29B0'", "'\u237A'", "'\u2306'", 
+			null, null, null, "'\u2200'", null, "'^'", "'\u00B5'", "'\u2202'", "'\u2306'", 
 			null, null, null, "'`'", null, "'~'", null, null, null, null, "'#'", 
 			"'|'", null, "'.'", "'\u00AF'", "'\u207A'", "'\u230A'", "'\u2308'"
 		};
@@ -340,8 +340,8 @@ public class QDLParserLexer extends Lexer {
 		"\u01ea\t\t\2\2\u01ea\u008c\3\2\2\2\u01eb\u01ec\4\u220a\u220b\2\u01ec\u008e"+
 		"\3\2\2\2\u01ed\u01ee\4\u2205\u2206\2\u01ee\u0090\3\2\2\2\u01ef\u01f0\7"+
 		"\u2202\2\2\u01f0\u0092\3\2\2\2\u01f1\u01f2\4\u220d\u220e\2\u01f2\u0094"+
-		"\3\2\2\2\u01f3\u01f4\7`\2\2\u01f4\u0096\3\2\2\2\u01f5\u01f6\7\u29b2\2"+
-		"\2\u01f6\u0098\3\2\2\2\u01f7\u01f8\7\u237c\2\2\u01f8\u009a\3\2\2\2\u01f9"+
+		"\3\2\2\2\u01f3\u01f4\7`\2\2\u01f4\u0096\3\2\2\2\u01f5\u01f6\7\u00b7\2"+
+		"\2\u01f6\u0098\3\2\2\2\u01f7\u01f8\7\u2204\2\2\u01f8\u009a\3\2\2\2\u01f9"+
 		"\u01fa\7\u2308\2\2\u01fa\u009c\3\2\2\2\u01fb\u01fc\t\n\2\2\u01fc\u009e"+
 		"\3\2\2\2\u01fd\u01fe\7(\2\2\u01fe\u0201\7(\2\2\u01ff\u0201\7\u2229\2\2"+
 		"\u0200\u01fd\3\2\2\2\u0200\u01ff\3\2\2\2\u0201\u00a0\3\2\2\2\u0202\u0203"+

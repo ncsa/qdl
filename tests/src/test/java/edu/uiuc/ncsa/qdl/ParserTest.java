@@ -1010,7 +1010,7 @@ public class ParserTest extends AbstractQDLTester {
         String slash = "\\";
         addLine(script, "a:='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\\n" + //alphanumeric
                 "  ~`!@#$%^&*()[]{}<>\\\\/\\'\"-_=+|;:,.?\\n" + // other ASCII symbols
-                "  ¬¿¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧≁⊕⊗⊙⌆⦰⊢∈∉∀∋∌∃∄∩∪∆⍺\\n" + // unicode
+                "  ¬¿¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧≁⊕⊗⊙⌆µ⊢∈∉∀∋∌∃∄∩∪∆∂\\n" + // unicode
                 "  ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω';" // Greek
         );
         addLine(script, "say('\\nprinting all base characters with say:');");
@@ -3132,9 +3132,9 @@ left hand argument at index 'p' is not a boolean At (1, 0)
          addLine(script,
                  " module['a:a'][f(x,y)->x+y;];\n" +
                  "  A := import('a:a');");
-        addLine(script, "ok0:= 7 == [3,4]⍺A#2@f;");
-        addLine(script, "ok1:= 7 == {'x':3,'y':4}⍺A#2@f;");
-        addLine(script, "ok2:= 7 == {'y':4, 'x':3}⍺A#2@f;");
+        addLine(script, "ok0:= 7 == [3,4]∂A#2@f;");
+        addLine(script, "ok1:= 7 == {'x':3,'y':4}∂A#2@f;");
+        addLine(script, "ok2:= 7 == {'y':4, 'x':3}∂A#2@f;");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok0", state) : FunctionEvaluator.APPLY + " failed, for list on  module function ";
@@ -3147,9 +3147,9 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         StringBuffer script = new StringBuffer();
         addLine(script,
                 " eg := import(load('edu.uiuc.ncsa.qdl.extensions.example.EGLoaderImpl', 'java'));");
-        addLine(script, "ok0:= 'ab' == ['a','b']⍺eg#2@concat;");
-        addLine(script, "ok1:= 'ab' == {'x_0':'a','x_1':'b'}⍺eg#2@concat;");
-        addLine(script, "ok2:= 'ab' == {'x_1':'b', 'x_0':'a'}⍺eg#2@concat;");
+        addLine(script, "ok0:= 'ab' == ['a','b']∂eg#2@concat;");
+        addLine(script, "ok1:= 'ab' == {'x_0':'a','x_1':'b'}∂eg#2@concat;");
+        addLine(script, "ok2:= 'ab' == {'x_1':'b', 'x_0':'a'}∂eg#2@concat;");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok0", state) : FunctionEvaluator.APPLY + " failed, for list on java module function ";
@@ -3173,7 +3173,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
                 "    g(p,q)->p*q;\n" +
                 "    f(x,y,z)->x+y+z;\n" +
                 "    ff.:=n(3,4,[@f,@g]);");
-        addLine(script, "out. := (zz.)⍺ff.;");
+        addLine(script, "out. := (zz.)∂ff.;");
         addLine(script, "ok:=rank(out.) == 2 && reduce(@&&, dim(out.) ==[3,4]);");
         addLine(script, "ok1:=reduce(@&&,reduce(@&&, out. ==[[-11,6,7,6],[7,6,7,6],[7,-1,7,-1]]));");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
@@ -3196,7 +3196,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
                 "args.:={*:[1,4,2]};\n" +  // default
                 "args.1:=3;\n" +           // argument by position
                 "args.2:={'x':5};    \n" + // argument by function signature
-                "out. := (args.)⍺n(5,[@f]);");
+                "out. := (args.)∂n(5,[@f]);");
         addLine(script, "ok:=rank(out.) == 1 && size(out.)==5;");
         addLine(script, "ok1 := false ∉ (out. == [1.8,8,24,1.8,1.8]);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
@@ -3208,7 +3208,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
     public void testAppliesBuiltin() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "ok := 5==([2,3]⍺@+);");
+        addLine(script, "ok := 5==([2,3]∂@+);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : OpEvaluator.APPLY_OP_KEY + " returned wrong result for built in operator ";
@@ -3217,7 +3217,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
     public void testAppliesBuiltinWithArgs() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "ok := 5==({'x_1':2,'x_0':3}⍺@+);");
+        addLine(script, "ok := 5==({'x_1':2,'x_0':3}∂@+);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : OpEvaluator.APPLY_OP_KEY + " returned wrong result for built in operator ";
@@ -3258,7 +3258,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         StringBuffer script = new StringBuffer();
         addLine(script, "f(x)->x^2;");
         addLine(script, "f(x,y)->x^2+y^2;");
-        addLine(script, "[2,3]⍺1@f;"); // sending 2 args, f accepts one
+        addLine(script, "[2,3]∂1@f;"); // sending 2 args, f accepts one
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         boolean bad = false;
         try {
@@ -3267,7 +3267,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         }catch(BadArgException bax){
 
         }
-        assert !bad : "was able to invoke monadic function with 2 arguments using ⍺ (apply)";
+        assert !bad : "was able to invoke monadic function with 2 arguments using ∂ (apply)";
     }
     /*
    f(x)->x^2-1;
@@ -3275,7 +3275,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
    args.:={*:[1,4,2]};
    args.1:=3;
    args.2:={'x':5};
-   z. := (args.)⍺n(5,[@f]);
+   z. := (args.)∂n(5,[@f]);
      */
     /*
          Complex example: This sets up a matrix fo function refs with a default value an specific values.
@@ -3292,7 +3292,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
 
      Simpler case with integer outputs for testing (or we have to check comparison tolerances for decimals)
     g(p,q)->p*q;
-    (zz.)⍺ff.
+    (zz.)∂ff.
 [[-11,6,7,6],[7,6,7,6],[7,-1,7,-1]]
      */
 }

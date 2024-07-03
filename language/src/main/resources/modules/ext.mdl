@@ -1,10 +1,9 @@
 module[
    'qdl:/extensions','ext'
 ]body[
-   === This module defines several additional functions for mathematics
+   » This module defines several additional functions for mathematics
    » These include sec(), sech() etc.
    »    clone(arg.) - make a complete copy of a stem
-   »    for_each(@monad, arg.) -- apply the monad to each individual element of arg.
    »    fork(@monad0, @dyad, @monad1, arg) - evaluate dyad(monad0(arg),monad1(arg))
    »    n_copy(s,n) - make a stem with n copies of the argument s
    »    to_csv(arg.)- export a stem to comma separated format.

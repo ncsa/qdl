@@ -2,6 +2,7 @@ package edu.uiuc.ncsa.qdl.config;
 
 import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.QDLException;
+import edu.uiuc.ncsa.qdl.gui.FontUtil;
 import edu.uiuc.ncsa.qdl.state.LibLoader;
 import edu.uiuc.ncsa.qdl.util.QDLVersion;
 import edu.uiuc.ncsa.qdl.workspace.WorkspaceCommands;
@@ -13,6 +14,7 @@ import edu.uiuc.ncsa.security.util.cli.editing.Editors;
 import edu.uiuc.ncsa.security.util.configuration.XMLConfigUtil;
 import org.apache.commons.configuration.tree.ConfigurationNode;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -79,6 +81,73 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
         ConfigurationNode node = getFirstNode(cn, WS_TAG);
         return getNodeValue(node, WS_HOME_DIR_TAG, "");
     }
+
+    protected Font getFont() {
+        if(GraphicsEnvironment.isHeadless()){
+            return null;
+        }
+        ConfigurationNode node = getFirstNode(cn, WS_TAG);
+        ConfigurationNode fontNode = getFirstNode(node, WS_FONT_TAG);
+        if (fontNode == null) return null;
+        String name = getFirstAttribute(fontNode, WS_ATTR_FONT_NAME);
+        String rawStyle = getFirstAttribute(fontNode, WS_ATTR_FONT_TYPE);
+        String rawSize = getFirstAttribute(fontNode, WS_ATTR_FONT_SIZE);
+        name = (name == null) ? DEFAULT_FONT_NAME : name;
+        rawStyle = (rawStyle == null) ? "bold" : rawStyle;
+        rawSize = (rawSize == null) ? "14" : rawSize;
+        int type = FontUtil.getStyle(rawStyle);
+        int size = DEFAULT_FONT_SIZE;
+        try {
+            size = Integer.parseInt(rawSize);
+        } catch (NumberFormatException nfx) {
+
+        }
+
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        String[] fonts = ge.getAvailableFontFamilyNames();
+        for(String f : fonts){
+            if(f.equals(name)){
+                return new Font(name, type, size);
+            }
+        }
+        if(isWSVerboseOn()){
+            System.out.println("warn-- could not find font named '" + name + "', loading default font");
+        }
+        return new Font(DEFAULT_FONT_NAME, DEFAULT_FONT_STYLE, DEFAULT_FONT_SIZE);
+    }
+
+    /*
+      Note on loading a custom font. This would do it if we want to, but it gets messy.
+
+      try {
+          // As a resource in the fonts folder:
+          InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream("/fonts/custom_font.ttf")
+          Font customFont = Font.createFont(Font.TRUETYPE_FONT, stream).deriveFont(48f);
+          // As a file
+          Font customFont = Font.createFont(Font.TRUETYPE_FONT, new File("/path/to/custom_font.ttf")).deriveFont(12f);
+          // NOTE THAT THE deriveFont FONT SIZE IS A FLOAT!!!
+          // Since the derive method (would create a possibly smoother font if the point size has to be interpolated)
+          // expects the style to be an integer, it does a fake overload
+          // of the size and passes it as a float. If you pass it, say 12, as the size vs. 12F,
+          // it would throw an exception because the styles are in the range 0 (PLAIN) to 3 (BOLD+ITALIC).
+      } catch (IOException e) {
+          e.printStackTrace();
+      } catch(FontFormatException e) {
+          e.printStackTrace();
+      }
+
+          // Much later, however, this font can only be used when there is a graphical environment, so
+          // in the SwingTerminal during setup, it would need to be communicated this has to be registered
+          // and then
+          GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+          //register the font
+          ge.registerFont(customFont);
+          // Now you can just set the font for a Swing component using setFont(customFont).
+
+     */
+    public static String DEFAULT_FONT_NAME = "Monospaced";
+    public static int DEFAULT_FONT_STYLE = Font.BOLD;
+    public static int DEFAULT_FONT_SIZE = 14;
 
     protected boolean getCompressionOn() {
         ConfigurationNode node = getFirstNode(cn, WS_TAG);
@@ -180,12 +249,13 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
     protected String getTerminalType() {
         ConfigurationNode node = getFirstNode(cn, WS_TAG);
         String terminalType = getFirstAttribute(node, WS_ATTR_TERMINAL_TYPE);
-        if(StringUtils.isTrivial(terminalType)){
-             terminalType = getFirstAttribute(node, WS_ATTR_TERMINAL_TYPE2); // in case they used the alternate
+        if (StringUtils.isTrivial(terminalType)) {
+            terminalType = getFirstAttribute(node, WS_ATTR_TERMINAL_TYPE2); // in case they used the alternate
         }
         if (StringUtils.isTrivial(terminalType)) return WS_TERMINAL_TYPE_TEXT; // still nothing. Use default
         return terminalType;
     }
+
     protected boolean isEnabled() {
         return getFirstBooleanValue(cn, CONFG_ATTR_ENABLED, true);
     }
@@ -455,7 +525,8 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
                 getLibLoader(),
                 isAnsiModeOn(),
                 useLogo(),
-                getTerminalType());
+                getTerminalType(),
+                getFont());
     }
 
     @Override

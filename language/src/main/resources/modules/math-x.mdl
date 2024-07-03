@@ -152,11 +152,11 @@ module[
    » 3
    » Another example, the general product of two matrices
    » a. and b. is just
-   » ip(@+,@*, a., 1⦰b.)
+   » ip(@+,@*, a., 1µb.)
    » since this applies multiplication then addition along the
    » appropriate axes.
    » To get the matrix product of the transposes, issue
-   » ip(@+, @*, 1⦰a., b.)
+   » ip(@+, @*, 1µa., b.)
    » Final note: Remember that subsetting is on, so be sure your stems are
    » the right size!
 
@@ -208,14 +208,14 @@ module[
        »  ]
        » and the 3×2 multiplied by the 2×3 matrix yields a 3×3 result.
        » Cf. mm(b., a.) which yields a 2×2 result,
-       »     mm(1⦰a., 1⦰b.);
+       »     mm(1µa., 1µb.);
        » [
        »   [41,112],
        »   [59,119]
        »  ]
        » (so flip them both) simply showing that
        » matrix multiplication is not, of course, commutative.
-       ip(@+,@*, x., 1⦰y.);
+       ip(@+,@*, x., 1µy.);
        ];
    /*
       A list of primes less than 10,000.      

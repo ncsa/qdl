@@ -494,7 +494,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
       module['a:a'][ff(x)->x^2;gg(x)->x^3;]
   A := import('a:a')
       A#1@ff
-  [4,5]⍺funcs(A)
+  [4,5]∂funcs(A)
 1@ff
   docs(A#1@ff)
 
@@ -670,7 +670,7 @@ docs(c#2@ini_out) ;
     /*
   module['a:a'][ff(x)->x^2;gg(x)->x^3;]
     A := import('a:a')
-    [4,5]⍺funcs(A)
+    [4,5]∂funcs(A)
      */
 
     /**

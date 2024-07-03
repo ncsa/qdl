@@ -355,7 +355,43 @@ public class QDLListener implements QDLParserListener {
 
     protected void finish(Dyad dyad, ParseTree parseTree) {
         dyad.setLeftArgument((ExpressionInterface) resolveChild(parseTree.getChild(0)));
-        dyad.setRightArgument((ExpressionInterface) resolveChild(parseTree.getChild(2)));
+        Statement s  = resolveChild(parseTree.getChild(2));
+/*     Attempt at having lambdas directly evaluated. If ∂ then it makes sense but might open the door
+       to functions being defined everywhere on a whim -- which may be ok.
+       Do we want (x)->x^2 + (y)->y^3 to be allowed?
+       For one thing, it makes the @ functor implicit everywhere.
+       On the other hand, makes lamdas behave like expressions.
+
+       We'd have to intercept it everywhere. Here is just for dyads.
+
+       Test QDL:
+       [2,3]∂(x,y)->x*y
+
+       You will then have to track down every place that a lamda might end
+       up as an errant argument!!
+       Needs some real thought.
+       */
+/*       if(s instanceof  FunctionDefinitionStatement){
+            FunctionDefinitionStatement fds = (FunctionDefinitionStatement) s;
+
+            if(fds.isLambda()){
+                s = new LambdaDefinitionNode((FunctionDefinitionStatement) s);
+
+       //       Alternate???
+       //       DyadicFunctionReferenceNode frn = new DyadicFunctionReferenceNode();
+       //       FunctionRecord fr = fds.getFunctionRecord();
+       //       frn.setFunctionRecord(fr);
+       //       ArrayList<ExpressionInterface> x = new ArrayList<>();
+       //       x.add(new ConstantNode((long)fr.getArgCount()));
+       //       x.add(new ConstantNode(fr.getName()==null?"":fr.getName()));
+       //
+       //       frn.setArguments(x);
+       //       s = frn;
+       //     }
+
+        } */
+
+        dyad.setRightArgument((ExpressionInterface) s);
         List<String> source = new ArrayList<>();
         source.add(parseTree.getText());
         dyad.setSourceCode(source);
@@ -2635,7 +2671,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
 /*
       module['a:x'][g(x,y)->x*y;]
   z:=import('a:x')
-  ⍺z#@g
+  ∂z#@g
      */
     /*
            ConstantNode constantNode = null;

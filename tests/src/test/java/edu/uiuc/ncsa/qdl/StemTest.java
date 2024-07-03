@@ -2106,7 +2106,7 @@ public class StemTest extends AbstractQDLTester {
     public void testMonadicTransposeOperator() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "x. := ⦰n(3,4,n(12));");
+        addLine(script, "x. := µn(3,4,n(12));");
         addLine(script, "ok := ⊗∧⊙(⊗∧⊙(x.==[[0,4,8],[1,5,9],[2,6,10],[3,7,11]]));");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
 

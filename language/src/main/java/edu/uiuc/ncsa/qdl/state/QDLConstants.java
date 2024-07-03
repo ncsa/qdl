@@ -31,12 +31,11 @@ public interface QDLConstants {
     //String RESERVED_FALSE2 = "⊥";
     String RESERVED_NULL = "null";
     String RESERVED_NULL_SET = "∅";
-  //  String RESERVED_NULL_SET = "null_set";
-  //  String RESERVED_COMPLEX_I = "I";
+    //  String RESERVED_NULL_SET = "null_set";
+    //  String RESERVED_COMPLEX_I = "I";
 
     String FUNCTION_REFERENCE_MARKER = "@";
     String FUNCTION_REFERENCE_MARKER2 = "⊗"; // /u2297
-
 
 
     static boolean isReservedWord(String x) {
@@ -78,6 +77,8 @@ public interface QDLConstants {
     String SYS_VAR_TYPE_STRING = "string";
     String SYS_VAR_TYPE_SET = "set";
     String SYS_VAR_TYPE_CHARACTERS = "characters";
+    String SYS_VAR_TYPE_RESERVED = "reserved";
+    String SYS_VAR_TYPE_CHARACTER_MAP = "char_map";
 
     String SYS_ERROR_CODES = "error_codes.";
     String SYS_ERROR_CODE_SYSTEM_ERROR = "system_error";
@@ -153,4 +154,32 @@ public interface QDLConstants {
     String STEM_PATH_MARKER2 = "·";
 
     String JSON_QDL_NULL = "$$$qdl_null$$$";
+
+    String GREEK_CHARS = "ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω";
+    String UNICODE_CHARS = "⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧≁⊕⊗⊙⌆⊢∈∉∀∋∌∃∄∩∪∆∂";
+    String ASCII_CHARS = "  ~`!@#$%^&*()[]{}<>\\/'\"-_=+|;:,.?¬¿µ¯·×÷";
+    String ALPHA_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    String ALL_CHARS = ALPHA_CHARS + ASCII_CHARS + GREEK_CHARS + UNICODE_CHARS;
+    String[] KEYWORDS = new String[]{
+  "assert",
+  "block",
+  "body",
+  "catch",
+  "define",
+  "do",
+  "else",
+  "false",
+  "if",
+  "local",
+  "module",
+  "null",
+  "switch",
+  "then",
+  "true",
+  "try",
+  "while",
+  "∅",
+  "⊨"
+    };
+
 }

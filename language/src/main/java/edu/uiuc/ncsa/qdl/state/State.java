@@ -6,6 +6,7 @@ import edu.uiuc.ncsa.qdl.extensions.JavaModule;
 import edu.uiuc.ncsa.qdl.extensions.convert.QDLConvertLoader;
 import edu.uiuc.ncsa.qdl.extensions.crypto.CryptoLoader;
 import edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader;
+import edu.uiuc.ncsa.qdl.extensions.dynamodb.QDLDynamoDBLoader;
 import edu.uiuc.ncsa.qdl.extensions.example.EGLoaderImpl;
 import edu.uiuc.ncsa.qdl.extensions.http.QDLHTTPLoader;
 import edu.uiuc.ncsa.qdl.extensions.inputLine.QDLCLIToolsLoader;
@@ -369,6 +370,7 @@ public class State extends FunctionState implements QDLConstants {
         map.put("description", "System tools for http, conversions and other very useful things.");
         map.put("http", QDLHTTPLoader.class.getCanonicalName());
         map.put("db", QDLDBLoader.class.getCanonicalName());
+        map.put("dynamo", QDLDynamoDBLoader.class.getCanonicalName());
         map.put("crypto", CryptoLoader.class.getCanonicalName());
         map.put("convert", QDLConvertLoader.class.getCanonicalName());
         map.put("cli", QDLCLIToolsLoader.class.getCanonicalName());
@@ -384,52 +386,60 @@ public class State extends FunctionState implements QDLConstants {
         // Start off with the actual constants that the system must have
         systemConstants = new QDLStem();
 
+        QDLStem characterMap = new QDLStem();
+        characterMap.put("00ac", OpEvaluator.NOT2);
+        characterMap.put("00af", OpEvaluator.MINUS2);
+        characterMap.put("00b7", QDLConstants.STEM_PATH_MARKER2);
+        characterMap.put("00bf", "¿");
+        characterMap.put("00d7", OpEvaluator.TIMES2);
+        characterMap.put("00f7", OpEvaluator.DIVIDE2);
+        characterMap.put("207a", OpEvaluator.PLUS2);
+        characterMap.put("2192", "→");
+        characterMap.put("2205", "∅");
+        characterMap.put("2227", OpEvaluator.AND2);
+        characterMap.put("2228", OpEvaluator.OR2);
+        characterMap.put("2248", "≈");
+        characterMap.put("2254", "≔");
+        characterMap.put("2255", "≕");
+        characterMap.put("2260", OpEvaluator.NOT_EQUAL2);
+        characterMap.put("2261", OpEvaluator.EQUALS2);
+        characterMap.put("2264", OpEvaluator.LESS_THAN_EQUAL3);
+        characterMap.put("2265", OpEvaluator.MORE_THAN_EQUAL3);
+        characterMap.put("22a8", "⊨");
+        characterMap.put("2241", "≁");
+        characterMap.put("2297", "⊗");
+        characterMap.put("2308", "⌈");
+        characterMap.put("230a", "⌊");
+        characterMap.put("27e6", "⟦");
+        characterMap.put("27e7", "⟧");
+        characterMap.put("22a2", OpEvaluator.TO_SET);
+        characterMap.put("2299", OpEvaluator.REDUCE_OP_KEY);
+        characterMap.put("2295", OpEvaluator.EXPAND_OP_KEY);
+        characterMap.put("2306", OpEvaluator.MASK_OP_KEY);
+        characterMap.put("00B5", OpEvaluator.TRANSPOSE_OP_KEY);
+        characterMap.put("03c0", TMathEvaluator.PI2);
+        characterMap.put("2229", "∩");
+        characterMap.put("222a", "∪");
+        characterMap.put("2208", "∈");
+        characterMap.put("2209", "∉");
+        characterMap.put("2203", "∃");
+        characterMap.put("2204", "∄");
+        characterMap.put("220b", "∋");
+        characterMap.put("220c", "∌");
+        characterMap.put("2200", "∀");
+        characterMap.put("21d2", "⇒");
+        characterMap.put("2202", OpEvaluator.APPLY_OP_KEY);
+
+
+        systemConstants.put(SYS_VAR_TYPE_CHARACTER_MAP, characterMap);
         QDLStem characters = new QDLStem();
-        characters.put("00ac", OpEvaluator.NOT2);
-        characters.put("00af", OpEvaluator.MINUS2);
-        characters.put("00b7", QDLConstants.STEM_PATH_MARKER2);
-        characters.put("00bf", "¿");
-        characters.put("00d7", OpEvaluator.TIMES2);
-        characters.put("00f7", OpEvaluator.DIVIDE2);
-        characters.put("207a", OpEvaluator.PLUS2);
-        characters.put("2192", "→");
-        characters.put("2205", "∅");
-        characters.put("2227", OpEvaluator.AND2);
-        characters.put("2228", OpEvaluator.OR2);
-        characters.put("2248", "≈");
-        characters.put("2254", "≔");
-        characters.put("2255", "≕");
-        characters.put("2260", OpEvaluator.NOT_EQUAL2);
-        characters.put("2261", OpEvaluator.EQUALS2);
-        characters.put("2264", OpEvaluator.LESS_THAN_EQUAL3);
-        characters.put("2265", OpEvaluator.MORE_THAN_EQUAL3);
-        characters.put("22a8", "⊨");
-        characters.put("2241", "≁");
-        characters.put("2297", "⊗");
-        characters.put("2308", "⌈");
-        characters.put("230a", "⌊");
-        characters.put("27e6", "⟦");
-        characters.put("27e7", "⟧");
-        characters.put("22a2", OpEvaluator.TO_SET);
-        characters.put("2299", OpEvaluator.REDUCE_OP_KEY);
-        characters.put("2295", OpEvaluator.EXPAND_OP_KEY);
-        characters.put("2306", OpEvaluator.MASK_OP_KEY);
-        characters.put("29b0", OpEvaluator.TRANSPOSE_OP_KEY);
-        characters.put("03c0", TMathEvaluator.PI2);
-        characters.put("2229", "∩");
-        characters.put("222a", "∪");
-        characters.put("2208", "∈");
-        characters.put("2209", "∉");
-        characters.put("2203", "∃");
-        characters.put("2204", "∄");
-        characters.put("220b", "∋");
-        characters.put("220c", "∌");
-        characters.put("2200", "∀");
-        characters.put("21d2", "⇒");
-        characters.put("237a", OpEvaluator.APPLY_OP_KEY);
-
-
+        characters.put("alphanumeric",ALPHA_CHARS);
+        characters.put("all",ALL_CHARS);
+        characters.put("ascii",ASCII_CHARS);
+        characters.put("unicode",UNICODE_CHARS);
+        characters.put("greek",GREEK_CHARS);
         systemConstants.put(SYS_VAR_TYPE_CHARACTERS, characters);
+        systemConstants.put(SYS_VAR_TYPE_RESERVED, getQDLReservedNames());
         QDLStem varTypes = new QDLStem();
         varTypes.put(SYS_VAR_TYPE_STRING, (long) Constant.STRING_TYPE);
         varTypes.put(SYS_VAR_TYPE_STEM, (long) Constant.STEM_TYPE);
@@ -536,6 +546,32 @@ public class State extends FunctionState implements QDLConstants {
 
     }
 
+    /**
+     * Get a listing of all the functions, operators and keywords for QDL.
+     * @return
+     */
+    protected QDLStem getQDLReservedNames(){
+        // See also $NCSA_DEV/qdl/language/src/main/resources/all_ops.txt
+        QDLStem out = new QDLStem();
+        QDLStem keywords = new QDLStem();
+        keywords.getQDLList().addAll(Arrays.asList(QDLConstants.KEYWORDS));
+        out.put("keywords", keywords);
+        QDLStem funcs = new QDLStem();
+        funcs.getQDLList().addAll(getMetaEvaluator().listFunctions(false));
+        out.put("functions", funcs);
+        // Note that since the parser intercepts several of these, they cannot be
+        // directly accessed
+        QDLStem ops = new QDLStem();
+        ArrayList<String> allOps = new ArrayList<>(OpEvaluator.ALL_MATH_OPS.length + OpEvaluator.OTHER_MATH_OPS.length);
+        List<String> x = Arrays.asList(OpEvaluator.ALL_MATH_OPS);
+              allOps.addAll(x);
+        allOps.addAll(Arrays.asList(OpEvaluator.OTHER_MATH_OPS));
+        HashSet<String> opsSet = new HashSet<>();
+        opsSet.addAll(allOps); // uniquefy them
+        ops.getQDLList().addAll(opsSet);
+        out.put("operators", ops);
+        return out;
+    }
     /**
      * Debug utility for QDL. Note that this is completely independent of the {@link edu.uiuc.ncsa.security.core.util.DebugUtil}
      * for the JVM, which can be toggled with the WS variable 'debug'
@@ -1079,6 +1115,7 @@ public class State extends FunctionState implements QDLConstants {
                 isRestrictedIO(),
                 isAssertionsOn());
         newState.setScriptArgStem(getScriptArgStem());
+        newState.setIoInterface(getIoInterface());
         newState.setScriptName(getScriptName());
         newState.setScriptPaths(getScriptPaths());
         newState.setModulePaths(getModulePaths());

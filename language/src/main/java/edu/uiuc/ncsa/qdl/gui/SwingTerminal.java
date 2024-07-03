@@ -238,8 +238,11 @@ public class SwingTerminal implements TerminalInterface {
                 textArea.setText(lines.get(ndx));
                 return ndx;
             }
-            textArea.setText(lines.get((ndx) % lines.size()));
-            return ndx + 1;
+            if(lines.size()!=0) {
+                textArea.setText(lines.get((ndx) % lines.size()));
+                return ndx + 1;
+            }
+            return ndx;
         }
 
         protected int arrowDown(int ndx, List<String> lines, JTextArea textArea) {
@@ -314,7 +317,7 @@ public class SwingTerminal implements TerminalInterface {
      */
     protected void showHelp(String title, String message) {
         JTextArea textArea = new JTextArea(25, 100);
-        textArea.setFont(new Font("DialogInput", Font.PLAIN, 12));
+        textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         textArea.setText(message);
         textArea.setCaretPosition(0); // put it at the top
         textArea.setEditable(false);
@@ -390,6 +393,21 @@ public class SwingTerminal implements TerminalInterface {
         AutoCompletion ac = new AutoCompletion(provider);
         ac.install(getInput());
         input.setSyntaxEditingStyle("text/qdl");
+/*      Runs through every font on your system at startup and prints a list of fonts at 12 and 14
+        points that display all of the QDL characters
+
+        try {
+            System.out.println(findQDLFonts());
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+
+*/
+        Font font = workspaceCommands.getFont();
+
+        input.setFont(font);
+        output.setFont(font);
+        frame.setFont(font);
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
         int w = (int) dimension.getWidth() * 3 / 4;
         int h = (int) dimension.getHeight() * 3 / 4;
@@ -408,6 +426,8 @@ public class SwingTerminal implements TerminalInterface {
             UIManager.setLookAndFeel(new FlatLightLaf());
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
         setupListeners();
         frame.setVisible(true);
@@ -426,7 +446,8 @@ public class SwingTerminal implements TerminalInterface {
         AutoCompletion ac = new AutoCompletion(provider);
         ac.install(input);
         state.setIoInterface(qdlSwingIO);
-        workspaceCommands = new WorkspaceCommands(qdlSwingIO);
+        WorkspaceCommands.setInstance(new WorkspaceCommands(qdlSwingIO));
+        workspaceCommands = WorkspaceCommands.getInstance();
         workspaceCommands.setState(state);
         qdlWorkspace = new QDLWorkspace(workspaceCommands);
         workspaceCommands.setWorkspace(qdlWorkspace);

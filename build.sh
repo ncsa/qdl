@@ -26,7 +26,7 @@ cd $QDL_ROOT || exit
 mvn clean install > maven.log
 if [ $? -ne 0 ]
 then
-  echo "error running maven. Check maven.log" >&2
+  echo "error running maven. Check $QDL_ROOT/maven.log" >&2
   exit 1;
 fi
 echo "     ... done!"
@@ -35,7 +35,7 @@ cd "$QDL_ROOT"/language/src/main/scripts || exit
 ./create_installer.sh > installer.log
 if [ $? -ne 0 ]
 then
-  echo "error running installer creation. Check installer.log" >&2
+  echo "error running installer creation. Check $QDL_ROOT/language/src/main/scripts/installer.log" >&2
   exit 1;
 fi
 echo "     ... done!"

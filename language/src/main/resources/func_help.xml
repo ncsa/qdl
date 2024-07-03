@@ -3099,7 +3099,7 @@ expand         ⊕       X    \u2295         expand operator
 @              ⊗       @    \u2297         function reference
 reduce         ⊙       x    \u2299         reduce operator
 mask           ⌆       m    \u2306         mask operator
-transpose      ⦰       t    \u29b0         transpose operator
+transpose      µ       t    \u00b5         transpose operator
 [|             ⟦       {    \u27e6         left closed slice bracket
 |]             ⟧       }    \u27e7         right closed slice bracket
 ceiling        ⌈       k    \u2308         ceiling
@@ -4000,7 +4000,7 @@ Note that indices(a., 1) == indices(a., -1) in this case.]]>
         </example>
 
     </entry>
-    <entry id="transpose" alt="⦰">
+    <entry id="transpose" alt="µ">
         <body>
             <![CDATA[Restructure a higher dimension stem by transposing its axes.
 
@@ -4014,9 +4014,9 @@ transpose(x., permutation.) - transforms x. as per the permutation.
 This does not alter x.  This has no effect on a rank 1 stem (i.e. a simple list).
 
 Operator forms are resp.
-⦰x.
-a⦰x.
-permutaton.⦰x.
+µx.
+aµx.
+permutaton.µx.
 
 See also: shuffle
 ]]>
@@ -4055,7 +4055,7 @@ i.e. add horizontally? This is summation on the last axis:
  18
 ]
 or in wholly operator form
-  ⊗+⊙⦰[[1,2,3],[5,6,7]]
+  ⊗+⊙µ[[1,2,3],[5,6,7]]
 [6,18]
 
 An axis of -1 is always the last axis.]]></example>
@@ -4940,12 +4940,12 @@ And each key is separated by |'s
   Q |  W |  E  |  R |  T |  Y |  U |  I |  O |  P |  { |  } |  | |
     |    |  ∉  |    |    |    |  ∩ |  ∄ |    |    |  ⟦ |  ⟧ |  ∨ |
 q   |w   |e    |r   |t   |y   |u   |i   |o   |p   |[   |]   |\   |
-    |    |∈    |≈   |⦰   |    |∪   |∃   |    |π   |    |   | ≠  |
+∂   |    |∈    |≈   |µ   |    |∪   |∃   |    |π   |    |   | ≠  |
 
   A |  S |  D |  F |  G |  H |  J |  K |  L |  : |  " |
   ∀ |  ⊨ |  ∆ |    |    |  ∌ |    |    |    |  ≔ |  ≕ |
 a   |s   |d   |f   |g   |h   |j   |k   |l   |;   |'   |
-⍺   |⊢   |→   |    |    |∋   |    |⌈   |⌊   |    | »  |
+∂   |⊢   |→   |    |    |∋   |    |⌈   |⌊   |    | »  |
 
   Z |  X |  C |  V |  B |  N |  M |  < |  > |  ? |
     |  ⊕ |    |    |    |    |    |  ≤ |  ≥ |  ⇒ |
@@ -5960,7 +5960,7 @@ Here there is no such value equal to 11, so the default case value of -1 is retu
         </example>
     </entry>
 
-    <entry id="apply" alt="⍺">
+    <entry id="apply" alt="∂">
         <body>
             <![CDATA[apply(@function) - returns a list of arg counts for this function
   apply(@function, stem. ) - apply the function to the arguments
@@ -5970,17 +5970,17 @@ Here there is no such value equal to 11, so the default case value of -1 is retu
   Note that apply will certainly work on non-function references, in which
   case it does nothing and treats any non-function as a constant
 
-  Note that for the operator version, which uses ⍺ (unicode 237A) which
+  Note that for the operator version, which uses ∂ (unicode 2202) which
   is not the same as the Greek letter α, (unicode 03b1) that the arguments
   are switched.
-  ⍺@f == apply(@f)
-  stem.⍺@f == apply(@f, stem.)
+  ∂@f == apply(@f)
+  stem.∂@f == apply(@f, stem.)
 
 Note especially the application to a module function. So if the function
 f is nested in modules x, y and z, then
-   ⍺x#y#z#@f
+   ∂x#y#z#@f
 would access the function proper and
-   [2,3,4]⍺x#y#z#@f
+   [2,3,4]∂x#y#z#@f
 would evaluate it as
    x#y#z#f(2,3,4)
 
@@ -5990,23 +5990,23 @@ See also: apply, names, arg_count]]>
             <![CDATA[Complete use might be
    f(x)->x^2; // the definition
     // there is a single function, f that takes a single argument:
-   ⍺@f
+   ∂@f
 [1]
     // The function list for f is the single variable x
     names(@f,1)
 [x]
    // evaluate f(3)
-   [3]⍺@f
+   [3]∂@f
 9
    // Evaluate f at 3, explicitly setting the variable x in the argument list.
-   {'x':3}⍺@f
+   {'x':3}∂@f
 9
 To amplify that constants are not evaluated,
-  {*:{'x':3}}⍺[@f,4]
+  {*:{'x':3}}∂[@f,4]
 [9,4]]]>
         </example>
     </entry>
-    <entry id="⍺">
+    <entry id="∂">
         <body>
             <![CDATA[The apply function as an operator.
 
@@ -6034,10 +6034,10 @@ and for triadic f they are 'x','y','z'
 To evaluate f with a single argument, at the value of 5, all
 of the following work the same
 
-   5⍺@f       // argument as scalar (only works for monads)
-   [5]⍺@f     // argument by position, zero element fed as zeroth arg to function
-   {'x':5}⍺@f // argument by function signature
-   {*:5}⍺@f   // argument using default
+   5∂@f       // argument as scalar (only works for monads)
+   [5]∂@f     // argument by position, zero element fed as zeroth arg to function
+   {'x':5}∂@f // argument by function signature
+   {*:5}∂@f   // argument using default
 
 These all return the value of 24, as expected. Setting a default value
 for the stem is very useful at times.
@@ -6050,11 +6050,11 @@ tries to make it so you cannot, e.g. forget and argument and get the
 wrong function.
 
 Evaluate the monadic and triadic forms of f:
-     [5,[1,4,2]]⍺[@f,@f]
+     [5,[1,4,2]]∂[@f,@f]
 [24,1.8]
 
 Evaluate the monadic form of f with two different arguments
-     [2,3]⍺[@f,@f]
+     [2,3]∂[@f,@f]
 [3,8]
 
 Finally, evaluate a list of functions. The default is the triadic
@@ -6062,22 +6062,22 @@ form of f and two specific values for the monadic form are set.
     args.:={*:[1,4,2]}
     args.1:=3
     args.2:={'x':5}
-    (args.)⍺n(5,[@f])
+    (args.)∂n(5,[@f])
 [1.8,8,24,1.8,1.8]
 
 Note especially we wrote
-  (args.)⍺n(5,[@f])
+  (args.)∂n(5,[@f])
 and NOT
-  args.⍺n(5,[@f])
-Because order of operations would mean that the right side of ⍺ is evaluated
+  args.∂n(5,[@f])
+Because order of operations would mean that the right side of ∂ is evaluated
 and passed as the stem index to args., i.e., the way it is parsed is
-   args.(⍺n(5,[@f]))
+   args.(∂n(5,[@f]))
 
 A final caveat about default values. Compare this
-        (args.)⍺[n(5,[@f])]
+        (args.)∂[n(5,[@f])]
 [[1.8,1.8,1.8,1.8,1.8]]
 
-which is different than  (args.)⍺n(5,[@f]) (which does not have the nested argument on the rhs.)
+which is different than  (args.)∂n(5,[@f]) (which does not have the nested argument on the rhs.)
 Why? Because a default is specified and the structures must match exactly. The net effect
 during evaluation is that rhs.i.j has no elements specified, so that entire evaluation
 uses the default. Upshot is to check your arguments.]]>
@@ -6323,7 +6323,7 @@ x_j  since these are often very overloaded. E.g.,
    names(@sin)
 [[x_0]]
 
-See also: apply (⍺ operator), arg_count]]>
+See also: apply (∂ operator), arg_count]]>
         </body>
         <example>
     <![CDATA[Example of passing in a generic stem. The names are preserved and each gets
@@ -6337,7 +6337,7 @@ You may also explicitly pass in the arg counts this way
 {f:[x], g:[x,y]}]]>
          </example>
      </entry>
-    <entry id="arg_count" alt="⍺">
+    <entry id="arg_count" alt="∂">
        <body>
   <![CDATA[arg_count(@f | stem.) - return a list of the argument counts for
             a function reference or stem of them.
@@ -6631,7 +6631,7 @@ j_load or j_use very conveniently.
     g((x)->x^3, 2)
  8
 
- See also: visibility, define, ⍺ or apply]]>
+ See also: visibility, define, ∂ or apply]]>
       </body>
       <example>
   <![CDATA[

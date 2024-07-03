@@ -65,6 +65,11 @@ public interface QDLConfigurationConstants {
     String WS_TERMINAL_TYPE_TEXT = "text";
     String WS_TERMINAL_TYPE_ANSI = "ansi";
     String WS_TERMINAL_TYPE_SWING = "swing";
+    String WS_FONT_TAG = "font";
+    String WS_ATTR_FONT_NAME = "name";
+    String WS_ATTR_FONT_TYPE = "type";
+    String WS_ATTR_FONT_SIZE = "size";
+
 
     String WS_ENV = "env";
     String WS_HOME_DIR_TAG = "home_dir";

@@ -510,13 +510,17 @@ public class QDLWorkspace implements Serializable {
 
     //  {'x':{'a':'b'},'c':'d'} ~ {'y':{'p':'q'},'r':'s'}
     public static void main(String[] args) throws Throwable {
+        // hook for extensions of this class. Do any setup, then call init.
+             init(args);
+    }
+    protected static void init(String[] args) throws Throwable {
         Vector<String> vector = new Vector<>();
         vector.add("dummy"); // Dummy zero-th arg.
         for (String arg : args) {
             vector.add(arg);
         }
         InputLine argLine = new InputLine(vector); // now we have a bunch of utilities for this
-        WorkspaceCommands workspaceCommands = new WorkspaceCommands();
+        WorkspaceCommands workspaceCommands = WorkspaceCommands.getInstance();
         if (argLine.hasArg(CONFIG_FILE_FLAG)) {
             String cfgname = argLine.hasArg(CONFIG_NAME_FLAG) ? argLine.getNextArgFor(CONFIG_NAME_FLAG) : "default";
             workspaceCommands.loadQE(argLine, cfgname);
@@ -590,6 +594,7 @@ public class QDLWorkspace implements Serializable {
                     iso6429IO = new ISO6429IO(qdlTerminal, true);
                     workspaceCommands.setIoInterface(iso6429IO);
                     workspaceCommands.setAnsiModeOn(true);
+                    WorkspaceCommands.setInstance(workspaceCommands); // Since IO is now setup!!
                     isoTerminal = true;
                 } catch (Throwable t) {
                     System.out.println("could not load ANSI terminal: " + t.getMessage());
@@ -597,7 +602,7 @@ public class QDLWorkspace implements Serializable {
                     workspaceCommands.setIoInterface(new BasicIO());
                 }
             } else {
-                workspaceCommands = new WorkspaceCommands(new BasicIO());
+                workspaceCommands = workspaceCommands.newInstance(new BasicIO());
             }
         }
         QDLWorkspace qc = new QDLWorkspace(workspaceCommands);
@@ -628,6 +633,7 @@ public class QDLWorkspace implements Serializable {
             swingTerminal.setup(jFrame, functions);
             workspaceCommands.getState().setIoInterface(swingTerminal.getQdlSwingIO());
             workspaceCommands.setSwingGUI(true);
+            WorkspaceCommands.setInstance(workspaceCommands);// since IO is setup.
             // Add completion with current set of functions from workspace.
         }
         qc.mainLoop();

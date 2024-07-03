@@ -298,13 +298,13 @@ http#host(qqq('https://foo'))
        module['a:x'][module['a:y'][f(x)->x;];y:=import('a:y');]
        x:=import('a:x');
        x#y#f(3)
-       ⍺x#y#@f
+       ∂x#y#@f
 
 
        module['a:x'][g(x,y)->x*y;]
   z:=import('a:x')
-  ⍺z#@g
-    [3,4]⍺z#@g
+  ∂z#@g
+    [3,4]∂z#@g
 
        module['a:x'][g(x,y)->x*y;]
        module['a:x'][module['a:y'][module['a:z'][module['a:w'][g(x,y)->x*y;foo:='bar';];w:=import('a:w');];z:=import('a:z');];y:=import('a:y');]

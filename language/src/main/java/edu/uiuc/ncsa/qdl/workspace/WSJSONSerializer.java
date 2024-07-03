@@ -66,7 +66,10 @@ public class WSJSONSerializer {
     }
 
     public WorkspaceCommands fromJSON(JSONObject json) throws Throwable {
-        WorkspaceCommands workspaceCommands = new WorkspaceCommands();
+        //WorkspaceCommands workspaceCommands = new WorkspaceCommands();
+        // roundabout way to get a new instance, but this means that this suite of tests can be run against
+        // an extension of the workspace commands
+        WorkspaceCommands workspaceCommands = WorkspaceCommands.getInstance().newInstance();
         State state = workspaceCommands.getState();
         if (state == null) {
             state = State.getFactory().newInstance();
