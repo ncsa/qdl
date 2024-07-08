@@ -37,7 +37,7 @@
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.6</version>
                 <configuration>
-                    <skip>false</skip>
+                    <skip>true</skip>
                 </configuration>
                 <executions>
                     <execution>
@@ -289,7 +289,7 @@
                         <artifactId>maven-gpg-plugin</artifactId>
                         <version>1.6</version>
                         <configuration>
-                            <skip>false</skip>
+                            <skip>true</skip>
                         </configuration>
                         <executions>
                             <execution>
@@ -306,8 +306,8 @@
                         <artifactId>maven-compiler-plugin</artifactId>
                         <version>3.10.1</version>
                         <configuration>
-                            <source>${java.version}</source>
-                            <target>${java.version}</target>
+                            <source>11</source>
+                            <target>11</target>
 
                             <!-- JDK9+ Add Module MAGIC happens below...          -->
                             <!-- Add implicit default JDK9+ java.se explicitly    -->

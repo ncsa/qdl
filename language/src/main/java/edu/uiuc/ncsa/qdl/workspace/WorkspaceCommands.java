@@ -3351,20 +3351,18 @@ public class WorkspaceCommands implements Logable, Serializable {
             }
             // that didn't work, see if it is an instance in the old system
             if (doxx == null) {
+                String name0 = name;
                 if (!name.endsWith(State.NS_DELIMITER)) {
-                    name = name + State.NS_DELIMITER; // add it if the used the flag.
+                    name0 = name + State.NS_DELIMITER; // add it if the used the flag.
                 }
-                doxx = getState().listModuleDoc(name);
+                doxx = getState().listModuleDoc(name0);
             }
-            if (doxx == null || doxx.isEmpty()) {
-                say("Sorry, no help for '" + name + "'");
+            if (!(doxx == null || doxx.isEmpty())) {
+                for (String x : doxx) {
+                    say(x);
+                }
                 return RC_CONTINUE;
             }
-            for (String x : doxx) {
-                say(x);
-            }
-            return RC_CONTINUE;
-
         }
 
         // Not a system function, so see if it is user defined. Find any arg count first

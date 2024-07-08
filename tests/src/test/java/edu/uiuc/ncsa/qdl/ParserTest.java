@@ -6,6 +6,7 @@ import edu.uiuc.ncsa.qdl.exceptions.*;
 import edu.uiuc.ncsa.qdl.functions.FKey;
 import edu.uiuc.ncsa.qdl.functions.FunctionRecord;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
+import edu.uiuc.ncsa.qdl.state.QDLConstants;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.variables.QDLNull;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
@@ -57,31 +58,11 @@ public class ParserTest extends AbstractQDLTester {
         addLine(script, "return(v);");
         addLine(script, "];");
         QDLInterpreter interpreter;
-        //state = rountripState(state, script, testCase);
-/*
-        if (testXML) {
-            state = roundTripXMLSerialization(state, script);
-            interpreter = new QDLInterpreter(null, state); // round trip the state, create local interpret for check
-        } else {
-            interpreter = new QDLInterpreter(null, state);
-            interpreter.execute(script.toString());
-        }
-*/
+
 
         for (int i = 1; i < 1 + results.length; i++) {
             state = rountripState(state, script, testCase);
             interpreter = new QDLInterpreter(null, state); // round trip the state, create local interpret for check
-
-/*
-            if (testXML) {
-                // test to really beat the daylights out of serialization -- each instance of the loop tests it,
-                // so if there are odd artifacts or some such that are creeping in, these get caught.
-                // This emulates someone saving and relading their workspace over the course of saveral sessions.
-                state = roundTripXMLSerialization(state, script);
-                interpreter = new QDLInterpreter(null, state); // round trip the state, create local interpret for check
-            }
-            script = new StringBuffer();
-*/
             addLine(script, "a:=3/" + i + ";");
             addLine(script, "b := -5/" + i + ";");
             addLine(script, "c := f(a,b);");
@@ -774,8 +755,6 @@ public class ParserTest extends AbstractQDLTester {
             BigDecimal r = results[i - 1];
             assert areEqual(d, r);
         }
-
-
     }
 
 
@@ -1007,6 +986,7 @@ public class ParserTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         // Writing the next line was harder than it looks since it has to be a QDL string inside a Java string.
+        // Don't change except to add new characters!
         String slash = "\\";
         addLine(script, "a:='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\\n" + //alphanumeric
                 "  ~`!@#$%^&*()[]{}<>\\\\/\\'\"-_=+|;:,.?\\n" + // other ASCII symbols
@@ -1032,8 +1012,6 @@ public class ParserTest extends AbstractQDLTester {
         addLine(script, "a :='Trăm năm trong cõi người ta, Chữ tài chữ mệnh khéo là ghét nhau.';");
         // Some Ahmaric text...
         addLine(script, "p :='በሰማይ ፡ የምትኖር ፡ ኣባታችን ፡ ሆይ ፡';");
-        //addLine(script, "b := (a == vdecode(vencode(a)));");
-        //addLine(script, "q := (p == vdecode(vencode(p)));");
         addLine(script, "b := (a == decode(encode(a,0),0));");
         addLine(script, "q := (p == decode(encode(p,0),0));");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
@@ -2985,6 +2963,10 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         addLine(script, "ok6 := false;");
         addLine(script, "try[{'p':'q',1:true}¿{1:3+3,'z':a*3}:5;]catch[ok6:=true;];");
         addLine(script, "b. := [;5]*2-1;ok7 := -1 == ([;5]==11?!b.:-1);");
+        // next two tests ensure that passing functions and parenthesized expressions work with
+        // switch statements
+        addLine(script, "ok8 := (31.0062766802997 - (mod([1;6],3)==0 ?! pi([1;6]))) < 0.01;");
+        addLine(script, "ok9 := (31.0062766802997 - ((((mod([1;6],3)==0))) ?! (((pi([1;6])))))) <  0.01;");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok0", state) : "switch failed to evaluate scalar case for true";
@@ -2995,6 +2977,8 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         assert getBooleanValue("ok5", state) : "switch failed to select case of general switch and general case";
         assert getBooleanValue("ok6", state) : "switch should fail for missing arguments";
         assert getBooleanValue("ok7", state) : "switch fails for resolving variable cases";
+        assert getBooleanValue("ok8", state) : "switch fails for functions";
+        assert getBooleanValue("ok9", state) : "switch fails for parenthesized expressions";
     }
 
     public void testBasicApply() throws Throwable {
@@ -3098,8 +3082,8 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         StringBuffer script = new StringBuffer();
         addLine(script,
                 " module['a:a'][f(x,y)->x+y;];\n" +
-                "  A := import('a:a');\n" +
-                "  args. := names(A#@f,2);");
+                        "  A := import('a:a');\n" +
+                        "  args. := names(A#@f,2);");
         addLine(script, "ok0:= size(args.) == 2 ;");
         addLine(script, "ok1:= args.0=='x' ;");
         addLine(script, "ok2:= args.1 == 'y';");
@@ -3115,7 +3099,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         StringBuffer script = new StringBuffer();
         addLine(script,
                 " eg := import(load('edu.uiuc.ncsa.qdl.extensions.example.EGLoaderImpl', 'java'));\n" +
-                "  args. := names(eg#@concat,2);");
+                        "  args. := names(eg#@concat,2);");
         addLine(script, "ok0:= size(args.) == 2 ;");
         addLine(script, "ok1:= args.0=='x_0' ;");
         addLine(script, "ok2:= args.1 == 'x_1';");
@@ -3127,11 +3111,11 @@ left hand argument at index 'p' is not a boolean At (1, 0)
     }
 
     public void testArgNamesApplyModule() throws Throwable {
-         State state = testUtils.getNewState();
-         StringBuffer script = new StringBuffer();
-         addLine(script,
-                 " module['a:a'][f(x,y)->x+y;];\n" +
-                 "  A := import('a:a');");
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script,
+                " module['a:a'][f(x,y)->x+y;];\n" +
+                        "  A := import('a:a');");
         addLine(script, "ok0:= 7 == [3,4]∂A#2@f;");
         addLine(script, "ok1:= 7 == {'x':3,'y':4}∂A#2@f;");
         addLine(script, "ok2:= 7 == {'y':4, 'x':3}∂A#2@f;");
@@ -3140,7 +3124,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         assert getBooleanValue("ok0", state) : FunctionEvaluator.APPLY + " failed, for list on  module function ";
         assert getBooleanValue("ok1", state) : FunctionEvaluator.APPLY + " failed, for stem on  module function ";
         assert getBooleanValue("ok2", state) : FunctionEvaluator.APPLY + " failed, for permuted stem on  module function ";
-     }
+    }
 
     public void testArgNamesApplyJavaModule() throws Throwable {
         State state = testUtils.getNewState();
@@ -3156,6 +3140,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         assert getBooleanValue("ok1", state) : FunctionEvaluator.APPLY + " failed, for stem on java module function ";
         assert getBooleanValue("ok2", state) : FunctionEvaluator.APPLY + " failed, for permuted stem on java module function ";
     }
+
     /**
      * Messy case to kick the tires hard. This will create a stem with a default
      * and various function then run the whole thing.
@@ -3232,11 +3217,12 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         try {
             interpreter.execute(script.toString());
             bad = true;
-        }catch(UndefinedFunctionException efx){
+        } catch (UndefinedFunctionException efx) {
 
         }
         assert !bad : "was able to create reference for undefined function with dyadic applies";
     }
+
     public void testDyadicAppliesFail2() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -3247,7 +3233,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         try {
             interpreter.execute(script.toString());
             bad = true;
-        }catch(UndefinedFunctionException efx){
+        } catch (UndefinedFunctionException efx) {
 
         }
         assert !bad : "was able to create reference for function with wrong arguments with dyadic applies";
@@ -3264,7 +3250,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         try {
             interpreter.execute(script.toString());
             bad = true;
-        }catch(BadArgException bax){
+        } catch (BadArgException bax) {
 
         }
         assert !bad : "was able to invoke monadic function with 2 arguments using ∂ (apply)";

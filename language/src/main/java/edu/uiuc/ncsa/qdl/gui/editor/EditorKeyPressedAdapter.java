@@ -217,6 +217,10 @@ public class EditorKeyPressedAdapter extends KeyAdapter {
                     if (!StringUtils.isTrivial(selected)) {
                         content = selected;
                     }
+                    if(content.trim().startsWith("#!")){
+                        // they are editing a script, strip the first line
+                        content = content.substring(content.indexOf("\n")+1);
+                    }
                     StringReader r = new StringReader(content);
                     QDLParserDriver driver = new QDLParserDriver(new XProperties(), new State());
                     try {

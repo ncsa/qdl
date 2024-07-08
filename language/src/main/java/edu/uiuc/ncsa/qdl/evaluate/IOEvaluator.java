@@ -80,6 +80,9 @@ public class IOEvaluator extends AbstractEvaluator {
                     SCAN_FUNCTION,
                     READ_FILE,
                     WRITE_FILE,
+                    RM_FILE,
+                    MKDIR,
+                    RMDIR,
                     DIR,
                     VFS_MOUNT,
                     VFS_UNMOUNT};

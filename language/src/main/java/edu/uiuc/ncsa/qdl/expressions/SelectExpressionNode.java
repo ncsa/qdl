@@ -66,6 +66,9 @@ public class SelectExpressionNode extends ExpressionImpl {
 
     @Override
     public Object evaluate(State state) {
+        return OLDevaluate(state);
+    }
+    protected Object NEWevaluate(State state) {
         Object obj = getSWITCH().evaluate(state);
         QDLStem stem = null;
 
@@ -110,7 +113,69 @@ public class SelectExpressionNode extends ExpressionImpl {
         }
         // otherwise, find foundIndex and evaluate that.
         ExpressionInterface caseObj = getCASE();
+        Object result = getCASE().evaluate(state);
+        if(!(result instanceof QDLStem)) {
+            throw new BadArgException("argument must be a stem", getCASE());
+        }
+        Object rr = ((QDLStem) result).get(foundIndex);
+        if(rr == null){
+            throw new BadArgException("no such index " + foundIndex + " exists in this list.", getCASE());
+        }
+        setResult(rr);;
+        setResultType(Constant.getType(rr));
+        setEvaluated(true);
+        return rr;
+
+    }
+
+    protected Object OLDevaluate(State state) {
+        Object obj = getSWITCH().evaluate(state);
+        QDLStem stem = null;
+
+        if ((obj instanceof QDLStem)) {
+            stem = (QDLStem) obj;
+        } else {
+            if (obj instanceof Boolean) {
+                Object result;
+                if ((Boolean) obj) {
+                    result = getCASE().evaluate(state);
+                } else {
+                    result = getDEFAULT().evaluate(state);
+                }
+                setResult(result);
+                setResultType(Constant.getType(result));
+                setEvaluated(true);
+                return result;
+            }
+            throw new BadArgException("left hand argument must be a boolean if its a scalar", getSWITCH());
+        }
+
+        Object foundIndex = null;
+        for (Object k : stem.keySet()) {
+            Object value = stem.get(k);
+            if (!(value instanceof Boolean)) {
+                throw new BadArgException("left hand argument at index '" + k + "' is not a boolean", getSWITCH());
+            }
+            Boolean b = (Boolean) value;
+            if (b) {
+                if (foundIndex != null) {
+                    throw new BadArgException("redundant value at index " + k + " (" + foundIndex + " already found) ", getSWITCH());
+                }
+                foundIndex = k;
+            }
+        }
+        if (foundIndex == null) {
+            // use the default
+            setResult(getDEFAULT().evaluate(state));
+            setResultType(getDEFAULT().getResultType());
+            setEvaluated(true);
+            return getResult();
+        }
+        ExpressionInterface caseObj = getCASE();
         Object result;
+        // The next cases are to try and pick apart switch statements so we don't run the
+        // risk of evaluating things that are undefined. Fallthrough case is we just
+        // can't figure it out, so try it directly.
          switch (caseObj.getNodeType()){
              case ExpressionInterface.VARIABLE_NODE:
                  result = caseObj.evaluate(state);
@@ -183,8 +248,25 @@ public class SelectExpressionNode extends ExpressionImpl {
                  setResultType(Constant.getType(result));
                  setEvaluated(true);
                  return result;
+
              default:
-                 throw new BadArgException("scalars are not  supported as case types", getCASE());
+                 // Might be the case they sent along a polyad whose result is a stem.
+                 // try that
+                 Object ooo = getCASE().evaluate(state);
+                 if(!(ooo instanceof QDLStem)) {
+                     throw new BadArgException("scalars are not  supported as case types", getCASE());
+                 }
+                 QDLStem qdlStem = (QDLStem) ooo;
+                 result = qdlStem.get(foundIndex);
+                 if(result == null){
+                     throw new BadArgException("index '" + foundIndex + "' not found", getCASE());
+                 }
+                 setResult(result);
+                 setResultType(Constant.getType(result));
+                 setEvaluated(true);
+                 return result;
+
+
          }
     }
     @Override

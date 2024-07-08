@@ -1,6 +1,7 @@
 package edu.uiuc.ncsa.qdl.evaluate;
 
 import edu.uiuc.ncsa.qdl.exceptions.FunctionArgException;
+import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.exceptions.QDLExceptionWithTrace;
 import edu.uiuc.ncsa.qdl.exceptions.UndefinedFunctionException;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
@@ -268,16 +269,31 @@ public class MetaEvaluator extends AbstractEvaluator {
           module['a:b'][size(x)->stem#size(x)+1;];
           b≔import('a:b');
           b#size([;5])
+
+          eg := j_load('eg');
+          eg#concat('a','b');
           */
               if(state!= null && state.hasModule()){
-                    if (getFunctionEvaluator().evaluate(polyad, state)) {
-                        return true;
-                    }
+                  try {
+                      if (getFunctionEvaluator().evaluate(polyad, state)) {
+                          return true;
+                      }
+                  }catch(QDLException qdlException){
+                      // Fix for https://github.com/ncsa/qdl/issues/66
+                      // handles this edge case: In Java Modules, a built-in function is constructed
+                      // then its evaluate method is called. Hand;ing this via intercepting
+                      // a thrown exception scales terribly though. // If the function is not in
+                      // defined in the module (what this tests for), fall through and try it as
+                      // a regular function.
+                      if(!(qdlException.getCause() instanceof UndefinedFunctionException)){
+                          throw qdlException;
+                      }
+                  }
                 }
                 if (evaluator.evaluate(polyad, state)) return true;
             } catch (FunctionArgException functionArgException) {
                 farg = functionArgException;
-                // So maybe its overloaded??? Check user defined function.
+                // So maybe it's overloaded??? Check user defined function.
                 // If not then blow up for real
                 try {
                     if (getFunctionEvaluator().evaluate(polyad, state)) {

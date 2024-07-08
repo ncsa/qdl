@@ -38,6 +38,8 @@ public class QDLConvertModule extends JavaModule {
         funcs.add(xml.new IniImport());
         funcs.add(xml.new IniExport());
         qdlxml.addFunctions(funcs);
+        vars.add(xml.new Sample());
+        qdlxml.addVariables(vars);
         if (state != null) {
             qdlxml.init(state);
         }

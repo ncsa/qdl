@@ -1,7 +1,12 @@
 package edu.uiuc.ncsa.qdl.extensions.example;
 
+import edu.uiuc.ncsa.qdl.evaluate.StringEvaluator;
+import edu.uiuc.ncsa.qdl.expressions.ConstantNode;
+import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
 import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.qdl.variables.QDLStem;
+import org.checkerframework.checker.units.qual.C;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +28,13 @@ public class Concat implements QDLFunction {
 
     @Override
     public Object evaluate(Object[] objects, State state) {
+        QDLStem stem = new QDLStem();
+        stem.getQDLList().add(objects[0].toString());
+        stem.getQDLList().add(objects[1].toString());
+        Polyad detokenize = new Polyad(StringEvaluator.DETOKENIZE);
+        detokenize.addArgument(new ConstantNode(stem));
+        detokenize.addArgument(new ConstantNode(" "));
+        detokenize.evaluate(state);
       return objects[0].toString() + objects[1].toString();
     }
 

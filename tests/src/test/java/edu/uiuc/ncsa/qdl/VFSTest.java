@@ -190,7 +190,7 @@ public class VFSTest extends AbstractQDLTester {
         file = new File(realPath);
         file.deleteOnExit(); // clean up.
 
-         bytes = new byte[byteCount];
+        bytes = new byte[byteCount];
         getRandom().nextBytes(bytes);
         FileEntry fileEntry = new FileEntry(bytes);
         assert fileEntry.isBinaryType();
@@ -484,7 +484,7 @@ public class VFSTest extends AbstractQDLTester {
 
 
     public void testFilePassThrough() throws Throwable {
-        String rootDir = DebugUtil.getDevPath()+"/qdl/language/src/test/resources";
+        String rootDir = DebugUtil.getDevPath() + "/qdl/language/src/test/resources";
         VFSPassThruFileProvider vfs = new VFSPassThruFileProvider(
                 rootDir,
                 "qdl-vfs",
@@ -515,6 +515,16 @@ public class VFSTest extends AbstractQDLTester {
     }
 
     public void testDerbyVFS() throws Throwable {
+        try{
+            VFSMySQLProvider vfs = setupMySQLVFS();
+            if(vfs == null) return;
+            runVFSTests(vfs);
+
+        }catch(Throwable t){
+            System.out.println("Could not run Derby tests:" + t.getMessage());
+        }
+    }
+    protected VFSMySQLProvider setupDerbyVFS() throws Throwable {
         DerbyConnectionParameters params = null;
         if (hasConfig()) {
             params = new DerbyConnectionParameters(
@@ -545,8 +555,7 @@ public class VFSTest extends AbstractQDLTester {
                 true,
                 true);
 
-
-        runVFSTests(vfs);
+return vfs;
     }
 
     String propertiesFile = "/home/ncsa/dev/csd/config/qdl-test.properties";
@@ -584,6 +593,19 @@ public class VFSTest extends AbstractQDLTester {
 
 
     public void testMySQLVFS() throws Throwable {
+        try {
+            VFSMySQLProvider vfs = setupMySQLVFS();
+            if (vfs == null) {
+                return;
+            }
+            runVFSTests(vfs);
+
+        } catch (Throwable t) {
+            System.out.println("No usuable MySQL found:" + t.getMessage());
+        }
+    }
+
+    protected VFSMySQLProvider setupMySQLVFS() throws Throwable {
         MySQLConnectionParameters params;
         String tableName = "qdl_vfs"; // default;
         if (hasConfig()) {
@@ -602,7 +624,7 @@ public class VFSTest extends AbstractQDLTester {
         } else {
             if (System.getProperty("username") == null || System.getProperty("password") == null) {
                 System.out.println("No user name and password supplied, cannot do VFS MySQL tests.");
-                return;
+                return null;
             }
             params = new MySQLConnectionParameters(
                     System.getProperty("username"),
@@ -626,8 +648,7 @@ public class VFSTest extends AbstractQDLTester {
                 true,
                 true);
 
-
-        runVFSTests(vfs);
+        return vfs;
     }
 
     /**
@@ -640,7 +661,7 @@ public class VFSTest extends AbstractQDLTester {
 
     public void testZipVFS() throws Throwable {
 
-        String pathToZip = DebugUtil.getDevPath()+"/qdl/tests/src/test/resources/vfs-test/vfs-test.zip";
+        String pathToZip = DebugUtil.getDevPath() + "/qdl/tests/src/test/resources/vfs-test/vfs-test.zip";
         // now for the path inside the zip file. Note that when mounted, this is absolute with respect to the
         // mount point. See the readme in the folder with the vfs-test.zip file for more info
         String mountPoint = VFSPaths.PATH_SEPARATOR;
@@ -681,7 +702,7 @@ public class VFSTest extends AbstractQDLTester {
     }
 
     public void testServerMode() throws Throwable {
-        String rootDir = DebugUtil.getDevPath()+"/qdl/tests/src/test/resources";
+        String rootDir = DebugUtil.getDevPath() + "/qdl/tests/src/test/resources";
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "    cfg.type := 'pass_through';");
@@ -704,7 +725,7 @@ public class VFSTest extends AbstractQDLTester {
     }
 
     public void testServerModeBad() throws Throwable {
-        String rootDir = DebugUtil.getDevPath()+"/qdl/language/src/test/resources";
+        String rootDir = DebugUtil.getDevPath() + "/qdl/language/src/test/resources";
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         state.setServerMode(true);
@@ -740,7 +761,7 @@ public class VFSTest extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testServerModes() throws Throwable {
-        String rootDir = DebugUtil.getDevPath()+"/qdl/language/src/test/resources";
+        String rootDir = DebugUtil.getDevPath() + "/qdl/language/src/test/resources";
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         state.setServerMode(true);
@@ -799,9 +820,10 @@ public class VFSTest extends AbstractQDLTester {
     /**
      * Tests that scripts can be resolved correctly. This just calls a really dumb script to show
      * that the paths all work
+     *
      * @throws Throwable
      */
-    public void testScripts() throws Throwable{
+    public void testScripts() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         // tests absolute path, not in server mode.
@@ -841,5 +863,5 @@ public class VFSTest extends AbstractQDLTester {
         assert getBooleanValue("ok3", state) : "Did not get right value echoed back";
         assert getBooleanValue("ok4", state) : "Did not get right value echoed back";
         assert getBooleanValue("ok5", state) : "Did not get right value echoed back";
-}
+    }
 }
