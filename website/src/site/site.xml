@@ -21,6 +21,7 @@
     <menu name="Quick reference">
       <item name="FAQ" href="faq.html"/>
       <item name="Language Reference" href="./pdf/qdl_reference.pdf"/>
+      <item name="Function Reference" href="./pdf/function-reference.pdf"/>
       <item name="Configuration Reference" href="./pdf/qdl_configuration.pdf"/>
       <item name="Workspace Reference" href="./pdf/qdl_workspace.pdf"/>
       <item name="Quickstart Tutorial" href="./pdf/tutorial.pdf"/>

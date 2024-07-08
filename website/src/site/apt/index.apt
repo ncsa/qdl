@@ -32,7 +32,12 @@ The QDL Programming Language
 Documentation
 
     *{{{./pdf/installer.pdf}The QDL Installer}} The QDL installer and how to use it.
-    *{{{./pdf/qdl_reference.pdf}QDL Reference Manual}} THE reference manual. This is large and aims to be quite complete.
+
+    *{{{./pdf/qdl_reference.pdf}QDL Language Reference}} THE reference manual on the language
+    itself. This is large and aims to be quite complete.
+
+    *{{{./pdf/function-reference.pdf}QDL Function Reference}} Reference manual for
+    functions and operators.
 
     *{{{./pdf/tutorial.pdf}A basic tutorial to QDL}} A much smaller, gentler introduction to QDL. Suitable for a first foray.
 
