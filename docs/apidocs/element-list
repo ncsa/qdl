@@ -7,6 +7,7 @@ edu.uiuc.ncsa.qdl.extensions
 edu.uiuc.ncsa.qdl.extensions.convert
 edu.uiuc.ncsa.qdl.extensions.crypto
 edu.uiuc.ncsa.qdl.extensions.database
+edu.uiuc.ncsa.qdl.extensions.dynamodb
 edu.uiuc.ncsa.qdl.extensions.example
 edu.uiuc.ncsa.qdl.extensions.http
 edu.uiuc.ncsa.qdl.extensions.inputLine
