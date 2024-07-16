@@ -447,7 +447,8 @@ public class EditorKeyPressedAdapter extends KeyAdapter {
      */
     protected void showHelp(String title, String message) {
         JTextArea textArea = new JTextArea(25, 100);
-        textArea.setFont(new Font("DialogInput", Font.PLAIN, 12));
+
+        textArea.setFont(workspaceCommands.getFont());
         textArea.setText(message);
         textArea.setCaretPosition(0); // put it at the top
         textArea.setEditable(false);

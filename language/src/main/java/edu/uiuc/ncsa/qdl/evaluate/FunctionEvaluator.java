@@ -262,15 +262,26 @@ public class FunctionEvaluator extends AbstractEvaluator {
 
     private void doApply(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setResult(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
+        ExpressionImpl newPoly = null;
+        if(polyad.getArgCount() == 1){
+            Monad monad = new Monad(OpEvaluator.APPLY_OP_VALUE, false);
+            monad.setArgument(polyad.getArgAt(0));
+            newPoly = monad;
+        }
+        if(polyad.getArgCount() == 2){
+            Dyad dyad = new Dyad(OpEvaluator.APPLY_OP_VALUE);
+            dyad.setLeftArgument(polyad.getArgAt(1));
+            dyad.setRightArgument(polyad.getArgAt(0));
+            newPoly = dyad;
+        }
+        if(newPoly == null){
+            throw new NFWException("Unknown number of arguments to " + OpEvaluator.APPLY_OP_KEY + " allowed");
+        }
         // The arguments swap when in function notation.
-        Dyad dyad = new Dyad(OpEvaluator.APPLY_OP_VALUE);
-        dyad.setLeftArgument(polyad.getArgAt(1));
-        dyad.setRightArgument(polyad.getArgAt(0));
-        ExpressionImpl newPoly = dyad;
         Object result = newPoly.evaluate(state);
         polyad.setEvaluated(true);
         polyad.setResult(result);

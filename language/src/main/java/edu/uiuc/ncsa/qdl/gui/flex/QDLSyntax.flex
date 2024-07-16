@@ -1,5 +1,5 @@
 /*
- * Generated on 5/23/24, 5:14 PM
+ * Generated on 7/16/24, 9:11 AM
  */
 package edu.uiuc.ncsa.qdl.gui.flex;
 
@@ -252,13 +252,51 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "if" |
 "local" |
 "module" |
+"null" |
 "switch" |
 "then" |
 "try" |
-"while"		{ addToken(Token.RESERVED_WORD); }
+"while" |
+"∅" |
+"⊨"		{ addToken(Token.RESERVED_WORD); }
 
 	/* Keywords 2 (just an optional set of keywords colored differently) */
-	/* No keywords 2 */
+	"π" |
+"τ" |
+"⁺" |
+"→" |
+"∀" |
+"∂" |
+"∃" |
+"∄" |
+"∅" |
+"∆" |
+"∈" |
+"∉" |
+"∋" |
+"∌" |
+"∧" |
+"∨" |
+"∩" |
+"∪" |
+"≁" |
+"≈" |
+"≔" |
+"≕" |
+"≠" |
+"≡" |
+"≤" |
+"≥" |
+"⊕" |
+"⊗" |
+"⊙" |
+"⊢" |
+"⊨" |
+"⌆" |
+"⌈" |
+"⌊" |
+"⟦" |
+"⟧"		{ addToken(Token.RESERVED_WORD_2); }
 
 	/* Data types */
 	"Boolean" |
@@ -275,6 +313,8 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 	"abs" |
 "acos" |
 "acosh" |
+"apply" |
+"arg_count" |
 "args" |
 "asin" |
 "asinh" |
@@ -296,19 +336,17 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "cosh" |
 "date_iso" |
 "date_ms" |
-"debug" |
+"debugger" |
 "decode" |
 "detokenize" |
 "diff" |
 "differ_at" |
 "dim" |
 "dir" |
-"display" |
 "docs" |
 "encode" |
 "excise" |
 "exclude_keys" |
-"execute" |
 "exp" |
 "expand" |
 "file_read" |
@@ -339,6 +377,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "input_form" |
 "insert" |
 "insert_at" |
+"interpret" |
 "is_defined" |
 "is_function" |
 "is_list" |
@@ -356,16 +395,18 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "load" |
 "loaded" |
 "log" |
-"log_entry" |
+"logger" |
 "mask" |
 "max" |
 "min" |
+"mkdir" |
 "mod" |
 "module_import" |
 "module_load" |
 "module_path" |
 "module_remove" |
 "n" |
+"names" |
 "nroot" |
 "numeric_digits" |
 "os_env" |
@@ -385,10 +426,13 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "replace" |
 "return" |
 "reverse" |
+"rm" |
+"rm_dir" |
 "say" |
 "scan" |
 "script_args" |
 "script_load" |
+"script_name" |
 "script_path" |
 "script_run" |
 "set_default" |
@@ -426,11 +470,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "vfs_mount" |
 "vfs_unmount" |
 "ws_macro" |
-"π" |
-"⊕" |
-"⊙" |
-"⌆" |
-"µ"		{ addToken(Token.FUNCTION); }
+"π"		{ addToken(Token.FUNCTION); }
 
 	{BooleanLiteral}			{ addToken(Token.LITERAL_BOOLEAN); }
 
@@ -458,63 +498,31 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 	{Separator2}					{ addToken(Token.IDENTIFIER); }
 
 	/* Operators. */
-	"!=" |
+	"!" |
 "#" |
-"%" |
 "&&" |
 "*" |
 "+" |
 "-" |
+"." |
 "/" |
-"/\\" |
-":=" |
+":" |
 "<" |
-"<=" |
-"=:" |
+"=" |
 ">" |
-">=" |
+"?" |
 "@" |
-"[|" |
 "\\" |
-"|]" |
-"|^" |
-"||" |
+"^" |
+"^" |
+"|" |
 "~" |
 "¬" |
 "¯" |
+"µ" |
 "¿" |
 "×" |
-"÷" |
-"⁺" |
-"→" |
-"⇒" |
-"∀" |
-"∃" |
-"∄" |
-"∆" |
-"∈" |
-"∉" |
-"∋" |
-"∌" |
-"∧" |
-"∨" |
-"∩" |
-"∪" |
-"≈" |
-"≔" |
-"≕" |
-"≠" |
-"≡" |
-"≤" |
-"≥" |
-"⊗" |
-"⊢" |
-"⊨" |
-"⌈" |
-"⌊" |
-"∂" |
-"⟦" |
-"⟧"		{ addToken(Token.OPERATOR); }
+"÷"		{ addToken(Token.OPERATOR); }
 
 	/* Numbers */
 	{IntegerLiteral}				{ addToken(Token.LITERAL_NUMBER_DECIMAL_INT); }

@@ -1772,7 +1772,7 @@ a.⌆b.
                 // At this point, only scalars should ever get passed here as arguments.
                 fpResult r = new fpResult();
                 if (areAllSets(objects)) {
-                    throw new QDLExceptionWithTrace(PLUS + " not defined on sets. Did you mean union (" + AND + ")?", dyad);
+                    throw new QDLExceptionWithTrace(PLUS + " not defined on sets. Did you mean union (" + UNION + ")?", dyad);
                 }
                 if (areAllNumbers(objects)) {
                     if (areAllLongs(objects)) {

@@ -205,6 +205,14 @@ d  |  [0,      2,       0]
     protected IndexArgs checkIfList(IndexArg indexArg, State state) {
         IndexArgs indexArgs = new IndexArgs();
         if (indexArg.interpretListArg) {
+            /*
+              Meaning of this is that the argument is to be interpreted as a stem index,
+              so
+              a\[2,3]
+              means to take a.2 and a.3 and return them
+              a\>[2,3]
+              means the specific index a.2.3
+             */
             indexArg.swri.evaluate(state);
             if (!(indexArg.swri.getResult() instanceof QDLStem)) {
                 throw new QDLExceptionWithTrace("argument for stem extraction must be a list", indexArg.swri);

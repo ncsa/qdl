@@ -87,6 +87,7 @@ logger
 mask
 max
 min
+mkdir
 mod
 module_import
 module_load
@@ -113,6 +114,8 @@ rename_keys
 replace
 return
 reverse
+rm
+rm_dir
 say
 scan
 script_args

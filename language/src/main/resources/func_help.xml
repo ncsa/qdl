@@ -5247,12 +5247,15 @@ m_set(a., keys., values) - set multiple values
             <![CDATA[\ is the extraction operator for stems. This allows you to
 pull out parts of a stem.
 
-var ((\ scalar | stem | *) | (\! scalar | stem | *))+
+var ((\{>} scalar | stem | *) | (\{>}! scalar | stem | *))+
 
  \! (uniqueness) will force the resulting stem to have exactly the
     indices of that dimension,
  \  for integers, they will be re-ordered. String keys are, however, never altered.
  * means to take all of the indices for that dimension.
+ > means to interpret the argument (scalar or list only) as a stem index, so
+   a\[2,3] means extract a.2, a.3
+   a\>[2,3] means extract a.2.3
  A scalar index indicates to use that for accessing the value, but do not include the index
  in the final result. Each element corresponds to a dimension in var. 
 
@@ -5294,6 +5297,20 @@ preserve the indices for further uses (such as mask).
 [[7,7,6],[-8,-8,-9]]
 So you can reorder elements, select multiples etc. \ lets you restructure
 the result too!
+
+Examples using >.
+You may specify that an argument list is to be interpreted as an index list.
+Remember that a.[p,q,r] == a.p.q.r. and [p,q,r] is an index list
+in that context.
+
+   n(5,5,5,[;5^3])\>[4,1]\[2,2,1]
+[107,107,106]
+
+The \>[4,1] means to treat that as the specific index 4.1, so alternately this
+could be written as
+   n(5,5,5,[;5^3]).4.1 \ [2,2,1]
+[107,107,106]
+
 
 See also: pick]]>
         </body>

@@ -26,12 +26,52 @@ By Jeff Gaynor</classComment>
     <keyword>if</keyword>
     <keyword>local</keyword>
     <keyword>module</keyword>
+    <keyword>null</keyword>
     <keyword>switch</keyword>
     <keyword>then</keyword>
     <keyword>try</keyword>
     <keyword>while</keyword>
+    <keyword>∅</keyword>
+    <keyword>⊨</keyword>
   </keywords>
-  <keywords2/>
+  <keywords2>
+    <keyword>π</keyword>
+    <keyword>τ</keyword>
+    <keyword>⁺</keyword>
+    <keyword>→</keyword>
+    <keyword>∀</keyword>
+    <keyword>∂</keyword>
+    <keyword>∃</keyword>
+    <keyword>∄</keyword>
+    <keyword>∅</keyword>
+    <keyword>∆</keyword>
+    <keyword>∈</keyword>
+    <keyword>∉</keyword>
+    <keyword>∋</keyword>
+    <keyword>∌</keyword>
+    <keyword>∧</keyword>
+    <keyword>∨</keyword>
+    <keyword>∩</keyword>
+    <keyword>∪</keyword>
+    <keyword>≁</keyword>
+    <keyword>≈</keyword>
+    <keyword>≔</keyword>
+    <keyword>≕</keyword>
+    <keyword>≠</keyword>
+    <keyword>≡</keyword>
+    <keyword>≤</keyword>
+    <keyword>≥</keyword>
+    <keyword>⊕</keyword>
+    <keyword>⊗</keyword>
+    <keyword>⊙</keyword>
+    <keyword>⊢</keyword>
+    <keyword>⊨</keyword>
+    <keyword>⌆</keyword>
+    <keyword>⌈</keyword>
+    <keyword>⌊</keyword>
+    <keyword>⟦</keyword>
+    <keyword>⟧</keyword>
+  </keywords2>
   <dataTypes>
     <dataType>Boolean</dataType>
     <dataType>Decimal</dataType>
@@ -47,6 +87,8 @@ By Jeff Gaynor</classComment>
     <function>abs</function>
     <function>acos</function>
     <function>acosh</function>
+    <function>apply</function>
+    <function>arg_count</function>
     <function>args</function>
     <function>asin</function>
     <function>asinh</function>
@@ -68,19 +110,17 @@ By Jeff Gaynor</classComment>
     <function>cosh</function>
     <function>date_iso</function>
     <function>date_ms</function>
-    <function>debug</function>
+    <function>debugger</function>
     <function>decode</function>
     <function>detokenize</function>
     <function>diff</function>
     <function>differ_at</function>
     <function>dim</function>
     <function>dir</function>
-    <function>display</function>
     <function>docs</function>
     <function>encode</function>
     <function>excise</function>
     <function>exclude_keys</function>
-    <function>execute</function>
     <function>exp</function>
     <function>expand</function>
     <function>file_read</function>
@@ -103,14 +143,15 @@ By Jeff Gaynor</classComment>
     <function>head</function>
     <function>i</function>
     <function>identity</function>
-    <function>include_keys</function>
     <function>import</function>
+    <function>include_keys</function>
     <function>index_of</function>
     <function>indices</function>
     <function>info</function>
     <function>input_form</function>
     <function>insert</function>
     <function>insert_at</function>
+    <function>interpret</function>
     <function>is_defined</function>
     <function>is_function</function>
     <function>is_list</function>
@@ -120,24 +161,26 @@ By Jeff Gaynor</classComment>
     <function>join</function>
     <function>keys</function>
     <function>kill</function>
-    <function>load</function>
-    <function>loaded</function>
     <function>lcm</function>
     <function>lib_entries</function>
     <function>list_copy</function>
     <function>list_keys</function>
     <function>ln</function>
+    <function>load</function>
+    <function>loaded</function>
     <function>log</function>
-    <function>log_entry</function>
+    <function>logger</function>
     <function>mask</function>
     <function>max</function>
     <function>min</function>
+    <function>mkdir</function>
     <function>mod</function>
     <function>module_import</function>
     <function>module_load</function>
     <function>module_path</function>
     <function>module_remove</function>
     <function>n</function>
+    <function>names</function>
     <function>nroot</function>
     <function>numeric_digits</function>
     <function>os_env</function>
@@ -157,10 +200,13 @@ By Jeff Gaynor</classComment>
     <function>replace</function>
     <function>return</function>
     <function>reverse</function>
+    <function>rm</function>
+    <function>rm_dir</function>
     <function>say</function>
     <function>scan</function>
     <function>script_args</function>
     <function>script_load</function>
+    <function>script_name</function>
     <function>script_path</function>
     <function>script_run</function>
     <function>set_default</function>
@@ -199,10 +245,6 @@ By Jeff Gaynor</classComment>
     <function>vfs_unmount</function>
     <function>ws_macro</function>
     <function>π</function>
-    <function>µ</function>
-    <function>⌆</function>
-    <function>⊙</function>
-    <function>⊕</function>
   </functions>
   <numbers>
     <hexLiteral/>
@@ -213,62 +255,30 @@ By Jeff Gaynor</classComment>
   <charLiterals enabled="true" multiLine="false"/>
   <backtickLiterals enabled="false"/>
   <operators>
-    <operator>!=</operator>
+    <operator>!</operator>
     <operator>#</operator>
-    <operator>%</operator>
     <operator>&amp;&amp;</operator>
     <operator>*</operator>
     <operator>+</operator>
     <operator>-</operator>
+    <operator>.</operator>
     <operator>/</operator>
-    <operator>/\</operator>
-    <operator>:=</operator>
+    <operator>:</operator>
     <operator>&lt;</operator>
-    <operator>&lt;=</operator>
-    <operator>=:</operator>
+    <operator>=</operator>
     <operator>&gt;</operator>
-    <operator>&gt;=</operator>
+    <operator>?</operator>
     <operator>@</operator>
-    <operator>[|</operator>
     <operator>\</operator>
-    <operator>|]</operator>
-    <operator>|^</operator>
-    <operator>||</operator>
+    <operator>^</operator>
+    <operator>^</operator>
+    <operator>|</operator>
     <operator>~</operator>
     <operator>¬</operator>
     <operator>¯</operator>
+    <operator>µ</operator>
+    <operator>¿</operator>
     <operator>×</operator>
     <operator>÷</operator>
-    <operator>⁺</operator>
-    <operator>→</operator>
-    <operator>∃</operator>
-    <operator>¿</operator>
-    <operator>∄</operator>
-    <operator>∀</operator>
-    <operator>⇒</operator>
-    <operator>∆</operator>
-    <operator>∈</operator>
-    <operator>∉</operator>
-    <operator>∋</operator>
-    <operator>∧</operator>
-    <operator>∨</operator>
-    <operator>∩</operator>
-    <operator>∪</operator>
-    <operator>≈</operator>
-    <operator>≔</operator>
-    <operator>≕</operator>
-    <operator>≠</operator>
-    <operator>≡</operator>
-    <operator>≤</operator>
-    <operator>≥</operator>
-    <operator>⊗</operator>
-    <operator>⊢</operator>
-    <operator>⊨</operator>
-    <operator>⌈</operator>
-    <operator>⌊</operator>
-    <operator>⟦</operator>
-    <operator>⟧</operator>
-    <operator>∌</operator>
-    <operator>∂</operator>
   </operators>
 </TokenMakerDefinition>
