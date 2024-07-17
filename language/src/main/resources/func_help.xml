@@ -5679,13 +5679,13 @@ and are just a regular function there. No namespace qualification is needed.
 
     <entry id="j_load">
         <body>
-            <![CDATA[j_load(class_name | moniker | path, {alias}) - this is a convenience method to load a single
+            <![CDATA[j_load(class_name | moniker | path, {mode}) - this is a convenience method to load a single
 class with an alias. This requires that the libraries in question be loaded into the
 info().lib using either the lib_entries function or setting the lib_loader in the
 modules element of the XML configuration. The result is the name of the alias. It
 is equivalent to
-  import(load(class_name,'java'), alias)
-If the alias argument is missing, then the default for the module is used.
+  import(load(class_name,'java'), mode)
+If the mode argument is missing, then the default is used.
 
 There are two special cases.
 1. suppply the key in the info().'lib'.'tools' object,
@@ -6144,14 +6144,14 @@ qualification as lon as there were no name clashes. This is now deprecated. )
     </entry>
     <entry id="use">
         <body>
-            <![CDATA[use(namespace{,'java' | 'qdl'})
+            <![CDATA[use(namespace)
 
 Imports the given module into the current scope. This allows
 you to use the names unqualified. the second argument allows you to specify
 what module type it is, but if omitted, the system will try to load all types until
 one works.
 
-See also: j_use which loads java  ]]>
+See also: j_use which loads a java module too.]]>
         </body>
         <example>
             <![CDATA[   module['a:x'][f(x)->x^2;q:=3;]

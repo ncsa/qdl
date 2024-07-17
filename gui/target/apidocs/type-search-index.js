@@ -1,1 +1,0 @@
-typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"edu.uiuc.ncsa.qdl.sat","l":"Client2"},{"p":"edu.uiuc.ncsa.qdl.sat","l":"Server2"}]

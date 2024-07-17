@@ -1101,15 +1101,15 @@ docs(c#2@ini_out) ;
             throw new WrongArgCountException((isLoad ? JAVA_MODULE_LOAD : JAVA_MODULE_USE) + " requires at most two arguments", polyad.getArgAt(2));
         }
         Object arg = polyad.evalArg(0, state);
-        boolean hasAlias = false;
-        String alias = null;
+        boolean hasMode = false;
+        String mode = null;
         if (polyad.getArgCount() == 2) {
             Object object = polyad.evalArg(1, state);
             if (!isString(object)) {
-                throw new BadArgException((isLoad ? JAVA_MODULE_LOAD : JAVA_MODULE_USE) + " requires a string as its second argument if present", polyad.getArgAt(1));
+                throw new BadArgException((isLoad ? JAVA_MODULE_LOAD : JAVA_MODULE_USE) + " requires a string for the mode as its second argument if present", polyad.getArgAt(1));
             }
-            alias = (String) object;
-            hasAlias = true;
+            mode = (String) object;
+            hasMode = true;
         }
         String possibleName = null;
         if (isStem(arg)) {
@@ -1171,8 +1171,8 @@ docs(c#2@ini_out) ;
         module_load.evaluate(state);
         Polyad module_import = new Polyad(isLoad ? ModuleEvaluator.IMPORT : ModuleEvaluator.USE);
         module_import.addArgument(new ConstantNode(module_load.getResult()));
-        if (hasAlias) {
-            module_import.addArgument(new ConstantNode(alias));
+        if (hasMode) {
+            module_import.addArgument(new ConstantNode(mode));
         }
         module_import.evaluate(state);
         polyad.setEvaluated(true);
