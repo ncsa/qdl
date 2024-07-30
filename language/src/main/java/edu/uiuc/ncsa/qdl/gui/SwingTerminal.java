@@ -15,6 +15,8 @@ import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
+import org.fife.ui.rsyntaxtextarea.folding.CurlyFoldParser;
+import org.fife.ui.rsyntaxtextarea.folding.FoldParserManager;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
@@ -375,7 +377,7 @@ public class SwingTerminal implements TerminalInterface {
     }
 
     protected JFrame frame;
-
+    protected static String syntaxEditStyle = "text/qdl";
     public void setup(JFrame frame1, List<String> functions) {
 
 /*
@@ -388,11 +390,11 @@ public class SwingTerminal implements TerminalInterface {
         frame.setContentPane(getMainPanel());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
-        atmf.putMapping("text/qdl", "edu.uiuc.ncsa.qdl.gui.flex.QDLSyntax");
+        atmf.putMapping(syntaxEditStyle, "edu.uiuc.ncsa.qdl.gui.flex.QDLSyntax");
         CompletionProvider provider = QDLSwingUtil.createCompletionProvider(functions);
         AutoCompletion ac = new AutoCompletion(provider);
         ac.install(getInput());
-        input.setSyntaxEditingStyle("text/qdl");
+        input.setSyntaxEditingStyle(syntaxEditStyle);
 /*      Runs through every font on your system at startup and prints a list of fonts at 12 and 14
         points that display all of the QDL characters
 
@@ -404,6 +406,9 @@ public class SwingTerminal implements TerminalInterface {
 
 */
         Font font = workspaceCommands.getFont();
+        CurlyFoldParser curlyFoldParser = new CurlyFoldParser();
+        FoldParserManager.get().addFoldParserMapping(syntaxEditStyle, curlyFoldParser);
+        input.setCodeFoldingEnabled(true);
 
         input.setFont(font);
         output.setFont(font);
@@ -475,11 +480,11 @@ public class SwingTerminal implements TerminalInterface {
         frame.setContentPane(swingTerminal.panel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
-        atmf.putMapping("text/qdl", "edu.uiuc.ncsa.qdl.gui.flex.QDLSyntax");
-        swingTerminal.input.setSyntaxEditingStyle("text/qdl");
+        atmf.putMapping(syntaxEditStyle, "edu.uiuc.ncsa.qdl.gui.flex.QDLSyntax");
+        swingTerminal.input.setSyntaxEditingStyle(syntaxEditStyle);
         // Folding sounds nice, but is going to be quite some work here. This turns on java -style
         // curly brace folding.
-        /*FoldParserManager.get().addFoldParserMapping("text/qdl", new CurlyFoldParser());
+        /*FoldParserManager.get().addFoldParserMapping(syntaxEditStyle, new CurlyFoldParser());
         swingTerminal.input.setCodeFoldingEnabled(true);*/
         swingTerminal.setupWS(inputLine);
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();

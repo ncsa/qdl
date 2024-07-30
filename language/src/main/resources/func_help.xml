@@ -831,10 +831,17 @@ See also: \ (extraction)]]>
        // example where key+value are divisible by 3:
        pick((key,value)->mod(key+value,3)==0, [-4;5]);
    {2:-2, 5:1, 8:4}
-       // How to select all the elements of a stem, x., that contain the substring 'my_string'
-       // Note that index_of always returns a list with at least one element. -1 means 'my_string'
-       // was not found.
-       pick((k,v)->-1 < index_of(v, 'my_string').0, x.)]]>
+   //  A poem by Ogden Nash:
+   nash. := ['Some primal termite knocked on wood',
+             'And tasted it, and found it good!',
+             'And that is why your Cousin May',
+             'Fell through the parlor floor today.'];
+  // Let's pick the lines that talk about (i.e. have a substring of) Cousin May:
+
+   pick((v)->'Cousin May'<v, nash.)
+{
+ 2:And that is why your Cousin May
+}]]>
         </example>
     </entry>
 

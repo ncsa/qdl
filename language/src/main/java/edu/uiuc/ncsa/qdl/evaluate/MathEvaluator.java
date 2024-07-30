@@ -709,7 +709,7 @@ public class MathEvaluator extends AbstractEvaluator {
                     } else {
                         // assume it's and ISO 8601 date and should le converted to millis
                         try {
-                            String x = objects.toString().trim();
+                            String x = objects[0].toString().trim();
                             if(!x.endsWith("Z")){
                                 // try it as a local time
                                 LocalTime localTime =LocalTime.parse(x);

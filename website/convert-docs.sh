@@ -13,8 +13,9 @@ echo "converting QDL docs to PDF"
 lowriter --headless --convert-to pdf ${args[0]}/anaphors.odt             > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/cli-extension.odt        > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/crypto.odt               > /dev/null
+lowriter --headless --convert-to pdf ${args[0]}/dynamo-db.odt            > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/fonts.odt                > /dev/null
-lowriter --headless --convert-to pdf ${args[0]}/function-reference.odt     > /dev/null
+lowriter --headless --convert-to pdf ${args[0]}/function-reference.odt   > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/http-extension.odt       > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/installer.odt            > /dev/null
 lowriter --headless --convert-to pdf ${args[0]}/iso6429.odt              > /dev/null

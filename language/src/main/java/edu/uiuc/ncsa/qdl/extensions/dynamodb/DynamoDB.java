@@ -191,7 +191,14 @@ public class DynamoDB implements QDLModuleMetaClass {
 
 
     }
-
+    /*
+      Below starts the outline for writing values. There are some technical issues involved
+      since roundtripping values would seem impossible. The fly in the ointment is binary values
+      which end up as b64 encoded strings. Unless there is some way to track these by type,
+      then they are identical to just messy strings. This implies that, perhaps, types should be
+      added to them, so you get {'value':v, 'type':'b64'} or some such. Don't want to add types for
+      all values since that would be redundant and make stems hugely messy.
+     */
     protected Map<String, AttributeValue> stemToMap(QDLStem stem) {
         Map<String, AttributeValue> outMap = new HashMap<>();
 
@@ -367,10 +374,7 @@ public class DynamoDB implements QDLModuleMetaClass {
     public static String tableName = null;
     public static String partitionKey = null;
 
-    /*
 
-
-     */
     public class Close implements QDLFunction {
         @Override
         public String getName() {
@@ -483,6 +487,7 @@ public class DynamoDB implements QDLModuleMetaClass {
                 case 1:
                     d.add(getName() + "(new_value) - set to the new value, returning the old.");
             }
+            d.add("A default value of '" + DEFAULT_REGION + "' is set initially" );
             return d;
         }
     }

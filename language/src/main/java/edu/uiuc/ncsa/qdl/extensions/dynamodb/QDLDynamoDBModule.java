@@ -46,13 +46,12 @@ public class QDLDynamoDBModule extends JavaModule {
             doxx.add("Module for AWS (Amazon) Dynamo DB database operations in QDL.");
             doxx.add("There are several basic functions available");
             doxx.add("At this time, we only support reading from a Dynamo DB");
-            doxx.add(DynamoDB.OPEN + " open a connection to a dynamo DB server");
-            doxx.add(DynamoDB.CLOSE + " close an existing connection.");
-            doxx.add(DynamoDB.GET_ITEM + " get Dynamo DB objects. The result is a stem of objects");
-            doxx.add(DynamoDB.REGIONS + " List regions available. Default is " + DynamoDB.DEFAULT_REGION);
-            doxx.add(DynamoDB.REGION_FUNCTION + " Set the current region. " + DynamoDB.DEFAULT_REGION);
-            doxx.add(DynamoDB.TABLE_NAME_FUNCTION + " Set or get the current table name.");
-            doxx.add(DynamoDB.PARTITION_KEY_FUNCTION + " Set or get the current partition key.");
+            doxx.add("The basic usage is to call " + DynamoDB.OPEN +
+                    " a connection, then " + DynamoDB.GET_ITEM +  "  then when done,");
+            doxx.add(DynamoDB.CLOSE + " to close the connection");
+            doxx.add("Other functions are mutators to set connection information and ");
+            doxx.add("the " + DynamoDB.REGIONS + " function to query supported regions.");
+            doxx.add("See the detailed help for each function for more");
             doxx.add("You do need to set the table name, and partition key before getting values.");
        }
         return doxx;

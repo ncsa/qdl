@@ -29,6 +29,11 @@ The QDL Programming Language
     management magic there. If you've ever logged in with CILogon, there is an excellent chance you've already
     run into QDL on the sly.
 
+    The documentation is largely PDF. It is strongly suggested that you use a viewer that shows a
+    navigation bar, since many of these references are quite encyclopedic and not really intended
+    to be read cover to cover. At the command line, most unix distributions will convert PDF to text
+    on the fly with the less command.
+
 Documentation
 
     *{{{./pdf/installer.pdf}The QDL Installer}} The QDL installer and how to use it.
@@ -69,11 +74,12 @@ Documentation
 
 User Interfaces to QDL
 
-    *{{{./pdf/qdl_workspace.pdf}QDL Workspace Reference Manual}}  The basic command line way to quiddle.
+    *{{{./pdf/qdl_workspace.pdf}QDL Workspace Reference Manual}}  The basic command line way to quiddle. This uses native
+    Java I/O only so works everywhere, but is really limited.
 
-    *{{{./pdf/iso6429.pdf}How to use the ISO 6429 terminal support.}} Java has terrible command line support. This adds
-    an agnostic way to get basic command line functionality (such as cursor keys, history, special characters) in a purely
-    Java setting.  There are a few oddities such as clipboard support so do read this.
+    *{{{./pdf/iso6429.pdf}How to use the ISO 6429 terminal support.}} Since Java has terrible command line support,
+    this adds an agnostic way to get basic command line functionality (such as cursor keys, history,
+    special characters) in a purely Java setting.  There are a few oddities such as clipboard support so do read this.
 
     *{{{./pdf/qdl_swing_gui.pdf}Reference Manual for the Swing GUI}} A Swing-based GUI for quiddling. It includes syntax highlighting,
     a wide array of use shortcuts (such as ctrl+i to paste input form, ctrl+x to copy a line or selected area), special
@@ -90,6 +96,8 @@ Standard Extensions
     is not a full-featured client, but has a small handful of commands and a framework so you can
     write your database access easily. In Java, this would be the equivalent of the JDBC or in Python
     an adapter.
+
+    *{{{./pdf/dynamo-db.pdf} Dynamo DB module}} QDL support for Amazon Web Service's Dynamo DB.
 
     *{{{./pdf/http-extension.pdf}HTTP extension.}} Basic HTTP functions. It's never been easier to get access to
     your favorite site. Responses are converted to stems so you can quiddle them with wild abandon.
