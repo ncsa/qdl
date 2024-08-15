@@ -28,6 +28,7 @@ public class QDLDBModule extends JavaModule {
         module.setMetaClass(qdldb);
         funcs.add(qdldb.new Connect());
         funcs.add(qdldb.new Read());
+        funcs.add(qdldb.new BatchExecute());
         funcs.add(qdldb.new Update());
         funcs.add(qdldb.new Execute());
 

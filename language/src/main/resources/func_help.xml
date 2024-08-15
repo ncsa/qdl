@@ -831,6 +831,9 @@ See also: \ (extraction)]]>
        // example where key+value are divisible by 3:
        pick((key,value)->mod(key+value,3)==0, [-4;5]);
    {2:-2, 5:1, 8:4}
+
+ Example: filtering text
+ ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
    //  A poem by Ogden Nash:
    nash. := ['Some primal termite knocked on wood',
              'And tasted it, and found it good!',
@@ -841,7 +844,22 @@ See also: \ (extraction)]]>
    pick((v)->'Cousin May'<v, nash.)
 {
  2:And that is why your Cousin May
-}]]>
+}
+
+Example: Filtering stems.
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+Let us say we had a collection of stems like
+
+  clients. := [{'client_id':'987AD876E987', 'name':'Physics server',... }, ...]
+
+and some of them have and email entry (i.e. a key for 'email')
+and some do not. How to grab the ones that have email or
+don't have using pick:
+
+  has_email. := ~pick((k,v)->'email'∋v, clients.);
+   no_email. := ~pick((k,v)->'email'∌v, clients.);}
+
+Note that the initial ~ is just to re-index the list.]]>
         </example>
     </entry>
 

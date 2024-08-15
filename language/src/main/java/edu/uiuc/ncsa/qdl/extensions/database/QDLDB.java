@@ -28,6 +28,8 @@ import org.apache.commons.codec.binary.Base64;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import static edu.uiuc.ncsa.security.storage.sql.ConnectionPoolProvider.*;
@@ -161,7 +163,8 @@ public class QDLDB implements QDLModuleMetaClass {
                 if (objects[1] instanceof QDLStem) {
                     QDLStem stemVariable = (QDLStem) objects[1];
                     if (stemVariable.isList()) {
-                        args = stemVariable.getQDLList().toJSON();
+                        //args = stemVariable.getQDLList().toJSON();
+                        args = stemVariable.getQDLList();
                     } else {
                         throw new IllegalArgumentException(QUERY_COMMAND + " requires its second argument, if present to be a list");
                     }
@@ -169,6 +172,10 @@ public class QDLDB implements QDLModuleMetaClass {
                     throw new IllegalArgumentException(QUERY_COMMAND + " requires its second argument, if present to be a list");
                 }
             }
+            /*
+      db#read('select @ from oauth2.clients where ?<create_ts AND ?<last_accessed', [10000,10000])
+
+             */
             // Args are list of form
             /*
                 [a0,a1,...]
@@ -190,7 +197,7 @@ public class QDLDB implements QDLModuleMetaClass {
                 if (args != null) {
                     int i = 1;
                     for (Object entry : args) {
-                        setParam(stmt, i, entry);
+                        setParam(stmt, i++, entry);
                     }
                 }
                 stmt.executeQuery();
@@ -263,6 +270,11 @@ public class QDLDB implements QDLModuleMetaClass {
                 return;
             }
             if (value instanceof Long) {
+                stmt.setObject(i, value, BIGINT);
+                return;
+            }
+            // Since the entry comes from a trip through JSON
+            if (value instanceof Integer) {
                 stmt.setObject(i, value, BIGINT);
                 return;
             }
@@ -374,7 +386,7 @@ public class QDLDB implements QDLModuleMetaClass {
                 if (args != null) {
                     int i = 1;
                     for (Object entry : args) {
-                        setParam(stmt, i, entry);
+                        setParam(stmt, i++, entry);
                     }
                 }
                 stmt.executeUpdate();
@@ -523,7 +535,7 @@ public class QDLDB implements QDLModuleMetaClass {
             if (args != null) {
                 int i = 1;
                 for (Object entry : args) {
-                    setParam(stmt, i, entry);
+                    setParam(stmt, i++, entry);
                 }
             }
             stmt.execute();
@@ -565,7 +577,109 @@ public class QDLDB implements QDLModuleMetaClass {
     public void deserializeFromJSON(JSONObject json) {
 
     }
-/* Handy dandy table of SQL types and calls.
+    public static String BATCH = "batch";
+    public class BatchExecute implements QDLFunction{
+        @Override
+        public String getName() {
+            return BATCH;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{2};
+        }
+        // Fixes https://github.com/ncsa/qdl/issues/69
+        @Override
+        public Object evaluate(Object[] objects, State state) throws Throwable {
+            if(!(objects[0] instanceof String)){
+                throw new IllegalArgumentException("the first argument to " + getName() + " must be a string");
+            }
+            if(!Constant.isStem(objects[1])){
+                throw new IllegalArgumentException("the second argument to " + getName() + " must be a stem");
+            }
+            QDLStem stemVariable = (QDLStem) objects[1];
+            ConnectionRecord connectionRecord = connectionPool.pop();
+            Connection c = connectionRecord.connection;
+            HashMap returnCodes = new HashMap();
+            int counter = 0;
+            try {
+                PreparedStatement stmt = c.prepareStatement((String)objects[0]);
+                for(Object key : stemVariable.keySet()){
+                    Object value = stemVariable.get(key);
+                    if(!(value instanceof QDLStem)){
+                        throw new IllegalArgumentException("the element with index '" + key + " must be a list");
+                    }
+                    QDLStem arg = (QDLStem) value;
+                    if(!arg.isList()){
+                        throw new IllegalArgumentException("the element with index '" + key + " must be a list");
+                    }
+                    QDLList list = arg.getQDLList();
+                    int i = 1;
+                    for (Object entry : list) {
+                        setParam(stmt, i++, entry);
+                    }
+                    stmt.addBatch();
+                    returnCodes.put(counter++, key);
+
+                }
+                long[] rcs = stmt.executeLargeBatch();
+                QDLStem outStem = new QDLStem();
+                for(int i = 0; i < rcs.length; i++){
+                   outStem.putLongOrString(returnCodes.get(i), rcs[i]);
+                }
+                stmt.close();
+                releaseConnection(connectionRecord);
+                return outStem;
+            } catch (SQLException e) {
+                destroyConnection(connectionRecord);
+                throw new GeneralException("Error executing SQL: " + e.getMessage(), e);
+            }
+        }
+/*
+    ConnectionRecord cr = getConnection();
+        Connection c = cr.connection;
+        try {
+            PreparedStatement pStmt = c.prepareStatement(sql);
+            for (Identifier id : idMap.keySet()) {
+                pStmt.setLong(1, idMap.get(id));
+                pStmt.setString(2, id.toString());
+                pStmt.setLong(3, idMap.get(id));
+                pStmt.addBatch();
+                if (DEEP_DEBUG) {
+                    System.out.println("MonitoredSQLStore: updating id=" + id + ", access time=" + idMap.get(id));
+                }
+            }
+            int[] affectedRecords = pStmt.executeBatch();
+ */
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> documentation = new ArrayList<>();
+documentation.add(getName() + "(statement, value_list.) - execute a statement with multiple values. ");
+documentation.add("This will take a prepared statement and a stem of values, each of whose");
+documentation.add("entries is a list for the prepared statement." );
+documentation.add("it may be used for INSERT, DELETE or UPDATE.");
+documentation.add("It is logically equivalent to loop through statements and execute them,");
+documentation.add("but most SQL databases optimize such a batch execution and for very large");
+documentation.add("datasets, the performance difference can be quite dramatic.");
+documentation.add("\nThis returns a conformable stem each opf whose values is a non-zero integer");
+documentation.add("indicating the number of records in the database changed by this statment, or");
+documentation.add("a negative integer where");
+documentation.add(Statement.SUCCESS_NO_INFO + " = the operation worked, but no other information is available");
+documentation.add(Statement.EXECUTE_FAILED + " = the statement failed, but processing continued.");
+documentation.add("\n");
+documentation.add("E.g.");
+documentation.add("Let us use the prepared statement");
+documentation.add("stmt := UPDATE my_table set accessed=? where id=? AND (access IS NULL or create_ts<?)");
+documentation.add("\nand we have a large list of values. Each element of the list is a list");
+documentation.add("whose values are used in the prepared statement");
+documentation.add("v.:=[[date_ms(), '7D5EF', date_ms()-2419200000], [date_ms(),'C46AB',date_ms()-2419200000]]");
+documentation.add("\n(just 2 for this example, but it could be thousands). You issue");
+documentation.add("\nrc. := "+getName() + "(stmt, v.)");
+            return documentation;
+        }
+    }
+
+    /* Handy dandy table of SQL types and calls.
     SQL 	        JDBC/Java 	            setXXX 	        updateXXX
     VARCHAR 	    java.lang.String 	    setString 	    updateString
     CHAR 	        java.lang.String 	    setString 	    updateString
