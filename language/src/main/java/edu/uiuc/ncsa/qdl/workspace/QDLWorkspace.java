@@ -35,6 +35,19 @@ public class QDLWorkspace implements Serializable {
         this.workspaceCommands = workspaceCommands;
     }
 
+    public WorkspaceCommands getWorkspaceCommands() {
+        return workspaceCommands;
+    }
+
+    /**
+     * This is used only during deserialization of the workspace. Setting it
+     * any other time may lead to very bad results!
+     * @param workspaceCommands
+     */
+    public void setWorkspaceCommands(WorkspaceCommands workspaceCommands) {
+        this.workspaceCommands = workspaceCommands;
+    }
+
     WorkspaceCommands workspaceCommands;
 
     protected MyLoggingFacade getLogger() {

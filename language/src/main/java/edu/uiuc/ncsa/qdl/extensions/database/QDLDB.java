@@ -136,6 +136,115 @@ public class QDLDB implements QDLModuleMetaClass {
     }
 
 
+    public static final String BATCH_QUERY_COMMAND = "batch_read";
+
+    public class BatchRead implements QDLFunction {
+        @Override
+        public String getName() {
+            return BATCH_QUERY_COMMAND;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{2, 3};
+        }
+
+        @Override
+        public Object evaluate(Object[] objects, State state) throws Throwable {
+            if (!(objects[0] instanceof String)) {
+                throw new IllegalArgumentException(getName() + " requires a string as its first argument");
+            }
+            if (!(objects[1] instanceof QDLStem)) {
+                throw new IllegalArgumentException(getName() + " requires a stem as its second argument");
+            }
+            QDLStem inStem = (QDLStem) objects[1];
+            QDLStem outStem = new QDLStem();
+            boolean flattenList = false;
+            if(objects.length == 3){
+                if(objects[2] instanceof Boolean){
+                    flattenList = (Boolean) objects[2];
+                }else{
+                    throw new IllegalArgumentException(getName() + " requires a boolean as its third argument");
+                }
+            }
+            Read read = new Read();
+            for (Object key : inStem.keySet()) {
+                try {
+                    Object rawArg = inStem.get(key);
+                    QDLStem stemArg;
+                    if(rawArg instanceof QDLStem) {
+                        stemArg = (QDLStem) rawArg;
+                    }else{
+                        // its a scalar, so convert to a list
+                        stemArg = new QDLStem();
+                       stemArg.put(0, rawArg);
+                    }
+                    Object[] oArgs = new Object[]{objects[0], stemArg};
+                    Object output = read.evaluate(oArgs, state);
+                    if(flattenList && (output instanceof QDLStem)){
+                        QDLStem flattenStem = (QDLStem)output;
+                        if(flattenStem.size() == 1){
+                            outStem.putLongOrString(key, flattenStem.get(0L));
+                        }else{
+                            outStem.putLongOrString(key, output);
+                        }
+
+                    }else{
+
+                        outStem.putLongOrString(key, output);
+                    }
+                } catch (Throwable t) {
+                    if (state.isDebugOn()) {
+                        t.printStackTrace();
+                    }
+                    outStem.putLongOrString(key, QDLNull.getInstance());
+                }
+            }
+            return outStem;
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> docs = new ArrayList<>();
+            switch (argCount){
+                case 2:
+                    docs.add(getName() + "(prepared_statement, batch_values.) - do multiple reads as a batch");
+                    break;
+                case 3:
+                    docs.add(getName() + "(prepared_statement, batch_values., flatten) - do multiple reads as a batch. If there is a single result, do not wrap in a list");
+                    docs.add("Since any read returns a list of results, setting flatten to true will take ");
+                    docs.add("a list that has a single element and use that. This permits you to have simpler output.");
+                    break;
+            }
+            docs.add("This is like " + QUERY_COMMAND + ", except that the batch_values. will be used");
+            docs.add("to construct multiple queries and execute them.");
+            docs.add("The result is a conformable stem to batch_values, with the key holding");
+            docs.add("the result (which is in general a list of results!) or a NULL if the operation failed.");
+            docs.add("\n");
+            docs.add("If the batch_values. are scalars, the ");
+            docs.add("/nE.g. Passing in a generic stem\n");
+            docs.add("   stmt := 'select client_id, creation_ts from oauth2.clients where client_id=?'");
+            docs.add("   args.:={'zero':['oa4mp:/client/234234'], 'one':['oa4mp:/client_id/5667']}");
+            docs.add("   db#batch_read(stmt, args.);\n");
+            docs.add("{\n" +
+                    " zero : [{creation_ts:2023-05-19T05:00:00.000Z,client_id:oa4mp:/client/234234}],\n" +
+                    "  one : [{creation_ts:2024-03-21T05:00:00.000Z,client_id:oa4mp:/client_id/5667}]\n" +
+                    "}");
+            docs.add("This shows that there was one result for each query.");
+            docs.add("\nE.g. Using a list of scalars\n");
+            docs.add("   args1.:=['oa4mp:/client/234234','oa4mp:/client_id/5667']");
+            docs.add("   db#batch_read(stmt, args1.)");
+            docs.add("\nSame as the above results, but as a list since args1 is a list.");
+            docs.add("\nE.g.with flatten\n");
+            docs.add("   db#batch_read(stmt, args1., true)");
+            docs.add("[\n" +
+                    "{creation_ts:2023-05-19T05:00:00.000Z,client_id:oa4mp:/client/234234},\n" +
+                    "{creation_ts:2024-03-21T05:00:00.000Z,client_id:oa4mp:/client_id/5667}\n" +
+                    "]");
+            return docs;
+        }
+    }
+
     public static final String QUERY_COMMAND = "read";
 
     public class Read implements QDLFunction {
@@ -577,8 +686,10 @@ public class QDLDB implements QDLModuleMetaClass {
     public void deserializeFromJSON(JSONObject json) {
 
     }
-    public static String BATCH = "batch";
-    public class BatchExecute implements QDLFunction{
+
+    public static String BATCH = "batch_execute";
+
+    public class BatchExecute implements QDLFunction {
         @Override
         public String getName() {
             return BATCH;
@@ -588,13 +699,14 @@ public class QDLDB implements QDLModuleMetaClass {
         public int[] getArgCount() {
             return new int[]{2};
         }
+
         // Fixes https://github.com/ncsa/qdl/issues/69
         @Override
         public Object evaluate(Object[] objects, State state) throws Throwable {
-            if(!(objects[0] instanceof String)){
+            if (!(objects[0] instanceof String)) {
                 throw new IllegalArgumentException("the first argument to " + getName() + " must be a string");
             }
-            if(!Constant.isStem(objects[1])){
+            if (!Constant.isStem(objects[1])) {
                 throw new IllegalArgumentException("the second argument to " + getName() + " must be a stem");
             }
             QDLStem stemVariable = (QDLStem) objects[1];
@@ -603,29 +715,32 @@ public class QDLDB implements QDLModuleMetaClass {
             HashMap returnCodes = new HashMap();
             int counter = 0;
             try {
-                PreparedStatement stmt = c.prepareStatement((String)objects[0]);
-                for(Object key : stemVariable.keySet()){
+                PreparedStatement stmt = c.prepareStatement((String) objects[0]);
+                for (Object key : stemVariable.keySet()) {
                     Object value = stemVariable.get(key);
-                    if(!(value instanceof QDLStem)){
-                        throw new IllegalArgumentException("the element with index '" + key + " must be a list");
+                    QDLList list;
+                    if (value instanceof QDLStem) {
+                        QDLStem arg = (QDLStem) value;
+                        if (!arg.isList()) {
+                            throw new IllegalArgumentException("the element with index '" + key + " must be a list");
+                        }
+                         list = arg.getQDLList();
+                    }else{
+                        list = new QDLList();
+                        list.add(value);
                     }
-                    QDLStem arg = (QDLStem) value;
-                    if(!arg.isList()){
-                        throw new IllegalArgumentException("the element with index '" + key + " must be a list");
-                    }
-                    QDLList list = arg.getQDLList();
+
                     int i = 1;
                     for (Object entry : list) {
                         setParam(stmt, i++, entry);
                     }
                     stmt.addBatch();
                     returnCodes.put(counter++, key);
-
                 }
                 long[] rcs = stmt.executeLargeBatch();
                 QDLStem outStem = new QDLStem();
-                for(int i = 0; i < rcs.length; i++){
-                   outStem.putLongOrString(returnCodes.get(i), rcs[i]);
+                for (int i = 0; i < rcs.length; i++) {
+                    outStem.putLongOrString(returnCodes.get(i), rcs[i]);
                 }
                 stmt.close();
                 releaseConnection(connectionRecord);
@@ -635,46 +750,42 @@ public class QDLDB implements QDLModuleMetaClass {
                 throw new GeneralException("Error executing SQL: " + e.getMessage(), e);
             }
         }
-/*
-    ConnectionRecord cr = getConnection();
-        Connection c = cr.connection;
-        try {
-            PreparedStatement pStmt = c.prepareStatement(sql);
-            for (Identifier id : idMap.keySet()) {
-                pStmt.setLong(1, idMap.get(id));
-                pStmt.setString(2, id.toString());
-                pStmt.setLong(3, idMap.get(id));
-                pStmt.addBatch();
-                if (DEEP_DEBUG) {
-                    System.out.println("MonitoredSQLStore: updating id=" + id + ", access time=" + idMap.get(id));
-                }
-            }
-            int[] affectedRecords = pStmt.executeBatch();
- */
+
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> documentation = new ArrayList<>();
-documentation.add(getName() + "(statement, value_list.) - execute a statement with multiple values. ");
-documentation.add("This will take a prepared statement and a stem of values, each of whose");
-documentation.add("entries is a list for the prepared statement." );
-documentation.add("it may be used for INSERT, DELETE or UPDATE.");
-documentation.add("It is logically equivalent to loop through statements and execute them,");
-documentation.add("but most SQL databases optimize such a batch execution and for very large");
-documentation.add("datasets, the performance difference can be quite dramatic.");
-documentation.add("\nThis returns a conformable stem each opf whose values is a non-zero integer");
-documentation.add("indicating the number of records in the database changed by this statment, or");
-documentation.add("a negative integer where");
-documentation.add(Statement.SUCCESS_NO_INFO + " = the operation worked, but no other information is available");
-documentation.add(Statement.EXECUTE_FAILED + " = the statement failed, but processing continued.");
-documentation.add("\n");
-documentation.add("E.g.");
-documentation.add("Let us use the prepared statement");
-documentation.add("stmt := UPDATE my_table set accessed=? where id=? AND (access IS NULL or create_ts<?)");
-documentation.add("\nand we have a large list of values. Each element of the list is a list");
-documentation.add("whose values are used in the prepared statement");
-documentation.add("v.:=[[date_ms(), '7D5EF', date_ms()-2419200000], [date_ms(),'C46AB',date_ms()-2419200000]]");
-documentation.add("\n(just 2 for this example, but it could be thousands). You issue");
-documentation.add("\nrc. := "+getName() + "(stmt, v.)");
+            documentation.add(getName() + "(statement, value_list.) - execute a statement with multiple values. ");
+            documentation.add("This will take a prepared statement and a stem of values, each of whose");
+            documentation.add("entries is a list or scalar (converted to a list with one element)");
+            documentation.add(" for the prepared statement. It may be used for INSERT, DELETE or UPDATE.");
+            documentation.add("See " + BATCH_QUERY_COMMAND + " for batch reads");
+            documentation.add("It is logically equivalent to loop through statements and execute them,");
+            documentation.add("but most SQL databases optimize such a batch execution and for very large");
+            documentation.add("datasets, the performance difference can be quite dramatic.");
+            documentation.add("Moreover, drivers that talk to databases need make a single call with this");
+            documentation.add("method, which saves resources and is much more efficient.");
+            documentation.add("\nThis returns a conformable stem each of whose values is a non-zero integer");
+            documentation.add("indicating the number of records in the database changed by this statment, or");
+            documentation.add("a negative integer where");
+            documentation.add(Statement.SUCCESS_NO_INFO + " = the operation worked, but no other information is available");
+            documentation.add(Statement.EXECUTE_FAILED + " = the statement failed, but processing continued.");
+            documentation.add("\n");
+            documentation.add("E.g.");
+            documentation.add("Let us use the prepared statement");
+            documentation.add("stmt := UPDATE my_table set accessed=? where id=? AND (access IS NULL or create_ts<?)");
+            documentation.add("\nand we have a large list of values. Each element of the list is a list");
+            documentation.add("whose values are used in the prepared statement");
+            documentation.add("v.:=[[date_ms(), '7D5EF', date_ms()-2419200000], [date_ms(),'C46AB',date_ms()-2419200000]]");
+            documentation.add("\n(just 2 for this example, but it could be thousands). You issue");
+            documentation.add("\nrc. := " + getName() + "(stmt, v.)");
+            documentation.add("\nE.g. mass delete");
+            documentation.add("This will do a mass delete by a unique id. It uses the fact that");
+            documentation.add("the function accepts a list of scalars if there is a single parameter.");
+            documentation.add("   stmt = 'DELETE from my_table WHERE id = ?");
+            documentation.add("   ids.:=['ADC745B','B6434F','C984E875',...];");
+            documentation.add("   "+getName() + "(stmt, ids.);");
+            documentation.add("[1," + Statement.SUCCESS_NO_INFO + ",1,...]");
+
             return documentation;
         }
     }

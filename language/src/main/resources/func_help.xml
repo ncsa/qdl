@@ -866,14 +866,14 @@ Note that the initial ~ is just to re-index the list.]]>
     <entry id="sublist">
         <body>
             <![CDATA[Function to extract a sublist from a list or set.
-
+For sets:
 sublist(set, count) - get count elements from a list. Since sets have no
           order, no promises are made on which elements are returned.
 
 => Note that for the remaining calls, the arg is a list and the result is
 => *always* a rank 1 stem and this operates only on the zeroth axis.
 
-
+For lists:
 sublist(source_list., start_index) -
           return a sublist of the source_list starting at the given index.
 sublist(source_list., start_index, n) -
@@ -4276,7 +4276,7 @@ The aim of such a file is for building a possibly sizeable
 application with several sections that have their own
 configurations. Since bootstrapping such an application can be
 hard, you can put the critical information in an ini file,
-which can then be read (e.g., by the __init() method of a
+which can then be read (e.g., by the __initialize() method of a
 workspace). "The bootstrapping problem" refers to how to
 start up a system and the easiest way to do it is with
 information from outside the system. QDL's ini files are one
@@ -4455,7 +4455,7 @@ output - true if it succeeded, an error if it did not.
 This is to be a bridge between QDL and its workspace, if
 there is one active. The intent is not to let you write massive
 programs (use scripts) but to allow for customization of the
-workspace from inside QDL, e.g. in an __init() function,
+workspace from inside QDL, e.g. in an __initialize() function,
 so the workspace can be initialized etc.
 As such, it should be used minimally and with discretion.]]>
         </body>
@@ -6681,6 +6681,47 @@ j_load or j_use very conveniently.
        </example>
    </entry>
 
+    <entry id="run_init_on_load">
+    <body>
+        <![CDATA[Run the initialize function, named __initialize() (note the double underscore in the name).
+If there is a niladic function named __initialize(), setting this variable true will run it
+when the workspace is loaded with the )load command.
+  ]]>
+    </body>
+    <example>
+    <![CDATA[E.g. Creating an initialize function.
+In this example, we will show the entire lifecycle for the initialize function.
+Start QDL and set this property true, then create the function,
+save and exit QDL:
+
+   )ws set run_init_on_load on
+run_init_on_load is on
+   __initialize()->block[say('loading...');say('workspace loaded at ' + date_iso());]
+   )save temp
+(message about saving the workspace)
+   )off y
+
+Now restart QDL and load the workspace.
+  )load temp
+loading...
+current time is 2024-08-17T11:32:59.853Z
+
+The __initialize() function is called as soon as the workspace has been
+loaded from the file system, but before the prompt is displayed.
+There is no limit or type placed on this function, just that it has
+no arguments.
+   ]]>
+    </example>
+    </entry>
+    <entry id="__initialize">
+    <body>
+        <![CDATA[__initialize is a reserved function in the workspace that
+can be defined and executed on load.
+
+See: run_init_on_load
+  ]]>
+    </body>
+    </entry>
 
     <!--
     <entry id="">

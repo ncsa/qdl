@@ -5124,6 +5124,18 @@ public class WorkspaceCommands implements Logable, Serializable {
         WSJSONSerializer wsJSONSerializer = new WSJSONSerializer();
         newCommands = wsJSONSerializer.fromJSON(bytes, compressionOn);
         updateWSState(newCommands);
+        if (runInitOnLoad && state.getFTStack().containsKey(new FKey(DEFAULT_BOOT_FUNCTION_ON_LOAD_NAME, 0))) {
+            String runnit = DEFAULT_BOOT_FUNCTION_ON_LOAD_NAME + "();";
+            // turn off echoing so __init only prints what it wants to.
+            QDLInterpreter qi = getInterpreter();
+            boolean oldPP = qi.isPrettyPrint();
+            boolean oldEchoMode = qi.isEchoModeOn();
+            qi.setEchoModeOn(false);
+            qi.setPrettyPrint(false);
+            getInterpreter().execute(runnit);
+            qi.setPrettyPrint(oldPP);
+            qi.setEchoModeOn(oldEchoMode);
+        }
         return RC_CONTINUE;
     }
 
@@ -5537,7 +5549,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return false;
     }
 
-    String DEFAULT_BOOT_FUNCTION_ON_LOAD_NAME = "__init";
+    String DEFAULT_BOOT_FUNCTION_ON_LOAD_NAME = "__initialize";
     boolean runInitOnLoad = true;
 
     String currentWorkspace;
@@ -6721,6 +6733,9 @@ public class WorkspaceCommands implements Logable, Serializable {
                 iso6429IO.clearCommandBuffer();
                 iso6429IO.addCommandHistory(newCommands.commandHistory);
             }
+            // Fix for https://github.com/ncsa/qdl/issues/70
+            QDLWorkspace qdlWorkspace = new QDLWorkspace(newCommands);
+            newCommands.setWorkspace(qdlWorkspace);
             return true;
         } catch (Throwable t) {
             // This should return a nice message to display.
