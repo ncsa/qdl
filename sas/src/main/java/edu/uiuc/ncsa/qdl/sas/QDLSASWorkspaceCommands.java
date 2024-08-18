@@ -36,7 +36,7 @@ public class QDLSASWorkspaceCommands extends WorkspaceCommands {
     }
 
     @Override
-    public Object functionEdit(List<String> inputForm, List<String> output, String fName, int argCount) {
+    public Object editFunction(List<String> inputForm, List<String> output, String fName, int argCount) {
         String content = listToString(inputForm);
         EditResponse editResponse = new EditResponse(content);
         editResponse.setAlias(fName);

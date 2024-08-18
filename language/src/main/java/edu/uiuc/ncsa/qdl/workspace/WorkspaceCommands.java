@@ -2640,7 +2640,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         List<String> f = StringUtils.stringToList(inputForm);
         List<String> output = new ArrayList<>();
-        Object rc = functionEdit(f, output, fName, argCount);
+        Object rc = editFunction(f, output, fName, argCount);
         if (rc instanceof Response) {
             return rc;
         }
@@ -2650,13 +2650,14 @@ public class WorkspaceCommands implements Logable, Serializable {
         return restoreFunction(output, fName, argCount);
     }
 
-    public Object functionEdit(List<String> inputForm, List<String> output, String fName, int argCount) {
-        // return value is thje return code or response, so pass in output as argument.
+    public Object editFunction(List<String> inputForm, List<String> output, String fName, int argCount) {
+        // return value is the return code or response, so pass in output as argument.
         if (useExternalEditor()) {
             inputForm = _doExternalEdit(inputForm);
         } else {
             if (isSwingGUI()) {
-                QDLEditor qdlEditor = new QDLEditor();
+                // Fix https://github.com/ncsa/qdl/issues/71
+                QDLEditor qdlEditor = new QDLEditor(this,fName, 0);
                 qdlEditor.setWorkspaceCommands(this); // or callback fails
                 qdlEditor.setType(EditDoneEvent.TYPE_FUNCTION);
                 qdlEditor.setLocalName(fName);
@@ -3106,7 +3107,8 @@ public class WorkspaceCommands implements Logable, Serializable {
             output.addAll(_doExternalEdit(inputForm));
         } else {
             if (isSwingGUI()) {
-                QDLEditor qdlEditor = new QDLEditor();
+                // Fix https://github.com/ncsa/qdl/issues/71
+                QDLEditor qdlEditor = new QDLEditor(this, varName, 0);
                 qdlEditor.setType(EditDoneEvent.TYPE_VARIABLE);
                 qdlEditor.setLocalName(varName);
                 qdlEditor.setArgState((isText ? 1 : 0) + (isStem ? 2 : 0));
