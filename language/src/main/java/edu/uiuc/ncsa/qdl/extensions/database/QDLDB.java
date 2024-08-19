@@ -24,6 +24,7 @@ import edu.uiuc.ncsa.security.storage.sql.postgres.PostgresConnectionParameters;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
+import org.checkerframework.checker.units.qual.A;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -277,8 +278,9 @@ public class QDLDB implements QDLModuleMetaClass {
                     } else {
                         throw new IllegalArgumentException(QUERY_COMMAND + " requires its second argument, if present to be a list");
                     }
-                } else {
-                    throw new IllegalArgumentException(QUERY_COMMAND + " requires its second argument, if present to be a list");
+                } else { // if a scalar, float it to a list.
+                    args = new ArrayList();
+                    args.add(objects[1]);
                 }
             }
             /*
@@ -484,7 +486,9 @@ public class QDLDB implements QDLModuleMetaClass {
                         throw new IllegalArgumentException(QUERY_COMMAND + " requires its second argument, if present to be a list");
                     }
                 } else {
-                    throw new IllegalArgumentException(QUERY_COMMAND + " requires its second argument, if present to be a list");
+                    args = new ArrayList();
+                    args.add(objects[1]);
+                    //throw new IllegalArgumentException(QUERY_COMMAND + " requires its second argument, if present to be a list");
                 }
             }
 
@@ -633,7 +637,9 @@ public class QDLDB implements QDLModuleMetaClass {
                     throw new IllegalArgumentException(name + " requires its second argument, if present to be a list");
                 }
             } else {
-                throw new IllegalArgumentException(name + " requires its second argument, if present to be a list");
+                args = new ArrayList();
+                args.add(objects[1]);
+              //  throw new IllegalArgumentException(name + " requires its second argument, if present to be a list");
             }
         }
 

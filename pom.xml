@@ -45,7 +45,7 @@
         <module>language</module>
         <module>website</module> 
         <module>tests</module>
-        <module>gui</module>
+    <!--    <module>gui</module> -->
         <module>sas</module>
         <module>skin</module>
     </modules>
