@@ -229,6 +229,11 @@ public class HTTPClient implements QDLModuleMetaClass {
         public Object evaluate(Object[] objects, State state) throws Throwable {
             checkInit();
             String r = null;
+            if(objects.length == 1){
+                if(!(objects[0] instanceof QDLStem)){
+                    throw new IllegalArgumentException(getName() + " requires a stem if there is a single argument.");
+                }
+            }
             r = paramsToRequest(objects);
             HttpGet request = new HttpGet(r);
             if ((headers != null) && !headers.isEmpty()) {

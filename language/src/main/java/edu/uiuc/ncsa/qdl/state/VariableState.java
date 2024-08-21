@@ -219,7 +219,8 @@ public abstract class VariableState extends NamespaceAwareState {
         }
         if (isIntrinsic(variableName)) {
             vStack = getVStack();
-            VThing vThing = (VThing) vStack.nonlocalGet(vKey);
+            //VThing vThing = (VThing) vStack.nonlocalGet(vKey);
+            VThing vThing = (VThing) vStack.localGet(vKey);
             if (vThing == null) {
                 stem = null;
             } else {
@@ -572,5 +573,15 @@ public abstract class VariableState extends NamespaceAwareState {
         return null;
     }
 
+    public void setInstrinsicVariables(VStack instrinsicVariables) {
+        this.instrinsicVariables = instrinsicVariables;
+    }
 
+    VStack instrinsicVariables;
+    public VStack getInstrinsicVariables(){
+        if(instrinsicVariables == null){
+            instrinsicVariables = new VStack();
+        }
+        return instrinsicVariables;
+    }
 }

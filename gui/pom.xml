@@ -17,20 +17,5 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
     </properties>
-<!--     <dependencies>
 
-         <dependency>
-             <groupId>edu.uiuc.ncsa.security</groupId>
-             <artifactId>sas-server</artifactId>
-             <version>5.3-SNAPSHOT</version>
-             <type>jar</type>
-         </dependency>
-         <dependency>
-             <groupId>edu.uiuc.ncsa.qdl</groupId>
-             <artifactId>language</artifactId>
-             <version>1.5-QDL-SNAPSHOT</version>
-         </dependency>
-
-     </dependencies>-->
-  
 </project>

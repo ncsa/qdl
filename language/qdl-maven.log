@@ -15,7 +15,7 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #13,366 (2024-08-19T09:25:49.377-05:00) at timestamp: 1724077549377
+[[1;34mINFO[m] Storing buildNumber: Build: #13,377 (2024-08-20T16:57:36.585-05:00) at timestamp: 1724191056585
 [[1;34mINFO[m] Storing buildScmBranch: main
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mlanguage[0;1m ---[m
@@ -47,7 +47,7 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #13,367 (2024-08-19T09:25:52.829-05:00) at timestamp: 1724077552829
+[[1;34mINFO[m] Storing buildNumber: Build: #13,378 (2024-08-20T16:57:39.229-05:00) at timestamp: 1724191059229
 [[1;34mINFO[m] Storing buildScmBranch: main
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m<<< [0;32mmaven-source-plugin:2.2.1:jar[m [1m(attach-sources)[0;1m < [0;1mgenerate-sources[m @ [36mlanguage[0;1m <<<[m
@@ -1145,10 +1145,22 @@ Generating /home/ncsa/dev/ncsa-git/qdl/language/target/apidocs/help-doc.html...
 [[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/qdl-javadoc.jar
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-assembly-plugin:3.1.0:single[m [1m(make-my-jar-with-dependencies)[m @ [36mlanguage[0;1m ---[m
+Downloading from apache.snapshots: http://people.apache.org/repo/m2-snapshot-repository/edu/uiuc/ncsa/security/storage/5.3-SNAPSHOT/maven-metadata.xml
+Downloading from ow2-snapshot: http://repository.ow2.org/nexus/content/repositories/snapshots/edu/uiuc/ncsa/security/storage/5.3-SNAPSHOT/maven-metadata.xml
+Downloading from apache.snapshots: http://people.apache.org/repo/m2-snapshot-repository/edu/uiuc/ncsa/security/security-lib/5.3-SNAPSHOT/maven-metadata.xml
+Downloading from ow2-snapshot: http://repository.ow2.org/nexus/content/repositories/snapshots/edu/uiuc/ncsa/security/security-lib/5.3-SNAPSHOT/maven-metadata.xml
+Downloading from apache.snapshots: http://people.apache.org/repo/m2-snapshot-repository/edu/uiuc/ncsa/security/util/5.3-SNAPSHOT/maven-metadata.xml
+Downloading from ow2-snapshot: http://repository.ow2.org/nexus/content/repositories/snapshots/edu/uiuc/ncsa/security/util/5.3-SNAPSHOT/maven-metadata.xml
+Downloading from apache.snapshots: http://repository.apache.org/snapshots/edu/uiuc/ncsa/security/core/5.3-SNAPSHOT/maven-metadata.xml
+Downloading from ow2-snapshot: http://repository.ow2.org/nexus/content/repositories/snapshots/edu/uiuc/ncsa/security/core/5.3-SNAPSHOT/maven-metadata.xml
+Downloading from apache.snapshots: http://repository.apache.org/snapshots/edu/uiuc/ncsa/security/sas-server/5.3-SNAPSHOT/maven-metadata.xml
+Downloading from ow2-snapshot: http://repository.ow2.org/nexus/content/repositories/snapshots/edu/uiuc/ncsa/security/sas-server/5.3-SNAPSHOT/maven-metadata.xml
+Downloading from apache.snapshots: http://repository.apache.org/snapshots/edu/uiuc/ncsa/security/servlet/5.3-SNAPSHOT/maven-metadata.xml
+Downloading from ow2-snapshot: http://repository.ow2.org/nexus/content/repositories/snapshots/edu/uiuc/ncsa/security/servlet/5.3-SNAPSHOT/maven-metadata.xml
 [[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/qdl-jar-with-dependencies.jar
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1;32mBUILD SUCCESS[m
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] Total time:  13.455 s
-[[1;34mINFO[m] Finished at: 2024-08-19T09:26:02-05:00
+[[1;34mINFO[m] Total time:  15.590 s
+[[1;34mINFO[m] Finished at: 2024-08-20T16:57:51-05:00
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
