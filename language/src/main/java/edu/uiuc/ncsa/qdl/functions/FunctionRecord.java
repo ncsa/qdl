@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl.functions;
 
+import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.statements.Statement;
 import edu.uiuc.ncsa.qdl.statements.TokenPosition;
 
@@ -18,7 +19,13 @@ public class FunctionRecord implements FunctionRecordInterface {
         this.sourceCode = sourceCode;
         this.key = key;
     }
-
+    boolean extrinsic = false;
+    public boolean isExtrinsic(){
+        return extrinsic;
+    }
+    public void setExtrinsic(boolean extrinsic){
+        this.extrinsic = extrinsic;
+    }
     @Override
     public boolean isAnonymous() {
         return anonymous;
@@ -43,6 +50,9 @@ public class FunctionRecord implements FunctionRecordInterface {
 
     public void setName(String name) {
         this.name = name;
+        if (name != null && !name.isEmpty()) {
+            setExtrinsic(State.isExtrinsic(name));
+        }
     }
 
     @Override
@@ -193,7 +203,7 @@ public class FunctionRecord implements FunctionRecordInterface {
     @Override
     public FunctionRecord clone() {
         FunctionRecord functionRecord = new FunctionRecord();
-        functionRecord.name = name;
+        functionRecord.setName(name);
         functionRecord.sourceCode = sourceCode;
         functionRecord.documentation = documentation;
         functionRecord.statements = statements;

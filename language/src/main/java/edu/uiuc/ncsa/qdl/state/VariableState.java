@@ -218,9 +218,12 @@ public abstract class VariableState extends NamespaceAwareState {
             didIt = true;
         }
         if (isIntrinsic(variableName)) {
+            vStack = getIntrinsicVariables();
+            VThing vThing = (VThing) vStack.get(vKey);
+/*
             vStack = getVStack();
-            //VThing vThing = (VThing) vStack.nonlocalGet(vKey);
-            VThing vThing = (VThing) vStack.localGet(vKey);
+            VThing vThing = (VThing) vStack.nonlocalGet(vKey);
+*/
             if (vThing == null) {
                 stem = null;
             } else {
@@ -363,6 +366,10 @@ public abstract class VariableState extends NamespaceAwareState {
             getExtrinsicVars().put(vThing);
             return;
         }
+        if(isIntrinsic(variableName)){
+            getIntrinsicVariables().put(vThing);
+            return;
+        }
         if (isImportMode()) {
             getVStack().localPut(vThing);
         } else {
@@ -398,7 +405,8 @@ public abstract class VariableState extends NamespaceAwareState {
             didIt = true;
         }
         if (isIntrinsic(variableName)) {
-            v = (VThing) getVStack().get(xKey);
+            //v = (VThing) getVStack().get(xKey);
+            v = (VThing) getIntrinsicVariables().get(xKey);
             didIt = true;
         }
         if (!didIt) {
@@ -528,6 +536,9 @@ public abstract class VariableState extends NamespaceAwareState {
         if (showExtrinsic) {
             out.addAll(getExtrinsicVars().listVariables());
         }
+        if(showIntrinsic){
+            out.addAll(getIntrinsicVariables().listVariables());
+        }
         if (!includeModules) {
             return out;
         }
@@ -563,7 +574,7 @@ public abstract class VariableState extends NamespaceAwareState {
     //public static final String EXTRINSIC_MARKER = "&";
     public static final String EXTRINSIC_MARKER = "$$";
 
-    public boolean isExtrinsic(String x) {
+    public static boolean isExtrinsic(String x) {
         return x.startsWith(EXTRINSIC_MARKER);
     }
 
@@ -578,7 +589,7 @@ public abstract class VariableState extends NamespaceAwareState {
     }
 
     VStack instrinsicVariables;
-    public VStack getInstrinsicVariables(){
+    public VStack getIntrinsicVariables(){
         if(instrinsicVariables == null){
             instrinsicVariables = new VStack();
         }

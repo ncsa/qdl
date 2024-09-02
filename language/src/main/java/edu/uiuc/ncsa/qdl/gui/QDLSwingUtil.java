@@ -31,7 +31,7 @@ public class QDLSwingUtil {
         ArrayList<String> functions = new ArrayList<>();
         functions.addAll(state.getMetaEvaluator().listFunctions(false));
         functions.addAll(state.listFunctions(true,
-                null, true, false));
+                null, true, false, false));
         return createCompletionProvider(functions);
     }
 

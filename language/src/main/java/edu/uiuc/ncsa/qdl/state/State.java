@@ -974,7 +974,7 @@ public class State extends FunctionState implements QDLConstants {
      * @return
      */
     public State newSelectiveState(State moduleState, boolean inheritFunctions, boolean inheritVariables) {
-        return newSelectiveState(moduleState, true, inheritFunctions, inheritVariables);
+        return newSelectiveState(moduleState, true, inheritFunctions, inheritVariables, true);
     }
 
     /**
@@ -988,7 +988,11 @@ public class State extends FunctionState implements QDLConstants {
      * @param inheritVariables
      * @return
      */
-    public State newSelectiveState(State moduleState, boolean inheritModules, boolean inheritFunctions, boolean inheritVariables) {
+    public State newSelectiveState(State moduleState,
+                                   boolean inheritModules,
+                                   boolean inheritFunctions,
+                                   boolean inheritVariables,
+                                   boolean inheritIntrinsics) {
         VStack newStack = new VStack(); // always creates an empty symbol table, replace it
         if (inheritVariables) {
             if (moduleState != null && !moduleState.vStack.isEmpty()) {
@@ -997,6 +1001,31 @@ public class State extends FunctionState implements QDLConstants {
             }
             if (!vStack.isEmpty()) {
                 newStack.appendTables(vStack);
+            }
+        }
+/*
+  Start here 8/21/2024: Converting old intrinsic vars to use new stack. Need to
+  figure out how to push module intrinsic vars on. The next snippet is wrong, since
+  it is boilerplated from the previous block and still has references to newStack
+  directly. What is the right logic? This method is used in the import() function.
+ */
+        VStack iStack = new VStack(); // always creates an empty symbol table, replace it
+        FStack<? extends FTable<? extends FKey, ? extends FunctionRecordInterface>> iftStack = new FStack();
+
+        if (inheritIntrinsics) {
+            if (moduleState != null && !moduleState.getIntrinsicVariables().isEmpty()) {
+                //newStack.addAll(moduleState.symbolStack.getParentTables());
+                iStack.appendTables(moduleState.getIntrinsicVariables());
+            }
+            if (!getIntrinsicVariables().isEmpty()) {
+                iStack.appendTables(getIntrinsicVariables());
+            }
+ //and now functions
+            if (moduleState != null && !moduleState.getIntrinsicFunctions().isEmpty()) {
+                iftStack.appendTables(moduleState.getIntrinsicFunctions());
+            }
+            if (!getIntrinsicFunctions().isEmpty()) {
+                iftStack.appendTables(getIntrinsicFunctions()); // pushes elements in reverse order
             }
         }
 
@@ -1048,6 +1077,8 @@ public class State extends FunctionState implements QDLConstants {
                 isRestrictedIO(),
                 isAssertionsOn());
         newState.setScriptArgStem(getScriptArgStem());
+        newState.setInstrinsicVariables(iStack);
+        newState.setIntrinsicFunctions(iftStack);
         newState.setScriptName(getScriptName());
         newState.setScriptPaths(getScriptPaths());
         newState.setModulePaths(getModulePaths());
@@ -1064,7 +1095,7 @@ public class State extends FunctionState implements QDLConstants {
 
 
     /**
-     * For the case the this has been deserialized and needs to have its transient
+     * For the case where this has been deserialized and needs to have its transient
      * fields initialized. These are things like the {@link MetaEvaluator} that
      * should not be serialized or current mount points (which can't be serialized
      * because you'd have to serialize the entire backing file system to satisfy
@@ -1168,6 +1199,12 @@ public class State extends FunctionState implements QDLConstants {
         //getSymbolStack().toXML(xsw);
         getVStack().toXML(xsw, serializationState);
         getFTStack().toXML(xsw, serializationState);
+        if(!getIntrinsicVariables().isEmpty()) {
+            getIntrinsicVariables().toXML(xsw, serializationState);
+        }
+        if(!getIntrinsicFunctions().isEmpty()) {
+            getIntrinsicFunctions().toXML(xsw, serializationState);
+        }
         getMTemplates().toXML(xsw, serializationState);
         getMInstances().toXML(xsw, serializationState);
         writeExtraXMLElements(xsw);
@@ -1542,7 +1579,7 @@ public class State extends FunctionState implements QDLConstants {
     }
 
     public void setExtrinsicVars(VStack extrinsicVars) {
-        this.extrinsicVars = extrinsicVars;
+        State.extrinsicVars = extrinsicVars;
     }
 
     public VStack getExtrinsicVars() {
@@ -1554,6 +1591,20 @@ public class State extends FunctionState implements QDLConstants {
 
 
     public static VStack extrinsicVars;
+
+    public static void setExtrinsicFuncs(FStack extrinsicFuncs) {
+        State.extrinsicFuncs = extrinsicFuncs;
+    }
+
+    public  FStack getExtrinsicFuncs() {
+        if(extrinsicFuncs == null){
+            extrinsicFuncs = new FStack();
+        }
+        return extrinsicFuncs;
+    }
+
+    public static FStack extrinsicFuncs;
+
 
     public boolean isAllowBaseFunctionOverrides() {
         return allowBaseFunctionOverrides;
@@ -1618,6 +1669,13 @@ public class State extends FunctionState implements QDLConstants {
         doLocalSerialization(getMInstances(), MODULE_INSTANCES_TAG, jsonObject, serializationState);
         doLocalSerialization(getFTStack(), FUNCTION_TABLE_STACK_TAG, jsonObject, serializationState);
         doLocalSerialization(getVStack(), VARIABLE_STACK, jsonObject, serializationState);
+        if(!getIntrinsicVariables().isEmpty()) {
+            doLocalSerialization(getIntrinsicVariables(), INTRINSIC_VARIABLES_TAG, jsonObject, serializationState);
+        }
+        if(!getIntrinsicFunctions().isEmpty()) {
+            doLocalSerialization(getIntrinsicFunctions(), INTRINSIC_FUNCTIONS_TAG, jsonObject, serializationState);
+        }
+
         return jsonObject;
     }
 
@@ -1642,6 +1700,9 @@ public class State extends FunctionState implements QDLConstants {
         addJSONtoState(jsonObject, MODULE_INSTANCES_TAG, getMInstances(), serializationState);
         addJSONtoState(jsonObject, FUNCTION_TABLE_STACK_TAG, getFTStack(), serializationState);
         addJSONtoState(jsonObject, VARIABLE_STACK, getVStack(), s);
+        if(!getIntrinsicVariables().isEmpty()) {
+            addJSONtoState(jsonObject, INTRINSIC_VARIABLES_TAG, getIntrinsicVariables(), s);
+        }
         if (!getUsedModules().isEmpty()) {
             ModuleUtils moduleUtils = new ModuleUtils();
             JSONArray array = moduleUtils.serializeUsedModules(this, serializationState);
@@ -1673,6 +1734,8 @@ public class State extends FunctionState implements QDLConstants {
         makeStack(getMInstances(), jsonObject, MODULE_INSTANCES_TAG, serializationState);
         makeStack(getFTStack(), jsonObject, FUNCTION_TABLE_STACK_TAG, serializationState);
         makeStack(getVStack(), jsonObject, VARIABLE_STACK, serializationState);
+        makeStack(getIntrinsicVariables(), jsonObject, INTRINSIC_VARIABLES_TAG, serializationState);
+        makeStack(getIntrinsicFunctions(), jsonObject, INTRINSIC_FUNCTIONS_TAG, serializationState);
         if (jsonObject.containsKey(USED_MODULES)) {
             ModuleUtils moduleUtils = new ModuleUtils();
             moduleUtils.deserializeUsedModules(this,

@@ -15,10 +15,9 @@ import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
 import edu.uiuc.ncsa.qdl.state.StateUtils;
 import edu.uiuc.ncsa.qdl.util.ModuleUtils;
-import edu.uiuc.ncsa.qdl.variables.Constant;
-import edu.uiuc.ncsa.qdl.variables.QDLList;
-import edu.uiuc.ncsa.qdl.variables.QDLNull;
-import edu.uiuc.ncsa.qdl.variables.QDLStem;
+import edu.uiuc.ncsa.qdl.variables.*;
+import edu.uiuc.ncsa.qdl.xml.SerializationState;
+import net.sf.json.JSONArray;
 
 import java.net.URI;
 import java.util.*;
@@ -1040,15 +1039,14 @@ docs(c#2@ini_out) ;
                 case IMPORT_STATE_SNAPSHOT_VALUE:
                     newState = StateUtils.clone(state);
                     // put tables and such in the right place so ambient state is not altered.
-                    newState = newState.newSelectiveState(newState, false, true, true);
-
+                    newState = newState.newSelectiveState(newState, false, true, true, true);
                     break;
                 case IMPORT_STATE_SHARE_VALUE:
                     newState = state;
                     // put tables and such in the right place so ambient state is not altered.
                     // The next command creates a state with the inhereited functions and variables.
 
-                    newState = newState.newSelectiveState(newState, false, true, true);
+                    newState = newState.newSelectiveState(newState, false, true, true, true);
                     // now since these are shared, push on new tables to ensure nothing in the ambient state gets overwritten.
                     // We do not want moduile state to leak back into the ambient state.
                     newState.getVStack().pushNewTable();
@@ -1060,6 +1058,15 @@ docs(c#2@ini_out) ;
             Module module = template.newInstance(newState);
             module.setInheritanceMode(inhertianceMode);
             newState.setModule(module);
+            switch (inhertianceMode){
+                case IMPORT_STATE_NONE_VALUE:
+                case IMPORT_STATE_SNAPSHOT_VALUE:
+                    newState.setInstrinsicVariables(cloneIntrinsicVariables(module.getState()));
+                    break;
+                    case IMPORT_STATE_SHARE_VALUE:
+                        newState.setInstrinsicVariables(state.getIntrinsicVariables());
+                        break;
+            }
             module.setTemplate(false);
             module.setParentTemplateID(template.getId());
             if (state.hasModule()) {
@@ -1075,7 +1082,13 @@ docs(c#2@ini_out) ;
         }
 
     }
-
+protected VStack cloneIntrinsicVariables(State state) throws Throwable {
+    SerializationState ss = new SerializationState(); // just need a non-null dummy
+    JSONArray iVars = state.getIntrinsicVariables().toJSON(ss);
+    VStack iStack = new VStack();
+    iStack.fromJSON(iVars, ss);
+    return iStack;
+}
     /**
      * This is just import(load(x, 'java')). It happens so much we need an idiom.
      * this will try to look up the argument in the system lib table, so you can do things like

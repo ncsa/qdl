@@ -165,9 +165,29 @@ public class XMLUtilsV2 {
         xer.nextEvent();// advance cursor
         VStack exx = new VStack();
         exx.fromXML(xer, serializationState);
-    //    state.setExtrinsicVars(exx);
+    }
+    public static void deserializeExtrinsicFunctions(XMLEventReader xer, State state, SerializationState serializationState) throws XMLStreamException{
+        xer.nextEvent();// advance cursor
+        FStack iFuncs = new FStack();
+        iFuncs.fromXML(xer, serializationState);
 
     }
+
+    public static void deserializeIntrinsicVariables(XMLEventReader xer, State state, SerializationState serializationState) throws XMLStreamException {
+        xer.nextEvent();// advance cursor
+        VStack iStack = new VStack();
+        iStack.fromXML(xer, serializationState);
+        state.setInstrinsicVariables( iStack);
+        //xStack.setStateStack(state, xStack);
+    }
+    public static void deserializeIntrinsicFunctions(XMLEventReader xer, State state, SerializationState serializationState) throws XMLStreamException {
+        xer.nextEvent();// advance cursor
+        FStack iStack = new FStack<>();
+        iStack.fromXML(xer, serializationState);
+        state.setIntrinsicFunctions( iStack);
+        //xStack.setStateStack(state, xStack);
+    }
+
     protected static void deserializeXStack(XMLEventReader xer, XStack xStack, State state, SerializationState serializationState) throws XMLStreamException {
         xer.nextEvent();// advance cursor
         xStack.fromXML(xer, serializationState);

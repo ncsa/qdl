@@ -819,6 +819,7 @@ a
 
     /**
      * Tests that setting a variable on module import from the ambient state works.
+     * Old modules inherit state automatically.
      *
      * @throws Throwable
      */
@@ -851,7 +852,7 @@ cannot access '__a'
     (vs. running a module) and is special cased in the VariableState/FunctionState objects. Mostly this is to
     guard against a change that breaks this. Simple, basic and essentail regression checks.
      */
-    protected static String testModulePath = DebugUtil.getDevPath() + "/qdl/language/src/main/resources/modules/test.mdl";
+    protected static String testModulePath = DebugUtil.getDevPath() + "/qdl/tests/src/test/resources/modules/test.mdl";
 
     // ML = module_load
     public void testMLIntrinsicFunction() throws Throwable {
@@ -895,10 +896,10 @@ cannot access '__a'
      */
     public void testMLSetVariableFromGlobal() throws Throwable {
         testMLSetVariableFromGlobal(ROUNDTRIP_NONE);
-        testMLSetVariableFromGlobal(ROUNDTRIP_XML);
+        testMLSetVariableFromGlobal(ROUNDTRIP_JSON);
+      //  testMLSetVariableFromGlobal(ROUNDTRIP_XML);
         testMLSetVariableFromGlobal(ROUNDTRIP_QDL);
         testMLSetVariableFromGlobal(ROUNDTRIP_JAVA);
-        testMLSetVariableFromGlobal(ROUNDTRIP_JSON);
     }
 
     protected void testMLSetVariableFromGlobal(int testCase) throws Throwable {

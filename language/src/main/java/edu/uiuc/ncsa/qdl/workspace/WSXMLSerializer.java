@@ -141,6 +141,21 @@ public class WSXMLSerializer {
             state.getExtrinsicVars().toXML(xsw, serializationState);
             xsw.writeEndElement();
         }
+        if (!state.getExtrinsicFuncs().isEmpty()) {
+            xsw.writeStartElement(EXTRINSIC_FUNCTIONS_TAG);
+            state.getExtrinsicFuncs().toXML(xsw, serializationState);
+            xsw.writeEndElement();
+        }
+        if (!state.getIntrinsicVariables().isEmpty()) {
+            xsw.writeStartElement(INTRINSIC_VARIABLES_TAG);
+            state.getIntrinsicVariables().toXML(xsw, serializationState);
+            xsw.writeEndElement();
+        }
+        if (!state.getIntrinsicFunctions().isEmpty()) {
+            xsw.writeStartElement(INTRINSIC_FUNCTIONS_TAG);
+            state.getIntrinsicFunctions().toXML(xsw, serializationState);
+            xsw.writeEndElement();
+        }
         xsw.writeEndElement(); // end workspace tag
     }
 
@@ -443,6 +458,21 @@ public class WSXMLSerializer {
                                 testCommands.state.getExtrinsicVars().clear();
                                 XMLUtilsV2.deserializeExtrinsicVariables(xer, testCommands.state, serializationState);
                                 break;
+                            case EXTRINSIC_FUNCTIONS_TAG:
+                                // Actually, there is exactly one of these. So this populates whatever is current.
+                                // Clear it, then re-populate it.
+                                testCommands.state.getExtrinsicFuncs().clear();
+                                XMLUtilsV2.deserializeExtrinsicFunctions(xer, testCommands.state, serializationState);
+                                break;
+                            case INTRINSIC_VARIABLES_TAG:
+testCommands.state.getIntrinsicVariables().clear();
+                                XMLUtilsV2.deserializeIntrinsicVariables(xer, testCommands.state, serializationState);
+
+                                break;
+                            case INTRINSIC_FUNCTIONS_TAG:
+                                state.getIntrinsicFunctions().clear();
+                                XMLUtilsV2.deserializeIntrinsicFunctions(xer, testCommands.state, serializationState);
+break;
                             case BUFFER_MANAGER:
                                 if (!workspaceAttributesOnly) {
                                     testCommands.bufferManager = new BufferManager();

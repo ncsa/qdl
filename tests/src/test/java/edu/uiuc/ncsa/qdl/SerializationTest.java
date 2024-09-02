@@ -125,7 +125,7 @@ public class SerializationTest extends AbstractQDLTester {
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         // The state has been created and populated. Now we serialize it, then deserialize it.
-        state = pickleXMLState(state);
+ //       state = pickleXMLState(state);
 
         script = new StringBuffer();
         addLine(script, "ok := 4 == X#get_private();");

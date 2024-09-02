@@ -116,7 +116,7 @@ public abstract class JavaModule extends Module {
                 QDLFunctionRecord fr = new QDLFunctionRecord();
                 fr.qdlFunction = f;
                 fr.argCount = i;
-                fr.name = f.getName();
+                fr.setName(f.getName());
                 // There are no names for these, so these are created
                 List<String> names = new ArrayList<>();
                 for(int k = 0 ; k < i; k++){

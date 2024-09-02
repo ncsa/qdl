@@ -5,6 +5,7 @@ import edu.uiuc.ncsa.qdl.evaluate.OpEvaluator;
 import edu.uiuc.ncsa.qdl.exceptions.NamespaceException;
 import edu.uiuc.ncsa.qdl.exceptions.QDLIllegalAccessException;
 import edu.uiuc.ncsa.qdl.exceptions.UndefinedFunctionException;
+import edu.uiuc.ncsa.qdl.exceptions.UnknownSymbolException;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.functions.*;
 import edu.uiuc.ncsa.qdl.module.MIStack;
@@ -120,13 +121,46 @@ public abstract class FunctionState extends VariableState {
         if (name == null || name.isEmpty()) {
             throw new NFWException(("Internal error: The function has not been named"));
         }
-
+        if(isExtrinsic(name)){
+            FR_WithState frs = new FR_WithState();
+            XThing xThing = null;
+            FKey fKey = new FKey(name, argCount);
+            if(getExtrinsicFuncs().containsKey(new FKey(name, -1))){
+                xThing = getExtrinsicFuncs().get(fKey);
+                if(xThing == null){
+                    return null;
+                }
+                if (xThing instanceof FunctionRecord) {
+                    frs.functionRecord = (FunctionRecord) xThing;
+                } else {
+                    if (xThing instanceof FR_WithState) {
+                        frs = (FR_WithState) xThing;
+                    } else {
+                        frs.functionRecord = null;
+                    }
+                }
+                return frs;
+            }else{
+                throw new UndefinedFunctionException("no extrinsic function named '" + name + "' with " + argCount + " argument" + (argCount==1?".":"s."), null);
+            }
+        }
         if (getMInstances().isEmpty()) {
             FR_WithState frs = new FR_WithState();
 
             // Nothing imported, so nothing to look through.
             frs.state = this;
+            XThing xThing = null;
+            FKey fKey = new FKey(name, argCount);
             if (getFTStack().containsKey(new FKey(name, -1))) {
+                // xThing = getFTStack().get(fKey);
+                 xThing = getFTStack().get(fKey);
+            }else{
+                if(getIntrinsicFunctions().containsKey(new FKey(name, -1))){
+                    //xThing = getIntrinsicFunctions().get(fKey);
+                    xThing = getIntrinsicFunctions().get(fKey);
+                }
+            }
+            if (xThing != null) {
                 // First case. Since cannot specify which arguments are in a function ref
                 // E.g. f(@g, x, y) -> g(x)*g(x,y)
                 // f(@-, 6, 3) yields (-6)*(6 - 3) == -18.
@@ -135,16 +169,16 @@ public abstract class FunctionState extends VariableState {
                 // for this. Such arguments are stored with no arg count (so < 0)
                 // The next bit gets that and, if this is a function ref with the right number
                 // arguments, uses that.
-                XThing xThing = getFTStack().get(new FKey(name, -1));
+/*
                 if (xThing instanceof FunctionRecord) {
                     FunctionRecordInterface functionRecordInterface = (FunctionRecordInterface) xThing;
                 }
-                XThing xThing1 = getFTStack().get(new FKey(name, argCount));
-                if (xThing1 instanceof FunctionRecord) {
-                    frs.functionRecord = (FunctionRecord) xThing1;
+*/
+                if (xThing instanceof FunctionRecord) {
+                    frs.functionRecord = (FunctionRecord) xThing;
                 } else {
-                    if (xThing1 instanceof FR_WithState) {
-                        frs = (FR_WithState) xThing1;
+                    if (xThing instanceof FR_WithState) {
+                        frs = (FR_WithState) xThing;
                     } else {
                         frs.functionRecord = null;
                     }
@@ -235,9 +269,15 @@ public abstract class FunctionState extends VariableState {
      */
     public TreeSet<String> listFunctions(boolean useCompactNotation, String regex,
                                          boolean includeModules,
-                                         boolean showIntrinsic) {
+                                         boolean showIntrinsic,
+                                         boolean showExtrinsic) {
         HashSet<XKey> processedAliases = new HashSet<>();
-        return listFunctions(useCompactNotation, regex, includeModules, showIntrinsic, processedAliases);
+        TreeSet<String> output = new TreeSet<>();
+        if(showExtrinsic){
+            output = getExtrinsicFuncs().listFunctions(regex);
+        }
+         output.addAll(listFunctions(useCompactNotation, regex, includeModules, showIntrinsic, processedAliases));
+        return output;
     }
 
     /**
@@ -268,21 +308,26 @@ public abstract class FunctionState extends VariableState {
             Module m = ((MIWrapper) getMInstances().get(xKey)).getModule();
             //        processedAliases.add(xKey);
             TreeSet<String> uqFuncs = m.getState().getFTStack().listFunctions(regex);
-            for (String x : uqFuncs) {
-                if (isIntrinsic(x) && !showIntrinsic) {
-                    continue;
-                }
-                if (useCompactNotation) {
-                    out.add(getMInstances().getAliasesAsString(m.getMTKey()) + NS_DELIMITER + x);
-                } else {
-                    for (Object alias : getMInstances().getAliasesAsString(m.getMTKey())) {
-                        out.add(alias + NS_DELIMITER + x);
-                    }
-                }
+            extractFunctionList(useCompactNotation,  uqFuncs, out, m);
+            if(showIntrinsic && !m.getState().getIntrinsicFunctions().isEmpty()){
+                 uqFuncs = m.getState().getIntrinsicFunctions().listFunctions(regex);
+                extractFunctionList(useCompactNotation,  uqFuncs, out, m);
             }
 
         }
         return out;
+    }
+
+    private void extractFunctionList(boolean useCompactNotation,  TreeSet<String> uqFuncs, TreeSet<String> out, Module m) {
+        for (String x : uqFuncs) {
+            if (useCompactNotation) {
+                out.add(getMInstances().getAliasesAsString(m.getMTKey()) + NS_DELIMITER + x);
+            } else {
+                for (Object alias : getMInstances().getAliasesAsString(m.getMTKey())) {
+                    out.add(alias + NS_DELIMITER + x);
+                }
+            }
+        }
     }
 
     public List<String> listAllDocumentation() {
@@ -416,5 +461,19 @@ public abstract class FunctionState extends VariableState {
         }
         return out;
     }
+   FStack intrinsicFunctions;
 
+    public FStack getIntrinsicFunctions() {
+        if(intrinsicFunctions == null){
+            intrinsicFunctions = new FStack();
+        }
+        return intrinsicFunctions;
+    }
+
+    public void setIntrinsicFunctions(FStack intrinsicFunctions) {
+        this.intrinsicFunctions = intrinsicFunctions;
+    }
+    public FStack getExtrinsicFuncs() {
+        return null;
+    }
 }

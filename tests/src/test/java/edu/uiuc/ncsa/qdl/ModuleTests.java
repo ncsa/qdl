@@ -7,6 +7,7 @@ import edu.uiuc.ncsa.qdl.exceptions.QDLException;
 import edu.uiuc.ncsa.qdl.exceptions.UndefinedFunctionException;
 import edu.uiuc.ncsa.qdl.parsing.QDLInterpreter;
 import edu.uiuc.ncsa.qdl.state.State;
+import edu.uiuc.ncsa.security.core.util.DebugUtil;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -717,16 +718,19 @@ public class ModuleTests extends AbstractQDLTester {
         testGithub45(ROUNDTRIP_JSON);
         testGithub45(ROUNDTRIP_QDL);
     }
+
     public void testGithub45λ() throws Throwable {
         testGithub45λ(ROUNDTRIP_NONE);
         testGithub45λ(ROUNDTRIP_JSON);
         testGithub45λ(ROUNDTRIP_QDL);
     }
+
     /**
      * <h3>Test for https://github.com/ncsa/qdl/issues/45, λ functions</h3>
      * λ functions should have visibility down the hierarchy.  If not, then certain
      * standard patterns, such as creating setters and getters and referencing them inside
      * functions -- necessary for controlling module state -- fail.
+     *
      * @param testCase
      * @throws Throwable
      */
@@ -735,7 +739,7 @@ public class ModuleTests extends AbstractQDLTester {
         StringBuffer script = new StringBuffer();
         addLine(script,
                 "g(x)→1/x; // should be ignored\n" +
-                "    module['a:a'][\n" +
+                        "    module['a:a'][\n" +
                         "      g(x)→x^2;\n" +
                         "      f0(x)→\n" +
                         "       block[\n" +
@@ -755,7 +759,7 @@ public class ModuleTests extends AbstractQDLTester {
                         "        ];//end f0\n" +
                         "    ];\n" +
                         "    a ≔ import('a:a');"
-                );
+        );
         state = rountripState(state, script, testCase);
         addLine(script, "ok ≔ 36≡a#f0(2);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
@@ -908,4 +912,113 @@ p:='/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/math-x.mdl';
   h(@g, x)->g(x);
   h(z#@f, 3)
         */
+    public static String intrinsicModuleTest = DebugUtil.getDevPath() + "/qdl/tests/src/test/resources/modules/intrinsic.mdl";
+
+    public void testIntrinsicModule() throws Throwable {
+        testIntrinsicModule(ROUNDTRIP_NONE);
+        testIntrinsicModule(ROUNDTRIP_JSON);
+        testIntrinsicModule(ROUNDTRIP_JAVA);
+       // testExtrinsicModule(ROUNDTRIP_XML);
+        // QDL dump does not capture complex module state.
+    }
+
+    public void testIntrinsicModule(int testCase) throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "A:=import(load('" + intrinsicModuleTest + "'));");
+        addLine(script, "A#setX(11);");
+        //   QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        //    interpreter.execute(script.toString());
+
+        state = rountripState(state, script, testCase);
+
+        addLine(script, "ok:= 11 == A#getX();");
+        addLine(script, "ok1 := 42==$$MY_GLOBAL;");
+        addLine(script, "ok2 := 33 == A#f(3);");
+        //     interpreter = new QDLInterpreter(null, state);
+        //     interpreter.execute(script.toString());
+
+        state = rountripState(state, script, testCase);
+        addLine(script, "ok3:=A#q(5)==1;");
+        addLine(script, "ok4 := 495 == A#g(3,5);");
+        //     interpreter = new QDLInterpreter(null, state);
+        //     interpreter.execute(script.toString());
+        state = rountripState(state, script, testCase);
+        addLine(script, "ok5 := 36 == A#gg(5);"); // test an intrinsic function
+        addLine(script, "ok6 := 144 == A#hh(5);"); // test an intrinsic function in an intrinsic function
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "Test case(" + testCase + "): mutated value lost in serialization";
+        assert getBooleanValue("ok1", state) : "Test case(" + testCase + "): global variable loaded from module lost in serialization";
+        assert getBooleanValue("ok2", state) : "Test case(" + testCase + "): internal module state not preserved  in serialization";
+        assert getBooleanValue("ok3", state) : "Test case(" + testCase + "): defined function  not preserved  in serialization";
+        assert getBooleanValue("ok4", state) : "Test case(" + testCase + "): nested function state for g not preserved  in serialization";
+        assert getBooleanValue("ok5", state) : "Test case(" + testCase + "): nested function state for gg not preserved  in serialization";
+        assert getBooleanValue("ok6", state) : "Test case(" + testCase + "): nested function state for hh not preserved  in serialization";
+
+    }
+
+    public static String extrinsicModuleTest = DebugUtil.getDevPath() + "/qdl/tests/src/test/resources/modules/extrinsic.mdl";
+
+    public void testExtrinsicModule() throws Throwable {
+        testExtrinsicModule(ROUNDTRIP_NONE);
+        testExtrinsicModule(ROUNDTRIP_JSON);
+        testExtrinsicModule(ROUNDTRIP_JAVA);
+        //testExtrinsicModule(ROUNDTRIP_XML);
+    }
+
+    public void testExtrinsicModule(int testCase) throws Throwable {
+        State state = testUtils.getNewState();
+        state.getExtrinsicFuncs().clear();
+        state.getExtrinsicVars().clear();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "A:=load('" + extrinsicModuleTest + "');");
+        addLine(script, "ok1 := $$NEWTON∃3;");
+        QDLInterpreter interpreter;
+        if (testCase == ROUNDTRIP_NONE) {
+            interpreter = new QDLInterpreter(null, state);
+            interpreter.execute(script.toString());
+            script = new StringBuffer();
+        }
+        state = rountripState(state, script, testCase);
+        addLine(script, "ok3 := $$E∃1;");
+        addLine(script, "ok4 := $$service_locator∄1;"); // checks that module defined extrinsic has not been evaluated somehow.
+        if (testCase == ROUNDTRIP_NONE) {
+            // none means that an interpreter is not called, and script is not
+            // // cleared, hence partial results cannot be tracked. Since part of
+            // the test is watching what is in the state after load then import,
+            // we have to do it manually.
+            interpreter = new QDLInterpreter(null, state);
+            interpreter.execute(script.toString());
+            script = new StringBuffer();
+        }
+
+        state = rountripState(state, script, testCase);
+        addLine(script, "X:=import('test:extrinsic');");
+        addLine(script, "ok5 := ∃$$E;");
+        addLine(script, "ok6 := 8 == $$service_locator(2);");
+        if (testCase == ROUNDTRIP_NONE) {
+            interpreter = new QDLInterpreter(null, state);
+            interpreter.execute(script.toString());
+            script = new StringBuffer();
+        }
+
+        state = rountripState(state, script, testCase);
+        addLine(script, "ok0 := ∃$$G;");
+        addLine(script, "ok2 := ∃$$C;");
+        addLine(script, "ok7 := 8 == $$service_locator(2);");
+        addLine(script, "ok8 := 2 == ⌊100*$$connection_pool($$C, $$G);"); // cheap trick
+        interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "test case(" + testCase + "): $$G not found";
+        assert getBooleanValue("ok1", state) : "test case(" + testCase + "): $$NEWTON([1]) not found";
+        assert getBooleanValue("ok2", state) : "test case(" + testCase + "): $$C not found";
+        assert getBooleanValue("ok3", state) : "test case(" + testCase + "): $$E([1]) not found";
+        assert getBooleanValue("ok4", state) : "test case(" + testCase + "): $$service_locator([1]) (in module) was created on load. Should not have been.";
+        assert getBooleanValue("ok5", state) : "test case(" + testCase + "): $$E (in module) failed on import. Should have been created.";
+        assert getBooleanValue("ok6", state) : "test case(" + testCase + "): $$service_locator([1]) (in module) failed on import. Should have been created.";
+        assert getBooleanValue("ok7", state) : "test case(" + testCase + "): $$service_locator([1]) failed to evaluate correctly.";
+        assert getBooleanValue("ok8", state) : "test case(" + testCase + "): $$connection_pool([2]) failed to evaluate correctly.";
+
+    }
 }

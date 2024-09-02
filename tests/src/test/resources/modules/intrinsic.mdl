@@ -1,0 +1,29 @@
+/*
+  Module that tests various intrinsic properties
+  getX, setX = standard mutators
+  f = basic function to show lambdas can access mutators in the class
+  g = function that defines a function inside to show that mutators work
+      even when the stack has other things on it.
+  q = test to show that a function can have in intrinsic variable and
+      not have the state bleed over into the module.
+*/
+module['test:intrinsic']
+   [
+     $$MY_GLOBAL := 42;
+     __x := 4;
+     // Standard mutator pattern
+     getX()->__x;
+     setX(x)->block[oldx:=__x;__x:=x;return(oldx);];
+     f(x)->getX()*x;
+     g(x,y)->block[
+          h(y)->block[g(x)->x*getX();return(y*g(x));];
+          return(x*h(y));
+        ];
+    define[q(n)][
+       __x. := [;n];
+       return(size(__x.)==0?(-1):__x.1);
+    ]; //end q function
+    __f(x)->x^2;
+    gg(x)->__f(x)+getX();
+    hh(x)->block[__ii(x)->(x-1)*gg(x);return(__ii(x));];
+   ];

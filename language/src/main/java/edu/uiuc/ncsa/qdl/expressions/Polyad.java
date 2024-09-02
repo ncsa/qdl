@@ -74,6 +74,9 @@ public class Polyad extends ExpressionImpl {
                 if (hasAlias()) {
                     state.getMetaEvaluator().evaluate(getAlias(), this, state);
                 } else {
+                    // related to https://github.com/ncsa/qdl/issues/75 If there is an NPE
+                    // here after a java deserialization, need to check why the meta evaluator
+                    // is not being checked/reset
                     state.getMetaEvaluator().getFunctionEvaluator().evaluate(this, state);
                 }
                 return getResult();
@@ -107,8 +110,9 @@ public class Polyad extends ExpressionImpl {
         }
         return polyad;
     }
+
     @Override
-        public int getNodeType() {
-            return POLYAD_NODE;
-        }    
+    public int getNodeType() {
+        return POLYAD_NODE;
+    }
 }

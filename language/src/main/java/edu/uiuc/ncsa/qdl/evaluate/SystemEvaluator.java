@@ -2657,7 +2657,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             // QDLModules create the local state, java modules assume the state is exactly the local state.
             // Get a new instance and then set the state to the local state later for Java modules.
             State newModuleState = null;
-            newModuleState = state.newSelectiveState(null,true,true,true);
+            newModuleState = state.newSelectiveState(null,true,true,true, true);
             newModuleState.setModuleState(true);
 
 /*

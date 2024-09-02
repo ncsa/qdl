@@ -536,7 +536,8 @@ public class FunctionEvaluator extends AbstractEvaluator {
         try {
             if (AbstractState.isIntrinsic(polyad.getName()) && polyad.hasAlias()) {
                 // if it is in a module and at the top of the stack, then this is an access violation
-                if (state.getFTStack().localHas(new FKey(polyad.getName(), polyad.getArgCount()))) {
+                if (state.getIntrinsicFunctions().localHas(new FKey(polyad.getName(), polyad.getArgCount()))) {
+           //     if (state.getFTStack().localHas(new FKey(polyad.getName(), polyad.getArgCount()))) {
                     throw new IntrinsicViolation("cannot access intrinsic function directly.", polyad);
                 }
             }
@@ -617,7 +618,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
             if (polyad.getArguments().get(i) instanceof LambdaDefinitionNode) {
                 LambdaDefinitionNode ldn = (LambdaDefinitionNode) polyad.getArguments().get(i);
                 if (!ldn.hasName()) {
-                    ldn.getFunctionRecord().name = tempFname(state);
+                    ldn.getFunctionRecord().setName(tempFname(state));
                     // This is anonymous
                 }
                 ldn.evaluate(localState);

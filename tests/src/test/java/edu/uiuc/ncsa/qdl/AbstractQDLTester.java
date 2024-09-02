@@ -374,6 +374,16 @@ public class AbstractQDLTester extends TestBase {
     public static final int ROUNDTRIP_JAVA = 3;
     public static final int ROUNDTRIP_JSON = 4;
 
+    /**
+     * deletages rountripping to various serializers. This will also zero out the
+     * script so that the pending calls are not repeated (which would just stick
+     * them back in the state if they were missing, giving a false positive.)
+     * @param state
+     * @param script
+     * @param testCase
+     * @return
+     * @throws Throwable
+     */
     public State rountripState(State state, StringBuffer script, int testCase) throws Throwable {
         switch (testCase) {
             case ROUNDTRIP_XML:
@@ -398,6 +408,7 @@ public class AbstractQDLTester extends TestBase {
             default:
             case ROUNDTRIP_NONE:
                 // Do no serialization.
+                // Do not reset the script since nothing has executed.
         }
         return state;
     }

@@ -35,6 +35,7 @@ import edu.uiuc.ncsa.qdl.vfs.AbstractVFSFileProvider;
 import edu.uiuc.ncsa.qdl.vfs.VFSEntry;
 import edu.uiuc.ncsa.qdl.vfs.VFSFileProvider;
 import edu.uiuc.ncsa.qdl.vfs.VFSPaths;
+import edu.uiuc.ncsa.qdl.xml.SerializationConstants;
 import edu.uiuc.ncsa.qdl.xml.XMLUtils;
 import edu.uiuc.ncsa.sas.thing.response.Response;
 import edu.uiuc.ncsa.security.core.Logable;
@@ -2886,6 +2887,8 @@ public class WorkspaceCommands implements Logable, Serializable {
         inputLine.removeSwitch(LIST_MODULES_SWITCH);
         boolean showIntrinsic = inputLine.hasArg(LIST_INTRINSIC_SWITCH);
         inputLine.removeSwitch(LIST_INTRINSIC_SWITCH);
+        boolean showExtrinsic = inputLine.hasArg(LIST_EXTRINSIC_SWITCH);
+        inputLine.removeSwitch(LIST_EXTRINSIC_SWITCH);
         boolean useCompactNotation = inputLine.hasArg(COMPACT_ALIAS_SWITCH);
         inputLine.removeSwitch("list");
         TreeSet<String> funcs;
@@ -2906,11 +2909,17 @@ public class WorkspaceCommands implements Logable, Serializable {
             if (module == null) {
                 funcs = new TreeSet<>();
             } else {
-                funcs = module.getState().listFunctions(useCompactNotation, null, includeModules, showIntrinsic);
+                funcs = module.getState().listFunctions(useCompactNotation, null,
+                        includeModules,
+                        showIntrinsic,
+                        showExtrinsic);
             }
 
         } else {
-            funcs = getState().listFunctions(useCompactNotation, null, includeModules, showIntrinsic);
+            funcs = getState().listFunctions(useCompactNotation, null,
+                    includeModules,
+                    showIntrinsic,
+                    showExtrinsic);
         }
         // These are fully qualified.
         Object rc = -1;
@@ -2946,7 +2955,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         List<String> functions = new ArrayList<>();
         functions.addAll(state.getMetaEvaluator().listFunctions(false));
         functions.addAll(state.listFunctions(true,
-                null, true, false));
+                null, true, false, false));
         return functions;
     }
 
@@ -5224,6 +5233,13 @@ public class WorkspaceCommands implements Logable, Serializable {
             String output = inputFormVar((String) varName, 2, state);
             fileWriter.write(varName + " := " + output + ";\n");
         }
+        if (!state.getIntrinsicVariables().isEmpty()) {
+            fileWriter.write("\n/* ** user defined intrinsic variables ** */\n");
+            for (Object varName : state.getIntrinsicVariables().listVariables()) {
+                String output = inputFormVar((String) varName, 2, state);
+                fileWriter.write(varName + " := " + output + ";\n");
+            }
+        }
 
         fileWriter.write("\n/* ** user defined functions ** */\n");
 
@@ -5235,7 +5251,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             }
         }
         // now do the imports
-        fileWriter.write("\n/* ** module imports ** */\n");
+        fileWriter.write("\n/* ** module " + SerializationConstants.VERSION_2_0_TAG + " imports ** */\n");
 
         for (Object kk : getState().getMInstances().keySet()) {
             XKey key = (XKey) kk;

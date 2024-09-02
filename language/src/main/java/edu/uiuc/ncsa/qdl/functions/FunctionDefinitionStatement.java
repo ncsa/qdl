@@ -42,6 +42,10 @@ public class FunctionDefinitionStatement implements Statement {
 
     @Override
     public Object evaluate(State state) {
+        if(functionRecord.isExtrinsic()){
+            state.getExtrinsicFuncs().put(functionRecord);
+            return QDLNull.getInstance(); // for now
+        }
         if(state.isImportMode()){
             state.getFTStack().localPut(functionRecord);
         } else {

@@ -1,5 +1,6 @@
 package edu.uiuc.ncsa.qdl.workspace;
 
+import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.module.QDLModule;
 import edu.uiuc.ncsa.qdl.state.State;
@@ -49,12 +50,13 @@ public class WSJSONSerializer {
 
     /**
      * Assumes the bytes represent either a compressed stream or not.
+     *
      * @param bytes
      * @return
      * @throws Throwable
      */
     public WorkspaceCommands fromJSON(byte[] bytes, boolean compressionOn) throws Throwable {
-        if(compressionOn) {
+        if (compressionOn) {
             return fromJSON(new ByteArrayInputStream(bytes), compressionOn);
         }
         return fromJSON(new String(bytes, StandardCharsets.UTF_8));
@@ -79,7 +81,7 @@ public class WSJSONSerializer {
             JSONObject s = json.getJSONObject(STATE_TAG);
             state.deserializeFromJSON(s, serializationState);
         }
-        if(json.containsKey(BUFFER_MANAGER)){
+        if (json.containsKey(BUFFER_MANAGER)) {
             workspaceCommands.getBufferManager().fromJSON(json.getJSONObject(BUFFER_MANAGER));
         }
 
@@ -99,7 +101,24 @@ public class WSJSONSerializer {
         if (json.containsKey(EXTRINSIC_VARIABLES_TAG)) {
             VStack xVars = new VStack();
             xVars.deserializeFromJSON(json.getJSONObject(EXTRINSIC_VARIABLES_TAG), serializationState, state);
+            // Don't need to set explicitly since they are automatically put in the state on deserialization.
             //   state.setExtrinsicVars(xVars);
+        }
+        if (json.containsKey(EXTRINSIC_FUNCTIONS_TAG)) {
+            FStack iFuncs = new FStack();
+            iFuncs.deserializeFromJSON(json.getJSONObject(EXTRINSIC_FUNCTIONS_TAG), serializationState, state);
+            // Don't need to set explicitly since they are automatically put in the state on deserialization.
+            //   state.setExtrinsicVars(xVars);
+        }
+        if (json.containsKey(INTRINSIC_VARIABLES_TAG)) {
+            VStack xVars = new VStack();
+            xVars.deserializeFromJSON(json.getJSONObject(INTRINSIC_VARIABLES_TAG), serializationState, state);
+            state.setInstrinsicVariables(xVars);
+        }
+        if (json.containsKey(INTRINSIC_FUNCTIONS_TAG)) {
+            FStack iFuncs = new FStack();
+            iFuncs.deserializeFromJSON(json.getJSONObject(INTRINSIC_FUNCTIONS_TAG), serializationState, state);
+            state.setIntrinsicFunctions(iFuncs);
         }
         return workspaceCommands;
     }
@@ -138,7 +157,15 @@ public class WSJSONSerializer {
         if (!state.getExtrinsicVars().isEmpty()) {
             jsonObject.put(EXTRINSIC_VARIABLES_TAG, state.getExtrinsicVars().serializeToJSON(serializationState));
         }
-
+        if (!state.getExtrinsicFuncs().isEmpty()) {
+            jsonObject.put(EXTRINSIC_FUNCTIONS_TAG, state.getExtrinsicFuncs().serializeToJSON(serializationState));
+        }
+        if (!state.getIntrinsicVariables().isEmpty()) {
+            jsonObject.put(INTRINSIC_VARIABLES_TAG, state.getIntrinsicVariables().serializeToJSON(serializationState));
+        }
+        if (state.getIntrinsicFunctions().isEmpty()) {
+            jsonObject.put(INTRINSIC_FUNCTIONS_TAG, state.getIntrinsicFunctions().serializeToJSON(serializationState));
+        }
         jsonObject.put(STATE_TAG, state.serializeToJSON(serializationState));
 
         return jsonObject;

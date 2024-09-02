@@ -30,6 +30,7 @@ public class EGModule extends JavaModule {
         ArrayList<QDLFunction> funcs = new ArrayList<>();
         funcs.add(new Concat());
         funcs.add(new FunctionReferenceExample());
+        funcs.add(new ExtrinsicFunction());
         // Once the list of functions is populated, add the functions to the module
         EGModule.addFunctions(funcs);
 

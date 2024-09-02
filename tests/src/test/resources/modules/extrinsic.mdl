@@ -1,0 +1,16 @@
+/* module to test extrinsic variable &  functions */
+$$G := 6.6740E-11;
+$$C:= 299792458;
+$$NEWTON(m1,m2,r)->$$G×m1×m2÷r^2;
+$$E(m)->m×$$C^2;
+/*
+  This module emulates a case where there might be a requirement for
+  global access to a single facility, such as locating a service, pooling
+  connections, configuration settings, etc.
+*/
+module['test:extrinsic']
+  [
+    $$E := 9.109E-31;
+    $$service_locator(x)->x^3;
+    $$connection_pool(x,y)->x*y;
+  ];

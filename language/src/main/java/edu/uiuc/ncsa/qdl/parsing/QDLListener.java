@@ -287,7 +287,20 @@ public class QDLListener implements QDLParserListener {
             constantNode = new ConstantNode(decimal, Constant.DECIMAL_TYPE);
         }
 */
-        BigDecimal decimal = new BigDecimal(rawNumber);
+        BigDecimal decimal;
+        try {
+            // Fixes https://github.com/ncsa/qdl/issues/73
+            // It is possible that there is a unary minus or plus for the exponent.
+            // Though not terribly often used. Try it straight up, then try it with these
+            // values replaced. This is done assuming that it is fairly low probability
+            // hence we do not have to scan every decimal which would give a performance hit.
+            // On the other hand, exception handling in Java is quite slow, so if there are
+            // lots of substitutions, this might have to change.
+            decimal = new BigDecimal(rawNumber);
+        }catch(NumberFormatException nfx){
+            rawNumber = rawNumber.replace("¯","-").replace("⁺","+");
+            decimal = new BigDecimal(rawNumber); // if it fails here, it fails.
+        }
         constantNode = new ConstantNode(decimal, Constant.DECIMAL_TYPE);
         stash(ctx, constantNode);
     }
@@ -771,7 +784,7 @@ public class QDLListener implements QDLParserListener {
         if (name.endsWith("(")) {
             name = name.substring(0, name.length() - 1);
         }
-        functionRecord.name = name;
+        functionRecord.setName(name);
         for (QDLParserParser.F_argsContext argListContext : nameAndArgsNode.f_args()) {
             // this is a comma delimited list of arguments.
             String allArgs = argListContext.getText();
@@ -858,7 +871,7 @@ public class QDLListener implements QDLParserListener {
                 functionRecord.argNames.add(st.nextToken());
             }
         }
-        functionRecord.name = name;
+        functionRecord.setName(name);
         functionRecord.setArgCount(functionRecord.argNames.size()); // Just set it here and be done with it.
 
         QDLParserParser.DocStatementBlockContext docStatmentBlockContext = lambdaContext.docStatementBlock();
@@ -1955,7 +1968,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
         functionRecord.sourceCode = stringList;
 
 
-        functionRecord.name = name;
+        functionRecord.setName(name);
         //for (QDLParserParser.ArgListContext argListContext : nameAndArgsNode.argList()) {
         if (justArgs.isEmpty()) {
             functionRecord.argNames = new ArrayList<>();

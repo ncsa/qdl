@@ -316,7 +316,21 @@ plus an extended artifact of the approximation. The size of the result is
   numeric_digits(50)
 15
   sqrt(945602795792794567)^2
-9.4560279579279456700000000000000000000000000000087E17]]>
+9.4560279579279456700000000000000000000000000000087E17
+
+E.g. finding if a (smallish) number is prime
+An easy way to check if a number, x, is prime is to check the remainders on
+division by the numbers 2,3,... sqrt(x). If one of these is 0, the number
+is not prime. In QDL, you can do this with a list and the mod function:
+
+   is_prime(x)->0∉mod(x,[2;⌈nroot(x,2)])
+   is_prime(786)
+false
+   is_prime(787)
+true
+
+A caveat is that while this is conceptually easy, it is by no means the way
+you'd want to find, say, Mersenne primes. ]]>
         </example>
     </entry>
     <entry id="random">
@@ -4184,22 +4198,39 @@ ab....cd]]>
             <![CDATA["Not part of the essential nature of someone or something; coming
  or operating from outside"
 
-This refers to what are also called global variables in some languages.
+This refers to what are also called global variables and functions in some languages.
 These are simply variables prefixed with a double dollar sign, $$, and are
 always available regardless of scope to every module or function.
 To list them in the workspace use the -extrinsic command. So in
-some worksapce you might be able to do this:
+some workspace you might be able to do this:
 
 )vars -extrinsic
-   $$Avogadro  $$Planck
+   $$Avogadro  $$Planck   $$configuration
 
    $$Planck
 6.62607015E-34
 
-None are pre-defined in QDL. You may access extrinsic variables
-by simply using them like any other variables (including removing them).
-In the final analysis, they are just variables and this is special
-handling based on a cenventioin (like intrinsic variables). You should
+)funcs -extrinsic
+$$service_locator([4])  $$connection_pool([3])
+
+None are pre-defined in QDL. You may access extrinsic objects
+by simply using them like any other objects (including removing them).
+Note that loading a module with extrinsics will put them in your workspace,
+so you do not have to import a module to have the extrinsics available
+(which can solve some bootstrapping issues for modules, by the way). One usage
+pattern for a module that loads on extrinsic functions etc. is to import it
+any way, e.g.
+
+$$configuration := module(load('my_configurator'));
+
+Then calls like
+
+   $$configuration#$$bootstrap(args.)
+
+are possible though strictly speaking, $$boostrap(args.) can just be called.
+
+In the final analysis, they are just standard QDL variables or functions and this is special
+handling based on a convention (like intrinsic objects). You should
 use them for values that should be global. A variable
 like $$temp used by everything would be a ghastly thing!]]>
             <entry id="$$">

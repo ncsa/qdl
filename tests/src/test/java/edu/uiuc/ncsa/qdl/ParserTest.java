@@ -3281,5 +3281,46 @@ left hand argument at index 'p' is not a boolean At (1, 0)
     (zz.)∂ff.
 [[-11,6,7,6],[7,6,7,6],[7,-1,7,-1]]
      */
+
+    /**
+     * Tests that an intrinsic variable used inside a function works correctly.
+     * This simply sets it then accesses it. Should always return 1 for any 0 < n;
+     * @throws Throwable
+     */
+    public void testIntrinsicInFunction() throws Throwable{
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "get_n(n)->block[");
+        addLine(script,"  __c. := [;n];");
+        addLine(script,"  return(size(__c.) == 0 ? __c. : __c.1);");
+        addLine(script, "]; //end block");
+        addLine(script, "ok := 1 == get_n(11);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : OpEvaluator.APPLY_OP_KEY + " returned wrong shape of argument ";
+    }
+
+    /**
+     * Tests that parsing of scientific notation supports special characters "¯" and "⁺" in exponents
+     * @throws Throwable
+     */
+    // Fixes https://github.com/ncsa/qdl/issues/73
+    public void testScientificNotation() throws Throwable{
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok0 := 0.091 ≡ 9.10E¯2;");
+        addLine(script, "ok1 := 0.091 ≡ 9.10E-2;");
+        addLine(script, "ok2 :=   910 ≡ 9.10E2;");
+        addLine(script, "ok3 :=   910 ≡ 9.10E+2;");
+        addLine(script, "ok4 :=   910 ≡ 9.10E⁺2;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "decimal parsing failed for unary minus exponent.";
+        assert getBooleanValue("ok1", state) : "decimal parsing failed for minus exponent.";
+        assert getBooleanValue("ok2", state) : "decimal parsing failed for no sign in exponent.";
+        assert getBooleanValue("ok3", state) : "decimal parsing failed for plus sign exponent.";
+        assert getBooleanValue("ok4", state) : "decimal parsing failed for unary plus sign exponent.";
+    }
+
 }
 

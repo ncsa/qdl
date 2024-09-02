@@ -366,11 +366,24 @@ public class ModuleUtils implements Serializable {
         JSONObject jState = jsonObject.getJSONObject(MODULE_STATE_TAG);
         QDLInterpreter qi = new QDLInterpreter(state);
         JSONArray funcs = getStack(jState, FUNCTION_TABLE_STACK_TAG);
+        doFunctions(funcs, qi);
+        funcs = getStack(jState, INTRINSIC_FUNCTIONS_TAG);
+        doFunctions(funcs, qi);
+        JSONArray vars = getStack(jState, VARIABLE_STACK);
+        doVariables(state, serializationState, vars, qi);
+        vars = getStack(jState, INTRINSIC_VARIABLES_TAG);
+        doVariables(state, serializationState, vars, qi);
+
+    }
+
+    private static void doFunctions(JSONArray funcs, QDLInterpreter qi) throws Throwable {
         for (int i = 0; i < funcs.size(); i++) {
             String source = new String(Base64.decodeBase64(funcs.getJSONObject(i).getString(FTable.FUNCTION_ENTRY_KEY)), UTF_8);
             qi.execute(source);
         }
-        JSONArray vars = getStack(jState, VARIABLE_STACK);
+    }
+
+    private void doVariables(State state, SerializationState serializationState, JSONArray vars, QDLInterpreter qi) throws Throwable {
         for (int i = 0; i < vars.size(); i++) {
             JSONObject var = vars.getJSONObject(i);
             if (var.getString(TYPE_TAG).equals(QDL_TYPE_TAG)) {
@@ -394,7 +407,6 @@ public class ModuleUtils implements Serializable {
                 }
             }
         }
-
     }
 
     public JSONArray serializeUsedModules(State state,

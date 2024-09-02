@@ -120,7 +120,7 @@ public abstract class ExpressionImpl implements ExpressionNode {
             // These should be passed back, since they are needed for the internal operation of QDL
             // E.g. IndexError, NamespaceError, ReturnException,...
             throw returnException;
-        } catch (Throwable t) {
+        } catch (Throwable t) {t.printStackTrace();
             // Generate a bona fide error if there is a non-QDL one.
             throw new QDLExceptionWithTrace(t, this);
         }

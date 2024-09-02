@@ -355,7 +355,20 @@ http#host(qqq('https://foo'))
         if (module == null) {
             return null;
         }
-        return getModule().getState();
+        State s = getModule().getState();
+        if(s.getMetaEvaluator() == null){
+            // Fix for https://github.com/ncsa/qdl/issues/75
+            // edge case -- java serialization won't be able to track down huge networks of modules
+            // in modules and the the meta evaluator is always a transient field. It is therefore
+            // possible that the entire module state comes back nicely except for this which causes
+            // NPEs.
+            // Why not "fix" this at deserialization? Because modules are now variables and that
+            // would involve crawling through every variable stack and in complex cases would
+            // be an intolerable burden. Better to fix it as it is found.
+            s.setMetaEvaluator(getAmbientState().getMetaEvaluator());
+            s.setOpEvaluator(getAmbientState().getOpEvaluator());
+        }
+        return s;
     }
 
     /**

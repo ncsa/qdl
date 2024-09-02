@@ -1,3 +1,9 @@
+/*
+   This intended to be used with the old module system which automatically
+   inherited the ambient state. As such there is variable zzz here that
+   must be set. This can be used with the new system if the import mode is
+   set to shared.
+*/
 module[
    'a:/b','X'
    ][

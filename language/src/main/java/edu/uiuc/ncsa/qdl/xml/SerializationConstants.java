@@ -39,6 +39,9 @@ public interface SerializationConstants {
     String WORKSPACE_TAG = "workspace";
     String WS_ENV_TAG = "env";
     String EXTRINSIC_VARIABLES_TAG = "extrinsic_variables";
+    String EXTRINSIC_FUNCTIONS_TAG = "extrinsic_functions";
+    String INTRINSIC_VARIABLES_TAG = "intrinsic_variables";
+    String INTRINSIC_FUNCTIONS_TAG = "intrinsic_functions";
     String ENV_FILE = "env_file";
     String PRETTY_PRINT = "pretty_print";
     String OVERWRITE_BASE_FUNCTIONS = "overwrite_base_functions";
@@ -131,6 +134,7 @@ public interface SerializationConstants {
     String UUID_TAG = "uuid";
     String VARIABLES_TAG = "variables";
     String VARIABLE_STACK = "variable_stack";
+    String INTRINSIC_VARIABLE_STACK = "intrinsic_variable_stack";
     /**
      * List of modules imported to local scope with QDL's use or jUse commands.
      */
