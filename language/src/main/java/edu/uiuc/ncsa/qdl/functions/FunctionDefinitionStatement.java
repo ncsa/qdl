@@ -42,6 +42,9 @@ public class FunctionDefinitionStatement implements Statement {
 
     @Override
     public Object evaluate(State state) {
+        // Explicitly intercept an intrinsic function in a module so it does not end
+        // up in the local state. Bad form to define extrinsics in a module, but
+        // this is the right behavior if a user does.
         if(functionRecord.isExtrinsic()){
             state.getExtrinsicFuncs().put(functionRecord);
             return QDLNull.getInstance(); // for now
@@ -49,7 +52,7 @@ public class FunctionDefinitionStatement implements Statement {
         if(state.isImportMode()){
             state.getFTStack().localPut(functionRecord);
         } else {
-            state.getFTStack().put(functionRecord);
+            state.putFunction(functionRecord);
         }
         return QDLNull.getInstance(); // for now
     }

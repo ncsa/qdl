@@ -51,6 +51,23 @@ public abstract class FunctionState extends VariableState {
         return fStack;
     }
 
+    /**
+     * Adds a function to the correct stack (intrinsic, extrinsic or regular. To get the
+     * function, call {@link #resolveFunction(Polyad, boolean)} or one of its variants.
+     * @param function
+     */
+    public void putFunction(FunctionRecordInterface function) {
+        if(function.isExtrinsic() || isExtrinsic(function.getName())){
+            getExtrinsicFuncs().put(function);
+        }else{
+            if(isIntrinsic(function.getName())){
+                getIntrinsicFunctions().put(function);
+            }else{
+                getFTStack().put(function);
+            }
+        }
+
+    }
 
     FStack<? extends FTable<? extends FKey, ? extends FunctionRecordInterface>> fStack = new FStack();
 
@@ -93,7 +110,7 @@ public abstract class FunctionState extends VariableState {
             }
             if (wrapper != null) {
                 for (FunctionRecordInterface fr : wrapper.getModule().getState().getFTStack().getByAllName(lastName)) {
-                   // list.add(new FR_WithState(fr, wrapper.getModule().getState(), true));
+                    // list.add(new FR_WithState(fr, wrapper.getModule().getState(), true));
                     list.add(new FR_WithState(fr.clone(), wrapper.getModule().getState(), true));
                 }
             }
@@ -111,7 +128,7 @@ public abstract class FunctionState extends VariableState {
             }
             for (FunctionRecordInterface fr : wrapper.getModule().getState().getFTStack().getByAllName(name)) {
                 list.add(new FR_WithState(fr.clone(), wrapper.getModule().getState(), true));
-               // list.add(new FR_WithState(fr, wrapper.getModule().getState(), true));
+                // list.add(new FR_WithState(fr, wrapper.getModule().getState(), true));
             }
         }
         return list;
@@ -121,13 +138,13 @@ public abstract class FunctionState extends VariableState {
         if (name == null || name.isEmpty()) {
             throw new NFWException(("Internal error: The function has not been named"));
         }
-        if(isExtrinsic(name)){
+        if (isExtrinsic(name)) {
             FR_WithState frs = new FR_WithState();
             XThing xThing = null;
             FKey fKey = new FKey(name, argCount);
-            if(getExtrinsicFuncs().containsKey(new FKey(name, -1))){
+            if (getExtrinsicFuncs().containsKey(new FKey(name, -1))) {
                 xThing = getExtrinsicFuncs().get(fKey);
-                if(xThing == null){
+                if (xThing == null) {
                     return null;
                 }
                 if (xThing instanceof FunctionRecord) {
@@ -140,8 +157,8 @@ public abstract class FunctionState extends VariableState {
                     }
                 }
                 return frs;
-            }else{
-                throw new UndefinedFunctionException("no extrinsic function named '" + name + "' with " + argCount + " argument" + (argCount==1?".":"s."), null);
+            } else {
+                throw new UndefinedFunctionException("no extrinsic function named '" + name + "' with " + argCount + " argument" + (argCount == 1 ? "." : "s."), null);
             }
         }
         if (getMInstances().isEmpty()) {
@@ -153,9 +170,9 @@ public abstract class FunctionState extends VariableState {
             FKey fKey = new FKey(name, argCount);
             if (getFTStack().containsKey(new FKey(name, -1))) {
                 // xThing = getFTStack().get(fKey);
-                 xThing = getFTStack().get(fKey);
-            }else{
-                if(getIntrinsicFunctions().containsKey(new FKey(name, -1))){
+                xThing = getFTStack().get(fKey);
+            } else {
+                if (getIntrinsicFunctions().containsKey(new FKey(name, -1))) {
                     //xThing = getIntrinsicFunctions().get(fKey);
                     xThing = getIntrinsicFunctions().get(fKey);
                 }
@@ -273,10 +290,10 @@ public abstract class FunctionState extends VariableState {
                                          boolean showExtrinsic) {
         HashSet<XKey> processedAliases = new HashSet<>();
         TreeSet<String> output = new TreeSet<>();
-        if(showExtrinsic){
+        if (showExtrinsic) {
             output = getExtrinsicFuncs().listFunctions(regex);
         }
-         output.addAll(listFunctions(useCompactNotation, regex, includeModules, showIntrinsic, processedAliases));
+        output.addAll(listFunctions(useCompactNotation, regex, includeModules, showIntrinsic, processedAliases));
         return output;
     }
 
@@ -308,17 +325,17 @@ public abstract class FunctionState extends VariableState {
             Module m = ((MIWrapper) getMInstances().get(xKey)).getModule();
             //        processedAliases.add(xKey);
             TreeSet<String> uqFuncs = m.getState().getFTStack().listFunctions(regex);
-            extractFunctionList(useCompactNotation,  uqFuncs, out, m);
-            if(showIntrinsic && !m.getState().getIntrinsicFunctions().isEmpty()){
-                 uqFuncs = m.getState().getIntrinsicFunctions().listFunctions(regex);
-                extractFunctionList(useCompactNotation,  uqFuncs, out, m);
+            extractFunctionList(useCompactNotation, uqFuncs, out, m);
+            if (showIntrinsic && !m.getState().getIntrinsicFunctions().isEmpty()) {
+                uqFuncs = m.getState().getIntrinsicFunctions().listFunctions(regex);
+                extractFunctionList(useCompactNotation, uqFuncs, out, m);
             }
 
         }
         return out;
     }
 
-    private void extractFunctionList(boolean useCompactNotation,  TreeSet<String> uqFuncs, TreeSet<String> out, Module m) {
+    private void extractFunctionList(boolean useCompactNotation, TreeSet<String> uqFuncs, TreeSet<String> out, Module m) {
         for (String x : uqFuncs) {
             if (useCompactNotation) {
                 out.add(getMInstances().getAliasesAsString(m.getMTKey()) + NS_DELIMITER + x);
@@ -461,10 +478,11 @@ public abstract class FunctionState extends VariableState {
         }
         return out;
     }
-   FStack intrinsicFunctions;
+
+    FStack intrinsicFunctions;
 
     public FStack getIntrinsicFunctions() {
-        if(intrinsicFunctions == null){
+        if (intrinsicFunctions == null) {
             intrinsicFunctions = new FStack();
         }
         return intrinsicFunctions;
@@ -473,6 +491,7 @@ public abstract class FunctionState extends VariableState {
     public void setIntrinsicFunctions(FStack intrinsicFunctions) {
         this.intrinsicFunctions = intrinsicFunctions;
     }
+
     public FStack getExtrinsicFuncs() {
         return null;
     }

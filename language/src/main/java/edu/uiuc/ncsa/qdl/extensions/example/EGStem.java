@@ -1,12 +1,15 @@
 package edu.uiuc.ncsa.qdl.extensions.example;
 
 import edu.uiuc.ncsa.qdl.extensions.QDLVariable;
+import edu.uiuc.ncsa.qdl.variables.QDLSet;
 import edu.uiuc.ncsa.qdl.variables.QDLStem;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 /**
+ * A sample stem that has various types added to it. This shows you how to work with
+ * QDL types in Java.
  * <p>Created by Jeff Gaynor<br>
  * on 1/27/20 at  1:26 PM
  */
@@ -24,6 +27,11 @@ public class EGStem implements QDLVariable {
         stemVariable.put("integer", 456456546L);
         stemVariable.put("decimal", new BigDecimal("3455476.987654567654567"));
         stemVariable.put("boolean", Boolean.TRUE);
+        QDLSet set = new QDLSet();
+        set.add("one");
+        set.add("two");
+        set.add(3);
+        stemVariable.put("set", set);
         QDLStem nestedStem = new QDLStem();
         nestedStem.put("0", 10L);
         nestedStem.put("1", 11L);

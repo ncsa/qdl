@@ -3,12 +3,23 @@ package edu.uiuc.ncsa.qdl.extensions.example;
 import edu.uiuc.ncsa.qdl.extensions.QDLFunction;
 import edu.uiuc.ncsa.qdl.state.State;
 
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * An example of an extrinsic (<i>aka</i> global, static in other languages) function.
+ * This function will be treated like any other function. It is available everywhere
+ * in the workspace.
+ *
+ * <p>When creating one, remember that only things that truly need to be accessible
+ * the same everywhere should be made extrinsic. </p>
+ *
+ */
 public class ExtrinsicFunction implements QDLFunction {
+    public static String EX_NAME = "$$my_extrinsic";
     @Override
     public String getName() {
-        return "$$my_extrinsic";
+        return EX_NAME;
     }
 
     @Override
@@ -23,6 +34,9 @@ public class ExtrinsicFunction implements QDLFunction {
 
     @Override
     public List<String> getDocumentation(int argCount) {
-        return List.of();
+        ArrayList<String> documentation = new ArrayList<>();
+
+        documentation.add(getName() + "(x) - a sample extrinsic function. It just returns it argument.");
+        return documentation;
     }
 }

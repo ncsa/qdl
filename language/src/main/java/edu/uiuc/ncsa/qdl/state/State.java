@@ -1077,7 +1077,7 @@ public class State extends FunctionState implements QDLConstants {
                 isRestrictedIO(),
                 isAssertionsOn());
         newState.setScriptArgStem(getScriptArgStem());
-        newState.setInstrinsicVariables(iStack);
+        newState.setIntrinsicVariables(iStack);
         newState.setIntrinsicFunctions(iftStack);
         newState.setScriptName(getScriptName());
         newState.setScriptPaths(getScriptPaths());

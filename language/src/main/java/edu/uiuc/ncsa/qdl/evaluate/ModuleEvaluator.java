@@ -10,6 +10,7 @@ import edu.uiuc.ncsa.qdl.expressions.ModuleExpression;
 import edu.uiuc.ncsa.qdl.expressions.Polyad;
 import edu.uiuc.ncsa.qdl.functions.DyadicFunctionReferenceNode;
 import edu.uiuc.ncsa.qdl.functions.FKey;
+import edu.uiuc.ncsa.qdl.functions.FStack;
 import edu.uiuc.ncsa.qdl.module.MTKey;
 import edu.uiuc.ncsa.qdl.module.Module;
 import edu.uiuc.ncsa.qdl.state.State;
@@ -1061,10 +1062,12 @@ docs(c#2@ini_out) ;
             switch (inhertianceMode){
                 case IMPORT_STATE_NONE_VALUE:
                 case IMPORT_STATE_SNAPSHOT_VALUE:
-                    newState.setInstrinsicVariables(cloneIntrinsicVariables(module.getState()));
+                    newState.setIntrinsicVariables(cloneIntrinsicVariables(module.getState()));
+                    newState.setIntrinsicFunctions(cloneIntrinsicFunctions(module.getState()));
                     break;
                     case IMPORT_STATE_SHARE_VALUE:
-                        newState.setInstrinsicVariables(state.getIntrinsicVariables());
+                        newState.setIntrinsicVariables(state.getIntrinsicVariables());
+                        newState.setIntrinsicFunctions(state.getIntrinsicFunctions());
                         break;
             }
             module.setTemplate(false);
@@ -1089,6 +1092,13 @@ protected VStack cloneIntrinsicVariables(State state) throws Throwable {
     iStack.fromJSON(iVars, ss);
     return iStack;
 }
+    protected FStack cloneIntrinsicFunctions(State state) throws Throwable {
+        SerializationState ss = new SerializationState(); // just need a non-null dummy
+        JSONArray iFuncs = state.getIntrinsicFunctions().toJSON(ss);
+        FStack iStack = new FStack();
+        iStack.fromJSON(iFuncs, ss);
+        return iStack;
+    }
     /**
      * This is just import(load(x, 'java')). It happens so much we need an idiom.
      * this will try to look up the argument in the system lib table, so you can do things like

@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * The module for the example. This sets the namespace and an alias (for people using
+ * the old module system). It is charged with creating new instances of itself and holds
+ * module level documentation.
  * <p>Created by Jeff Gaynor<br>
  * on 4/2/20 at  8:09 AM
  */
@@ -37,6 +40,8 @@ public class EGModule extends JavaModule {
         // Step 3: create a list of variables and populate it
         ArrayList<QDLVariable> vars = new ArrayList<>();
         vars.add(new EGStem());
+        vars.add(new StemEntry());
+        vars.add(new ExtrinsicVariable());
         // Once the list of variables is populated, add it to the module
         EGModule.addVariables(vars);
         // Step 4: If this has a State object passed in initialize it. Note that
@@ -56,11 +61,10 @@ public class EGModule extends JavaModule {
         if (description == null) {
             description = new ArrayList<>();
             description.add("This module is a simple example from the toolkit to show how");
-            description.add("to create a module and import it and use it. It has a two functions ");
-            description.add("concat(a,b) which is just concatenation of two strings.");
-            description.add("f_ref(@f,b) which shows how to evaluate a function reference.");
-            description.add("It also has a variable, e.g. that shows various bits of information.");
-            description.add("type: java" );
+            description.add("to create a module and import it and use it. It has an extrinsic function,");
+            description.add(ExtrinsicFunction.EX_NAME + " and an extrinsic variable " + ExtrinsicVariable.EX_NAME);
+            description.add("which are available on load (so no import needed).");
+            description.add("It also has an example where a single stem value is set for " + StemEntry.STEM_NAME);
         }
         return description;
     }

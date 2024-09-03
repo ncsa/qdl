@@ -373,8 +373,6 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("System exit cancelled.");
                 return RC_CONTINUE;
             case VARS_COMMAND:
-
-
                 return doVars(inputLine);
             case WS_COMMAND:
                 return doWS(inputLine);

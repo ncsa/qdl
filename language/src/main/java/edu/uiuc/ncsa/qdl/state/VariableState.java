@@ -584,7 +584,7 @@ public abstract class VariableState extends NamespaceAwareState {
         return null;
     }
 
-    public void setInstrinsicVariables(VStack instrinsicVariables) {
+    public void setIntrinsicVariables(VStack instrinsicVariables) {
         this.instrinsicVariables = instrinsicVariables;
     }
 

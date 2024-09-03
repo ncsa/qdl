@@ -113,7 +113,7 @@ public class WSJSONSerializer {
         if (json.containsKey(INTRINSIC_VARIABLES_TAG)) {
             VStack xVars = new VStack();
             xVars.deserializeFromJSON(json.getJSONObject(INTRINSIC_VARIABLES_TAG), serializationState, state);
-            state.setInstrinsicVariables(xVars);
+            state.setIntrinsicVariables(xVars);
         }
         if (json.containsKey(INTRINSIC_FUNCTIONS_TAG)) {
             FStack iFuncs = new FStack();

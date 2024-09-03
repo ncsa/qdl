@@ -76,6 +76,11 @@ public class FR_WithState implements FunctionRecordInterface {
     }
 
     @Override
+    public boolean isExtrinsic() {
+        return functionRecord.isExtrinsic();
+    }
+
+    @Override
     public void setName(String name) {
         functionRecord.setName(name);
     }

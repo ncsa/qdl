@@ -1,7 +1,6 @@
 /**
- * This package contains a simple example of how to make a java module for QDL. It consists of a function
- * called concat that takes two string and concatenates them. There is also a stem variable called "ex."
- * (for example) that has a few values in it.
+ * This package contains a simple example of how to make a java module for QDL. It consists of various functions and variables that
+ * showcase QDL module programming.
  * <p>Created by Jeff Gaynor<br>
  * on 1/27/20 at  1:23 PM
  */

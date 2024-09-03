@@ -14,7 +14,7 @@ public interface FunctionRecordInterface extends XThing {
     boolean isAnonymous();
 
     boolean isLambda();
-
+boolean isExtrinsic();
     @Override
     String getName();
     void setName(String  name);

@@ -11,14 +11,23 @@ import java.util.List;
 
 import static edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.getOperator;
 
-/**
+/** Example of a QDL function for a module that accepts a function reference.
+ * This takes two arguments
+ * <pre>
+ *     f_eval(@f, x)
+ * </pre>
+ * and returns
+ * <pre>
+ *     f(x)
+ * </pre>
  * <p>Created by Jeff Gaynor<br>
  * on 10/7/21 at  4:40 PM
  */
 public class FunctionReferenceExample implements QDLFunction {
+    public static String F_NAME = "f_eval";
     @Override
     public String getName() {
-        return "f_ref";
+        return F_NAME;
     }
 
     @Override
@@ -28,6 +37,7 @@ public class FunctionReferenceExample implements QDLFunction {
 
     @Override
     public Object evaluate(Object[] objects, State state) {
+        // no real argument checking done since this is sample code.
         ExpressionImpl expression = getOperator(state, (FunctionReferenceNode) objects[0], 1);
         expression.getArguments().add( new ConstantNode(objects[1]));
         return expression.evaluate(state);
@@ -37,10 +47,11 @@ public class FunctionReferenceExample implements QDLFunction {
     public List<String> getDocumentation(int argCount) {
         List<String> doxx = new ArrayList<>();
 
-        doxx.add(getName() + "(@f, x) - simple example for a Java extension that processes f(x) using a function reference.");
+        doxx.add(getName() + "(@f, x) - simple example that evaluates f at x using a function reference.");
         doxx.add("E.g.");
         doxx.add("    eg#" + getName() + "(@cos, pi()/7)");
         doxx.add("0.900968867902419");
+        doxx.add("\nThis is the same as issuing cos(pi()/7)");
         return doxx;
     }
 }

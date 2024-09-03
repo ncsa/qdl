@@ -177,7 +177,7 @@ public class XMLUtilsV2 {
         xer.nextEvent();// advance cursor
         VStack iStack = new VStack();
         iStack.fromXML(xer, serializationState);
-        state.setInstrinsicVariables( iStack);
+        state.setIntrinsicVariables( iStack);
         //xStack.setStateStack(state, xStack);
     }
     public static void deserializeIntrinsicFunctions(XMLEventReader xer, State state, SerializationState serializationState) throws XMLStreamException {
