@@ -33,18 +33,16 @@ fi
 cd $TARGET_ROOT
 rm -Rf *
 
-mkdir edu
-mkdir edu/uiuc
-mkdir edu/uiuc/ncsa
-mkdir edu/uiuc/ncsa/qdl
-mkdir edu/uiuc/ncsa/qdl/install
+mkdir org
+mkdir org.qdl_lang
+mkdir org/qdl_lang/install
 
 
 cd $TARGET_ROOT
 cp $QDL_SOURCES/src/main/scripts/installer.mf .
 cp $QDL_SOURCES/src/main/scripts/version.txt .
 # following class has to be installed here so it executes later.
-cp "$QDL_SOURCES"/target/classes/edu/uiuc/ncsa/qdl/install/*.class edu/uiuc/ncsa/qdl/install
+cp "$QDL_SOURCES"/target/classes/org/qdl_lang/install/*.class org/qdl_lang/install
 
 # Now make the directories
 mkdir "bin"

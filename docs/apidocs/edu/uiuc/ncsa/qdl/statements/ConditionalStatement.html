@@ -125,7 +125,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Object.html?is-external=true" title="class or interface in java.lang" class="externalLink">java.lang.Object</a></li>
 <li>
 <ul class="inheritance">
-<li>edu.uiuc.ncsa.qdl.statements.ConditionalStatement</li>
+<li>org.qdl_lang.statements.ConditionalStatement</li>
 </ul>
 </li>
 </ul>
@@ -144,7 +144,7 @@ implements <a href="Statement.html" title="interface in edu.uiuc.ncsa.qdl.statem
  on 1/17/20 at  3:34 PM</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../serialized-form.html#edu.uiuc.ncsa.qdl.statements.ConditionalStatement">Serialized Form</a></dd>
+<dd><a href="../../../../../serialized-form.html#org.qdl_lang.statements.ConditionalStatement">Serialized Form</a></dd>
 </dl>
 </li>
 </ul>
@@ -166,7 +166,7 @@ implements <a href="Statement.html" title="interface in edu.uiuc.ncsa.qdl.statem
 <th class="colLast" scope="col">Description</th>
 </tr>
 <tr class="altColor">
-<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(edu.uiuc.ncsa.qdl.statements.TokenPosition)">ConditionalStatement</a></span>&#8203;(<a href="TokenPosition.html" title="class in edu.uiuc.ncsa.qdl.statements">TokenPosition</a>&nbsp;tokenPosition)</code></th>
+<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(org.qdl_lang.statements.TokenPosition)">ConditionalStatement</a></span>&#8203;(<a href="TokenPosition.html" title="class in edu.uiuc.ncsa.qdl.statements">TokenPosition</a>&nbsp;tokenPosition)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 </table>
@@ -189,7 +189,7 @@ implements <a href="Statement.html" title="interface in edu.uiuc.ncsa.qdl.statem
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Object.html?is-external=true" title="class or interface in java.lang" class="externalLink">Object</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#evaluate(edu.uiuc.ncsa.qdl.state.State)">evaluate</a></span>&#8203;(<a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#evaluate(org.qdl_lang.state.State)">evaluate</a></span>&#8203;(<a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i1" class="rowColor">
@@ -244,7 +244,7 @@ implements <a href="Statement.html" title="interface in edu.uiuc.ncsa.qdl.statem
 </tr>
 <tr id="i11" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setTokenPosition(edu.uiuc.ncsa.qdl.statements.TokenPosition)">setTokenPosition</a></span>&#8203;(<a href="TokenPosition.html" title="class in edu.uiuc.ncsa.qdl.statements">TokenPosition</a>&nbsp;tokenPosition)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#setTokenPosition(org.qdl_lang.statements.TokenPosition)">setTokenPosition</a></span>&#8203;(<a href="TokenPosition.html" title="class in edu.uiuc.ncsa.qdl.statements">TokenPosition</a>&nbsp;tokenPosition)</code></th>
 <td class="colLast">
 <div class="block">Set the location of this token from the parser.</div>
 </td>
@@ -273,7 +273,7 @@ implements <a href="Statement.html" title="interface in edu.uiuc.ncsa.qdl.statem
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a id="&lt;init&gt;(edu.uiuc.ncsa.qdl.statements.TokenPosition)">
+<a id="&lt;init&gt;(org.qdl_lang.statements.TokenPosition)">
 <!--   -->
 </a>
 <ul class="blockListLast">
@@ -292,19 +292,19 @@ implements <a href="Statement.html" title="interface in edu.uiuc.ncsa.qdl.statem
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a id="setTokenPosition(edu.uiuc.ncsa.qdl.statements.TokenPosition)">
+<a id="setTokenPosition(org.qdl_lang.statements.TokenPosition)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>setTokenPosition</h4>
 <pre class="methodSignature">public&nbsp;void&nbsp;setTokenPosition&#8203;(<a href="TokenPosition.html" title="class in edu.uiuc.ncsa.qdl.statements">TokenPosition</a>&nbsp;tokenPosition)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="Statement.html#setTokenPosition(edu.uiuc.ncsa.qdl.statements.TokenPosition)">Statement</a></code></span></div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from interface:&nbsp;<code><a href="Statement.html#setTokenPosition(org.qdl_lang.statements.TokenPosition)">Statement</a></code></span></div>
 <div class="block">Set the location of this token from the parser. This is used
  for error notifications later.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="Statement.html#setTokenPosition(edu.uiuc.ncsa.qdl.statements.TokenPosition)">setTokenPosition</a></code>&nbsp;in interface&nbsp;<code><a href="Statement.html" title="interface in edu.uiuc.ncsa.qdl.statements">Statement</a></code></dd>
+<dd><code><a href="Statement.html#setTokenPosition(org.qdl_lang.statements.TokenPosition)">setTokenPosition</a></code>&nbsp;in interface&nbsp;<code><a href="Statement.html" title="interface in edu.uiuc.ncsa.qdl.statements">Statement</a></code></dd>
 </dl>
 </li>
 </ul>
@@ -388,7 +388,7 @@ implements <a href="Statement.html" title="interface in edu.uiuc.ncsa.qdl.statem
 <pre class="methodSignature">public&nbsp;void&nbsp;setElseArguments&#8203;(<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/List.html?is-external=true" title="class or interface in java.util" class="externalLink">List</a>&lt;<a href="Statement.html" title="interface in edu.uiuc.ncsa.qdl.statements">Statement</a>&gt;&nbsp;elseArguments)</pre>
 </li>
 </ul>
-<a id="evaluate(edu.uiuc.ncsa.qdl.state.State)">
+<a id="evaluate(org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -397,7 +397,7 @@ implements <a href="Statement.html" title="interface in edu.uiuc.ncsa.qdl.statem
 <pre class="methodSignature">public&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Object.html?is-external=true" title="class or interface in java.lang" class="externalLink">Object</a>&nbsp;evaluate&#8203;(<a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="Statement.html#evaluate(edu.uiuc.ncsa.qdl.state.State)">evaluate</a></code>&nbsp;in interface&nbsp;<code><a href="Statement.html" title="interface in edu.uiuc.ncsa.qdl.statements">Statement</a></code></dd>
+<dd><code><a href="Statement.html#evaluate(org.qdl_lang.state.State)">evaluate</a></code>&nbsp;in interface&nbsp;<code><a href="Statement.html" title="interface in edu.uiuc.ncsa.qdl.statements">Statement</a></code></dd>
 </dl>
 </li>
 </ul>

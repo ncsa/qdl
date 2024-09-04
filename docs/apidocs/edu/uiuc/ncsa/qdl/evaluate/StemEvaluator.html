@@ -125,10 +125,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Object.html?is-external=true" title="class or interface in java.lang" class="externalLink">java.lang.Object</a></li>
 <li>
 <ul class="inheritance">
-<li><a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evaluate">edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator</a></li>
+<li><a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evaluate">org.qdl_lang.evaluate.AbstractEvaluator</a></li>
 <li>
 <ul class="inheritance">
-<li>edu.uiuc.ncsa.qdl.evaluate.StemEvaluator</li>
+<li>org.qdl_lang.evaluate.StemEvaluator</li>
 </ul>
 </li>
 </ul>
@@ -148,7 +148,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
  on 1/16/20 at  9:19 AM</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../serialized-form.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator">Serialized Form</a></dd>
+<dd><a href="../../../../../serialized-form.html#org.qdl_lang.evaluate.StemEvaluator">Serialized Form</a></dd>
 </dl>
 </li>
 </ul>
@@ -184,7 +184,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 </table>
 <ul class="blockList">
-<li class="blockList"><a id="nested.classes.inherited.from.class.edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator">
+<li class="blockList"><a id="nested.classes.inherited.from.class.org.qdl_lang.evaluate.AbstractEvaluator">
 <!--   -->
 </a>
 <h3>Nested classes/interfaces inherited from class&nbsp;edu.uiuc.ncsa.qdl.evaluate.<a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evaluate">AbstractEvaluator</a></h3>
@@ -624,14 +624,14 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 </table>
 <ul class="blockList">
-<li class="blockList"><a id="fields.inherited.from.class.edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator">
+<li class="blockList"><a id="fields.inherited.from.class.org.qdl_lang.evaluate.AbstractEvaluator">
 <!--   -->
 </a>
 <h3>Fields inherited from class&nbsp;edu.uiuc.ncsa.qdl.evaluate.<a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evaluate">AbstractEvaluator</a></h3>
 <code><a href="AbstractEvaluator.html#bigArgList">bigArgList</a>, <a href="AbstractEvaluator.html#bigArgList0">bigArgList0</a>, <a href="AbstractEvaluator.html#FILE_OP_AUTO">FILE_OP_AUTO</a>, <a href="AbstractEvaluator.html#FILE_OP_BINARY">FILE_OP_BINARY</a>, <a href="AbstractEvaluator.html#FILE_OP_INPUT_STREAM">FILE_OP_INPUT_STREAM</a>, <a href="AbstractEvaluator.html#FILE_OP_TEXT_INI">FILE_OP_TEXT_INI</a>, <a href="AbstractEvaluator.html#FILE_OP_TEXT_STEM">FILE_OP_TEXT_STEM</a>, <a href="AbstractEvaluator.html#FILE_OP_TEXT_STRING">FILE_OP_TEXT_STRING</a>, <a href="AbstractEvaluator.html#FILE_OP_TEXT_WITHOUT_LIST_INI">FILE_OP_TEXT_WITHOUT_LIST_INI</a>, <a href="AbstractEvaluator.html#fNames">fNames</a>, <a href="AbstractEvaluator.html#MAX_ARG_COUNT">MAX_ARG_COUNT</a></code></li>
 </ul>
 <ul class="blockList">
-<li class="blockList"><a id="fields.inherited.from.class.edu.uiuc.ncsa.qdl.evaluate.EvaluatorInterface">
+<li class="blockList"><a id="fields.inherited.from.class.org.qdl_lang.evaluate.EvaluatorInterface">
 <!--   -->
 </a>
 <h3>Fields inherited from interface&nbsp;edu.uiuc.ncsa.qdl.evaluate.<a href="EvaluatorInterface.html" title="interface in edu.uiuc.ncsa.qdl.evaluate">EvaluatorInterface</a></h3>
@@ -677,7 +677,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#dispatch(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">dispatch</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#dispatch(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">dispatch</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
         <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">
 <div class="block">Does the actual evaluation of the <a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions"><code>Polyad</code></a>.</div>
@@ -685,7 +685,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doCommonKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doCommonKeys</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doCommonKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doCommonKeys</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
             <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">
 <div class="block"><code>common_keys(stem1., stem2.)</code><br/><br/> Return a list of keys common to both stems.</div>
@@ -693,7 +693,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 <tr id="i2" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doExcludeKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doExcludeKeys</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doExcludeKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doExcludeKeys</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
              <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">
 <div class="block"><code>exclude_keys(stem., var | list.)</code><br/><br/> remove all the keys in list.</div>
@@ -701,7 +701,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doForEach(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doForEach</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doForEach(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doForEach</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
          <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">
 <div class="block">Apply n-ary function to outer product of stems.</div>
@@ -709,13 +709,13 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doFromJSON(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doFromJSON</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doFromJSON(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doFromJSON</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
           <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doHasKey(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doHasKey</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doHasKey(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doHasKey</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
         <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">
 <div class="block">has_keys(key | keysList., arg.) returns left conformable result if the key or keylist.</div>
@@ -723,7 +723,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doHasKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doHasKeys</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doHasKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doHasKeys</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
          <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
@@ -731,7 +731,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doIncludeKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doIncludeKeys</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doIncludeKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doIncludeKeys</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
              <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">
 <div class="block"><code>include_keys(stem., var | list.);</code><br/><br/> include keys on the right in the resulting stem</div>
@@ -739,19 +739,19 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doIndices(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doIndices</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doIndices(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doIndices</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
          <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i9" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doIsList(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doIsList</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doIsList(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doIsList</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
         <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i10" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doIsMemberOf(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doIsMemberOf</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doIsMemberOf(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doIsMemberOf</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
             <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">
 <div class="block">Compute if the left argument is a member of the right argument.</div>
@@ -759,19 +759,19 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 <tr id="i11" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doJoin(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doJoin</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doJoin(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doJoin</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
       <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i12" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doJPathQuery(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doJPathQuery</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doJPathQuery(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doJPathQuery</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
             <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i13" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doKeys</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doKeys</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
       <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">
 <div class="block">Return a stem of nothing key the keys, possibly filtering, so the final stem is of the form</div>
@@ -779,7 +779,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 <tr id="i14" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doListKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doListKeys</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doListKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doListKeys</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
           <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">
 <div class="block">Returns the keys in a stem as a list, filtering if wanted.</div>
@@ -787,19 +787,19 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 <tr id="i15" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doMakeIndex(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doMakeIndex</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doMakeIndex(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doMakeIndex</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
            <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i16" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doMask(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doMask</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doMask(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doMask</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
       <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i17" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doRemove(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doRemove</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doRemove(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doRemove</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
         <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">
 <div class="block">Remove the entire variable from the symbol table.</div>
@@ -807,7 +807,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 <tr id="i18" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doRenameKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doRenameKeys</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doRenameKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doRenameKeys</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
             <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">
 <div class="block"><code>rename_keys(arg., indices.);</code><br/><br/> list.</div>
@@ -815,7 +815,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 <tr id="i19" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doSetDefault(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doSetDefault</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doSetDefault(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doSetDefault</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
             <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">
 <div class="block">Sets the default value for a stem.</div>
@@ -823,7 +823,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 <tr id="i20" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doShuffle(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doShuffle</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doShuffle(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doShuffle</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
          <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">
 <div class="block">Permute the elements in a stem.</div>
@@ -831,38 +831,38 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 <tr id="i21" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doSize(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doSize</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doSize(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doSize</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
       <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i22" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doToJSON(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doToJSON</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doToJSON(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doToJSON</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
         <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i23" class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doTransform(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doTransform</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doTransform(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doTransform</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
            <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i24" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doValues(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">doValues</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#doValues(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">doValues</a></span>&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
         <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i25" class="rowColor">
 <td class="colFirst"><code>protected <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Object.html?is-external=true" title="class or interface in java.lang" class="externalLink">Object</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#forEachEval(edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,edu.uiuc.ncsa.qdl.state.State,java.util.List)">forEachEval</a></span>&#8203;(<a href="../expressions/ExpressionImpl.html" title="class in edu.uiuc.ncsa.qdl.expressions">ExpressionImpl</a>&nbsp;f,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#forEachEval(edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,org.qdl_lang.state.State,java.util.List)">forEachEval</a></span>&#8203;(<a href="../expressions/ExpressionImpl.html" title="class in edu.uiuc.ncsa.qdl.expressions">ExpressionImpl</a>&nbsp;f,
            <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state,
            <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/List.html?is-external=true" title="class or interface in java.util" class="externalLink">List</a>&nbsp;args)</code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr id="i26" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#forEachRecursion(edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,edu.uiuc.ncsa.qdl.state.State,java.lang.Object%5B%5D,edu.uiuc.ncsa.qdl.expressions.IndexList,java.util.ArrayList,int)">forEachRecursion</a></span>&#8203;(<a href="../variables/QDLStem.html" title="class in edu.uiuc.ncsa.qdl.variables">QDLStem</a>&nbsp;output,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#forEachRecursion(edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,org.qdl_lang.state.State,java.lang.Object%5B%5D,edu.uiuc.ncsa.qdl.expressions.IndexList,java.util.ArrayList,int)">forEachRecursion</a></span>&#8203;(<a href="../variables/QDLStem.html" title="class in edu.uiuc.ncsa.qdl.variables">QDLStem</a>&nbsp;output,
                 <a href="../expressions/ExpressionImpl.html" title="class in edu.uiuc.ncsa.qdl.expressions">ExpressionImpl</a>&nbsp;f,
                 <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state,
                 <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Object.html?is-external=true" title="class or interface in java.lang" class="externalLink">Object</a>[]&nbsp;args,
@@ -890,7 +890,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 <tr id="i30" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#indexRecursion(edu.uiuc.ncsa.qdl.variables.QDLStem,int%5B%5D,int,edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.CyclicArgList)">indexRecursion</a></span>&#8203;(<a href="../variables/QDLStem.html" title="class in edu.uiuc.ncsa.qdl.variables">QDLStem</a>&nbsp;out,
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#indexRecursion(edu.uiuc.ncsa.qdl.variables.QDLStem,int%5B%5D,int,org.qdl_lang.evaluate.StemEvaluator.CyclicArgList)">indexRecursion</a></span>&#8203;(<a href="../variables/QDLStem.html" title="class in edu.uiuc.ncsa.qdl.variables">QDLStem</a>&nbsp;out,
               int[]&nbsp;lengths,
               int&nbsp;index,
               <a href="StemEvaluator.CyclicArgList.html" title="class in edu.uiuc.ncsa.qdl.evaluate">StemEvaluator.CyclicArgList</a>&nbsp;cyclicArgList)</code></th>
@@ -930,11 +930,11 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </tr>
 </table>
 <ul class="blockList">
-<li class="blockList"><a id="methods.inherited.from.class.edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator">
+<li class="blockList"><a id="methods.inherited.from.class.org.qdl_lang.evaluate.AbstractEvaluator">
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;edu.uiuc.ncsa.qdl.evaluate.<a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evaluate">AbstractEvaluator</a></h3>
-<code><a href="AbstractEvaluator.html#areAllBigDecimals(java.lang.Object...)">areAllBigDecimals</a>, <a href="AbstractEvaluator.html#areAllBoolean(java.lang.Object...)">areAllBoolean</a>, <a href="AbstractEvaluator.html#areAllLongs(java.lang.Object...)">areAllLongs</a>, <a href="AbstractEvaluator.html#areAllNumbers(java.lang.Object...)">areAllNumbers</a>, <a href="AbstractEvaluator.html#areAllSets(java.lang.Object...)">areAllSets</a>, <a href="AbstractEvaluator.html#areAllStems(java.lang.Object...)">areAllStems</a>, <a href="AbstractEvaluator.html#areAllStrings(java.lang.Object...)">areAllStrings</a>, <a href="AbstractEvaluator.html#areAnyBigDecimals(java.lang.Object...)">areAnyBigDecimals</a>, <a href="AbstractEvaluator.html#areNoneStems(java.lang.Object...)">areNoneStems</a>, <a href="AbstractEvaluator.html#bdEquals(java.math.BigDecimal,java.math.BigDecimal)">bdEquals</a>, <a href="AbstractEvaluator.html#checkNull(java.lang.Object,edu.uiuc.ncsa.qdl.statements.ExpressionInterface)">checkNull</a>, <a href="AbstractEvaluator.html#checkNull(java.lang.Object,edu.uiuc.ncsa.qdl.statements.ExpressionInterface,edu.uiuc.ncsa.qdl.state.State)">checkNull</a>, <a href="AbstractEvaluator.html#convertArgsToStem(edu.uiuc.ncsa.qdl.expressions.Polyad,java.lang.Object,edu.uiuc.ncsa.qdl.state.State,java.lang.String)">convertArgsToStem</a>, <a href="AbstractEvaluator.html#evaluate(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">evaluate</a>, <a href="AbstractEvaluator.html#evaluate(java.lang.String,edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">evaluate</a>, <a href="AbstractEvaluator.html#finishExpr(edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.fpResult)">finishExpr</a>, <a href="AbstractEvaluator.html#getBigArgList()">getBigArgList</a>, <a href="AbstractEvaluator.html#getBigArgList0()">getBigArgList0</a>, <a href="AbstractEvaluator.html#getCommonKeys(edu.uiuc.ncsa.qdl.variables.QDLStem...)">getCommonKeys</a>, <a href="AbstractEvaluator.html#getFQFunctionNames()">getFQFunctionNames</a>, <a href="AbstractEvaluator.html#getFunctionReferenceNode(edu.uiuc.ncsa.qdl.state.State,edu.uiuc.ncsa.qdl.statements.ExpressionInterface)">getFunctionReferenceNode</a>, <a href="AbstractEvaluator.html#getFunctionReferenceNode(edu.uiuc.ncsa.qdl.state.State,edu.uiuc.ncsa.qdl.statements.ExpressionInterface,boolean)">getFunctionReferenceNode</a>, <a href="AbstractEvaluator.html#getOperator(edu.uiuc.ncsa.qdl.state.State,edu.uiuc.ncsa.qdl.functions.FunctionReferenceNodeInterface,int)">getOperator</a>, <a href="AbstractEvaluator.html#getOrCreateStem(edu.uiuc.ncsa.qdl.statements.ExpressionInterface,edu.uiuc.ncsa.qdl.state.State,java.lang.String)">getOrCreateStem</a>, <a href="AbstractEvaluator.html#isBigDecimal(java.lang.Object)">isBigDecimal</a>, <a href="AbstractEvaluator.html#isBoolean(java.lang.Object)">isBoolean</a>, <a href="AbstractEvaluator.html#isBuiltInFunction(java.lang.String)">isBuiltInFunction</a>, <a href="AbstractEvaluator.html#isFunctionRef(edu.uiuc.ncsa.qdl.statements.ExpressionInterface)">isFunctionRef</a>, <a href="AbstractEvaluator.html#isLong(java.lang.Object)">isLong</a>, <a href="AbstractEvaluator.html#isNumber(java.lang.Object)">isNumber</a>, <a href="AbstractEvaluator.html#isScalar(java.lang.Object)">isScalar</a>, <a href="AbstractEvaluator.html#isSet(java.lang.Object)">isSet</a>, <a href="AbstractEvaluator.html#isStem(java.lang.Object)">isStem</a>, <a href="AbstractEvaluator.html#isStemList(java.lang.Object)">isStemList</a>, <a href="AbstractEvaluator.html#isString(java.lang.Object)">isString</a>, <a href="AbstractEvaluator.html#listFunctions(boolean)">listFunctions</a>, <a href="AbstractEvaluator.html#process1(edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.fPointer,java.lang.String,edu.uiuc.ncsa.qdl.state.State)">process1</a>, <a href="AbstractEvaluator.html#process2(edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.fPointer,java.lang.String,edu.uiuc.ncsa.qdl.state.State)">process2</a>, <a href="AbstractEvaluator.html#process2(edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.fPointer,java.lang.String,edu.uiuc.ncsa.qdl.state.State,boolean)">process2</a>, <a href="AbstractEvaluator.html#process3(edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.fPointer,java.lang.String,edu.uiuc.ncsa.qdl.state.State,boolean)">process3</a>, <a href="AbstractEvaluator.html#processSet1(edu.uiuc.ncsa.qdl.variables.QDLSet,edu.uiuc.ncsa.qdl.variables.QDLSet,edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.fPointer)">processSet1</a>, <a href="AbstractEvaluator.html#processSet2(edu.uiuc.ncsa.qdl.variables.QDLSet,edu.uiuc.ncsa.qdl.variables.QDLSet,edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.fPointer,edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,boolean)">processSet2</a>, <a href="AbstractEvaluator.html#processSet2(edu.uiuc.ncsa.qdl.variables.QDLSet,edu.uiuc.ncsa.qdl.variables.QDLSet,java.lang.Object,boolean,edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.fPointer,edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,boolean)">processSet2</a>, <a href="AbstractEvaluator.html#processStem1(edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.fPointer)">processStem1</a>, <a href="AbstractEvaluator.html#processStem2(edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.fPointer,edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,boolean)">processStem2</a>, <a href="AbstractEvaluator.html#processStem3(edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.evaluate.AbstractEvaluator.fPointer,edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,boolean)">processStem3</a>, <a href="AbstractEvaluator.html#resolveResourceToFile(java.lang.String,int,edu.uiuc.ncsa.qdl.state.State)">resolveResourceToFile</a>, <a href="AbstractEvaluator.html#tempFname(edu.uiuc.ncsa.qdl.state.State)">tempFname</a>, <a href="AbstractEvaluator.html#toBD(java.lang.Object)">toBD</a>, <a href="AbstractEvaluator.html#toConstants(java.util.ArrayList)">toConstants</a>, <a href="AbstractEvaluator.html#toStem(java.lang.Object)">toStem</a></code></li>
+<code><a href="AbstractEvaluator.html#areAllBigDecimals(java.lang.Object...)">areAllBigDecimals</a>, <a href="AbstractEvaluator.html#areAllBoolean(java.lang.Object...)">areAllBoolean</a>, <a href="AbstractEvaluator.html#areAllLongs(java.lang.Object...)">areAllLongs</a>, <a href="AbstractEvaluator.html#areAllNumbers(java.lang.Object...)">areAllNumbers</a>, <a href="AbstractEvaluator.html#areAllSets(java.lang.Object...)">areAllSets</a>, <a href="AbstractEvaluator.html#areAllStems(java.lang.Object...)">areAllStems</a>, <a href="AbstractEvaluator.html#areAllStrings(java.lang.Object...)">areAllStrings</a>, <a href="AbstractEvaluator.html#areAnyBigDecimals(java.lang.Object...)">areAnyBigDecimals</a>, <a href="AbstractEvaluator.html#areNoneStems(java.lang.Object...)">areNoneStems</a>, <a href="AbstractEvaluator.html#bdEquals(java.math.BigDecimal,java.math.BigDecimal)">bdEquals</a>, <a href="AbstractEvaluator.html#checkNull(java.lang.Object,org.qdl_lang.statements.ExpressionInterface)">checkNull</a>, <a href="AbstractEvaluator.html#checkNull(java.lang.Object,org.qdl_lang.statements.ExpressionInterface,org.qdl_lang.state.State)">checkNull</a>, <a href="AbstractEvaluator.html#convertArgsToStem(edu.uiuc.ncsa.qdl.expressions.Polyad,java.lang.Object,org.qdl_lang.state.State,java.lang.String)">convertArgsToStem</a>, <a href="AbstractEvaluator.html#evaluate(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">evaluate</a>, <a href="AbstractEvaluator.html#evaluate(java.lang.String,edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">evaluate</a>, <a href="AbstractEvaluator.html#finishExpr(edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,org.qdl_lang.evaluate.AbstractEvaluator.fpResult)">finishExpr</a>, <a href="AbstractEvaluator.html#getBigArgList()">getBigArgList</a>, <a href="AbstractEvaluator.html#getBigArgList0()">getBigArgList0</a>, <a href="AbstractEvaluator.html#getCommonKeys(edu.uiuc.ncsa.qdl.variables.QDLStem...)">getCommonKeys</a>, <a href="AbstractEvaluator.html#getFQFunctionNames()">getFQFunctionNames</a>, <a href="AbstractEvaluator.html#getFunctionReferenceNode(org.qdl_lang.state.State,org.qdl_lang.statements.ExpressionInterface)">getFunctionReferenceNode</a>, <a href="AbstractEvaluator.html#getFunctionReferenceNode(org.qdl_lang.state.State,org.qdl_lang.statements.ExpressionInterface,boolean)">getFunctionReferenceNode</a>, <a href="AbstractEvaluator.html#getOperator(org.qdl_lang.state.State,org.qdl_lang.functions.FunctionReferenceNodeInterface,int)">getOperator</a>, <a href="AbstractEvaluator.html#getOrCreateStem(org.qdl_lang.statements.ExpressionInterface,org.qdl_lang.state.State,java.lang.String)">getOrCreateStem</a>, <a href="AbstractEvaluator.html#isBigDecimal(java.lang.Object)">isBigDecimal</a>, <a href="AbstractEvaluator.html#isBoolean(java.lang.Object)">isBoolean</a>, <a href="AbstractEvaluator.html#isBuiltInFunction(java.lang.String)">isBuiltInFunction</a>, <a href="AbstractEvaluator.html#isFunctionRef(org.qdl_lang.statements.ExpressionInterface)">isFunctionRef</a>, <a href="AbstractEvaluator.html#isLong(java.lang.Object)">isLong</a>, <a href="AbstractEvaluator.html#isNumber(java.lang.Object)">isNumber</a>, <a href="AbstractEvaluator.html#isScalar(java.lang.Object)">isScalar</a>, <a href="AbstractEvaluator.html#isSet(java.lang.Object)">isSet</a>, <a href="AbstractEvaluator.html#isStem(java.lang.Object)">isStem</a>, <a href="AbstractEvaluator.html#isStemList(java.lang.Object)">isStemList</a>, <a href="AbstractEvaluator.html#isString(java.lang.Object)">isString</a>, <a href="AbstractEvaluator.html#listFunctions(boolean)">listFunctions</a>, <a href="AbstractEvaluator.html#process1(edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,org.qdl_lang.evaluate.AbstractEvaluator.fPointer,java.lang.String,org.qdl_lang.state.State)">process1</a>, <a href="AbstractEvaluator.html#process2(edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,org.qdl_lang.evaluate.AbstractEvaluator.fPointer,java.lang.String,org.qdl_lang.state.State)">process2</a>, <a href="AbstractEvaluator.html#process2(edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,org.qdl_lang.evaluate.AbstractEvaluator.fPointer,java.lang.String,org.qdl_lang.state.State,boolean)">process2</a>, <a href="AbstractEvaluator.html#process3(edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,org.qdl_lang.evaluate.AbstractEvaluator.fPointer,java.lang.String,org.qdl_lang.state.State,boolean)">process3</a>, <a href="AbstractEvaluator.html#processSet1(edu.uiuc.ncsa.qdl.variables.QDLSet,edu.uiuc.ncsa.qdl.variables.QDLSet,org.qdl_lang.evaluate.AbstractEvaluator.fPointer)">processSet1</a>, <a href="AbstractEvaluator.html#processSet2(edu.uiuc.ncsa.qdl.variables.QDLSet,edu.uiuc.ncsa.qdl.variables.QDLSet,org.qdl_lang.evaluate.AbstractEvaluator.fPointer,edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,boolean)">processSet2</a>, <a href="AbstractEvaluator.html#processSet2(edu.uiuc.ncsa.qdl.variables.QDLSet,edu.uiuc.ncsa.qdl.variables.QDLSet,java.lang.Object,boolean,org.qdl_lang.evaluate.AbstractEvaluator.fPointer,edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,boolean)">processSet2</a>, <a href="AbstractEvaluator.html#processStem1(edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.variables.QDLStem,org.qdl_lang.evaluate.AbstractEvaluator.fPointer)">processStem1</a>, <a href="AbstractEvaluator.html#processStem2(edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.variables.QDLStem,org.qdl_lang.evaluate.AbstractEvaluator.fPointer,edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,boolean)">processStem2</a>, <a href="AbstractEvaluator.html#processStem3(edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.variables.QDLStem,org.qdl_lang.evaluate.AbstractEvaluator.fPointer,edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,boolean)">processStem3</a>, <a href="AbstractEvaluator.html#resolveResourceToFile(java.lang.String,int,org.qdl_lang.state.State)">resolveResourceToFile</a>, <a href="AbstractEvaluator.html#tempFname(org.qdl_lang.state.State)">tempFname</a>, <a href="AbstractEvaluator.html#toBD(java.lang.Object)">toBD</a>, <a href="AbstractEvaluator.html#toConstants(java.util.ArrayList)">toConstants</a>, <a href="AbstractEvaluator.html#toStem(java.lang.Object)">toStem</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
@@ -968,7 +968,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> STEM_NAMESPACE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.STEM_NAMESPACE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.STEM_NAMESPACE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -981,7 +981,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int STEM_FUNCTION_BASE_VALUE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.STEM_FUNCTION_BASE_VALUE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.STEM_FUNCTION_BASE_VALUE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -994,7 +994,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> SIZE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.SIZE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.SIZE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1007,7 +1007,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int SIZE_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.SIZE_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.SIZE_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1020,7 +1020,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> SHORT_MAKE_INDICES</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.SHORT_MAKE_INDICES">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.SHORT_MAKE_INDICES">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1033,7 +1033,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int MAKE_INDICES_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.MAKE_INDICES_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.MAKE_INDICES_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1046,7 +1046,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> REMOVE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.REMOVE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.REMOVE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1059,7 +1059,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int REMOVE_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.REMOVE_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.REMOVE_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1072,7 +1072,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> SET_DEFAULT</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.SET_DEFAULT">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.SET_DEFAULT">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1085,7 +1085,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int SET_DEFAULT_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.SET_DEFAULT_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.SET_DEFAULT_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1098,7 +1098,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> BOX</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.BOX">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.BOX">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1111,7 +1111,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int BOX_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.BOX_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.BOX_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1124,7 +1124,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> UNBOX</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.UNBOX">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.UNBOX">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1137,7 +1137,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int UNBOX_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.UNBOX_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.UNBOX_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1150,7 +1150,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> UNION</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.UNION">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.UNION">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1163,7 +1163,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int UNION_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.UNION_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.UNION_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1176,7 +1176,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> HAS_VALUE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.HAS_VALUE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.HAS_VALUE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1189,7 +1189,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int HAS_VALUE_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.HAS_VALUE_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.HAS_VALUE_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1202,7 +1202,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> DIMENSION</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.DIMENSION">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.DIMENSION">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1215,7 +1215,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int DIMENSION_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.DIMENSION_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.DIMENSION_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1228,7 +1228,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> RANK</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.RANK">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.RANK">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1241,7 +1241,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int RANK_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.RANK_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.RANK_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1254,7 +1254,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> FOR_EACH</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.FOR_EACH">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.FOR_EACH">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1267,7 +1267,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int FOR_EACH_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.FOR_EACH_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.FOR_EACH_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1280,7 +1280,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> COMMON_KEYS</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.COMMON_KEYS">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.COMMON_KEYS">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1293,7 +1293,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int COMMON_KEYS_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.COMMON_KEYS_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.COMMON_KEYS_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1306,7 +1306,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> EXCLUDE_KEYS</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.EXCLUDE_KEYS">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.EXCLUDE_KEYS">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1319,7 +1319,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int EXCLUDE_KEYS_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.EXCLUDE_KEYS_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.EXCLUDE_KEYS_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1332,7 +1332,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> LIST_KEYS</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.LIST_KEYS">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.LIST_KEYS">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1345,7 +1345,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int LIST_KEYS_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.LIST_KEYS_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.LIST_KEYS_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1358,7 +1358,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> HAS_KEY</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.HAS_KEY">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.HAS_KEY">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1371,7 +1371,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int HAS_KEY_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.HAS_KEY_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.HAS_KEY_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1384,7 +1384,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> INCLUDE_KEYS</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.INCLUDE_KEYS">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.INCLUDE_KEYS">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1397,7 +1397,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int INCLUDE_KEYS_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.INCLUDE_KEYS_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.INCLUDE_KEYS_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1410,7 +1410,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> RENAME_KEYS</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.RENAME_KEYS">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.RENAME_KEYS">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1423,7 +1423,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int RENAME_KEYS_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.RENAME_KEYS_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.RENAME_KEYS_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1436,7 +1436,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> MASK</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.MASK">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.MASK">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1449,7 +1449,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int MASK_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.MASK_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.MASK_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1462,7 +1462,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> KEYS</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.KEYS">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.KEYS">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1475,7 +1475,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int KEYS_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.KEYS_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.KEYS_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1488,7 +1488,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> SHUFFLE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.SHUFFLE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.SHUFFLE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1501,7 +1501,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int SHUFFLE_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.SHUFFLE_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.SHUFFLE_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1514,7 +1514,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> UNIQUE_VALUES</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.UNIQUE_VALUES">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.UNIQUE_VALUES">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1527,7 +1527,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int UNIQUE_VALUES_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.UNIQUE_VALUES_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.UNIQUE_VALUES_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1540,7 +1540,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> JOIN</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.JOIN">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.JOIN">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1553,7 +1553,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int JOIN_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.JOIN_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.JOIN_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1566,7 +1566,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> ALL_KEYS</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.ALL_KEYS">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.ALL_KEYS">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1579,7 +1579,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int ALL_KEYS_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.ALL_KEYS_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.ALL_KEYS_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1592,7 +1592,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> TRANSPOSE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.TRANSPOSE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.TRANSPOSE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1605,7 +1605,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int TRANSPOSE_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.TRANSPOSE_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.TRANSPOSE_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1618,7 +1618,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> REMAP</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.REMAP">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.REMAP">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1631,7 +1631,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int REMAP_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.REMAP_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.REMAP_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1644,7 +1644,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> HAS_KEYS</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.HAS_KEYS">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.HAS_KEYS">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1657,7 +1657,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int HAS_KEYS_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.HAS_KEYS_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.HAS_KEYS_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1670,7 +1670,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> EXCISE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.EXCISE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.EXCISE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1683,7 +1683,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int EXCISE_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.EXCISE_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.EXCISE_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1696,7 +1696,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> IS_LIST</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.IS_LIST">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.IS_LIST">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1709,7 +1709,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int IS_LIST_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.IS_LIST_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.IS_LIST_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1722,7 +1722,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> VALUES</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.VALUES">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.VALUES">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1735,7 +1735,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int VALUES_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.VALUES_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.VALUES_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1748,7 +1748,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> STAR</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.STAR">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.STAR">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1761,7 +1761,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int STAR_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.STAR_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.STAR_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1774,7 +1774,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> DIFF</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.DIFF">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.DIFF">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1787,7 +1787,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int DIFF_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.DIFF_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.DIFF_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1800,7 +1800,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> TO_JSON</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.TO_JSON">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.TO_JSON">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1813,7 +1813,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int TO_JSON_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.TO_JSON_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.TO_JSON_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1826,7 +1826,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> FROM_JSON</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.FROM_JSON">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.FROM_JSON">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1839,7 +1839,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int FROM_JSON_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.FROM_JSON_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.FROM_JSON_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1852,7 +1852,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> JSON_PATH_QUERY</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.JSON_PATH_QUERY">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.JSON_PATH_QUERY">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1865,7 +1865,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int JSON_PATH_QUERY_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.JSON_PATH_QUERY_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.JSON_PATH_QUERY_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1878,7 +1878,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a> DISPLAY</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.DISPLAY">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.DISPLAY">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -1891,7 +1891,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre>public static final&nbsp;int DISPLAY_TYPE</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../constant-values.html#edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.DISPLAY_TYPE">Constant Field Values</a></dd>
+<dd><a href="../../../../../constant-values.html#org.qdl_lang.evaluate.StemEvaluator.DISPLAY_TYPE">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -2056,7 +2056,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre class="methodSignature">public&nbsp;int&nbsp;getType&#8203;(<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a>&nbsp;name)</pre>
 </li>
 </ul>
-<a id="dispatch(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="dispatch(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2064,11 +2064,11 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <h4>dispatch</h4>
 <pre class="methodSignature">public&nbsp;boolean&nbsp;dispatch&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
                         <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="AbstractEvaluator.html#dispatch(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">AbstractEvaluator</a></code></span></div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="AbstractEvaluator.html#dispatch(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">AbstractEvaluator</a></code></span></div>
 <div class="block">Does the actual evaluation of the <a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions"><code>Polyad</code></a>.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="AbstractEvaluator.html#dispatch(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">dispatch</a></code>&nbsp;in class&nbsp;<code><a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evaluate">AbstractEvaluator</a></code></dd>
+<dd><code><a href="AbstractEvaluator.html#dispatch(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">dispatch</a></code>&nbsp;in class&nbsp;<code><a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evaluate">AbstractEvaluator</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 </dl>
 </li>
@@ -2096,7 +2096,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre class="methodSignature">protected&nbsp;<a href="../variables/QDLStem.html" title="class in edu.uiuc.ncsa.qdl.variables">QDLStem</a>&nbsp;reverseKeysAndValues&#8203;(<a href="../variables/QDLStem.html" title="class in edu.uiuc.ncsa.qdl.variables">QDLStem</a>&nbsp;inStem)</pre>
 </li>
 </ul>
-<a id="doIndices(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doIndices(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2106,7 +2106,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
                          <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</pre>
 </li>
 </ul>
-<a id="doValues(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doValues(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2116,7 +2116,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
                         <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</pre>
 </li>
 </ul>
-<a id="doForEach(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doForEach(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2133,7 +2133,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </dl>
 </li>
 </ul>
-<a id="forEachRecursion(edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,edu.uiuc.ncsa.qdl.state.State,java.lang.Object[],edu.uiuc.ncsa.qdl.expressions.IndexList,java.util.ArrayList,int)">
+<a id="forEachRecursion(edu.uiuc.ncsa.qdl.variables.QDLStem,edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,org.qdl_lang.state.State,java.lang.Object[],edu.uiuc.ncsa.qdl.expressions.IndexList,java.util.ArrayList,int)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2148,7 +2148,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
                                 int&nbsp;currentIndex)</pre>
 </li>
 </ul>
-<a id="forEachEval(edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,edu.uiuc.ncsa.qdl.state.State,java.util.List)">
+<a id="forEachEval(edu.uiuc.ncsa.qdl.expressions.ExpressionImpl,org.qdl_lang.state.State,java.util.List)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2159,7 +2159,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
                              <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/List.html?is-external=true" title="class or interface in java.util" class="externalLink">List</a>&nbsp;args)</pre>
 </li>
 </ul>
-<a id="doJPathQuery(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doJPathQuery(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2185,7 +2185,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </dl>
 </li>
 </ul>
-<a id="doIsMemberOf(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doIsMemberOf(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2201,7 +2201,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </dl>
 </li>
 </ul>
-<a id="doFromJSON(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doFromJSON(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2211,7 +2211,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
                           <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</pre>
 </li>
 </ul>
-<a id="doToJSON(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doToJSON(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2221,7 +2221,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
                         <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</pre>
 </li>
 </ul>
-<a id="doSize(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doSize(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2231,7 +2231,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
                       <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</pre>
 </li>
 </ul>
-<a id="doListKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doListKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2247,7 +2247,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </dl>
 </li>
 </ul>
-<a id="doKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2286,7 +2286,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </dl>
 </li>
 </ul>
-<a id="doHasKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doHasKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2295,7 +2295,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 <pre class="methodSignature">protected&nbsp;void&nbsp;doHasKeys&#8203;(<a href="../expressions/Polyad.html" title="class in edu.uiuc.ncsa.qdl.expressions">Polyad</a>&nbsp;polyad,
                          <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</pre>
 <div class="deprecationBlock"><span class="deprecatedLabel">Deprecated.</span></div>
-<div class="block">This is not left conformable and any uses should be removed in favor of <a href="#doHasKey(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)"><code>doHasKey(Polyad, State)</code></a></div>
+<div class="block">This is not left conformable and any uses should be removed in favor of <a href="#doHasKey(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)"><code>doHasKey(Polyad, State)</code></a></div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>polyad</code> - </dd>
@@ -2303,7 +2303,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </dl>
 </li>
 </ul>
-<a id="doHasKey(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doHasKey(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2319,7 +2319,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </dl>
 </li>
 </ul>
-<a id="doMakeIndex(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doMakeIndex(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2329,7 +2329,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
                            <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</pre>
 </li>
 </ul>
-<a id="indexRecursion(edu.uiuc.ncsa.qdl.variables.QDLStem,int[],int,edu.uiuc.ncsa.qdl.evaluate.StemEvaluator.CyclicArgList)">
+<a id="indexRecursion(edu.uiuc.ncsa.qdl.variables.QDLStem,int[],int,org.qdl_lang.evaluate.StemEvaluator.CyclicArgList)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2349,7 +2349,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </dl>
 </li>
 </ul>
-<a id="doIsList(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doIsList(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2359,7 +2359,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
                         <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</pre>
 </li>
 </ul>
-<a id="doRemove(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doRemove(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2375,7 +2375,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </dl>
 </li>
 </ul>
-<a id="doIncludeKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doIncludeKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2391,7 +2391,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </dl>
 </li>
 </ul>
-<a id="doExcludeKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doExcludeKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2407,7 +2407,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </dl>
 </li>
 </ul>
-<a id="doShuffle(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doShuffle(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2427,7 +2427,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
  read that in [4,2,3,1,0]: old → new, so 0 → 4, 1 → 2, 2→3, 3→1, 4→0</div>
 </li>
 </ul>
-<a id="doRenameKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doRenameKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2453,7 +2453,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </dl>
 </li>
 </ul>
-<a id="doCommonKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doCommonKeys(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2469,7 +2469,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </dl>
 </li>
 </ul>
-<a id="doSetDefault(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doSetDefault(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2485,7 +2485,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
 </dl>
 </li>
 </ul>
-<a id="doMask(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doMask(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2495,7 +2495,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
                       <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</pre>
 </li>
 </ul>
-<a id="doJoin(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doJoin(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -2505,7 +2505,7 @@ extends <a href="AbstractEvaluator.html" title="class in edu.uiuc.ncsa.qdl.evalu
                       <a href="../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</pre>
 </li>
 </ul>
-<a id="doTransform(edu.uiuc.ncsa.qdl.expressions.Polyad,edu.uiuc.ncsa.qdl.state.State)">
+<a id="doTransform(edu.uiuc.ncsa.qdl.expressions.Polyad,org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockListLast">

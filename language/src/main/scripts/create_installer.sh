@@ -32,6 +32,6 @@ unzip -p target/qdl-jar-with-dependencies.jar META-INF/MANIFEST.MF > $TARGET_ROO
 
 # Get the actual manifest so that build info is available.
 cd $TARGET_ROOT || exit
-java  edu.uiuc.ncsa.qdl.install.ListDistroFiles $TARGET_ROOT
-jar cmf installer.mf "$JAR_NAME" edu/uiuc/ncsa/qdl/install/Installer.class version.txt dir_list.txt file_list.txt bin docs etc lib log var examples
+java  org.qdl_lang.install.ListDistroFiles $TARGET_ROOT
+jar cmf installer.mf "$JAR_NAME" org/qdl_lang/install/Installer.class version.txt dir_list.txt file_list.txt bin docs etc lib log var examples
 echo '     ... done!'

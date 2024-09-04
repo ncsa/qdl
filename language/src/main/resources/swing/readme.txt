@@ -70,14 +70,14 @@ Steps
    see a message like
 
    Writing code to
-     "/home/ncsa/dev/ncsa-git/qdl/language/src/main/java/edu/uiuc/ncsa/qdl/gui/flex/QDLSyntax.java"
+     "/home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/gui/flex/QDLSyntax.java"
 
    in the output window. This means it worked and the GUI is ready for use.
 
 6. The GUI should bring up an RSyntaxTextArea window with the new grammar to test. Do so.
-7. The new generated QDLSyntax.* files are in /tmp/edu/uiuc/ncsa/qdl/gui/flex/ and you should
+7. The new generated QDLSyntax.* files are in /tmp/org/qdl_lang/gui/flex/ and you should
    issue a copy to the main code:
-cp /tmp/edu/uiuc/ncsa/qdl/gui/flex/QDLSyntax.* /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/edu/uiuc/ncsa/qdl/gui/flex
+cp /tmp/edu/uiuc/ncsa/qdl/gui/flex/QDLSyntax.* /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/gui/flex
     If you do not do this, then no changes will end up in QDL (!!!)
 8. Finally, save the updated qdl_syntax.xml file explicitly, just in case.
 ______

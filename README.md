@@ -32,7 +32,7 @@ If you are just using QDL, the rest of this document may be ignored.
 The base QDL jar is in Maven and should be referenced as
 ```
 <dependency>
-  <groupId>edu.uiuc.ncsa.qdl</groupId>
+  <groupId>org.qdl_lang</groupId>
   <artifactId>language</artifactId>
   <version>1.5-QDL-SNAPSHOT</version>
 </dependency>

@@ -13,7 +13,7 @@
     </servlet-mapping>
     <servlet>
         <servlet-name>sas</servlet-name>
-        <servlet-class>edu.uiuc.ncsa.qdl.sas.QDLSASServlet</servlet-class>
+        <servlet-class>org.qdl_lang.sas.QDLSASServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
 
@@ -39,7 +39,7 @@
 
 
     <listener>
-        <listener-class>edu.uiuc.ncsa.qdl.sas.loader.QDLSASBootstrapper</listener-class>
+        <listener-class>org.qdl_lang.sas.loader.QDLSASBootstrapper</listener-class>
     </listener>
 
 </web-app>

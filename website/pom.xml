@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>edu.uiuc.ncsa.qdl</groupId>
+        <groupId>org.qdl_lang</groupId>
         <artifactId>qdl</artifactId>
         <version>1.5-QDL-SNAPSHOT</version>
     </parent>
@@ -63,7 +63,7 @@
                     <!--<aggregate>true</aggregate>-->
                     <includeDependencySources>true</includeDependencySources>
                     <dependencySourceIncludes>
-                        <dependencySourceInclude>edu.uiuc.ncsa.qdl.*</dependencySourceInclude>
+                        <dependencySourceInclude>org.qdl_lang.*</dependencySourceInclude>
                     </dependencySourceIncludes>
                     <excludePackageNames>src.*;ch.*;edu.uiuc.ncsa.security.*;com.*;org.*;javax.*</excludePackageNames>
                 </configuration>
@@ -81,7 +81,7 @@
                 <configuration>
                     <includeDependencySources>true</includeDependencySources>
                     <dependencySourceIncludes>
-                        <dependencySourceInclude>edu.uiuc.ncsa.qdl.*</dependencySourceInclude>
+                        <dependencySourceInclude>org.qdl_lang.*</dependencySourceInclude>
                     </dependencySourceIncludes>
                     <excludePackageNames>ch.*;edu.uiuc.ncsa.security.*;com.*;org.*;javax.*</excludePackageNames>
 
