@@ -125,13 +125,13 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Object.html?is-external=true" title="class or interface in java.lang" class="externalLink">java.lang.Object</a></li>
 <li>
 <ul class="inheritance">
-<li><a href="../../module/Module.html" title="class in edu.uiuc.ncsa.qdl.module">edu.uiuc.ncsa.qdl.module.Module</a></li>
+<li><a href="../../module/Module.html" title="class in edu.uiuc.ncsa.qdl.module">org.qdl_lang.module.Module</a></li>
 <li>
 <ul class="inheritance">
-<li><a href="../JavaModule.html" title="class in edu.uiuc.ncsa.qdl.extensions">edu.uiuc.ncsa.qdl.extensions.JavaModule</a></li>
+<li><a href="../JavaModule.html" title="class in edu.uiuc.ncsa.qdl.extensions">org.qdl_lang.extensions.JavaModule</a></li>
 <li>
 <ul class="inheritance">
-<li>edu.uiuc.ncsa.qdl.extensions.inputLine.QDLCLIToolsModule</li>
+<li>org.qdl_lang.extensions.inputLine.QDLCLIToolsModule</li>
 </ul>
 </li>
 </ul>
@@ -153,7 +153,7 @@ extends <a href="../JavaModule.html" title="class in edu.uiuc.ncsa.qdl.extension
  on 2/28/23 at  7:54 AM</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../../../../serialized-form.html#edu.uiuc.ncsa.qdl.extensions.inputLine.QDLCLIToolsModule">Serialized Form</a></dd>
+<dd><a href="../../../../../../serialized-form.html#org.qdl_lang.extensions.inputLine.QDLCLIToolsModule">Serialized Form</a></dd>
 </dl>
 </li>
 </ul>
@@ -169,14 +169,14 @@ extends <a href="../JavaModule.html" title="class in edu.uiuc.ncsa.qdl.extension
 </a>
 <h3>Field Summary</h3>
 <ul class="blockList">
-<li class="blockList"><a id="fields.inherited.from.class.edu.uiuc.ncsa.qdl.extensions.JavaModule">
+<li class="blockList"><a id="fields.inherited.from.class.org.qdl_lang.extensions.JavaModule">
 <!--   -->
 </a>
 <h3>Fields inherited from class&nbsp;edu.uiuc.ncsa.qdl.extensions.<a href="../JavaModule.html" title="class in edu.uiuc.ncsa.qdl.extensions">JavaModule</a></h3>
 <code><a href="../JavaModule.html#funcs">funcs</a>, <a href="../JavaModule.html#vars">vars</a></code></li>
 </ul>
 <ul class="blockList">
-<li class="blockList"><a id="fields.inherited.from.class.edu.uiuc.ncsa.qdl.module.Module">
+<li class="blockList"><a id="fields.inherited.from.class.org.qdl_lang.module.Module">
 <!--   -->
 </a>
 <h3>Fields inherited from class&nbsp;edu.uiuc.ncsa.qdl.module.<a href="../../module/Module.html" title="class in edu.uiuc.ncsa.qdl.module">Module</a></h3>
@@ -230,31 +230,31 @@ extends <a href="../JavaModule.html" title="class in edu.uiuc.ncsa.qdl.extension
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getDescription()">getDescription</a></span>()</code></th>
 <td class="colLast">
 <div class="block">The <a href="../JavaModule.html#createDefaultDocs()"><code>JavaModule.createDefaultDocs()</code></a> will create basic documentation for functions and such,
- and is called automatically during module <a href="../JavaModule.html#init(edu.uiuc.ncsa.qdl.state.State)"><code>JavaModule.init(State)</code></a>,
+ and is called automatically during module <a href="../JavaModule.html#init(org.qdl_lang.state.State)"><code>JavaModule.init(State)</code></a>,
  but the actual description of this module -- if any -- is done here.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code><a href="../../module/Module.html" title="class in edu.uiuc.ncsa.qdl.module">Module</a></code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#newInstance(edu.uiuc.ncsa.qdl.state.State)">newInstance</a></span>&#8203;(<a href="../../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#newInstance(org.qdl_lang.state.State)">newInstance</a></span>&#8203;(<a href="../../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</code></th>
 <td class="colLast">
 <div class="block">Modules are effectively templates.</div>
 </td>
 </tr>
 </table>
 <ul class="blockList">
-<li class="blockList"><a id="methods.inherited.from.class.edu.uiuc.ncsa.qdl.extensions.JavaModule">
+<li class="blockList"><a id="methods.inherited.from.class.org.qdl_lang.extensions.JavaModule">
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;edu.uiuc.ncsa.qdl.extensions.<a href="../JavaModule.html" title="class in edu.uiuc.ncsa.qdl.extensions">JavaModule</a></h3>
-<code><a href="../JavaModule.html#addFunctions(java.util.List)">addFunctions</a>, <a href="../JavaModule.html#addVariables(java.util.List)">addVariables</a>, <a href="../JavaModule.html#createDefaultDocs()">createDefaultDocs</a>, <a href="../JavaModule.html#deserializeFromJSON(net.sf.json.JSONObject,edu.uiuc.ncsa.qdl.xml.SerializationState)">deserializeFromJSON</a>, <a href="../JavaModule.html#getClassname()">getClassname</a>, <a href="../JavaModule.html#getDocumentation()">getDocumentation</a>, <a href="../JavaModule.html#getListByTag()">getListByTag</a>, <a href="../JavaModule.html#getLoaderClassName()">getLoaderClassName</a>, <a href="../JavaModule.html#getMetaClass()">getMetaClass</a>, <a href="../JavaModule.html#hasMetaClass()">hasMetaClass</a>, <a href="../JavaModule.html#init(edu.uiuc.ncsa.qdl.state.State)">init</a>, <a href="../JavaModule.html#init(edu.uiuc.ncsa.qdl.state.State,boolean)">init</a>, <a href="../JavaModule.html#isExternal()">isExternal</a>, <a href="../JavaModule.html#serializeToJSON(edu.uiuc.ncsa.qdl.xml.SerializationState)">serializeToJSON</a>, <a href="../JavaModule.html#setClassName(java.lang.String)">setClassName</a>, <a href="../JavaModule.html#setDocumentation(java.util.List)">setDocumentation</a>, <a href="../JavaModule.html#setLoaderClassName(java.lang.String)">setLoaderClassName</a>, <a href="../JavaModule.html#setMetaClass(edu.uiuc.ncsa.qdl.extensions.QDLModuleMetaClass)">setMetaClass</a>, <a href="../JavaModule.html#writeExtraXMLAttributes(javax.xml.stream.XMLStreamWriter)">writeExtraXMLAttributes</a></code></li>
+<code><a href="../JavaModule.html#addFunctions(java.util.List)">addFunctions</a>, <a href="../JavaModule.html#addVariables(java.util.List)">addVariables</a>, <a href="../JavaModule.html#createDefaultDocs()">createDefaultDocs</a>, <a href="../JavaModule.html#deserializeFromJSON(net.sf.json.JSONObject,org.qdl_lang.xml.SerializationState)">deserializeFromJSON</a>, <a href="../JavaModule.html#getClassname()">getClassname</a>, <a href="../JavaModule.html#getDocumentation()">getDocumentation</a>, <a href="../JavaModule.html#getListByTag()">getListByTag</a>, <a href="../JavaModule.html#getLoaderClassName()">getLoaderClassName</a>, <a href="../JavaModule.html#getMetaClass()">getMetaClass</a>, <a href="../JavaModule.html#hasMetaClass()">hasMetaClass</a>, <a href="../JavaModule.html#init(org.qdl_lang.state.State)">init</a>, <a href="../JavaModule.html#init(org.qdl_lang.state.State,boolean)">init</a>, <a href="../JavaModule.html#isExternal()">isExternal</a>, <a href="../JavaModule.html#serializeToJSON(org.qdl_lang.xml.SerializationState)">serializeToJSON</a>, <a href="../JavaModule.html#setClassName(java.lang.String)">setClassName</a>, <a href="../JavaModule.html#setDocumentation(java.util.List)">setDocumentation</a>, <a href="../JavaModule.html#setLoaderClassName(java.lang.String)">setLoaderClassName</a>, <a href="../JavaModule.html#setMetaClass(org.qdl_lang.extensions.QDLModuleMetaClass)">setMetaClass</a>, <a href="../JavaModule.html#writeExtraXMLAttributes(javax.xml.stream.XMLStreamWriter)">writeExtraXMLAttributes</a></code></li>
 </ul>
 <ul class="blockList">
-<li class="blockList"><a id="methods.inherited.from.class.edu.uiuc.ncsa.qdl.module.Module">
+<li class="blockList"><a id="methods.inherited.from.class.org.qdl_lang.module.Module">
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;edu.uiuc.ncsa.qdl.module.<a href="../../module/Module.html" title="class in edu.uiuc.ncsa.qdl.module">Module</a></h3>
-<code><a href="../../module/Module.html#fromJSON(net.sf.json.JSONArray)">fromJSON</a>, <a href="../../module/Module.html#fromXML(javax.xml.stream.XMLEventReader,edu.uiuc.ncsa.qdl.xml.SerializationState,boolean)">fromXML</a>, <a href="../../module/Module.html#fromXML(javax.xml.stream.XMLEventReader,edu.uiuc.ncsa.security.core.configuration.XProperties,edu.uiuc.ncsa.qdl.parsing.QDLInterpreter)">fromXML</a>, <a href="../../module/Module.html#getAlias()">getAlias</a>, <a href="../../module/Module.html#getId()">getId</a>, <a href="../../module/Module.html#getInheritMode()">getInheritMode</a>, <a href="../../module/Module.html#getKey()">getKey</a>, <a href="../../module/Module.html#getListByTag(javax.xml.stream.XMLEventReader,java.lang.String)">getListByTag</a>, <a href="../../module/Module.html#getMTKey()">getMTKey</a>, <a href="../../module/Module.html#getName()">getName</a>, <a href="../../module/Module.html#getNamespace()">getNamespace</a>, <a href="../../module/Module.html#getParentInstanceAlias()">getParentInstanceAlias</a>, <a href="../../module/Module.html#getParentInstanceID()">getParentInstanceID</a>, <a href="../../module/Module.html#getParentTemplateID()">getParentTemplateID</a>, <a href="../../module/Module.html#getState()">getState</a>, <a href="../../module/Module.html#isTemplate()">isTemplate</a>, <a href="../../module/Module.html#readExtraXMLAttributes(javax.xml.stream.events.XMLEvent)">readExtraXMLAttributes</a>, <a href="../../module/Module.html#readExtraXMLElements(javax.xml.stream.events.XMLEvent,javax.xml.stream.XMLEventReader)">readExtraXMLElements</a>, <a href="../../module/Module.html#setAlias(java.lang.String)">setAlias</a>, <a href="../../module/Module.html#setId(java.util.UUID)">setId</a>, <a href="../../module/Module.html#setInheritanceMode(int)">setInheritanceMode</a>, <a href="../../module/Module.html#setNamespace(java.net.URI)">setNamespace</a>, <a href="../../module/Module.html#setParentInstanceAlias(java.lang.String)">setParentInstanceAlias</a>, <a href="../../module/Module.html#setParentInstanceID(java.util.UUID)">setParentInstanceID</a>, <a href="../../module/Module.html#setParentTemplateID(java.util.UUID)">setParentTemplateID</a>, <a href="../../module/Module.html#setState(edu.uiuc.ncsa.qdl.state.State)">setState</a>, <a href="../../module/Module.html#setTemplate(boolean)">setTemplate</a>, <a href="../../module/Module.html#setupModule(edu.uiuc.ncsa.qdl.module.Module)">setupModule</a>, <a href="../../module/Module.html#toJSON()">toJSON</a>, <a href="../../module/Module.html#toString()">toString</a>, <a href="../../module/Module.html#toXML(javax.xml.stream.XMLStreamWriter,java.lang.String)">toXML</a>, <a href="../../module/Module.html#toXML(javax.xml.stream.XMLStreamWriter,java.lang.String,boolean,edu.uiuc.ncsa.qdl.xml.SerializationState)">toXML</a>, <a href="../../module/Module.html#toXML2(javax.xml.stream.XMLStreamWriter,java.lang.String,boolean,edu.uiuc.ncsa.qdl.xml.SerializationState)">toXML2</a>, <a href="../../module/Module.html#writeExtraXMLElements(javax.xml.stream.XMLStreamWriter)">writeExtraXMLElements</a></code></li>
+<code><a href="../../module/Module.html#fromJSON(net.sf.json.JSONArray)">fromJSON</a>, <a href="../../module/Module.html#fromXML(javax.xml.stream.XMLEventReader,org.qdl_lang.xml.SerializationState,boolean)">fromXML</a>, <a href="../../module/Module.html#fromXML(javax.xml.stream.XMLEventReader,edu.uiuc.ncsa.security.core.configuration.XProperties,org.qdl_lang.parsing.QDLInterpreter)">fromXML</a>, <a href="../../module/Module.html#getAlias()">getAlias</a>, <a href="../../module/Module.html#getId()">getId</a>, <a href="../../module/Module.html#getInheritMode()">getInheritMode</a>, <a href="../../module/Module.html#getKey()">getKey</a>, <a href="../../module/Module.html#getListByTag(javax.xml.stream.XMLEventReader,java.lang.String)">getListByTag</a>, <a href="../../module/Module.html#getMTKey()">getMTKey</a>, <a href="../../module/Module.html#getName()">getName</a>, <a href="../../module/Module.html#getNamespace()">getNamespace</a>, <a href="../../module/Module.html#getParentInstanceAlias()">getParentInstanceAlias</a>, <a href="../../module/Module.html#getParentInstanceID()">getParentInstanceID</a>, <a href="../../module/Module.html#getParentTemplateID()">getParentTemplateID</a>, <a href="../../module/Module.html#getState()">getState</a>, <a href="../../module/Module.html#isTemplate()">isTemplate</a>, <a href="../../module/Module.html#readExtraXMLAttributes(javax.xml.stream.events.XMLEvent)">readExtraXMLAttributes</a>, <a href="../../module/Module.html#readExtraXMLElements(javax.xml.stream.events.XMLEvent,javax.xml.stream.XMLEventReader)">readExtraXMLElements</a>, <a href="../../module/Module.html#setAlias(java.lang.String)">setAlias</a>, <a href="../../module/Module.html#setId(java.util.UUID)">setId</a>, <a href="../../module/Module.html#setInheritanceMode(int)">setInheritanceMode</a>, <a href="../../module/Module.html#setNamespace(java.net.URI)">setNamespace</a>, <a href="../../module/Module.html#setParentInstanceAlias(java.lang.String)">setParentInstanceAlias</a>, <a href="../../module/Module.html#setParentInstanceID(java.util.UUID)">setParentInstanceID</a>, <a href="../../module/Module.html#setParentTemplateID(java.util.UUID)">setParentTemplateID</a>, <a href="../../module/Module.html#setState(org.qdl_lang.state.State)">setState</a>, <a href="../../module/Module.html#setTemplate(boolean)">setTemplate</a>, <a href="../../module/Module.html#setupModule(org.qdl_lang.module.Module)">setupModule</a>, <a href="../../module/Module.html#toJSON()">toJSON</a>, <a href="../../module/Module.html#toString()">toString</a>, <a href="../../module/Module.html#toXML(javax.xml.stream.XMLStreamWriter,java.lang.String)">toXML</a>, <a href="../../module/Module.html#toXML(javax.xml.stream.XMLStreamWriter,java.lang.String,boolean,org.qdl_lang.xml.SerializationState)">toXML</a>, <a href="../../module/Module.html#toXML2(javax.xml.stream.XMLStreamWriter,java.lang.String,boolean,org.qdl_lang.xml.SerializationState)">toXML2</a>, <a href="../../module/Module.html#writeExtraXMLElements(javax.xml.stream.XMLStreamWriter)">writeExtraXMLElements</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
@@ -308,14 +308,14 @@ extends <a href="../JavaModule.html" title="class in edu.uiuc.ncsa.qdl.extension
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a id="newInstance(edu.uiuc.ncsa.qdl.state.State)">
+<a id="newInstance(org.qdl_lang.state.State)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>newInstance</h4>
 <pre class="methodSignature">public&nbsp;<a href="../../module/Module.html" title="class in edu.uiuc.ncsa.qdl.module">Module</a>&nbsp;newInstance&#8203;(<a href="../../state/State.html" title="class in edu.uiuc.ncsa.qdl.state">State</a>&nbsp;state)</pre>
-<div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="../../module/Module.html#newInstance(edu.uiuc.ncsa.qdl.state.State)">Module</a></code></span></div>
+<div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="../../module/Module.html#newInstance(org.qdl_lang.state.State)">Module</a></code></span></div>
 <div class="block">Modules are effectively templates. This passes in the state of the parser at the point a new
  module is required and the contract is to create a new instance of this module with the state.
  Note that the state passed in may have nothing to do with the state here. You are creating
@@ -325,7 +325,7 @@ extends <a href="../JavaModule.html" title="class in edu.uiuc.ncsa.qdl.extension
  during deserialization.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
-<dd><code><a href="../../module/Module.html#newInstance(edu.uiuc.ncsa.qdl.state.State)">newInstance</a></code>&nbsp;in class&nbsp;<code><a href="../../module/Module.html" title="class in edu.uiuc.ncsa.qdl.module">Module</a></code></dd>
+<dd><code><a href="../../module/Module.html#newInstance(org.qdl_lang.state.State)">newInstance</a></code>&nbsp;in class&nbsp;<code><a href="../../module/Module.html" title="class in edu.uiuc.ncsa.qdl.module">Module</a></code></dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 </dl>
 </li>
@@ -339,7 +339,7 @@ extends <a href="../JavaModule.html" title="class in edu.uiuc.ncsa.qdl.extension
 <pre class="methodSignature">public&nbsp;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/List.html?is-external=true" title="class or interface in java.util" class="externalLink">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/String.html?is-external=true" title="class or interface in java.lang" class="externalLink">String</a>&gt;&nbsp;getDescription()</pre>
 <div class="block"><span class="descfrmTypeLabel">Description copied from class:&nbsp;<code><a href="../JavaModule.html#getDescription()">JavaModule</a></code></span></div>
 <div class="block">The <a href="../JavaModule.html#createDefaultDocs()"><code>JavaModule.createDefaultDocs()</code></a> will create basic documentation for functions and such,
- and is called automatically during module <a href="../JavaModule.html#init(edu.uiuc.ncsa.qdl.state.State)"><code>JavaModule.init(State)</code></a>,
+ and is called automatically during module <a href="../JavaModule.html#init(org.qdl_lang.state.State)"><code>JavaModule.init(State)</code></a>,
  but the actual description of this module -- if any -- is done here. Override and return your description.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>

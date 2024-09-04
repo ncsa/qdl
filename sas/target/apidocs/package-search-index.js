@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"edu.uiuc.ncsa.qdl.sas"},{"l":"edu.uiuc.ncsa.qdl.sas.action"},{"l":"edu.uiuc.ncsa.qdl.sas.loader"},{"l":"edu.uiuc.ncsa.qdl.sas.response"}]
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"org.qdl_lang.sas"},{"l":"org.qdl_lang.sas.action"},{"l":"org.qdl_lang.sas.loader"},{"l":"org.qdl_lang.sas.response"}]

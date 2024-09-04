@@ -3641,7 +3641,7 @@ To see the general comments for a module in the workspace type
 See also: body, load, import, intrinsic.]]>
         </body>
         <example>
-      <![CDATA[An example of loading a module and querying various
+            <![CDATA[An example of loading a module and querying various
 bits of information about. There is an example module shipped in the
 standard QDL distro, so we will use that. First round is how to look
 at everything using functions
@@ -3658,7 +3658,7 @@ at everything using functions
     0 :   module name : EGModule
     1 :     namespace : qdl:/examples/java
     2 : default alias : eg
-    3 :    java class : edu.uiuc.ncsa.qdl.extensions.example.EGModule
+    3 :    java class : org.qdl_lang.extensions.example.EGModule
 ... more lines
 
 The workspace allows for interactive versions of this.
@@ -3673,9 +3673,9 @@ concat([2])  f_ref([2])
   module name : EGModule
     namespace : qdl:/examples/java
 default alias : eg
-   java class : edu.uiuc.ncsa.qdl.extensions.example.EGModule
+   java class : org.qdl_lang.extensions.example.EGModule
 ... more lines]]>
-           </example>
+        </example>
     </entry>
     <entry id="body">
         <body>
@@ -5777,7 +5777,7 @@ See also: j_use]]>
    mySQL := j_load('db');
 
 versus issuing the full
-  mySQL := import(load('edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader','java'));
+  mySQL := import(load('org.qdl_lang.extensions.database.QDLDBLoader','java'));
 ]]>
         </example>
     </entry>
@@ -6647,7 +6647,7 @@ as will the workspace commands
     </entry>
     <entry id="lib_entries">
         <body>
-   <![CDATA[lib_entries() - list all library entries
+            <![CDATA[lib_entries() - list all library entries
 lib_entries(key, stem.) - add a set of library entries
 
 The system has a library in info().'lib' of names and classpaths
@@ -6655,14 +6655,14 @@ for java modules.  It comes pre-populated with various tools
 so
     print(info().'lib'.'tools')
 
-           cli : edu.uiuc.ncsa.qdl.extensions.inputLine.QDLCLIToolsLoader
-       convert : edu.uiuc.ncsa.qdl.extensions.convert.QDLConvertLoader
-        crypto : edu.uiuc.ncsa.qdl.extensions.crypto.CryptoLoader
-            db : edu.uiuc.ncsa.qdl.extensions.database.QDLDBLoader
+           cli : org.qdl_lang.extensions.inputLine.QDLCLIToolsLoader
+       convert : org.qdl_lang.extensions.convert.QDLConvertLoader
+        crypto : org.qdl_lang.extensions.crypto.CryptoLoader
+            db : org.qdl_lang.extensions.database.QDLDBLoader
    description : System tools for http, conversions and other very useful things.
-            eg : edu.uiuc.ncsa.qdl.extensions.example.EGLoaderImpl
-          http : edu.uiuc.ncsa.qdl.extensions.http.QDLHTTPLoader
-          mail : edu.uiuc.ncsa.qdl.extensions.mail.QDLMailLoader
+            eg : org.qdl_lang.extensions.example.EGLoaderImpl
+          http : org.qdl_lang.extensions.http.QDLHTTPLoader
+          mail : org.qdl_lang.extensions.mail.QDLMailLoader
 
 You can then access these as relative paths to info().'lib' using
 j_load or j_use very conveniently.

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <TokenMakerDefinition>
   <general>
-    <package>edu.uiuc.ncsa.qdl.gui.flex</package>
+    <package>org.qdl_lang.gui.flex</package>
     <className>QDLSyntax</className>
     <extendedClass>AbstractJFlexCTokenMaker</extendedClass>
     <classComment>QDL

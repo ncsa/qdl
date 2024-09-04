@@ -14,7 +14,7 @@
         <modules>
             <module type="java"
                     import_on_start="true">
-                <class_name>edu.uiuc.ncsa.qdl.extensions.QDLLoaderImp</class_name>
+                <class_name>org.qdl_lang.extensions.QDLLoaderImp</class_name>
             </module>
             <module type="qdl">
                 <path>relative/path/module.qdl</path>

@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>qdl</artifactId>
-        <groupId>edu.uiuc.ncsa.qdl</groupId>
+        <groupId>org.qdl_lang</groupId>
         <version>1.5-QDL-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -17,12 +17,12 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>edu.uiuc.ncsa.qdl</groupId>
+            <groupId>org.qdl_lang</groupId>
             <artifactId>language</artifactId>
             <version>1.5-QDL-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>edu.uiuc.ncsa.qdl</groupId>
+            <groupId>org.qdl_lang</groupId>
             <artifactId>language</artifactId>
             <version>1.5-QDL-SNAPSHOT</version>
             <scope>test</scope>
@@ -50,6 +50,12 @@
             <groupId>org.apache.derby</groupId>
             <artifactId>derby</artifactId>
             <version>10.14.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.qdl_lang</groupId>
+            <artifactId>language</artifactId>
+            <version>1.5-QDL-SNAPSHOT</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>

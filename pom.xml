@@ -7,7 +7,7 @@
         <artifactId>oss-parent</artifactId>
         <version>9</version>
     </parent>
-    <groupId>edu.uiuc.ncsa.qdl</groupId>
+    <groupId>org.qdl_lang</groupId>
     <artifactId>qdl</artifactId>
     <version>1.5-QDL-SNAPSHOT</version>
     <name>QDL root module</name>

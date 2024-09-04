@@ -4,9 +4,9 @@
 # THEN rebuild the *entire project.
 ANTLR4_ROOT=/home/ncsa/apps/java/antlr-4.9.3
 ANTLR4_CP=$ANTLR4_ROOT/antlr-4.9.3-complete.jar
-OUT_DIR="/home/ncsa/dev/ncsa-git/qdl/language/src/main/java/edu/uiuc/ncsa/qdl/ini_generated"
+OUT_DIR="/home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/ini_generated"
 SOURCE_DIR="/home/ncsa/dev/ncsa-git/qdl/language/src/main/antlr4/iniFile"
-OUT_PACKAGE="edu.uiuc.ncsa.qdl.ini_generated"
+OUT_PACKAGE="org.qdl_lang.ini_generated"
 cd $SOURCE_DIR
 # Stupidly, the antlr tool only build from the current directory.
 # There is no option to set the source directory
