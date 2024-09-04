@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Example of a basic QDL function implemented in Java.
  * <p>Created by Jeff Gaynor<br>
  * on 1/27/20 at  1:24 PM
  */
@@ -28,14 +29,7 @@ public class Concat implements QDLFunction {
 
     @Override
     public Object evaluate(Object[] objects, State state) {
-        QDLStem stem = new QDLStem();
-        stem.getQDLList().add(objects[0].toString());
-        stem.getQDLList().add(objects[1].toString());
-        Polyad detokenize = new Polyad(StringEvaluator.DETOKENIZE);
-        detokenize.addArgument(new ConstantNode(stem));
-        detokenize.addArgument(new ConstantNode(" "));
-        detokenize.evaluate(state);
-      return objects[0].toString() + objects[1].toString();
+      return objects[0].toString() + objects[1]; // call toString so it compiles. Can't add objects
     }
 
     @Override
