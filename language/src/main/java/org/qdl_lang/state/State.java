@@ -10,6 +10,7 @@ import org.qdl_lang.extensions.example.EGLoaderImpl;
 import org.qdl_lang.extensions.http.QDLHTTPLoader;
 import org.qdl_lang.extensions.inputLine.QDLCLIToolsLoader;
 import org.qdl_lang.extensions.mail.QDLMailLoader;
+import org.qdl_lang.extensions.stateful_example.StatefulLoader;
 import org.qdl_lang.module.*;
 import org.qdl_lang.scripting.QDLScript;
 import org.qdl_lang.scripting.Scripts;
@@ -381,7 +382,11 @@ public class State extends FunctionState implements QDLConstants {
         map.put("convert", QDLConvertLoader.class.getCanonicalName());
         map.put("cli", QDLCLIToolsLoader.class.getCanonicalName());
         map.put("mail", QDLMailLoader.class.getCanonicalName());
-        map.put("eg", EGLoaderImpl.class.getCanonicalName());
+        QDLStem egMap = new QDLStem();
+
+        egMap.put("basic", EGLoaderImpl.class.getCanonicalName());
+        egMap.put("stateful", StatefulLoader.class.getCanonicalName());
+        map.put("eg", egMap);
         return map;
     }
 

@@ -2,7 +2,7 @@ package org.qdl_lang.extensions.database;
 
 import org.qdl_lang.evaluate.SystemEvaluator;
 import org.qdl_lang.extensions.QDLFunction;
-import org.qdl_lang.extensions.QDLModuleMetaClass;
+import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.state.State;
 import org.qdl_lang.util.InputFormUtil;
@@ -43,7 +43,7 @@ import static java.sql.Types.*;
    A test file is in ~/dev/csd/config/test/db-test.qdl that has connection information and
    samples for using this class.
  */
-public class QDLDB implements QDLModuleMetaClass {
+public class QDLDB implements QDLMetaModule {
     public static String CONNECT_COMMAND = "connect";
     public static final String MYSQL_TYPE = "mysql";
     public static final String MARIADB_TYPE = "mariadb";

@@ -2,7 +2,7 @@ package org.qdl_lang.extensions.crypto;
 
 import org.qdl_lang.evaluate.MathEvaluator;
 import org.qdl_lang.extensions.QDLFunction;
-import org.qdl_lang.extensions.QDLModuleMetaClass;
+import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.state.State;
 import org.qdl_lang.util.QDLFileUtil;
 import org.qdl_lang.variables.QDLStem;
@@ -25,7 +25,7 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 8/16/22 at  1:34 PM
  */
-public class Crypto implements QDLModuleMetaClass {
+public class Crypto implements QDLMetaModule {
     public JWKUtil2 getJwkUtil() {
         if (jwkUtil == null) {
             jwkUtil = new JWKUtil2();

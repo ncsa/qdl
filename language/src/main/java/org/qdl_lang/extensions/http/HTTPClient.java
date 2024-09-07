@@ -2,7 +2,7 @@ package org.qdl_lang.extensions.http;
 
 import org.qdl_lang.exceptions.QDLException;
 import org.qdl_lang.extensions.QDLFunction;
-import org.qdl_lang.extensions.QDLModuleMetaClass;
+import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.state.State;
 import org.qdl_lang.util.QDLFileUtil;
 import org.qdl_lang.variables.Constant;
@@ -93,7 +93,7 @@ q := module_load('org.qdl_lang.extensions.http.QDLHTTPLoader','java') ;
 
   Which returns a status of 0 (so all ok), the client_id and the current base 32 encoded grant.
   */
-public class HTTPClient implements QDLModuleMetaClass {
+public class HTTPClient implements QDLMetaModule {
     transient CloseableHttpClient httpClient = null;
     String host = null;
     public String HOST_METHOD = "host";

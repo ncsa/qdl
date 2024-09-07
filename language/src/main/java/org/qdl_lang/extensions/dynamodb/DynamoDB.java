@@ -1,7 +1,7 @@
 package org.qdl_lang.extensions.dynamodb;
 
 import org.qdl_lang.extensions.QDLFunction;
-import org.qdl_lang.extensions.QDLModuleMetaClass;
+import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLList;
@@ -30,7 +30,7 @@ import java.util.Map;
  * <p>Created by Jeff Gaynor<br>
  * on 6/20/24 at  9:54 AM
  */
-public class DynamoDB implements QDLModuleMetaClass {
+public class DynamoDB implements QDLMetaModule {
     @Override
     public JSONObject serializeToJSON() {
         // no state to serialize.

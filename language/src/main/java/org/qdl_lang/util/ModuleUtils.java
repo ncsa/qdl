@@ -155,7 +155,7 @@ public class ModuleUtils implements Serializable {
         } catch (RuntimeException rx) {
             throw rx;
         } catch (ReflectiveOperationException cnf) {
-            throw new BadArgException("class not found for " + resourceName,cnf,null);
+            throw new BadArgException("class not found for " + resourceName, cnf, null);
         } catch (Throwable t) {
             throw new QDLException("could not load Java class " + resourceName + ": '" + t.getMessage() + "'.", t);
         }
@@ -168,7 +168,7 @@ public class ModuleUtils implements Serializable {
      * @param resourceName
      * @return
      */
-    public List<String> doQDLModuleLoad(State state, String resourceName)  {
+    public List<String> doQDLModuleLoad(State state, String resourceName) {
         QDLScript script = null;
         try {
             script = resolveScript(resourceName, state.getModulePaths(), state);
@@ -183,43 +183,43 @@ public class ModuleUtils implements Serializable {
             throw new QDLRuntimeException("Could not find  '" + resourceName + "'. Is your module path set?", t);
         }
 
-   //     try {
-            QDLParserDriver parserDriver = new QDLParserDriver(new XProperties(), state);
-            // Exceptional case where we just run it directly.
-            // note that since this is QDL there may be multiple modules, etc.
-            // in a single file, so there is no way to know what the user did except
-            // to look at the state before, then after. This should return the added
-            // modules fq paths.
-            state.getMTemplates().clearChangeList();
-            if (script == null) {
-                if (state.isServerMode()) {
-                    throw new QDLServerModeException("File operations are not permitted in server mode");
-                }
-                try {
-                    Reader reader = new InputStreamReader(QDLFileUtil.readFileAsInputStream(state, resourceName));
-                    QDLRunner runner = new QDLRunner(parserDriver.parse(reader));
-                    runner.setState(state);
-                    runner.run();
-                }catch(Throwable t){
-                    if(t instanceof RuntimeException){
-                        throw (RuntimeException)t;
-                    }
-                    throw new BadArgException("could not parse module '" + t.getMessage() + "'", null);
-                }
-            } else {
-                boolean importMode = state.isImportMode();
-                state.setImportMode(false);
-                script.execute(state);
-                state.setImportMode(importMode);
+        //     try {
+        QDLParserDriver parserDriver = new QDLParserDriver(new XProperties(), state);
+        // Exceptional case where we just run it directly.
+        // note that since this is QDL there may be multiple modules, etc.
+        // in a single file, so there is no way to know what the user did except
+        // to look at the state before, then after. This should return the added
+        // modules fq paths.
+        state.getMTemplates().clearChangeList();
+        if (script == null) {
+            if (state.isServerMode()) {
+                throw new QDLServerModeException("File operations are not permitted in server mode");
             }
-            List<String> afterLoad = new ArrayList<>();
-            for (Object k : state.getMTemplates().getChangeList()) {
-                MTKey mtKey = (MTKey) k;
-                state.getMTemplates().getModule(mtKey).setTemplate(true);
-                afterLoad.add(mtKey.getKey());
+            try {
+                Reader reader = new InputStreamReader(QDLFileUtil.readFileAsInputStream(state, resourceName));
+                QDLRunner runner = new QDLRunner(parserDriver.parse(reader));
+                runner.setState(state);
+                runner.run();
+            } catch (Throwable t) {
+                if (t instanceof RuntimeException) {
+                    throw (RuntimeException) t;
+                }
+                throw new BadArgException("could not parse module '" + t.getMessage() + "'", null);
             }
-            state.getMTemplates().clearChangeList();
-            return afterLoad;
+        } else {
+            boolean importMode = state.isImportMode();
+            state.setImportMode(false);
+            script.execute(state);
+            state.setImportMode(importMode);
+        }
+        List<String> afterLoad = new ArrayList<>();
+        for (Object k : state.getMTemplates().getChangeList()) {
+            MTKey mtKey = (MTKey) k;
+            state.getMTemplates().getModule(mtKey).setTemplate(true);
+            afterLoad.add(mtKey.getKey());
+        }
+        state.getMTemplates().clearChangeList();
+        return afterLoad;
   /*      } catch (Throwable t) {
            t.printStackTrace();
         }
@@ -263,18 +263,18 @@ public class ModuleUtils implements Serializable {
         String source = null;
         if (json.getString(MODULE_TYPE_TAG2).equals(QDL_TYPE_TAG)) {
             // This is a module[] statement and needs to be loaded directly.
-            if(json.containsKey(MODULE_INPUT_FORM_TAG)) {
-                 source = new String(Base64.decodeBase64(json.getString(MODULE_INPUT_FORM_TAG)), UTF_8);
-            }else{
-                 if(serializationState.hasTemplates()){
-                     UUID templateUUID = UUID.fromString(json.getString(PARENT_TEMPLATE_UUID_TAG));
-                     Module template = serializationState.getTemplate(templateUUID);
-                     if(template != null){
-                         source = InputFormUtil.inputForm(template);
-                     }
-                 }
+            if (json.containsKey(MODULE_INPUT_FORM_TAG)) {
+                source = new String(Base64.decodeBase64(json.getString(MODULE_INPUT_FORM_TAG)), UTF_8);
+            } else {
+                if (serializationState.hasTemplates()) {
+                    UUID templateUUID = UUID.fromString(json.getString(PARENT_TEMPLATE_UUID_TAG));
+                    Module template = serializationState.getTemplate(templateUUID);
+                    if (template != null) {
+                        source = InputFormUtil.inputForm(template);
+                    }
+                }
             }
-            if(source == null){
+            if (source == null) {
                 throw new IllegalStateException("missing source for module");
             }
             try {
@@ -325,14 +325,11 @@ public class ModuleUtils implements Serializable {
     }
 
     public void updateUsedModuleState(JSONObject jsonObject, State state, SerializationState serializationState) throws Throwable {
-        if (!jsonObject.containsKey(MODULE_STATE_TAG)) return; // just in case
         // at this point, QDL has recreated the system and the state of the stored module needs to be adpated.
         Module m = state.getUsedModules().get(URI.create(jsonObject.getString(MODULE_NS_ATTR)));
-        if(m instanceof JavaModule){
+        if (m instanceof JavaModule) {
             JavaModule javaModule = (JavaModule) m;
-            if (javaModule.hasMetaClass()) {
-                javaModule.getMetaClass().deserializeFromJSON(jsonObject.getJSONObject(MODULE_STATE_TAG));
-            }
+            javaModule.deserializeStates(jsonObject, serializationState);
         }
     }
 
@@ -352,14 +349,12 @@ public class ModuleUtils implements Serializable {
             if (jsonObject.getString(MODULE_TYPE_TAG2).equals(MODULE_TYPE_JAVA)) {
                 // Then this is straight up a java module and the state is the entire content
                 Module module = state.getModule();
-                jsonObject.getJSONObject(MODULE_STATE_TAG);
+                jsonObject.getJSONObject(MODULE_STATE_TAG);// checks if state stack is a JSON object.
                 if ((module == null) || !(module instanceof JavaModule)) {
                     throw new NFWException("serialization error. Expected a java module");
                 }
                 JavaModule javaModule = (JavaModule) module;
-                if (javaModule.hasMetaClass()) {
-                    javaModule.getMetaClass().deserializeFromJSON(jsonObject.getJSONObject(MODULE_STATE_TAG));
-                }
+                javaModule.deserializeStates(jsonObject, serializationState);
                 return;
             }
         }
@@ -399,9 +394,7 @@ public class ModuleUtils implements Serializable {
                 Module module = (Module) vThing.getValue();
                 if (module instanceof JavaModule) {
                     JavaModule javaModule = (JavaModule) module;
-                    if (javaModule.hasMetaClass()) {
-                        javaModule.getMetaClass().deserializeFromJSON(var.getJSONObject(MODULE_STATE_TAG));
-                    }
+                    javaModule.deserializeStates(var, serializationState);
                 } else {
                     updateSerializedState(var, module.getState(), serializationState);
                 }

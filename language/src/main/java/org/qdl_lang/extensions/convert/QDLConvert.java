@@ -9,7 +9,7 @@ import org.qdl_lang.evaluate.SystemEvaluator;
 import org.qdl_lang.expressions.ConstantNode;
 import org.qdl_lang.expressions.Polyad;
 import org.qdl_lang.extensions.QDLFunction;
-import org.qdl_lang.extensions.QDLModuleMetaClass;
+import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.parsing.IniParserDriver;
 import org.qdl_lang.state.State;
@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
  * <p>Created by Jeff Gaynor<br>
  * on 2/13/23 at  7:33 AM
  */
-public class QDLConvert implements QDLModuleMetaClass {
+public class QDLConvert implements QDLMetaModule {
     public static final String XML_IMPORT_NAME = "xml_in";
     public static final String XML_EXPORT_NAME = "xml_out";
     public static final int XML_IMPORT_LEVEL_FLATTEN = 0; // no @'s, ignore most structures, attributes flattened to properties

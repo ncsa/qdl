@@ -61,6 +61,9 @@ public class ModuleTests extends AbstractQDLTester {
         addLine(script, "X#http_client#host(z);"); // fails since the function references the default NS.
         state = rountripState(state, script, testCase); // tests that state in a module is handled on serialization.
 
+/*        addLine(script, "say('---------------');");
+        addLine(script, "say( X#http_client#host());");
+        addLine(script, "say('z=' + z);");*/
         addLine(script, "ok := z == X#http_client#host();");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
@@ -250,7 +253,7 @@ public class ModuleTests extends AbstractQDLTester {
      *
      * @throws Throwable
      */
-    public void testUseSerialzation() throws Throwable {
+    public void testUseSerialization() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, ModuleEvaluator.JAVA_MODULE_USE + "('http');");

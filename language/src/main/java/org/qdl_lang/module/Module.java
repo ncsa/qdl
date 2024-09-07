@@ -149,6 +149,20 @@ public abstract class Module implements XThing, Serializable {
     }
 
     /**
+     * If this was imported by the use command.
+     * @return
+     */
+    public boolean isUsed() {
+        return used;
+    }
+
+    public void setUsed(boolean used) {
+        this.used = used;
+    }
+
+    boolean used = false;
+
+    /**
      * Modules are effectively templates. This passes in the state of the parser at the point a new
      * module is required and the contract is to create a new instance of this module with the state.
      * Note that the state passed in may have nothing to do with the state here. You are creating

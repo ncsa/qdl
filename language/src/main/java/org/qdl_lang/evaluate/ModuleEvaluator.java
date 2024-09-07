@@ -789,6 +789,7 @@ docs(c#2@ini_out) ;
         State moduleState = m.getState();
         state.getVStack().appendTables(moduleState.getVStack());
         state.getFTStack().appendTables(moduleState.getFTStack());
+        m.setUsed(true);
         state.getUsedModules().put(m.getNamespace(), m);
         polyad.setEvaluated(true);
         polyad.setResult(Boolean.TRUE);

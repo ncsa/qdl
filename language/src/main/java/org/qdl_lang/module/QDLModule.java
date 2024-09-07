@@ -150,14 +150,7 @@ public class QDLModule extends Module {
                 source = new String(Base64.decodeBase64(json.getString(MODULE_INPUT_FORM_TAG)), StandardCharsets.UTF_8);
             }
         }
-/*
-        if (!isTemplate() && serializationState.hasTemplates()) {
-            Module template = serializationState.getTemplate(getParentTemplateID());
-            if (template != null) {
-                source = InputFormUtil.inputForm(template);
-            }
-        }
-*/
+
         if (source == null) {
             // Plan B, see if it was serialized
             if (!json.containsKey(MODULE_INPUT_FORM_TAG)) {

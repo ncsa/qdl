@@ -2,7 +2,7 @@ package org.qdl_lang.extensions.mail;
 
 import org.qdl_lang.evaluate.SystemEvaluator;
 import org.qdl_lang.extensions.QDLFunction;
-import org.qdl_lang.extensions.QDLModuleMetaClass;
+import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.QDLStem;
@@ -23,7 +23,7 @@ import static edu.uiuc.ncsa.security.core.util.StringUtils.RJustify;
  * <p>Created by Jeff Gaynor<br>
  * on 11/2/23 at  11:17 AM
  */
-public class QDLMail implements QDLModuleMetaClass {
+public class QDLMail implements QDLMetaModule {
     public static String SEND_NAME = "send";
 
     public class Send implements QDLFunction {

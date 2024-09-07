@@ -1,5 +1,6 @@
 package org.qdl_lang.extensions;
 
+import org.qdl_lang.evaluate.ModuleEvaluator;
 import org.qdl_lang.module.Module;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.Constant;
@@ -16,6 +17,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import static org.qdl_lang.state.VariableState.var_regex;
+import static org.qdl_lang.xml.SerializationConstants.MODULE_JAVA_STATE_TAG;
 import static org.qdl_lang.xml.SerializationConstants.MODULE_STATE_TAG;
 
 /**
@@ -119,7 +121,7 @@ public abstract class JavaModule extends Module {
                 fr.setName(f.getName());
                 // There are no names for these, so these are created
                 List<String> names = new ArrayList<>();
-                for(int k = 0 ; k < i; k++){
+                for (int k = 0; k < i; k++) {
                     names.add("x_" + k);
                 }
                 fr.setArgNames(names);
@@ -129,8 +131,8 @@ public abstract class JavaModule extends Module {
                /* if(state.isExtrinsic(fr.getName())){
                     state.getExtrinsicFuncs().put(fr);
                 }else{*/
-                  //  state.getFTStack().put(fr);
-                    state.putFunction(fr);
+                //  state.getFTStack().put(fr);
+                state.putFunction(fr);
                 //}
 
             }
@@ -152,8 +154,11 @@ public abstract class JavaModule extends Module {
         JSONObject json = super.serializeToJSON(serializationState);
         if (hasMetaClass()) {
             if (null != getMetaClass().serializeToJSON()) {
-                json.put(MODULE_STATE_TAG, getMetaClass().serializeToJSON());
+                json.put(MODULE_JAVA_STATE_TAG, getMetaClass().serializeToJSON());
             }
+        }
+        if (!isUsed() && getState() != null) {
+            json.put(MODULE_STATE_TAG, getState().serializeToJSON(serializationState));
         }
         json.put(SerializationConstants.MODULE_TYPE_TAG2, SerializationConstants.MODULE_TYPE_JAVA_TAG);
         json.put(SerializationConstants.MODULE_CLASS_NAME_TAG, getClassname());
@@ -163,15 +168,28 @@ public abstract class JavaModule extends Module {
     @Override
     public void deserializeFromJSON(JSONObject json, SerializationState serializationState) throws Throwable {
         super.deserializeFromJSON(json, serializationState);
-        State newState = State.getRootState().newCleanState(); // remember that State can be overridden, so this is the right type
-        init(newState, false); // don't force the defined variables to overwrite the stored ones.
-        if (json.containsKey(MODULE_STATE_TAG)) {
-            if (hasMetaClass()) {
-                getMetaClass().deserializeFromJSON(json.getJSONObject(MODULE_STATE_TAG));
-            }
-            //     newState.deserializeFromJSON(json.getJSONObject(MODULE_STATE_TAG),serializationState);
+        deserializeStates(json, serializationState);
+    }
+
+    /**
+     * This should centralize deserializing the state for a Java module. Hence this is public
+     * and should be called whenever this s needed.
+     *
+     * @param jsonObject
+     * @param serializationState
+     * @throws Throwable
+     */
+    public void deserializeStates(JSONObject jsonObject, SerializationState serializationState) throws Throwable {
+        if (hasMetaClass()) {
+            getMetaClass().deserializeFromJSON(jsonObject.getJSONObject(MODULE_JAVA_STATE_TAG));
         }
-        // Unlike QDLModule, there is no source code to interpret, so just reset the state.
+        if (jsonObject.has(MODULE_STATE_TAG)) {
+            State cleanState = State.getRootState().newCleanState();
+            cleanState.deserializeFromJSON(jsonObject.getJSONObject(MODULE_STATE_TAG), serializationState);
+            // In Java modules, the variable stack might have been updated, but nothing else
+            // can really be used.
+            getState().setvStack(cleanState.getVStack());
+        }
     }
 
     /**
@@ -243,15 +261,15 @@ public abstract class JavaModule extends Module {
         return documentation;
     }
 
-    public QDLModuleMetaClass getMetaClass() {
+    public QDLMetaModule getMetaClass() {
         return metaClass;
     }
 
-    public void setMetaClass(QDLModuleMetaClass metaClass) {
+    public void setMetaClass(QDLMetaModule metaClass) {
         this.metaClass = metaClass;
     }
 
-    QDLModuleMetaClass metaClass = null;
+    QDLMetaModule metaClass = null;
 
     public boolean hasMetaClass() {
         return metaClass != null;

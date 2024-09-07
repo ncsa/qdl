@@ -1,7 +1,7 @@
 package org.qdl_lang.extensions.inputLine;
 
 import org.qdl_lang.extensions.QDLFunction;
-import org.qdl_lang.extensions.QDLModuleMetaClass;
+import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.QDLStem;
 import net.sf.json.JSONObject;
@@ -13,7 +13,7 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 2/28/23 at  7:53 AM
  */
-public class QDLCLITools implements QDLModuleMetaClass {
+public class QDLCLITools implements QDLMetaModule {
     public static String TO_STEM_NAME = "to_stem";
     public static String DEFAULT_SWITCH_MARKER = "-";
 

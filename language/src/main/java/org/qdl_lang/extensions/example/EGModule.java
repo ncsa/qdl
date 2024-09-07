@@ -28,7 +28,7 @@ public class EGModule extends JavaModule {
     @Override
     public Module newInstance(State state) {
         // Step 1: create the module with the URI and alias
-        EGModule EGModule = new EGModule(URI.create("qdl:/examples/java"), "eg");
+        EGModule EGModule = new EGModule(URI.create("ex:eg"), "eg");
         // Step 2: create a list of functions and populate it
         ArrayList<QDLFunction> funcs = new ArrayList<>();
         funcs.add(new Concat());

@@ -29,6 +29,7 @@ public interface SerializationConstants {
     String MODULE_SOURCE_TAG = "source";
     String MODULE_DOCUMENTATION_TAG = "documentation";
     String MODULE_STATE_TAG = "state";
+    String MODULE_JAVA_STATE_TAG = "java_state";
     String MODULE_INHERITANCE_MODE_TAG = "inheritance_mode";
     String MODULE_INPUT_FORM_TAG = "input_form";
     String MODULE_IS_TEMPLATE_TAG = "is_template";
