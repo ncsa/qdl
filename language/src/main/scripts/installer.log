@@ -1,5 +1,6 @@
 creating QDL installer
   deploy target directory exists, cleaning...
+/home/ncsa/dev/temp-deploy/qdl
 converting QDL docs to PDF
    ... done with QDL docs
      ... done!

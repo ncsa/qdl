@@ -173,13 +173,14 @@ public abstract class JavaModule extends Module {
 
     /**
      * This should centralize deserializing the state for a Java module. Hence this is public
-     * and should be called whenever this s needed.
+     * and should be called whenever this as needed.
      *
      * @param jsonObject
      * @param serializationState
      * @throws Throwable
      */
     public void deserializeStates(JSONObject jsonObject, SerializationState serializationState) throws Throwable {
+        // Fixes https://github.com/ncsa/qdl/issues/77
         if (hasMetaClass()) {
             getMetaClass().deserializeFromJSON(jsonObject.getJSONObject(MODULE_JAVA_STATE_TAG));
         }

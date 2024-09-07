@@ -83,7 +83,7 @@ public class ListDistroFiles {
 
     protected void recurse(File rootDirectory) {
         String relativeDirPath = rootDirectory.getAbsolutePath().substring(rootPathLength);
-        if(relativeDirPath.startsWith("/edu")){
+        if(relativeDirPath.startsWith("/org")){
             // do nothing if it starts with /edu -- that just contains the Installer.class
             // which should never end up in the user's distribution.
             return;

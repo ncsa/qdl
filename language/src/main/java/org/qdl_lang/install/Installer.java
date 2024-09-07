@@ -155,6 +155,7 @@ public class Installer {
 
     static protected final String UPGRADE_FLAG = "-u";
     static protected final String UPGRADE_OPTION = "upgrade";
+    static protected final String UPDATE_OPTION = "update";
     static protected final String HELP_FLAG = "--help";
     static protected final String HELP_OPTION = "help";
     static protected final String DIR_ARG = "-dir";
@@ -167,7 +168,7 @@ public class Installer {
     static protected final String QDL_FLAG = "-qdl";
     static protected final String ALL_FLAG = "-all";
 
-    static List<String> allOps = Arrays.asList(UPGRADE_OPTION, REMOVE_OPTION, HELP_OPTION, INSTALL_OPTION, LIST_OPTION);
+    static List<String> allOps = Arrays.asList(UPGRADE_OPTION, UPDATE_OPTION, REMOVE_OPTION, HELP_OPTION, INSTALL_OPTION, LIST_OPTION);
 
     private void showHelp() {
         say("===============================================================");
@@ -177,6 +178,7 @@ public class Installer {
         say("(none) = same as help");
         say(INSTALL_OPTION + " = install");
         say(UPGRADE_OPTION + " = upgrade");
+        say(UPGRADE_OPTION + " = same as " + UPGRADE_OPTION);
         say(REMOVE_OPTION + " = remove");
         say(HELP_OPTION + " = show help and exit. Note you can also use the flag " + HELP_FLAG);
         say(LIST_OPTION + " = list all the files in the distribution. Nothing is done.");
@@ -733,7 +735,7 @@ public class Installer {
     }
 
     public boolean isUpgrade() {
-        return getOperation().equals(UPGRADE_OPTION);
+        return getOperation().equals(UPGRADE_OPTION) || getOperation().equals(UPDATE_OPTION);
     }
 
     public boolean isShowHelp() {

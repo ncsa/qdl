@@ -232,6 +232,14 @@ public abstract class Module implements XThing, Serializable {
         return json;
     }
 
+    /**
+     * Deserializes a JSON object into the current module. You must check the type in the json
+     * object o know which class (e.g., {@link org.qdl_lang.extensions.JavaModule} to instantiate
+     * first.
+     * @param json
+     * @param serializationState
+     * @throws Throwable
+     */
     public void deserializeFromJSON(JSONObject json,
                                     SerializationState serializationState) throws Throwable {
         setNamespace(URI.create(json.getString(MODULE_NS_ATTR)));

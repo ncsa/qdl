@@ -329,6 +329,7 @@ public class ModuleUtils implements Serializable {
         Module m = state.getUsedModules().get(URI.create(jsonObject.getString(MODULE_NS_ATTR)));
         if (m instanceof JavaModule) {
             JavaModule javaModule = (JavaModule) m;
+            // fix https://github.com/ncsa/qdl/issues/77
             javaModule.deserializeStates(jsonObject, serializationState);
         }
     }
@@ -354,6 +355,7 @@ public class ModuleUtils implements Serializable {
                     throw new NFWException("serialization error. Expected a java module");
                 }
                 JavaModule javaModule = (JavaModule) module;
+                // Fix https://github.com/ncsa/qdl/issues/77
                 javaModule.deserializeStates(jsonObject, serializationState);
                 return;
             }
