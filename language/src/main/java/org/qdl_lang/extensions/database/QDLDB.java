@@ -780,7 +780,7 @@ public class QDLDB implements QDLMetaModule {
             documentation.add("\nand we have a large list of values. Each element of the list is a list");
             documentation.add("whose values are used in the prepared statement");
             documentation.add("v.:=[[date_ms(), '7D5EF', date_ms()-2419200000], [date_ms(),'C46AB',date_ms()-2419200000]]");
-            documentation.add("\n(just 2 for this example, but it could be thousands). You issue");
+            documentation.add("\n(just 2 for this basic, but it could be thousands). You issue");
             documentation.add("\nrc. := " + getName() + "(stmt, v.)");
             documentation.add("\nE.g. mass delete");
             documentation.add("This will do a mass delete by a unique id. It uses the fact that");

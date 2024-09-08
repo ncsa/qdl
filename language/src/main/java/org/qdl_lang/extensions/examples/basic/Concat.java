@@ -1,11 +1,7 @@
-package org.qdl_lang.extensions.example;
+package org.qdl_lang.extensions.examples.basic;
 
-import org.qdl_lang.evaluate.StringEvaluator;
-import org.qdl_lang.expressions.ConstantNode;
-import org.qdl_lang.expressions.Polyad;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.state.State;
-import org.qdl_lang.variables.QDLStem;
 
 import java.util.ArrayList;
 import java.util.List;

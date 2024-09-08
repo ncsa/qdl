@@ -6279,7 +6279,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                         onlineHelp.put(name, cd.getTextContent());
                     }
                     // Process examples
-                    x = eElement.getElementsByTagName("example")
+                    x = eElement.getElementsByTagName("basic")
                             .item(0);
                     if (x != null) {
                         child = x.getFirstChild().getNextSibling();

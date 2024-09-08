@@ -1,6 +1,6 @@
 <config>
     <!--
-    A few example configurations.
+    A few basic configurations.
     "default" : uses an alias that points to one of the other configurations.
                 aliases are a great tool that lets you experiment between
                 various configurations easily

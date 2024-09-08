@@ -1,13 +1,11 @@
-package org.qdl_lang.extensions.stateful_example;
+package org.qdl_lang.extensions.examples.stateful;
 
 import net.sf.json.JSONObject;
-import org.checkerframework.checker.units.qual.A;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.QDLNull;
-import org.qdl_lang.variables.QDLSet;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,7 +1,6 @@
-package org.qdl_lang.extensions.stateful_example;
+package org.qdl_lang.extensions.examples.stateful;
 
 import org.qdl_lang.extensions.QDLLoader;
-import org.qdl_lang.extensions.dynamodb.QDLDynamoDBModule;
 import org.qdl_lang.module.Module;
 
 import java.util.ArrayList;

@@ -807,7 +807,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
         }
     }
 
-    /*  Quick example of rename.
+    /*  Quick basic of rename.
               b.OA2_foo := 'a';
               b.OA2_woof := 'b';
               b.OA2_arf := 'c';

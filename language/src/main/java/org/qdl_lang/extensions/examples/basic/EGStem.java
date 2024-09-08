@@ -1,4 +1,4 @@
-package org.qdl_lang.extensions.example;
+package org.qdl_lang.extensions.examples.basic;
 
 import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.variables.QDLSet;
@@ -22,7 +22,7 @@ public class EGStem implements QDLVariable {
     @Override
     public Object getValue() {
         QDLStem stemVariable = new QDLStem();
-        stemVariable.put("help", "This is an example stem variable that shows how to make one and  is shipped with the standard distro.");
+        stemVariable.put("help", "This is an basic stem variable that shows how to make one and  is shipped with the standard distro.");
         stemVariable.put("time", "Current time in ms is " + new Date().getTime());
         stemVariable.put("integer", 456456546L);
         stemVariable.put("decimal", new BigDecimal("3455476.987654567654567"));

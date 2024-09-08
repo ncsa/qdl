@@ -981,7 +981,7 @@ public class QDLListener implements QDLParserListener {
       @param ctx the parse tree
      */
     /*
-    Comment out conditional in the enterModuleStatement method to use this example of
+    Comment out conditional in the enterModuleStatement method to use this basic of
     how nested module[] statement fails. Nesting of modules parses fine, just the state
     does not seem coherent afterwards. Issue is that modules are all global.
     To do this right will need local module stack (like functions and variables).

@@ -155,7 +155,7 @@ The following are working:
          [[-n(4),3*n(5)],[11+n(6), 4-n(5)^2]].i(0).i(1).i(2)
          (b.).i(0).i(1).i(2)
 
-        Embedded stem example. This get a.1.2 in a very roundabout way
+        Embedded stem basic. This get a.1.2 in a very roundabout way
         k:=1;j:=2;a.:=[-n(4),3*n(5),11+n(6)];
         x := n(12).n(11).n(10).(a.k).n(6).n(7).j;
         x==6;

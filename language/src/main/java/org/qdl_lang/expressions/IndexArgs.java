@@ -78,7 +78,7 @@ public class IndexArgs extends ArrayList<IndexArg> {
    In an expression like a\x1.\x2.\...\xk. where the xk are lists or scalars
    list sizes are n1,n2,...nk.
    ν = total size = n1*n2*...*nk
-   An example shows this.
+   An basic shows this.
    a\[;2]\[;3]\[;4]    generates indices
 
  - [0,    - 0,    k- 0]       And the relationship is (general = here)

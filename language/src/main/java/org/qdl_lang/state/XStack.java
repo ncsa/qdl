@@ -350,7 +350,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
     /**
      * Does the grunt work of writing the stack in the right order. You write the start tag,
      * any comments, invoke this, then the end tag. See {@link FStack#toXML(XMLStreamWriter, SerializationState)}
-     * for a canonical example.
+     * for a canonical basic.
      *
      * @param xsw
      * @throws XMLStreamException

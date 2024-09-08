@@ -1,4 +1,4 @@
-package org.qdl_lang.extensions.example;
+package org.qdl_lang.extensions.examples.basic;
 
 import org.qdl_lang.extensions.JavaModule;
 import org.qdl_lang.extensions.QDLFunction;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The module for the example. This sets the namespace and an alias (for people using
+ * The module for the basic. This sets the namespace and an alias (for people using
  * the old module system). It is charged with creating new instances of itself and holds
  * module level documentation.
  * <p>Created by Jeff Gaynor<br>
@@ -60,11 +60,11 @@ public class EGModule extends JavaModule {
     public List<String> getDescription() {
         if (description == null) {
             description = new ArrayList<>();
-            description.add("This module is a simple example from the toolkit to show how");
+            description.add("This module is a simple basic from the toolkit to show how");
             description.add("to create a module and import it and use it. It has an extrinsic function,");
             description.add(ExtrinsicFunction.EX_NAME + " and an extrinsic variable " + ExtrinsicVariable.EX_NAME);
             description.add("which are available on load (so no import needed).");
-            description.add("It also has an example where a single stem value is set for " + StemEntry.STEM_NAME);
+            description.add("It also has an basic where a single stem value is set for " + StemEntry.STEM_NAME);
         }
         return description;
     }

@@ -1,6 +1,5 @@
-package org.qdl_lang.extensions.stateful_example;
+package org.qdl_lang.extensions.examples.stateful;
 
-import org.checkerframework.checker.units.qual.A;
 import org.qdl_lang.extensions.JavaModule;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLVariable;

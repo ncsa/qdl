@@ -10,7 +10,7 @@ import java.io.Serializable;
  * between them. This interface should be implemented for those classes in order
  * to ensure compatibility with the system. It has no methods and is a
  * marker interface.
- * <h3>A typical example</h3>
+ * <h3>A typical basic</h3>
  * Let us say you wrote a module that has read a configuration
  * file and named configuration. Stash those in a JSON object, along with any
  * other state you need to reconstruct, which will be returned

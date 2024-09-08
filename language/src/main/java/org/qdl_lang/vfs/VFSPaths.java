@@ -314,7 +314,7 @@ public class VFSPaths {
     }
     public static void main(String[] args) throws Exception {
         /*
-        Nifty example where a jar is read using the usual machinery then a FileSystem is created
+        Nifty basic where a jar is read using the usual machinery then a FileSystem is created
         and it is navigated like a regular File.
          */
         String pathToJar = DebugUtil.getDevOutput()+"/cilogon-oa2/cilogon-oa2-cp.jar";

@@ -1,4 +1,4 @@
-package org.qdl_lang.extensions.example;
+package org.qdl_lang.extensions.examples.basic;
 
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.state.State;
@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * An example of an extrinsic (<i>aka</i> global, static in other languages) function.
+ * An basic of an extrinsic (<i>aka</i> global, static in other languages) function.
  * This function will be treated like any other function. It is available everywhere
  * in the workspace.
  *

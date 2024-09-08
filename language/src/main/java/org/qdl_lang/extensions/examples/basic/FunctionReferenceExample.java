@@ -1,4 +1,4 @@
-package org.qdl_lang.extensions.example;
+package org.qdl_lang.extensions.examples.basic;
 
 import org.qdl_lang.expressions.ConstantNode;
 import org.qdl_lang.expressions.ExpressionImpl;
@@ -47,7 +47,7 @@ public class FunctionReferenceExample implements QDLFunction {
     public List<String> getDocumentation(int argCount) {
         List<String> doxx = new ArrayList<>();
 
-        doxx.add(getName() + "(@f, x) - simple example that evaluates f at x using a function reference.");
+        doxx.add(getName() + "(@f, x) - simple basic that evaluates f at x using a function reference.");
         doxx.add("E.g.");
         doxx.add("    eg#" + getName() + "(@cos, pi()/7)");
         doxx.add("0.900968867902419");

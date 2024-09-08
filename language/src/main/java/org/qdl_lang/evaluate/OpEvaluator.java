@@ -617,7 +617,7 @@ apply([@f,@g],[2])
      [3]∂@f
       <==> f(3.4)
      -----
-     Complex example: This sets up a matrix fo function refs with a default value an specific values.
+     Complex basic: This sets up a matrix fo function refs with a default value an specific values.
     zz.0.1 := zz.0.3 := zz.1.1:= zz.1.3:=[2,3];
     zz.2.1:=zz.2.3 := [-1,1];
     zz.:=zz.~{*:[4,1,2]};

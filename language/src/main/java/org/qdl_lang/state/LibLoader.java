@@ -15,7 +15,7 @@ import org.qdl_lang.extensions.QDLLoader;
  *
  * <p>The contract is simple. Create an instance of this, put a reference to it
  * in the modules section of the configuration.</p>
- * <h2>A compelete example (from OA4MP)</h2>
+ * <h2>A compelete basic (from OA4MP)</h2>
  * <pre>
  *  public class OA2LibLoader implements LibLoader {
  *     protected String libKey = "oa2";

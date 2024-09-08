@@ -3658,7 +3658,7 @@ at everything using functions
     0 :   module name : EGModule
     1 :     namespace : qdl:/examples/java
     2 : default alias : eg
-    3 :    java class : org.qdl_lang.extensions.example.EGModule
+    3 :    java class : org.qdl_lang.extensions.examples.basic.EGModule
 ... more lines
 
 The workspace allows for interactive versions of this.
@@ -3673,7 +3673,7 @@ concat([2])  f_ref([2])
   module name : EGModule
     namespace : qdl:/examples/java
 default alias : eg
-   java class : org.qdl_lang.extensions.example.EGModule
+   java class : org.qdl_lang.extensions.examples.basic.EGModule
 ... more lines]]>
         </example>
     </entry>
@@ -6660,7 +6660,7 @@ so
         crypto : org.qdl_lang.extensions.crypto.CryptoLoader
             db : org.qdl_lang.extensions.database.QDLDBLoader
    description : System tools for http, conversions and other very useful things.
-            eg : org.qdl_lang.extensions.example.EGLoaderImpl
+            eg : org.qdl_lang.extensions.examples.basic.EGLoaderImpl
           http : org.qdl_lang.extensions.http.QDLHTTPLoader
           mail : org.qdl_lang.extensions.mail.QDLMailLoader
 
@@ -6760,10 +6760,10 @@ See: run_init_on_load
   <![CDATA[
   ]]>
        </body>
-       <example>
+       <basic>
    <![CDATA[
    ]]>
-        </example>
+        </basic>
     </entry>
    -->
     <!--
@@ -6775,10 +6775,10 @@ See: run_init_on_load
   <![CDATA[
   ]]>
        </body>
-       <example>
+       <basic>
    <![CDATA[
    ]]>
-        </example>
+        </basic>
     </entry>
           -->
 </help>

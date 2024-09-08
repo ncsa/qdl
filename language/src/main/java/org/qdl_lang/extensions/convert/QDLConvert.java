@@ -1294,11 +1294,11 @@ public class QDLConvert implements QDLMetaModule {
         @Override
         public Object getValue() {
             /*
-            Standard public example from https://json.org/example.html
+            Standard public basic from https://json.org/example.html
              */
             String raw = "{\n" +
                     "    \"glossary\": {\n" +
-                    "        \"title\": \"example glossary\",\n" +
+                    "        \"title\": \"basic glossary\",\n" +
                     "\t\t\"GlossDiv\": {\n" +
                     "            \"title\": \"S\",\n" +
                     "\t\t\t\"GlossList\": {\n" +

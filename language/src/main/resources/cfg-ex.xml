@@ -1,15 +1,15 @@
 <config>
     <!--
-    A few example configurations. "default" is the most minimal configuration possible: nothing.
+    A few basic configurations. "default" is the most minimal configuration possible: nothing.
     This uses the current directory as
-    the root. Not great. Look at the one called example for more ideas and be sure to read
+    the root. Not great. Look at the one called basic for more ideas and be sure to read
     the documentation on the main website: https://qdl-lang.org/pdf/qdl_configuration.pdf
 
     NOTE: In upgrades this file will be overwritten. It is intended to be a template
           and a starting point. Do not actually use this file as a configuration!
     -->
     <qdl name="default" />
-    <!-- A more complete example. Set your root directory properly -->
+    <!-- A more complete basic. Set your root directory properly -->
     <qdl name="example"
              enabled="true"
              server_mode="false">

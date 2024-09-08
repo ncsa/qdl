@@ -1,4 +1,4 @@
-package org.qdl_lang.extensions.example;
+package org.qdl_lang.extensions.examples.basic;
 
 import org.qdl_lang.extensions.QDLLoader;
 import org.qdl_lang.module.Module;

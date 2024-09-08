@@ -207,11 +207,11 @@ public class QDLWorkspace implements Serializable {
 
         // One idea is to strip off comments in parser, E.g. process
         //
-        //    2+2 // example
+        //    2+2 // basic
         // into
         //    2+2
         // so user does not have to type
-        //   2+2; // example
+        //   2+2; // basic
         //
         // but the regex here needs to be
         // quite clever to match ' and // within them (e.g. any url in a string fails at the command line).
