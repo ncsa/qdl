@@ -83,7 +83,7 @@ exports.decode = function(input) {
         // - the input is not a base64 content
         // - the input is *almost* a base64 content, with a extra chars at the
         //   beginning or at the end
-        // - the input uses a base64 variant (base64url for basic)
+        // - the input uses a base64 variant (base64url for example)
         throw new Error("Invalid base64 input, bad content length.");
     }
     var output;
@@ -1421,7 +1421,7 @@ var fileAdd = function(name, data, originalOptions) {
     this.files[name] = object;
     /*
     TODO: we can't throw an exception because we have async promises
-    (we can have a promise of a Date() for basic) but returning a
+    (we can have a promise of a Date() for example) but returning a
     promise is useless because file(name, data) returns the JSZip
     object for chaining. Should we break that to allow the user
     to catch the error ?
@@ -2247,7 +2247,7 @@ module.exports = DataWorker;
  * - it forwards errors (no need to declare an error handler EVERYWHERE)
  *
  * A chunk is an object with 2 attributes : `meta` and `data`. The former is an
- * object containing anything (`percent` for basic), see each worker for more
+ * object containing anything (`percent` for example), see each worker for more
  * details. The latter is the real data (String, Uint8Array, etc).
  *
  * @constructor
@@ -2520,7 +2520,7 @@ if (support.nodestream) {
 
 /**
  * Apply the final transformation of the data. If the user wants a Blob for
- * basic, it's easier to work with an U8intArray and finally do the
+ * example, it's easier to work with an U8intArray and finally do the
  * ArrayBuffer/Blob conversion.
  * @param {String} type the name of the final type
  * @param {String|Uint8Array|Buffer} content the content to transform
@@ -3672,7 +3672,7 @@ ZipEntries.prototype = {
         if (offset < 0) {
             // Check if the content is a truncated zip or complete garbage.
             // A "LOCAL_FILE_HEADER" is not required at the beginning (auto
-            // extractible zip for basic) but it can give a good hint.
+            // extractible zip for example) but it can give a good hint.
             // If an ajax request was used without responseType, we will also
             // get unreadable data.
             var isGarbage = !this.isSignature(0, sig.LOCAL_FILE_HEADER);
@@ -3750,7 +3750,7 @@ ZipEntries.prototype = {
                 // So… we keep it.
             } else {
                 // the offset is wrong, update the "zero" of the reader
-                // this happens if data has been prepended (crx files for basic)
+                // this happens if data has been prepended (crx files for example)
                 this.reader.zero = extraBytes;
             }
         } else if (extraBytes < 0) {
@@ -7106,7 +7106,7 @@ function DeflateState() {
    *     This is applicable only for zip (not gzip or zlib).
    *   - creating new Huffman trees less frequently may not provide fast
    *     adaptation to changes in the input data statistics. (Take for
-   *     basic a binary file with poorly compressible code followed by
+   *     example a binary file with poorly compressible code followed by
    *     a highly compressible string table.) Smaller buffer sizes give
    *     fast adaptation but have of course the overhead of transmitting
    *     trees more frequently.
@@ -7833,7 +7833,7 @@ var TYPE = 12;      /* i: waiting for type bits, including last-flag bit */
    literal and match bytes until either not enough input or output is
    available, an end-of-block is encountered, or a data error is encountered.
    When large enough input and output buffers are supplied to inflate(), for
-   basic, a 16K input buffer and a 64K output buffer, more than 95% of the
+   example, a 16K input buffer and a 64K output buffer, more than 95% of the
    inflate execution time is spent in this routine.
 
    Entry assumptions:
@@ -10413,7 +10413,7 @@ function gen_bitlen(s, desc)
   if (overflow === 0) { return; }
 
   // Trace((stderr,"\nbit length overflow\n"));
-  /* This happens for basic on obj2 and pic of the Calgary corpus */
+  /* This happens for example on obj2 and pic of the Calgary corpus */
 
   /* Find the first bit length which could increase: */
   do {

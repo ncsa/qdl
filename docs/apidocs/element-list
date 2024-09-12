@@ -8,7 +8,8 @@ org.qdl_lang.extensions.convert
 org.qdl_lang.extensions.crypto
 org.qdl_lang.extensions.database
 org.qdl_lang.extensions.dynamodb
-org.qdl_lang.extensions.basic
+org.qdl_lang.extensions.examples.basic
+org.qdl_lang.extensions.examples.stateful
 org.qdl_lang.extensions.http
 org.qdl_lang.extensions.inputLine
 org.qdl_lang.extensions.mail
