@@ -7,7 +7,7 @@ import org.qdl_lang.extensions.QDLVariable;
  * however, is in the module. If you import this module to the variable
  * <code>eg</code>, then it creates the value <code>eg#a.</code>
  */
-public class StemEntry implements QDLVariable {
+public class StemEntryVar implements QDLVariable {
     public static String STEM_NAME = "a.5";
     @Override
     public String getName() {

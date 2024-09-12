@@ -23,7 +23,7 @@ import static org.qdl_lang.evaluate.AbstractEvaluator.getOperator;
  * <p>Created by Jeff Gaynor<br>
  * on 10/7/21 at  4:40 PM
  */
-public class FunctionReferenceExample implements QDLFunction {
+public class FEvalFunction implements QDLFunction {
     public static String F_NAME = "f_eval";
     @Override
     public String getName() {

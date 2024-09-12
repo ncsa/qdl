@@ -6660,7 +6660,7 @@ so
         crypto : org.qdl_lang.extensions.crypto.CryptoLoader
             db : org.qdl_lang.extensions.database.QDLDBLoader
    description : System tools for http, conversions and other very useful things.
-            eg : org.qdl_lang.extensions.examples.basic.EGLoaderImpl
+            eg : org.qdl_lang.extensions.examples.basic.EGLoader
           http : org.qdl_lang.extensions.http.QDLHTTPLoader
           mail : org.qdl_lang.extensions.mail.QDLMailLoader
 

@@ -12,7 +12,7 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 1/27/20 at  5:44 PM
  */
-public class EGLoaderImpl implements QDLLoader {
+public class EGLoader implements QDLLoader {
     @Override
     public List<Module> load(){
         EGModule EGModule = new EGModule();

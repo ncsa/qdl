@@ -1058,7 +1058,7 @@ cannot access '__a'
 
     boolean skipBuiltinOverride = true;
 
-    String javaTestModule = "org.qdl_lang.extensions.example.EGModule";
+    String javaTestModule = "org.qdl_lang.extensions.examples.basic.EGModule";
     // Java module tests
 
     /**

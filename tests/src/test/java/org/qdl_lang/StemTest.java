@@ -1367,7 +1367,7 @@ public class StemTest extends AbstractQDLTester {
 
     /**
      * The contract for stem evaluation is that w.z.y.x uses stems unles told otherwise.
-     * This is an example that tests that. Passing in (y) tells the system to
+     * This is an basic that tests that. Passing in (y) tells the system to
      * evaluate that and use it rather than fall back on the default.
      *
      * @throws Throwable
@@ -1465,7 +1465,7 @@ public class StemTest extends AbstractQDLTester {
      [[-i(4),3*i(5)],[11+i(6), 4-i(5)^2]].j(0).j(1).j(2)
      (b.).j(0).j(1).j(2)
 
-     Embedded stem example. This get a.1.2 in a very roundabout way
+     Embedded stem basic. This get a.1.2 in a very roundabout way
     k:=1;j:=2;a.:=[-i(4),3*i(5),11+i(6)];
     x := i(12).i(11).i(10).(a.k).i(6).i(7).j;
     x==6;
@@ -1653,7 +1653,7 @@ public class StemTest extends AbstractQDLTester {
     }
 
     /**
-     * In the manual, the example given is
+     * In the manual, the basic given is
      * <pre>
      *       x := 0;
      *     y.0 := 1;

@@ -34,6 +34,10 @@ public abstract class JavaModule extends Module {
     public JavaModule() {
     }
 
+    public JavaModule(URI uri) {
+        super(uri, null);
+    }
+
     @Override
     public boolean isExternal() {
         return true;
@@ -61,7 +65,7 @@ public abstract class JavaModule extends Module {
 
     /**
      * Used by the factory method {@link #newInstance(State)}
-     *
+     * @deprecated alias is no longer needed. Just use the namespace only constructor
      * @param namespace
      * @param alias
      */
@@ -92,6 +96,7 @@ public abstract class JavaModule extends Module {
      * @param state
      */
     public void init(State state) {
+        if(state == null) {return;} // do nothing!
         init(state, true);
     }
 

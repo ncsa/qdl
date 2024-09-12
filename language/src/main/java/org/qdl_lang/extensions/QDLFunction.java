@@ -19,7 +19,7 @@ public interface QDLFunction extends Serializable {
      * called in the workspace.
      * @return
      */
-    public String getName();
+     String getName();
 
     /**
      * The contract is that when QDL invokes this method, it will faithfully give all of the arguments
@@ -33,7 +33,7 @@ public interface QDLFunction extends Serializable {
      *
      * @return
      */
-    public int[] getArgCount();
+     int[] getArgCount();
 
     /**
      * The method that is invoked by QDL that is the function. It will have the arguments
@@ -43,7 +43,7 @@ public interface QDLFunction extends Serializable {
      * @param state 
      * @return
      */
-    public Object evaluate(Object[] objects, State state) throws Throwable;
+     Object evaluate(Object[] objects, State state) throws Throwable;
 
 
     /**

@@ -16,7 +16,7 @@ import java.util.List;
  *
  */
 public class ExtrinsicFunction implements QDLFunction {
-    public static String EX_NAME = "$$my_extrinsic";
+    public static String EX_NAME = "$$echo";
     @Override
     public String getName() {
         return EX_NAME;

@@ -6,7 +6,7 @@ import org.qdl_lang.extensions.convert.QDLConvertLoader;
 import org.qdl_lang.extensions.crypto.CryptoLoader;
 import org.qdl_lang.extensions.database.QDLDBLoader;
 import org.qdl_lang.extensions.dynamodb.QDLDynamoDBLoader;
-import org.qdl_lang.extensions.examples.basic.EGLoaderImpl;
+import org.qdl_lang.extensions.examples.basic.EGLoader;
 import org.qdl_lang.extensions.http.QDLHTTPLoader;
 import org.qdl_lang.extensions.inputLine.QDLCLIToolsLoader;
 import org.qdl_lang.extensions.mail.QDLMailLoader;
@@ -384,7 +384,7 @@ public class State extends FunctionState implements QDLConstants {
         map.put("mail", QDLMailLoader.class.getCanonicalName());
         QDLStem egMap = new QDLStem();
 
-        egMap.put("basic", EGLoaderImpl.class.getCanonicalName());
+        egMap.put("basic", EGLoader.class.getCanonicalName());
         egMap.put("stateful", StatefulLoader.class.getCanonicalName());
         map.put("eg", egMap);
         return map;
@@ -764,7 +764,7 @@ public class State extends FunctionState implements QDLConstants {
                                     <application-name>${project.name}</application-name>
                                     <application-title>OA4MP</application-title>
                                     <build-time>${timestamp}</build-time>
-                                    <implementation-version>1.5-QDL-SNAPSHOT</implementation-version>
+                                    <implementation-version>1.6-QDL-SNAPSHOT</implementation-version>
                                     <implementation-build>${buildNumber}</implementation-build>
                                     <implementation-title>QDL</implementation-title>
                                 </manifestEntries>

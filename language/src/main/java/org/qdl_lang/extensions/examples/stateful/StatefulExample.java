@@ -6,7 +6,6 @@ import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.QDLNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +30,9 @@ public class StatefulExample implements QDLMetaModule {
             }
             String oldValue = s;
             s = (String) objects[0];
+            if(oldValue == null){
+                return QDLNull.getInstance();
+            }
             return oldValue;
         }
 
@@ -74,10 +76,10 @@ public class StatefulExample implements QDLMetaModule {
             return doc;
         }
     }
-    public class LoadTimestamp  implements QDLVariable {
+    public class ImportTimestamp implements QDLVariable {
         @Override
         public String getName() {
-            return "load_timestamp";
+            return "import_ts";
         }
 
         @Override
@@ -86,7 +88,7 @@ public class StatefulExample implements QDLMetaModule {
         }
     }
     /**
-      * Thios serializes the state of the Java module only. There is a QDl variable that
+      * This serializes the state of the Java module only. There is a QDl variable that
       * is created, but that is stored in QDL's {@link State} object, so you don't need to do
      * anything with it. There is no requirement on the structure of the JSON object.
      * You are free to structure it however you want.

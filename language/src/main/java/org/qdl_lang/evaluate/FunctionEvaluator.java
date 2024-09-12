@@ -498,6 +498,11 @@ public class FunctionEvaluator extends AbstractEvaluator {
             throw new UndefinedFunctionException("this function is not defined", polyad);
         }
         Object result = qfr.qdlFunction.evaluate(argList, state);
+        if(result == null){
+            // Functions should never return a Java null, but iit does happen by accident, so better
+            // to bomb here rather than get a strange, completely unrelated NPE later.
+            throw new QDLExceptionWithTrace("illegal java return vale of null", polyad);
+        }
         polyad.setResult(result);
         polyad.setEvaluated(true);
         polyad.setResultType(Constant.getType(result));

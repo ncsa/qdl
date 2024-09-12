@@ -11,7 +11,7 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 1/27/20 at  1:24 PM
  */
-public class Concat implements QDLFunction {
+public class ConcatFunction implements QDLFunction {
     @Override
     public String getName() {
         return "concat";

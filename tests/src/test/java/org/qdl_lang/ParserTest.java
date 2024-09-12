@@ -3,6 +3,7 @@ package org.qdl_lang;
 import org.qdl_lang.evaluate.FunctionEvaluator;
 import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.exceptions.*;
+import org.qdl_lang.extensions.examples.basic.EGLoader;
 import org.qdl_lang.functions.FKey;
 import org.qdl_lang.functions.FunctionRecord;
 import org.qdl_lang.parsing.QDLInterpreter;
@@ -2061,7 +2062,7 @@ public class ParserTest extends AbstractQDLTester {
      * <pre>
      *    dyad(monad1(arg), monad2(arg))
      * </pre>
-     * This actually covers a very large range of applications. This example computes
+     * This actually covers a very large range of applications. This basic computes
      * the average over a list as<br/><br/>
      * <pre>
      *    sum(list.)/size(list.)
@@ -3097,7 +3098,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script,
-                " eg := import(load('org.qdl_lang.extensions.example.EGLoaderImpl', 'java'));\n" +
+                " eg := import(load('" + EGLoader.class.getCanonicalName() + "', 'java'));\n" +
                         "  args. := names(eg#@concat,2);");
         addLine(script, "ok0:= size(args.) == 2 ;");
         addLine(script, "ok1:= args.0=='x_0' ;");
@@ -3129,7 +3130,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script,
-                " eg := import(load('org.qdl_lang.extensions.example.EGLoaderImpl', 'java'));");
+                " eg := import(load('" + EGLoader.class.getCanonicalName() + "', 'java'));");
         addLine(script, "ok0:= 'ab' == ['a','b']∂eg#2@concat;");
         addLine(script, "ok1:= 'ab' == {'x_0':'a','x_1':'b'}∂eg#2@concat;");
         addLine(script, "ok2:= 'ab' == {'x_1':'b', 'x_0':'a'}∂eg#2@concat;");
@@ -3263,7 +3264,7 @@ left hand argument at index 'p' is not a boolean At (1, 0)
    z. := (args.)∂n(5,[@f]);
      */
     /*
-         Complex example: This sets up a matrix fo function refs with a default value an specific values.
+         Complex basic: This sets up a matrix fo function refs with a default value an specific values.
     zz.0.1 := zz.0.3 := zz.1.1:= zz.1.3:=[2,3];
     zz.2.1:=zz.2.3 := [-1,1];
     zz.:=zz.~{*:[4,1,2]};

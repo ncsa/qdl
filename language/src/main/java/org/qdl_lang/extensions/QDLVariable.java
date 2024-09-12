@@ -31,7 +31,7 @@ public interface QDLVariable extends Serializable {
      * </p>
      * @return
      */
-    public String getName();
+    String getName();
 
     /**
      * The value. The basic Java types that QDL knows are {@link Boolean},
@@ -42,5 +42,5 @@ public interface QDLVariable extends Serializable {
      *
      * @return
      */
-    public Object getValue();
+    Object getValue();
 }

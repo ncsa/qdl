@@ -29,7 +29,7 @@ public interface QDLSASConstants extends SASConstants {
 
     public static final String ACTION_GET_HELP_TOPIC = "get_help_topic";
     public static final String RESPONSE_TYPE_GET_HELP_TOPIC = ACTION_GET_HELP_TOPIC;
-    public static final String KEY_HELP_EXAMPLE = "example";
+    public static final String KEY_HELP_EXAMPLE = "basic";
     public static final String KEY_FUNCTION_HELP = "function_help";
 
 }

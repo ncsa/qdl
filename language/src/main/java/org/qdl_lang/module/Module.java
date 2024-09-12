@@ -105,7 +105,10 @@ public abstract class Module implements XThing, Serializable {
         this.alias = alias;
         this.namespace = namespace;
     }
-
+    public Module(URI namespace,  State state) {
+        this.state = state;
+        this.namespace = namespace;
+    }
     public String getAlias() {
         return alias;
     }

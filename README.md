@@ -34,7 +34,7 @@ The base QDL jar is in Maven and should be referenced as
 <dependency>
   <groupId>org.qdl_lang</groupId>
   <artifactId>language</artifactId>
-  <version>1.5-QDL-SNAPSHOT</version>
+  <version>1.6-QDL-SNAPSHOT</version>
 </dependency>
 ```
 (Or whatever version you want.)

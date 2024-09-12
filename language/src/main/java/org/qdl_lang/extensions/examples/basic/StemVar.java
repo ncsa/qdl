@@ -13,7 +13,7 @@ import java.util.Date;
  * <p>Created by Jeff Gaynor<br>
  * on 1/27/20 at  1:26 PM
  */
-public class EGStem implements QDLVariable {
+public class StemVar implements QDLVariable {
     @Override
     public String getName() {
         return "eg.";

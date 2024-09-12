@@ -2,7 +2,7 @@ package edu.uiuc.ncsa.qdl.sat;
 
 /**
  * This client pairs with {@link edu.uiuc.ncsa.qdl.sat.Server2}. Run both at the same time.
- * It is a toy (example from web) and just sends the line typed to the server then blocks until you type
+ * It is a toy (basic from web) and just sends the line typed to the server then blocks until you type
  * a response in the server. Nice to see the back and forth and about as simple as possible.
  * <p>Created by Jeff Gaynor<br>
  * on 9/7/22 at  6:55 AM

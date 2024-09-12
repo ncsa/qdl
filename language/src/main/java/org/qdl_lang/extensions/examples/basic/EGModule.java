@@ -31,29 +31,25 @@ public class EGModule extends JavaModule {
         EGModule EGModule = new EGModule(URI.create("ex:eg"), "eg");
         // Step 2: create a list of functions and populate it
         ArrayList<QDLFunction> funcs = new ArrayList<>();
-        funcs.add(new Concat());
-        funcs.add(new FunctionReferenceExample());
+        funcs.add(new ConcatFunction());
+        funcs.add(new FEvalFunction());
         funcs.add(new ExtrinsicFunction());
         // Once the list of functions is populated, add the functions to the module
         EGModule.addFunctions(funcs);
 
         // Step 3: create a list of variables and populate it
         ArrayList<QDLVariable> vars = new ArrayList<>();
-        vars.add(new EGStem());
-        vars.add(new StemEntry());
-        vars.add(new ExtrinsicVariable());
+        vars.add(new StemVar());
+        vars.add(new StemEntryVar());
+        vars.add(new ExtrinsicVar());
         // Once the list of variables is populated, add it to the module
         EGModule.addVariables(vars);
-        // Step 4: If this has a State object passed in initialize it. Note that
-        // if you do not, then this instance will not be usable.
-        // If the state is null, this implies that the state will be injected later and
-        // the init method will be called too. 
-        if(state != null){
-            EGModule.init(state);
-        }
+        // Step 4: Initialize this and finish setting it up/
+        EGModule.init(state);
         setupModule(EGModule);
         return EGModule;
     }
+
     List<String> description = null;
 
     @Override
@@ -62,9 +58,9 @@ public class EGModule extends JavaModule {
             description = new ArrayList<>();
             description.add("This module is a simple basic from the toolkit to show how");
             description.add("to create a module and import it and use it. It has an extrinsic function,");
-            description.add(ExtrinsicFunction.EX_NAME + " and an extrinsic variable " + ExtrinsicVariable.EX_NAME);
+            description.add(ExtrinsicFunction.EX_NAME + " and an extrinsic variable " + ExtrinsicVar.EX_NAME);
             description.add("which are available on load (so no import needed).");
-            description.add("It also has an basic where a single stem value is set for " + StemEntry.STEM_NAME);
+            description.add("It also has an basic where a single stem value is set for " + StemEntryVar.STEM_NAME);
         }
         return description;
     }

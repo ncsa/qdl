@@ -10,7 +10,7 @@ import java.util.List;
  * no result and an expression does. However, due to historical reasons, everything in the
  * implementation is a "statement". So in reality, statements (such as if[]then[])
  * implement this but expressions implement {@link ExpressionInterface}. This mostly
- * has parser-related generic stuff in it it, like the source code, token position in parsing etc.
+ * has parser-related generic stuff in it. It, like the source code, token position in parsing etc.
  * <p>Created by Jeff Gaynor<br>
  * on 1/14/20 at  9:11 AM
  */
