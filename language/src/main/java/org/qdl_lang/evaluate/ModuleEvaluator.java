@@ -920,10 +920,20 @@ docs(c#2@ini_out) ;
     /**
      * Imported module shares ambient state. Any changes to ambient state are reflected in module's state.
      */
+
     public final static String IMPORT_STATE_SHARE = "share";
     public final static String IMPORT_STATE_ANY = "any"; // used in module definition
+    /**
+     * Used if no state is shared, i.e. completely clean state in the module (default)
+     */
     public final static int IMPORT_STATE_NONE_VALUE = 100;
+    /**
+     * Am,bient state cloned and then added to module state.
+     */
     public final static int IMPORT_STATE_SNAPSHOT_VALUE = 101;
+    /**
+     * Ambient state used by module. Note that this causes serialization problems potentially...
+     */
     public final static int IMPORT_STATE_SHARE_VALUE = 102;
     public final static int IMPORT_STATE_ANY_VALUE = 110;
 

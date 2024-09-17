@@ -10,7 +10,6 @@ public interface SerializationConstants {
     String DECIMAL_TAG = "decimal";
     String NULL_TAG = "null";
     String STRING_TAG = "string";
-    String SET_TAG = "settem";
     String STEM_TAG = "stem";
     String STEM_KEY_TAG = "key";
     String STEM_ENTRY_TAG = "entry";

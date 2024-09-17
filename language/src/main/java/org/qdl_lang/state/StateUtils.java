@@ -1,5 +1,6 @@
 package org.qdl_lang.state;
 
+import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import org.qdl_lang.evaluate.MetaEvaluator;
 import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.exceptions.QDLException;
@@ -38,6 +39,7 @@ public abstract class StateUtils {
     public static State clone(State state)  {
         SerializationState serializationState = new SerializationState();
         serializationState.setVersion(SerializationConstants.VERSION_2_1_TAG);
+        JSONObject json = null;
         try {
             State newState;
             if(state == null){
@@ -46,11 +48,26 @@ public abstract class StateUtils {
                 newState = State.getFactory().newInstance();
             }else{
                 newState = state.newInstance();
-                JSONObject json = state.serializeToJSON(serializationState);
+                json = state.serializeToJSON(serializationState);
                 newState.deserializeFromJSON(json, serializationState);
             }
             return newState;
-        } catch (Throwable e) {
+        } catch(net.sf.json.JSONException | StackOverflowError sox){
+            // In this case, there the system will get overwhelmed with JSON messages
+            // which are not searchable since we don't generate them, and it is hard
+            // to see where this happened. It indicates
+            // an actual internal issue with the implementation. Catch it here
+            // so this can get tracked down.
+            sox.printStackTrace();
+            if(json != null){System.err.println(json.toString(2));}
+           /* try {
+                return javaClone(state);
+            } catch (IOException  | ClassNotFoundException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }*/
+              throw new NFWException("internal error serializing state.", sox);
+        }catch (Throwable e) {
             if(e instanceof RuntimeException){
                 throw (RuntimeException)e;
             }

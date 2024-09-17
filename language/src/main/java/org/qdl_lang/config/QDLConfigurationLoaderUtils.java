@@ -302,16 +302,24 @@ public class QDLConfigurationLoaderUtils {
 
     public static List<String> setupJavaModule(State state, QDLLoader loader, JavaModuleConfig jmc) {
         List<String> importedFQNames = new ArrayList<>();
+        // Fix for https://github.com/ncsa/qdl/issues/79 monitor the version and set up state inheritance based on that.
+        boolean oldImports = jmc.getVersion().equals(MODULE_ATTR_VERSION_1_0);
         for (Module template : loader.load()) {
             template.setTemplate(true);
             state.addModule(template); // done!
             importedFQNames.add(template.getNamespace().toString());
             if (jmc.isImportOnStart()) {
                 // state.getMInstances().put(m);
-                State state1 = state.newLocalState();
+                State state1;
+                if(oldImports){
+                     state1 = state.newLocalState();
+                }else{
+                    state1 = state.newCleanState();
+                }
                 Module instance = template.newInstance(state1);
                 ((JavaModule) instance).init(state1);
-                if (jmc.getVersion().equals(MODULE_ATTR_VERSION_1_0)) {
+                if (oldImports) {
+                    instance.setInheritanceMode(ModuleEvaluator.IMPORT_STATE_SHARE_VALUE);
                     state.getMInstances().put(new MIWrapper(template.getKey(), instance));// puts it in the table with default alias.
                 }else{
                     if(jmc.isUse()){
@@ -319,6 +327,8 @@ public class QDLConfigurationLoaderUtils {
                         state.getFTStack().appendTables(instance.getState().getFTStack());
                         state.getUsedModules().put(instance.getNamespace(), instance);
                     }else{
+                        // Actually fox for https://github.com/ncsa/qdl/issues/79
+                        instance.setInheritanceMode(ModuleEvaluator.IMPORT_STATE_NONE_VALUE);
                         String varName = template.getAlias();
                         if(jmc.getVarName()!=null){
                             varName = jmc.getVarName();

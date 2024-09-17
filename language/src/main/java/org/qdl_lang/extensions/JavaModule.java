@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import static org.qdl_lang.evaluate.ModuleEvaluator.*;
 import static org.qdl_lang.state.VariableState.var_regex;
 import static org.qdl_lang.xml.SerializationConstants.MODULE_JAVA_STATE_TAG;
 import static org.qdl_lang.xml.SerializationConstants.MODULE_STATE_TAG;
@@ -162,8 +163,33 @@ public abstract class JavaModule extends Module {
                 json.put(MODULE_JAVA_STATE_TAG, getMetaClass().serializeToJSON());
             }
         }
-        if (!isUsed() && getState() != null) {
-            json.put(MODULE_STATE_TAG, getState().serializeToJSON(serializationState));
+        // https://github.com/ncsa/qdl/issues/79 booby trap
+        // Should this ever raise its head again, send up flares all over the place.
+        // Old module system imported shared state which might cause a recursive failure.
+        // At issue: modules imported in the configuration using the old system can get a recursive
+        // loop when serializing. This next bit of code should avoid that, and if it does happen,
+        // there should be alls sorts of bells and whistles that go off, since this would be show-stopper
+        // for OA4MP.
+        // The solution is to use not use the old config import system, but use a boot script and create variables
+        // that contain what you want. There is really no reason to use the old system!
+        if (!isUsed()
+                && getInheritMode() != IMPORT_STATE_ANY_VALUE // old modules whose inheritance was somehow not set
+                && getInheritMode() != IMPORT_STATE_SHARE_VALUE // mostly old modules
+                && getState() != null) {
+            try {
+                json.put(MODULE_STATE_TAG, getState().serializeToJSON(serializationState));
+            }catch(StackOverflowError sox){
+                System.out.println("***Caught StackOverflowError"  );
+                System.out.println("in JavaModule.serializeToJSON:\n" + json.toString(2));
+                System.out.println("JavaModule:" + this);
+                System.out.println("state.getVStack:\n" + getState().getVStack().toString(true));
+                throw sox;
+            }catch(Throwable t){
+                System.out.println("***Caught other exception:" + t);
+                System.out.println("JavaModule:" + this);
+                System.out.println("in JavaModule.serializeToJSON:\n" + json.toString(2));
+                throw t;
+            }
         }
         json.put(SerializationConstants.MODULE_TYPE_TAG2, SerializationConstants.MODULE_TYPE_JAVA_TAG);
         json.put(SerializationConstants.MODULE_CLASS_NAME_TAG, getClassname());
@@ -281,5 +307,15 @@ public abstract class JavaModule extends Module {
         return metaClass != null;
     }
 
-
+    @Override
+    public String toString() {
+        return "JavaModule{" +
+                "\nclassName='" + className + '\'' +
+                ",\n loaderClassName='" + loaderClassName + '\'' +
+                ",\n metaClass=" + metaClass +
+                ",\n initialized=" + initialized +
+                ",\n vars=" + vars +
+                ",\n funcs=" + funcs +
+                '}';
+    }
 }

@@ -68,7 +68,8 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
      * [P,Q,...] the result is [A,B,C,...,P,Q,...]
      * This is needed when, e.g., creating new local state for function reference resolution
      * <br/><br/>
-       * <b>Note:</b> {@link #get(XKey)} starts from index 0, so local overrides are first!
+     * <b>Note:</b> {@link #get(XKey)} starts from index 0, so local overrides are first!
+     *
      * @param xStack
      */
     public void addTables(XStack xStack) {
@@ -168,11 +169,13 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
 
     /**
      * Get the local table for this stack.
+     *
      * @return
      */
-    public XTable<? extends XKey, ? extends XThing> getLocal(){
+    public XTable<? extends XKey, ? extends XThing> getLocal() {
         return getStack().get(0);
     }
+
     public boolean localHas(XKey xkey) {
         if (getStack().isEmpty()) {
             return false;
@@ -236,6 +239,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
         }
         return stack;
     }
+
     public void setStack(List<XTable<? extends XKey, ? extends XThing>> stack) {
         this.stack = stack;
     }
@@ -327,23 +331,34 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
 
     @Override
     public String toString() {
+        return toString(false);
+    }
+
+    public String toString(boolean showKeys) {
         String out = "[" + getClass().getSimpleName();
         out = out + ", table#=" + getStack().size();
         int i = 0;
         int totalSymbols = 0;
         boolean isFirst = true;
+        String keys = "keys=[";
         out = ", counts=[";
-        for (XTable functionTable : getStack()) {
+        for (XTable xTable : getStack()) {
             if (isFirst) {
                 isFirst = false;
-                out = out + functionTable.size();
+                out = out + xTable.size();
+                keys = keys + xTable.keySet();
             } else {
-                out = out + "," + functionTable.size();
+                out = out + "," + xTable.size();
+                keys = keys + "," + xTable.keySet();
             }
-            totalSymbols += functionTable.size();
+            totalSymbols += xTable.size();
         }
         out = out + "], total=" + totalSymbols;
+        keys = keys + "]";
         out = out + "]";
+        if (showKeys) {
+            out = out + "," + keys;
+        }
         return out;
     }
 
@@ -408,7 +423,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
             for (Object key : xTable.keySet()) {
                 XThing xThing = (XThing) xTable.get(key);
                 String x = xTable.toJSONEntry(xThing, serializationState);
-                    jsonArray.add(x);
+                jsonArray.add(x);
             }
             array.add(jsonArray);
         }
@@ -526,8 +541,8 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
     protected void serializeContent(XMLStreamWriter xsw, SerializationState serializationState) throws XMLStreamException {
         try {
             xsw.writeCData(toJSON(serializationState).toString());
-        }catch (Throwable t){
-            if(t instanceof XMLStreamException){
+        } catch (Throwable t) {
+            if (t instanceof XMLStreamException) {
                 throw (XMLStreamException) t;
             }
             throw new NFWException("problem serializing string", t);
@@ -656,7 +671,7 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
                     currentST.deserializeFromJSON(jsonArray.getJSONObject(k), qi, serializationState);
                 } catch (Throwable e) {
                     // For now
-                 //   e.printStackTrace();
+                    //   e.printStackTrace();
                 }
             }
             // since this is the stack in the interpreter state, this pushes a new table there

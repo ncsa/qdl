@@ -136,7 +136,7 @@ public class ModuleUtils implements Serializable {
                         javaModule = (JavaModule) javaModule.newInstance(newState);
                         javaModule.init(newState); // set it up
                         javaModule.setTemplate(true);
-
+                        javaModule.setInheritanceMode(ModuleEvaluator.IMPORT_STATE_NONE_VALUE);
                         m.add(javaModule);
                         return m;
                     }
