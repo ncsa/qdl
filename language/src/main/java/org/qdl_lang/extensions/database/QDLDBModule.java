@@ -52,7 +52,9 @@ public class QDLDBModule extends JavaModule {
             doxx.add("There are 4 basic functions available");
             doxx.add(QDLDB.QUERY_COMMAND + " allows for statements that return a result, such as select or count");
             doxx.add(QDLDB.UPDATE_COMMAND + " allows for updating an existing database. This does not return a result");
-            doxx.add(QDLDB.EXECUTE_COMMAND + " allows for executing other commands that do not return a result, such as insert or delete");
+            doxx.add(QDLDB.EXECUTE_COMMAND + " allows for executing other commands that may/may not return a result, such as insert or delete");
+            doxx.add("    This is the most generic way to execute a command to the database. Reads and updates are just");
+            doxx.add("    special cases of this");
             doxx.add(QDLDB.CONNECT_COMMAND + " command that connects to a database. You must run this first before access the database");
             doxx.add("    or an error will occur.");
             doxx.add("This is not intended to be a full fledged database access module, it is designed to provide the tools");

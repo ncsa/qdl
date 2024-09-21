@@ -569,10 +569,10 @@ public class QDLDB implements QDLMetaModule {
             List<String> doc = new ArrayList<>();
             switch (argCount) {
                 case 1:
-                    doc.add(getName() + "(statement) - executes a statement with no return value");
+                    doc.add(getName() + "(statement) - executes a statement with or without no return value");
                     break;
                 case 2:
-                    doc.add(getName() + "(statement,arg_list) - executes a prepared statement that has no return values.");
+                    doc.add(getName() + "(statement,arg_list) - executes a prepared statement with or without returned values.");
                     break;
             }
             doc.add("This is used for inserts and deletes in particular.");
@@ -671,6 +671,7 @@ public class QDLDB implements QDLMetaModule {
             }
            gotResult = stmt.execute();
             if(gotResult){
+                // Fix https://github.com/ncsa/qdl/issues/80
                 outStem = processResultSet(stmt);
             }else{
                 updateCount = stmt.getLargeUpdateCount();
