@@ -6748,7 +6748,8 @@ public class WorkspaceCommands implements Logable, Serializable {
                 iso6429IO.addCommandHistory(newCommands.commandHistory);
             }
             // Fix for https://github.com/ncsa/qdl/issues/70
-            QDLWorkspace qdlWorkspace = new QDLWorkspace(newCommands);
+            //QDLWorkspace qdlWorkspace = new QDLWorkspace(newCommands);
+            QDLWorkspace qdlWorkspace = QDLWorkspace.newInstance(newCommands);
             newCommands.setWorkspace(qdlWorkspace);
             return true;
         } catch (Throwable t) {

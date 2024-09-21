@@ -454,7 +454,8 @@ public class SwingTerminal implements TerminalInterface {
         WorkspaceCommands.setInstance(new WorkspaceCommands(qdlSwingIO));
         workspaceCommands = WorkspaceCommands.getInstance();
         workspaceCommands.setState(state);
-        qdlWorkspace = new QDLWorkspace(workspaceCommands);
+//        qdlWorkspace = new QDLWorkspace(workspaceCommands);
+        qdlWorkspace = QDLWorkspace.newInstance(workspaceCommands);
         workspaceCommands.setWorkspace(qdlWorkspace);
         try {
             workspaceCommands.init(new InputLine());

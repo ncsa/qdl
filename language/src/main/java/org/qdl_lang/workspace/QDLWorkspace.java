@@ -14,6 +14,7 @@ import edu.uiuc.ncsa.security.util.cli.InputLine;
 import edu.uiuc.ncsa.security.util.terminal.ISO6429IO;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
+import javax.inject.Provider;
 import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
@@ -38,6 +39,24 @@ public class QDLWorkspace implements Serializable {
     public WorkspaceCommands getWorkspaceCommands() {
         return workspaceCommands;
     }
+
+    public static QDLWorkspace newInstance(WorkspaceCommands workspaceCommands) {
+        return getWorkspaceProvider().getWorkspace(workspaceCommands);
+    }
+
+    public static WorkspaceProvider getWorkspaceProvider() {
+        if(workspaceProvider == null){
+            workspaceProvider = new WorkspaceProviderImpl();
+        }
+        return workspaceProvider;
+    }
+
+    public static void setWorkspaceProvider(WorkspaceProvider workspaceProvider) {
+        QDLWorkspace.workspaceProvider = workspaceProvider;
+    }
+
+    static WorkspaceProvider workspaceProvider;
+
 
     /**
      * This is used only during deserialization of the workspace. Setting it
@@ -524,9 +543,14 @@ public class QDLWorkspace implements Serializable {
     //  {'x':{'a':'b'},'c':'d'} ~ {'y':{'p':'q'},'r':'s'}
     public static void main(String[] args) throws Throwable {
         // hook for extensions of this class. Do any setup, then call init.
-             init(args);
+             QDLWorkspace qdlWorkspace = init(args);
+             if(qdlWorkspace != null){
+                 // a null response means that this is being run as a script, so there
+                 // is no workspace main event loop to run
+                 qdlWorkspace.mainLoop();
+             }
     }
-    protected static void init(String[] args) throws Throwable {
+    protected static QDLWorkspace init(String[] args) throws Throwable {
         Vector<String> vector = new Vector<>();
         vector.add("dummy"); // Dummy zero-th arg.
         for (String arg : args) {
@@ -618,11 +642,11 @@ public class QDLWorkspace implements Serializable {
                 workspaceCommands = workspaceCommands.newInstance(new BasicIO());
             }
         }
-        QDLWorkspace qc = new QDLWorkspace(workspaceCommands);
-        workspaceCommands.setWorkspace(qc);
+        QDLWorkspace qdlWorkspace = QDLWorkspace.newInstance(workspaceCommands);
+        workspaceCommands.setWorkspace(qdlWorkspace);
         workspaceCommands.init(argLine);
         if (workspaceCommands.isRunScript()) {
-            return;
+            return null;
         }
         if ((workspaceCommands.showBanner) && isoTerminal) {
             //System.out.println("ISO 6429 terminal" + iso6429IO.getTerminal().getName());
@@ -631,8 +655,8 @@ public class QDLWorkspace implements Serializable {
 
 
         ArrayList<String> functions = new ArrayList<>();
-        functions.addAll(qc.workspaceCommands.getState().getMetaEvaluator().listFunctions(false));
-        functions.addAll(qc.workspaceCommands.getState().listFunctions(true,
+        functions.addAll(qdlWorkspace.workspaceCommands.getState().getMetaEvaluator().listFunctions(false));
+        functions.addAll(qdlWorkspace.workspaceCommands.getState().listFunctions(true,
                 null, true, false, false));
         if (isoTerminal) {
             // set up command completion
@@ -649,7 +673,7 @@ public class QDLWorkspace implements Serializable {
             WorkspaceCommands.setInstance(workspaceCommands);// since IO is setup.
             // Add completion with current set of functions from workspace.
         }
-        qc.mainLoop();
+      return  qdlWorkspace;
     }
 
     public static final String MACRO_COMMENT_DELIMITER = "//";

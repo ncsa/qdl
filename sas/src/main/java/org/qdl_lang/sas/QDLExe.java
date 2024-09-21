@@ -67,7 +67,8 @@ public class QDLExe implements Executable, QDLSASConstants {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-        qdlWorkspace = new QDLWorkspace(workspaceCommands);
+        //qdlWorkspace = new QDLWorkspace(workspaceCommands);
+        qdlWorkspace = QDLWorkspace.newInstance(workspaceCommands);
 
         StringIO stringIO = new StringIO("");
         workspaceCommands.setIoInterface(stringIO);

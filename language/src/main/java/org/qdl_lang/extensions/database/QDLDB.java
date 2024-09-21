@@ -297,10 +297,10 @@ public class QDLDB implements QDLMetaModule {
                 would assert the first is a string, convert the second into a date and the 3rd is assumed
                 to be base 64 encoded and would be decoded and asserted as a byte[]
              */
-            QDLStem outStem = new QDLStem();
 
             ConnectionRecord connectionRecord = connectionPool.pop();
             Connection c = connectionRecord.connection;
+            QDLStem outStem;
             try {
                 PreparedStatement stmt = c.prepareStatement(rawStatement);
                 if (args != null) {
@@ -310,20 +310,7 @@ public class QDLDB implements QDLMetaModule {
                     }
                 }
                 stmt.executeQuery();
-                ResultSet rs = stmt.getResultSet();
-                // Now we have to pull in all the values.
-                while (rs.next()) {
-                    ColumnMap map = rsToMap(rs);
-                    QDLStem currentEntry = new QDLStem();
-                    for (String key : map.keySet()) {
-                        if (map.get(key) != null) {
-                            currentEntry.put(key, sqlConvert(map.get(key)));
-                        }
-                    }
-                    outStem.getQDLList().add(currentEntry);
-                }
-                // Have to convert this map since it is col name + Java object.
-                rs.close();
+                outStem = processResultSet(stmt);
                 stmt.close();
                 releaseConnection(connectionRecord);
             } catch (SQLException e) {
@@ -361,6 +348,34 @@ public class QDLDB implements QDLMetaModule {
             doc.add("null -> LONGVARCHAR as a  NULL");
             return doc;
         }
+    }
+
+    /**
+     * IF there is a result set, then invoke this. It will convert the entire result set
+     * to a QDL stem. Only invoke if you know there is a result set!
+     * <br/><br/>
+     * <b>Note</b> this closes the result set.
+     * @param stmt
+     * @return
+     * @throws SQLException
+     */
+    private QDLStem processResultSet(PreparedStatement stmt) throws SQLException {
+        QDLStem outStem = new QDLStem();
+        ResultSet rs = stmt.getResultSet();
+        // Now we have to pull in all the values.
+        while (rs.next()) {
+            ColumnMap map = rsToMap(rs);
+            QDLStem currentEntry = new QDLStem();
+            for (String key : map.keySet()) {
+                if (map.get(key) != null) {
+                    currentEntry.put(key, sqlConvert(map.get(key)));
+                }
+            }
+            outStem.getQDLList().add(currentEntry);
+        }
+        rs.close();
+
+        return outStem;
     }
 
     private void setParam(PreparedStatement stmt, int i, Object entry) throws SQLException {
@@ -492,6 +507,7 @@ public class QDLDB implements QDLMetaModule {
 
             ConnectionRecord connectionRecord = connectionPool.pop();
             Connection c = connectionRecord.connection;
+            Long updateCount = 0L;
             try {
                 PreparedStatement stmt = c.prepareStatement(rawStatement);
                 if (args != null) {
@@ -500,15 +516,14 @@ public class QDLDB implements QDLMetaModule {
                         setParam(stmt, i++, entry);
                     }
                 }
-                stmt.executeUpdate();
-                // Nothing is ever returned from an update
+                updateCount = (long) stmt.executeUpdate();
                 stmt.close();
                 releaseConnection(connectionRecord);
             } catch (SQLException e) {
                 destroyConnection(connectionRecord);
                 throw new GeneralException("Error executing SQL: " + e.getMessage(), e);
             }
-            return Boolean.TRUE;
+            return updateCount;
         }
 
 
@@ -643,6 +658,9 @@ public class QDLDB implements QDLMetaModule {
 
         ConnectionRecord connectionRecord = connectionPool.pop();
         Connection c = connectionRecord.connection;
+        boolean gotResult = false;
+        QDLStem outStem = null;
+        Long updateCount = 0L;
         try {
             PreparedStatement stmt = c.prepareStatement(rawStatement);
             if (args != null) {
@@ -651,14 +669,22 @@ public class QDLDB implements QDLMetaModule {
                     setParam(stmt, i++, entry);
                 }
             }
-            stmt.execute();
+           gotResult = stmt.execute();
+            if(gotResult){
+                outStem = processResultSet(stmt);
+            }else{
+                updateCount = stmt.getLargeUpdateCount();
+            }
             stmt.close();
             releaseConnection(connectionRecord);
         } catch (SQLException e) {
             destroyConnection(connectionRecord);
             throw new GeneralException("Error executing SQL: " + e.getMessage(), e);
         }
-        return Boolean.TRUE;
+        if(gotResult){
+            return outStem;
+        }
+        return updateCount;
     }
 
     List<String> argStatement = new ArrayList<>();

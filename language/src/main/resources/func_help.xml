@@ -833,7 +833,11 @@ pick(@f, arg) - picks elements from arg based on the boolean @f
 
 Note that any indices are returned as well.
 
-See also: \ (extraction)]]>
+Other languages, such as python, have such constructs as pick, remap, etc.,
+and refer to them as a list comprehensions, but they are restricted to lists,
+not a general data structure like a stem or set.
+
+See also: \ (extraction), remap, sublist]]>
         </body>
         <example>
             <![CDATA[  pick((v)->v<3, {-2,0,4,5}); // pick elements in a set whose value < 3
