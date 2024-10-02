@@ -1,6 +1,7 @@
 package org.qdl_lang.extensions.http;
 
 import org.qdl_lang.extensions.JavaModule;
+import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.module.Module;
 import org.qdl_lang.state.State;
 
@@ -25,6 +26,8 @@ public class QDLHTTPModule extends JavaModule {
         QDLHTTPModule qdlhttp = new QDLHTTPModule(URI.create("qdl:/tools/http_client"), "http");
         HTTPClient httpModule = new HTTPClient();
         qdlhttp.setMetaClass(httpModule);
+        ArrayList<QDLFunction> funcs = new ArrayList<>();
+
         funcs.add(httpModule.new Close());
         funcs.add(httpModule.new CreateCredentials());
         funcs.add(httpModule.new Delete());

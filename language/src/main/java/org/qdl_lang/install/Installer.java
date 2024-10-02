@@ -625,8 +625,8 @@ public class Installer {
             if (rootDir.exists()) {
                 if (rootDir.list().length != 0) {
                     say("This exists and is not empty. This will only install to an empty/non-existent directory.\nDid you mean " + UPGRADE_OPTION + "?");
+                    return null;
                 }
-                return null;
             }
             trace("creating directories for root path");
             Files.createDirectories(rootDir.toPath());

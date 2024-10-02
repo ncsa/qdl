@@ -186,35 +186,36 @@ public class WorkspaceCommands implements Logable, Serializable {
     protected int FIRST_ARG_INDEX = 2; //e.g:  filename
 
     protected void splashScreen() {
+        String separator = Banners.getDelimiter(logoName);
+        int width = Banners.getLogoWidth(logoName);
+        if (!logoName.equals(NONE_STYLE)) {
+            say(Banners.getLogo(logoName));
+        }
         if (showBanner) {
-            say(logo);
-            switch (logoName) {
-                case TIMES_STYLE:
-                case ROMAN_STYLE:
-                case OS2_STYLE:
-                    break;
-                case SMALL_STYLE:
-                    say("----------------------");
-                    break;
-                default:
-                    say("*****************************************");
-            }
+            say(separator.substring(0, width));
             say("Welcome to the QDL Workspace");
             say("Version " + QDLVersion.VERSION);
-            say("Type " + HELP_COMMAND + " for help.");
-            switch (logoName) {
-                case OS2_STYLE:
-                    say("¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯");
-                    break;
-                case SMALL_STYLE:
-                    say("----------------------");
-                    break;
-                default:
-                    say("*****************************************");
+            QDLStem buildInfo = getState().getSystemInfo().getStem("build");
+            if (buildInfo != null) {
+                if (buildInfo.containsKey("implementation-build")) {
+                    String info = buildInfo.getString("implementation-build");
+                    // of form "#build_number (timestamp)"
+                    String build = info.substring(0, info.lastIndexOf(" ")).trim();
+                    String ts = info.substring(info.lastIndexOf(" ") + 1);
+                    ts = ts.replace(("("), "");
+                    ts = ts.replace((")"), "");
+                    ts = ts.trim();
+                    say(build);
+                    say("Time: " + ts);
+                }
             }
+            say("Type " + HELP_COMMAND + " for help.");
+            say(separator.substring(0, width));
         }
     }
 
+    String STARS = "********************************************************************************************";
+    String DASHES = "-------------------------------------------------------------------------------------------";
     String logoName;
     boolean showBanner = true;
 
@@ -434,12 +435,12 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         // If they just issue ")fonts 97" assume they mean ")fonts list 97"
         boolean listFonts = inputLine.hasArg(FONT_LIST_COMMAND) || inputLine.getArgCount() == 0;
-        if(inputLine.getArgCount() ==1 ){
-            try{
+        if (inputLine.getArgCount() == 1) {
+            try {
                 Double.parseDouble(inputLine.getLastArg());
                 listFonts = true;
-            } catch(NumberFormatException nfx){
-                       // no problem
+            } catch (NumberFormatException nfx) {
+                // no problem
             }
         }
         if (listFonts) {
@@ -1423,6 +1424,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     /**
      * Save all of the buffers. This just invokes the save method since there is a lot of state to ferret out
      * and it is best to hand it off.
+     *
      * @throws Throwable
      */
     protected void _saveAllBuffers() throws Throwable {
@@ -1432,7 +1434,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         for (BufferManager.BufferRecord br : bufferRecords) {
             if (br.edited) {
                 if (!br.memoryOnly) {
-                    InputLine inputLine = new InputLine(BUFFER2_COMMAND, "save",  Integer.toString(getBufferManager().getIndex(br)));
+                    InputLine inputLine = new InputLine(BUFFER2_COMMAND, "save", Integer.toString(getBufferManager().getIndex(br)));
                     try {
                         _doBufferWrite(inputLine, false);
                         successes.add(br.alias);
@@ -1452,11 +1454,12 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     protected Object _doBufferWrite(InputLine inputLine) throws Throwable {
-          return _doBufferWrite(inputLine, true);
+        return _doBufferWrite(inputLine, true);
     }
 
     /**
      * Used internally, This has a flag to suppress certain messages.
+     *
      * @param inputLine
      * @param doOuput
      * @return
@@ -1509,9 +1512,9 @@ public class WorkspaceCommands implements Logable, Serializable {
         boolean ok = bufferManager.write(br);
 
         if (ok) {
-            if(doOuput)say("done");
+            if (doOuput) say("done");
         } else {
-            if(doOuput)say("nothing was found to write.");
+            if (doOuput) say("nothing was found to write.");
         }
         return RC_CONTINUE;
 
@@ -2656,7 +2659,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         } else {
             if (isSwingGUI()) {
                 // Fix https://github.com/ncsa/qdl/issues/71
-                QDLEditor qdlEditor = new QDLEditor(this,fName, 0);
+                QDLEditor qdlEditor = new QDLEditor(this, fName, 0);
                 qdlEditor.setWorkspaceCommands(this); // or callback fails
                 qdlEditor.setType(EditDoneEvent.TYPE_FUNCTION);
                 qdlEditor.setLocalName(fName);
@@ -3306,7 +3309,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
         if (names == null) {
             checkAsModule = true; // assume it might be a module and check it.
-        }else{
+        } else {
             String realName = names[0];
             if (doOnlineExample) {
                 String x = getHelpTopicExample(realName);
@@ -5049,7 +5052,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
             }
 
-            if(!doNotsaveBuffers) {
+            if (!doNotsaveBuffers) {
                 _saveAllBuffers();
             }
             if (doQDL || fullPath.endsWith(QDLVersion.DEFAULT_FILE_EXTENSION)) {
@@ -5325,8 +5328,19 @@ public class WorkspaceCommands implements Logable, Serializable {
             gzipOutputStream.flush();
             gzipOutputStream.close();
             if (isTargetVFS) {
+                VFSFileProvider vfsFileProvider = getState().getVFS(fullPath);
+                String parentPath = fullPath.substring(0,fullPath.lastIndexOf(VFSPaths.PATH_SEPARATOR));
+                if(!vfsFileProvider.isDirectory(parentPath)) {
+                    vfsFileProvider.mkdir(parentPath);
+                }
+                saveDir = parentPath;
                 writeBinaryVFS(getState(), fullPath, baos.toByteArray());
             } else {
+                File fff = new File(fullPath);
+                if(!fff.getParentFile().exists()) {
+                    fff.getParentFile().mkdirs();
+                }
+                saveDir = fff.getParent();
                 FileOutputStream fos = new FileOutputStream(fullPath);
                 fos.write(baos.toByteArray());
                 fos.flush();
@@ -5914,7 +5928,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     public static final String CLA_VERBOSE_ON = "-v";
     public static final String CLA_LONG_FORMAT_ON = "-l";
     public static final String CLA_NO_BANNER = "-no_banner";
-    public static final String CLA_NO_HEADER = "-no_header";
+    public static final String CLA_SHOW_BANNER = "-show_banner";
     public static final String CLA_LOGO = "-logo";
     public static final String CLA_DEBUG_ON = "-debug";
     public static final String CLA_RUN_SCRIPT_ON = "-run";
@@ -6051,13 +6065,19 @@ public class WorkspaceCommands implements Logable, Serializable {
         state.setAllowBaseFunctionOverrides(qe.isAllowOverwriteBaseFunctions());
         boolean isVerbose = qe.isWSVerboseOn();
         showBanner = qe.isShowBanner();
+        if (inputLine.hasArg(CLA_SHOW_BANNER)) {
+            // allows for override.
+            String raw = inputLine.getNextArgFor(CLA_SHOW_BANNER);
+                showBanner = "true".equals(raw);
+            inputLine.removeSwitchAndValue(CLA_SHOW_BANNER);
+        }
         logoName = qe.getLogoName();
         if (inputLine.hasArg(CLA_LOGO)) {
             // allow override of logo from command line
             logoName = inputLine.getNextArgFor(CLA_LOGO).toLowerCase();
             inputLine.removeSwitchAndValue(CLA_LOGO);
         }
-        logo = getLogo(logoName); // check for logo after show banner since they can select none and turn it anyway.
+        logo = Banners.getLogo(logoName); // check for logo after show banner since they can select none and turn it anyway.
 
         logger = qe.getMyLogger();
 
@@ -6252,6 +6272,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         if (getIoInterface() != null) {
             getIoInterface().setBufferingOn(true);
         }
+        ClassMigrator.init(); // for now...
         // Set up the help.
         InputStream helpStream = getClass().getResourceAsStream("/func_help.xml");
         if (helpStream == null) {
@@ -6279,8 +6300,8 @@ public class WorkspaceCommands implements Logable, Serializable {
                         onlineHelp.put(name, cd.getTextContent());
                     }
                     // Process examples
-                    x = eElement.getElementsByTagName("basic")
-                            .item(0);
+                    //x = eElement.getElementsByTagName("basic").item(0);
+                    x = eElement.getElementsByTagName("example").item(0);
                     if (x != null) {
                         child = x.getFirstChild().getNextSibling();
                         cd = (CharacterData) child;
@@ -6321,27 +6342,6 @@ public class WorkspaceCommands implements Logable, Serializable {
     Editors qdlEditors;
     String logo = Banners.TIMES;
 
-    protected String getLogo(String name) {
-        switch (name.toLowerCase()) {
-            case TIMES_STYLE:
-                return Banners.TIMES;
-            case ROMAN_STYLE:
-                return Banners.ROMAN;
-            case OS2_STYLE:
-                return Banners.OS2;
-            case PLAIN_STYLE:
-            case DEFAULT_STYLE:
-                return Banners.DEFAULT;
-            case SMALL_STYLE:
-                return Banners.SMALL;
-            case FRAKTUR_STYLE:
-                return Banners.FRAKTUR;
-            case "none":
-                showBanner = false;
-                return "";
-        }
-        return Banners.TIMES;
-    }
 
     protected void fromCommandLine(InputLine inputLine) throws Throwable {
         boolean isVerbose = inputLine.hasArg(CLA_VERBOSE_ON);
@@ -6359,12 +6359,16 @@ public class WorkspaceCommands implements Logable, Serializable {
             runScriptPath = inputLine.getNextArgFor(CLA_RUN_SCRIPT_ON);
             inputLine.removeSwitchAndValue(CLA_RUN_SCRIPT_ON);
         }
-        showBanner = !inputLine.hasArg(CLA_NO_BANNER);
-        inputLine.removeSwitch(CLA_NO_BANNER);
+
+        if (inputLine.hasArg(CLA_SHOW_BANNER)) {
+            String raw = inputLine.getNextArgFor(CLA_SHOW_BANNER);
+            showBanner = "true".equals(raw);
+            inputLine.removeSwitch(CLA_SHOW_BANNER);
+        }
         logoName = "default";
         if (inputLine.hasArg(CLA_LOGO)) {
             logoName = inputLine.getNextArgFor(CLA_LOGO).toLowerCase();
-            logo = getLogo(logoName);
+            logo = Banners.getLogo(logoName);
             inputLine.removeSwitchAndValue(CLA_LOGO);
         }
         // Make sure logging is in place before actually setting up the state,

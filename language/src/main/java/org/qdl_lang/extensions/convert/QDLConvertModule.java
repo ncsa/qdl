@@ -1,6 +1,7 @@
 package org.qdl_lang.extensions.convert;
 
 import org.qdl_lang.extensions.JavaModule;
+import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.module.Module;
 import org.qdl_lang.state.State;
 
@@ -25,6 +26,8 @@ public class QDLConvertModule extends JavaModule {
         QDLConvertModule qdlxml = new QDLConvertModule(URI.create("qdl:/tools/convert"), "convert");
         QDLConvert xml = new QDLConvert();
         qdlxml.setMetaClass(xml);
+        ArrayList<QDLFunction> funcs = new ArrayList<>();
+
         funcs.add(xml.new XMLImport());
         funcs.add(xml.new XMLExport());
         funcs.add(xml.new GetAttributes());

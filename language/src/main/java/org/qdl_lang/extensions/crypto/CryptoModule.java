@@ -1,6 +1,7 @@
 package org.qdl_lang.extensions.crypto;
 
 import org.qdl_lang.extensions.JavaModule;
+import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.module.Module;
 import org.qdl_lang.state.State;
 
@@ -25,6 +26,8 @@ public class CryptoModule extends JavaModule {
         CryptoModule cryptoModule = new CryptoModule(URI.create("qdl:/tools/crypto"), "crypto");
         Crypto crypto = new Crypto();
         cryptoModule.setMetaClass(crypto);
+        ArrayList<QDLFunction> funcs = new ArrayList<>();
+
         funcs.add(crypto.new ImportJWKS());
         funcs.add(crypto.new ExportJWKS());
         funcs.add(crypto.new Encrypt());

@@ -532,7 +532,7 @@ public class IOEvaluator extends AbstractEvaluator {
             scheme = cfg.getString(VFS_SCHEME_TAG);
         }
         String access = "r";
-        if (!cfg.containsKey(VFS_ATTR_ACCESS)) {
+        if (cfg.containsKey(VFS_ATTR_ACCESS)) {
             access = cfg.getString(VFS_ATTR_ACCESS);
         }
 

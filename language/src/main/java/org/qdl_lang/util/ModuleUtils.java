@@ -16,6 +16,7 @@ import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.parsing.QDLParserDriver;
 import org.qdl_lang.parsing.QDLRunner;
 import org.qdl_lang.scripting.QDLScript;
+import org.qdl_lang.state.ClassMigrator;
 import org.qdl_lang.state.State;
 import org.qdl_lang.state.XKey;
 import org.qdl_lang.variables.Constant;
@@ -251,6 +252,8 @@ public class ModuleUtils implements Serializable {
                                       boolean useModule,
                                       SerializationState serializationState) throws Throwable {
         Module m = null;
+        // Fix https://github.com/ncsa/oa4mp/issues/208, https://github.com/ncsa/qdl/issues/82
+        ClassMigrator.updateSerializedJSON(json);
         QDLInterpreter qi = new QDLInterpreter(state);
         Polyad polyad;
         polyad = new Polyad(ModuleEvaluator.LOAD);

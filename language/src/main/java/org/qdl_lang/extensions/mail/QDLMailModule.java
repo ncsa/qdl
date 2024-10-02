@@ -1,6 +1,7 @@
 package org.qdl_lang.extensions.mail;
 
 import org.qdl_lang.extensions.JavaModule;
+import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.module.Module;
 import org.qdl_lang.state.State;
 
@@ -25,6 +26,8 @@ public class QDLMailModule extends JavaModule {
         QDLMailModule mailModule = new QDLMailModule(URI.create("qdl:/tools/email"), "mail");
         QDLMail qdlMail = new QDLMail();
         mailModule.setMetaClass(qdlMail);
+        ArrayList<QDLFunction> funcs = new ArrayList<>();
+
         funcs.add(qdlMail.new Send());
         funcs.add(qdlMail.new SetCfg());
         mailModule.addFunctions(funcs);

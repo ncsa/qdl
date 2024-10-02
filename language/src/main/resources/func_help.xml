@@ -454,7 +454,13 @@ To use in loops, use either for_keys() or ∋
 4
 
 Final caveat: this does not recurse through the stem since the contract
-is to report if a given index is there or not.
+is to report if a given index is there or not. How to test is some substem
+has a key? Just test that part of the stem, e.g.
+
+   'foo'∋a.'my'.'stem'
+true
+
+means that a.'my'.'stem'.'foo' is present.
 See also: has_value, for_keys, list_keys]]>
         </body>
 <example>
@@ -6757,7 +6763,45 @@ See: run_init_on_load
   ]]>
     </body>
     </entry>
+    <entry id="logo">
+        <body>
+            <![CDATA[QDL can have any of several logos on startup. A list of these is
+Name     | Description
+---------+--------------------------------------------
+default  | The same as plain
+fraktur  | German medieval script
+gothic   | French medieval script
+none     | show no banner
+os2      | ASCII banner style retro
+plain    | San serif ASCII
+roman    | Serif script, slightly better quality than times, but bigger
+small    | A small san serif version
+times    |  Serif ("time roman" font)
 
+You specify these either with the logo tag in the configuration (make sure that you
+do not override it by setting showBanner to false), or by using the command line switch
+
+-logo name
+  ]]>
+        </body>
+        <example>
+            <![CDATA[Specifying the os2 logo at startup.
+$tmp>qdl -logo os2
+_____________________________
+___oooo____oooooo____oo______
+_oo____oo__oo____oo__oo______
+oo______oo_oo_____oo_oo______
+oo___o__oo_oo_____oo_oo______
+_oo___ooo__oo____oo__oo______
+___oooo_o__oooooo____ooooooo_
+_________oo__________________
+Welcome to the QDL Workspace
+Version 1.6-QDL-SNAPSHOT
+Type )help for help.
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+   ]]>
+        </example>
+    </entry>
     <!--
     <entry id="">
        <body>

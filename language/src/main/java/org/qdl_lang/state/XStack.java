@@ -1,5 +1,6 @@
 package org.qdl_lang.state;
 
+import org.qdl_lang.exceptions.QDLException;
 import org.qdl_lang.functions.FKey;
 import org.qdl_lang.functions.FStack;
 import org.qdl_lang.functions.FunctionRecord;
@@ -670,6 +671,12 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
                 try {
                     currentST.deserializeFromJSON(jsonArray.getJSONObject(k), qi, serializationState);
                 } catch (Throwable e) {
+                    if(serializationState.isFailOnMissingModules()){
+                        if(e instanceof RuntimeException){
+                            throw (RuntimeException)e;
+                        }
+                        throw new QDLException("error deserializing module", e);
+                    }
                     // For now
                     //   e.printStackTrace();
                 }

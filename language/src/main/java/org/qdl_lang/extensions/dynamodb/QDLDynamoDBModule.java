@@ -1,6 +1,7 @@
 package org.qdl_lang.extensions.dynamodb;
 
 import org.qdl_lang.extensions.JavaModule;
+import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.module.Module;
 import org.qdl_lang.state.State;
 
@@ -25,6 +26,8 @@ public class QDLDynamoDBModule extends JavaModule {
         QDLDynamoDBModule module = new QDLDynamoDBModule(URI.create("qdl:/tools/db"), "db");
         DynamoDB dynamoDB = new DynamoDB();
         module.setMetaClass(dynamoDB);
+        ArrayList<QDLFunction> funcs = new ArrayList<>();
+
         funcs.add(dynamoDB.new Get());
         funcs.add(dynamoDB.new Open());
         funcs.add(dynamoDB.new Close());

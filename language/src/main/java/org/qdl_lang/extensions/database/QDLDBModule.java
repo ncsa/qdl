@@ -1,6 +1,8 @@
 package org.qdl_lang.extensions.database;
 
 import org.qdl_lang.extensions.JavaModule;
+import org.qdl_lang.extensions.QDLFunction;
+import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.module.Module;
 import org.qdl_lang.state.State;
 
@@ -26,13 +28,14 @@ public class QDLDBModule extends JavaModule {
 
         QDLDB qdldb = new QDLDB();
         module.setMetaClass(qdldb);
+        ArrayList<QDLFunction> funcs = new ArrayList<>();
         funcs.add(qdldb.new Connect());
         funcs.add(qdldb.new Read());
         funcs.add(qdldb.new BatchExecute());
         funcs.add(qdldb.new BatchRead());
         funcs.add(qdldb.new Update());
         funcs.add(qdldb.new Execute());
-
+        ArrayList<QDLVariable> vars = new ArrayList<>();
         vars.add(qdldb.new SQLTypes());
         module.addFunctions(funcs);
         module.addVariables(vars);
@@ -42,9 +45,10 @@ public class QDLDBModule extends JavaModule {
         setupModule(module);
         return module;
     }
+
     @Override
     public List<String> getDescription() {
-        if(doxx == null){
+        if (doxx == null) {
             doxx = new ArrayList<>();
             doxx.add("Module for database operations in QDL.");
             doxx.add("This supports CRUD (Create, Read, Update and Delete) operations in");
@@ -61,8 +65,9 @@ public class QDLDBModule extends JavaModule {
             doxx.add("to write one with all basic access patterns and data conversions taken care of");
             doxx.add("Database administration (such as creating them and setting permissions, etc.) are outside of this");
             doxx.add("module. This module is for access.");
-       }
+        }
         return doxx;
     }
+
     List<String> doxx = null;
 }

@@ -1,6 +1,7 @@
 package org.qdl_lang.extensions.inputLine;
 
 import org.qdl_lang.extensions.JavaModule;
+import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.module.Module;
 import org.qdl_lang.state.State;
 
@@ -25,6 +26,8 @@ public class QDLCLIToolsModule extends JavaModule {
         QDLCLIToolsModule ilm = new QDLCLIToolsModule(URI.create("qdl:/tools/cli"), "cli");
         QDLCLITools il = new QDLCLITools();
         ilm.setMetaClass(il);
+        ArrayList<QDLFunction> funcs = new ArrayList<>();
+
         funcs.add(il.new ToStem());
         ilm.addFunctions(funcs);
         if (state != null) {

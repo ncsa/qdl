@@ -1098,6 +1098,9 @@ docs(c#2@ini_out) ;
     }
 protected VStack cloneIntrinsicVariables(State state) throws Throwable {
     SerializationState ss = new SerializationState(); // just need a non-null dummy
+    if(state == null || state.getIntrinsicVariables() == null || state.getIntrinsicVariables().isEmpty()){
+        return new VStack();
+    }
     JSONArray iVars = state.getIntrinsicVariables().toJSON(ss);
     VStack iStack = new VStack();
     iStack.fromJSON(iVars, ss);
@@ -1105,6 +1108,9 @@ protected VStack cloneIntrinsicVariables(State state) throws Throwable {
 }
     protected FStack cloneIntrinsicFunctions(State state) throws Throwable {
         SerializationState ss = new SerializationState(); // just need a non-null dummy
+        if(state == null || state.getIntrinsicFunctions() == null || state.getIntrinsicFunctions().isEmpty()){
+            return new FStack();
+        }
         JSONArray iFuncs = state.getIntrinsicFunctions().toJSON(ss);
         FStack iStack = new FStack();
         iStack.fromJSON(iFuncs, ss);

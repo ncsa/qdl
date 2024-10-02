@@ -220,4 +220,9 @@ public class FileEntry implements VFSEntry {
 
         return inputStream;
     }
+
+    @Override
+    public boolean isDirectory() {
+        return false;
+    }
 }

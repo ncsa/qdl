@@ -11,9 +11,7 @@ import net.sf.json.JSONObject;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static org.qdl_lang.evaluate.ModuleEvaluator.*;
@@ -66,9 +64,10 @@ public abstract class JavaModule extends Module {
 
     /**
      * Used by the factory method {@link #newInstance(State)}
-     * @deprecated alias is no longer needed. Just use the namespace only constructor
+     *
      * @param namespace
      * @param alias
+     * @deprecated alias is no longer needed. Just use the namespace only constructor
      */
     protected JavaModule(URI namespace, String alias) {
         super(namespace, alias, null); // no state here -- it is injected later
@@ -97,7 +96,9 @@ public abstract class JavaModule extends Module {
      * @param state
      */
     public void init(State state) {
-        if(state == null) {return;} // do nothing!
+        if (state == null) {
+            return;
+        } // do nothing!
         init(state, true);
     }
 
@@ -178,13 +179,13 @@ public abstract class JavaModule extends Module {
                 && getState() != null) {
             try {
                 json.put(MODULE_STATE_TAG, getState().serializeToJSON(serializationState));
-            }catch(StackOverflowError sox){
-                System.out.println("***Caught StackOverflowError"  );
+            } catch (StackOverflowError sox) {
+                System.out.println("***Caught StackOverflowError");
                 System.out.println("in JavaModule.serializeToJSON:\n" + json.toString(2));
                 System.out.println("JavaModule:" + this);
                 System.out.println("state.getVStack:\n" + getState().getVStack().toString(true));
                 throw sox;
-            }catch(Throwable t){
+            } catch (Throwable t) {
                 System.out.println("***Caught other exception:" + t);
                 System.out.println("JavaModule:" + this);
                 System.out.println("in JavaModule.serializeToJSON:\n" + json.toString(2));
@@ -307,15 +308,62 @@ public abstract class JavaModule extends Module {
         return metaClass != null;
     }
 
+    String offSet = "\n  ";
+    String offSet1 = "," + offSet;
+
     @Override
     public String toString() {
-        return "JavaModule{" +
-                "\nclassName='" + className + '\'' +
-                ",\n loaderClassName='" + loaderClassName + '\'' +
-                ",\n metaClass=" + metaClass +
-                ",\n initialized=" + initialized +
-                ",\n vars=" + vars +
-                ",\n funcs=" + funcs +
-                '}';
+        String out = "JavaModule{" +
+                offSet + "className='" + className + '\'';
+        if (loaderClassName != null) {
+            out = out + offSet1 + "loaderClassName='" + loaderClassName + '\'';
+        }
+        if (metaClass != null) {
+            out = out + offSet1 + "metaClass=" + metaClass.getClass().getSimpleName();
+        }
+        out = out + offSet1 + "initialized=" + initialized;
+        if (vars != null && !vars.isEmpty()) {
+            StringBuilder s = new StringBuilder();
+            s.append("[");
+            HashSet<String> done = new HashSet<>();
+
+            boolean isFirst = true;
+            for (QDLVariable var : vars) {
+                if (done.contains(var.getName())) {
+                    continue;
+                }
+                done.add(var.getName());
+                if (isFirst) {
+                    isFirst = false;
+                } else {
+                    s.append(",");
+                }
+                s.append(var.getName());
+            }
+            s.append("]");
+            out = out + offSet1 + "vars=" + s;
+        }
+        if (funcs != null && !funcs.isEmpty()) {
+            HashSet<String> done = new HashSet<>();
+            StringBuilder s = new StringBuilder();
+            s.append("[");
+            boolean isFirst = true;
+            for (QDLFunction func : funcs) {
+                if (done.contains(func.getName())) {
+                    continue;
+                }
+                done.add(func.getName());
+                if (isFirst) {
+                    isFirst = false;
+                } else {
+                    s.append(",");
+                }
+                s.append(func.getName() + "(" + Arrays.toString(func.getArgCount()) + ")");
+            }
+            s.append("]");
+            out = out + offSet1 + "funcs=" + s;
+
+        }
+        return out + "\n}";
     }
 }
