@@ -111,10 +111,7 @@ public class VFSMemoryFileProvider extends AbstractVFSFileProvider {
 
         String realPath = getRealPath(path);
         map.rmDirectory(realPath);
-        // The logic is that entries in the map are of the form /a/b/c/.../file
-        // so you cannot remove a directory since it doesn't really exist. Best you can do
-        // is tell if there are no more files with that path.
-        //return !map.containsKey(realPath);
+
    return true;
     }
 

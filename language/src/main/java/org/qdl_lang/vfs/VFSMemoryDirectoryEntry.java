@@ -5,7 +5,7 @@ import org.qdl_lang.exceptions.QDLIOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-
+// Fix for https://github.com/ncsa/qdl/issues/83
 public class VFSMemoryDirectoryEntry extends HashMap<String, VFSMetaEntry> implements VFSMetaEntry {
     @Override
     public boolean isDirectory() {
@@ -41,6 +41,8 @@ public class VFSMemoryDirectoryEntry extends HashMap<String, VFSMetaEntry> imple
                     return metaEntry;
                 }
                 entry = (VFSMemoryDirectoryEntry) metaEntry;
+            }else{
+                return null;
             }
         }
         return entry;
@@ -121,23 +123,30 @@ public class VFSMemoryDirectoryEntry extends HashMap<String, VFSMetaEntry> imple
            entry.remove(token);
        }
     }
+
+    /**
+     * Contract is if the relative path has multiple components, remove the last one.
+     * @param relativePath
+     */
     public void rmDirectory(String relativePath) {
         StringTokenizer stringTokenizer = new StringTokenizer(relativePath, VFSPaths.PATH_SEPARATOR);
         VFSMemoryDirectoryEntry entry = this;
-        String token = stringTokenizer.nextToken();
-        if (stringTokenizer.hasMoreTokens()) {
-            throw new QDLIOException(relativePath + " is not a single directory");
-        }
-        if (entry.containsKey(token)) {
-            VFSMetaEntry metaEntry = entry.get(token);
-            if(!metaEntry.isDirectory()) {
-                throw new QDLIOException(relativePath + " is not a directory");
+        while (stringTokenizer.hasMoreTokens()) {
+            String token = stringTokenizer.nextToken();
+            if (entry.containsKey(token)) {
+                if(!stringTokenizer.hasMoreTokens()){
+                    entry.remove(token);
+                    return;
+                }
+                VFSMetaEntry x =  entry.get(token);
+                if (x.isDirectory()) {
+                    entry = (VFSMemoryDirectoryEntry) x;
+                }else{
+                    throw new QDLIOException("'" + token + "' is not a directory");
+                }
+            }else{
+                return;
             }
-            VFSMemoryDirectoryEntry x = (VFSMemoryDirectoryEntry) metaEntry;
-            if(!x.isEmpty()){
-                throw new QDLIOException(relativePath + " is not empty");
-            }
-            x.remove(token);
         }
     }
 }
