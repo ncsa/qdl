@@ -58,6 +58,7 @@ import org.qdl_lang.state.*;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.*;
 
+import javax.inject.Provider;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLEventReader;
@@ -6273,6 +6274,11 @@ public class WorkspaceCommands implements Logable, Serializable {
             getIoInterface().setBufferingOn(true);
         }
         ClassMigrator.init(); // for now...
+        if(!getLibLoaders().isEmpty()){
+            for(LibLoader loader : getLibLoaders()) {
+             loader.add(   getState());
+            }
+        }
         // Set up the help.
         InputStream helpStream = getClass().getResourceAsStream("/func_help.xml");
         if (helpStream == null) {
@@ -6845,6 +6851,16 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     transient SwingTerminal swingTerminal;
 
+    public static Provider<WorkspaceCommands> getWorkspaceCommandsProvider() {
+        return WorkspaceCommandsProvider;
+    }
+
+    public static void setWorkspaceCommandsProvider(Provider<WorkspaceCommands> workspaceCommandsProvider) {
+        WorkspaceCommandsProvider = workspaceCommandsProvider;
+    }
+
+    static Provider<WorkspaceCommands> WorkspaceCommandsProvider = null;
+
     static WorkspaceCommands workspaceCommands = null;
 
     /**
@@ -6873,7 +6889,8 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     /**
-     * Use this to create new instances of this with same {@link IOInterface} as the instance. The idea is that the static factory creates
+     * Use this to create new instances of this with same {@link IOInterface} as the instance. The idea is
+     * that the static factory creates
      * a single instance and that can be used to create others. This allows for overrides
      * to be used in the base classes. Set the static method once and override the non-static methods.
      *
@@ -6902,9 +6919,11 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     Font font = null;
 
-    /*
-         public WorkspaceCommands(IOInterface ioInterface) {
-        setIoInterface(ioInterface);
-    }
+    /**
+     * Override for custom {@link LibLoader}s. These will be processed in the order given.
+     * @return
      */
+    public List<LibLoader> getLibLoaders(){
+        return new ArrayList<>();
+    }
 }
