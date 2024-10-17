@@ -557,7 +557,8 @@ public class QDLWorkspace implements Serializable {
             vector.add(arg);
         }
         InputLine argLine = new InputLine(vector); // now we have a bunch of utilities for this
-        WorkspaceCommands workspaceCommands = WorkspaceCommands.getInstance();
+        //WorkspaceCommands workspaceCommands = WorkspaceCommands.getInstance();
+        WorkspaceCommands workspaceCommands = getWorkspaceCommandsProvider().get();
         if (argLine.hasArg(CONFIG_FILE_FLAG)) {
             String cfgname = argLine.hasArg(CONFIG_NAME_FLAG) ? argLine.getNextArgFor(CONFIG_NAME_FLAG) : "default";
             workspaceCommands.loadQE(argLine, cfgname);
@@ -639,7 +640,8 @@ public class QDLWorkspace implements Serializable {
                     workspaceCommands.setIoInterface(new BasicIO());
                 }
             } else {
-                workspaceCommands = workspaceCommands.newInstance(new BasicIO());
+                //workspaceCommands = workspaceCommands.newInstance(new BasicIO());
+                workspaceCommands = getWorkspaceCommandsProvider().get(new BasicIO());
             }
         }
         QDLWorkspace qdlWorkspace = QDLWorkspace.newInstance(workspaceCommands);

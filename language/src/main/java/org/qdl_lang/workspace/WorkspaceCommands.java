@@ -58,7 +58,6 @@ import org.qdl_lang.state.*;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.*;
 
-import javax.inject.Provider;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLEventReader;
@@ -6851,15 +6850,18 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     transient SwingTerminal swingTerminal;
 
-    public static Provider<WorkspaceCommands> getWorkspaceCommandsProvider() {
-        return WorkspaceCommandsProvider;
+    public static WorkspaceCommandsProvider getWorkspaceCommandsProvider() {
+        if(workspaceCommandsProvider == null){
+            workspaceCommandsProvider = new WorkspaceCommandsProvider();
+        }
+        return workspaceCommandsProvider;
     }
 
-    public static void setWorkspaceCommandsProvider(Provider<WorkspaceCommands> workspaceCommandsProvider) {
-        WorkspaceCommandsProvider = workspaceCommandsProvider;
+    public static void setWorkspaceCommandsProvider(WorkspaceCommandsProvider workspaceCommandsProvider) {
+        WorkspaceCommands.workspaceCommandsProvider = workspaceCommandsProvider;
     }
 
-    static Provider<WorkspaceCommands> WorkspaceCommandsProvider = null;
+    static WorkspaceCommandsProvider workspaceCommandsProvider = null;
 
     static WorkspaceCommands workspaceCommands = null;
 
@@ -6872,18 +6874,17 @@ public class WorkspaceCommands implements Logable, Serializable {
      */
     public static WorkspaceCommands getInstance() {
         if (workspaceCommands == null) {
-            workspaceCommands = new WorkspaceCommands();
+            workspaceCommands = getWorkspaceCommandsProvider().get();
         }
         return workspaceCommands;
     }
 
     public static WorkspaceCommands getInstance(IOInterface ioInterface) {
         if (workspaceCommands == null) {
-            workspaceCommands = new WorkspaceCommands(ioInterface);
+            workspaceCommands = getWorkspaceCommandsProvider().get(ioInterface);
         }
         return workspaceCommands;
     }
-
     public static void setInstance(WorkspaceCommands wc) {
         workspaceCommands = wc;
     }
@@ -6896,15 +6897,17 @@ public class WorkspaceCommands implements Logable, Serializable {
      *
      * @return
      */
+
     public WorkspaceCommands newInstance() {
-        WorkspaceCommands ww = new WorkspaceCommands(getInstance().getIoInterface());
-        //    ww.getState().setIoInterface(getInstance().getIoInterface());
+        WorkspaceCommands ww = getWorkspaceCommandsProvider().get(getInstance().getIoInterface());
         return ww;
     }
 
     public WorkspaceCommands newInstance(IOInterface ioInterface) {
-        return new WorkspaceCommands(ioInterface);
+        //return new WorkspaceCommands(ioInterface);
+        return getWorkspaceCommandsProvider().get(ioInterface);
     }
+
 
     public Font getFont() {
         if (font == null) {
