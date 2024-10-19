@@ -218,6 +218,8 @@ public class ModuleExpression extends ExpressionImpl {
                 newState.getFTStack().appendTables(ambientState.getFTStack()); // add in any passed in state for functions
                 newState.getVStack().appendTables(ambientState.getVStack()); // add in any passed in state for variables
                 newState.setModuleState(true);
+                // Next line is for https://github.com/ncsa/qdl/issues/84
+                newState.setScriptArgs(ambientState.getScriptArgs());
                 if (mm != null) {
                     if (mm instanceof JavaModule) {
                         // the point is that these are added to the module state because the functions for the module
