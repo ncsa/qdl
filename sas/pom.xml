@@ -23,7 +23,7 @@
         <dependency>
             <groupId>edu.uiuc.ncsa.security</groupId>
             <artifactId>sas-server</artifactId>
-            <version>5.6-SNAPSHOT</version>
+            <version>6.x-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
         <dependency>
