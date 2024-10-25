@@ -184,7 +184,6 @@ public class ModuleUtils implements Serializable {
             throw new QDLRuntimeException("Could not find  '" + resourceName + "'. Is your module path set?", t);
         }
 
-        //     try {
         QDLParserDriver parserDriver = new QDLParserDriver(new XProperties(), state);
         // Exceptional case where we just run it directly.
         // note that since this is QDL there may be multiple modules, etc.
@@ -221,10 +220,6 @@ public class ModuleUtils implements Serializable {
         }
         state.getMTemplates().clearChangeList();
         return afterLoad;
-  /*      } catch (Throwable t) {
-           t.printStackTrace();
-        }
-        return null;*/
     }
 
     /**

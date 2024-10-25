@@ -2103,7 +2103,9 @@ tokenize(target, arg{, use_regex}) - tokenize a string or stem of strings
     target - the string to tokenize
        arg - either the delimiter (use_regex == false) or a regular expression
              (use_regex == true)
-     use_regex - flag to use regex.]]>
+     use_regex - flag to use regex.
+
+See also: detokenize, ]]>
         </body>
         <example>
             <![CDATA[   tokenize('abd:def:123', ':');
