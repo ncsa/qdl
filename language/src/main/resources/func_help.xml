@@ -3489,7 +3489,7 @@ including the endpoints.]]>
 
     <entry id="version">
         <body>
-            <![CDATA[The current version of QDL is 1.6-QDL-SNAPSHOT]]>
+            <![CDATA[The current version of QDL is 1.6.0]]>
         </body>
     </entry>
     <entry id="if">
@@ -6798,7 +6798,7 @@ _oo___ooo__oo____oo__oo______
 ___oooo_o__oooooo____ooooooo_
 _________oo__________________
 Welcome to the QDL Workspace
-Version 1.6-QDL-SNAPSHOT
+Version 1.6.0
 Type )help for help.
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
    ]]>

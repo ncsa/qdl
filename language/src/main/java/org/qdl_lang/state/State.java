@@ -764,7 +764,7 @@ public class State extends FunctionState implements QDLConstants {
                                     <application-name>${project.name}</application-name>
                                     <application-title>OA4MP</application-title>
                                     <build-time>${timestamp}</build-time>
-                                    <implementation-version>1.6-QDL-SNAPSHOT</implementation-version>
+                                    <implementation-version>1.6.0</implementation-version>
                                     <implementation-build>${buildNumber}</implementation-build>
                                     <implementation-title>QDL</implementation-title>
                                 </manifestEntries>
