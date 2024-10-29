@@ -37,7 +37,6 @@ mkdir org
 mkdir org/qdl_lang
 mkdir org/qdl_lang/install
 
-echo $PWD
 cd $TARGET_ROOT
 cp $QDL_SOURCES/src/main/scripts/installer.mf .
 cp $QDL_SOURCES/src/main/scripts/version.txt .
