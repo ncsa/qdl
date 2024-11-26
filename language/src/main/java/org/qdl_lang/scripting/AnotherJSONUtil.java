@@ -236,7 +236,6 @@ public class AnotherJSONUtil implements ScriptingConstants {
             t.printStackTrace();
         }
     }
-
     static String test0 = "{\"qdl\":{\"load\":\"x.qdl\"}}";
     static String test0a = "{\"qdl\":[{\"load\":\"x.qdl\", \"xmd\":\"pre_auth\"},{\"load\":\"x.qdl\",\"xmd\":\"pre_token\"}]}";
     static String test1 = "{\"qdl\":{\"code\":\"init();\"}}";

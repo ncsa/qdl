@@ -2,6 +2,7 @@ package org.qdl_lang.config;
 
 import org.qdl_lang.evaluate.ModuleEvaluator;
 import org.qdl_lang.evaluate.SystemEvaluator;
+import org.qdl_lang.exceptions.ReturnException;
 import org.qdl_lang.extensions.JavaModule;
 import org.qdl_lang.extensions.QDLLoader;
 import org.qdl_lang.module.MIWrapper;
@@ -356,7 +357,10 @@ public class QDLConfigurationLoaderUtils {
                 config.getMyLogger().info("loaded boot script " + bootFile);
                 return bootFile;
             } catch (Throwable t) {
-                config.getMyLogger().error("warning: Could not load boot script\"" + bootFile + "\": " + t.getMessage(), t);
+                if(!(t instanceof ReturnException)) {
+                    // Don't blow up if the script returns.
+                    config.getMyLogger().error("warning: Could not load boot script\"" + bootFile + "\": " + t.getMessage(), t);
+                }
             }
         }
         return null;

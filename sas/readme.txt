@@ -13,8 +13,8 @@ QDL's SAS implementation. To test, make sure the following is in the system's we
 
 The two files of interest are
 
-       /home/ncsa/dev/csd/config/sat.xml -- the server's configuration
-/home/ncsa/dev/csd/config/sas-config.xml -- the client's configuration
+       /home/ncsa/dev/csd/config/sas/sat.xml -- the server's configuration
+/home/ncsa/dev/csd/config/sas/sas-config.xml -- the client's configuration
 
-Typical client command line arguments:
--cfg /home/ncsa/dev/csd/config/sas-config.xml -gui
+Typical client command line arguments to QDLSASTer:
+-cfg /home/ncsa/dev/csd/config/sas/sas-config.xml -gui
