@@ -2117,17 +2117,10 @@ illegal argument:no module named "b" was  imported at (1, 67)
     @Override
     public void exitModuleExpression(QDLParserParser.ModuleExpressionContext ctx) {
         boolean defaultNS = ctx.getChildCount() == 2;
-/*
-        if (ctx.getChildCount() == 2) {
-            // This is of the form #expression, so it is just an expression
-            // Don't wrap it and no special processing needed.
-            stash(ctx, resolveChild(ctx.expression()));
-            return;
-        }
-*/
-        /**
+
+        /*
          * Check for intrinsic violations here rather than try to set things up and check later.
-         * Basically any varliable or function that starts with a __ cannot have an alias attached to
+         * Basically any variable or function that starts with a __ cannot have an alias attached to
          * it, so X#__a, X#__f(3) will fail. 
          */
         Statement statement = resolveChild(ctx.expression());
