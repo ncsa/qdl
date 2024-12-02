@@ -1473,10 +1473,27 @@ illegal argument:no module named "b" was  imported at (1, 67)
     public void exitAltIFExpression(QDLParserParser.AltIFExpressionContext ctx) {
         AltIfExpressionNode altIfExpressionNode = (AltIfExpressionNode) parsingMap.getStatementFromContext(ctx);
         //#0 is if[ // #1 is conditional, #2 is ]then[. #3 starts the statements
-        altIfExpressionNode.setIF((ExpressionNode) resolveChild(ctx.getChild(0)));
-        altIfExpressionNode.setTHEN((ExpressionInterface) resolveChild(ctx.getChild(2)));
+        // Includes fixes for https://github.com/ncsa/qdl/issues/86
+        Object object = resolveChild(ctx.getChild(0));
+        if(object instanceof ExpressionNode) {
+            altIfExpressionNode.setIF((ExpressionNode) object);
+        }else{
+            throw new IllegalArgumentException("left argument must be a boolean, not a " + object);
+        }
+        object = resolveChild(ctx.getChild(2));
+        if(object instanceof ExpressionInterface){
+
+            altIfExpressionNode.setTHEN((ExpressionInterface) resolveChild(ctx.getChild(2)));
+        }else{
+            throw new IllegalArgumentException("target of if argument must be an expression, not a " + object);
+        }
         if (3 < ctx.getChildCount()) {
-            altIfExpressionNode.setELSE((ExpressionInterface) resolveChild(ctx.getChild(4)));
+            object = resolveChild(ctx.getChild(4));
+            if(object instanceof ExpressionInterface) {
+                altIfExpressionNode.setELSE((ExpressionInterface) object);
+            }else{
+                throw new IllegalArgumentException("alternate of if argument must be an expression, not a " + object);
+            }
         } else {
             altIfExpressionNode.setELSE(QDLNull.getInstance());
         }

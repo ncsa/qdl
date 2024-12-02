@@ -1,6 +1,7 @@
 package org.qdl_lang;
 
 import org.qdl_lang.exceptions.AssertionException;
+import org.qdl_lang.exceptions.QDLExceptionWithTrace;
 import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.state.QDLConstants;
 import org.qdl_lang.state.State;
@@ -485,6 +486,46 @@ public class StatementTest extends AbstractQDLTester {
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);
+    }
+    // Fix for https://github.com/ncsa/qdl/issues/86 are next two tests
+    /*
+       Test that a non-boolean left argument fails in a timely fashion
+       during parsing with the right exception
+     */
+    public void testTernaryArrowFail1() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok := 1 ==  ([;2]⇒-1:1);");// use the arrow, not the ?
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        try {
+            interpreter.execute(script.toString());
+            assert false : "was able to set stem instead of boolean in if expression";
+        }catch(QDLExceptionWithTrace iax){
+            // ok
+        }
+    }
+
+    /**
+     * Shows that if the expression seems syntactically valid, but does not evaluate to
+     * a boolean, it fails with the right error.
+     * @throws Throwable
+     */
+    public void testTernaryArrowFail2() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "claims.'foo' := 'bar';"); // set value
+        addLine(script, "'a' ∉ ['post_token', 'post_refresh', 'post_user_info'] ⇒ return();");// use the arrow, not the ?
+        //addLine(script, "!is_defined(claims.'isMemberOf') ⇒ return();");// use the arrow, not the ?
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        //
+        try {
+            interpreter.execute(script.toString());
+            assert false : "was able to set stem instead of boolean in if expression";
+        }catch(IllegalArgumentException iax){
+            // ok
+        }
+
+        //(!is_defined(claims.'isMemberOf')) ⇒ return();
     }
 
     /**
