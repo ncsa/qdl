@@ -29,13 +29,17 @@ public class CryptoModule extends JavaModule {
         ArrayList<QDLFunction> funcs = new ArrayList<>();
 
         funcs.add(crypto.new ImportJWKS());
+        funcs.add(crypto.new ImportPKCS());
+        funcs.add(crypto.new ImportCert());
         funcs.add(crypto.new ExportJWKS());
+        funcs.add(crypto.new ExportPKCS());
         funcs.add(crypto.new Encrypt());
         funcs.add(crypto.new Decrypt());
         funcs.add(crypto.new CreateKey());
         funcs.add(crypto.new GetPublicKey());
-        funcs.add(crypto.new SymmetricEncrypt());
-        funcs.add(crypto.new SymmetricDecrypt());
+        //funcs.add(crypto.new SymmetricEncrypt());
+        //funcs.add(crypto.new SymmetricDecrypt());
+        funcs.add(crypto.new ReadOID());
         cryptoModule.addFunctions(funcs);
         if (state != null) {
             cryptoModule.init(state);
@@ -49,10 +53,10 @@ public class CryptoModule extends JavaModule {
     @Override
     public List<String> getDescription() {
         if (dd.isEmpty()) {
-            dd.add("QDL's crypto graphic module. This has a variety of operations possible");
-            dd.add("it will allow you to create a RSA keys  (so includes a public and private key)");
+            dd.add("QDL's crypto graphic module. This has a variety of operations possible.");
+            dd.add("It will allow you to create a Both Elliptic and RSA keys  (so includes a public and private key)");
             dd.add("and encrypt both strings and stems of strings using these or symmetric keys.");
-            dd.add("Note that if you de/en-crypt with one RSA key, you en/de-crypt with the other:");
+            dd.add("Note that if you de/en-crypt with one key, you en/de-crypt with the other:");
             dd.add("E.g.");
             dd.add("key. := " + Crypto.CREATE_KEY_NAME + "(2048); // create 2048 bit key pair");
             dd.add("  " + Crypto.DECRYPT_NAME + "(key., " + Crypto.ENCRYPT_NAME + "(key., ['a','b']))\n" +
@@ -63,6 +67,9 @@ public class CryptoModule extends JavaModule {
             dd.add("You may have individual keys or have sets of them. A *key set* is a stem");
             dd.add("of keys whose id is used as its key in the stem. Operations generally work for");
             dd.add("individual keys or sets of them.");
+            dd.add("\n\nAdditionally, you may import/export individual keys to various PKCS pem");
+            dd.add("formats, PKCS 1, 8 and X509 (for public keys).");
+            dd.add( "See also:" + Crypto.IMPORT_PKCS_NAME + " and " + Crypto.EXPORT_PKCS_NAME + " for details.");
         }
         return dd;
     }

@@ -245,7 +245,22 @@ public abstract class ExpressionImpl implements ExpressionNode {
     public List<Object> evaluatedArgs(State state) {
         evaluatedArgs = new ArrayList<>(getArgCount());
         for (int i = 0; i < getArgCount(); i++) {
-            evaluatedArgs.add(evalArg(i, state));
+            // Fix https://github.com/ncsa/qdl/issues/87
+            Object eval = evalArg(i, state);
+            if(eval == null) {
+                Object x = getArgAt(i);
+                String message;
+                if(x instanceof VariableNode){
+                    message = ((VariableNode)x).getVariableReference() +   " at argument " + i + " not found";
+                }else{
+                    message = "argument " + i + " not found";
+                }
+                // Found when a person assigned an empty set {} for an empty stem [] which was
+                // therefore not a variable. It should have failed here rather than sending a null to
+                // cause an NPE later.
+                throw new QDLExceptionWithTrace( message, getArguments().get(i));
+            }
+            evaluatedArgs.add(eval);
         }
         return evaluatedArgs;
     }

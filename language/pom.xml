@@ -201,22 +201,22 @@
             <version>6.x-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
-<!--        <dependency>
-        <groupId>com.thoughtworks.xstream</groupId>
-        <artifactId>xstream</artifactId>
-        <version>1.4.20</version>
-        </dependency>-->
+
         <dependency>
             <groupId>edu.uiuc.ncsa.security</groupId>
             <artifactId>util</artifactId>
             <version>6.x-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.30</version>
-            <!--<scope>provided</scope>-->
+        </dependency>-->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>9.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.derby</groupId>

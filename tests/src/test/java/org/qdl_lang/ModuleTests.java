@@ -278,7 +278,7 @@ public class ModuleTests extends AbstractQDLTester {
         addLine(script, "w(z)->z^2;");
         addLine(script, "module['A:Y'][f(x)->w(2*x);];");
         addLine(script, "y:=import('A:Y');");
-        addLine(script, "y#f(3);"); // should fail since w is not visibile.
+        addLine(script, "y#f(3);"); // should fail since w is not visible.
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         try {
             interpreter.execute(script.toString());

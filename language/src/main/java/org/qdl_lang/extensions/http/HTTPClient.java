@@ -229,12 +229,18 @@ public class HTTPClient implements QDLMetaModule {
         public Object evaluate(Object[] objects, State state) throws Throwable {
             checkInit();
             String r = null;
+            // Fix https://github.com/ncsa/qdl/issues/88
+            Object[] obj2 = objects;
             if(objects.length == 1){
-                if(!(objects[0] instanceof QDLStem)){
-                    throw new IllegalArgumentException(getName() + " requires a stem if there is a single argument.");
+                if(objects[0] instanceof String){
+                    obj2 = new Object[]{objects[0], new QDLStem()};
+                }else{
+                    if(!(objects[0] instanceof QDLStem)){
+                        throw new IllegalArgumentException(getName() + " requires a stem if there is a single argument.");
+                    }
                 }
             }
-            r = paramsToRequest(objects);
+            r = paramsToRequest(obj2);
             HttpGet request = new HttpGet(r);
             if ((headers != null) && !headers.isEmpty()) {
                 for (Object key : headers.keySet()) {
@@ -254,7 +260,7 @@ public class HTTPClient implements QDLMetaModule {
                     doxx.add(getName() + "() - do an HTTP GET to the host with the current headers and no parameters.");
                     break;
                 case 1:
-                    doxx.add(getName() + "(parameters.) - do an HTTP GET to the host with the current headers and use the parameters.");
+                    doxx.add(getName() + "(uri_path | parameters.) - do an HTTP GET to the host with the current headers and use path ot the parameters.");
                     break;
                 case 2:
                     doxx.add(getName() + "(uri_path, parameters.) - do an HTTP GET to host + uri_path with the current headers and use the parameters.");

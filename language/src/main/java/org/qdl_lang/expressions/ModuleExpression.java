@@ -213,10 +213,11 @@ public class ModuleExpression extends ExpressionImpl {
                 //  g(x)->f(x)-x; // fails unless f is included in its state.
 
                 //newState.getVStack().append(ambientState.getVStack().getLocal()); // add in any passed in state (e.g. function arguments to module functions)
-
+                // Fix for https://github.com/ncsa/qdl/issues/89 -- be attentive to the fact that these are
+                // put into the state in reverse order!
+                newState.getVStack().appendTables(ambientState.getVStack()); // add in any passed in state for variables
                 newState.getVStack().appendTables(getAmbientState().getVStack());  // add in the state of the module
                 newState.getFTStack().appendTables(ambientState.getFTStack()); // add in any passed in state for functions
-                newState.getVStack().appendTables(ambientState.getVStack()); // add in any passed in state for variables
                 newState.setModuleState(true);
                 // Next line is for https://github.com/ncsa/qdl/issues/84
                 newState.setScriptArgs(ambientState.getScriptArgs());
@@ -239,6 +240,7 @@ public class ModuleExpression extends ExpressionImpl {
                     // send along evaluated args with ambient state, but do not allow
                     // ambient state to override internal module state for functions, loaded modules etc.
                     r = getExpression().evaluate(getModuleState());
+                    //r = getExpression().evaluate(newState);
                 } else {
                     r = getExpression().evaluate(newState); // gets local overrides from ambient state
                     if (getExpression() instanceof DyadicFunctionReferenceNode) {
