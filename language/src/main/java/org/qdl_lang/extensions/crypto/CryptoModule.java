@@ -28,17 +28,13 @@ public class CryptoModule extends JavaModule {
         cryptoModule.setMetaClass(crypto);
         ArrayList<QDLFunction> funcs = new ArrayList<>();
 
-        funcs.add(crypto.new ImportJWKS());
-        funcs.add(crypto.new ImportPKCS());
+        funcs.add(crypto.new ImportKey());
         funcs.add(crypto.new ImportCert());
-        funcs.add(crypto.new ExportJWKS());
-        funcs.add(crypto.new ExportPKCS());
+        funcs.add(crypto.new ExportKeys());
         funcs.add(crypto.new Encrypt());
         funcs.add(crypto.new Decrypt());
         funcs.add(crypto.new CreateKey());
         funcs.add(crypto.new GetPublicKey());
-        //funcs.add(crypto.new SymmetricEncrypt());
-        //funcs.add(crypto.new SymmetricDecrypt());
         funcs.add(crypto.new ReadOID());
         cryptoModule.addFunctions(funcs);
         if (state != null) {
@@ -69,7 +65,7 @@ public class CryptoModule extends JavaModule {
             dd.add("individual keys or sets of them.");
             dd.add("\n\nAdditionally, you may import/export individual keys to various PKCS pem");
             dd.add("formats, PKCS 1, 8 and X509 (for public keys).");
-            dd.add( "See also:" + Crypto.IMPORT_PKCS_NAME + " and " + Crypto.EXPORT_PKCS_NAME + " for details.");
+            dd.add( "See also:" + Crypto.IMPORT_NAME + " and " + Crypto.EXPORT_NAME + " for details.");
         }
         return dd;
     }

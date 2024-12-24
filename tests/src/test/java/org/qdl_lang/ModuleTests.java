@@ -1024,4 +1024,19 @@ p:='/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/math-x.mdl';
         assert getBooleanValue("ok8", state) : "test case(" + testCase + "): $$connection_pool([2]) failed to evaluate correctly.";
 
     }
+
+    /**
+     * In this test, a script that has functions, loops and conditionals invokes a module.
+     * This is a regression test for the state. It does fetch some pages from CILogon, so
+     * if that goes away, then this will have to be rewritten
+     * @throws Throwable
+     */
+    public void testGitHub89() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok := script_run('" + DebugUtil.getDevPath() + "/qdl/tests/src/test/resources/github89_test.qdl');");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "github issue 89 test script failed";
+    }
 }

@@ -213,11 +213,25 @@ public class ModuleExpression extends ExpressionImpl {
                 //  g(x)->f(x)-x; // fails unless f is included in its state.
 
                 //newState.getVStack().append(ambientState.getVStack().getLocal()); // add in any passed in state (e.g. function arguments to module functions)
-                // Fix for https://github.com/ncsa/qdl/issues/89 -- be attentive to the fact that these are
-                // put into the state in reverse order!
-                newState.getVStack().appendTables(ambientState.getVStack()); // add in any passed in state for variables
-                newState.getVStack().appendTables(getAmbientState().getVStack());  // add in the state of the module
-                newState.getFTStack().appendTables(ambientState.getFTStack()); // add in any passed in state for functions
+                /* Fix for https://github.com/ncsa/qdl/issues/89 -- be attentive to the fact that these are
+                 put into the state in reverse order!
+                  It is quite possible that the passed in ambient state is different,
+                  e.g.they have any statement like a conditional
+                  which includes the module. Logically these override what is in the set ambient state.
+                  E.g.
+                  my_module := j_load('foo'); // <-- sets ambient state in module, getAmbientState() gets it
+                  if[blah]
+                   [x := 'woof' + arf; // new variable lives in new scope, hence new state object
+                    my_module#do_it(x); // current state object passed in as ambientState
+                    ];
+
+                */
+                if(!ambientState.getInternalID().equals(getAmbientState().getInternalID())){
+                    newState.getVStack().appendTables(ambientState.getVStack()); // add in any local state for variables
+                    newState.getFTStack().appendTables(ambientState.getFTStack()); // add in any local  state for functions
+                }
+                newState.getVStack().appendTables(getAmbientState().getVStack());  // add in the state of the module for variables
+                newState.getFTStack().appendTables(getAmbientState().getFTStack()); // "     "       "           "       functions
                 newState.setModuleState(true);
                 // Next line is for https://github.com/ncsa/qdl/issues/84
                 newState.setScriptArgs(ambientState.getScriptArgs());

@@ -231,11 +231,149 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         }
     }
 
+    public static final String IMPORT_NAME = "import";
+        /*
+          crypto := j_load('crypto');
+            a. := crypto#import('/home/ncsa/temp/public_key.pem', 'x509');
+            b. := crypto#import('/home/ncsa/temp/key.pem','pkcs_8');
+            crypto#export( b., '/tmp/pkcs8.pem', 'pkcs_8');
+            crypto#export( b., '/tmp/pkcs1.pem', 'pkcs_1');
+
+
+         */
+
+    public class ImportKey implements QDLFunction {
+        @Override
+        public String getName() {
+            return IMPORT_NAME;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1, 2};
+        }
+
+        @Override
+        public Object evaluate(Object[] objects, State state) throws Throwable {
+            if (objects.length == 1) {
+                return importJWKS(objects, state);
+            }
+            if (!(objects[1] instanceof String)) {
+                throw new IllegalArgumentException(getName() + " the second argument must be a string");
+            }
+            String arg2 = (String) objects[1];
+            if (arg2.equals(JWKS_TYPE)) {
+                return importJWKS(objects, state);
+            }
+            return importPKCS(objects, state);
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            switch (argCount) {
+                case 1:
+                    dd.add(getName() + "(file_path) - load a key in JWKS format");
+                    dd.add("file_path - the path to the key file");
+                    break;
+                case 2:
+                    dd.add(getName() + "(file_path, type) - load a key of a given type");
+                    dd.add("file_path - the path to the key file");
+                    dd.add("type - the type of the file. ");
+                    addTypeHelp(dd);
+                    break;
+            }
+            dd.add("returns a stem that is the key or key set.");
+
+            return dd;
+        }
+    }
+
+    protected void addTypeHelp(List<String> dd) {
+        dd.add("Supported types are");
+        dd.add("        " + JWKS_TYPE + " - (default) JWKS key or set of keys");
+        dd.add("        " + PKCS_1_TYPE + " - PKCS 1, PEM encoded RSA private key");
+        dd.add("        " + PKCS_8_TYPE + " - PKCS 8, PEM encoded unencrypted private key");
+        dd.add("        " + X509_TYPE + " - X509, PEM encoded public key");
+    }
+
+    public Object importPKCS(Object[] objects, State state) throws Throwable {
+        if (!(objects[0] instanceof String)) {
+            throw new IllegalArgumentException("The first argument of " + IMPORT_NAME + " must be a string that is the path to the file");
+        }
+        String filePath = (String) objects[0];
+        String type = PKCS_8_TYPE; //default
+        String rawFile = QDLFileUtil.readTextFile(state, filePath);
+        PrivateKey privateKey = null;
+        PublicKey publicKey = null;
+        if (objects.length != 1) {
+            type = (String) objects[1];
+            switch (type) {
+                case PKCS_1_TYPE:
+                    privateKey = KeyUtil.fromPKCS1PEM(rawFile);
+                    break;
+                case PKCS_8_TYPE:
+                    privateKey = KeyUtil.fromPKCS8PEM(rawFile);
+                    break;
+                case X509_TYPE:
+                    publicKey = KeyUtil.fromX509PEM(rawFile);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown key type: " + type);
+            }
+        }
+
+        JWK jwk = null;
+        if (privateKey == null) {
+            jwk = getJwk(publicKey);
+        } else {
+            RSAPrivateCrtKey privk = (RSAPrivateCrtKey) privateKey;
+            RSAPublicKeySpec publicKeySpec = new java.security.spec.RSAPublicKeySpec(privk.getModulus(), privk.getPublicExponent());
+            System.out.println(getClass().getSimpleName() + ": priv key alg=" + privk.getAlgorithm());
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            publicKey = keyFactory.generatePublic(publicKeySpec);
+
+            jwk = new RSAKey.Builder((RSAPublicKey) publicKey)
+                    .privateKey((RSAPrivateKey) privateKey)
+                    .keyID(getRandomID())
+                    .issueTime(new Date())
+                    .algorithm(JWSAlgorithm.RS256) // for use in signing, not from the key
+                    .keyUse(new KeyUse("sig"))
+                    .build();
+        }
+        JSONWebKey jsonWebKey = new JSONWebKey(jwk);
+        QDLStem outStem = webKeyToStem(jsonWebKey);
+        return outStem;
+    }
+
+    public Object importJWKS(Object[] objects, State state) throws Throwable {
+        if (!(objects[0] instanceof String)) {
+            throw new IllegalArgumentException(IMPORT_NAME + " requires a file name as its first argument");
+        }
+        String out = QDLFileUtil.readTextFile(state, (String) objects[0]);
+        JSONWebKeys jsonWebKeys = getJwkUtil().fromJSON(out);
+        QDLStem keys = new QDLStem();
+        if (jsonWebKeys.size() == 1) {
+            return webKeyToStem(jsonWebKeys.getDefault());
+        }
+        // otherwise, loop
+        for (String key : jsonWebKeys.keySet()) {
+            JSONWebKey jsonWebKey = jsonWebKeys.get(key);
+            if (jsonWebKeys.size() == 1) {
+                return jsonWebKeys;
+            }
+            keys.put(key, webKeyToStem(jsonWebKey));
+        }
+
+        return keys;
+    }
+
     public static final String IMPORT_KEYS_NAME = "import_jwks";
 
     /**
      * Read key set from a file
      */
+/*
     public class ImportJWKS implements QDLFunction {
         @Override
         public String getName() {
@@ -281,7 +419,137 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             return dd;
         }
     }
+*/
 
+    public static final String EXPORT_NAME = "export";
+
+    public class ExportKeys implements QDLFunction {
+        @Override
+        public String getName() {
+            return EXPORT_NAME;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{2, 3};
+        }
+
+        @Override
+        public Object evaluate(Object[] objects, State state) throws Throwable {
+            if (objects.length == 2) {
+                return exportJWKS(objects, state);
+            }
+            if (!(objects[2] instanceof String)) {
+                throw new IllegalArgumentException("The third argument of " + EXPORT_NAME + " must be a string");
+            }
+            String type = (String) objects[2];
+            if (type.equals(JWKS_TYPE)) {
+                return exportJWKS(objects, state);
+            }
+            return exportPKCS(objects, state);
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            switch (argCount) {
+                case 1:
+                    dd.add(getName() + "(key., file_path) - load a key in JWKS format");
+                    dd.add("key. - the stem containing a key or set of keys");
+                    dd.add("file_path - the path to the key file");
+                    break;
+                case 2:
+                    dd.add(getName() + "(key., file_path, type) - load a key of a given type");
+                    dd.add("key. - the stem containing a key or set of keys");
+                    dd.add("file_path - the path to the key file");
+                    dd.add("type - the type of the file. ");
+                    addTypeHelp(dd);
+                    break;
+            }
+            dd.add("Returns true if it worked, throws an exception if it did not.");
+
+            return dd;
+        }
+    }
+
+    /**
+     * Does the actual work of exporting a JWKS set.
+     * @param objects
+     * @param state
+     * @return
+     * @throws Throwable
+     */
+    protected Object exportJWKS(Object[] objects, State state) throws Throwable {
+        if (!(objects[0] instanceof QDLStem)) {
+            throw new IllegalArgumentException("The first argument of " + EXPORT_NAME + " must be a stem");
+        }
+        if (!(objects[1] instanceof String)) {
+            throw new IllegalArgumentException("The second argument of " + EXPORT_NAME + " must be a string");
+        }
+        QDLStem inStem = (QDLStem) objects[0];
+        String filePath = (String) objects[1];
+        JSONArray array = new JSONArray();
+        JSONObject jsonObject = new JSONObject();
+        if (isSingleKey(inStem)) {
+            // single key
+            array.add(inStem.toJSON());
+
+        } else {
+            for (Object k : inStem.keySet()) {
+                QDLStem currentStem = (k instanceof String) ? inStem.getStem((String) k) : inStem.getStem((Long) k);
+                // have to get the only entry
+                array.add(currentStem.toJSON());
+            }
+        }
+        jsonObject.put(JWKUtil2.KEYS, array);
+        QDLFileUtil.writeTextFile(state, filePath, jsonObject.toString(2));
+        return Boolean.TRUE;
+    }
+
+    /**
+     * Does the actual work or exporting various PKCS files.
+     * @param objects
+     * @param state
+     * @return
+     * @throws Throwable
+     */
+    protected Object exportPKCS(Object[] objects, State state) throws Throwable {
+        if (!(objects[0] instanceof QDLStem)) {
+            throw new IllegalArgumentException(EXPORT_NAME + " first argument must be a QDL stem that is they key");
+        }
+        QDLStem key = (QDLStem) objects[0];
+        if (!(objects[1] instanceof String)) {
+            throw new IllegalArgumentException(EXPORT_NAME + " - second argument must be a string that is the path to the file");
+        }
+        String path = (String) objects[1];
+        String type = PKCS_8_TYPE;
+        if (objects.length == 3) {
+            if (!(objects[2] instanceof String)) {
+                throw new IllegalArgumentException(EXPORT_NAME + " third argument must be a string that is the type of key");
+            }
+            type = (String) objects[2];
+        }
+        JSONWebKey jwk = JSONWebKeyUtil.getJsonWebKey(key.toJSON().toString());
+        String content;
+        switch (type) {
+            case PKCS_1_TYPE:
+                content = KeyUtil.toPKCS1PEM(jwk.privateKey);
+                break;
+            case PKCS_8_TYPE:
+                content = KeyUtil.toPKCS8PEM(jwk.privateKey);
+                break;
+            case X509_TYPE:
+                content = KeyUtil.toX509PEM(jwk.publicKey);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown key type: " + type);
+        }
+        QDLFileUtil.writeTextFile(state, path, content);
+        return Boolean.TRUE;
+    }
+
+
+/*
     public static final String EXPORT_KEYS_NAME = "export_jwks";
 
     public class ExportJWKS implements QDLFunction {
@@ -322,6 +590,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             QDLFileUtil.writeTextFile(state, filePath, jsonObject.toString(2));
             return Boolean.TRUE;
         }
+
         List<String> dd = new ArrayList<>();
 
         @Override
@@ -333,12 +602,15 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             return dd;
         }
     }
+*/
 
-    public static final String IMPORT_PKCS_NAME = "import_pkcs";
+    //    public static final String IMPORT_PKCS_NAME = "import_pkcs";
+    public static final String JWKS_TYPE = "jwks";
     public static final String PKCS_1_TYPE = "pkcs_1";
     public static final String PKCS_8_TYPE = "pkcs_8";
     public static final String X509_TYPE = "x509";
 
+/*
     public class ImportPKCS implements QDLFunction {
         @Override
         public String getName() {
@@ -420,6 +692,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             return dd;
         }
     }
+*/
 
     private JWK getJwk(PublicKey publicKey) {
         JWK jwk = null;
@@ -448,90 +721,83 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         return jwk;
     }
 
-    public static final String EXPORT_PKCS_NAME = "export_pkcs";
+    /*
+        public static final String EXPORT_PKCS_NAME = "export_pkcs";
 
-    public class ExportPKCS implements QDLFunction {
-        @Override
-        public String getName() {
-            return EXPORT_PKCS_NAME;
-        }
-
-        @Override
-        public int[] getArgCount() {
-            return new int[]{2, 3};
-        }
-
-        @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (!(objects[0] instanceof QDLStem)) {
-                throw new IllegalArgumentException(getName() + " first argument must be a QDL stem that is they key");
+        public class ExportPKCS implements QDLFunction {
+            @Override
+            public String getName() {
+                return EXPORT_PKCS_NAME;
             }
-            QDLStem key = (QDLStem) objects[0];
-            if (!(objects[1] instanceof String)) {
-                throw new IllegalArgumentException(getName() + " - second argument must be a string that is the path to the file");
+
+            @Override
+            public int[] getArgCount() {
+                return new int[]{2, 3};
             }
-            String path = (String) objects[1];
-            String type = PKCS_8_TYPE;
-            if (objects.length == 3) {
-                if (!(objects[2] instanceof String)) {
-                    throw new IllegalArgumentException(getName() + " third argument must be a string that is the path to the file");
+
+            @Override
+            public Object evaluate(Object[] objects, State state) throws Throwable {
+                if (!(objects[0] instanceof QDLStem)) {
+                    throw new IllegalArgumentException(getName() + " first argument must be a QDL stem that is they key");
                 }
-                type = (String) objects[2];
+                QDLStem key = (QDLStem) objects[0];
+                if (!(objects[1] instanceof String)) {
+                    throw new IllegalArgumentException(getName() + " - second argument must be a string that is the path to the file");
+                }
+                String path = (String) objects[1];
+                String type = PKCS_8_TYPE;
+                if (objects.length == 3) {
+                    if (!(objects[2] instanceof String)) {
+                        throw new IllegalArgumentException(getName() + " third argument must be a string that is the path to the file");
+                    }
+                    type = (String) objects[2];
+                }
+                JSONWebKey jwk = JSONWebKeyUtil.getJsonWebKey(key.toJSON().toString());
+                String content;
+                switch (type) {
+                    case PKCS_1_TYPE:
+                        content = KeyUtil.toPKCS1PEM(jwk.privateKey);
+                        break;
+                    case PKCS_8_TYPE:
+                        content = KeyUtil.toPKCS8PEM(jwk.privateKey);
+                        break;
+                    case X509_TYPE:
+                        content = KeyUtil.toX509PEM(jwk.publicKey);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unknown key type: " + type);
+                }
+                QDLFileUtil.writeTextFile(state, path, content);
+                return Boolean.TRUE;
             }
-            JSONWebKey jwk = JSONWebKeyUtil.getJsonWebKey(key.toJSON().toString());
-            String content;
-            switch (type) {
-                case PKCS_1_TYPE:
-                    content = KeyUtil.toPKCS1PEM(jwk.privateKey);
-                    break;
-                case PKCS_8_TYPE:
-                    content = KeyUtil.toPKCS8PEM(jwk.privateKey);
-                    break;
-                case X509_TYPE:
-                    content = KeyUtil.toX509PEM(jwk.publicKey);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown key type: " + type);
+
+
+            @Override
+            public List<String> getDocumentation(int argCount) {
+                List<String> dd = new ArrayList<>();
+                switch (argCount) {
+                    case 2:
+                        dd.add(getName() + ("(key.,file_path) - write a single private key to a file in PKCS 8 format."));
+                        dd.add("key. - the JWK representation of a single private key (all that PKCS supports)");
+                        dd.add("file_path -  path to the resulting PEM encoded file");
+                        dd.add("This function returns true if the operation worked, otherwise it throws an exception.");
+                        break;
+                    case 3:
+                        dd.add(getName() + ("(key., file_path, type) - write a single key to a file in PEM format."));
+                        dd.add("key. - the JWK representation of a single key (all that PKCS supports)");
+                        dd.add("file_path -  path to the resulting PEM encoded file");
+                        dd.add("type - one of the following");
+                        dd.add(PKCS_1_TYPE + " - PKCS 1, for a single private key");
+                        dd.add(PKCS_8_TYPE + " - PKCS 8, for a single private key");
+                        dd.add(X509_TYPE + " - X 509 format  for a single public key");
+                        dd.add("This function returns true if the operation worked, otherwise it throws an exception.");
+                        break;
+                }
+                return dd;
             }
-            QDLFileUtil.writeTextFile(state, path, content);
-            return Boolean.TRUE;
         }
-
-        /*
-          crypto := j_load('crypto');
-            a. := crypto#import_pkcs('/home/ncsa/temp/public_key.pem', 'x509');
-            b. := crypto#import_pkcs('/home/ncsa/temp/key.pem','pkcs_8');
-            crypto#export_pkcs( b., '/tmp/pkcs8.pem', 'pkcs_8')
-            crypto#export_pkcs( b., '/tmp/pkcs1.pem', 'pkcs_1')
-
-
-         */
-        @Override
-        public List<String> getDocumentation(int argCount) {
-            List<String> dd = new ArrayList<>();
-            switch (argCount) {
-                case 2:
-                    dd.add(getName() + ("(key.,file_path) - write a single private key to a file in PKCS 8 format."));
-                    dd.add("key. - the JWK representation of a single private key (all that PKCS supports)");
-                    dd.add("file_path -  path to the resulting PEM encoded file");
-                    dd.add("This function returns true if the operation worked, otherwise it throws an exception.");
-                    break;
-                case 3:
-                    dd.add(getName() + ("(key., file_path, type) - write a single key to a file in PEM format."));
-                    dd.add("key. - the JWK representation of a single key (all that PKCS supports)");
-                    dd.add("file_path -  path to the resulting PEM encoded file");
-                    dd.add("type - one of the following");
-                    dd.add(PKCS_1_TYPE + " - PKCS 1, for a single private key");
-                    dd.add(PKCS_8_TYPE + " - PKCS 8, for a single private key");
-                    dd.add(X509_TYPE + " - X 509 format  for a single public key");
-                    dd.add("This function returns true if the operation worked, otherwise it throws an exception.");
-                    break;
-            }
-            return dd;
-        }
-    }
-
-    public static final String GET_PUBLIC_KEY_NAME = "rsa_public_key";
+    */
+    public static final String GET_PUBLIC_KEY_NAME = "to_public";
 
     /**
      * Get the public part of a key
@@ -555,6 +821,9 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             }
             QDLStem inStem = (QDLStem) objects[0];
             if (isSingleKey(inStem)) {
+                if(isAES(inStem)){
+                    return inStem;
+                }
                 JSONWebKey jsonWebKey = getJwkUtil().getJsonWebKey((JSONObject) inStem.toJSON());
                 JSONWebKey pKey = JSONWebKeyUtil.makePublic(jsonWebKey);
                 QDLStem outStem = new QDLStem();
@@ -565,6 +834,10 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             // try to process each entry as a separate key
             for (Object kk : inStem.keySet()) {
                 QDLStem currentStem = (kk instanceof String) ? inStem.getStem((String) kk) : inStem.getStem((Long) kk);
+                if(isAES(currentStem)){
+                    outStem.putLongOrString(kk, currentStem);
+                    continue;
+                }
                 JSONWebKey jsonWebKey = getJwkUtil().getJsonWebKey((JSONObject) currentStem.toJSON());
                 JSONWebKey pKey = JSONWebKeyUtil.makePublic(jsonWebKey);
                 QDLStem tempStem = new QDLStem();
@@ -586,6 +859,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                 dd.add(getName() + "(key.) - get the public part(s) of the key(s)");
                 dd.add("If this is a single key, a public key is returned.");
                 dd.add("if this is a key set, then all of them are converted");
+                dd.add("Note that AES keys are always public since there are no private parts.");
             }
             return dd;
         }
@@ -622,8 +896,11 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             // arg 0 is either stem of the key or a cfg stem (which includes the key as 'key' entry)
             // arg 1 is either string or stem of strings to encrypt.
             QDLStem leftStem = (QDLStem) objects[0];
-            if (leftStem.containsKey("kty") && leftStem.getString("kty").equals("oct")) {
+            if (isAES(leftStem)) {
                 return sDeOrEnCrypt(objects, state, true, getName());
+            }
+            if(isEC(leftStem)){
+                throw new IllegalArgumentException(getName() + " unsupported key type");
             }
             JSONWebKey jsonWebKey;
             String cipher = "RSA"; // There are several available.
@@ -681,7 +958,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
    crypto:=j_load('crypto')
   rsa. := crypto#create_key()
   crypto#encrypt(rsa., 'woof woof')
-  crypto#encrypt({'key':rsa.,'cipher':'DES'}, 'woof woof')
+  crypto#encrypt({'key':rsa.,'cipher':'RSA'}, 'woof woof')
 
   set_test := crypto#encrypt(rsa.,{'a',{'b'}})
    crypto#decrypt(rsa., set_test)
@@ -876,8 +1153,11 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                 throw new IllegalArgumentException("The first argument of " + getName() + " must be a stem");
             }
             QDLStem leftArg = (QDLStem) objects[0];
-            if (leftArg.containsKey("kty") && leftArg.getString("kty").equals("oct")) {
+            if (isAES(leftArg)) {
                 return sDeOrEnCrypt(objects, state, false, getName());
+            }
+            if(isEC(leftArg)){
+                throw new IllegalArgumentException(getName() + " unsupported key type");
             }
             QDLStem arg = null;
             boolean usePrivateKey = false;
@@ -1111,6 +1391,7 @@ kazrnybI9mX73qv6NqA
 
     /**
      * Creates a random id as an (upper case) hex number.
+     *
      * @param byteCount
      * @return
      */
@@ -1132,7 +1413,7 @@ kazrnybI9mX73qv6NqA
 
     }
 
-    public static String IMPORT_CERT = "import_x509";
+    public static String IMPORT_CERT = "read_x509";
 
     public class ImportCert implements QDLFunction {
         @Override
@@ -1190,7 +1471,7 @@ kazrnybI9mX73qv6NqA
 
         /*
          crypto := j_load('crypto')
-         print(cert.:=crypto#import_x509('/home/ncsa/Downloads/github-com.pem'))
+         print(cert.:=crypto#read_x509('/home/ncsa/Downloads/github-com.pem'))
          crypto#read_oid(cert., {'foo':'2.5.29.19'})
   decode(crypto#read_oid(cert., '1.3.6.1.4.1.5923.1.1.1.6'))
 
@@ -1353,7 +1634,7 @@ kazrnybI9mX73qv6NqA
             dd.add(getName() + "(full_path)  - read a cert or chain of certs");
             dd.add("full_path = full path to the file.");
             dd.add("This will read an X 509 cert and return a stem of its attributes");
-            dd.add("Note that you cannot change a cert nor write one!");
+            dd.add("Note that you can neither change a cert nor write one!");
             dd.add("This is not intended for certificate management, but just to let you view one easily");
             dd.add("At this point, only RSA public keys will be returned.");
             return dd;
@@ -1434,7 +1715,7 @@ kazrnybI9mX73qv6NqA
             dd.add("This returns the base 64 encoded octet stream. Best we can do in general...");
             dd.add("If there is no such value, a null is returned.");
             dd.add("An OID (object identifier) is a bit of X 509 voodoo that allows for");
-            dd.add("addressing attributes. These are very specific and not standardizes, hence are. ");
+            dd.add("addressing attributes. These are very specific and not standardizes, hence are");
             dd.add("bona fide low-level operations, but often the only way to get certain custom values");
             dd.add("E.g. to get the EPPN (if present) from a cert");
             dd.add("   " + getName() + "(cert., {'eppn':'1.3.6.1.4.1.5923.1.1.1.6'}");
@@ -1456,39 +1737,18 @@ kazrnybI9mX73qv6NqA
         }
     }
 
-    public static final String CREATE_CERT_REQUEST = "create_cert_request";
-
-    public class CreateCertRequest implements QDLFunction {
-        @Override
-        public String getName() {
-            return CREATE_CERT_REQUEST;
-        }
-
-        @Override
-        public int[] getArgCount() {
-            return new int[]{1};
-        }
-
-        @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-
-            //   MyCertUtil.createCertRequest(MyCertUtil.createCertRequest(null));
-            return null;
-        }
-
-        @Override
-        public List<String> getDocumentation(int argCount) {
-            List<String> dd = new ArrayList<>();
-            dd.add(getName() + "(params.) - create a cert request with the given parameters");
-            dd.add("params. - a stem of parameters with the following keys");
-            dd.add("----------------------------------");
-            dd.add("    key = RSA key that is a JWK");
-            dd.add("     dn = the distinguished name. Default is " + CertUtil.DEFAULT_PKCS10_DISTINGUISHED_NAME);
-            dd.add("     cn = the country. Default is USA");
-            dd.add("     ou = organizational unit. Default is OU.");
-            dd.add("sig_alg = signature algorithm. Default is " + CertUtil.DEFAULT_PKCS10_SIGNATURE_ALGORITHM);
-            dd.add("     on = organizational name. Default is OU");
-            return dd;
-        }
+    /**
+     * Tests if a given stem that is a key is an AES i.e., symmetric key.
+     * @param key
+     * @return
+     */
+    protected boolean isAES(QDLStem key){
+        return key.containsKey("kty") && key.getString("kty").equals("oct");
+    }
+    protected boolean isEC(QDLStem key){
+        return key.containsKey("kty") && key.getString("kty").equals("EC");
+    }
+    protected boolean isRSA(QDLStem key){
+        return key.containsKey("kty") && key.getString("kty").equals("RSA");
     }
 }
