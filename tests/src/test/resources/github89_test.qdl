@@ -2,7 +2,7 @@
     Boiler plate from Robin Blairs script that located a module bug. Since this requires
     a lot of interacting scopes to find, this is just taken in toto.
 
-    It gets some pages from a public source in a loop, CIlogon.
+    It gets some pages from a public source (CILogon in thsi case) in a loop.
 */
 debugger(10);
 

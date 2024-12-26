@@ -36,6 +36,8 @@ public class CryptoModule extends JavaModule {
         funcs.add(crypto.new CreateKey());
         funcs.add(crypto.new GetPublicKey());
         funcs.add(crypto.new ReadOID());
+        funcs.add(crypto.new SignJWT());
+        funcs.add(crypto.new VerifyJWT());
         cryptoModule.addFunctions(funcs);
         if (state != null) {
             cryptoModule.init(state);

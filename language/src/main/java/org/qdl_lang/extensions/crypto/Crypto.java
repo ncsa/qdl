@@ -1,18 +1,27 @@
 package org.qdl_lang.extensions.crypto;
 
-import com.nimbusds.jose.EncryptionMethod;
-import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.ECDSASigner;
+import com.nimbusds.jose.crypto.ECDSAVerifier;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.*;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.OctetSequenceKeyGenerator;
+import com.nimbusds.jose.util.Base64URL;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+import edu.uiuc.ncsa.security.core.exceptions.UnsupportedProtocolException;
+import edu.uiuc.ncsa.security.core.util.StringUtils;
 import edu.uiuc.ncsa.security.util.crypto.CertUtil;
 import edu.uiuc.ncsa.security.util.crypto.KeyUtil;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.state.State;
+import org.qdl_lang.util.ProcessScalarImpl;
+import org.qdl_lang.util.QDLAggregateUtil;
 import org.qdl_lang.util.QDLFileUtil;
 import org.qdl_lang.variables.QDLNull;
-import org.qdl_lang.variables.QDLSet;
 import org.qdl_lang.variables.QDLStem;
 import edu.uiuc.ncsa.security.util.crypto.DecryptUtils;
 import edu.uiuc.ncsa.security.util.jwk.JSONWebKey;
@@ -23,7 +32,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.CertificateEncodingException;
@@ -370,56 +378,6 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
 
     public static final String IMPORT_KEYS_NAME = "import_jwks";
 
-    /**
-     * Read key set from a file
-     */
-/*
-    public class ImportJWKS implements QDLFunction {
-        @Override
-        public String getName() {
-            return IMPORT_KEYS_NAME;
-        }
-
-        @Override
-        public int[] getArgCount() {
-            return new int[]{1};
-        }
-
-        @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (!(objects[0] instanceof String)) {
-                throw new IllegalArgumentException(getName() + " requires a file name as its first argument");
-            }
-            String out = QDLFileUtil.readTextFile(state, (String) objects[0]);
-            JSONWebKeys jsonWebKeys = getJwkUtil().fromJSON(out);
-            QDLStem keys = new QDLStem();
-            if (jsonWebKeys.size() == 1) {
-                return webKeyToStem(jsonWebKeys.getDefault());
-            }
-            // otherwise, loop
-            for (String key : jsonWebKeys.keySet()) {
-                JSONWebKey jsonWebKey = jsonWebKeys.get(key);
-                if (jsonWebKeys.size() == 1) {
-                    return jsonWebKeys;
-                }
-                keys.put(key, webKeyToStem(jsonWebKey));
-            }
-
-            return keys;
-        }
-
-        List<String> dd = new ArrayList<>();
-
-        @Override
-        public List<String> getDocumentation(int argCount) {
-            if (dd.isEmpty()) {
-                dd.add(getName() + "(file_path) - read a JSON webkey (as per RFC 7517)");
-                dd.add("Import a key set from RFC7517 format");
-            }
-            return dd;
-        }
-    }
-*/
 
     public static final String EXPORT_NAME = "export";
 
@@ -474,6 +432,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
 
     /**
      * Does the actual work of exporting a JWKS set.
+     *
      * @param objects
      * @param state
      * @return
@@ -508,6 +467,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
 
     /**
      * Does the actual work or exporting various PKCS files.
+     *
      * @param objects
      * @param state
      * @return
@@ -548,151 +508,11 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         return Boolean.TRUE;
     }
 
-
-/*
-    public static final String EXPORT_KEYS_NAME = "export_jwks";
-
-    public class ExportJWKS implements QDLFunction {
-        @Override
-        public String getName() {
-            return EXPORT_KEYS_NAME;
-        }
-
-        @Override
-        public int[] getArgCount() {
-            return new int[]{2};
-        }
-
-        @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (!(objects[0] instanceof QDLStem)) {
-                throw new IllegalArgumentException("The first argument of " + getName() + " must be a stem");
-            }
-            if (!(objects[1] instanceof String)) {
-                throw new IllegalArgumentException("The second argument of " + getName() + " must be a string");
-            }
-            QDLStem inStem = (QDLStem) objects[0];
-            String filePath = (String) objects[1];
-            JSONArray array = new JSONArray();
-            JSONObject jsonObject = new JSONObject();
-            if (isSingleKey(inStem)) {
-                // single key
-                array.add(inStem.toJSON());
-
-            } else {
-                for (Object k : inStem.keySet()) {
-                    QDLStem currentStem = (k instanceof String) ? inStem.getStem((String) k) : inStem.getStem((Long) k);
-                    // have to get the only entry
-                    array.add(currentStem.toJSON());
-                }
-            }
-            jsonObject.put(JWKUtil2.KEYS, array);
-            QDLFileUtil.writeTextFile(state, filePath, jsonObject.toString(2));
-            return Boolean.TRUE;
-        }
-
-        List<String> dd = new ArrayList<>();
-
-        @Override
-        public List<String> getDocumentation(int argCount) {
-            if (dd.isEmpty()) {
-                dd.add(getName() + "(keys., file_path) - export a key or keyset to RFC 7517 format");
-                dd.add("This will skip unrecognized entries in the stem");
-            }
-            return dd;
-        }
-    }
-*/
-
-    //    public static final String IMPORT_PKCS_NAME = "import_pkcs";
     public static final String JWKS_TYPE = "jwks";
     public static final String PKCS_1_TYPE = "pkcs_1";
     public static final String PKCS_8_TYPE = "pkcs_8";
     public static final String X509_TYPE = "x509";
 
-/*
-    public class ImportPKCS implements QDLFunction {
-        @Override
-        public String getName() {
-            return IMPORT_PKCS_NAME;
-        }
-
-        @Override
-        public int[] getArgCount() {
-            return new int[]{1, 2};
-        }
-
-        @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (!(objects[0] instanceof String)) {
-                throw new IllegalArgumentException("The first argument of " + getName() + " must be a string that is the path to the file");
-            }
-            String filePath = (String) objects[0];
-            String type = PKCS_8_TYPE; //default
-            String rawFile = QDLFileUtil.readTextFile(state, filePath);
-            PrivateKey privateKey = null;
-            PublicKey publicKey = null;
-            if (objects.length != 1) {
-                type = (String) objects[1];
-                switch (type) {
-                    case PKCS_1_TYPE:
-                        privateKey = KeyUtil.fromPKCS1PEM(rawFile);
-                        break;
-                    case PKCS_8_TYPE:
-                        privateKey = KeyUtil.fromPKCS8PEM(rawFile);
-                        break;
-                    case X509_TYPE:
-                        publicKey = KeyUtil.fromX509PEM(rawFile);
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unknown key type: " + type);
-                }
-            }
-
-            JWK jwk = null;
-            if (privateKey == null) {
-                jwk = getJwk(publicKey);
-            } else {
-                RSAPrivateCrtKey privk = (RSAPrivateCrtKey) privateKey;
-                RSAPublicKeySpec publicKeySpec = new java.security.spec.RSAPublicKeySpec(privk.getModulus(), privk.getPublicExponent());
-                System.out.println(getClass().getSimpleName() + ": priv key alg=" + privk.getAlgorithm());
-                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-                publicKey = keyFactory.generatePublic(publicKeySpec);
-
-                jwk = new RSAKey.Builder((RSAPublicKey) publicKey)
-                        .privateKey((RSAPrivateKey) privateKey)
-                        .keyID(getRandomID())
-                        .issueTime(new Date())
-                        .algorithm(JWSAlgorithm.RS256) // for use in signing, not from the key
-                        .keyUse(new KeyUse("sig"))
-                        .build();
-            }
-            JSONWebKey jsonWebKey = new JSONWebKey(jwk);
-            QDLStem outStem = webKeyToStem(jsonWebKey);
-            return outStem;
-        }
-
-        @Override
-        public List<String> getDocumentation(int argCount) {
-            List<String> dd = new ArrayList<>();
-            switch (argCount) {
-                case 1:
-                    dd.add(getName() + "(file_path) - read a PKCS 1 (RSA private key) in PEM format and return as a stem");
-                    dd.add("file_path -  path to the PEM encoded file");
-                    break;
-                case 2:
-                    dd.add(getName() + "(file_path, type) - read a PEM format key, retuning a stem.");
-                    dd.add("file_path -  path to the PEM encoded file");
-                    dd.add("type -  supported types are ");
-                    dd.add("        " + PKCS_1_TYPE + " - PKCS 1, PEM encoded RSA private key");
-                    dd.add("        " + PKCS_8_TYPE + " - PKCS 8, PEM encoded unencrypted private key");
-                    dd.add("        " + X509_TYPE + " - X509, PEM encoded public key");
-                    break;
-            }
-            return dd;
-        }
-    }
-*/
 
     private JWK getJwk(PublicKey publicKey) {
         JWK jwk = null;
@@ -721,82 +541,6 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         return jwk;
     }
 
-    /*
-        public static final String EXPORT_PKCS_NAME = "export_pkcs";
-
-        public class ExportPKCS implements QDLFunction {
-            @Override
-            public String getName() {
-                return EXPORT_PKCS_NAME;
-            }
-
-            @Override
-            public int[] getArgCount() {
-                return new int[]{2, 3};
-            }
-
-            @Override
-            public Object evaluate(Object[] objects, State state) throws Throwable {
-                if (!(objects[0] instanceof QDLStem)) {
-                    throw new IllegalArgumentException(getName() + " first argument must be a QDL stem that is they key");
-                }
-                QDLStem key = (QDLStem) objects[0];
-                if (!(objects[1] instanceof String)) {
-                    throw new IllegalArgumentException(getName() + " - second argument must be a string that is the path to the file");
-                }
-                String path = (String) objects[1];
-                String type = PKCS_8_TYPE;
-                if (objects.length == 3) {
-                    if (!(objects[2] instanceof String)) {
-                        throw new IllegalArgumentException(getName() + " third argument must be a string that is the path to the file");
-                    }
-                    type = (String) objects[2];
-                }
-                JSONWebKey jwk = JSONWebKeyUtil.getJsonWebKey(key.toJSON().toString());
-                String content;
-                switch (type) {
-                    case PKCS_1_TYPE:
-                        content = KeyUtil.toPKCS1PEM(jwk.privateKey);
-                        break;
-                    case PKCS_8_TYPE:
-                        content = KeyUtil.toPKCS8PEM(jwk.privateKey);
-                        break;
-                    case X509_TYPE:
-                        content = KeyUtil.toX509PEM(jwk.publicKey);
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unknown key type: " + type);
-                }
-                QDLFileUtil.writeTextFile(state, path, content);
-                return Boolean.TRUE;
-            }
-
-
-            @Override
-            public List<String> getDocumentation(int argCount) {
-                List<String> dd = new ArrayList<>();
-                switch (argCount) {
-                    case 2:
-                        dd.add(getName() + ("(key.,file_path) - write a single private key to a file in PKCS 8 format."));
-                        dd.add("key. - the JWK representation of a single private key (all that PKCS supports)");
-                        dd.add("file_path -  path to the resulting PEM encoded file");
-                        dd.add("This function returns true if the operation worked, otherwise it throws an exception.");
-                        break;
-                    case 3:
-                        dd.add(getName() + ("(key., file_path, type) - write a single key to a file in PEM format."));
-                        dd.add("key. - the JWK representation of a single key (all that PKCS supports)");
-                        dd.add("file_path -  path to the resulting PEM encoded file");
-                        dd.add("type - one of the following");
-                        dd.add(PKCS_1_TYPE + " - PKCS 1, for a single private key");
-                        dd.add(PKCS_8_TYPE + " - PKCS 8, for a single private key");
-                        dd.add(X509_TYPE + " - X 509 format  for a single public key");
-                        dd.add("This function returns true if the operation worked, otherwise it throws an exception.");
-                        break;
-                }
-                return dd;
-            }
-        }
-    */
     public static final String GET_PUBLIC_KEY_NAME = "to_public";
 
     /**
@@ -821,7 +565,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             }
             QDLStem inStem = (QDLStem) objects[0];
             if (isSingleKey(inStem)) {
-                if(isAES(inStem)){
+                if (isAES(inStem)) {
                     return inStem;
                 }
                 JSONWebKey jsonWebKey = getJwkUtil().getJsonWebKey((JSONObject) inStem.toJSON());
@@ -834,7 +578,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             // try to process each entry as a separate key
             for (Object kk : inStem.keySet()) {
                 QDLStem currentStem = (kk instanceof String) ? inStem.getStem((String) kk) : inStem.getStem((Long) kk);
-                if(isAES(currentStem)){
+                if (isAES(currentStem)) {
                     outStem.putLongOrString(kk, currentStem);
                     continue;
                 }
@@ -899,7 +643,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             if (isAES(leftStem)) {
                 return sDeOrEnCrypt(objects, state, true, getName());
             }
-            if(isEC(leftStem)){
+            if (isEC(leftStem)) {
                 throw new IllegalArgumentException(getName() + " unsupported key type");
             }
             JSONWebKey jsonWebKey;
@@ -939,6 +683,9 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                 rightArg = new QDLStem();
                 rightArg.put(0L, objects[1]);
             }
+            ProcessEncryptDecrypt processEncryptDecrypt = new ProcessEncryptDecrypt(jsonWebKey, cipher, usePrivateKey, false);
+            return QDLAggregateUtil.process(objects[1], processEncryptDecrypt);
+/*
             if (objects[1] instanceof QDLSet) {
                 return encryptOrDecryptSet((QDLSet) objects[1], cipher, jsonWebKey, usePrivateKey, false);
             }
@@ -952,6 +699,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                 return out.getString(0L);
             }
             return out;
+*/
         }
 
 /*
@@ -1004,6 +752,57 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         }
     }
 
+    protected class ProcessEncryptDecrypt extends ProcessScalarImpl {
+        String cipher;
+        JSONWebKey jsonWebKey;
+        boolean usePrivateKey;
+        boolean doDecrypt;
+
+        public ProcessEncryptDecrypt(JSONWebKey jsonWebKey,
+                                     String cipher,
+                                     boolean usePrivateKey,
+                                     boolean doDecrypt) {
+            this.cipher = cipher;
+            this.jsonWebKey = jsonWebKey;
+            this.usePrivateKey = usePrivateKey;
+            this.doDecrypt = doDecrypt;
+        }
+
+        @Override
+        public Object process(String stringValue) {
+            return process(null, stringValue);
+        }
+
+        @Override
+        public Object process(Object key, String inString) {
+            String result;
+            try {
+                if (usePrivateKey) {
+                    if (doDecrypt) {
+                        result = DecryptUtils.decryptPrivate(cipher, jsonWebKey.privateKey, inString);
+                    } else {
+                        result = DecryptUtils.encryptPrivate(cipher, jsonWebKey.privateKey, inString);
+                    }
+                } else {
+                    if (doDecrypt) {
+                        result = DecryptUtils.decryptPublic(cipher, jsonWebKey.publicKey, inString);
+                    } else {
+                        result = DecryptUtils.encryptPublic(cipher, jsonWebKey.publicKey, inString);
+                    }
+                }
+                return result;
+            } catch (RuntimeException rt) {
+                throw rt;
+            } catch (Throwable gsx) {
+                // Clean up exception with a better message
+                if (key == null) {
+                    throw new IllegalArgumentException((doDecrypt ? DECRYPT_NAME : ENCRYPT_NAME) + " could not process value ='" + inString + "' (" + gsx.getMessage() + ")");
+                }
+                throw new IllegalArgumentException((doDecrypt ? DECRYPT_NAME : ENCRYPT_NAME) + " could not process argument for key='" + key + "' with value ='" + inString + "' (" + gsx.getMessage() + ")");
+            }
+        }
+    }
+
     /**
      * Encrypt or decrypt a stem. This will skip anything that is not a string or stem
      * and will do the correct recursion to get everything in the stem
@@ -1015,6 +814,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
      * @param doDecrypt
      * @return
      */
+/*
     protected QDLStem encryptOrDecryptStem(QDLStem rightArg,
                                            String cipher,
                                            JSONWebKey jsonWebKey,
@@ -1064,7 +864,9 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         }
         return outStem;
     }
+*/
 
+/*
     protected QDLSet encryptOrDecryptSet(QDLSet rightArg,
                                          String cipher,
                                          JSONWebKey jsonWebKey,
@@ -1112,6 +914,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         }
         return outSet;
     }
+*/
 
     /*
          crypto := j_load('crypto');
@@ -1156,23 +959,10 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             if (isAES(leftArg)) {
                 return sDeOrEnCrypt(objects, state, false, getName());
             }
-            if(isEC(leftArg)){
+            if (isEC(leftArg)) {
                 throw new IllegalArgumentException(getName() + " unsupported key type");
             }
-            QDLStem arg = null;
             boolean usePrivateKey = false;
-            boolean stringArg = false;
-            boolean gotOne = false;
-            if (objects[1] instanceof QDLStem) {
-                gotOne = true;
-                arg = (QDLStem) objects[1];
-            }
-            if (objects[1] instanceof String) {
-                gotOne = true;
-                stringArg = true;
-                arg = new QDLStem();
-                arg.put(0L, objects[1]);
-            }
 
             if (objects.length == 3) {
                 if (!(objects[2] instanceof Boolean)) {
@@ -1191,18 +981,9 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                 }
             }
             String cipher = "RSA"; // There are several available.
-            if (objects[1] instanceof QDLSet) {
-                return encryptOrDecryptSet((QDLSet) objects[1], cipher, jsonWebKey, usePrivateKey, true);
-            }
-
-            if (!gotOne) {
-                return objects[1]; // nix to do
-            }
-            QDLStem out = encryptOrDecryptStem(arg, cipher, jsonWebKey, usePrivateKey, true);
-            if (stringArg) {
-                return out.getString(0L);
-            }
-            return out;
+            ProcessEncryptDecrypt processEncryptDecrypt = new ProcessEncryptDecrypt(jsonWebKey,
+                    cipher, usePrivateKey, true);
+            return QDLAggregateUtil.process(objects[1], processEncryptDecrypt);
         }
 
 
@@ -1273,7 +1054,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
     /*
      crypto := j_load('crypto');
          aes. := crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
-         crypto#encrypt(aes., 'woof woof woof')
+         crypto#encrypt(aes., 'woof woof woof');
 kazrnybI9mX73qv6NqA
   crypto#encrypt(aes., {'a':'woof woof woof'})
 {a:kazrnybI9mX73qv6NqA}
@@ -1304,72 +1085,34 @@ kazrnybI9mX73qv6NqA
             }
             key = Base64.decodeBase64((String) objects[0]);
         }
-        QDLStem inStem = null;
-        boolean isStringArg = false;
-        if (objects[1] instanceof String) {
-            isStringArg = true;
-            inStem = new QDLStem();
-            inStem.put(0L, (String) objects[1]);
-        }
-        if (objects[1] instanceof QDLStem) {
-            inStem = (QDLStem) objects[1];
-        }
 
-        if (objects[1] instanceof QDLSet) {
-            return sDeOrEncryptSet((QDLSet) objects[1], isEncrypt, key);
-        }
-        if (inStem == null) {
-            return objects[1]; // nix to do
-        }
-        QDLStem outStem = sDeOrEncryptStem(inStem, isEncrypt, key);
-        if (isStringArg) {
-            return outStem.get(0L);
-        }
-        return outStem;
+        ProcessSymmetricDeorEncrypt processSymmetricDeorEncrypt = new ProcessSymmetricDeorEncrypt(key, isEncrypt);
+        return QDLAggregateUtil.process(objects[1], processSymmetricDeorEncrypt);
     }
 
-    private QDLStem sDeOrEncryptStem(QDLStem inStem, boolean isEncrypt, byte[] key) {
-        QDLStem outStem = new QDLStem();
-        for (Object stemKey : inStem.keySet()) {
-            Object obj = inStem.get(stemKey);
-            if (obj instanceof String) {
-                String target = (String) obj;
-                outStem.putLongOrString(stemKey, decodeString(key, target, isEncrypt));
-            } else {
-                if (obj instanceof QDLStem) {
-                    outStem.putLongOrString(stemKey, sDeOrEncryptStem((QDLStem) obj, isEncrypt, key));// don't touch if not string
-                } else {
-                    if (obj instanceof QDLSet) {
-                        outStem.putLongOrString(stemKey, sDeOrEncryptSet((QDLSet) obj, isEncrypt, key));// don't touch if not string
-                    } else {
-                        outStem.putLongOrString(stemKey, obj);// don't touch if not string
-                    }
-                }
+    protected class ProcessSymmetricDeorEncrypt extends ProcessScalarImpl {
+        boolean isEncrypt = false;
+        byte[] key;
+
+        public ProcessSymmetricDeorEncrypt(byte[] key, boolean isEncrypt) {
+            this.isEncrypt = isEncrypt;
+            this.key = key;
+        }
+
+        @Override
+        public Object process(String stringValue) {
+            if (isEncrypt) {
+                return DecryptUtils.sEncrypt(key, stringValue);
             }
+            return DecryptUtils.sDecrypt(key, stringValue);
         }
-        return outStem;
+
+        @Override
+        public Object process(Object key, String stringValue) {
+            return process(stringValue);
+        }
     }
 
-    private QDLSet sDeOrEncryptSet(QDLSet inSet, boolean isEncrypt, byte[] key) {
-        QDLSet outSet = new QDLSet();
-        for (Object obj : inSet) {
-            if (obj instanceof String) {
-                String target = (String) obj;
-                outSet.add(decodeString(key, target, isEncrypt));
-            } else {
-                if (obj instanceof QDLSet) {
-                    outSet.add(sDeOrEncryptSet((QDLSet) obj, isEncrypt, key));// don't touch if not string
-                } else {
-                    if (obj instanceof QDLStem) {
-                        outSet.add(sDeOrEncryptStem((QDLStem) obj, isEncrypt, key));// don't touch if not string
-                    } else {
-                        outSet.add(obj); // do nothing
-                    }
-                }
-            }
-        }
-        return outSet;
-    }
 
     /**
      * Is the stem a single key or a stem of keys? This is a simple-minded test and just
@@ -1739,16 +1482,211 @@ kazrnybI9mX73qv6NqA
 
     /**
      * Tests if a given stem that is a key is an AES i.e., symmetric key.
+     *
      * @param key
      * @return
      */
-    protected boolean isAES(QDLStem key){
+    protected boolean isAES(QDLStem key) {
         return key.containsKey("kty") && key.getString("kty").equals("oct");
     }
-    protected boolean isEC(QDLStem key){
+
+    protected boolean isEC(QDLStem key) {
         return key.containsKey("kty") && key.getString("kty").equals("EC");
     }
-    protected boolean isRSA(QDLStem key){
+
+    protected boolean isRSA(QDLStem key) {
         return key.containsKey("kty") && key.getString("kty").equals("RSA");
+    }
+
+    public static String SIGN_JWT = "sign";
+    public static String JWT_TYPE = "typ";
+    public static String JWT_KEY_ID = "kid";
+    public static String JWT_ALGORITHM = "alg";
+    public static String JWT_DEFAULT_TYPE = "JWT";
+    public static String JWT_ALGORITHM_NONE = "none";
+
+    public class SignJWT implements QDLFunction {
+        @Override
+        public String getName() {
+            return SIGN_JWT;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{2, 3};
+        }
+
+        @Override
+        public Object evaluate(Object[] objects, State state) throws Throwable {
+            JSONObject header = null;
+            JSONObject payload = null;
+            JSONWebKey webkey = null;
+            int argIndex = 0;
+            if (objects.length == 3) {
+                header = (JSONObject) ((QDLStem) objects[argIndex++]).toJSON();
+            }
+
+            payload = (JSONObject) ((QDLStem) objects[argIndex++]).toJSON();
+            webkey = getKeys((QDLStem) objects[argIndex++]);
+            if (webkey.isOctetKey()) {
+                throw new IllegalArgumentException("cannot sign with octet keys");
+            }
+            if (header == null) {
+                // create one
+                header = new JSONObject();
+                header.put(JWT_TYPE, JWT_DEFAULT_TYPE);
+                header.put(JWT_ALGORITHM, webkey.algorithm);
+                if (!StringUtils.isTrivial(webkey.id)) {
+                    // ID is not required, so only add if present
+                    header.put(JWT_KEY_ID, webkey.id);
+                }
+
+            }
+            // If the algorithm is none, then do not sign the JWT, just return the encoded header + "." +  payload + "."
+            // (note the trailing period!)
+            if (header.get(JWT_ALGORITHM).equals(JWT_ALGORITHM_NONE)) {
+                return Base64.encodeBase64URLSafeString(header.toString().getBytes()) + "." +
+                        Base64.encodeBase64URLSafeString(payload.toString().getBytes()) + ".";
+
+            }
+            JWSHeader jwsHeader = JWSHeader.parse(header);
+            JWTClaimsSet jwsPayload = JWTClaimsSet.parse(payload);
+            SignedJWT signedJWT = new SignedJWT(jwsHeader, jwsPayload);
+            JWSSigner signer = null;
+            boolean unsupportedSigner = true;
+            if (webkey.isRSAKey()) {
+                signer = new RSASSASigner(webkey.privateKey);
+                unsupportedSigner = false;
+            }
+            if (webkey.isECKey()) {
+                signer = new ECDSASigner((ECPrivateKey) webkey.privateKey);
+                unsupportedSigner = false;
+            }
+            if (unsupportedSigner) {
+                throw new UnsupportedProtocolException("unsupported key type for signature verification");
+            }
+            signedJWT.sign(signer);
+            return signedJWT.serialize();
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            switch (argCount) {
+                case 2:
+                    dd.add(getName() + "(payload., key.) - create a JWT from the stem, signing it with the key.");
+                    dd.add("payload. - the stem that will be the payload of the JWT");
+                    dd.add("key. - the key to use. RSA and EC curves are supported.");
+                    dd.add("A header will be created automatically");
+                    break;
+                case 3:
+                    dd.add(getName() + "(header., payload., key.) - create a JWT from the stem, signing it with the key.");
+                    dd.add("header. - the stem that will be the header of the JWT");
+                    dd.add("payload. - the stem that will be the payload of the JWT");
+                    dd.add("key. - the key to use. RSA and EC curves are supported.");
+                    break;
+            }
+            dd.add("If you want the JWT to be unsigned, you must set the header to have {'alg':'none'}");
+            return dd;
+        }
+    }
+
+    public static String JWT_VERIFY = "verify";
+
+    public class VerifyJWT implements QDLFunction {
+        @Override
+        public String getName() {
+            return JWT_VERIFY;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{2};
+        }
+
+        @Override
+        public Object evaluate(Object[] objects, State state) throws Throwable {
+            JSONWebKey webKey = getKeys((QDLStem) objects[1]);
+            ProcessJWT processJWT = new ProcessJWT(webKey);
+            return QDLAggregateUtil.process(objects[0], processJWT);
+        }
+
+        public class ProcessJWT extends ProcessScalarImpl {
+            public ProcessJWT(JSONWebKey webKey) {
+                this.webKey = webKey;
+            }
+
+            JSONWebKey webKey;
+
+            @Override
+            public Object process(String jwt) {
+                String[] b64s = jwt.split("\\.");
+                if (b64s.length == 2) {
+                    // Maybe an unsigned JWT? Verification consists of checking the algorithm
+                    // is indeed "none"
+                    String header = new String(Base64.decodeBase64(b64s[0]));
+                    JSONObject h = JSONObject.fromObject(header);
+                    if (h.containsKey(JWT_ALGORITHM) && h.getString(JWT_ALGORITHM).equals(JWT_ALGORITHM_NONE)) {
+                        String payload = new String(Base64.decodeBase64(b64s[1]));
+                        QDLStem out = new QDLStem();
+                        out.fromJSON(JSONObject.fromObject(payload));
+                        return out;
+                    }
+                }
+                try {
+                    SignedJWT signedJWT = new SignedJWT(new Base64URL(b64s[0]),
+                            new Base64URL(b64s[1]),
+                            new Base64URL(b64s[2]));
+                    JWSVerifier verifier = null;
+                    boolean unsupportedProtocol = true;
+                    if (webKey.isRSAKey()) {
+                        verifier = new RSASSAVerifier((RSAPublicKey) webKey.publicKey);
+                        unsupportedProtocol = false;
+                    }
+                    if (webKey.isECKey()) {
+                        verifier = new ECDSAVerifier((ECPublicKey) webKey.publicKey);
+                        unsupportedProtocol = false;
+                    }
+                    if (unsupportedProtocol) {
+                        throw new UnsupportedProtocolException("unsupported protocol");
+                    }
+                    if (signedJWT.verify(verifier)) {
+                        String payload = new String(Base64.decodeBase64(b64s[1]));
+                        QDLStem out = new QDLStem();
+                        out.fromJSON(JSONObject.fromObject(payload));
+                        return out;
+                    }
+
+                } catch (Throwable throwable) {
+                    throw new IllegalStateException("JWT verification failed: " + throwable.getMessage(), throwable);
+                }
+                throw new IllegalStateException("JWT verification failed: ");
+            }
+        }
+
+        /*
+        p. ≔ {'a':'q','b':{'s':'t'}};
+        crypto ≔ j_load('crypto');
+        rsa. ≔ crypto#create_key(2048);
+        rr ≔ crypto#sign(p., rsa.);
+        crypto#verify(rr,rsa.);
+        crypto#verify({'A':rr,'B':{'C':rr}},rsa.);
+         */
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            switch (argCount) {
+                case 2:
+                    dd.add(getName() + "(arg, key.) - verify the signature of a JWT against a given key");
+                    dd.add("arg - the JWT string");
+                    dd.add("key. - the key to verify against");
+                    dd.add("Returns the stem of the payload, or raises an error if verification failed");
+                    dd.add("Note that verification here means solely that the signature for teh JWT corresponds");
+                    dd.add("to that for the given key. In many cases (such as OAuth) \"verification\" also implies");
+                    dd.add("a variety of other checks on the content of the payload which this function does not do");
+                    break;
+            }
+            return dd;
+        }
     }
 }
