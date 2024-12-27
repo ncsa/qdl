@@ -1,5 +1,6 @@
 package org.qdl_lang.extensions.dynamodb;
 
+import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.state.State;
@@ -65,19 +66,19 @@ public class DynamoDB implements QDLMetaModule {
             if (objects[0] instanceof String) {
                 accessKeyId = (String) objects[0];
                 if (!(objects[1] instanceof String)) {
-                    throw new IllegalArgumentException("The arguments to " + getName() + " must be a stem or pair of strings.");
+                    throw new BadArgException("The arguments to " + getName() + " must be a stem or pair of strings.",1);
                 }
                 secretAccessKey = (String) objects[1];
             } else {
                 if (!(objects[0] instanceof QDLStem)) {
-                    throw new IllegalArgumentException("argument to " + getName() + " must be a stem");
+                    throw new BadArgException("argument to " + getName() + " must be a stem", 0);
                 }
                 QDLStem cfg = (QDLStem) objects[0];
                 if (!cfg.containsKey(ACCESS_KEY_ID)) {
-                    throw new IllegalArgumentException("missing " + ACCESS_KEY_ID);
+                    throw new BadArgException("missing " + ACCESS_KEY_ID, 0);
                 }
                 if (!cfg.containsKey(SECRET_ACCESS_KEY)) {
-                    throw new IllegalArgumentException("missing " + SECRET_ACCESS_KEY);
+                    throw new BadArgException("missing " + SECRET_ACCESS_KEY, 0);
                 }
                 if (cfg.containsKey(TABLE_NAME_KEY)) {
                     tableName = cfg.getString(TABLE_NAME_KEY);
@@ -151,13 +152,13 @@ public class DynamoDB implements QDLMetaModule {
             String keyVal;
             checkInit();
             if (!(objects[0] instanceof String)) {
-                throw new IllegalArgumentException("first argument for " + getName() + " must be a string, and is the key value");
+                throw new BadArgException("first argument for " + getName() + " must be a string, and is the key value", 0);
             }
             if (tableName == null) {
-                throw new IllegalArgumentException("You must set the " + TABLE_NAME_KEY + " before calling " + getName());
+                throw new IllegalStateException("You must set the " + TABLE_NAME_KEY + " before calling " + getName());
             }
             if (partitionKey == null) {
-                throw new IllegalArgumentException("You must set the " + PARTITION_KEY + " before calling " + getName());
+                throw new IllegalStateException("You must set the " + PARTITION_KEY + " before calling " + getName());
             }
 
             keyVal = (String) objects[0];
@@ -469,7 +470,7 @@ public class DynamoDB implements QDLMetaModule {
                 return region.id();
             }
             if (!(objects[0] instanceof String)) {
-                throw new IllegalArgumentException("The argument to " + getName() + " must be a string");
+                throw new BadArgException("The argument to " + getName() + " must be a string", 0);
             }
             String name = (String) objects[0];
             Region oldRegion = region;
@@ -510,7 +511,7 @@ public class DynamoDB implements QDLMetaModule {
                 return tableName;
             }
             if (!(objects[0] instanceof String)) {
-                throw new IllegalArgumentException("The argument to " + getName() + " must be a string");
+                throw new BadArgException("The argument to " + getName() + " must be a string", 0);
             }
             String name = (String) objects[0];
             String oldName = tableName;

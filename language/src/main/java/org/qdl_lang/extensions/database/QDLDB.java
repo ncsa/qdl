@@ -1,6 +1,7 @@
 package org.qdl_lang.extensions.database;
 
 import org.qdl_lang.evaluate.SystemEvaluator;
+import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.extensions.QDLVariable;
@@ -68,15 +69,12 @@ public class QDLDB implements QDLMetaModule {
 
         @Override
         public Object evaluate(Object[] objects, State state) {
-            if (objects.length != 1) {
-                throw new IllegalArgumentException("missing argument.");
-            }
             if (!(objects[0] instanceof QDLStem)) {
-                throw new IllegalArgumentException(getName() + " requires a stem as its argument");
+                throw new BadArgException(getName() + " requires a stem as its argument",0);
             }
             QDLStem stemVariable = (QDLStem) objects[0];
             if (!stemVariable.containsKey(TYPE_ARG)) {
-                throw new IllegalArgumentException("missing " + TYPE_ARG + " argument");
+                throw new BadArgException("missing " + TYPE_ARG + " argument", 0);
             }
             String type = stemVariable.getString(TYPE_ARG);
             JSONObject json = (JSONObject) stemVariable.toJSON();
@@ -102,7 +100,7 @@ public class QDLDB implements QDLMetaModule {
                 case DYNAMODB_TYPE:
                     break;
                 default:
-                    throw new IllegalArgumentException("unknown database type");
+                    throw new BadArgException("unknown database type", 0);
             }
             isConnected = true;
             return Boolean.TRUE;
@@ -151,10 +149,10 @@ public class QDLDB implements QDLMetaModule {
         @Override
         public Object evaluate(Object[] objects, State state) throws Throwable {
             if (!(objects[0] instanceof String)) {
-                throw new IllegalArgumentException(getName() + " requires a string as its first argument");
+                throw new BadArgException(getName() + " requires a string as its first argument", 0);
             }
             if (!(objects[1] instanceof QDLStem)) {
-                throw new IllegalArgumentException(getName() + " requires a stem as its second argument");
+                throw new BadArgException(getName() + " requires a stem as its second argument", 1);
             }
             QDLStem inStem = (QDLStem) objects[1];
             QDLStem outStem = new QDLStem();
@@ -163,7 +161,7 @@ public class QDLDB implements QDLMetaModule {
                 if(objects[2] instanceof Boolean){
                     flattenList = (Boolean) objects[2];
                 }else{
-                    throw new IllegalArgumentException(getName() + " requires a boolean as its third argument");
+                    throw new BadArgException(getName() + " requires a boolean as its third argument", 2);
                 }
             }
             Read read = new Read();
@@ -274,7 +272,7 @@ public class QDLDB implements QDLMetaModule {
                         //args = stemVariable.getQDLList().toJSON();
                         args = stemVariable.getQDLList();
                     } else {
-                        throw new IllegalArgumentException(QUERY_COMMAND + " requires its second argument, if present to be a list");
+                        throw new BadArgException(QUERY_COMMAND + " requires its second argument, if present to be a list", 1);
                     }
                 } else { // if a scalar, float it to a list.
                     args = new ArrayList();
@@ -496,12 +494,11 @@ public class QDLDB implements QDLMetaModule {
                     if (stemVariable.isList()) {
                         args = stemVariable.getQDLList().toJSON();
                     } else {
-                        throw new IllegalArgumentException(QUERY_COMMAND + " requires its second argument, if present to be a list");
+                        throw new BadArgException(QUERY_COMMAND + " requires its second argument, if present to be a list", 1);
                     }
                 } else {
                     args = new ArrayList();
                     args.add(objects[1]);
-                    //throw new IllegalArgumentException(QUERY_COMMAND + " requires its second argument, if present to be a list");
                 }
             }
 
@@ -647,12 +644,11 @@ public class QDLDB implements QDLMetaModule {
                 if (stemVariable.isList()) {
                     args = stemVariable.getQDLList().toJSON(); // converts to a list of more or less standard Java values.
                 } else {
-                    throw new IllegalArgumentException(name + " requires its second argument, if present to be a list");
+                    throw new BadArgException(name + " requires its second argument, if present to be a list", 1);
                 }
             } else {
                 args = new ArrayList();
                 args.add(objects[1]);
-              //  throw new IllegalArgumentException(name + " requires its second argument, if present to be a list");
             }
         }
 
@@ -735,10 +731,10 @@ public class QDLDB implements QDLMetaModule {
         @Override
         public Object evaluate(Object[] objects, State state) throws Throwable {
             if (!(objects[0] instanceof String)) {
-                throw new IllegalArgumentException("the first argument to " + getName() + " must be a string");
+                throw new BadArgException("the first argument to " + getName() + " must be a string", 0);
             }
             if (!Constant.isStem(objects[1])) {
-                throw new IllegalArgumentException("the second argument to " + getName() + " must be a stem");
+                throw new BadArgException("the second argument to " + getName() + " must be a stem", 1);
             }
             QDLStem stemVariable = (QDLStem) objects[1];
             ConnectionRecord connectionRecord = connectionPool.pop();

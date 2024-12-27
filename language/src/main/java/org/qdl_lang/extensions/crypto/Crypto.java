@@ -15,6 +15,7 @@ import edu.uiuc.ncsa.security.core.exceptions.UnsupportedProtocolException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import edu.uiuc.ncsa.security.util.crypto.CertUtil;
 import edu.uiuc.ncsa.security.util.crypto.KeyUtil;
+import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.state.State;
@@ -34,7 +35,6 @@ import org.apache.commons.codec.binary.Base64;
 
 import java.math.BigInteger;
 import java.security.*;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.*;
@@ -54,9 +54,6 @@ public class Crypto implements QDLMetaModule {
         return jwkUtil;
     }
 
-    public void setJwkUtil(JWKUtil2 jwkUtil) {
-        this.jwkUtil = jwkUtil;
-    }
 
     JWKUtil2 jwkUtil;
 
@@ -98,7 +95,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                     if (stem.containsKey("type")) {
                         type = stem.getString("type");
                     } else {
-                        throw new IllegalArgumentException(getName() + " is missing the type of the key. Must be RSA or EC");
+                        throw new BadArgException(getName() + " is missing the type of the key. Must be RSA or EC",  0);
                     }
                     if (type.equals("RSA")) {
                         unknownType = false;
@@ -106,7 +103,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                             keyLength = stem.getLong("length").intValue();
                         }
                         if (keyLength % 256 != 0) {
-                            throw new IllegalArgumentException("the key size of " + keyLength + " must be a multiple of 256");
+                            throw new BadArgException("the key size of " + keyLength + " must be a multiple of 256", 0);
                         }
                         if (stem.containsKey("alg")) {
                             alg = stem.getString("alg");
@@ -172,16 +169,16 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                         return out;
                     }
                     if (unknownType) {
-                        throw new IllegalArgumentException("unknown key type '" + stem.get("type") + "'");
+                        throw new BadArgException("unknown key type '" + stem.get("type") + "'",0);
                     }
                 } else {
                     if (!(objects[0] instanceof Long)) {
-                        throw new IllegalArgumentException("single argument must be the length of the RSA key");
+                        throw new BadArgException("single argument must be the integer length of the RSA key", 0);
 
                     }
                     keyLength = ((Long) objects[0]).intValue();
                     if (keyLength % 256 != 0) {
-                        throw new IllegalArgumentException("the key size of " + keyLength + " must be a multiple of 256");
+                        throw new BadArgException("the key size of " + keyLength + " must be a multiple of 256", 0);
                     }
                     webKey = getJwkUtil().createRSAKey(keyLength, alg);
                 }
@@ -267,7 +264,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                 return importJWKS(objects, state);
             }
             if (!(objects[1] instanceof String)) {
-                throw new IllegalArgumentException(getName() + " the second argument must be a string");
+                throw new BadArgException(getName() + " the second argument must be a string",1);
             }
             String arg2 = (String) objects[1];
             if (arg2.equals(JWKS_TYPE)) {
@@ -307,7 +304,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
 
     public Object importPKCS(Object[] objects, State state) throws Throwable {
         if (!(objects[0] instanceof String)) {
-            throw new IllegalArgumentException("The first argument of " + IMPORT_NAME + " must be a string that is the path to the file");
+            throw new BadArgException("The first argument of " + IMPORT_NAME + " must be a string that is the path to the file", 0);
         }
         String filePath = (String) objects[0];
         String type = PKCS_8_TYPE; //default
@@ -327,7 +324,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                     publicKey = KeyUtil.fromX509PEM(rawFile);
                     break;
                 default:
-                    throw new IllegalArgumentException("Unknown key type: " + type);
+                    throw new BadArgException("Unknown key type: " + type, 1);
             }
         }
 
@@ -356,7 +353,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
 
     public Object importJWKS(Object[] objects, State state) throws Throwable {
         if (!(objects[0] instanceof String)) {
-            throw new IllegalArgumentException(IMPORT_NAME + " requires a file name as its first argument");
+            throw new BadArgException(IMPORT_NAME + " requires a file name as its first argument", 0);
         }
         String out = QDLFileUtil.readTextFile(state, (String) objects[0]);
         JSONWebKeys jsonWebKeys = getJwkUtil().fromJSON(out);
@@ -375,9 +372,6 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
 
         return keys;
     }
-
-    public static final String IMPORT_KEYS_NAME = "import_jwks";
-
 
     public static final String EXPORT_NAME = "export";
 
@@ -398,7 +392,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                 return exportJWKS(objects, state);
             }
             if (!(objects[2] instanceof String)) {
-                throw new IllegalArgumentException("The third argument of " + EXPORT_NAME + " must be a string");
+                throw new BadArgException("The third argument of " + EXPORT_NAME + " must be a string", 2);
             }
             String type = (String) objects[2];
             if (type.equals(JWKS_TYPE)) {
@@ -440,10 +434,10 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
      */
     protected Object exportJWKS(Object[] objects, State state) throws Throwable {
         if (!(objects[0] instanceof QDLStem)) {
-            throw new IllegalArgumentException("The first argument of " + EXPORT_NAME + " must be a stem");
+            throw new BadArgException("The first argument of " + EXPORT_NAME + " must be a stem", 0);
         }
         if (!(objects[1] instanceof String)) {
-            throw new IllegalArgumentException("The second argument of " + EXPORT_NAME + " must be a string");
+            throw new BadArgException("The second argument of " + EXPORT_NAME + " must be a string", 1);
         }
         QDLStem inStem = (QDLStem) objects[0];
         String filePath = (String) objects[1];
@@ -475,17 +469,17 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
      */
     protected Object exportPKCS(Object[] objects, State state) throws Throwable {
         if (!(objects[0] instanceof QDLStem)) {
-            throw new IllegalArgumentException(EXPORT_NAME + " first argument must be a QDL stem that is they key");
+            throw new BadArgException(EXPORT_NAME + " first argument must be a QDL stem that is they key", 0);
         }
         QDLStem key = (QDLStem) objects[0];
         if (!(objects[1] instanceof String)) {
-            throw new IllegalArgumentException(EXPORT_NAME + " - second argument must be a string that is the path to the file");
+            throw new BadArgException(EXPORT_NAME + " - second argument must be a string that is the path to the file", 1);
         }
         String path = (String) objects[1];
         String type = PKCS_8_TYPE;
         if (objects.length == 3) {
             if (!(objects[2] instanceof String)) {
-                throw new IllegalArgumentException(EXPORT_NAME + " third argument must be a string that is the type of key");
+                throw new BadArgException(EXPORT_NAME + " third argument must be a string that is the type of key",2);
             }
             type = (String) objects[2];
         }
@@ -502,7 +496,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                 content = KeyUtil.toX509PEM(jwk.publicKey);
                 break;
             default:
-                throw new IllegalArgumentException("Unknown key type: " + type);
+                throw new BadArgException("Unknown key type: " + type, 0);
         }
         QDLFileUtil.writeTextFile(state, path, content);
         return Boolean.TRUE;
@@ -561,7 +555,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         public Object evaluate(Object[] objects, State state) throws NoSuchAlgorithmException, InvalidKeySpecException {
             // allows for single key as a stem or stem of them
             if (!(objects[0] instanceof QDLStem)) {
-                throw new IllegalArgumentException(getName() + " requires a stem as its argument");
+                throw new BadArgException(getName() + " requires a stem as its argument", 0);
             }
             QDLStem inStem = (QDLStem) objects[0];
             if (isSingleKey(inStem)) {
@@ -635,16 +629,16 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             }
 
             if (!(objects[0] instanceof QDLStem)) {
-                throw new IllegalArgumentException("The first argument of " + getName() + " must be a stem");
+                throw new BadArgException("The first argument of " + getName() + " must be a stem",  0);
             }
             // arg 0 is either stem of the key or a cfg stem (which includes the key as 'key' entry)
             // arg 1 is either string or stem of strings to encrypt.
             QDLStem leftStem = (QDLStem) objects[0];
             if (isAES(leftStem)) {
-                return sDeOrEnCrypt(objects, state, true, getName());
+                return sDeOrEnCrypt(objects,  true, getName());
             }
             if (isEC(leftStem)) {
-                throw new IllegalArgumentException(getName() + " unsupported key type");
+                throw new BadArgException(getName() + " unsupported key type", 0);
             }
             JSONWebKey jsonWebKey;
             String cipher = "RSA"; // There are several available.
@@ -663,11 +657,11 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             }
             if (usePrivateKey) {
                 if (jsonWebKey.privateKey == null) {
-                    throw new IllegalArgumentException("Missing private key");
+                    throw new BadArgException("Missing private key", 0);
                 }
             } else {
                 if (jsonWebKey.publicKey == null) {
-                    throw new IllegalArgumentException("Missing public key");
+                    throw new BadArgException("Missing public key", 0);
                 }
             }
             QDLStem rightArg = null;
@@ -685,21 +679,6 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             }
             ProcessEncryptDecrypt processEncryptDecrypt = new ProcessEncryptDecrypt(jsonWebKey, cipher, usePrivateKey, false);
             return QDLAggregateUtil.process(objects[1], processEncryptDecrypt);
-/*
-            if (objects[1] instanceof QDLSet) {
-                return encryptOrDecryptSet((QDLSet) objects[1], cipher, jsonWebKey, usePrivateKey, false);
-            }
-
-            if (!gotOne) {
-                return objects[1]; // nix to do
-            }
-
-            QDLStem out = encryptOrDecryptStem(rightArg, cipher, jsonWebKey, usePrivateKey, false);
-            if (stringArg) {
-                return out.getString(0L);
-            }
-            return out;
-*/
         }
 
 /*
@@ -814,107 +793,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
      * @param doDecrypt
      * @return
      */
-/*
-    protected QDLStem encryptOrDecryptStem(QDLStem rightArg,
-                                           String cipher,
-                                           JSONWebKey jsonWebKey,
-                                           boolean usePrivateKey,
-                                           boolean doDecrypt) {
 
-        QDLStem outStem = new QDLStem();
-        for (Object key : rightArg.keySet()) {
-            Object obj = rightArg.get(key);
-            String result;
-            if (obj instanceof QDLStem) {
-                outStem.putLongOrString(key, encryptOrDecryptStem((QDLStem) obj, cipher, jsonWebKey, usePrivateKey, doDecrypt));
-            } else {
-                if (obj instanceof String) {
-                    String inString = (String) obj;
-
-                    try {
-                        if (usePrivateKey) {
-                            if (doDecrypt) {
-                                result = DecryptUtils.decryptPrivate(cipher, jsonWebKey.privateKey, inString);
-                            } else {
-                                result = DecryptUtils.encryptPrivate(cipher, jsonWebKey.privateKey, inString);
-                            }
-                        } else {
-                            if (doDecrypt) {
-                                result = DecryptUtils.decryptPublic(cipher, jsonWebKey.publicKey, inString);
-                            } else {
-                                result = DecryptUtils.encryptPublic(cipher, jsonWebKey.publicKey, inString);
-                            }
-                        }
-                        outStem.putLongOrString(key, result);
-                    } catch (RuntimeException rt) {
-                        throw rt;
-                    } catch (Throwable gsx) {
-                        // Clean up exception with a better message
-                        throw new IllegalArgumentException((doDecrypt ? DECRYPT_NAME : ENCRYPT_NAME) + " could not process argument for key='" + key + "' with value ='" + obj + "' (" + gsx.getMessage() + ")");
-                    }
-                } else {
-                    if (obj instanceof QDLSet) {
-                        outStem.putLongOrString(key, encryptOrDecryptSet((QDLSet) obj, cipher, jsonWebKey, usePrivateKey, doDecrypt));
-
-                    } else {
-                        outStem.putLongOrString(key, obj);
-                    }
-                }
-            }
-        }
-        return outStem;
-    }
-*/
-
-/*
-    protected QDLSet encryptOrDecryptSet(QDLSet rightArg,
-                                         String cipher,
-                                         JSONWebKey jsonWebKey,
-                                         boolean usePrivateKey,
-                                         boolean doDecrypt) {
-
-        QDLSet outSet = new QDLSet();
-        for (Object obj : rightArg) {
-            String result;
-            if (obj instanceof QDLStem) {
-                outSet.add(encryptOrDecryptStem((QDLStem) obj, cipher, jsonWebKey, usePrivateKey, doDecrypt));
-            } else {
-                if (obj instanceof String) {
-                    String inString = (String) obj;
-
-                    try {
-                        if (usePrivateKey) {
-                            if (doDecrypt) {
-                                result = DecryptUtils.decryptPrivate(cipher, jsonWebKey.privateKey, inString);
-                            } else {
-                                result = DecryptUtils.encryptPrivate(cipher, jsonWebKey.privateKey, inString);
-                            }
-                        } else {
-                            if (doDecrypt) {
-                                result = DecryptUtils.decryptPublic(cipher, jsonWebKey.publicKey, inString);
-                            } else {
-                                result = DecryptUtils.encryptPublic(cipher, jsonWebKey.publicKey, inString);
-                            }
-                        }
-                        outSet.add(result);
-                    } catch (RuntimeException rt) {
-                        throw rt;
-                    } catch (Throwable gsx) {
-                        // Clean up exception with a better message
-                        throw new IllegalArgumentException((doDecrypt ? DECRYPT_NAME : ENCRYPT_NAME) + " could not process argument for set element ='" + obj + "' (" + gsx.getMessage() + ")");
-                    }
-                } else {
-                    if (obj instanceof QDLSet) {
-                        outSet.add(encryptOrDecryptSet((QDLSet) obj, cipher, jsonWebKey, usePrivateKey, doDecrypt));
-                    } else {
-                        outSet.add(obj);
-                    }
-                }
-            }
-        }
-        return outSet;
-    }
-*/
 
     /*
          crypto := j_load('crypto');
@@ -953,31 +832,31 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         @Override
         public Object evaluate(Object[] objects, State state) {
             if (!(objects[0] instanceof QDLStem)) {
-                throw new IllegalArgumentException("The first argument of " + getName() + " must be a stem");
+                throw new BadArgException("The first argument of " + getName() + " must be a stem", 0);
             }
             QDLStem leftArg = (QDLStem) objects[0];
             if (isAES(leftArg)) {
-                return sDeOrEnCrypt(objects, state, false, getName());
+                return sDeOrEnCrypt(objects,  false, getName());
             }
             if (isEC(leftArg)) {
-                throw new IllegalArgumentException(getName() + " unsupported key type");
+                throw new BadArgException(getName() + " unsupported key type", 0);
             }
             boolean usePrivateKey = false;
 
             if (objects.length == 3) {
                 if (!(objects[2] instanceof Boolean)) {
-                    throw new IllegalArgumentException("the last argument of " + getName() + " must be a boolean. Default is true");
+                    throw new BadArgException("the last argument of " + getName() + " must be a boolean. Default is true",  2);
                 }
                 usePrivateKey = (Boolean) objects[2];
             }
             JSONWebKey jsonWebKey = getKeys(leftArg);
             if (usePrivateKey) {
                 if (jsonWebKey.privateKey == null) {
-                    throw new IllegalArgumentException("Missing private key");
+                    throw new BadArgException("Missing private key", 0);
                 }
             } else {
                 if (jsonWebKey.publicKey == null) {
-                    throw new IllegalArgumentException("Missing public key");
+                    throw new BadArgException("Missing public key", 0);
                 }
             }
             String cipher = "RSA"; // There are several available.
@@ -1036,21 +915,6 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         return keys;
     }
 
-    /**
-     * Utility for symmetric key encode/decode.
-     *
-     * @param key
-     * @param s
-     * @param isEncrypt
-     * @return
-     */
-    protected String decodeString(byte[] key, String s, boolean isEncrypt) {
-        if (isEncrypt) {
-            return DecryptUtils.sEncrypt(key, s);
-        }
-        return DecryptUtils.sDecrypt(key, s);
-    }
-
     /*
      crypto := j_load('crypto');
          aes. := crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
@@ -1064,24 +928,24 @@ kazrnybI9mX73qv6NqA
 {woof woof woof}
     crypto#encrypt(aes., {'b',{'a':'woof woof woof'}})
      */
-    public Object sDeOrEnCrypt(Object[] objects, State state, boolean isEncrypt, String name) {
+    public Object sDeOrEnCrypt(Object[] objects,  boolean isEncrypt, String name) {
         byte[] key = null;
         if (objects[0] instanceof QDLStem) {
             // check that it is a JWK of type octet
             QDLStem sKey = (QDLStem) objects[0];
             if (sKey.containsKey("kty")) {
                 if (!sKey.getString("kty").equals("oct")) {
-                    throw new IllegalArgumentException("Incorrect key type. Must be of type 'oct' (octet-encoded)");
+                    throw new BadArgException("Incorrect key type. Must be of type 'oct' (octet-encoded)",  0);
                 }
                 if (sKey.containsKey("k")) {
                     key = Base64.decodeBase64(sKey.getString("k"));
                 } else {
-                    throw new IllegalArgumentException("Incorrect key format: missing 'k' entry for bytes");
+                    throw new BadArgException("Incorrect key format: missing 'k' entry for bytes", 0);
                 }
             }
         } else {
             if (!(objects[0] instanceof String)) {
-                throw new IllegalArgumentException("the first argument to " + name + " must be a base64 encoded key");
+                throw new BadArgException("the first argument to " + name + " must be a base64 encoded key",  0);
             }
             key = Base64.decodeBase64((String) objects[0]);
         }
@@ -1193,24 +1057,6 @@ kazrnybI9mX73qv6NqA
             return out;
         }
 
-        public String hexToASCII(String hex) {
-            // initialize the ASCII code string as empty.
-            String ascii = "";
-
-            for (int i = 0; i < hex.length(); i += 2) {
-
-                // extract two characters from hex string
-                String part = hex.substring(i, i + 2);
-
-                // change it into base 16 and typecast as the character
-                char ch = (char) Integer.parseInt(part, 16);
-
-                // add this char to final ASCII string
-                ascii = ascii + ch;
-            }
-
-            return ascii;
-        }
 
         /*
          crypto := j_load('crypto')
@@ -1219,7 +1065,7 @@ kazrnybI9mX73qv6NqA
   decode(crypto#read_oid(cert., '1.3.6.1.4.1.5923.1.1.1.6'))
 
         */
-        protected QDLStem certToStem(X509Certificate x509Certificate) throws CertificateEncodingException {
+        protected QDLStem certToStem(X509Certificate x509Certificate)  {
             QDLStem out = new QDLStem();
             QDLStem subject = new QDLStem();
             subject.put("x500", x509Certificate.getSubjectX500Principal().getName());
@@ -1417,7 +1263,7 @@ kazrnybI9mX73qv6NqA
                     oidStem = (QDLStem) objects[1];
 
                 } else {
-                    throw new IllegalArgumentException(getName() + "requires a string or stem as the second argument");
+                    throw new BadArgException(getName() + "requires a string or stem as the second argument", 0);
                 }
             }
             X509Certificate x509Certificate = certs[0];
@@ -1529,7 +1375,7 @@ kazrnybI9mX73qv6NqA
             payload = (JSONObject) ((QDLStem) objects[argIndex++]).toJSON();
             webkey = getKeys((QDLStem) objects[argIndex++]);
             if (webkey.isOctetKey()) {
-                throw new IllegalArgumentException("cannot sign with octet keys");
+                throw new BadArgException("cannot sign with octet keys", argIndex-1);
             }
             if (header == null) {
                 // create one

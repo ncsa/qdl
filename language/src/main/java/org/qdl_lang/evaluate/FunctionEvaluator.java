@@ -475,6 +475,13 @@ public class FunctionEvaluator extends AbstractEvaluator {
         return (statement instanceof LambdaDefinitionNode) || (statement instanceof FunctionDefinitionStatement) || (statement instanceof FunctionReferenceNode);
     }
 
+    /**
+     * Executes a user-defined function, defined in Java as an implementation of {@link org.qdl_lang.extensions.QDLFunction}.
+     * @param polyad
+     * @param state
+     * @param frs
+     * @throws Throwable
+     */
     protected void doJavaFunction(Polyad polyad, State state, FR_WithState frs) throws Throwable {
         // Contains a java function that is wrapped in a QDLFunction. The polyad here contains the
         // arguments that are needed to unpack this.
@@ -493,20 +500,33 @@ public class FunctionEvaluator extends AbstractEvaluator {
             }
         }
         QDLFunctionRecord qfr = (QDLFunctionRecord) frs.functionRecord;
-        // This is the direct analog of func(polyad, state):
         if (qfr == null) {
             throw new UndefinedFunctionException("this function is not defined", polyad);
+        }Object result = null;
+        try {
+            // This is the direct analog of func(polyad, state):
+            result = qfr.qdlFunction.evaluate(argList, state);
+        }catch(BadArgException badArgException){
+            if(!badArgException.hasStatement()){
+                if(-1 < badArgException.getArgIndex()){
+                    badArgException.setStatement(polyad.getArguments().get(badArgException.getArgIndex()));
+                }
+            }
+            throw badArgException;
+        }catch(QDLExceptionWithTrace qdlExceptionWithTrace){
+            if(!qdlExceptionWithTrace.hasStatement()){
+                qdlExceptionWithTrace.setStatement(polyad);
+            }
+            throw qdlExceptionWithTrace;
         }
-        Object result = qfr.qdlFunction.evaluate(argList, state);
         if(result == null){
             // Functions should never return a Java null, but iit does happen by accident, so better
             // to bomb here rather than get a strange, completely unrelated NPE later.
-            throw new QDLExceptionWithTrace("illegal java return vale of null", polyad);
+            throw new QDLExceptionWithTrace("illegal java return value of null", polyad);
         }
         polyad.setResult(result);
         polyad.setEvaluated(true);
         polyad.setResultType(Constant.getType(result));
-        return;
     }
 
     protected boolean tryScript(Polyad polyad, State state) {
@@ -563,6 +583,16 @@ public class FunctionEvaluator extends AbstractEvaluator {
         }
     }
 
+    /**
+     * Executes a user-defined function, defined in QDL., E.g.
+     * <pre>
+     *     f(x) → x;
+     * </pre>
+     * @param polyad
+     * @param state
+     * @param frs
+     * @throws Throwable
+     */
     protected void doFunctionEvaluation(Polyad polyad, State state, FR_WithState frs) throws Throwable {
         FunctionRecordInterface functionRecord = frs.functionRecord;
         State moduleState = null;

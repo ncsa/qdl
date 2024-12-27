@@ -1,5 +1,6 @@
 package org.qdl_lang.extensions.http;
 
+import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.exceptions.QDLException;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
@@ -154,7 +155,7 @@ public class HTTPClient implements QDLMetaModule {
         QDLStem parameters = null;
         if (objects.length == 2) {
             if (!(objects[0] instanceof String)) {
-                throw new IllegalArgumentException("uri_path must be a string ");
+                throw new BadArgException("uri_path must be a string", 0);
             }
             actualHost = getActualHost((String) objects[0]);
             parameters = (QDLStem) objects[1];
@@ -202,7 +203,7 @@ public class HTTPClient implements QDLMetaModule {
                 if (objects[0] instanceof String) {
                     host = (String) objects[0];
                 } else {
-                    throw new IllegalArgumentException("the argument to " + getName() + " must be a string, not a " + (objects[0] == null ? "null" : objects[0].getClass().getSimpleName()));
+                    throw new BadArgException("the argument to " + getName() + " must be a string, not a " + (objects[0] == null ? "null" : objects[0].getClass().getSimpleName()), 0);
                 }
             }
             return oldHost == null ? "" : oldHost;
@@ -236,7 +237,7 @@ public class HTTPClient implements QDLMetaModule {
                     obj2 = new Object[]{objects[0], new QDLStem()};
                 }else{
                     if(!(objects[0] instanceof QDLStem)){
-                        throw new IllegalArgumentException(getName() + " requires a stem if there is a single argument.");
+                        throw new BadArgException(getName() + " requires a stem if there is a single argument.", 0);
                     }
                 }
             }
@@ -350,7 +351,7 @@ public class HTTPClient implements QDLMetaModule {
                 if (objects[0] instanceof QDLStem) {
                     headers = (JSONObject) ((QDLStem) objects[0]).toJSON();
                 } else {
-                    throw new IllegalArgumentException(getName() + " requires a stem as its argument if present");
+                    throw new BadArgException(getName() + " requires a stem as its argument if present", 0);
                 }
             }
             QDLStem stemVariable = new QDLStem();
@@ -451,7 +452,7 @@ public class HTTPClient implements QDLMetaModule {
             boolean doInsecure = false;
             if (objects.length == 1) {
                 if (!(objects[0] instanceof Boolean)) {
-                    throw new IllegalArgumentException(getName() + " requires a boolean argument if present");
+                    throw new BadArgException(getName() + " requires a boolean argument if present", 0);
                 }
                 doInsecure = (Boolean) objects[0];
             }
@@ -654,7 +655,7 @@ public class HTTPClient implements QDLMetaModule {
                     if (objects[0] instanceof String) {
                         stringPayload = (String) objects[0];
                     } else {
-                        throw new IllegalArgumentException("monadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a stem or string as its argument");
+                        throw new BadArgException("monadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a stem or string as its argument", 0);
                     }
                 }
 
@@ -663,7 +664,7 @@ public class HTTPClient implements QDLMetaModule {
                 if (objects[0] instanceof String) {
                     uriPath = (String) objects[0];
                 } else {
-                    throw new IllegalArgumentException("dyadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a string as it first argument");
+                    throw new BadArgException("dyadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a string as it first argument",0);
                 }
                 if (objects[1] instanceof QDLStem) {
                     payload = (QDLStem) objects[1];
@@ -671,7 +672,7 @@ public class HTTPClient implements QDLMetaModule {
                     if (objects[1] instanceof String) {
                         stringPayload = (String) objects[1];
                     } else {
-                        throw new IllegalArgumentException("dyadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a stem or string as its second argument");
+                        throw new BadArgException("dyadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a stem or string as its second argument",1);
                     }
                 }
                 break;
@@ -871,7 +872,7 @@ public class HTTPClient implements QDLMetaModule {
         @Override
         public Object evaluate(Object[] objects, State state) throws Throwable {
             if (!(objects[0] instanceof QDLStem)) {
-                throw new IllegalArgumentException("argument must be a stem");
+                throw new BadArgException("argument must be a stem", 0);
             }
             QDLStem stem = (QDLStem) objects[0];
 
@@ -881,7 +882,7 @@ public class HTTPClient implements QDLMetaModule {
             if (stem.containsKey("Content-Type")) {
                 return stem.getString("Content-Type").contains("application/json");
             }
-            throw new IllegalArgumentException("could not find content type");
+            throw new BadArgException("could not find content type", 0);
         }
 
         @Override
@@ -909,7 +910,7 @@ public class HTTPClient implements QDLMetaModule {
         @Override
         public Object evaluate(Object[] objects, State state) throws Throwable {
             if (!(objects[0] instanceof QDLStem)) {
-                throw new IllegalArgumentException("argument must be a stem");
+                throw new BadArgException("argument must be a stem", 0);
             }
             QDLStem stem = (QDLStem) objects[0];
 
@@ -927,7 +928,7 @@ public class HTTPClient implements QDLMetaModule {
                         type.contains("/xhtml+xml") ||
                         type.contains("/javascript");
             }
-            throw new IllegalArgumentException("could not find content type");
+            throw new BadArgException("could not find content type",0);
         }
 
         @Override
@@ -953,12 +954,12 @@ public class HTTPClient implements QDLMetaModule {
 
         @Override
         public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (!Constant.isString(objects[0])) throw new IllegalArgumentException("zeroth argument must be a string");
-            if (!Constant.isString(objects[1])) throw new IllegalArgumentException("first argument must be a string");
+            if (!Constant.isString(objects[0])) throw new BadArgException("zeroth argument must be a string", 0);
+            if (!Constant.isString(objects[1])) throw new BadArgException("first argument must be a string",1);
             boolean isZip = false;
             if (objects.length == 3) {
                 if (!(objects[2] instanceof Boolean)) {
-                    throw new IllegalArgumentException(getName() + " must have a boolean as its third argument if present");
+                    throw new BadArgException(getName() + " must have a boolean as its third argument if present",2);
                 }
                 isZip = (Boolean) objects[2];
             }
@@ -970,7 +971,7 @@ public class HTTPClient implements QDLMetaModule {
                     VFSPassThruFileProvider vfsPassThruFileProvider = (VFSPassThruFileProvider) vfs;
                     targetPath = vfsPassThruFileProvider.getRealPath(targetPath);
                 } else {
-                    throw new IllegalArgumentException("can only download to a physical file");
+                    throw new BadArgException("can only download to a physical file",1);
                 }
             } else {
                 if (state.isServerMode()) throw new IllegalAccessException("cannot download in server mode");
@@ -1007,11 +1008,11 @@ public class HTTPClient implements QDLMetaModule {
             long totalSize = 0L;
             if (targetFile.exists()) {
                 if (!targetFile.isDirectory()) {
-                    throw new QDLException("The target of the download for a zip file must be a directory");
+                    throw new IllegalArgumentException("The target of the download for a zip file must be a directory");
                 }
             } else {
                 if (!targetFile.mkdirs()) {
-                    throw new QDLException("unable to create directory '" + targetFile.getAbsolutePath() + "\'");
+                    throw new IllegalArgumentException("unable to create directory '" + targetFile.getAbsolutePath() + "\'");
                 }
             }
 

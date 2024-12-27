@@ -24,21 +24,4 @@ public class FunctionArgException extends QDLExceptionWithTrace{
         super(message, cause, statement);
     }
 
-
-/*
-    public FunctionArgException() {
-    }
-
-    public FunctionArgException(Throwable cause) {
-        super(cause);
-    }
-
-    public FunctionArgException(String message) {
-        super(message);
-    }
-
-    public FunctionArgException(String message, Throwable cause) {
-        super(message, cause);
-    }
-*/
 }

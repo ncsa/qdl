@@ -1,5 +1,6 @@
 package org.qdl_lang.extensions.inputLine;
 
+import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.state.State;
@@ -66,7 +67,7 @@ public class QDLCLITools implements QDLMetaModule {
                     if (objects[0] instanceof QDLStem) {
                         args = (QDLStem) objects[0];
                     } else {
-                        throw new IllegalArgumentException(getName() + ": requires a stem or string as its argument");
+                        throw new BadArgException(getName() + ": requires a stem or string as its argument", 0);
                     }
                     aa = getObjects(args);
                     flags = new QDLStem();
@@ -77,10 +78,10 @@ public class QDLCLITools implements QDLMetaModule {
                 if (objects[0] instanceof QDLStem) {
                     args = (QDLStem) objects[0];
                     if (!args.isList()) {
-                        throw new IllegalArgumentException(getName() + " requires a list as its first argument");
+                        throw new BadArgException(getName() + " requires a list as its first argument", 0);
                     }
                 } else {
-                    throw new IllegalArgumentException(getName() + " requires a list as its first argument");
+                    throw new BadArgException(getName() + " requires a list as its first argument", 0);
                 }
                 if (objects[1] instanceof String) {
                     marker = (String) objects[1];
@@ -88,10 +89,10 @@ public class QDLCLITools implements QDLMetaModule {
                     if (objects[1] instanceof QDLStem) {
                         flags = (QDLStem) objects[1];
                         if (!flags.isList()) {
-                            throw new IllegalArgumentException(getName() + " requires a list as its second argument");
+                            throw new BadArgException(getName() + " requires a list as its second argument",1);
                         }
                     } else {
-                        throw new IllegalArgumentException(getName() + " requires a string or list as its second argument");
+                        throw new BadArgException(getName() + " requires a string or list as its second argument",1);
                     }
                 }
                 aa = getObjects(args);
@@ -100,23 +101,23 @@ public class QDLCLITools implements QDLMetaModule {
                 if (objects[0] instanceof QDLStem) {
                     args = (QDLStem) objects[0];
                     if (!args.isList()) {
-                        throw new IllegalArgumentException(getName() + " requires a list as its first argument");
+                        throw new BadArgException(getName() + " requires a list as its first argument",0);
                     }
                 } else {
-                    throw new IllegalArgumentException(getName() + " requires a list as its first argument");
+                    throw new BadArgException(getName() + " requires a list as its first argument",0);
                 }
                 if (objects[1] instanceof String) {
                     marker = (String) objects[1];
                 } else {
-                    throw new IllegalArgumentException(getName() + " requires a string as its second argument");
+                    throw new BadArgException(getName() + " requires a string as its second argument",1);
                 }
                 if (objects[2] instanceof QDLStem) {
                     flags = (QDLStem) objects[2];
                     if (!flags.isList()) {
-                        throw new IllegalArgumentException(getName() + " requires a list as its third argument");
+                        throw new BadArgException(getName() + " requires a list as its third argument",2);
                     }
                 } else {
-                    throw new IllegalArgumentException(getName() + " requires a list as its third argument");
+                    throw new BadArgException(getName() + " requires a list as its third argument",2);
                 }
             }
             List<Object> flagList = flags.getQDLList().values();
@@ -132,12 +133,6 @@ public class QDLCLITools implements QDLMetaModule {
                     }
                     if (i + 1 < aa.length) {
                         Object nextNext = aa[i + 1];
-/*
-                        if (nextNext instanceof String && nextNext.toString().startsWith(marker)) {
-                            // So the next entry is another switch
-                            out.put(nextArg, Boolean.TRUE);
-                        } else {
-*/
                         out.put(nextArg, nextNext);
                         //}
                         i = i + 1; // skip to next

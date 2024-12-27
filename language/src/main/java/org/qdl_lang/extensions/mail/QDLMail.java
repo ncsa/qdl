@@ -1,6 +1,7 @@
 package org.qdl_lang.extensions.mail;
 
 import org.qdl_lang.evaluate.SystemEvaluator;
+import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.state.State;
@@ -51,10 +52,10 @@ public class QDLMail implements QDLMetaModule {
                 if (objects[0] instanceof QDLStem) {
                     message = (QDLStem) objects[0];
                     if (!message.isList()) {
-                        throw new IllegalArgumentException(getName() + " requires a list as its first argument.");
+                        throw new BadArgException(getName() + " requires a list as its first argument.",0);
                     }
                 } else {
-                    throw new IllegalArgumentException(getName() + " requires a string or stem as its first argument.");
+                    throw new BadArgException(getName() + " requires a string or stem as its first argument.",0);
                 }
             }
             QDLStem templates = null;
@@ -62,7 +63,7 @@ public class QDLMail implements QDLMetaModule {
                 if (objects[1] instanceof QDLStem) {
                     templates = (QDLStem) objects[1];
                 } else {
-                    throw new IllegalArgumentException(getName() + " requires a stem as its second argument, if present.");
+                    throw new BadArgException(getName() + " requires a stem as its second argument, if present.",1);
                 }
             }
             QDLStem newMessage = new QDLStem();
@@ -207,7 +208,7 @@ public class QDLMail implements QDLMetaModule {
                 setCfg((QDLStem) objects[0]);
                 return old;
             }
-            throw new IllegalArgumentException("The argument must be a stem");
+            throw new BadArgException("The argument must be a stem", 0);
         }
 
         @Override
