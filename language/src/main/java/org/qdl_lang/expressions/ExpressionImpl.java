@@ -251,7 +251,7 @@ public abstract class ExpressionImpl implements ExpressionNode {
                 Object x = getArgAt(i);
                 String message;
                 if(x instanceof VariableNode){
-                    message = ((VariableNode)x).getVariableReference() +   " at argument " + i + " not found";
+                    message = "variable '" + ((VariableNode)x).getVariableReference() +   "' not found";
                 }else{
                     message = "argument " + i + " not found";
                 }

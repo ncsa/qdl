@@ -2201,7 +2201,9 @@ public class SystemEvaluator extends AbstractEvaluator {
         state.setTargetState(null);
         String resourceName = arg1.toString();
         QDLScript script;
-        state.getScriptStack().add(resourceName);
+        // stash stack trace elements, but don't do anything unless there is an error, then format result
+        AbstractState.QDLStackTraceElement stackTraceElement = new AbstractState.QDLStackTraceElement(resourceName,polyad.getArgAt(0).getTokenPosition());
+        state.getScriptStack().add(stackTraceElement);
         try {
             script = resolveScript(resourceName, paths, state);
         } catch (Throwable t) {

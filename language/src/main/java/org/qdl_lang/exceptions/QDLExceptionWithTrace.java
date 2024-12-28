@@ -1,5 +1,6 @@
 package org.qdl_lang.exceptions;
 
+import org.qdl_lang.state.AbstractState;
 import org.qdl_lang.statements.Statement;
 
 import java.util.ArrayList;
@@ -61,14 +62,14 @@ public class QDLExceptionWithTrace extends QDLException{
         this.scriptName = scriptName;
     }
 
-    public List<String> getScriptStack() {
+    public List<AbstractState.QDLStackTraceElement> getScriptStack() {
         if(scriptStack == null){
              scriptStack = new ArrayList<>();
          }
         return scriptStack;
     }
 
-    public void setScriptStack(List<String> scriptStack) {
+    public void setScriptStack(List<AbstractState.QDLStackTraceElement> scriptStack) {
 
         this.scriptStack = scriptStack;
     }
@@ -87,14 +88,19 @@ public class QDLExceptionWithTrace extends QDLException{
         }
        StringBuilder stringBuilder = new StringBuilder();
         String indent = "";
-        for (String s : getScriptStack()) {
-            stringBuilder.append(indent + s);
-            indent = indent + "\n  ";
+        // https://github.com/ncsa/qdl/issues/91
+        int size = getScriptStack().size();
+        for(int i = 0; i < size; i++) {
+            AbstractState.QDLStackTraceElement se = getScriptStack().get(size-i-1);
+            String s = se.resource + " called at (" + se.position.line + "," + se.position.col + ") in";
+            stringBuilder.append(indent + s + "\n");
+            indent = indent + " ";
         }
+        stringBuilder.append(indent + "main\n");
         return stringBuilder.toString();
     }
 
-    List<String> scriptStack;
+    List<AbstractState.QDLStackTraceElement> scriptStack;
 
 
 

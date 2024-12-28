@@ -181,7 +181,7 @@ public class QDLWorkspace implements Serializable {
         if (!statement.hasTokenPosition()) {
             return "";
         }
-        String out = " At (" + statement.getTokenPosition().line + ", " + statement.getTokenPosition().col + ")";
+        String out = " at (" + statement.getTokenPosition().line + ", " + statement.getTokenPosition().col + ")";
         if (qq.isScript()) {
             out = out + " in:\n" + qq.stackTrace();
         }

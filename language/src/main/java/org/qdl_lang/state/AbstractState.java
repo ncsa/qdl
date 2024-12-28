@@ -2,6 +2,7 @@ package org.qdl_lang.state;
 
 import org.qdl_lang.evaluate.MetaEvaluator;
 import org.qdl_lang.evaluate.OpEvaluator;
+import org.qdl_lang.statements.TokenPosition;
 import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.VStack;
 import org.qdl_lang.vfs.VFSPaths;
@@ -23,15 +24,23 @@ import java.util.*;
  * on 2/2/20 at  6:37 AM
  */
 public abstract class AbstractState implements StateInterface, Logable {
-    public List<String> getScriptStack() {
+    public List<QDLStackTraceElement> getScriptStack() {
         return scriptStack;
     }
+public static class QDLStackTraceElement{
+    public QDLStackTraceElement(String resource, TokenPosition position) {
+        this.resource = resource;
+        this.position = position;
+    }
 
-    public void setScriptStack(List<String> scriptStack) {
+    public String resource;
+        public TokenPosition position;
+}
+    public void setScriptStack(List<QDLStackTraceElement> scriptStack) {
         this.scriptStack = scriptStack;
     }
 
-    List<String> scriptStack = new ArrayList<>();
+    List<QDLStackTraceElement> scriptStack = new ArrayList<>();
 
 
     public UUID getUuid() {
