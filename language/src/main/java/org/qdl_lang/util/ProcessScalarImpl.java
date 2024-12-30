@@ -1,6 +1,5 @@
 package org.qdl_lang.util;
 
-import com.mysql.cj.protocol.a.BooleanValueEncoder;
 import org.qdl_lang.functions.DyadicFunctionReferenceNode;
 import org.qdl_lang.functions.FunctionReferenceNode;
 import org.qdl_lang.module.Module;
@@ -12,50 +11,51 @@ import java.math.BigDecimal;
  * Basic (identity) implementation of {@link ProcessScalar}, simply returns each argument unchanged.
  * The default is that the dyadic calls (for stems) just call the monadic ones, so you
  * can usually just get away with implementing one method for any type. If you want
- * some specific erro message, you have enough information for that too.
+ * some specific error message, you have enough information for that too.
  *
+ * This is the most permissive type of processig.
  * This class is designed to do 95% of the work for handling aggregates and is really
  * redundant and boring.
  */
 public class ProcessScalarImpl implements ProcessScalar {
     @Override
     public Object process(String stringValue) {
-        return stringValue;
+        return getDefaultValue(stringValue);
     }
 
     @Override
     public Object process(Long longValue) {
-        return longValue;
+        return getDefaultValue(longValue);
     }
 
     @Override
     public Object process(BigDecimal decimalValue) {
-        return decimalValue;
+        return getDefaultValue(decimalValue);
     }
 
     @Override
     public Object process(QDLNull nullValue) {
-        return nullValue;
+        return getDefaultValue(nullValue);
     }
 
     @Override
     public Object process(Boolean booleanValue) {
-        return booleanValue;
+        return getDefaultValue(booleanValue);
     }
 
     @Override
     public Object process(Module moduleValue) {
-        return moduleValue;
+        return getDefaultValue(moduleValue);
     }
 
     @Override
     public Object process(FunctionReferenceNode frValue) {
-        return frValue;
+        return getDefaultValue(frValue);
     }
 
     @Override
     public Object process(DyadicFunctionReferenceNode dyadicFunctionReferenceNode) {
-        return dyadicFunctionReferenceNode;
+        return getDefaultValue(dyadicFunctionReferenceNode);
     }
 
     @Override
@@ -96,5 +96,15 @@ public class ProcessScalarImpl implements ProcessScalar {
     @Override
     public Object process(Object key, DyadicFunctionReferenceNode dyadicFunctionReferenceNode) {
         return process(dyadicFunctionReferenceNode);
+    }
+
+    /**
+     * This is what makes this the identity function. If you want/need a different default
+     * value for each call, override this.
+     * @param value
+     * @return
+     */
+    public Object getDefaultValue(Object value) {
+        return value;
     }
 }

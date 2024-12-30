@@ -349,7 +349,7 @@ public class QDLDB implements QDLMetaModule {
     }
 
     /**
-     * IF there is a result set, then invoke this. It will convert the entire result set
+     * <b>IF</b> there is a result set, then invoke this. It will convert the entire result set
      * to a QDL stem. Only invoke if you know there is a result set!
      * <br/><br/>
      * <b>Note</b> this closes the result set.

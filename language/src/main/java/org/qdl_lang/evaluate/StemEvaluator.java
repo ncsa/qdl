@@ -2160,7 +2160,7 @@ public class StemEvaluator extends AbstractEvaluator {
     }
 
     /**
-     * Fills in the elements for the n(x,y,z,...) function.adv74008
+     * Fills in the elements for the n(x,y,z,...) function.
      *
      * @param out
      * @param lengths

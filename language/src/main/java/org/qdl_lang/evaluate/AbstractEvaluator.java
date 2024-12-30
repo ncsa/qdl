@@ -105,34 +105,34 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         return false;
     }
 
-    protected boolean isStem(Object obj) {
+    public static boolean isStem(Object obj) {
         return StemUtility.isStem(obj);
     }
 
-    protected boolean isSet(Object obj) {
+    public static boolean isSet(Object obj) {
         return obj instanceof QDLSet;
     }
 
-    protected boolean isStemList(Object obj) {
+    public static boolean isStemList(Object obj) {
         return isStem(obj) && ((QDLStem) obj).containsKey("0");
     }
 
-    protected boolean isLong(Object obj) {
+    public static boolean isLong(Object obj) {
         return obj instanceof Long;
     }
 
-    protected boolean isBoolean(Object obj) {
+    public static boolean isBoolean(Object obj) {
         return obj instanceof Boolean;
     }
 
-    protected boolean areAllBoolean(Object... objects) {
+    public static boolean areAllBoolean(Object... objects) {
         for (Object arg : objects) {
             if (!isBoolean(arg)) return false;
         }
         return true;
     }
 
-    protected boolean areAllSets(Object... objects) {
+    public static boolean areAllSets(Object... objects) {
         for (Object obj : objects) {
             if (!isSet(obj)) {
                 return false;
@@ -141,48 +141,48 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         return true;
     }
 
-    protected boolean areAllStems(Object... objects) {
+    public static boolean areAllStems(Object... objects) {
         return StemUtility.areAllStems(objects);
     }
 
-    protected boolean areNoneStems(Object... objects) {
+    public static boolean areNoneStems(Object... objects) {
         return StemUtility.areNoneStems(objects);
     }
 
-    protected boolean isString(Object obj) {
+    public static boolean isString(Object obj) {
         return obj instanceof String;
     }
 
-    protected boolean areAllStrings(Object... objects) {
+    public static boolean areAllStrings(Object... objects) {
         for (Object arg : objects) {
             if (!isString(arg)) return false;
         }
         return true;
     }
 
-    protected boolean areAllLongs(Object... objects) {
+    public static boolean areAllLongs(Object... objects) {
         for (Object arg : objects) {
             if (!(arg instanceof Long)) return false;
         }
         return true;
     }
 
-    protected boolean isNumber(Object arg) {
+    public static boolean isNumber(Object arg) {
         return (arg instanceof Long) || (arg instanceof BigDecimal);
     }
 
-    protected boolean isBigDecimal(Object obj) {
+    public static boolean isBigDecimal(Object obj) {
         return obj instanceof BigDecimal;
     }
 
-    protected boolean areAnyBigDecimals(Object... objects) {
+    public static boolean areAnyBigDecimals(Object... objects) {
         for (Object arg : objects) {
             if (isBigDecimal(arg)) return true;
         }
         return false;
     }
 
-    protected boolean areAllBigDecimals(Object... objects) {
+    public static boolean areAllBigDecimals(Object... objects) {
         for (Object arg : objects) {
             if (!isBigDecimal(arg)) return false;
         }
@@ -208,7 +208,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         return true;
     }
 
-    protected BigDecimal toBD(Object obj) {
+    public static BigDecimal toBD(Object obj) {
         if (!isNumber(obj)) throw new IllegalArgumentException("'" + obj + "' is not a number");
         if (obj instanceof BigDecimal) return (BigDecimal) obj;
         if (obj instanceof Long) return new BigDecimal((Long) obj, OpEvaluator.getMathContext());
@@ -216,7 +216,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         throw new IllegalArgumentException("'" + obj + "' is not a number");
     }
 
-    protected QDLStem toStem(Object object) {
+    public static QDLStem toStem(Object object) {
         if (isStem(object)) return (QDLStem) object;
         QDLStem out = new QDLStem();
         out.setDefaultValue(object);
@@ -238,7 +238,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         public int resultType;
     }
 
-    protected void finishExpr(ExpressionImpl node, fpResult r) {
+    public static void finishExpr(ExpressionImpl node, fpResult r) {
         node.setResult(r.result);
         node.setResultType(r.resultType);
         node.setEvaluated(true);
@@ -252,7 +252,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param name
      * @param state
      */
-    protected void process1(ExpressionImpl polyad,
+    public static void process1(ExpressionImpl polyad,
                             fPointer pointer,
                             String name,
                             State state) {
@@ -295,7 +295,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param stemVariable
      * @param pointer
      */
-    protected void processStem1(QDLStem outStem, QDLStem stemVariable, fPointer pointer) {
+    public static void processStem1(QDLStem outStem, QDLStem stemVariable, fPointer pointer) {
         for (Object key : stemVariable.keySet()) {
             Object object = stemVariable.get(key);
             boolean isLongKey = key instanceof Long;
@@ -320,7 +320,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     }
 
 
-    protected void processSet1(QDLSet outSet, QDLSet arg, fPointer pointer) {
+    public static void processSet1(QDLSet outSet, QDLSet arg, fPointer pointer) {
         for (Object key : arg) {
             if (key instanceof QDLStem) {
                 // Do something here???
@@ -339,7 +339,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param name
      * @param state
      */
-    protected void process2(ExpressionImpl polyad,
+    public static void process2(ExpressionImpl polyad,
                             fPointer pointer,
                             String name,
                             State state
@@ -369,7 +369,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param state
      * @param optionalArgs
      */
-    protected void process2(ExpressionImpl polyad,
+    public static void process2(ExpressionImpl polyad,
                             fPointer pointer,
                             String name,
                             State state,
@@ -511,7 +511,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param optionalArgs
      * @return
      */
-    protected Object processSet2(QDLSet leftSet, QDLSet rightSet, fPointer pointer, ExpressionImpl polyad, boolean optionalArgs) {
+    public static Object processSet2(QDLSet leftSet, QDLSet rightSet, fPointer pointer, ExpressionImpl polyad, boolean optionalArgs) {
         fpResult r = null;
         Object[] objects;
         if (optionalArgs) {
@@ -545,7 +545,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param polyad
      * @param optionalArgs
      */
-    protected void processSet2(QDLSet outSet, QDLSet inSet, Object scalar, boolean scalarRHS, fPointer pointer, ExpressionImpl polyad, boolean optionalArgs) {
+    public static void processSet2(QDLSet outSet, QDLSet inSet, Object scalar, boolean scalarRHS, fPointer pointer, ExpressionImpl polyad, boolean optionalArgs) {
         for (Object element : inSet) {
             fpResult r = null;
             Object[] objects;
@@ -583,7 +583,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
       c.0.0 := 2; c.0.1 := 1; c.1.0:= -7;  c.1.1 := 5;
       c. + d.
      */
-    protected void processStem2(QDLStem outStem,
+    public static void processStem2(QDLStem outStem,
                                 QDLStem stem1,
                                 QDLStem stem2,
                                 fPointer pointer,
@@ -632,7 +632,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param state
      * @param optionalArguments
      */
-    protected void process3(ExpressionImpl polyad,
+    public static void process3(ExpressionImpl polyad,
                             fPointer pointer,
                             String name,
                             State state,
@@ -677,7 +677,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     }
 
 
-    protected void processStem3(QDLStem outStem,
+    public static void processStem3(QDLStem outStem,
                                 QDLStem stem1,
                                 QDLStem stem2,
                                 QDLStem stem3,
@@ -726,7 +726,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     }
 
 
-    public class CommonKeyIterator implements Iterator {
+    public static class CommonKeyIterator implements Iterator {
         ArrayList<StemKeys> stemKeys = new ArrayList<>();
 
         public void add(StemKeys keys) {
@@ -776,7 +776,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         }
     }
 
-    protected CommonKeyIterator getCommonKeys(QDLStem... stems) {
+    public static CommonKeyIterator getCommonKeys(QDLStem... stems) {
         CommonKeyIterator iterator = new CommonKeyIterator();
         for (QDLStem stem : stems) {
             if (stem.hasDefaultValue()) {

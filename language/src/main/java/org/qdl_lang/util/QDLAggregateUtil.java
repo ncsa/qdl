@@ -1,6 +1,7 @@
 package org.qdl_lang.util;
 
 import org.qdl_lang.evaluate.AbstractEvaluator;
+import org.qdl_lang.exceptions.BadStemValueException;
 import org.qdl_lang.exceptions.UnknownTypeException;
 import org.qdl_lang.expressions.ExpressionImpl;
 import org.qdl_lang.functions.FunctionReferenceNode;
@@ -19,7 +20,7 @@ import java.math.BigDecimal;
  * navigating them in turn. Implement or extends the {@link ProcessScalar} interface.
  * <h2>Processing aggregates.</h2>
  * You can do them so they follow the standard QDL stem/set contracts when implementing a system function by
- * executing the correct {@link org.qdl_lang.evaluate.FunctionEvaluator}.processN
+ * executing the correct {@link org.qdl_lang.evaluate.AbstractEvaluator}.processN
  * in an evaluator <b><i>or</i></b> if you have something specific address each scalar using this utility.
  * This utility in particular is useful when writing Java extensions that implement {@link org.qdl_lang.extensions.QDLFunction}
  * where the machinery of {@link org.qdl_lang.evaluate.FunctionEvaluator} is not available.
@@ -57,7 +58,12 @@ public class QDLAggregateUtil {
         QDLStem outStem = new QDLStem();
         for (Object key : inStem.keySet()) {
             Object value = inStem.get(key);
-            outStem.putLongOrString(key, getNewStemValue(processScalar, key, value));
+            try {
+                outStem.putLongOrString(key, getNewStemValue(processScalar, key, value));
+            }catch(BadStemValueException badStemValueException){
+                badStemValueException.getIndices().add(key);
+                throw badStemValueException;
+            }
         }
         return outStem;
     }

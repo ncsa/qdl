@@ -16,9 +16,11 @@ import edu.uiuc.ncsa.security.core.util.StringUtils;
 import edu.uiuc.ncsa.security.util.crypto.CertUtil;
 import edu.uiuc.ncsa.security.util.crypto.KeyUtil;
 import org.qdl_lang.exceptions.BadArgException;
+import org.qdl_lang.exceptions.BadStemValueException;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.state.State;
+import org.qdl_lang.util.NoOpScalarImpl;
 import org.qdl_lang.util.ProcessScalarImpl;
 import org.qdl_lang.util.QDLAggregateUtil;
 import org.qdl_lang.util.QDLFileUtil;
@@ -95,7 +97,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                     if (stem.containsKey("type")) {
                         type = stem.getString("type");
                     } else {
-                        throw new BadArgException(getName() + " is missing the type of the key. Must be RSA or EC",  0);
+                        throw new BadArgException(getName() + " is missing the type of the key. Must be RSA or EC", 0);
                     }
                     if (type.equals("RSA")) {
                         unknownType = false;
@@ -169,7 +171,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                         return out;
                     }
                     if (unknownType) {
-                        throw new BadArgException("unknown key type '" + stem.get("type") + "'",0);
+                        throw new BadArgException("unknown key type '" + stem.get("type") + "'", 0);
                     }
                 } else {
                     if (!(objects[0] instanceof Long)) {
@@ -264,7 +266,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                 return importJWKS(objects, state);
             }
             if (!(objects[1] instanceof String)) {
-                throw new BadArgException(getName() + " the second argument must be a string",1);
+                throw new BadArgException(getName() + " the second argument must be a string", 1);
             }
             String arg2 = (String) objects[1];
             if (arg2.equals(JWKS_TYPE)) {
@@ -479,7 +481,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         String type = PKCS_8_TYPE;
         if (objects.length == 3) {
             if (!(objects[2] instanceof String)) {
-                throw new BadArgException(EXPORT_NAME + " third argument must be a string that is the type of key",2);
+                throw new BadArgException(EXPORT_NAME + " third argument must be a string that is the type of key", 2);
             }
             type = (String) objects[2];
         }
@@ -628,17 +630,17 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                 return outStem;
             }
 
-            if (!(objects[0] instanceof QDLStem)) {
-                throw new BadArgException("The first argument of " + getName() + " must be a stem",  0);
+            if (!(objects[1] instanceof QDLStem)) {
+                throw new BadArgException("The second argument of " + getName() + " must be a stem", 1);
             }
             // arg 0 is either stem of the key or a cfg stem (which includes the key as 'key' entry)
             // arg 1 is either string or stem of strings to encrypt.
-            QDLStem leftStem = (QDLStem) objects[0];
+            QDLStem leftStem = (QDLStem) objects[1];
             if (isAES(leftStem)) {
-                return sDeOrEnCrypt(objects,  true, getName());
+                return sDeOrEnCrypt(objects, true, getName());
             }
             if (isEC(leftStem)) {
-                throw new BadArgException(getName() + " unsupported key type", 0);
+                throw new BadArgException(getName() + " unsupported key type", 1);
             }
             JSONWebKey jsonWebKey;
             String cipher = "RSA"; // There are several available.
@@ -657,28 +659,15 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             }
             if (usePrivateKey) {
                 if (jsonWebKey.privateKey == null) {
-                    throw new BadArgException("Missing private key", 0);
+                    throw new BadArgException("Missing private key", 1);
                 }
             } else {
                 if (jsonWebKey.publicKey == null) {
-                    throw new BadArgException("Missing public key", 0);
+                    throw new BadArgException("Missing public key", 1);
                 }
             }
-            QDLStem rightArg = null;
-            boolean stringArg = false;
-            boolean gotOne = false;
-            if (objects[1] instanceof QDLStem) {
-                gotOne = true;
-                rightArg = (QDLStem) objects[1];
-            }
-            if (objects[1] instanceof String) {
-                gotOne = true;
-                stringArg = true;
-                rightArg = new QDLStem();
-                rightArg.put(0L, objects[1]);
-            }
             ProcessEncryptDecrypt processEncryptDecrypt = new ProcessEncryptDecrypt(jsonWebKey, cipher, usePrivateKey, false);
-            return QDLAggregateUtil.process(objects[1], processEncryptDecrypt);
+            return QDLAggregateUtil.process(objects[0], processEncryptDecrypt);
         }
 
 /*
@@ -831,38 +820,38 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
 
         @Override
         public Object evaluate(Object[] objects, State state) {
-            if (!(objects[0] instanceof QDLStem)) {
-                throw new BadArgException("The first argument of " + getName() + " must be a stem", 0);
+            if (!(objects[1] instanceof QDLStem)) {
+                throw new BadArgException("The second argument of " + getName() + " must be a stem", 1);
             }
-            QDLStem leftArg = (QDLStem) objects[0];
+            QDLStem leftArg = (QDLStem) objects[1];
             if (isAES(leftArg)) {
-                return sDeOrEnCrypt(objects,  false, getName());
+                return sDeOrEnCrypt(objects, false, getName());
             }
             if (isEC(leftArg)) {
-                throw new BadArgException(getName() + " unsupported key type", 0);
+                throw new BadArgException(getName() + " unsupported key type", 1);
             }
             boolean usePrivateKey = false;
 
             if (objects.length == 3) {
                 if (!(objects[2] instanceof Boolean)) {
-                    throw new BadArgException("the last argument of " + getName() + " must be a boolean. Default is true",  2);
+                    throw new BadArgException("the last argument of " + getName() + " must be a boolean. Default is true", 2);
                 }
                 usePrivateKey = (Boolean) objects[2];
             }
             JSONWebKey jsonWebKey = getKeys(leftArg);
             if (usePrivateKey) {
                 if (jsonWebKey.privateKey == null) {
-                    throw new BadArgException("Missing private key", 0);
+                    throw new BadArgException("Missing private key", 1);
                 }
             } else {
                 if (jsonWebKey.publicKey == null) {
-                    throw new BadArgException("Missing public key", 0);
+                    throw new BadArgException("Missing public key", 1);
                 }
             }
             String cipher = "RSA"; // There are several available.
             ProcessEncryptDecrypt processEncryptDecrypt = new ProcessEncryptDecrypt(jsonWebKey,
                     cipher, usePrivateKey, true);
-            return QDLAggregateUtil.process(objects[1], processEncryptDecrypt);
+            return QDLAggregateUtil.process(objects[0], processEncryptDecrypt);
         }
 
 
@@ -871,10 +860,10 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             List<String> doxx = new ArrayList<>();
             switch (argCount) {
                 case 2:
-                    doxx.add(getName() + "(key., arg|arg.) - decrypt the argument. If the key is symmetric, use that, otherwise use the public key");
+                    doxx.add(getName() + "(arg|arg., key.) - decrypt the argument. If the key is symmetric, use that, otherwise use the public key");
                     break;
                 case 3:
-                    doxx.add(getName() + "(key., arg|arg., use_private) - decrypt the argument using the private key if use_private == true");
+                    doxx.add(getName() + "(arg|arg., key., use_private) - decrypt the argument using the private key if use_private == true");
             }
             if (doxx.isEmpty()) {
                 doxx.add("key. - the RSA key you want to use. Only RSA keys are supported at this time.");
@@ -887,15 +876,15 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                 doxx.add("to the " + ENCRYPT_NAME + " which uses the private key, so operations are seamless");
                 doxx.add("Remember that the length of the arg or each element of arg.");
                 doxx.add("E.g.");
-                doxx.add(getName() + "(key.,my_string)");
+                doxx.add(getName() + "(my_string, key.)");
                 doxx.add("E.g. (roundtrip)");
-                doxx.add("   " + getName() + "(key., " + ENCRYPT_NAME + "(key., 'marizy doats'))");
+                doxx.add("   " + getName() + "(" + ENCRYPT_NAME + "('marizy doats', key.), key.)");
                 doxx.add("marizy doats");
                 doxx.add("In this case, the encryption happens with the private key and the decryption with ");
                 doxx.add("the public part of the key.");
                 doxx.add("Note that the public private parts must be opposite, so ");
                 doxx.add("E.g. (roundtrip, with keys type reverse)");
-                doxx.add("   " + getName() + "(key., " + ENCRYPT_NAME + "(key., 'marizy doats', false), true)");
+                doxx.add("   " + getName() + "(" + ENCRYPT_NAME + "('marizy doats', key., false), key., true)");
                 doxx.add("marizy doats");
 
 
@@ -928,14 +917,14 @@ kazrnybI9mX73qv6NqA
 {woof woof woof}
     crypto#encrypt(aes., {'b',{'a':'woof woof woof'}})
      */
-    public Object sDeOrEnCrypt(Object[] objects,  boolean isEncrypt, String name) {
+    public Object sDeOrEnCrypt(Object[] objects, boolean isEncrypt, String name) {
         byte[] key = null;
         if (objects[0] instanceof QDLStem) {
             // check that it is a JWK of type octet
             QDLStem sKey = (QDLStem) objects[0];
             if (sKey.containsKey("kty")) {
                 if (!sKey.getString("kty").equals("oct")) {
-                    throw new BadArgException("Incorrect key type. Must be of type 'oct' (octet-encoded)",  0);
+                    throw new BadArgException("Incorrect key type. Must be of type 'oct' (octet-encoded)", 0);
                 }
                 if (sKey.containsKey("k")) {
                     key = Base64.decodeBase64(sKey.getString("k"));
@@ -945,7 +934,7 @@ kazrnybI9mX73qv6NqA
             }
         } else {
             if (!(objects[0] instanceof String)) {
-                throw new BadArgException("the first argument to " + name + " must be a base64 encoded key",  0);
+                throw new BadArgException("the first argument to " + name + " must be a base64 encoded key", 0);
             }
             key = Base64.decodeBase64((String) objects[0]);
         }
@@ -1065,7 +1054,7 @@ kazrnybI9mX73qv6NqA
   decode(crypto#read_oid(cert., '1.3.6.1.4.1.5923.1.1.1.6'))
 
         */
-        protected QDLStem certToStem(X509Certificate x509Certificate)  {
+        protected QDLStem certToStem(X509Certificate x509Certificate) {
             QDLStem out = new QDLStem();
             QDLStem subject = new QDLStem();
             subject.put("x500", x509Certificate.getSubjectX500Principal().getName());
@@ -1344,14 +1333,14 @@ kazrnybI9mX73qv6NqA
         return key.containsKey("kty") && key.getString("kty").equals("RSA");
     }
 
-    public static String SIGN_JWT = "sign";
+    public static String SIGN_JWT = "to_jwt";
     public static String JWT_TYPE = "typ";
     public static String JWT_KEY_ID = "kid";
     public static String JWT_ALGORITHM = "alg";
     public static String JWT_DEFAULT_TYPE = "JWT";
     public static String JWT_ALGORITHM_NONE = "none";
 
-    public class SignJWT implements QDLFunction {
+    public class ToJWT implements QDLFunction {
         @Override
         public String getName() {
             return SIGN_JWT;
@@ -1359,7 +1348,7 @@ kazrnybI9mX73qv6NqA
 
         @Override
         public int[] getArgCount() {
-            return new int[]{2, 3};
+            return new int[]{1, 2, 3};
         }
 
         @Override
@@ -1368,32 +1357,56 @@ kazrnybI9mX73qv6NqA
             JSONObject payload = null;
             JSONWebKey webkey = null;
             int argIndex = 0;
-            if (objects.length == 3) {
-                header = (JSONObject) ((QDLStem) objects[argIndex++]).toJSON();
-            }
-
-            payload = (JSONObject) ((QDLStem) objects[argIndex++]).toJSON();
-            webkey = getKeys((QDLStem) objects[argIndex++]);
-            if (webkey.isOctetKey()) {
-                throw new BadArgException("cannot sign with octet keys", argIndex-1);
-            }
-            if (header == null) {
-                // create one
+            if (objects.length == 1) {
                 header = new JSONObject();
                 header.put(JWT_TYPE, JWT_DEFAULT_TYPE);
-                header.put(JWT_ALGORITHM, webkey.algorithm);
-                if (!StringUtils.isTrivial(webkey.id)) {
-                    // ID is not required, so only add if present
-                    header.put(JWT_KEY_ID, webkey.id);
+                header.put(JWT_ALGORITHM, JWT_ALGORITHM_NONE);
+                if (!(objects[argIndex] instanceof QDLStem)) {
+                    throw new BadArgException(getName() + " requires a stem as its first argument", 0);
                 }
+                payload = (JSONObject) ((QDLStem) objects[argIndex++]).toJSON();
+            } else {
+
+                if (objects.length == 3) {
+                    if (!(objects[argIndex] instanceof QDLStem)) {
+                        throw new BadArgException(getName() + " requires a stem as its header", argIndex);
+                    }
+                    header = (JSONObject) ((QDLStem) objects[argIndex++]).toJSON();
+                }
+                if (!(objects[argIndex] instanceof QDLStem)) {
+                    throw new BadArgException(getName() + " requires a stem as its payload", argIndex);
+                }
+
+                payload = (JSONObject) ((QDLStem) objects[argIndex++]).toJSON();
+                if (!(objects[argIndex] instanceof QDLStem)) {
+                    throw new BadArgException(getName() + " requires a stem as its key", argIndex);
+                }
+                webkey = getKeys((QDLStem) objects[argIndex++]);
 
             }
             // If the algorithm is none, then do not sign the JWT, just return the encoded header + "." +  payload + "."
             // (note the trailing period!)
-            if (header.get(JWT_ALGORITHM).equals(JWT_ALGORITHM_NONE)) {
+            if (header != null && header.containsKey(JWT_ALGORITHM) && header.get(JWT_ALGORITHM).equals(JWT_ALGORITHM_NONE)) {
                 return Base64.encodeBase64URLSafeString(header.toString().getBytes()) + "." +
                         Base64.encodeBase64URLSafeString(payload.toString().getBytes()) + ".";
 
+            }
+            if (webkey.isOctetKey()) {
+                throw new BadArgException("cannot sign with octet keys", argIndex - 1);
+            }
+            if (header == null) {
+                // create one
+                header = new JSONObject();
+            }
+            if (!header.containsKey(JWT_TYPE)) {
+                header.put(JWT_TYPE, JWT_DEFAULT_TYPE);
+            }
+            if (!header.containsKey(JWT_ALGORITHM)) {
+                header.put(JWT_ALGORITHM, webkey.algorithm);
+            }
+            if (!StringUtils.isTrivial(webkey.id)) {
+                // ID is not required, so only add if present
+                header.put(JWT_KEY_ID, webkey.id);
             }
             JWSHeader jwsHeader = JWSHeader.parse(header);
             JWTClaimsSet jwsPayload = JWTClaimsSet.parse(payload);
@@ -1419,6 +1432,11 @@ kazrnybI9mX73qv6NqA
         public List<String> getDocumentation(int argCount) {
             List<String> dd = new ArrayList<>();
             switch (argCount) {
+                case 1:
+                    dd.add(getName() + "(payload.) - create an unsigned JWT from the stem.");
+                    dd.add("payload. - the stem that will be the payload of the JWT");
+                    dd.add("A header will be created automatically");
+                    break;
                 case 2:
                     dd.add(getName() + "(payload., key.) - create a JWT from the stem, signing it with the key.");
                     dd.add("payload. - the stem that will be the payload of the JWT");
@@ -1437,12 +1455,58 @@ kazrnybI9mX73qv6NqA
         }
     }
 
-    public static String JWT_VERIFY = "verify";
+    public static String FROM_JWT = "from_jwt";
+
+    public class FromJWT implements QDLFunction {
+        @Override
+        public String getName() {
+            return FROM_JWT;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1};
+        }
+
+        @Override
+        public Object evaluate(Object[] objects, State state) throws Throwable {
+            //   JSONWebKey webKey = getKeys((QDLStem) objects[1]);
+            ProcessJWT processJWT = new ProcessJWT();
+            return QDLAggregateUtil.process(objects[0], processJWT);
+        }
+
+
+        /*
+        p. ≔ {'a':'q','b':{'s':'t'}};
+        crypto ≔ j_load('crypto');
+        rsa. ≔ crypto#create_key(2048);
+        rr ≔ crypto#to_jwt(p., rsa.);
+        crypto#verify(rr,rsa.);
+        crypto#verify({'A':rr,'B':{'C':rr}},rsa.);
+         */
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            switch (argCount) {
+                case 2:
+                    dd.add(getName() + "(jwt | jwt., key.) - Convert the jwt strings to their payload");
+                    dd.add("jwt - a JWT (a string)");
+                    dd.add("jwt. - a stem of JWTs");
+                    dd.add("key. - the key to verify against");
+                    dd.add("Returns the stem of the payload. No verification is done. Any non-strings will");
+                    dd.add("result in an error.");
+                    break;
+            }
+            return dd;
+        }
+    }
+
+    public static String VERIFY_JWT = "verify";
 
     public class VerifyJWT implements QDLFunction {
         @Override
         public String getName() {
-            return JWT_VERIFY;
+            return VERIFY_JWT;
         }
 
         @Override
@@ -1453,23 +1517,141 @@ kazrnybI9mX73qv6NqA
         @Override
         public Object evaluate(Object[] objects, State state) throws Throwable {
             JSONWebKey webKey = getKeys((QDLStem) objects[1]);
-            ProcessJWT processJWT = new ProcessJWT(webKey);
-            return QDLAggregateUtil.process(objects[0], processJWT);
+            DoJWTVerify doJWTVerify = new DoJWTVerify(webKey);
+            return QDLAggregateUtil.process(objects[0], doJWTVerify);
         }
 
-        public class ProcessJWT extends ProcessScalarImpl {
-            public ProcessJWT(JSONWebKey webKey) {
-                this.webKey = webKey;
+
+        /*
+        p. ≔ {'a':'q','b':{'s':'t'}};
+        crypto ≔ j_load('crypto');
+        rsa. ≔ crypto#create_key(2048);
+        rr ≔ crypto#to_jwt(p., rsa.);
+       crypto#verify('woof woof woof',rsa.); // scalar bad example
+       crypto#verify({'A':rr,'B':{'C':rr,'D':'arf'}},rsa.); // Bad JWT at B.D
+        crypto#verify(rr,rsa.); // good scalar example
+        crypto#verify({'A':rr,'B':{'C':rr}},rsa.); // Good stem example
+        A. ≔ {'a':rr,'b':{'c':rr,'d':{'e':123}}};
+        crypto#verify(A., rsa.); // bad stem example at b.d.e
+         */
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            switch (argCount) {
+                case 2:
+                    dd.add(getName() + "(jwt | jwt., key.) - verify the signature of a JWT against a given key");
+                    dd.add("jwt - the JWT");
+                    dd.add("jwt. - a stem of JWT");
+                    dd.add("key. - the key to verify against");
+                    dd.add("Returns a left conformable output with true if the verification worked and false");
+                    dd.add("otherwise. Note that unknown entries fail verification.");
+                    dd.add("Verification here means solely that the signature for the JWT corresponds");
+                    dd.add("to that for the given key. In many cases (such as OAuth) \"verification\" also implies");
+                    dd.add("a variety of other checks on the content of the payload and header.");
+                    dd.add("which this function does not do.");
+                    break;
+            }
+            return dd;
+        }
+    }
+
+    //public class ProcessJWT extends ProcessScalarImpl {
+    public class DoJWTVerify extends ProcessScalarImpl {
+        public DoJWTVerify(JSONWebKey webKey) {
+            this.webKey = webKey;
+        }
+
+        JSONWebKey webKey;
+
+        @Override
+        public Object getDefaultValue(Object value) {
+            return Boolean.FALSE;
+        }
+
+        @Override
+        public Object process(Object key, String jwt) {
+            try {
+                return process(jwt);
+            } catch (Throwable ex) {
+                throw new BadStemValueException("error processing JWT:" + ex.getMessage());
             }
 
-            JSONWebKey webKey;
+        }
 
-            @Override
-            public Object process(String jwt) {
-                String[] b64s = jwt.split("\\.");
-                if (b64s.length == 2) {
-                    // Maybe an unsigned JWT? Verification consists of checking the algorithm
-                    // is indeed "none"
+        @Override
+        public Object process(String jwt) {
+            String[] b64s = jwt.split("\\.");
+            if (b64s.length != 2 && b64s.length != 3) {
+                return Boolean.FALSE;
+            }
+            if (b64s.length == 2) {
+                // Maybe an unsigned JWT? Verification consists of checking the algorithm
+                // is indeed "none"
+                try {
+                    String header = new String(Base64.decodeBase64(b64s[0]));
+                    JSONObject h = JSONObject.fromObject(header);
+                    if (h.containsKey(JWT_ALGORITHM) && h.getString(JWT_ALGORITHM).equals(JWT_ALGORITHM_NONE)) {
+                        String payload = new String(Base64.decodeBase64(b64s[1]));
+                        QDLStem out = new QDLStem();
+                        out.fromJSON(JSONObject.fromObject(payload));
+                        return Boolean.TRUE;
+                    }
+                } catch (Throwable ex) {
+                    return Boolean.FALSE;
+                }
+            }
+            try {
+
+                SignedJWT signedJWT = new SignedJWT(new Base64URL(b64s[0]),
+                        new Base64URL(b64s[1]),
+                        new Base64URL(b64s[2]));
+                JWSVerifier verifier = null;
+                boolean unsupportedProtocol = true;
+                if (webKey.isRSAKey()) {
+                    verifier = new RSASSAVerifier((RSAPublicKey) webKey.publicKey);
+                    unsupportedProtocol = false;
+                }
+                if (webKey.isECKey()) {
+                    verifier = new ECDSAVerifier((ECPublicKey) webKey.publicKey);
+                    unsupportedProtocol = false;
+                }
+                if (unsupportedProtocol) {
+                    throw new UnsupportedProtocolException("unsupported protocol");
+                }
+                return signedJWT.verify(verifier);
+
+            } catch (Throwable throwable) {
+            }
+            return Boolean.FALSE;
+        }
+    }
+
+    //public class ProcessJWT extends ProcessScalarImpl {
+    public class ProcessJWT extends ProcessScalarImpl {
+
+        public ProcessJWT() {
+        }
+
+        @Override
+        public Object process(Object key, String jwt) {
+            try {
+                return process(jwt);
+            } catch (Throwable ex) {
+                throw new BadStemValueException("error processing JWT:" + ex.getMessage());
+            }
+
+        }
+
+        @Override
+        public Object process(String jwt) {
+            String[] b64s = jwt.split("\\.");
+            if (b64s.length != 2 && b64s.length != 3) {
+                return jwt; // not a JWT
+            }
+            if (b64s.length == 2) {
+                // Maybe an unsigned JWT? Verification consists of checking the algorithm
+                // is indeed "none"
+                try {
                     String header = new String(Base64.decodeBase64(b64s[0]));
                     JSONObject h = JSONObject.fromObject(header);
                     if (h.containsKey(JWT_ALGORITHM) && h.getString(JWT_ALGORITHM).equals(JWT_ALGORITHM_NONE)) {
@@ -1478,61 +1660,20 @@ kazrnybI9mX73qv6NqA
                         out.fromJSON(JSONObject.fromObject(payload));
                         return out;
                     }
+                } catch (Throwable t) {
+                    return jwt;
                 }
-                try {
-                    SignedJWT signedJWT = new SignedJWT(new Base64URL(b64s[0]),
-                            new Base64URL(b64s[1]),
-                            new Base64URL(b64s[2]));
-                    JWSVerifier verifier = null;
-                    boolean unsupportedProtocol = true;
-                    if (webKey.isRSAKey()) {
-                        verifier = new RSASSAVerifier((RSAPublicKey) webKey.publicKey);
-                        unsupportedProtocol = false;
-                    }
-                    if (webKey.isECKey()) {
-                        verifier = new ECDSAVerifier((ECPublicKey) webKey.publicKey);
-                        unsupportedProtocol = false;
-                    }
-                    if (unsupportedProtocol) {
-                        throw new UnsupportedProtocolException("unsupported protocol");
-                    }
-                    if (signedJWT.verify(verifier)) {
-                        String payload = new String(Base64.decodeBase64(b64s[1]));
-                        QDLStem out = new QDLStem();
-                        out.fromJSON(JSONObject.fromObject(payload));
-                        return out;
-                    }
-
-                } catch (Throwable throwable) {
-                    throw new IllegalStateException("JWT verification failed: " + throwable.getMessage(), throwable);
-                }
-                throw new IllegalStateException("JWT verification failed: ");
             }
-        }
-
-        /*
-        p. ≔ {'a':'q','b':{'s':'t'}};
-        crypto ≔ j_load('crypto');
-        rsa. ≔ crypto#create_key(2048);
-        rr ≔ crypto#sign(p., rsa.);
-        crypto#verify(rr,rsa.);
-        crypto#verify({'A':rr,'B':{'C':rr}},rsa.);
-         */
-        @Override
-        public List<String> getDocumentation(int argCount) {
-            List<String> dd = new ArrayList<>();
-            switch (argCount) {
-                case 2:
-                    dd.add(getName() + "(arg, key.) - verify the signature of a JWT against a given key");
-                    dd.add("arg - the JWT string");
-                    dd.add("key. - the key to verify against");
-                    dd.add("Returns the stem of the payload, or raises an error if verification failed");
-                    dd.add("Note that verification here means solely that the signature for teh JWT corresponds");
-                    dd.add("to that for the given key. In many cases (such as OAuth) \"verification\" also implies");
-                    dd.add("a variety of other checks on the content of the payload which this function does not do");
-                    break;
+            // has 3 elements, so it is a JWT.
+            try {
+                String payload = new String(Base64.decodeBase64(b64s[1]));
+                QDLStem out = new QDLStem();
+                out.fromJSON(JSONObject.fromObject(payload));
+                return out;
+            } catch (Throwable throwable) {
+                return jwt; // pass it back unaltered
             }
-            return dd;
         }
     }
+
 }
