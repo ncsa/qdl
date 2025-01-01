@@ -1,0 +1,15 @@
+/*
+  Elliptic curve key used for testing the cryptography module
+*/
+return(
+ {'alg':'ES256',
+  'crv':'P-256',
+   'd':'fOuEaM72yugYAlO14f5bj_aZO5S6h2nfVOAhzkxrbbI',
+   'iat':1735649982,
+   'kid':'D57E9C2511070859',
+   'kty':'EC',
+   'use':'sig',
+   'x':'kTz5JR4GN26jBnXlTpcs3yYw1jirl6aF0YkZNNXoW24',
+   'y':'uFtnSWEy1D1-iUNZXXYhNhBoufiR5U2iY95e7dV1JOY'
+  }
+);

@@ -19,6 +19,7 @@ import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.exceptions.BadStemValueException;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
+import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.state.State;
 import org.qdl_lang.util.NoOpScalarImpl;
 import org.qdl_lang.util.ProcessScalarImpl;
@@ -99,7 +100,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                     } else {
                         throw new BadArgException(getName() + " is missing the type of the key. Must be RSA or EC", 0);
                     }
-                    if (type.equals("RSA")) {
+                    if (type.equals(RSA_TYPE)) {
                         unknownType = false;
                         if (stem.containsKey("length")) {
                             keyLength = stem.getLong("length").intValue();
@@ -113,7 +114,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
 
                         webKey = getJwkUtil().createRSAKey(keyLength, alg);
                     }
-                    if (type.equals("EC")) {
+                    if (type.equals(EC_TYPE)) {
                         unknownType = false;
                         if (stem.containsKey("curve")) {
                             curve = stem.getString("curve");
@@ -125,7 +126,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                         }
                         webKey = getJwkUtil().createECKey(curve, alg);
                     }
-                    if (type.equals("AES")) {
+                    if (type.equals(AES_TYPE)) {
                         // See https://www.rfc-editor.org/rfc/rfc7518.html#section-6.4
                         unknownType = false;
                         EncryptionMethod encryptionMethod = null;
@@ -301,7 +302,8 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         dd.add("        " + JWKS_TYPE + " - (default) JWKS key or set of keys");
         dd.add("        " + PKCS_1_TYPE + " - PKCS 1, PEM encoded RSA private key");
         dd.add("        " + PKCS_8_TYPE + " - PKCS 8, PEM encoded unencrypted private key");
-        dd.add("        " + X509_TYPE + " - X509, PEM encoded public key");
+        dd.add("        " + PKCS_8_PUBLIC_TYPE + " - PKCS 8 public, PEM encoded public key");
+        dd.add("        " + X509_TYPE + " - \"X509\", PEM encoded public key. This is really PKCS 8 public, but used in X 509 certificates.");
     }
 
     public Object importPKCS(Object[] objects, State state) throws Throwable {
@@ -323,6 +325,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                     privateKey = KeyUtil.fromPKCS8PEM(rawFile);
                     break;
                 case X509_TYPE:
+                case PKCS_8_PUBLIC_TYPE:
                     publicKey = KeyUtil.fromX509PEM(rawFile);
                     break;
                 default:
@@ -495,6 +498,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                 content = KeyUtil.toPKCS8PEM(jwk.privateKey);
                 break;
             case X509_TYPE:
+            case PKCS_8_PUBLIC_TYPE:
                 content = KeyUtil.toX509PEM(jwk.publicKey);
                 break;
             default:
@@ -505,9 +509,45 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
     }
 
     public static final String JWKS_TYPE = "jwks";
-    public static final String PKCS_1_TYPE = "pkcs_1";
-    public static final String PKCS_8_TYPE = "pkcs_8";
+    public static final String PKCS_1_TYPE = "pkcs1";
+    public static final String PKCS_8_TYPE = "pkcs8";
+    public static final String PKCS_8_PUBLIC_TYPE = "public";
     public static final String X509_TYPE = "x509";
+    public static final String RSA_TYPE = "rsa";
+    public static final String EC_TYPE = "elliptic";
+    public static final String AES_TYPE = "aes";
+    QDLStem types;
+
+    public QDLStem getKeyTypes() {
+        if (types == null) {
+            types = new QDLStem();
+            types.put("jwks", JWKS_TYPE);
+            types.put("pkcs1", PKCS_1_TYPE);
+            types.put("pkcs8", PKCS_8_TYPE);
+            types.put("public", PKCS_8_PUBLIC_TYPE);
+            types.put("x509", X509_TYPE);
+            types.put("rsa", RSA_TYPE);
+            types.put("ec", EC_TYPE);
+            types.put("aes", AES_TYPE);
+        }
+        return types;
+    }
+
+    public static String KEY_TYPES_STEM_NAME = "$$KEY_TYPE.";
+
+    public class KeyType implements QDLVariable {
+        QDLStem keyTypes = null;
+
+        @Override
+        public String getName() {
+            return KEY_TYPES_STEM_NAME;
+        }
+
+        @Override
+        public Object getValue() {
+            return getKeyTypes();
+        }
+    }
 
 
     private JWK getJwk(PublicKey publicKey) {
@@ -685,17 +725,16 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             List<String> dd = new ArrayList<>();
             switch (argCount) {
                 case 2:
-                    dd.add(getName() + "(key., arg|arg.) - encrypt a string or stem of them. If the key is symmetric, do symmetric encryption, otherwise encrypt with the private key");
+                    dd.add(getName() + "(arg|arg., key.) - encrypt a string or stem of them. If the key is symmetric, do symmetric encryption, otherwise encrypt with the private key");
                     break;
                 case 3:
-                    dd.add(getName() + "(key., arg|arg., use_private) - encrypt a string or stem of them with the private key if use_private is true");
+                    dd.add(getName() + "(arg|arg., key., use_private) - encrypt a string or stem of them with the private key if use_private is true");
                     dd.add("   or use the public key if false. Default is true");
                     break;
             }
             dd.add("key. - the RSA or symmetric key to use. N.B. Elliptic keys are not supported at this time.");
             dd.add("arg|arg. - a string or a stem of strings");
             if (argCount == 3) {
-
                 dd.add("use_private - use the private key (if true, this is the default) and the public key if false");
             }
             dd.add("NOTE: You can only encrypt a string with an RSA key that has fewer bits than the key.");
@@ -705,16 +744,16 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             dd.add("One final reminder is that if encrypt/decrypt with one key and decrypt/encrypt with the" +
                     "\nother or you will get an error");
             dd.add("E.g.");
-            dd.add("   " + getName() + "(key., 'marizy doats')");
+            dd.add("   " + getName() + "('marizy doats', key.)");
             dd.add("(whole bunch of base 64 stuff that depends on the key)");
             dd.add("Since this was encrypted with the private key, you would need to specify using the");
             dd.add("public key in " + DECRYPT_NAME + " (which is, incidentally, the default there).");
             dd.add("\nE.g. Symmetric example");
             dd.add("Here, a symmetric key (AES) is created and used.");
             dd.add("    aes. := crypto#create_key({'type':'AES','alg':'A256GCM','length':512})\n" +
-                    "    crypto#encrypt(aes., 'woof woof woof') \n" +
+                    "    crypto#encrypt('woof woof woof', aes.) \n" +
                     "67dmKZ6lqHwSt-mIZGs\n" +
-                    "    crypto#decrypt(aes., '67dmKZ6lqHwSt-mIZGs')\n" +
+                    "    crypto#decrypt('67dmKZ6lqHwSt-mIZGs', aes.)\n" +
                     "woof woof woof\n");
             return dd;
         }
@@ -919,28 +958,28 @@ kazrnybI9mX73qv6NqA
      */
     public Object sDeOrEnCrypt(Object[] objects, boolean isEncrypt, String name) {
         byte[] key = null;
-        if (objects[0] instanceof QDLStem) {
+        if (objects[1] instanceof QDLStem) {
             // check that it is a JWK of type octet
-            QDLStem sKey = (QDLStem) objects[0];
+            QDLStem sKey = (QDLStem) objects[1];
             if (sKey.containsKey("kty")) {
                 if (!sKey.getString("kty").equals("oct")) {
-                    throw new BadArgException("Incorrect key type. Must be of type 'oct' (octet-encoded)", 0);
+                    throw new BadArgException("Incorrect key type. Must be of type 'oct' (octet-encoded)", 1);
                 }
                 if (sKey.containsKey("k")) {
                     key = Base64.decodeBase64(sKey.getString("k"));
                 } else {
-                    throw new BadArgException("Incorrect key format: missing 'k' entry for bytes", 0);
+                    throw new BadArgException("Incorrect key format: missing 'k' entry for bytes", 1);
                 }
             }
         } else {
-            if (!(objects[0] instanceof String)) {
-                throw new BadArgException("the first argument to " + name + " must be a base64 encoded key", 0);
+            if (!(objects[1] instanceof String)) {
+                throw new BadArgException("the first argument to " + name + " must be a base64 encoded key", 1);
             }
-            key = Base64.decodeBase64((String) objects[0]);
+            key = Base64.decodeBase64((String) objects[1]);
         }
 
         ProcessSymmetricDeorEncrypt processSymmetricDeorEncrypt = new ProcessSymmetricDeorEncrypt(key, isEncrypt);
-        return QDLAggregateUtil.process(objects[1], processSymmetricDeorEncrypt);
+        return QDLAggregateUtil.process(objects[0], processSymmetricDeorEncrypt);
     }
 
     protected class ProcessSymmetricDeorEncrypt extends ProcessScalarImpl {
@@ -1059,6 +1098,7 @@ kazrnybI9mX73qv6NqA
             QDLStem subject = new QDLStem();
             subject.put("x500", x509Certificate.getSubjectX500Principal().getName());
             subject.put("dn", x509Certificate.getSubjectDN().getName());
+
             try {
                 if (x509Certificate.getSubjectAlternativeNames() != null) {
                     QDLStem altNames = processAltNames(x509Certificate.getSubjectAlternativeNames());
@@ -1077,6 +1117,7 @@ kazrnybI9mX73qv6NqA
             for (String x : x509Certificate.getNonCriticalExtensionOIDs()) {
                 noncriticalOIDS.getQDLList().add(x);
             }
+
             QDLStem oids = new QDLStem();
             oids.put("critical", criticalOIDS);
             oids.put("noncritical", noncriticalOIDS);
@@ -1236,50 +1277,39 @@ kazrnybI9mX73qv6NqA
         public Object evaluate(Object[] objects, State state) throws Throwable {
             QDLStem certStem = (QDLStem) objects[0];
             if (!certStem.containsKey("encoded")) {
-                throw new IllegalStateException("certs must contain encoded key");
+                throw new BadArgException("certs must contain 'encoded' key", 0);
             }
             String cert = certStem.getString("encoded");
             X509Certificate[] certs = CertUtil.fromX509PEM(cert);
-            // better be one?
-            boolean isScalar = false;
-            String oid = null;
-            QDLStem oidStem = null;
-            if (objects[1] instanceof String) {
-                oid = (String) objects[1];
-                isScalar = true;
-            } else {
-                if (objects[1] instanceof QDLStem) {
-                    oidStem = (QDLStem) objects[1];
 
-                } else {
-                    throw new BadArgException(getName() + "requires a string or stem as the second argument", 0);
-                }
+            ProcessOIDS processOIDS = new ProcessOIDS(certs[0]);
+            return QDLAggregateUtil.process(objects[1], processOIDS);
+        }
+
+        protected class ProcessOIDS extends ProcessScalarImpl{
+            public ProcessOIDS(X509Certificate x509Certificate) {
+                this.x509Certificate = x509Certificate;
             }
-            X509Certificate x509Certificate = certs[0];
-            QDLStem outStem = new QDLStem();
-            if (isScalar) {
-                byte[] bb = x509Certificate.getExtensionValue(oid);
-                if (bb == null) {
-                    return QDLNull.getInstance();
-                }
+
+            X509Certificate x509Certificate;
+            @Override
+            public Object getDefaultValue(Object value) {
+                return QDLNull.getInstance();
+            }
+
+            @Override
+            public Object process(String oidKey) {
+                byte[] bb = x509Certificate.getExtensionValue(oidKey);
+               if(bb == null){
+                   return QDLNull.getInstance();
+               }
                 return Base64.encodeBase64URLSafeString(bb);
             }
-            for (Object key : oidStem.keySet()) {
-                String oidKey;
-                byte[] bb;
-                if (key instanceof Long) {
-                    oidKey = oidStem.getString((Long) key);
-                } else {
-                    oidKey = oidStem.getString((String) key);
-                }
-                bb = x509Certificate.getExtensionValue(oidKey);
-                if (bb == null) {
-                    outStem.putLongOrString(key, QDLNull.getInstance());
-                } else {
-                    outStem.putLongOrString(key, Base64.encodeBase64URLSafeString(bb));
-                }
+
+            @Override
+            public Object process(Object key, String oidKey) {
+                return process(oidKey);
             }
-            return outStem;
         }
 
         @Override
@@ -1287,13 +1317,12 @@ kazrnybI9mX73qv6NqA
             List<String> dd = new ArrayList<>();
             dd.add(getName() + "(cert., oid | oids.) - get the given OIDs from a given cert.");
             dd.add("cert. - a single X509 certificate to be probed.");
-            dd.add("  oid - a string that is the oid (object id), e.g. '2.5.29.15'");
+            dd.add("  oid - a string or (set of such strings) that is the oid (object id), e.g. '2.5.29.15'");
             dd.add("oids. - a stem of oids whose keys are the return values. Only string-valued OIDs are supported.");
-            dd.add("You pass in either an oid or stem of them");
             dd.add("This returns the base 64 encoded octet stream. Best we can do in general...");
             dd.add("If there is no such value, a null is returned.");
             dd.add("An OID (object identifier) is a bit of X 509 voodoo that allows for");
-            dd.add("addressing attributes. These are very specific and not standardizes, hence are");
+            dd.add("addressing attributes. These are very specific and not standardized, hence are");
             dd.add("bona fide low-level operations, but often the only way to get certain custom values");
             dd.add("E.g. to get the EPPN (if present) from a cert");
             dd.add("   " + getName() + "(cert., {'eppn':'1.3.6.1.4.1.5923.1.1.1.6'}");

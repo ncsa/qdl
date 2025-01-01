@@ -2,6 +2,7 @@ package org.qdl_lang.extensions.crypto;
 
 import org.qdl_lang.extensions.JavaModule;
 import org.qdl_lang.extensions.QDLFunction;
+import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.module.Module;
 import org.qdl_lang.state.State;
 
@@ -40,6 +41,9 @@ public class CryptoModule extends JavaModule {
         funcs.add(crypto.new FromJWT());
         funcs.add(crypto.new VerifyJWT());
         cryptoModule.addFunctions(funcs);
+        ArrayList<QDLVariable> vars = new ArrayList<>();
+        vars.add(crypto.new KeyType());
+        cryptoModule.addVariables(vars);
         if (state != null) {
             cryptoModule.init(state);
         }

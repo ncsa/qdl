@@ -1,0 +1,19 @@
+/*
+  RSA 2048 bit key used for testing the cryptography module
+*/
+return(
+  {'alg':'RS256',
+   'd':'m09jBZ-02WOFbjkzNrxfo-Hnyw6-9lOVIy2sw1x0ZpykpP9YhenLsqjbn4PMf5FHlMIYNevDQ_tnoz00qPK5_aU0PvnVb-I1opiXZDj6D6Pp6EPf_9gukVRhWp7OURov62g7K1Ok9dy-pxGezY7KBhmtcw4DwUf6TyvmI9sU4EdL4SIyThWvBA15w4GMMNJoBUEm81yMbwFB-h6qSzVlqk4O33KDDVAGqAZkVwjaVW2GmjRO4uJ94PCSyjhaTaZ38m1HOuSAeKQ4fpVaIukZqUZ771q49BB6TJosiAN9gzmygws1bZLd_xiJWexqh771ji58RWt7gvsvf0LpevpJJQ',
+   'dp':'JTxjy0rRkeKWGhS6arNODbsZ-p_0DIWxeTD9Tg1NIXJuK6yn-kg7LrFnKG3sfYvZXHZ-1aSeht9dbkp2t2J4LD1WKU4rreovS3oWReMucpncGIXqGQMlhkKx1tjsUTk4kQRszWKULRSWkhQjjpoJECe7R9TNU9IrkcPbt5gdKkc',
+   'dq':'h_iDE5LBCKDHNjIJRgmuHAgI5wGkbhJTwNincKzOs0LBLvNKtvnCGS3faLhT9bYEp84BLhISVlqf8lSSbgEFE4fBnR0aIvWkotFxE3XQokFsjrtl2ly4MAPGz5ol1vaLkML5mT7JSu4MDceRbl65DyulSWXBfVe2lbbghkgrm70',
+   'e':'AQAB',
+   'iat':1735649963,
+   'kid':'E27317A047F4ABBB',
+   'kty':'RSA',
+   'n':'p9l1YGCQ7CxBAKpazj0YmaNEiGJaqI-djD-CTZJ7rfQ8TsqQy-2mxDZZgdlFeubKGFCaK_JGxxeGcmqcawoZBMEaOI1smT3J_iBnmcWoviohGzUC5ibxA_5OSfiQyE6XzkmXwDLc1iRVPbda0KlvXUyw-J09aHyiw1urHJkLFl5mP5MBQiuNtSAJ4vBMSfLstkaiMI-fyCMyQ1T6kdm9y5alPu5ix4o-Ia2T_Hz_tdcW7d2flnv6D_Jk3fuR1AidIRi3Vso7Gsc5c_lflMiBBeVYxB3QdR5xopOfWi0HQoCu2DQQ7FAllX2LCTl4GRxdMlqipqVDgHP0rJRn6iex2Q',
+   'p':'7QpLosQeQU2bmxzVJBMERyWQ49Mbo3DRpWXwm9QEDAZBv916Cv8EUyr9iLe8cxcfnO20qHs-B3UNytU62udlZepTkTQR5-0IOO3ERSo06Q5QxpVpuvO0V2-UBL5bUC7LHXEQLu60-C-iqv_RHsykeKv2V0iDtUnpqxd8ZKe32Os',
+   'q':'tUZkh6OJCDooorHpu3YUgaQkHZfNK9-jccpSDzUwK-s76Ga0WA3g_41PCPyzrRqPqJucczYRhVpy6FluN_2EL0T3XsNTkCMzsaqNMh-fIx76yF8DJOpGvsSoSeminxDgLWdNQIvUWPxWwmQWfIxQMATFyzW01nrmurFyxfVoL0s',
+   'qi':'OGJv6iP_WUhDklGrU2f86tc1pfjJpmILZv8W2MfM6uTOR3OcBpUGmW0Lx6k_WprxM1C0J3UIx6iOZ1B7VPu01bGV6JoEuEfycYPsGf7yc1oVAPfdn8pFYzLASzbfIq78X7689xmMLBxuFKB6MFsJBc3ZDfYw1aSGbCpCdMXhbx8',
+   'use':'sig'
+   }
+ );

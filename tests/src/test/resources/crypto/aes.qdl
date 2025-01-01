@@ -1,0 +1,10 @@
+/*
+  AES (symmetric) key used for testing the cryptography module
+*/
+return(
+{
+ 'k':'WhN3I-AXrQ1PNTwveDsB-eLR74HGDkC6_O5OmjBDBbrMejkTHpPPmRmlg9zwcW80FDS_sgPLU5ZFrU8WZLH1J_vvf8drILidqc2_Jyt5QteXYI1bxP82zVGGdOWDECKmHCQq0-D3PKcHeLJrpbPEKU7BklKayY9v-b9GhKdnhUeIzWkeq3ol-12PpVMk7hPsjpxbpFecqez6mVLiZBmbifaC0j4xv13WS1HQ2GbgFQN11MJRfhk63n0JxMZ1IlluTGW4rNNqL51d6Np9vLgQ9AaU49R6QFMx2VDxt3WXkpcqnQzctlmOtdpKdmEzrTZH06sL1Xda62KOZEwK6Detfg',
+ 'kid':'16776DE0877FFE3B',
+ 'kty':'oct'
+ }
+ );

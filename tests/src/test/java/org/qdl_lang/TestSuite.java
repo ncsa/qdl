@@ -26,10 +26,11 @@ import org.junit.runners.Suite;
         OldModuleTests.class,
         GlomTest.class,
         SerializationTest.class,
-        // Without the VFS tests, all other tests (156 of them) take 1.532 s. (av. 9.82 ms per test)
-        // Running this next test adds a full 3 seconds for the initial database connection
-        // and unzipping.
-        // Point is that this is quite fast since pretty much every test creates a parser and executes it.
+        CryptoTest.class,
+        // Without the VFS tests, all other tests (569 of them, often with multiple parts, 1/1/2025) takes 6.559 s.
+        // (av. 11.6 ms per test)
+        // Running this next test adds up to several seconds for the initial database latency,
+        // Point is that QDL is actually quite fast since pretty much every test creates a parser and executes it.
         VFSTest.class
 
 })

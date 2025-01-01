@@ -1178,7 +1178,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             argName = ((VariableNode) polyad.getArguments().get(0)).getVariableReference();
             gotOne = true;
         } else {
-            if ((!gotOne) && polyad.getArguments().get(0) instanceof ExpressionImpl) {
+            if ((!gotOne) && (polyad.getArguments().get(0) instanceof ExpressionImpl || polyad.getArguments().get(0) instanceof ConstantNode)) {
                 String out = InputFormUtil.inputForm(polyad.evalArg(0, state));
                 if (out == null) {
                     out = "";
@@ -1187,6 +1187,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 polyad.setResultType(Constant.STRING_TYPE);
                 polyad.setResult(out);
                 return;
+            }else{
             }
         }
 
