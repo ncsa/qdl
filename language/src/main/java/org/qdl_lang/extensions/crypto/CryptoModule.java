@@ -30,7 +30,7 @@ public class CryptoModule extends JavaModule {
         ArrayList<QDLFunction> funcs = new ArrayList<>();
 
         funcs.add(crypto.new ImportKey());
-        funcs.add(crypto.new ImportCert());
+        funcs.add(crypto.new ReadCert());
         funcs.add(crypto.new ExportKeys());
         funcs.add(crypto.new Encrypt());
         funcs.add(crypto.new Decrypt());
@@ -56,8 +56,8 @@ public class CryptoModule extends JavaModule {
     @Override
     public List<String> getDescription() {
         if (dd.isEmpty()) {
-            dd.add("QDL's crypto graphic module. This has a variety of operations possible.");
-            dd.add("It will allow you to create a Both Elliptic and RSA keys  (so includes a public and private key)");
+            dd.add("QDL's cryptographic module. This has a variety of operations possible.");
+            dd.add("It will allow you to create Elliptic,  RSA and AES (symmetric) keys,");
             dd.add("and encrypt both strings and stems of strings using these or symmetric keys.");
             dd.add("Note that if you de/en-crypt with one key, you en/de-crypt with the other:");
             dd.add("E.g.");
@@ -70,7 +70,9 @@ public class CryptoModule extends JavaModule {
             dd.add("You may have individual keys or have sets of them. A *key set* is a stem");
             dd.add("of keys whose id is used as its key in the stem. Operations generally work for");
             dd.add("individual keys or sets of them.");
-            dd.add("\n\nAdditionally, you may import/export individual keys to various PKCS pem");
+            dd.add("\n\nThere is support to turn stems to/from signed JSON web tokens.");
+            dd.add("There is basic support to read X 509 certificates.");
+            dd.add("Finally, you may import/export individual keys to JWK or various PKCS");
             dd.add("formats, PKCS 1, 8 and X509 (for public keys).");
             dd.add( "See also:" + Crypto.IMPORT_NAME + " and " + Crypto.EXPORT_NAME + " for details.");
         }

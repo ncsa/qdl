@@ -21,7 +21,6 @@ import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.state.State;
-import org.qdl_lang.util.NoOpScalarImpl;
 import org.qdl_lang.util.ProcessScalarImpl;
 import org.qdl_lang.util.QDLAggregateUtil;
 import org.qdl_lang.util.QDLFileUtil;
@@ -209,13 +208,13 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                     dd.add(getName() + "() create an RSA key with the default key size of 1024");
                     break;
                 case 1:
-                    dd.add(getName() + "(key_size | params.) either an RSA or elliptic curve key.");
+                    dd.add(getName() + "(key_size | params.) either an RSA, EC (elliptic curve) or AES (symmetric) key.");
                     dd.add("key_size = bit count for an RSA RS256 key. ");
                     dd.add("Note that the key_size must be a multiple of 256.");
                     dd.add("If a stem of parameters is passed, it is of the form");
-                    dd.add("  {'type' :'RSA'|'EC' | 'AES', 'alg':algorithm, 'length':rsa or aes key length, 'curve' : elliptic curve.}");
+                    dd.add("  {'type' :'" + RSA_TYPE +"'|'" + EC_TYPE+ "' | '" + AES_TYPE + "', 'alg':algorithm, 'length':rsa or aes key length, 'curve' : elliptic curve.}");
                     dd.add("E.g.");
-                    dd.add("    " + getName() + "({'type':'EC':'curve':'P-256', 'alg':'ES256'})");
+                    dd.add("    " + getName() + "({'type':'"+ EC_TYPE + "':'curve':'P-256', 'alg':'ES256'})");
                     dd.add("would use the curve P-256 with the ES256 algorithm to create an elliptic curve key.");
                     dd.add("EC curves:P-256, P-256K, P-384, P-521, secp256k1");
                     dd.add("EC algortihms:ES256, ES256k, ES384, ES512");
@@ -224,14 +223,14 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                     dd.add("AES algorithms: A128GCM, A192GCM, A256GCM");
                     dd.add("AES key length is creater then 112 and must be a multiple of 8.");
                     dd.add("\nE.g. to make an RSA key");
-                    dd.add("    " + getName() + "({'length':4096, 'alg':'RS512', 'type':'RSA'})");
+                    dd.add("    " + getName() + "({'length':4096, 'alg':'RS512', 'type':'" + RSA_TYPE + "'})");
                     dd.add("{alg:RS512,...");
                     dd.add("\nE.g. An AES key");
-                    dd.add(" crypto#create_key({'type':'AES','alg':'A256GCM','length':512})\n" +
+                    dd.add(" crypto#create_key({'type':'" + AES_TYPE + "','alg':'A256GCM','length':512})\n" +
                             "{alg:A256GCM, k:H4t50v....");
                     break;
             }
-            dd.add("One hears of 'key pairs', though in point of fact, the public bits of a key");
+            dd.add("\nOne hears of 'key pairs', for RSA and EC keys, though in point of fact, the public bits of a key");
             dd.add("are always part of it, hence we do not explicitly create a public key, just a key");
             dd.add("from which you may extract a public key with  " + GET_PUBLIC_KEY_NAME);
             dd.add("Note that for RSA keys, the algorithm (for consumers of the key) defaults to RS256.");
@@ -246,8 +245,6 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             b. := crypto#import('/home/ncsa/temp/key.pem','pkcs_8');
             crypto#export( b., '/tmp/pkcs8.pem', 'pkcs_8');
             crypto#export( b., '/tmp/pkcs1.pem', 'pkcs_1');
-
-
          */
 
     public class ImportKey implements QDLFunction {
@@ -291,7 +288,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                     addTypeHelp(dd);
                     break;
             }
-            dd.add("returns a stem that is the key or key set.");
+            dd.add("This returns a stem that is the key or key set.");
 
             return dd;
         }
@@ -410,13 +407,13 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         public List<String> getDocumentation(int argCount) {
             List<String> dd = new ArrayList<>();
             switch (argCount) {
-                case 1:
-                    dd.add(getName() + "(key., file_path) - load a key in JWKS format");
+                case 2:
+                    dd.add(getName() + "(key., file_path) - export, i.e. save a key in JWKS format");
                     dd.add("key. - the stem containing a key or set of keys");
                     dd.add("file_path - the path to the key file");
                     break;
-                case 2:
-                    dd.add(getName() + "(key., file_path, type) - load a key of a given type");
+                case 3:
+                    dd.add(getName() + "(key., file_path, type) - export, i.e. save a key of a given type");
                     dd.add("key. - the stem containing a key or set of keys");
                     dd.add("file_path - the path to the key file");
                     dd.add("type - the type of the file. ");
@@ -656,13 +653,14 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
 
         @Override
         public int[] getArgCount() {
-            return new int[]{0, 2};
+            return new int[]{2, 3};
         }
 
         @Override
         public Object evaluate(Object[] objects, State state) throws Throwable {
             if (objects.length == 0) {
-                // Query for supported ciphers
+                // Query for supported ciphers.
+                // we used to allow a query for this, but really cannot support them all
                 QDLStem outStem = new QDLStem();
                 ArrayList<String> ciphers = new ArrayList<>();
                 ciphers.addAll(DecryptUtils.listCiphers());
@@ -671,31 +669,34 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             }
 
             if (!(objects[1] instanceof QDLStem)) {
-                throw new BadArgException("The second argument of " + getName() + " must be a stem", 1);
+                throw new BadArgException("The key for " + getName() + " must be a stem", 1);
             }
             // arg 0 is either stem of the key or a cfg stem (which includes the key as 'key' entry)
             // arg 1 is either string or stem of strings to encrypt.
-            QDLStem leftStem = (QDLStem) objects[1];
-            if (isAES(leftStem)) {
+            QDLStem keyStem = (QDLStem) objects[1];
+            if (isAES(keyStem)) {
                 return sDeOrEnCrypt(objects, true, getName());
             }
-            if (isEC(leftStem)) {
+            if (isEC(keyStem)) {
                 throw new BadArgException(getName() + " unsupported key type", 1);
             }
             JSONWebKey jsonWebKey;
             String cipher = "RSA"; // There are several available.
             boolean usePrivateKey = true;
-            if (leftStem.containsKey("key")) {
-                jsonWebKey = getKeys(leftStem.getStem("key"));
-                if (leftStem.containsKey("cipher")) {
-                    cipher = leftStem.getString("cipher");
+            if(objects.length == 3 ) {
+                if(objects[2] instanceof Boolean) {
+                    usePrivateKey = (Boolean) objects[2];
+                }else{
+                    throw new BadArgException(getName() + " final argument must be a boolean if present", 2);
                 }
-                if (leftStem.containsKey("use_private")) {
-                    leftStem.getBoolean("use_private");
+            }
+            if (keyStem.containsKey("key")) {
+                jsonWebKey = getKeys(keyStem.getStem("key"));
+                if (keyStem.containsKey("cipher")) {
+                    cipher = keyStem.getString("cipher");
                 }
             } else {
-                jsonWebKey = getKeys(leftStem);
-                // just use defaults
+                jsonWebKey = getKeys(keyStem);
             }
             if (usePrivateKey) {
                 if (jsonWebKey.privateKey == null) {
@@ -750,7 +751,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             dd.add("public key in " + DECRYPT_NAME + " (which is, incidentally, the default there).");
             dd.add("\nE.g. Symmetric example");
             dd.add("Here, a symmetric key (AES) is created and used.");
-            dd.add("    aes. := crypto#create_key({'type':'AES','alg':'A256GCM','length':512})\n" +
+            dd.add("    aes. := crypto#create_key({'type':'" + AES_TYPE + "','alg':'A256GCM','length':512})\n" +
                     "    crypto#encrypt('woof woof woof', aes.) \n" +
                     "67dmKZ6lqHwSt-mIZGs\n" +
                     "    crypto#decrypt('67dmKZ6lqHwSt-mIZGs', aes.)\n" +
@@ -925,8 +926,6 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                 doxx.add("E.g. (roundtrip, with keys type reverse)");
                 doxx.add("   " + getName() + "(" + ENCRYPT_NAME + "('marizy doats', key., false), key., true)");
                 doxx.add("marizy doats");
-
-
             }
             return doxx;
         }
@@ -972,10 +971,13 @@ kazrnybI9mX73qv6NqA
                 }
             }
         } else {
+            throw new BadArgException("the second argument to " + name + " must be a key stem", 1);
+/*          The utilities accept a byte string as the key, but that breaks the module's contract, so we disallow it here.
             if (!(objects[1] instanceof String)) {
                 throw new BadArgException("the first argument to " + name + " must be a base64 encoded key", 1);
             }
             key = Base64.decodeBase64((String) objects[1]);
+*/
         }
 
         ProcessSymmetricDeorEncrypt processSymmetricDeorEncrypt = new ProcessSymmetricDeorEncrypt(key, isEncrypt);
@@ -1048,12 +1050,12 @@ kazrnybI9mX73qv6NqA
 
     }
 
-    public static String IMPORT_CERT = "read_x509";
+    public static String READ_CERT = "read_x509";
 
-    public class ImportCert implements QDLFunction {
+    public class ReadCert implements QDLFunction {
         @Override
         public String getName() {
-            return IMPORT_CERT;
+            return READ_CERT;
         }
 
         /*
@@ -1253,6 +1255,7 @@ kazrnybI9mX73qv6NqA
             dd.add(getName() + "(full_path)  - read a cert or chain of certs");
             dd.add("full_path = full path to the file.");
             dd.add("This will read an X 509 cert and return a stem of its attributes");
+            dd.add("A certificate chain is reutned as a list of certs.");
             dd.add("Note that you can neither change a cert nor write one!");
             dd.add("This is not intended for certificate management, but just to let you view one easily");
             dd.add("At this point, only RSA public keys will be returned.");
@@ -1322,7 +1325,7 @@ kazrnybI9mX73qv6NqA
             dd.add("This returns the base 64 encoded octet stream. Best we can do in general...");
             dd.add("If there is no such value, a null is returned.");
             dd.add("An OID (object identifier) is a bit of X 509 voodoo that allows for");
-            dd.add("addressing attributes. These are very specific and not standardized, hence are");
+            dd.add("addressing attributes. These are simply byte arrays that may have really any structure, hence require");
             dd.add("bona fide low-level operations, but often the only way to get certain custom values");
             dd.add("E.g. to get the EPPN (if present) from a cert");
             dd.add("   " + getName() + "(cert., {'eppn':'1.3.6.1.4.1.5923.1.1.1.6'}");
@@ -1477,9 +1480,9 @@ kazrnybI9mX73qv6NqA
                     dd.add("header. - the stem that will be the header of the JWT");
                     dd.add("payload. - the stem that will be the payload of the JWT");
                     dd.add("key. - the key to use. RSA and EC curves are supported.");
+                    dd.add("If you need the JWT to be unsigned and require a custom header, set the header to have {'alg':'none'}");
                     break;
             }
-            dd.add("If you want the JWT to be unsigned, you must set the header to have {'alg':'none'}");
             return dd;
         }
     }
@@ -1519,7 +1522,7 @@ kazrnybI9mX73qv6NqA
             switch (argCount) {
                 case 2:
                     dd.add(getName() + "(jwt | jwt., key.) - Convert the jwt strings to their payload");
-                    dd.add("jwt - a JWT (a string)");
+                    dd.add("jwt - a JWT (a string) or set of them");
                     dd.add("jwt. - a stem of JWTs");
                     dd.add("key. - the key to verify against");
                     dd.add("Returns the stem of the payload. No verification is done. Any non-strings will");
@@ -1569,7 +1572,7 @@ kazrnybI9mX73qv6NqA
             switch (argCount) {
                 case 2:
                     dd.add(getName() + "(jwt | jwt., key.) - verify the signature of a JWT against a given key");
-                    dd.add("jwt - the JWT");
+                    dd.add("jwt - the JWT or set of them");
                     dd.add("jwt. - a stem of JWT");
                     dd.add("key. - the key to verify against");
                     dd.add("Returns a left conformable output with true if the verification worked and false");
@@ -1578,6 +1581,8 @@ kazrnybI9mX73qv6NqA
                     dd.add("to that for the given key. In many cases (such as OAuth) \"verification\" also implies");
                     dd.add("a variety of other checks on the content of the payload and header.");
                     dd.add("which this function does not do.");
+                    dd.add("If you supply a set of JWTs do note that the result is a set with at most two values,");
+                    dd.add("{true,false}. ");
                     break;
             }
             return dd;
