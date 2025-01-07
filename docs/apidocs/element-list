@@ -13,6 +13,7 @@ org.qdl_lang.extensions.examples.stateful
 org.qdl_lang.extensions.http
 org.qdl_lang.extensions.inputLine
 org.qdl_lang.extensions.mail
+org.qdl_lang.extensions.X509
 org.qdl_lang.functions
 org.qdl_lang.generated
 org.qdl_lang.gui

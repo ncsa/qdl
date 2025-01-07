@@ -3114,51 +3114,54 @@ QDL also supports several directly as operators. Typing them is, however
 dependant on your keyboard layout. Generally every unicode character has
 an ASCII version (usually a digraph).
 
-Here is a table of supported unicode characters in QDL:
+Here is a table of supported unicode characters in order for QDL:
 
 Standard    Unicode   ALT   escape code    What is it
-               »       '    \u00bb         FDoc start of line
 !              ¬       !    \u00ac         logical not
 -              ¯       -    \u00af         unary minus
-`              ·       .    \u00b7         raised dot
+transpose      µ       t    \u00b5         transpose operator
+===            »       '    \u00bb         FDoc start of line
 *              ×       *    \u00d7         multiplication
 /              ÷       /    \u00f7         division
+pi             π       p    \u03c0         Greek letter pi.
+transpose      τ       t    \u03c4         alias for the transpose function.
 +              ⁺       +    \u207a         unary plus
-assert[][]     ⊨       a    \u22a8         assert
 ->             →       d    \u2192         lambda function
-i              ∃            \u2203         is_defined, is_function
-I              ∄            \u2204         ¬is_defined, ¬is_function
-h              ∋            \u2211         has_key
-H              ∌            \u2a0b         ¬has_key
-%              ∆       D    \u2206         symmetric difference operator
-e              ∈       e    \u2208         is member of
-E              ∉       E    \u2209         is *not* member of
-/\             ∩       U    \u2229         set intersection
+?              ⇒       ?    \u21d2         implies, used in conditional expression
+for_each       ∀       A    \u2200         for_each function
+apply          ∂       a    \u2202         apply function
+is_defined     ∃       i    \u2203         is_defined, is_function
+   is_function
+¬is_defined    ∄       I    \u2204         ¬is_defined, ¬is_function
+   ¬is_function
 {}             ∅       n    \u2205         null set
-\/             ∪       u    \u222a         set union
+%              ∆       D    \u2206         symmetric difference operator
+has_value      ∈       e    \u2208         has_value
+¬has_value     ∉       E    \u2209         ¬has_value
+has_key        ∋       h    \u2211         has_key
 &&             ∧       &    \u2227         logical and
 ||             ∨       |    \u2228         logical or
-=~             ≈       ?    \u2248         regex matches
+/\             ∩       U    \u2229         set intersection
+\/             ∪       u    \u222a         set union
+~|             ≁       ~    \u2241         last axis join
+=~             ≈       r    \u2248         regex matches
 :=             ≔       :    \u2254         left assignment
 =:             ≕       "    \u2255         right assignment
 !=             ≠       \    \u2260         not equal to
 ==             ≡       =    \u2261         logical equality
 <=             ≤       <    \u2264         less than or equals
 >=             ≥       >    \u2265         greater than or equals
-~|             ≁       ~    \u2241         last axis join
 expand         ⊕       X    \u2295         expand operator
 @              ⊗       @    \u2297         function reference
 reduce         ⊙       x    \u2299         reduce operator
+|^             ⊢       s    \u22a2         create a set from a stem
+assert[][]     ⊨       S    \u22a8         assert
 mask           ⌆       m    \u2306         mask operator
-transpose      µ       t    \u00b5         transpose operator
-[|             ⟦       {    \u27e6         left closed slice bracket
-|]             ⟧       }    \u27e7         right closed slice bracket
 ceiling        ⌈       k    \u2308         ceiling
 floor          ⌊       l    \u230a         floor
-|^             ⊢       s    \u22a2         create a set from a stem
-transpose      τ       t    \u03c4         alias for the transpose function.
-pi             π       p    \u03c0         Greek letter pi.
-
+[|             ⟦       {    \u27e6         left closed slice bracket
+|]             ⟧       }    \u27e7         right closed slice bracket
+¬has_key       ∌       H    \u2a0b         ¬has_key
 
 The ALT keys are only available if you are running QDL in ANSI mode. So
 alt+d inserts the definition arrow, for instance. Note that if you
