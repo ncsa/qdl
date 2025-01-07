@@ -1,8 +1,9 @@
-package org.qdl_lang.extensions.crypto;
+package org.qdl_lang.extensions.X509;
 
 import org.qdl_lang.extensions.JavaModule;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLVariable;
+import org.qdl_lang.extensions.crypto.Crypto;
 import org.qdl_lang.module.Module;
 import org.qdl_lang.state.State;
 
@@ -14,41 +15,33 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 8/16/22 at  3:17 PM
  */
-public class CryptoModule extends JavaModule {
-    public CryptoModule() {
+public class X509Module extends JavaModule {
+    public X509Module() {
     }
 
-    public CryptoModule(URI namespace, String alias) {
+    public X509Module(URI namespace, String alias) {
         super(namespace, alias);
     }
 
     @Override
     public Module newInstance(State state) {
-        CryptoModule cryptoModule = new CryptoModule(URI.create("qdl:/tools/crypto"), "crypto");
-        Crypto crypto = new Crypto();
-        cryptoModule.setMetaClass(crypto);
+        X509Module x509Module = new X509Module(URI.create("qdl:/tools/x509"), "x509");
+        X509 x509 = new X509();
+        x509Module.setMetaClass(x509);
         ArrayList<QDLFunction> funcs = new ArrayList<>();
 
-        funcs.add(crypto.new ImportKey());
-        funcs.add(crypto.new ExportKeys());
-        funcs.add(crypto.new ReadOID());
-        funcs.add(crypto.new ReadCert());
-        funcs.add(crypto.new Encrypt());
-        funcs.add(crypto.new Decrypt());
-        funcs.add(crypto.new CreateKey());
-        funcs.add(crypto.new GetPublicKey());
-        funcs.add(crypto.new ToJWT());
-        funcs.add(crypto.new FromJWT());
-        funcs.add(crypto.new VerifyJWT());
-        cryptoModule.addFunctions(funcs);
+        funcs.add(x509.new LoadKeystore());
+        x509Module.addFunctions(funcs);
+/*
         ArrayList<QDLVariable> vars = new ArrayList<>();
         vars.add(crypto.new KeyType());
-        cryptoModule.addVariables(vars);
+        x509Module.addVariables(vars);
+*/
         if (state != null) {
-            cryptoModule.init(state);
+            x509Module.init(state);
         }
-        setupModule(cryptoModule);
-        return cryptoModule;
+        setupModule(x509Module);
+        return x509Module;
     }
 
     List<String> dd = new ArrayList<>();

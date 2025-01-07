@@ -2,6 +2,7 @@ package org.qdl_lang.state;
 
 import org.qdl_lang.config.QDLEnvironment;
 import org.qdl_lang.extensions.JavaModule;
+import org.qdl_lang.extensions.X509.X509Loader;
 import org.qdl_lang.extensions.convert.QDLConvertLoader;
 import org.qdl_lang.extensions.crypto.CryptoLoader;
 import org.qdl_lang.extensions.database.QDLDBLoader;
@@ -379,6 +380,7 @@ public class State extends FunctionState implements QDLConstants {
         map.put("db", QDLDBLoader.class.getCanonicalName());
         map.put("dynamo", QDLDynamoDBLoader.class.getCanonicalName());
         map.put("crypto", CryptoLoader.class.getCanonicalName());
+        //map.put("x509", X509Loader.class.getCanonicalName());
         map.put("convert", QDLConvertLoader.class.getCanonicalName());
         map.put("cli", QDLCLIToolsLoader.class.getCanonicalName());
         map.put("mail", QDLMailLoader.class.getCanonicalName());

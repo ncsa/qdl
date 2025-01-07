@@ -35,6 +35,9 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.CertificateParsingException;
@@ -127,46 +130,34 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                     }
                     if (type.equals(AES_TYPE)) {
                         // See https://www.rfc-editor.org/rfc/rfc7518.html#section-6.4
-                        unknownType = false;
-                        EncryptionMethod encryptionMethod = null;
-                        if (stem.containsKey("alg")) {
-                            alg = stem.getString("alg");
-                            switch (alg) {
-                                case "A128GCM":
-                                    encryptionMethod = EncryptionMethod.A128GCM;
-                                    break;
-                                case "A192GCM":
-                                    encryptionMethod = EncryptionMethod.A192GCM;
-                                    break;
-                                case "A256GCM":
-                                    encryptionMethod = EncryptionMethod.A256GCM;
-                                    break;
-                                default:
-                                    encryptionMethod = null;
-                                    break;
-                            }
-                        }
+                        alg = "AES";
                         int length = 256;
                         if (stem.containsKey("length")) {
                             length = Math.toIntExact(stem.getLong("length"));
                         }
-                        OctetSequenceKey jwk;
-                        if (encryptionMethod == null) {
-                            jwk = new OctetSequenceKeyGenerator(length)
-                                    .issueTime(new Date()) // issued-at timestamp (optional)
-                                    .keyID(getRandomID())// give the key some ID (optional)
-                                    .generate();
 
-                        } else {
-                            jwk = new OctetSequenceKeyGenerator(length)
-                                    .issueTime(new Date()) // issued-at timestamp (optional)
-                                    .keyID(getRandomID()) // give the key some ID (optional)
-                                    .algorithm(encryptionMethod) // indicate the intended key alg (optional)
-                                    .generate();
+                        if (stem.containsKey("alg")) {
+                            alg = stem.getString("alg");
+                    /*
+                            c := j_load('crypto');
+                            c#create_key({'type':'aes', 'length':1024, 'alg':'AES_128/ECB/NoPadding'})
+                            */
                         }
-                        QDLStem out = new QDLStem();
+                        SecretKey key = getSecureRandomKey(alg, length);
+                        JWK jwk = new OctetSequenceKey.Builder(key)
+                                .keyID(getRandomID())
+                                .issueTime(new Date())
+                                .build();
+
+System.out.println("JOSE:"+ jwk.toJSONString());
                         JSONObject jsonObject = new JSONObject();
-                        jsonObject.putAll(jwk.toJSONObject());
+                        jsonObject.put("key","oct");
+                        jsonObject.put("iat",new Date().getTime()/1000);
+                        jsonObject.put("alg" , alg);
+                        jsonObject.put("kid" , getRandomID());
+                        jsonObject.put("k", Base64.encodeBase64URLSafeString(key.getEncoded()));
+
+                        QDLStem out = new QDLStem();
                         out.fromJSON(jsonObject);
                         return out;
                     }
@@ -174,9 +165,9 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                         throw new BadArgException("unknown key type '" + stem.get("type") + "'", 0);
                     }
                 } else {
-                    if (!(objects[0] instanceof Long)) {
-                        throw new BadArgException("single argument must be the integer length of the RSA key", 0);
 
+                    if (!(objects[0] instanceof Long)) {
+                        throw new BadArgException("single integer argument must be the integer length of the RSA key", 0);
                     }
                     keyLength = ((Long) objects[0]).intValue();
                     if (keyLength % 256 != 0) {
@@ -192,7 +183,12 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             return stem;
 
         }
-
+        protected SecretKey getSecureRandomKey(String cipher, int keySize) {
+            byte[] secureRandomKeyBytes = new byte[keySize / 8];
+            secureRandom = new SecureRandom();
+            secureRandom.nextBytes(secureRandomKeyBytes);
+            return new SecretKeySpec(secureRandomKeyBytes, cipher);
+        }
 
         /*
        )ws set debug on
@@ -220,7 +216,8 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                     dd.add("EC algortihms:ES256, ES256k, ES384, ES512");
                     dd.add("RSA algortihms: RS256, RS385, RS512");
                     dd.add("RSA key length is a multiple of 256.");
-                    dd.add("AES algorithms: A128GCM, A192GCM, A256GCM");
+                    dd.add("A complete list of supported AES algorithms (aka ciphers) can be gotten by calling " + ENCRYPT_NAME + "()");
+                    dd.add("AES basic algorithms: A128GCM, A192GCM, A256GCM, default is");
                     dd.add("AES key length is creater then 112 and must be a multiple of 8.");
                     dd.add("\nE.g. to make an RSA key");
                     dd.add("    " + getName() + "({'length':4096, 'alg':'RS512', 'type':'" + RSA_TYPE + "'})");
@@ -336,7 +333,6 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         } else {
             RSAPrivateCrtKey privk = (RSAPrivateCrtKey) privateKey;
             RSAPublicKeySpec publicKeySpec = new java.security.spec.RSAPublicKeySpec(privk.getModulus(), privk.getPublicExponent());
-            System.out.println(getClass().getSimpleName() + ": priv key alg=" + privk.getAlgorithm());
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             publicKey = keyFactory.generatePublic(publicKeySpec);
 
@@ -417,6 +413,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                     dd.add("key. - the stem containing a key or set of keys");
                     dd.add("file_path - the path to the key file");
                     dd.add("type - the type of the file. ");
+                    dd.add("Note that saving a file in PKCS 1 format is not supported. Use PKCS 8.");
                     addTypeHelp(dd);
                     break;
             }
@@ -484,13 +481,15 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                 throw new BadArgException(EXPORT_NAME + " third argument must be a string that is the type of key", 2);
             }
             type = (String) objects[2];
+            if(type.equals(PKCS_1_TYPE)) {
+                throw new BadArgException(EXPORT_NAME + " - does not support writing PKCS 1 files. Use PKCS 8", 1);
+            }
         }
         JSONWebKey jwk = JSONWebKeyUtil.getJsonWebKey(key.toJSON().toString());
         String content;
         switch (type) {
             case PKCS_1_TYPE:
-                content = KeyUtil.toPKCS1PEM(jwk.privateKey);
-                break;
+                throw new BadArgException(EXPORT_NAME + " - does not support writing PKCS 1 files. Use PKCS 8", 1);
             case PKCS_8_TYPE:
                 content = KeyUtil.toPKCS8PEM(jwk.privateKey);
                 break;
@@ -547,7 +546,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
     }
 
 
-    private JWK getJwk(PublicKey publicKey) {
+    public static JWK getJwk(PublicKey publicKey) {
         JWK jwk = null;
         if (publicKey instanceof RSAPublicKey) {
             jwk = new RSAKey.Builder((RSAPublicKey) publicKey)
@@ -653,21 +652,20 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
 
         @Override
         public int[] getArgCount() {
-            return new int[]{2, 3};
+            return new int[]{0,2, 3};
         }
 
         @Override
         public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (objects.length == 0) {
-                // Query for supported ciphers.
-                // we used to allow a query for this, but really cannot support them all
-                QDLStem outStem = new QDLStem();
-                ArrayList<String> ciphers = new ArrayList<>();
-                ciphers.addAll(DecryptUtils.listCiphers());
-                outStem.getQDLList().setArrayList(ciphers);
-                return outStem;
+            if(objects.length ==0){
+                    // Query for supported ciphers.
+                    // we used to allow a query for this, but really cannot support them all
+                    QDLStem outStem = new QDLStem();
+                    ArrayList<String> ciphers = new ArrayList<>();
+                    ciphers.addAll(DecryptUtils.listCiphers());
+                    outStem.getQDLList().setArrayList(ciphers);
+                    return outStem;
             }
-
             if (!(objects[1] instanceof QDLStem)) {
                 throw new BadArgException("The key for " + getName() + " must be a stem", 1);
             }
@@ -725,6 +723,10 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         public List<String> getDocumentation(int argCount) {
             List<String> dd = new ArrayList<>();
             switch (argCount) {
+                case 0:
+                    dd.add(getName() + "() - query for list of supported AES ciphers.");
+                    dd.add("Use any of these to create the encryption key.");
+                    return dd;
                 case 2:
                     dd.add(getName() + "(arg|arg., key.) - encrypt a string or stem of them. If the key is symmetric, do symmetric encryption, otherwise encrypt with the private key");
                     break;
@@ -935,7 +937,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         return JSONWebKeyUtil.getJsonWebKey(keys.toJSON().toString());
     }
 
-    protected QDLStem webKeyToStem(JSONWebKey jsonWebKey) {
+    public static QDLStem webKeyToStem(JSONWebKey jsonWebKey) {
         QDLStem keys = new QDLStem();
         JSONObject json = JSONWebKeyUtil.toJSON(jsonWebKey);
         keys.fromJSON(json);
@@ -1020,9 +1022,9 @@ kazrnybI9mX73qv6NqA
     }
 
 
-    SecureRandom secureRandom = new SecureRandom();
+    static SecureRandom secureRandom = new SecureRandom();
 
-    protected String getRandomID() {
+    public static String getRandomID() {
         return getRandomID(8);
     }
 
@@ -1032,7 +1034,7 @@ kazrnybI9mX73qv6NqA
      * @param byteCount
      * @return
      */
-    protected String getRandomID(int byteCount) {
+    public static String getRandomID(int byteCount) {
         byte[] bytes = new byte[byteCount];
         secureRandom.nextBytes(bytes);
         BigInteger bigInt = new BigInteger(bytes);
