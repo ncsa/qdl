@@ -5,7 +5,7 @@
     <parent>
         <artifactId>qdl</artifactId>
         <groupId>org.qdl_lang</groupId>
-        <version>1.6-QDL-SNAPSHOT</version>
+        <version>1.6.0.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
@@ -19,12 +19,12 @@
         <dependency>
             <groupId>org.qdl_lang</groupId>
             <artifactId>language</artifactId>
-            <version>1.6-QDL-SNAPSHOT</version>
+            <version>1.6.0.3</version>
         </dependency>
         <dependency>
             <groupId>org.qdl_lang</groupId>
             <artifactId>language</artifactId>
-            <version>1.6-QDL-SNAPSHOT</version>
+            <version>1.6.0.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -59,7 +59,7 @@
         <dependency>
             <groupId>org.qdl_lang</groupId>
             <artifactId>language</artifactId>
-            <version>1.6-QDL-SNAPSHOT</version>
+            <version>1.6.0.3</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
