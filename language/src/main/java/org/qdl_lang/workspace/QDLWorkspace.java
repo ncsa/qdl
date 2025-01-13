@@ -1,5 +1,6 @@
 package org.qdl_lang.workspace;
 
+import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.qdl_lang.config.QDLEnvironment;
 import org.qdl_lang.exceptions.*;
 import org.qdl_lang.gui.SwingTerminal;
@@ -669,8 +670,10 @@ public class QDLWorkspace implements Serializable {
         if (isSwingGui) {
             JFrame jFrame = new JFrame();
             swingTerminal.setWorkspaceCommands(workspaceCommands);
-            swingTerminal.setup(jFrame, functions);
+            DefaultCompletionProvider defaultCompletionProvider = swingTerminal.setup(jFrame, functions);
             workspaceCommands.getState().setIoInterface(swingTerminal.getQdlSwingIO());
+            workspaceCommands.getState().setCompletionProvider(defaultCompletionProvider);
+
             workspaceCommands.setSwingGUI(true);
             WorkspaceCommands.setInstance(workspaceCommands);// since IO is setup.
             // Add completion with current set of functions from workspace.

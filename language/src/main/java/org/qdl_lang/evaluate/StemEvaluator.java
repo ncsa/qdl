@@ -6,7 +6,7 @@ import com.jayway.jsonpath.JsonPathException;
 import com.jayway.jsonpath.Option;
 import org.qdl_lang.exceptions.*;
 import org.qdl_lang.expressions.*;
-import org.qdl_lang.functions.FunctionReferenceNodeInterface;
+import org.qdl_lang.functions.*;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.Statement;
@@ -816,6 +816,7 @@ public class StemEvaluator extends AbstractEvaluator {
         }
         return out;
     }
+
     protected void doIndices(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{1, 2});
@@ -2319,19 +2320,32 @@ public class StemEvaluator extends AbstractEvaluator {
      */
     protected void doRemove(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setResult(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
 
         if (0 == polyad.getArgCount()) {
-            throw new MissingArgException(REMOVE + " requires 1 argument", polyad);
+            throw new MissingArgException(REMOVE + " requires at least one argument", polyad);
         }
 
-        if (1 < polyad.getArgCount()) {
-            throw new ExtraArgException(REMOVE + " requires 1 argument", polyad.getArgAt(1));
+        if (2 < polyad.getArgCount()) {
+            throw new ExtraArgException(REMOVE + " requires at most 2 arguments", polyad.getArgAt(1));
+        }
+        boolean isFunction = false;
+        Long argCount = -2L; // -1 is reserved for all functions
+        if (polyad.getArgCount() == 2) {
+            isFunction = true;
+            // user is trying to remove a function
+            Object arg1 = polyad.evalArg(1, state);
+            // This should be an arg count
+            if (!(arg1 instanceof Long)) {
+                throw new BadArgException(REMOVE + " argument count must be an integer", polyad.getArgAt(1));
+            }
+            argCount = (Long) arg1;
         }
         try {
+
             polyad.evalArg(0, state);
         } catch (IndexError indexError) {
             // it is possible that the user is trying to grab something impossible
@@ -2350,7 +2364,11 @@ public class StemEvaluator extends AbstractEvaluator {
                 if (var == null) {
                     polyad.setResult(Boolean.FALSE);
                 } else {
-                    state.remove(var);
+                    if (isFunction) { // parser cannot always tell if the argument is a function.
+                        state.getFTStack().remove(new FKey(var, argCount.intValue()));
+                    } else {
+                        state.remove(var);
+                    }
                     polyad.setResult(Boolean.TRUE);
                 }
                 break;
@@ -2360,6 +2378,20 @@ public class StemEvaluator extends AbstractEvaluator {
             case ExpressionInterface.EXPRESSION_STEM2_NODE:
                 ESN2 esn2 = (ESN2) polyad.getArgAt(0);
                 polyad.setResult(esn2.remove(state));
+                break;
+            case ExpressionInterface.FUNCTION_REFERENCE_NODE:
+                if(!isFunction){
+                    throw new BadArgException(REMOVE + " requires a n argument count", polyad);
+                }
+                FunctionReferenceNode functionReferenceNode = (FunctionReferenceNode) polyad.getArgAt(0);
+                if(argCount == -1){
+                 for(FunctionRecordInterface fr : functionReferenceNode.getFunctionRecords()){
+                     state.getFTStack().remove(new FKey(functionReferenceNode.getFunctionName(), fr.getArgCount()));
+                 }
+                }else {
+                    state.getFTStack().remove(new FKey(functionReferenceNode.getFunctionName(), argCount.intValue()));
+                }
+                polyad.setResult(Boolean.TRUE);
                 break;
         }
         polyad.setResultType(BOOLEAN_TYPE);

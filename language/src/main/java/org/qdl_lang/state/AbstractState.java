@@ -1,5 +1,7 @@
 package org.qdl_lang.state;
 
+import org.fife.ui.autocomplete.CompletionProvider;
+import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.qdl_lang.evaluate.MetaEvaluator;
 import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.statements.TokenPosition;
@@ -42,7 +44,16 @@ public static class QDLStackTraceElement{
 
     List<QDLStackTraceElement> scriptStack = new ArrayList<>();
 
+    public boolean hasCompletionProvider(){return completionProvider != null;}
+    public DefaultCompletionProvider getCompletionProvider() {
+        return completionProvider;
+    }
 
+    public void setCompletionProvider(DefaultCompletionProvider completionProvider) {
+        this.completionProvider = completionProvider;
+    }
+
+    DefaultCompletionProvider completionProvider = null;
     public UUID getUuid() {
         return uuid;
     }

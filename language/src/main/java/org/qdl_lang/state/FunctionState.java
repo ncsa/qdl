@@ -1,5 +1,6 @@
 package org.qdl_lang.state;
 
+import org.fife.ui.autocomplete.BasicCompletion;
 import org.qdl_lang.evaluate.MetaEvaluator;
 import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.exceptions.NamespaceException;
@@ -65,7 +66,10 @@ public abstract class FunctionState extends VariableState {
                 getFTStack().put(function);
             }
         }
+if(hasCompletionProvider()){
+    getCompletionProvider().addCompletion(new BasicCompletion(getCompletionProvider(), function.getName()+"("));
 
+}
     }
 
     FStack<? extends FTable<? extends FKey, ? extends FunctionRecordInterface>> fStack = new FStack();

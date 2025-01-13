@@ -83,6 +83,7 @@ public class WhileLoop implements Statement {
             Polyad p = (Polyad) conditional;
             if (p.isBuiltIn()) {
                 switch (p.getName()) {
+                    case StemEvaluator.HAS_KEYS:
                     case FOR_KEYS:
                         return forKeysOrValuesLoop(localState, true);
                     case StemEvaluator.HAS_VALUE:

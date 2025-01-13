@@ -3,6 +3,7 @@ package org.qdl_lang.gui;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.qdl_lang.gui.editor.EditorKeyPressedAdapter;
 import org.qdl_lang.gui.editor.QDLEditor;
 import org.qdl_lang.state.State;
@@ -378,7 +379,7 @@ public class SwingTerminal implements TerminalInterface {
 
     protected JFrame frame;
     protected static String syntaxEditStyle = "text/qdl";
-    public void setup(JFrame frame1, List<String> functions) {
+    public DefaultCompletionProvider setup(JFrame frame1, List<String> functions) {
 
 /*
         UIManager.put("OptionPane.messageFont", new Font("DialogInput", Font.BOLD, 14));
@@ -391,7 +392,7 @@ public class SwingTerminal implements TerminalInterface {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
         atmf.putMapping(syntaxEditStyle, "org.qdl_lang.gui.flex.QDLSyntax");
-        CompletionProvider provider = QDLSwingUtil.createCompletionProvider(functions);
+        DefaultCompletionProvider provider = QDLSwingUtil.createCompletionProvider(functions);
         AutoCompletion ac = new AutoCompletion(provider);
         ac.install(getInput());
         input.setSyntaxEditingStyle(syntaxEditStyle);
@@ -436,6 +437,7 @@ public class SwingTerminal implements TerminalInterface {
         }
         setupListeners();
         frame.setVisible(true);
+        return provider;
     }
 
 
@@ -447,13 +449,14 @@ public class SwingTerminal implements TerminalInterface {
     protected void setupWS(InputLine inputLine) throws Throwable {
 
         State state = new State();
-        CompletionProvider provider = QDLSwingUtil.createCompletionProvider(state);
+        DefaultCompletionProvider provider = QDLSwingUtil.createCompletionProvider(state);
         AutoCompletion ac = new AutoCompletion(provider);
         ac.install(input);
         state.setIoInterface(qdlSwingIO);
         WorkspaceCommands.setInstance(new WorkspaceCommands(qdlSwingIO));
         workspaceCommands = WorkspaceCommands.getInstance();
         workspaceCommands.setState(state);
+        state.setCompletionProvider(provider);
 //        qdlWorkspace = new QDLWorkspace(workspaceCommands);
         qdlWorkspace = QDLWorkspace.newInstance(workspaceCommands);
         workspaceCommands.setWorkspace(qdlWorkspace);

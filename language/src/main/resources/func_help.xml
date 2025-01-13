@@ -1660,6 +1660,7 @@ Note 2: This is always empty in server mode! Scripts have no access to the
     <entry id="remove">
         <body>
             <![CDATA[remove(var) - remove a variable and its value from the symbol table.
+remove(func, arg_count) - remove a function with the given argument count  from the symbol table.
 Note: This expunges it from the session and any future attempts to access it
       will result in errors until it is set again.
 

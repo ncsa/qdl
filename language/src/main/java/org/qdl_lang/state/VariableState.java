@@ -1,5 +1,6 @@
 package org.qdl_lang.state;
 
+import org.fife.ui.autocomplete.BasicCompletion;
 import org.qdl_lang.evaluate.MetaEvaluator;
 import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.exceptions.IndexError;
@@ -88,6 +89,9 @@ public abstract class VariableState extends NamespaceAwareState {
 
     public void setValue(String variableName, Object value) {
         setValue(variableName, value, null);
+if(hasCompletionProvider()){
+    getCompletionProvider().addCompletion(new BasicCompletion(getCompletionProvider(), variableName));
+}
     }
 
     public void setValue(String variableName, Object value, Set<XKey> checkedAliases) {
@@ -128,6 +132,9 @@ public abstract class VariableState extends NamespaceAwareState {
     }
 
     public void remove(String variableName) {
+        if(hasCompletionProvider()){
+            getCompletionProvider().removeCompletion(new BasicCompletion(getCompletionProvider(), variableName));
+        }
         if (isStem(variableName)) {
             StemMultiIndex w = new StemMultiIndex(variableName);
             gsrNSStemOp(w, OP_REMOVE, null, new HashSet<>());

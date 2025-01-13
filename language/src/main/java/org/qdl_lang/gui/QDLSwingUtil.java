@@ -18,7 +18,7 @@ public class QDLSwingUtil {
      * Most barebones completion -- just create it with the basic state.
      * @return
      */
-    public static CompletionProvider createCompletionProvider() {
+    public static DefaultCompletionProvider createCompletionProvider() {
                             return createCompletionProvider(new State());
     }
 
@@ -27,7 +27,7 @@ public class QDLSwingUtil {
      * get the functions from any modules loaded in the state.
      * @return
      */
-    public static CompletionProvider createCompletionProvider(State state) {
+    public static DefaultCompletionProvider createCompletionProvider(State state) {
         ArrayList<String> functions = new ArrayList<>();
         functions.addAll(state.getMetaEvaluator().listFunctions(false));
         functions.addAll(state.listFunctions(true,
@@ -40,7 +40,7 @@ public class QDLSwingUtil {
      * @param functions
      * @return
      */
-    public static CompletionProvider createCompletionProvider(List<String> functions) {
+    public static DefaultCompletionProvider createCompletionProvider(List<String> functions) {
 
         // A DefaultCompletionProvider is the simplest concrete implementation
         // of CompletionProvider. This provider has no understanding of

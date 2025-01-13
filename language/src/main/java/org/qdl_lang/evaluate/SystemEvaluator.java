@@ -853,6 +853,11 @@ public class SystemEvaluator extends AbstractEvaluator {
         return line.trim().startsWith(QDLWorkspace.MACRO_COMMENT_DELIMITER);
     }
 
+    /**
+     * Module remove works ONLY for old modules. New system uses unload.
+     * @param polyad
+     * @param state
+     */
     private void doModuleRemove(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{1});
