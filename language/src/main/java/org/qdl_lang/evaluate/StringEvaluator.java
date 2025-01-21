@@ -524,8 +524,6 @@ public class StringEvaluator extends AbstractEvaluator {
                     isPrepend = true;
                     omitDanglingDelimiter = true;
                     break;
-
-
             }
         }
         String result = "";
@@ -569,7 +567,6 @@ public class StringEvaluator extends AbstractEvaluator {
                 for (Object key : leftStem.keySet()) {
                     if (isPrepend) {
                         if (omitDanglingDelimiter && currentCount == 0) {
-
                             result = String.valueOf(leftStem.get(key));
                         } else {
                             result = result + rightArg + leftStem.get(key);

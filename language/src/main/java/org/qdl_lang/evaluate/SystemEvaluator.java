@@ -444,17 +444,32 @@ public class SystemEvaluator extends AbstractEvaluator {
 
             case BREAK:
                 if (polyad.isSizeQuery()) {
-                    polyad.setResult(new int[]{0});
+                    polyad.setResult(new int[]{0,1});
                     polyad.setEvaluated(true);
                     return true;
                 }
-                if (0 != polyad.getArgCount()) {
-                    throw new ExtraArgException(BREAK + " does not take an argument", polyad.getArgAt(0));
+                boolean doBreak = true;
+                if(0 == polyad.getArgCount()){
+                    // niladic break -- just break
                 }
+                if(1 == polyad.getArgCount()){
+                     Object output = polyad.evalArg(0,state);
+                     if(!(output instanceof Boolean)){
+                         throw new BadArgException(BREAK + " requires a boolean as its argument", polyad.getArgAt(0));
+                     }
+                     doBreak = (Boolean)output;
+                }
+                if (1 < polyad.getArgCount()) {
+                    throw new ExtraArgException(BREAK + " takes at most an argument", polyad.getArgAt(1));
+                }
+
                 polyad.setEvaluated(true);
                 polyad.setResultType(Constant.BOOLEAN_TYPE);
-                polyad.setResult(Boolean.TRUE);
-                throw new BreakException();
+                polyad.setResult(doBreak);
+                if(doBreak) {
+                    throw new BreakException();
+                }
+                return true;
             case CONSTANTS:
                 doConstants(polyad, state);
                 return true;
@@ -472,17 +487,31 @@ public class SystemEvaluator extends AbstractEvaluator {
                 return true;
             case CONTINUE:
                 if (polyad.isSizeQuery()) {
-                    polyad.setResult(new int[]{0});
+                    polyad.setResult(new int[]{0,1});
                     polyad.setEvaluated(true);
                     return true;
                 }
-                if (0 != polyad.getArgCount()) {
+                boolean doContinue = false;
+                if(0 == polyad.getArgCount()){
+                    doContinue = true;
+                }
+                if( 1== polyad.getArgCount()){
+                    Object output = polyad.evalArg(0,state);
+                    if(!(output instanceof Boolean)){
+                        throw new BadArgException(CONTINUE + " require an boolean as its argument", polyad.getArgAt(0));
+                    }
+                    doContinue = (Boolean)output;
+                }
+                if (1 < polyad.getArgCount()) {
                     throw new ExtraArgException(CONTINUE + " does not take an argument", polyad.getArgAt(0));
                 }
                 polyad.setEvaluated(true);
                 polyad.setResultType(Constant.BOOLEAN_TYPE);
-                polyad.setResult(Boolean.TRUE);
-                throw new ContinueException();
+                polyad.setResult(doContinue);
+                if(doContinue) {
+                    throw new ContinueException();
+                }
+                return true;
             case INTERRUPT:
                 doInterrupt(polyad, state);
                 return true;

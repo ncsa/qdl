@@ -156,6 +156,7 @@ public class WhileLoop implements Statement {
                         return Boolean.TRUE;
                     } catch (ContinueException cx) {
                         // just continue.
+                        break;
                     } catch (ReturnException rx) {
                         return Boolean.TRUE;
                     }
@@ -175,6 +176,7 @@ public class WhileLoop implements Statement {
                             return Boolean.TRUE;
                         } catch (ContinueException cx) {
                             // just continue.
+                            break;
                         } catch (ReturnException rx) {
                             return Boolean.TRUE;
                         }
@@ -201,6 +203,7 @@ public class WhileLoop implements Statement {
                     return Boolean.TRUE;
                 } catch (ContinueException cx) {
                     // just continue.
+                    break;
                 } catch (ReturnException rx) {
                     return Boolean.TRUE;
                 }
@@ -278,6 +281,7 @@ public class WhileLoop implements Statement {
                         return Boolean.TRUE;
                     } catch (ContinueException cx) {
                         // just continue.
+                        break;
                     } catch (ReturnException rx) {
                         return Boolean.TRUE;
                     }
@@ -291,12 +295,14 @@ public class WhileLoop implements Statement {
                 try {
                     statement.evaluate(localState);
                 } catch (BreakException b) {
-                    return Boolean.TRUE;
+                    return Boolean.TRUE; // abort whole thing
                 } catch (ContinueException cx) {
-                    // just continue.
+                    // Skip rest of statements
+                    break;
                 } catch (ReturnException rx) {
-                    return Boolean.TRUE;
+                    return Boolean.TRUE; // abort whole thing
                 }
+
             }
         }
         return Boolean.TRUE;
@@ -312,6 +318,7 @@ public class WhileLoop implements Statement {
                         return Boolean.TRUE;
                     } catch (ContinueException cx) {
                         // just continue.
+                        break;
                     } catch (ReturnException rx) {
                         return Boolean.TRUE;
                     }

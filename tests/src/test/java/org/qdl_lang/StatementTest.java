@@ -116,6 +116,63 @@ public class StatementTest extends AbstractQDLTester {
         interpreter.execute(script.toString());
         assert getLongValue("i", state).equals(3L) : "continue() inside try..catch inside loop did not execute properly.";
     }
+    // for the next test. This is the correct result, used to verify in the test.
+    String contTest = "[{0:'0_0', 1:'0_1', 2:'0_2', 4:'0_4', 5:'0_5'},{0:'1_0', 1:'1_1', 2:'1_2', 4:'1_4', 5:'1_5'},{0:'2_0', 1:'2_1', 2:'2_2', 4:'2_4', 5:'2_5'},{0:'3_0', 1:'3_1', 2:'3_2', 4:'3_4', 5:'3_5'},{0:'4_0', 1:'4_1', 2:'4_2', 4:'4_4', 5:'4_5'}];";
+
+    /**
+     * Tests continue(boolean). This does so in a nested loop, so it also tests that
+     * the scope of the function is correct. It applies to the inner loop only.
+     * @throws Throwable
+     */
+    public void testMondicContinue() throws Throwable {
+        StringBuffer script = new StringBuffer();
+        addLine(script,
+                "b. ≔ null;\n" +
+                        "while[j∈[;5]]\n" +
+                        " do[\n" +
+                        "    while[k∈[;6]]\n" +
+                        "      do[\n" +
+                        "          continue(k==3);\n" +
+                        "          b.j.k := to_string(j) + '_' + to_string(k);\n" +
+                        "        ];\n" +
+                        "  ];\n" +
+                        "test. := " + contTest + "\n" +
+                        "ok := (false ∉ b. == test.) && (size(test.) == size(b.));"
+);
+        State state = testUtils.getNewState();
+
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "continue(arg) did not execute properly.";
+    }
+String breakTest = "[['0_0','0_1','0_2'],['1_0','1_1','1_2'],['2_0','2_1','2_2'],['3_0','3_1','3_2'],['4_0','4_1','4_2']];\n";
+
+    /**
+     * test monadic break. This is inside a nested loop to show scope works right too.
+     * @throws Throwable
+     */
+    public void testMondicBreak() throws Throwable {
+        StringBuffer script = new StringBuffer();
+        addLine(script,
+                "b. ≔ null;\n" +
+                        "while[j∈[;5]]\n" +
+                        " do[\n" +
+                        "    while[k∈[;6]]\n" +
+                        "      do[\n" +
+                        "          break(k==3);\n" +
+                        "          b.j.k := to_string(j) + '_' + to_string(k);\n" +
+                        "        ];\n" +
+                        "  ];\n" +
+                        "test. := " + breakTest +
+                        "say(test.); \n" +
+                        "ok := (false ∉ b. == test.) && (size(test.) == size(b.));"
+        );
+        State state = testUtils.getNewState();
+
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "break(arg) did not execute properly.";
+    }
     /*
     v. := [1;7]
     i :=1 ;
