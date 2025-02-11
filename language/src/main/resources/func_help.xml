@@ -1660,12 +1660,42 @@ Note 2: This is always empty in server mode! Scripts have no access to the
     <entry id="remove">
         <body>
             <![CDATA[remove(var) - remove a variable and its value from the symbol table.
+remove(var.index) - remove a value from a stem at a given index
 remove(func, arg_count) - remove a function with the given argument count  from the symbol table.
 Note: This expunges it from the session and any future attempts to access it
       will result in errors until it is set again.
 
+Returns true if the operation worked.
+
 See also: is_defined, excise (to remove by value from a stem)]]>
         </body>
+        <example><![CDATA[   a := 3;
+   remove(a);
+true
+   is_defined(a);
+false
+
+Now remove a value from within a stem.
+
+   b. := [;5]
+   remove(b.3);
+true
+   b.
+{0:0, 1:1, 2:2, 4:4}
+
+Remove a function from the workspace
+   f(x)->x^2;
+   remove(f,2); // f with 2 args is not defined, so the result is true since it is not in the workspace
+true
+   f(2);
+4
+   remove(f,1);
+true
+   is_function(f,1);
+false
+
+            ]]>
+        </example>
     </entry>
     <entry id="script_path">
         <body>
@@ -1730,9 +1760,26 @@ Note: The print or say function effectively calls this and spits out the
     </entry>
     <entry id="break">
         <body>
-            <![CDATA[break() - immediately terminates a loop.
+            <![CDATA[break({boolean}) - immediately terminates a loop.
+If there is no argument, the loop terminates immediately. If the argument is
+present, it terminates if and only if it is true.
+
 See also: continue, return]]>
         </body>
+        <example>
+            <![CDATA[
+In this example, we use continue to skip a couple of iterations and break to terminate
+the loop. Note that all the statements after the function are skipped.
+
+while[j∈[;10]]
+   do[
+       continue(j==1 ∨ j==3);
+       break(j==4);
+       say(j);
+     ]; //end loop
+0
+2]]>
+        </example>
     </entry>
     <entry id="check_after">
         <body>
@@ -1764,7 +1811,9 @@ Note: Original arguments are never altered.]]>
     </entry>
     <entry id="continue">
         <body>
-            <![CDATA[continue() - jumps to the next iteration in a loop
+            <![CDATA[continue({boolean}) - jumps to the next iteration in a loop.
+If boolean is omitted, the jump is unconditional. Otherwise, the jump only happens
+if the boolean is true.
 
 See also: break, return]]>
         </body>

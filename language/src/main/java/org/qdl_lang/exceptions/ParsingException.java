@@ -91,4 +91,14 @@ public class ParsingException extends QDLException {
     }
 
     String scriptName = null;
+
+    public boolean isKeywordError() {
+        return keywordError;
+    }
+
+    public void setKeywordError(boolean keywordError) {
+        this.keywordError = keywordError;
+    }
+
+    boolean keywordError = false;
 }

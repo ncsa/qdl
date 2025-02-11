@@ -27,6 +27,7 @@ import org.qdl_lang.statements.*;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -297,8 +298,8 @@ public class QDLListener implements QDLParserListener {
             // On the other hand, exception handling in Java is quite slow, so if there are
             // lots of substitutions, this might have to change.
             decimal = new BigDecimal(rawNumber);
-        }catch(NumberFormatException nfx){
-            rawNumber = rawNumber.replace("¯","-").replace("⁺","+");
+        } catch (NumberFormatException nfx) {
+            rawNumber = rawNumber.replace("¯", "-").replace("⁺", "+");
             decimal = new BigDecimal(rawNumber); // if it fails here, it fails.
         }
         constantNode = new ConstantNode(decimal, Constant.DECIMAL_TYPE);
@@ -368,7 +369,7 @@ public class QDLListener implements QDLParserListener {
 
     protected void finish(Dyad dyad, ParseTree parseTree) {
         dyad.setLeftArgument((ExpressionInterface) resolveChild(parseTree.getChild(0)));
-        Statement s  = resolveChild(parseTree.getChild(2));
+        Statement s = resolveChild(parseTree.getChild(2));
 /*     Attempt at having lambdas directly evaluated. If ∂ then it makes sense but might open the door
        to functions being defined everywhere on a whim -- which may be ok.
        Do we want (x)->x^2 + (y)->y^3 to be allowed?
@@ -785,6 +786,17 @@ public class QDLListener implements QDLParserListener {
             name = name.substring(0, name.length() - 1);
         }
         functionRecord.setName(name);
+        if(nameAndArgsNode.f_args() != null) {
+            QDLParserParser.F_argsContext argListContext = nameAndArgsNode.f_args();
+            // this is a comma delimited list of arguments.
+            String allArgs = argListContext.getText();
+
+            StringTokenizer st = new StringTokenizer(allArgs, ",");
+            while (st.hasMoreElements()) {
+                functionRecord.argNames.add(st.nextToken());
+            }
+        }
+/*
         for (QDLParserParser.F_argsContext argListContext : nameAndArgsNode.f_args()) {
             // this is a comma delimited list of arguments.
             String allArgs = argListContext.getText();
@@ -794,6 +806,7 @@ public class QDLListener implements QDLParserListener {
                 functionRecord.argNames.add(st.nextToken());
             }
         }
+*/
         //docStatementBlockContext = defineContext.docStatementBlock();
         for (QDLParserParser.FdocContext fd : docStatementBlockContext.fdoc()) {
             functionRecord.documentation.add(getFdocLine(fd.getText()));
@@ -862,6 +875,16 @@ public class QDLListener implements QDLParserListener {
         if (name.endsWith("(")) {
             name = name.substring(0, name.length() - 1);
         }
+        if(nameAndArgsNode.f_args() != null) {
+
+            String allArgs = nameAndArgsNode.f_args().getText();
+
+            StringTokenizer st = new StringTokenizer(allArgs, ",");
+            while (st.hasMoreElements()) {
+                functionRecord.argNames.add(st.nextToken());
+            }
+        }
+/*
         for (QDLParserParser.F_argsContext argListContext : nameAndArgsNode.f_args()) {
             // this is a comma delimited list of arguments.
             String allArgs = argListContext.getText();
@@ -871,6 +894,7 @@ public class QDLListener implements QDLParserListener {
                 functionRecord.argNames.add(st.nextToken());
             }
         }
+*/
         functionRecord.setName(name);
         functionRecord.setArgCount(functionRecord.argNames.size()); // Just set it here and be done with it.
 
@@ -1475,23 +1499,23 @@ illegal argument:no module named "b" was  imported at (1, 67)
         //#0 is if[ // #1 is conditional, #2 is ]then[. #3 starts the statements
         // Includes fixes for https://github.com/ncsa/qdl/issues/86
         Object object = resolveChild(ctx.getChild(0));
-        if(object instanceof ExpressionNode) {
+        if (object instanceof ExpressionNode) {
             altIfExpressionNode.setIF((ExpressionNode) object);
-        }else{
+        } else {
             throw new IllegalArgumentException("left argument must be a boolean, not a " + object);
         }
         object = resolveChild(ctx.getChild(2));
-        if(object instanceof ExpressionInterface){
+        if (object instanceof ExpressionInterface) {
 
             altIfExpressionNode.setTHEN((ExpressionInterface) resolveChild(ctx.getChild(2)));
-        }else{
+        } else {
             throw new IllegalArgumentException("target of if argument must be an expression, not a " + object);
         }
         if (3 < ctx.getChildCount()) {
             object = resolveChild(ctx.getChild(4));
-            if(object instanceof ExpressionInterface) {
+            if (object instanceof ExpressionInterface) {
                 altIfExpressionNode.setELSE((ExpressionInterface) object);
-            }else{
+            } else {
                 throw new IllegalArgumentException("alternate of if argument must be an expression, not a " + object);
             }
         } else {
@@ -1949,16 +1973,40 @@ illegal argument:no module named "b" was  imported at (1, 67)
      */
     @Override
     public void exitLambdaDef(QDLParserParser.LambdaDefContext lambdaContext) {
-        QDLParserParser.FunctionContext nameAndArgsNode = lambdaContext.function();
-        List<QDLParserParser.F_argsContext> justArgs = lambdaContext.f_args();
+        // Github https://github.com/ncsa/qdl/issues/99 change to parser yields 2 cases
+        QDLParserParser.FunctionContext nameAndArgsNode;
+        List<QDLParserParser.F_argsContext> justArgs= null;
         String name = null;
-        if (nameAndArgsNode != null) {
+        if(lambdaContext.function() == null) {
+            // case 1: This is an anonymous lambda function and has only a (possibly empty) argument list
+            justArgs = lambdaContext.f_args();
+        }else{
+            // Case 2: there is a named function with a (possibly empty) f_args
+            nameAndArgsNode = lambdaContext.function();
             name = nameAndArgsNode.getChild(0).getText();
             if (name.endsWith("(")) {
                 name = name.substring(0, name.length() - 1);
             }
-            justArgs = nameAndArgsNode.f_args();
+            justArgs = new ArrayList<>();
+            //justArgs = nameAndArgsNode.f_args();
+            if(nameAndArgsNode.f_args() != null) {
+                // null means no argument. Setting it as per next line results
+                // in a null as the element, which we don't want. We want an empty
+                // list if there are no arguments.
+                justArgs.add(nameAndArgsNode.f_args());
+            }
         }
+        //List<QDLParserParser.F_argsContext> justArgs = new ArrayList<>();
+/*        if (nameAndArgsNode != null) {
+            name = nameAndArgsNode.getChild(0).getText();
+            if (name.endsWith("(")) {
+                name = name.substring(0, name.length() - 1);
+            }
+            //justArgs = nameAndArgsNode.f_args();
+            if(nameAndArgsNode.f_args() != null) {
+                justArgs.add(nameAndArgsNode.f_args());
+            }
+        }*/
 
         FunctionRecord functionRecord = new FunctionRecord();
         functionRecord.setTokenPosition(tp(lambdaContext));
@@ -2000,6 +2048,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
                 }
             }
         }
+        functionRecord.setArgCount(functionRecord.argNames.size());
 
    /*     QDLParserParser.ExpressionBlockContext expressionBlockContext = lambdaContext.expressionBlock();
         if (expressionBlockContext != null && !expressionBlockContext.isEmpty()) {
@@ -2395,16 +2444,32 @@ illegal argument:no module named "b" was  imported at (1, 67)
         }
 
         if (re instanceof FailedPredicateException) {
-            // A token was found but it could not be validated as teh correct one to use.
+            // A token was found but it could not be validated as the correct one to use.
             type = AMBIGUOUS_TYPE;
         }
-        throw new ParsingException("parsing error, got " +
-                re.getOffendingToken().getText(),
-                re.getOffendingToken().getLine(),
-                re.getOffendingToken().getCharPositionInLine(),
-                type
-        );
+        String text = re.getOffendingToken().getText();
+        ParsingException px;
+        if(KEYWORDS.contains(text)){
+             px = new ParsingException(
+                    "keyword error for '" + text + "'",
+                    re.getOffendingToken().getLine(),
+                    re.getOffendingToken().getCharPositionInLine(),
+                    type
+            );
+             px.setKeywordError(true);
+
+        }else{
+             px = new ParsingException("parsing error, got " + text,
+                    re.getOffendingToken().getLine(),
+                    re.getOffendingToken().getCharPositionInLine(),
+                    type
+            );
+
+        }
+        throw px;
     }
+
+    List<String> KEYWORDS = Arrays.asList(QDLConstants.KEYWORDS);
 
     @Override
     public void enterExpressionDyadicOps(QDLParserParser.ExpressionDyadicOpsContext ctx) {
@@ -2665,9 +2730,9 @@ illegal argument:no module named "b" was  imported at (1, 67)
         DyadicFunctionReferenceNode fNode = (DyadicFunctionReferenceNode) resolveChild(ctx);
         ExpressionInterface lArg = (ExpressionInterface) resolveChild(ctx.expression(0));
         ExpressionInterface expression = (ExpressionInterface) resolveChild(ctx.expression(1));
-               ArrayList<ExpressionInterface> args = new ArrayList<>();
-               args.add(lArg);
-               args.add(expression);
+        ArrayList<ExpressionInterface> args = new ArrayList<>();
+        args.add(lArg);
+        args.add(expression);
         fNode.setArguments(args);
         // The symbol always includes the @ or ⊗ for the function reference. Strip it.
         String marker = ctx.FunctionMarker().getText();

@@ -123,7 +123,13 @@ public class QDLWorkspace implements Serializable {
         }
         if (t instanceof ParsingException) {
             ParsingException parsingException = (ParsingException) t;
-            String message = parsingException.getType() + " error";
+            String message;
+            if(parsingException.isKeywordError()){
+                 message = parsingException.getMessage();
+
+            }else{
+                 message = parsingException.getType() + " error";
+            }
             if (parsingException.hasScriptName()) {
                 message = message + " in script '" + parsingException.getScriptName() + "'";
             }
@@ -587,7 +593,7 @@ public class QDLWorkspace implements Serializable {
             terminalType = WS_TERMINAL_TYPE_SWING;
             argLine.removeSwitch("-gui");
         }
-        // Fix https://github.com/ncsa/qdl/issues/52 let it be overrideable from CLU
+        // Fix https://github.com/ncsa/qdl/issues/52 let it be overrideable from CLI
         if (argLine.hasArg("-tty")) {
             terminalType = argLine.getNextArgFor("-tty");
             argLine.removeSwitchAndValue("-tty");

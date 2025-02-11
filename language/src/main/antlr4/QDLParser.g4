@@ -86,7 +86,7 @@ assertStatement2:
               | stemVariable
               | stemList;
 
-     function : FuncStart f_args* ')';
+     function : FuncStart f_args? ')';
        op_ref : OP_REF;
  //       f_arg : (stemValue | f_ref);
        f_args : stemValue (',' stemValue)* ;
@@ -137,28 +137,27 @@ expression
  | expression op=(Times | Divide | Percent ) expression                        #multiplyExpression
  | (Floor | Ceiling) expression                                                #floorOrCeilingExpression
  | (Plus | UnaryPlus | Minus | UnaryMinus) expression                          #unaryMinusExpression
- | IsDefined expression                                                        #isDefinedExpression
- | expression op=IsDefined expression                                          #isDefinedDyadicExpression
  | expression op=(Plus | Minus ) expression                                    #addExpression
  | expression op=(LessThan | GreaterThan | LessEquals | MoreEquals) expression #compExpression
  | expression op=(Equals | NotEquals) expression                               #eqExpression
  | expression op=RegexMatches expression                                       #regexMatches
  | expression '<<' expression                                                  #is_a
- | expression And expression                                                   #andExpression
- | expression Or expression                                                    #orExpression
- //| LogicalNot expression                                                       #notExpression
- | ('!'  | '¬') expression                                                     #notExpression
-// | expression '<<' typeList                                                    #is_a
  | '(' expression ')'                                                          #association
- | expression AltIfMarker expression (':' expression)?                         #altIFExpression
- | expression SwitchMarker expression (':' expression)?                        #switchExpression
 //| expression '&'+ expression                                                  #typeCheck
 // | expression '`'+ expression                                                  #index
 // | expression '|'+ expression                                                  #stile
 // | prefix=',' expression                                                       #unravel
 // | expression ((Stile + expression ) | (Stile '*'))                            #restriction
+// Fix https://github.com/ncsa/qdl/issues/97
  | expression op=Membership expression                                         #epsilon  // unicode 2208, 2209
  | expression op=ContainsKey expression                                        #containsKey  // unicode 220b, 220c
+ | IsDefined expression                                                        #isDefinedExpression
+ | expression op=IsDefined expression                                          #isDefinedDyadicExpression
+ | ('!'  | '¬') expression                                                     #notExpression
+ | expression And expression                                                   #andExpression
+ | expression Or expression                                                    #orExpression
+ | expression AltIfMarker expression (':' expression)?                         #altIFExpression
+ | expression SwitchMarker expression (':' expression)?                        #switchExpression
  // Note that we cannot have something like a lambda on the lhs of ∀
  // because the parser won't quite flag it right.
  | expression op=ForAll expression                                             #forAll  // unicode 2200

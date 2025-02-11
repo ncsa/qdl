@@ -68,7 +68,7 @@ public class QDLParserLexer extends Lexer {
 	private static String[] makeLiteralNames() {
 		return new String[] {
 			null, "'{'", "'}'", "')'", "'\\/'", "'\u2229'", "'/\\'", "'\u222A'", 
-			"'!'", "'\u00AC'", "'('", null, "'assert'", "'\u22A8'", "'false'", "'true'", 
+			"'('", "'!'", "'\u00AC'", null, "'assert'", "'\u22A8'", "'false'", "'true'", 
 			"'block'", "'local'", "'body'", "'catch'", "'define'", "'do'", "'else'", 
 			"'if'", "'module'", "'null'", "'\u2205'", "'switch'", "'then'", "'try'", 
 			"'while'", null, null, null, null, null, "'['", "']'", "','", "':'", 
@@ -263,8 +263,8 @@ public class QDLParserLexer extends Lexer {
 		"\3\2\2\2\u00df\u00e0\7+\2\2\u00e0\b\3\2\2\2\u00e1\u00e2\7^\2\2\u00e2\u00e3"+
 		"\7\61\2\2\u00e3\n\3\2\2\2\u00e4\u00e5\7\u222b\2\2\u00e5\f\3\2\2\2\u00e6"+
 		"\u00e7\7\61\2\2\u00e7\u00e8\7^\2\2\u00e8\16\3\2\2\2\u00e9\u00ea\7\u222c"+
-		"\2\2\u00ea\20\3\2\2\2\u00eb\u00ec\7#\2\2\u00ec\22\3\2\2\2\u00ed\u00ee"+
-		"\7\u00ae\2\2\u00ee\24\3\2\2\2\u00ef\u00f0\7*\2\2\u00f0\26\3\2\2\2\u00f1"+
+		"\2\2\u00ea\20\3\2\2\2\u00eb\u00ec\7*\2\2\u00ec\22\3\2\2\2\u00ed\u00ee"+
+		"\7#\2\2\u00ee\24\3\2\2\2\u00ef\u00f0\7\u00ae\2\2\u00f0\26\3\2\2\2\u00f1"+
 		"\u00f6\5\37\20\2\u00f2\u00f6\5\35\17\2\u00f3\u00f6\5\63\32\2\u00f4\u00f6"+
 		"\5\65\33\2\u00f5\u00f1\3\2\2\2\u00f5\u00f2\3\2\2\2\u00f5\u00f3\3\2\2\2"+
 		"\u00f5\u00f4\3\2\2\2\u00f6\30\3\2\2\2\u00f7\u00f8\7c\2\2\u00f8\u00f9\7"+

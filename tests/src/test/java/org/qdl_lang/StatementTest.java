@@ -2,6 +2,7 @@ package org.qdl_lang;
 
 import org.qdl_lang.exceptions.AssertionException;
 import org.qdl_lang.exceptions.QDLExceptionWithTrace;
+import org.qdl_lang.exceptions.ReturnException;
 import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.state.QDLConstants;
 import org.qdl_lang.state.State;
@@ -82,15 +83,15 @@ public class StatementTest extends AbstractQDLTester {
 
     public void testLoopWithTryAndBreak() throws Throwable {
         StringBuffer script = new StringBuffer();
-         addLine(script, "        i := 0;\n" +
-                 "        while[\n" +
-                 "          x∈[;5]\n" +
-                 "        ][\n" +
-                 "         try[\n" +
-                 "           if[i == 3][break();]else[i++;];\n" +
-                 "         ]catch[\n" +
-                 "         ];\n" +
-                 "        ];");
+        addLine(script, "        i := 0;\n" +
+                "        while[\n" +
+                "          x∈[;5]\n" +
+                "        ][\n" +
+                "         try[\n" +
+                "           if[i == 3][break();]else[i++;];\n" +
+                "         ]catch[\n" +
+                "         ];\n" +
+                "        ];");
         State state = testUtils.getNewState();
 
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
@@ -100,28 +101,30 @@ public class StatementTest extends AbstractQDLTester {
 
     public void testLoopWithTryAndContinue() throws Throwable {
         StringBuffer script = new StringBuffer();
-         addLine(script,
-                 "        i := 0;\n" +
-                 "        while[\n" +
-                 "          x∈[;5]\n" +
-                 "        ][\n" +
-                 "         try[\n" +
-                 "           if[i == 3][continue();]else[i++;];\n" +
-                 "         ]catch[\n" +
-                 "         ];\n" +
-                 "        ];");
+        addLine(script,
+                "        i := 0;\n" +
+                        "        while[\n" +
+                        "          x∈[;5]\n" +
+                        "        ][\n" +
+                        "         try[\n" +
+                        "           if[i == 3][continue();]else[i++;];\n" +
+                        "         ]catch[\n" +
+                        "         ];\n" +
+                        "        ];");
         State state = testUtils.getNewState();
 
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getLongValue("i", state).equals(3L) : "continue() inside try..catch inside loop did not execute properly.";
     }
+
     // for the next test. This is the correct result, used to verify in the test.
     String contTest = "[{0:'0_0', 1:'0_1', 2:'0_2', 4:'0_4', 5:'0_5'},{0:'1_0', 1:'1_1', 2:'1_2', 4:'1_4', 5:'1_5'},{0:'2_0', 1:'2_1', 2:'2_2', 4:'2_4', 5:'2_5'},{0:'3_0', 1:'3_1', 2:'3_2', 4:'3_4', 5:'3_5'},{0:'4_0', 1:'4_1', 2:'4_2', 4:'4_4', 5:'4_5'}];";
 
     /**
      * Tests continue(boolean). This does so in a nested loop, so it also tests that
      * the scope of the function is correct. It applies to the inner loop only.
+     *
      * @throws Throwable
      */
     public void testMondicContinue() throws Throwable {
@@ -138,17 +141,19 @@ public class StatementTest extends AbstractQDLTester {
                         "  ];\n" +
                         "test. := " + contTest + "\n" +
                         "ok := (false ∉ b. == test.) && (size(test.) == size(b.));"
-);
+        );
         State state = testUtils.getNewState();
 
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "continue(arg) did not execute properly.";
     }
-String breakTest = "[['0_0','0_1','0_2'],['1_0','1_1','1_2'],['2_0','2_1','2_2'],['3_0','3_1','3_2'],['4_0','4_1','4_2']];\n";
+
+    String breakTest = "[['0_0','0_1','0_2'],['1_0','1_1','1_2'],['2_0','2_1','2_2'],['3_0','3_1','3_2'],['4_0','4_1','4_2']];\n";
 
     /**
      * test monadic break. This is inside a nested loop to show scope works right too.
+     *
      * @throws Throwable
      */
     public void testMondicBreak() throws Throwable {
@@ -164,7 +169,6 @@ String breakTest = "[['0_0','0_1','0_2'],['1_0','1_1','1_2'],['2_0','2_1','2_2']
                         "        ];\n" +
                         "  ];\n" +
                         "test. := " + breakTest +
-                        "say(test.); \n" +
                         "ok := (false ∉ b. == test.) && (size(test.) == size(b.));"
         );
         State state = testUtils.getNewState();
@@ -173,6 +177,7 @@ String breakTest = "[['0_0','0_1','0_2'],['1_0','1_1','1_2'],['2_0','2_1','2_2']
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "break(arg) did not execute properly.";
     }
+
     /*
     v. := [1;7]
     i :=1 ;
@@ -186,16 +191,16 @@ String breakTest = "[['0_0','0_1','0_2'],['1_0','1_1','1_2'],['2_0','2_1','2_2']
      */
     public void testLoopWithTryAndContinue2a() throws Throwable {
         StringBuffer script = new StringBuffer();
-         addLine(script,
-        "i := 1;                  "
-        +"v. := [;7];                      "
-        +"while[x∈v.]             "
-        +"   do[                          "
-        +"      if[0==mod(x,2)][continue();];  "
-        +"       i:=i*x;                "      
-        +"    ];          "
-        +" ok := i == 15;               "
-         );
+        addLine(script,
+                "i := 1;                  "
+                        + "v. := [;7];                      "
+                        + "while[x∈v.]             "
+                        + "   do[                          "
+                        + "      if[0==mod(x,2)][continue();];  "
+                        + "       i:=i*x;                "
+                        + "    ];          "
+                        + " ok := i == 15;               "
+        );
         State state = testUtils.getNewState();
 
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
@@ -205,18 +210,18 @@ String breakTest = "[['0_0','0_1','0_2'],['1_0','1_1','1_2'],['2_0','2_1','2_2']
 
     public void testLoopWithTryAndContinue2() throws Throwable {
         StringBuffer script = new StringBuffer();
-         addLine(script,
-        "ok := true;                  "
-        +"i := 0;                      "
-        +"key_set := {'a','b','c','d'};"      // The test is that the continue statement
-        +"while[k∈key_set]             "      // skips the rest of the loop.
-        +"do[                          "      //  If it does not, then ok is reset
-        +"   if[k=='b'][continue();];  "      //  to false and the test fails
-        +"   if[k=='b']                "      // The i variable is just to do something.
-        +"   then[ok:=false;]          "
-        +"   else[i++;];               "
-        +"];                           "
-         );
+        addLine(script,
+                "ok := true;                  "
+                        + "i := 0;                      "
+                        + "key_set := {'a','b','c','d'};"      // The test is that the continue statement
+                        + "while[k∈key_set]             "      // skips the rest of the loop.
+                        + "do[                          "      //  If it does not, then ok is reset
+                        + "   if[k=='b'][continue();];  "      //  to false and the test fails
+                        + "   if[k=='b']                "      // The i variable is just to do something.
+                        + "   then[ok:=false;]          "
+                        + "   else[i++;];               "
+                        + "];                           "
+        );
         State state = testUtils.getNewState();
 
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
@@ -248,23 +253,24 @@ String breakTest = "[['0_0','0_1','0_2'],['1_0','1_1','1_2'],['2_0','2_1','2_2']
 
     /**
      * Regression test that error messages from assert statements get propagated correctly.
+     *
      * @throws Throwable
      */
     public void testCatchAssertion() throws Throwable {
-           StringBuffer script = new StringBuffer();
-            addLine(script, "    msg := 'fail';\n" +
-                    "    try[\n" +
-                    "     ⊨ 2 == 3 : 'ok';\n" +
-                    "    ]catch[\n" +
-                    "       msg:=error_message;\n" +
-                    "    ];\n" +
-                    "    ok := msg=='ok';");
-           State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "    msg := 'fail';\n" +
+                "    try[\n" +
+                "     ⊨ 2 == 3 : 'ok';\n" +
+                "    ]catch[\n" +
+                "       msg:=error_message;\n" +
+                "    ];\n" +
+                "    ok := msg=='ok';");
+        State state = testUtils.getNewState();
 
-           QDLInterpreter interpreter = new QDLInterpreter(null, state);
-           interpreter.execute(script.toString());
-           assert getBooleanValue("ok", state): "failed to propagate assertion message.";
-       }
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to propagate assertion message.";
+    }
 
     /**
      * Test that assigning a value to a keyword, e.g. false := true fails.
@@ -511,6 +517,7 @@ String breakTest = "[['0_0','0_1','0_2'],['1_0','1_1','1_2'],['2_0','2_1','2_2']
 
     /**
      * Tests that a ternary expression using a stem of booleans returns a conformable argument.
+     *
      * @throws Throwable
      */
     public void testStemTernary() throws Throwable {
@@ -526,6 +533,7 @@ String breakTest = "[['0_0','0_1','0_2'],['1_0','1_1','1_2'],['2_0','2_1','2_2']
 
     /**
      * Basic test of the ternary operator.
+     *
      * @throws Throwable
      */
     public void testTernary() throws Throwable {
@@ -536,6 +544,7 @@ String breakTest = "[['0_0','0_1','0_2'],['1_0','1_1','1_2'],['2_0','2_1','2_2']
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);
     }
+
     public void testTernaryArrow() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -544,6 +553,7 @@ String breakTest = "[['0_0','0_1','0_2'],['1_0','1_1','1_2'],['2_0','2_1','2_2']
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);
     }
+
     // Fix for https://github.com/ncsa/qdl/issues/86 are next two tests
     /*
        Test that a non-boolean left argument fails in a timely fashion
@@ -557,7 +567,7 @@ String breakTest = "[['0_0','0_1','0_2'],['1_0','1_1','1_2'],['2_0','2_1','2_2']
         try {
             interpreter.execute(script.toString());
             assert false : "was able to set stem instead of boolean in if expression";
-        }catch(QDLExceptionWithTrace iax){
+        } catch (QDLExceptionWithTrace iax) {
             // ok
         }
     }
@@ -565,6 +575,7 @@ String breakTest = "[['0_0','0_1','0_2'],['1_0','1_1','1_2'],['2_0','2_1','2_2']
     /**
      * Shows that if the expression seems syntactically valid, but does not evaluate to
      * a boolean, it fails with the right error.
+     *
      * @throws Throwable
      */
     public void testTernaryArrowFail2() throws Throwable {
@@ -578,16 +589,15 @@ String breakTest = "[['0_0','0_1','0_2'],['1_0','1_1','1_2'],['2_0','2_1','2_2']
         try {
             interpreter.execute(script.toString());
             assert false : "was able to set stem instead of boolean in if expression";
-        }catch(IllegalArgumentException iax){
+        } catch (ReturnException iax) {
             // ok
         }
-
-        //(!is_defined(claims.'isMemberOf')) ⇒ return();
     }
 
     /**
      * Regression test to ensure that using the define statement keeps its state
      * separate
+     *
      * @throws Throwable
      */
     public void testFunctionDefinitionVariableVisibility() throws Throwable {
@@ -598,10 +608,10 @@ String breakTest = "[['0_0','0_1','0_2'],['1_0','1_1','1_2'],['2_0','2_1','2_2']
                 "at.:=tokens.;\n" +
                 "define[f(tt.)][at.:=tt.'foo';];    \n" +  // sets a. to the substem.
                 "f(tokens.); \n");
-        addLine(script, "ok := at.'fnord'=='woof';") ; // fingers and toes check, but it works.
+        addLine(script, "ok := at.'fnord'=='woof';"); // fingers and toes check, but it works.
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
-        assert getBooleanValue("ok", state):"define statement variable visibility contract violated.";
+        assert getBooleanValue("ok", state) : "define statement variable visibility contract violated.";
     }
 
 /*

@@ -8,6 +8,8 @@ import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLStem;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -78,7 +80,6 @@ public class OpenSliceNode extends ExpressionImpl {
         } else {
             step = new BigDecimal(args[2].toString());
         }
-        long i = 1L;
         // Now check that this isn't goofy.
         // step < 0 and start < stop means an infinite loop would happen
 
@@ -86,27 +87,33 @@ public class OpenSliceNode extends ExpressionImpl {
                 ((0 < step.compareTo(BigDecimal.ZERO)) && (stop.compareTo(start) < 0))) {
             throw new IllegalArgumentException("cannot do slice from " + start + " to " + stop + " by increment of " + step);
         }
-
-        QDLStem out = new QDLStem();
-        out.put(0L, start);
+        BigDecimal x = stop.subtract(start);
+        x = x.divide(step,0, RoundingMode.CEILING);
+        int count = x.intValueExact();
+   ArrayList<Object> aList = new ArrayList<>(count);
+        aList.add( start);
         BigDecimal result = start.add(step, OpEvaluator.getMathContext());
+        long i = 1L;
         while (result.compareTo(stop) < 0) {
-            out.put(i++, result);
+            aList.add( result);
             result = result.add(step, OpEvaluator.getMathContext());
         }
         if (stop.compareTo(start) < 0) {
             // decrement case
             while (result.compareTo(stop) > 0) {
-                out.put(i++, result);
+                aList.add( result);
                 result = result.add(step, OpEvaluator.getMathContext());
             }
         } else {
             //increment case
             while (result.compareTo(stop) < 0) {
-                out.put(i++, result);
+                aList.add( result);
                 result = result.add(step, OpEvaluator.getMathContext());
             }
         }
+
+        QDLStem out = new QDLStem();
+        out.getQDLList().setArrayList(aList);
         return out;
     }
 
@@ -122,22 +129,27 @@ public class OpenSliceNode extends ExpressionImpl {
 
         Long result = start;
         Long i = 0L;
+        Double dd = Math.ceil((stop - stop) / (step * 1.00D));
+        int lCount = dd.intValue();
 
+        ArrayList<Object> aList = new ArrayList<>(lCount);
         QDLStem out = new QDLStem();
         if (stop < start) {
             // decrement case, so step <0
             while (result > stop) {
-                out.put(i++, result);
+                //out.put(i++, result);
+                aList.add(result);
                 result = result + step;
             }
         } else {
             //increment case
             while (result < stop) {
-                out.put(i++, result);
+                //out.put(i++, result);
+                aList.add(result);
                 result = result + step;
             }
         }
-
+        out.getQDLList().setArrayList(aList);
         return out;
     }
 

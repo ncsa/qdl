@@ -1,6 +1,8 @@
 package org.qdl_lang;
 
 import org.qdl_lang.evaluate.MathEvaluator;
+import org.qdl_lang.evaluate.OpEvaluator;
+import org.qdl_lang.exceptions.ParsingException;
 import org.qdl_lang.expressions.ConstantNode;
 import org.qdl_lang.expressions.Polyad;
 import org.qdl_lang.expressions.VariableNode;
@@ -526,6 +528,24 @@ public class MathFunctionsTest extends AbstractQDLTester {
         assert getBooleanValue("okx0", state) : MathEvaluator.MIN + " returns wrong value.";
         assert getBooleanValue("oky", state) : MathEvaluator.MAX + " returns wrong numeric type, should be a decimal.";
         assert getBooleanValue("oky0", state) : MathEvaluator.MAX + " returns wrong value";
+    }
+
+    /**
+     * Test multiple args. Github issue https://github.com/ncsa/qdl/issues/99 found that the parser allowed for
+     * bogus multiple arguments like f(3 4 5 6). It would not throw an error. Should be intercepted by the parser.
+     * @throws Throwable
+     */
+    public void testBadArgList() throws Throwable{
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(3 4);"); // does not matter if f exists, parser should catch it
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        try {
+            interpreter.execute(script.toString());
+        }catch(ParsingException e) {
+            return; // alles ok
+        }
+        assert false : "was able to pass multiple arguments like \"3 4 5\" to a function.";
     }
 }
 
