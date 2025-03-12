@@ -1,18 +1,20 @@
 package org.qdl_lang.exceptions;
 
 import org.qdl_lang.statements.Statement;
+import org.qdl_lang.util.aggregate.ProcessScalar;
+import org.qdl_lang.util.aggregate.QDLAggregateUtil;
 import org.qdl_lang.variables.QDLStem;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This is used when recursing a stem with E.g. {@link org.qdl_lang.util.ProcessScalar} in
- * {@link org.qdl_lang.util.QDLAggregateUtil}. Throw this exception when there is a bad
+ * This is used when recursing a stem with E.g. {@link ProcessScalar} in
+ * {@link QDLAggregateUtil}. Throw this exception when there is a bad
  * argument and add the current key to the list of indices.
  *
  * <h3>Usage</h3>
- * Just throw this with no key. The {@link org.qdl_lang.util.QDLAggregateUtil} will fill in any
+ * Just throw this with no key. The {@link QDLAggregateUtil} will fill in any
  * keys at runtime. If there are keys (possible that only set operations are called)
  * then stem index will be added to any message you set, along with the parsing location
  * of the error. A typical error message reads

@@ -7,7 +7,6 @@ import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.*;
 import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.gen.OctetSequenceKeyGenerator;
 import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -21,8 +20,8 @@ import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.state.State;
-import org.qdl_lang.util.ProcessScalarImpl;
-import org.qdl_lang.util.QDLAggregateUtil;
+import org.qdl_lang.util.aggregate.IdentityScalarImpl;
+import org.qdl_lang.util.aggregate.QDLAggregateUtil;
 import org.qdl_lang.util.QDLFileUtil;
 import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.QDLStem;
@@ -35,7 +34,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
@@ -705,7 +703,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
                     throw new BadArgException("Missing public key", 1);
                 }
             }
-            ProcessEncryptDecrypt processEncryptDecrypt = new ProcessEncryptDecrypt(jsonWebKey, cipher, usePrivateKey, false);
+            IdentityEncryptDecrypt processEncryptDecrypt = new IdentityEncryptDecrypt(jsonWebKey, cipher, usePrivateKey, false);
             return QDLAggregateUtil.process(objects[0], processEncryptDecrypt);
         }
 
@@ -762,16 +760,16 @@ System.out.println("JOSE:"+ jwk.toJSONString());
         }
     }
 
-    protected class ProcessEncryptDecrypt extends ProcessScalarImpl {
+    protected class IdentityEncryptDecrypt extends IdentityScalarImpl {
         String cipher;
         JSONWebKey jsonWebKey;
         boolean usePrivateKey;
         boolean doDecrypt;
 
-        public ProcessEncryptDecrypt(JSONWebKey jsonWebKey,
-                                     String cipher,
-                                     boolean usePrivateKey,
-                                     boolean doDecrypt) {
+        public IdentityEncryptDecrypt(JSONWebKey jsonWebKey,
+                                      String cipher,
+                                      boolean usePrivateKey,
+                                      boolean doDecrypt) {
             this.cipher = cipher;
             this.jsonWebKey = jsonWebKey;
             this.usePrivateKey = usePrivateKey;
@@ -891,7 +889,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
                 }
             }
             String cipher = "RSA"; // There are several available.
-            ProcessEncryptDecrypt processEncryptDecrypt = new ProcessEncryptDecrypt(jsonWebKey,
+            IdentityEncryptDecrypt processEncryptDecrypt = new IdentityEncryptDecrypt(jsonWebKey,
                     cipher, usePrivateKey, true);
             return QDLAggregateUtil.process(objects[0], processEncryptDecrypt);
         }
@@ -982,15 +980,15 @@ kazrnybI9mX73qv6NqA
 */
         }
 
-        ProcessSymmetricDeorEncrypt processSymmetricDeorEncrypt = new ProcessSymmetricDeorEncrypt(key, isEncrypt);
+        IdentitySymmetricDeorEncrypt processSymmetricDeorEncrypt = new IdentitySymmetricDeorEncrypt(key, isEncrypt);
         return QDLAggregateUtil.process(objects[0], processSymmetricDeorEncrypt);
     }
 
-    protected class ProcessSymmetricDeorEncrypt extends ProcessScalarImpl {
+    protected class IdentitySymmetricDeorEncrypt extends IdentityScalarImpl {
         boolean isEncrypt = false;
         byte[] key;
 
-        public ProcessSymmetricDeorEncrypt(byte[] key, boolean isEncrypt) {
+        public IdentitySymmetricDeorEncrypt(byte[] key, boolean isEncrypt) {
             this.isEncrypt = isEncrypt;
             this.key = key;
         }
@@ -1287,12 +1285,12 @@ kazrnybI9mX73qv6NqA
             String cert = certStem.getString("encoded");
             X509Certificate[] certs = CertUtil.fromX509PEM(cert);
 
-            ProcessOIDS processOIDS = new ProcessOIDS(certs[0]);
+            IdentityOIDS processOIDS = new IdentityOIDS(certs[0]);
             return QDLAggregateUtil.process(objects[1], processOIDS);
         }
 
-        protected class ProcessOIDS extends ProcessScalarImpl{
-            public ProcessOIDS(X509Certificate x509Certificate) {
+        protected class IdentityOIDS extends IdentityScalarImpl {
+            public IdentityOIDS(X509Certificate x509Certificate) {
                 this.x509Certificate = x509Certificate;
             }
 
@@ -1505,7 +1503,7 @@ kazrnybI9mX73qv6NqA
         @Override
         public Object evaluate(Object[] objects, State state) throws Throwable {
             //   JSONWebKey webKey = getKeys((QDLStem) objects[1]);
-            ProcessJWT processJWT = new ProcessJWT();
+            IdentityJWT processJWT = new IdentityJWT();
             return QDLAggregateUtil.process(objects[0], processJWT);
         }
 
@@ -1592,7 +1590,7 @@ kazrnybI9mX73qv6NqA
     }
 
     //public class ProcessJWT extends ProcessScalarImpl {
-    public class DoJWTVerify extends ProcessScalarImpl {
+    public class DoJWTVerify extends IdentityScalarImpl {
         public DoJWTVerify(JSONWebKey webKey) {
             this.webKey = webKey;
         }
@@ -1663,9 +1661,9 @@ kazrnybI9mX73qv6NqA
     }
 
     //public class ProcessJWT extends ProcessScalarImpl {
-    public class ProcessJWT extends ProcessScalarImpl {
+    public class IdentityJWT extends IdentityScalarImpl {
 
-        public ProcessJWT() {
+        public IdentityJWT() {
         }
 
         @Override

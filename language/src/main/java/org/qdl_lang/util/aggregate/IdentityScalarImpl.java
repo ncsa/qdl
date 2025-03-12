@@ -1,5 +1,6 @@
-package org.qdl_lang.util;
+package org.qdl_lang.util.aggregate;
 
+import com.mysql.cj.x.protobuf.MysqlxDatatypes;
 import org.qdl_lang.functions.DyadicFunctionReferenceNode;
 import org.qdl_lang.functions.FunctionReferenceNode;
 import org.qdl_lang.module.Module;
@@ -13,11 +14,11 @@ import java.math.BigDecimal;
  * can usually just get away with implementing one method for any type. If you want
  * some specific error message, you have enough information for that too.
  *
- * This is the most permissive type of processig.
+ * This is the most permissive type of processing.
  * This class is designed to do 95% of the work for handling aggregates and is really
- * redundant and boring.
+ * redundant and boring. Again, you should only need to override those things that change.
  */
-public class ProcessScalarImpl implements ProcessScalar {
+public class IdentityScalarImpl extends AbstractIdentityStemProcess implements ProcessScalar {
     @Override
     public Object process(String stringValue) {
         return getDefaultValue(stringValue);
@@ -58,53 +59,4 @@ public class ProcessScalarImpl implements ProcessScalar {
         return getDefaultValue(dyadicFunctionReferenceNode);
     }
 
-    @Override
-    public Object process(Object key, Boolean booleanValue) {
-        return process(booleanValue);
-    }
-
-    @Override
-    public Object process(Object key, String stringValue) {
-        return process(stringValue);
-    }
-
-    @Override
-    public Object process(Object key, Long longValue) {
-        return process(longValue);
-    }
-
-    @Override
-    public Object process(Object key, BigDecimal decimalValue) {
-        return process(decimalValue);
-    }
-
-    @Override
-    public Object process(Object key, QDLNull nullValue) {
-        return process(nullValue);
-    }
-
-    @Override
-    public Object process(Object key, Module moduleValue) {
-        return process(moduleValue);
-    }
-
-    @Override
-    public Object process(Object key, FunctionReferenceNode frValue) {
-        return process(frValue);
-    }
-
-    @Override
-    public Object process(Object key, DyadicFunctionReferenceNode dyadicFunctionReferenceNode) {
-        return process(dyadicFunctionReferenceNode);
-    }
-
-    /**
-     * This is what makes this the identity function. If you want/need a different default
-     * value for each call, override this.
-     * @param value
-     * @return
-     */
-    public Object getDefaultValue(Object value) {
-        return value;
-    }
 }

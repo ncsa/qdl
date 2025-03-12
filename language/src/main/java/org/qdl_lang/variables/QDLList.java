@@ -235,7 +235,13 @@ subset(b., 3, 6)
         }
     }
 
-
+    /**
+     * Fill this list with size elements from the fill array. If size<length(fill)
+     * then only size elements are taken. If size > length(fill), the elements of fill
+     * are cyclically resused.
+     * @param size
+     * @param fill
+     */
     public QDLList(long size, Object[] fill) {
         if (Integer.MAX_VALUE < size) {
             throw new NotImplementedException("need to implement long lists");

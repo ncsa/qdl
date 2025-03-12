@@ -41,6 +41,13 @@ public class QDLStem implements Map<String, Object>, Serializable {
         setQDLList(list);
     }
 
+    /**
+     * Initialize a QDL stem with count elements form the fillList. This
+     * returns a simple list. See {@link QDLList#QDLList(long, Object[])}
+     * for the contract.
+     * @param count
+     * @param fillList
+     */
     public QDLStem(Long count, Object[] fillList) {
         QDLList s = new QDLList(count, fillList);
         setQDLList(s);

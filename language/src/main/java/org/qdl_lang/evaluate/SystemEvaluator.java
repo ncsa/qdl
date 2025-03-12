@@ -2796,6 +2796,15 @@ public class SystemEvaluator extends AbstractEvaluator {
         try {
             runner = p.execute(stringReader);
         } catch (Throwable t) {
+            // Fix for https://github.com/ncsa/qdl/issues/103
+            if(t instanceof ReturnException){
+                ReturnException re = (ReturnException) t;
+                // they've set the value directly.
+                polyad.setEvaluated(true);
+                polyad.setResult(re.result);
+                polyad.setResultType(re.resultType);
+                return;
+            }
             if (t instanceof RuntimeException) {
                 throw (RuntimeException) t;
             }
@@ -2803,7 +2812,7 @@ public class SystemEvaluator extends AbstractEvaluator {
         }
         List<Element> elements = runner.getElements();
         if (elements.size() == 0) {
-            // nothing done, for whateve reason, e.g. they sent in a list of comments
+            // nothing done, for whatever reason, e.g. they sent in a list of comments
             polyad.setResultType(Constant.NULL_TYPE);
             polyad.setResult(QDLNull.getInstance());
             polyad.setEvaluated(true);

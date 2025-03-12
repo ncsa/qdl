@@ -8,6 +8,9 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.variables.Constant;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * <p>Created by Jeff Gaynor<br>
  * on 6/10/24 at  12:43 PM
@@ -58,10 +61,13 @@ public class DyadicFunctionReferenceNode extends ExpressionImpl implements Funct
         getArguments().get(0).evaluate(state);
         Object lArg = getArgAt(0).getResult();
         getArguments().get(1).setEvaluated(true); // so things don't bomb elsewhere
-        if (!(lArg instanceof Long)) {
-            throw new BadArgException("left argument must be an integer", getArgAt(0));
+        if ((lArg instanceof Long)) {
+            //throw new BadArgException("left argument must be an integer", getArgAt(0));
+            int argCount = ((Long) lArg).intValue();
+            setFunctionRecord(getFRByArgCount(state,argCount,getFunctionName()));
         }
-        int argCount = ((Long) lArg).intValue();
+        Map<Integer, FunctionRecord> foundFRs = new HashMap<>();
+/*
         FunctionRecord functionRecord = (FunctionRecord) state.getFTStack().get(new FKey(getFunctionName(), argCount));
          if(functionRecord == null){
              if(!state.getFTStack().getByAllName(getFunctionName()).isEmpty()){
@@ -69,7 +75,8 @@ public class DyadicFunctionReferenceNode extends ExpressionImpl implements Funct
              }
              throw new UndefinedFunctionException("no such function " + getFunctionName(), getArgAt(1));
          }
-        setFunctionRecord(functionRecord); // may be null for an operator, e.g. name is * or ^
+        setFunctionRecord(functionRecord);
+*/
         // if this was e.g. in a module, it might have an arbitraily complex path to get here.
         // set the state that was finally constructed elsewhere for this specific call.
         if (state.isModuleState()) {
@@ -80,7 +87,16 @@ public class DyadicFunctionReferenceNode extends ExpressionImpl implements Funct
         setEvaluated(true);
         return this;
     }
-
+protected FunctionRecord getFRByArgCount(State state, int argCount, String functionName){
+    FunctionRecord functionRecord = (FunctionRecord) state.getFTStack().get(new FKey(getFunctionName(), argCount));
+    if(functionRecord == null){
+        if(!state.getFTStack().getByAllName(getFunctionName()).isEmpty()){
+            throw new UndefinedFunctionException("unknown valence of " + getFunctionArgCount() + " for " + getFunctionName(), getArgAt(0));
+        }
+        throw new UndefinedFunctionException("no such function " + getFunctionName(), getArgAt(1));
+    }
+    return functionRecord;
+}
     public String getFunctionName() {
         return functionName;
     }

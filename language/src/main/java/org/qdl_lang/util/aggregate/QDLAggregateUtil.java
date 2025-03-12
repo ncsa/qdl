@@ -1,12 +1,10 @@
-package org.qdl_lang.util;
+package org.qdl_lang.util.aggregate;
 
-import org.qdl_lang.evaluate.AbstractEvaluator;
+import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.exceptions.BadStemValueException;
 import org.qdl_lang.exceptions.UnknownTypeException;
-import org.qdl_lang.expressions.ExpressionImpl;
 import org.qdl_lang.functions.FunctionReferenceNode;
 import org.qdl_lang.module.Module;
-import org.qdl_lang.state.State;
 import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.QDLSet;
@@ -26,7 +24,7 @@ import java.math.BigDecimal;
  * where the machinery of {@link org.qdl_lang.evaluate.FunctionEvaluator} is not available.
  * <h3>Usage</h3>
  * If you have an aggregate and need to process scalars, call this with the right overrides to
- * {@link ProcessScalarImpl}. That class simply passes back its arguments unchanged as a default behavior.
+ * {@link IdentityScalarImpl}. That class simply passes back its arguments unchanged as a default behavior.
  * <h3>Handling exceptions</h3>
  * If you use this in an extension (so a Java class that extends {@link org.qdl_lang.extensions.QDLFunction})
  * then you don't need to do anything special exception throw Java exceptions.
@@ -41,7 +39,7 @@ public class QDLAggregateUtil {
      * on a generic object. A scalar is processed and returned as such, aggregates are processed
      * as aggregates.
      * @param object
-     * @param processScalar
+     * @param processScalar implementation of {@link ProcessScalar}
      * @return
      */
     public static Object process(Object object, ProcessScalar processScalar) {
@@ -51,7 +49,7 @@ public class QDLAggregateUtil {
         if (object instanceof QDLSet) {
             return processSet((QDLSet) object, processScalar);
         }
-        return getNewSetValue(processScalar, object);
+        return processSetValue(processScalar, object);
     }
 
     public static QDLStem processStem(QDLStem inStem, ProcessScalar processScalar) {
@@ -59,7 +57,7 @@ public class QDLAggregateUtil {
         for (Object key : inStem.keySet()) {
             Object value = inStem.get(key);
             try {
-                outStem.putLongOrString(key, getNewStemValue(processScalar, key, value));
+                outStem.putLongOrString(key, processStemValue(processScalar, key, value));
             }catch(BadStemValueException badStemValueException){
                 badStemValueException.getIndices().add(key);
                 throw badStemValueException;
@@ -68,7 +66,7 @@ public class QDLAggregateUtil {
         return outStem;
     }
 
-    private static Object getNewSetValue(ProcessScalar processScalar, Object value) {
+    private static Object processSetValue(ProcessScalar processScalar, Object value) {
         Object newValue = null;
         switch (Constant.getType(value)) {
             case Constant.BOOLEAN_TYPE:
@@ -104,7 +102,7 @@ public class QDLAggregateUtil {
         return newValue;
     }
 
-    private static Object getNewStemValue(ProcessScalar processScalar, Object key, Object value) {
+    private static Object processStemValue(ProcessScalar processScalar, Object key, Object value) {
         Object newValue = null;
         switch (Constant.getType(value)) {
             case Constant.BOOLEAN_TYPE:
@@ -141,11 +139,83 @@ public class QDLAggregateUtil {
         return newValue;
     }
 
+    private static Object processStemValue(ProcessStemAxisRestriction processStemValues,
+                                           Object key,
+                                           Object value,
+                                           int currentDepth) {
+        Object newValue = null;
+        switch (Constant.getType(value)) {
+            case Constant.BOOLEAN_TYPE:
+                newValue = processStemValues.process(key, (Boolean) value);
+                break;
+            case Constant.DECIMAL_TYPE:
+                newValue = processStemValues.process(key, (BigDecimal) value);
+                break;
+            case Constant.FUNCTION_TYPE:
+                newValue = processStemValues.process(key, (FunctionReferenceNode) value);
+                break;
+            case Constant.LONG_TYPE:
+                newValue = processStemValues.process(key, (Long) value);
+                break;
+            case Constant.MODULE_TYPE:
+                newValue = processStemValues.process(key, (Module) value);
+                break;
+            case Constant.NULL_TYPE:
+                newValue = processStemValues.process(key, (QDLNull) value);
+                break;
+            case Constant.SET_TYPE:
+                newValue = processStemValues.process(key, (QDLSet) value);
+                break;
+            case Constant.STEM_TYPE:
+                newValue = processStem((QDLStem) value, processStemValues, currentDepth);
+                break;
+            case Constant.STRING_TYPE:
+                newValue = processStemValues.process(key, (String) value);
+                break;
+            case Constant.UNKNOWN_TYPE:
+                // then it's a set
+                throw new UnknownTypeException("error processing key='" + key + "', value '" + value + "', unknown type", null);
+        }
+        return newValue;
+    }
+
     public static QDLSet processSet(QDLSet inSet, ProcessScalar processScalar) {
         QDLSet outSet = new QDLSet();
         for (Object value : inSet) {
-            outSet.add(getNewSetValue(processScalar, value));
+            outSet.add(processSetValue(processScalar, value));
         }
         return outSet;
+    }
+
+    /**
+     * Start processing for an axis restricted function. This will throw an exception if the argument is not a stem.
+
+     * @param processRankRestriction
+     * @return
+     */
+    public static Object process(QDLStem stem, ProcessStemAxisRestriction processRankRestriction) {
+        // start recursion
+            return processStem(stem, processRankRestriction, -1);
+    }
+
+    public static QDLStem processStem(QDLStem inStem, ProcessStemAxisRestriction processRankRestriction, int currentDepth) {
+        QDLStem outStem = new QDLStem();
+        for (Object key : inStem.keySet()) {
+            Object value = inStem.get(key);
+            try {
+                if(currentDepth == processRankRestriction.getAxis()){
+                    outStem.putLongOrString(key, processStemValue(processRankRestriction, key, value, currentDepth + 1));
+                }else{
+                    if(value instanceof QDLStem){
+                        processStem((QDLStem) value, processRankRestriction, currentDepth + 1);
+                    }
+                    //outStem.putLongOrString(key, getNewStemValue(processScalar, key, value));
+                }
+            }catch(BadStemValueException badStemValueException){
+                badStemValueException.getIndices().add(key);
+                throw badStemValueException;
+            }
+        }
+        return outStem;
     }
 }
