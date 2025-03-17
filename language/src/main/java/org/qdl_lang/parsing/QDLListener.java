@@ -786,7 +786,7 @@ public class QDLListener implements QDLParserListener {
             name = name.substring(0, name.length() - 1);
         }
         functionRecord.setName(name);
-        if(nameAndArgsNode.f_args() != null) {
+        if (nameAndArgsNode.f_args() != null) {
             QDLParserParser.F_argsContext argListContext = nameAndArgsNode.f_args();
             // this is a comma delimited list of arguments.
             String allArgs = argListContext.getText();
@@ -875,7 +875,7 @@ public class QDLListener implements QDLParserListener {
         if (name.endsWith("(")) {
             name = name.substring(0, name.length() - 1);
         }
-        if(nameAndArgsNode.f_args() != null) {
+        if (nameAndArgsNode.f_args() != null) {
 
             String allArgs = nameAndArgsNode.f_args().getText();
 
@@ -1975,12 +1975,12 @@ illegal argument:no module named "b" was  imported at (1, 67)
     public void exitLambdaDef(QDLParserParser.LambdaDefContext lambdaContext) {
         // Github https://github.com/ncsa/qdl/issues/99 change to parser yields 2 cases
         QDLParserParser.FunctionContext nameAndArgsNode;
-        List<QDLParserParser.F_argsContext> justArgs= null;
+        List<QDLParserParser.F_argsContext> justArgs = null;
         String name = null;
-        if(lambdaContext.function() == null) {
+        if (lambdaContext.function() == null) {
             // case 1: This is an anonymous lambda function and has only a (possibly empty) argument list
             justArgs = lambdaContext.f_args();
-        }else{
+        } else {
             // Case 2: there is a named function with a (possibly empty) f_args
             nameAndArgsNode = lambdaContext.function();
             name = nameAndArgsNode.getChild(0).getText();
@@ -1989,7 +1989,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
             }
             justArgs = new ArrayList<>();
             //justArgs = nameAndArgsNode.f_args();
-            if(nameAndArgsNode.f_args() != null) {
+            if (nameAndArgsNode.f_args() != null) {
                 // null means no argument. Setting it as per next line results
                 // in a null as the element, which we don't want. We want an empty
                 // list if there are no arguments.
@@ -2449,17 +2449,17 @@ illegal argument:no module named "b" was  imported at (1, 67)
         }
         String text = re.getOffendingToken().getText();
         ParsingException px;
-        if(KEYWORDS.contains(text)){
-             px = new ParsingException(
+        if (KEYWORDS.contains(text)) {
+            px = new ParsingException(
                     "keyword error for '" + text + "'",
                     re.getOffendingToken().getLine(),
                     re.getOffendingToken().getCharPositionInLine(),
                     type
             );
-             px.setKeywordError(true);
+            px.setKeywordError(true);
 
-        }else{
-             px = new ParsingException("parsing error, got " + text,
+        } else {
+            px = new ParsingException("parsing error, got " + text,
                     re.getOffendingToken().getLine(),
                     re.getOffendingToken().getCharPositionInLine(),
                     type
@@ -2782,6 +2782,33 @@ illegal argument:no module named "b" was  imported at (1, 67)
         constantNode.setSourceCode(getSource(ctx));
         stash(ctx, constantNode);
      */
+
+    @Override
+    public void enterAxis(QDLParserParser.AxisContext ctx) {
+
+    }
+
+    @Override
+    public void exitAxis(QDLParserParser.AxisContext ctx) {
+        AxisExpression expr = new AxisExpression();
+        ExpressionInterface lArg = (ExpressionInterface) resolveChild(ctx.expression(0));
+        ExpressionInterface rArg = (ExpressionInterface) resolveChild(ctx.expression(1));
+        ArrayList<ExpressionInterface> args = new ArrayList<>();
+        args.add(lArg);
+        args.add(rArg);
+        expr.setArguments(args);
+        expr.setTokenPosition(tp(ctx));
+        expr.setSourceCode(getSource(ctx));
+        stash(ctx, expr);
+/*
+      ExpressionInterface lArg = (ExpressionInterface) resolveChild(ctx.expression(0));
+        ExpressionInterface expression = (ExpressionInterface) resolveChild(ctx.expression(1));
+         fNode.setFunctionName(symbol);
+        fNode.setTokenPosition(tp(ctx));
+        fNode.setSourceCode(getSource(ctx));
+        stash(ctx, fNode);
+ */
+    }
 }
 
 

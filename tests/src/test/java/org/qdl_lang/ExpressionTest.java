@@ -334,4 +334,19 @@ ff(1@f,5);
     assert getBooleanValue("ok3", state) : "Failed to resolve @ correctly.";
 }
 
+    /**
+     * Issue was that returns inside of interpret were not intercepted, preventing accessing the
+     * value in variable assignments
+     * @throws Throwable
+     */
+    public void testGithub103() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        addLine(script,"a:=interpret('return(2+2)');");
+        addLine(script,"ok := a== 4;");
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "Failed to process return() inside interpret function.";
+    }
+
 }

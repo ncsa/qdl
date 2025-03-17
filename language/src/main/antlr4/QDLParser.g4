@@ -111,6 +111,7 @@ expression
  :
    function                                                                    #functions
  | expression op=FunctionMarker expression                                     #dyadicFunctionRefernce
+ //| expression '::' expression                                                  #arg_concat
  | variable? Hash expression                                                   #moduleExpression
  | expression StemDot+ expression                                              #dotOp
  | FunctionMarker expression                                                   #functionReference // REUSED
@@ -145,7 +146,7 @@ expression
  | '(' expression ')'                                                          #association
 //| expression '&'+ expression                                                  #typeCheck
 // | expression '`'+ expression                                                  #index
-// | expression '|'+ expression                                                  #stile
+ | expression '`'+ expression                                                  #axis
 // | prefix=',' expression                                                       #unravel
 // | expression ((Stile + expression ) | (Stile '*'))                            #restriction
 // Fix https://github.com/ncsa/qdl/issues/97

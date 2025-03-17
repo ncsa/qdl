@@ -11,6 +11,8 @@ import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.qdl_lang.statements.WhileLoop;
+import org.qdl_lang.util.aggregate.AxisRestrictionIdentity;
+import org.qdl_lang.util.aggregate.QDLAggregateUtil;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -35,9 +37,10 @@ public class QDLStem implements Map<String, Object>, Serializable {
 
     /**
      * Initialize a QDL stem with a list
+     *
      * @param list
      */
-    public QDLStem(QDLList list){
+    public QDLStem(QDLList list) {
         setQDLList(list);
     }
 
@@ -45,6 +48,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
      * Initialize a QDL stem with count elements form the fillList. This
      * returns a simple list. See {@link QDLList#QDLList(long, Object[])}
      * for the contract.
+     *
      * @param count
      * @param fillList
      */
@@ -86,16 +90,18 @@ public class QDLStem implements Map<String, Object>, Serializable {
         return (Long) getQDLMap().get(key);
     }
 
-    public QDLStem getStem(String key){
+    public QDLStem getStem(String key) {
         if (isLongIndex(key)) {
             return getStem(Long.parseLong(key));
         }
         return (QDLStem) getQDLMap().get(key);
 
     }
-    public QDLStem getStem(Long key){
+
+    public QDLStem getStem(Long key) {
         return (QDLStem) getQDLList().get(key);
     }
+
     public Long getLong(Long key) {
         return (Long) getQDLList().get(key);
     }
@@ -257,6 +263,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
      * Add the single object to the list in this stem. This allows you to add a stem as a list
      * value, unlike {@link #listAppend(QDLStem)} which appends the elements of the argument's
      * list to the current object's list.
+     *
      * @param value
      */
     public void listAdd(Object value) {
@@ -492,6 +499,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
     /**
      * return an enumeration (set) of <b>ALL</b> keys in order, starting with the list indices
      * then the keys.
+     *
      * @return
      */
     @Override
@@ -549,6 +557,10 @@ public class QDLStem implements Map<String, Object>, Serializable {
         return var.equals("0") || int_pattern.matcher(var).matches();
     }
 
+    /**
+     * A map that is keyed by an integer and has lists of indices as values. It is used to collect
+     * indices of a given rank or along a given axis.
+     */
     public static class KeyRankMap extends TreeMap<Integer, List<List>> {
         public void put(List list) {
             if (!containsKey(list.size())) {
@@ -795,7 +807,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
     public void renameKeys(QDLStem newKeys, boolean overWriteKeys) {
         for (Object oldKey : newKeys.keySet()) {
             Object newKey = newKeys.get(oldKey);
-            if(newKey.equals(oldKey)) continue;
+            if (newKey.equals(oldKey)) continue;
             if (containsKey(oldKey)) {
                 if (containsKey(newKey)) {
                     if (overWriteKeys) {
@@ -862,11 +874,11 @@ public class QDLStem implements Map<String, Object>, Serializable {
      */
     public QDLStem hasKeys(QDLStem keyList) {
         QDLStem result = newInstance();
-        if(!keyList.isList()){
+        if (!keyList.isList()) {
             throw new IllegalArgumentException("has keys requires a list");
         }
-        for(Object ndx : keyList.getQDLList().orderedKeys()){
-            result.put((Long)ndx, containsKey(keyList.get((Long)ndx))); // since we know it's a list
+        for (Object ndx : keyList.getQDLList().orderedKeys()) {
+            result.put((Long) ndx, containsKey(keyList.get((Long) ndx))); // since we know it's a list
         }
         return result;
     }
@@ -874,17 +886,19 @@ public class QDLStem implements Map<String, Object>, Serializable {
     /**
      * Modern successor to the deprecated {@link #hasKeys(QDLStem)}. This returns a left conformable
      * stem as it should.
+     *
      * @param keyList
      * @return
      */
     public QDLStem hasKey(QDLStem keyList) {
-    QDLStem result = newInstance();
+        QDLStem result = newInstance();
 
-    for(Object k : keySet()){
-        result.putLongOrString(k, keyList.containsKey(k));
+        for (Object k : keySet()) {
+            result.putLongOrString(k, keyList.containsKey(k));
+        }
+        return result;
     }
-    return result;
-}
+
     /* ********
          IndexEntry operations
        ********* */
@@ -1041,10 +1055,10 @@ public class QDLStem implements Map<String, Object>, Serializable {
         }
         if (index instanceof BigDecimal) {
             BigDecimal bd = (BigDecimal) index;
-            try{
+            try {
                 put(bd.longValueExact(), value);
 
-            }catch(ArithmeticException arithmeticException){
+            } catch (ArithmeticException arithmeticException) {
                 // over flow, so it's too big to have as an index.
                 BigInteger bi = bd.toBigIntegerExact();
                 SparseEntry sparseEntry = new SparseEntry(bi, value);
@@ -1062,6 +1076,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
 
     /**
      * Note that the
+     *
      * @param w
      * @return
      */
@@ -1142,7 +1157,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
             list.add(key);
             Object v = get(key);
             if (v instanceof QDLStem) {
-                indices((QDLStem) v, list, keyRankMap);
+                indicesByRank((QDLStem) v, list, keyRankMap);
             } else {
                 keyRankMap.put(list);
             }
@@ -1150,10 +1165,57 @@ public class QDLStem implements Map<String, Object>, Serializable {
         return keyRankMap;
     }
 
-    public QDLStem indices(Long axis) {
+    /**
+     * Get by axis. So if axis is 0, top level keys only, axis == 1 yields rank 2 keys
+     *
+     * @param axis
+     * @return
+     */
+    public QDLStem keysByAxis(Long axis) {
+        ARGetkeys arGetkeys = new ARGetkeys(axis.intValue());
+        //return (QDLStem) QDLAggregateUtil.process(this, arGetkeys);
+        QDLAggregateUtil.process(this, arGetkeys);
+        QDLStem qdlStem = new QDLStem();
+        qdlStem.setQDLList(arGetkeys.getAccumulator());
+        return qdlStem;
+    }
+
+    public static class ARGetkeys extends AxisRestrictionIdentity {
+        public ARGetkeys(int axis) {
+            this.axis = axis;
+        }
+
+        /**
+         * Flat list of all keys. Otherwise this returns a structured list of each
+         * key in its proper location.
+         * @return
+         */
+        public QDLList getAccumulator() {
+            return accumulator;
+        }
+
+        QDLList accumulator = new QDLList();
+
+        @Override
+        public Object getDefaultValue(List<Object> index, Object key, Object value) {
+            QDLStem stem = new QDLStem();
+            stem.getQDLList().appendAll(index);
+            stem.getQDLList().append(key);
+            accumulator.append(stem);
+            return stem;
+        }
+    }
+
+    /**
+     * Return the indices of a given rank for this stem.
+     *
+     * @param rank
+     * @return
+     */
+    public QDLStem indicesByRank(Long rank) {
         KeyRankMap keysByRank = allKeys2();
         //keysByRank.;
-        if (axis == 0L) {
+        if (rank == 0L) {
             QDLStem stemVariable = newInstance();
             if (!keysByRank.containsKey(1)) {
                 return newInstance();
@@ -1164,11 +1226,20 @@ public class QDLStem implements Map<String, Object>, Serializable {
             }
             return stemVariable;
         }
-        int targetAxis = axis < 0L ? keysByRank.lastKey() + axis.intValue() : axis.intValue();
-        if (!keysByRank.containsKey(targetAxis + 1)) {
+        int targetRank = rank.intValue();
+        if (targetRank < 0) {
+            long x = rank % keysByRank.lastKey(); // get it in the right range
+            if (x == 0) {
+                targetRank = 1; // They asked for a non-zero rank, so assume that is what they want.
+            } else {
+                targetRank = x < 0L ? (int) (keysByRank.lastKey() + x + 1) : rank.intValue();
+            }
+        }
+
+        if (!keysByRank.containsKey(targetRank)) {
             return newInstance();
         }
-        List list = keysByRank.get(targetAxis + 1);
+        List list = keysByRank.get(targetRank);
         return convertKeyByRank(list);
     }
 
@@ -1193,13 +1264,13 @@ public class QDLStem implements Map<String, Object>, Serializable {
         return stemVariable;
     }
 
-    protected void indices(QDLStem v, List list, KeyRankMap keyRankMap) {
+    protected void indicesByRank(QDLStem v, List list, KeyRankMap keyRankMap) {
         for (Object key : v.keySet()) {
             List list2 = new ArrayList();
             list2.addAll(list);
             list2.add(key);
             if (v.get(key) instanceof QDLStem) {
-                indices((QDLStem) v.get(key), list2, keyRankMap);
+                indicesByRank((QDLStem) v.get(key), list2, keyRankMap);
             } else {
                 keyRankMap.put(list2);
             }
@@ -1207,7 +1278,14 @@ public class QDLStem implements Map<String, Object>, Serializable {
 
     }
 
-    public QDLStem indices() {
+    /**
+     * Returns a <b>flat list</b> of all indices at a given rank. Each element is a stem.
+     * Special case is rank of 0 returns the same as rank == 1, except the elements are scalars,
+     * not stems with a single element.
+     *
+     * @return
+     */
+    public QDLStem indicesByRank() {
         KeyRankMap keysByRank = allKeys2();
         // really simple case of a basic list with no structure. Just return the elements in a stem
         if (keysByRank.size() == 1 && keysByRank.keySet().iterator().next() == 1) {
@@ -1250,9 +1328,8 @@ public class QDLStem implements Map<String, Object>, Serializable {
     }
 
 
-
     public JSON toJSON(boolean escapeNames, int type) {
-        MetaCodec codec = escapeNames?(new MetaCodec(type)):null;
+        MetaCodec codec = escapeNames ? (new MetaCodec(type)) : null;
 
         if (getQDLMap().size() == 0 && getQDLList().size() == 0) {
             // Empty stem corresponds to an empty JSON Object
@@ -1330,14 +1407,15 @@ public class QDLStem implements Map<String, Object>, Serializable {
 
 
     public QDLStem fromJSON(JSON json) {
-      if(json instanceof JSONObject)  {
-          return fromJSON((JSONObject) json, false, -1);
-      }
-      if(json instanceof JSONArray){
-          return fromJSON((JSONArray)json, false, -1);
-      }
-      throw new IllegalArgumentException("argument is neither a JSON object nor JSON array");
+        if (json instanceof JSONObject) {
+            return fromJSON((JSONObject) json, false, -1);
+        }
+        if (json instanceof JSONArray) {
+            return fromJSON((JSONArray) json, false, -1);
+        }
+        throw new IllegalArgumentException("argument is neither a JSON object nor JSON array");
     }
+
     public QDLStem fromJSON(JSONObject jsonObject) {
         return fromJSON(jsonObject, false, -1);
     }
@@ -1348,7 +1426,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
      * @param jsonObject return this object, populated
      */
     public QDLStem fromJSON(JSONObject jsonObject, boolean convertVars, int type) {
-        MetaCodec codec = convertVars?(new MetaCodec(type)):null;
+        MetaCodec codec = convertVars ? (new MetaCodec(type)) : null;
         for (Object k : jsonObject.keySet()) {
             String key = k.toString();
 
@@ -1356,17 +1434,17 @@ public class QDLStem implements Map<String, Object>, Serializable {
             if (v instanceof JSONObject) {
                 QDLStem x = newInstance();
                 if (convertVars) {
-                    put(codec.encode(key) + STEM_INDEX_MARKER, x.fromJSON((JSONObject) v,convertVars,type));
+                    put(codec.encode(key) + STEM_INDEX_MARKER, x.fromJSON((JSONObject) v, convertVars, type));
                 } else {
-                    put(key + STEM_INDEX_MARKER, x.fromJSON((JSONObject) v,convertVars,type));
+                    put(key + STEM_INDEX_MARKER, x.fromJSON((JSONObject) v, convertVars, type));
                 }
             } else {
                 if (v instanceof JSONArray) {
                     QDLStem x = newInstance();
                     if (convertVars) {
-                        put(codec.encode(key) + STEM_INDEX_MARKER, x.fromJSON((JSONArray) v,convertVars,type));
+                        put(codec.encode(key) + STEM_INDEX_MARKER, x.fromJSON((JSONArray) v, convertVars, type));
                     } else {
-                        put(key + STEM_INDEX_MARKER, x.fromJSON((JSONArray) v,convertVars,type));
+                        put(key + STEM_INDEX_MARKER, x.fromJSON((JSONArray) v, convertVars, type));
                     }
                 } else {
                     if (convertVars) {
@@ -1402,7 +1480,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
             } else {
                 if (v instanceof JSONArray) {
                     QDLStem x = newInstance();
-                    put((long) i, x.fromJSON((JSONArray) v,convert, type));
+                    put((long) i, x.fromJSON((JSONArray) v, convert, type));
                 } else {
                     //   sl.add(new StemEntry(i, v));
                     if (v instanceof Integer) {
@@ -1430,8 +1508,8 @@ public class QDLStem implements Map<String, Object>, Serializable {
 
     public String toString(int indentFactor, String currentIndent) {
         if (isEmpty()) {
-            if(hasDefaultValue()){
-                return "[]~{*:"+getDefaultValue() + "}";
+            if (hasDefaultValue()) {
+                return "[]~{*:" + getDefaultValue() + "}";
             }
             return "[]";
         }
@@ -1571,8 +1649,8 @@ public class QDLStem implements Map<String, Object>, Serializable {
         } catch (QDLList.seGapException x) {
             //rock on. Just means the list is sparse so use full notation.
         }
-        if(isEmpty()){
-            if(hasDefaultValue()){
+        if (isEmpty()) {
+            if (hasDefaultValue()) {
                 return "{*:" + InputFormUtil.inputForm(getDefaultValue()) + "}";
             }
             // Make SURE nothing else evaluates since this would return {}
@@ -1671,43 +1749,46 @@ public class QDLStem implements Map<String, Object>, Serializable {
      * Removes every value in the collection from everywhere in the stem.
      * Optionally,
      * lists will be reordered too. Since this a bit more
+     *
      * @param c
      * @param reorderLists
      * @return
      */
     public boolean removeAllByValues(Collection c, boolean reorderLists) {
-            // list remove is a bit optimized, so just do that if possible.
-        boolean rc=     getQDLList().removeAllByValue(c, reorderLists);
+        // list remove is a bit optimized, so just do that if possible.
+        boolean rc = getQDLList().removeAllByValue(c, reorderLists);
         for (Object obj : c) {
             rc = rc && removeAllByValue(obj, reorderLists, true);
         }
         return rc;
     }
-    public boolean removeAllByValue(Object c, boolean reorderLists){
-         return removeAllByValue(c, reorderLists, false);
+
+    public boolean removeAllByValue(Object c, boolean reorderLists) {
+        return removeAllByValue(c, reorderLists, false);
     }
-    public boolean removeAllByValue(Object c, boolean reorderLists, boolean listProcessed){
+
+    public boolean removeAllByValue(Object c, boolean reorderLists, boolean listProcessed) {
         boolean rc = true;
-        if(!listProcessed) {
+        if (!listProcessed) {
             // remove from list
-             rc = rc &&  getQDLList().removeAllByValue(c, reorderLists);
+            rc = rc && getQDLList().removeAllByValue(c, reorderLists);
         }
         // remove from map.
         Collection keysToRemove = new ArrayList();
-         for(Object key : getQDLMap().keySet()){
-             Object value = get(key);
-             if(value instanceof QDLStem){
-                 rc = rc && ((QDLStem)value).removeAllByValue(c, reorderLists);
-             }else {
-                 if (value.equals(c)) {
-                 keysToRemove.add(key);
-                 }
-             }
-         }
-         for(Object key : keysToRemove){
-             getQDLMap().remove(key); // have to be carefule to remove this so no concurrent modification exception.
-         }
-         return rc;
+        for (Object key : getQDLMap().keySet()) {
+            Object value = get(key);
+            if (value instanceof QDLStem) {
+                rc = rc && ((QDLStem) value).removeAllByValue(c, reorderLists);
+            } else {
+                if (value.equals(c)) {
+                    keysToRemove.add(key);
+                }
+            }
+        }
+        for (Object key : keysToRemove) {
+            getQDLMap().remove(key); // have to be carefule to remove this so no concurrent modification exception.
+        }
+        return rc;
     }
 
     /**
@@ -1719,14 +1800,15 @@ public class QDLStem implements Map<String, Object>, Serializable {
      * <h3>Note</h3>
      * <p>In this call, you pass in the exact index you want, unlike {@link #get(StemMultiIndex)}
      * which accepts the name of the stem as the first argument</p>
+     *
      * @param index
      * @return
      */
-    public Object getByMultiIndex(String index){
+    public Object getByMultiIndex(String index) {
         // This adds a dummy first argument that is omitted in the get call. It is set to something that cannot
         // ever resolve to a valid variable name, hence avoids variable resolution.
-         StemMultiIndex stemMultiIndex = new StemMultiIndex("^^^" + QDLStem.STEM_INDEX_MARKER +  index);
-         return get(stemMultiIndex);
+        StemMultiIndex stemMultiIndex = new StemMultiIndex("^^^" + QDLStem.STEM_INDEX_MARKER + index);
+        return get(stemMultiIndex);
     }
 
 

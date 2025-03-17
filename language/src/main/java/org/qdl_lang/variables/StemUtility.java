@@ -1,6 +1,7 @@
 package org.qdl_lang.variables;
 
 import org.qdl_lang.exceptions.RankException;
+import org.qdl_lang.expressions.AxisExpression;
 import org.qdl_lang.expressions.ConstantNode;
 import org.qdl_lang.expressions.ExpressionStemNode;
 import org.qdl_lang.expressions.VariableNode;
@@ -38,7 +39,7 @@ public class StemUtility {
     }
 
     public static boolean isStem(Object o) {
-        return o instanceof QDLStem;
+        return (o instanceof QDLStem) || (o instanceof AxisExpression);
     }
 
     public static boolean areNoneStems(Object... objects) {

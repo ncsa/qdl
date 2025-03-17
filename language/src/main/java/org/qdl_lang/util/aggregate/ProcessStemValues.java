@@ -6,6 +6,7 @@ import org.qdl_lang.module.Module;
 import org.qdl_lang.variables.QDLNull;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * interface for processors that traverse stems. Each method gets the current key. Note that there
@@ -14,12 +15,12 @@ import java.math.BigDecimal;
  * sets along an axis as aggregates.
  */
 public interface ProcessStemValues {
-    Object process(Object key, Boolean booleanValue);
-    Object process(Object key, String stringValue);
-    Object process(Object key, Long longValue);
-    Object process(Object key, BigDecimal decimalValue);
-    Object process(Object key, QDLNull nullValue);
-    Object process(Object key, Module moduleValue);
-    Object process(Object key, FunctionReferenceNode frValue);
-    Object process(Object key, DyadicFunctionReferenceNode dyadicFunctionReferenceNode);
+    Object process(List<Object> index, Object key, Boolean booleanValue);
+    Object process(List<Object> index, Object key, String stringValue);
+    Object process(List<Object> index, Object key, Long longValue);
+    Object process(List<Object> index, Object key, BigDecimal decimalValue);
+    Object process(List<Object> index, Object key, QDLNull nullValue);
+    Object process(List<Object> index, Object key, Module moduleValue);
+    Object process(List<Object> index, Object key, FunctionReferenceNode frValue);
+    Object process(List<Object> index, Object key, DyadicFunctionReferenceNode dyadicFunctionReferenceNode);
 }

@@ -10,6 +10,7 @@ import org.qdl_lang.functions.*;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.Statement;
+import org.qdl_lang.util.aggregate.AxisRestrictionIdentity;
 import org.qdl_lang.variables.*;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import net.sf.json.JSON;
@@ -127,6 +128,11 @@ public class StemEvaluator extends AbstractEvaluator {
 
     public static final String EXCISE = "excise";
     public static final int EXCISE_TYPE = 116 + STEM_FUNCTION_BASE_VALUE;
+
+/*    public static final String MAP = "map";
+    public static final int MAP_TYPE = 117 + STEM_FUNCTION_BASE_VALUE;*/
+
+
     public static final String IS_LIST = "is_list";
     public static final int IS_LIST_TYPE = 204 + STEM_FUNCTION_BASE_VALUE;
 
@@ -162,6 +168,7 @@ public class StemEvaluator extends AbstractEvaluator {
     public String[] getFunctionNames() {
         if (fNames == null) {
             fNames = new String[]{
+                //    MAP,
                     EXCISE,
                     HAS_KEYS,
                     DISPLAY,
@@ -202,6 +209,8 @@ public class StemEvaluator extends AbstractEvaluator {
     @Override
     public int getType(String name) {
         switch (name) {
+          /*  case MAP:
+                return MAP_TYPE;*/
             case EXCISE:
                 return EXCISE_TYPE;
             case HAS_KEYS:
@@ -281,6 +290,9 @@ public class StemEvaluator extends AbstractEvaluator {
     @Override
     public boolean dispatch(Polyad polyad, State state) {
         switch (polyad.getName()) {
+        /*    case MAP:
+                doMap(polyad, state);
+                return true;*/
             case EXCISE:
                 doExcise(polyad, state);
                 return true;
@@ -392,6 +404,7 @@ public class StemEvaluator extends AbstractEvaluator {
         }
         return false;
     }
+
 
     /**
      * Removes elements from a stem by value. In general stems this is not as useful as in lists.
@@ -836,10 +849,18 @@ public class StemEvaluator extends AbstractEvaluator {
         if (!isStem(arg0)) {
             throw new BadArgException(ALL_KEYS + " requires a stem as its first argument", polyad.getArgAt(0));
         }
-        QDLStem stem = (QDLStem) arg0;
-        boolean returnAll = true;
+        boolean hasAxisExpression = arg0 instanceof AxisExpression;
+        QDLStem stem;
         long axis = 0L;
-        if (polyad.getArgCount() == 2) {
+        if (hasAxisExpression) {
+            AxisExpression ae = (AxisExpression) arg0;
+            stem = ae.getStem();
+            axis = ae.getAxis();
+        } else {
+            stem = (QDLStem) arg0;
+        }
+        boolean returnAll = true;
+        if (!hasAxisExpression && polyad.getArgCount() == 2) {
             returnAll = false;
             Object arg1 = polyad.evalArg(1, state);
             checkNull(arg1, polyad.getArgAt(1), state);
@@ -848,7 +869,7 @@ public class StemEvaluator extends AbstractEvaluator {
             }
             axis = (Long) arg1;
         }
-        QDLStem rc = returnAll ? stem.indices() : stem.indices(axis);
+        QDLStem rc = returnAll ? stem.indicesByRank() : stem.indicesByRank(axis);
         polyad.setResult(rc);
         polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(Boolean.TRUE);
@@ -910,7 +931,7 @@ public class StemEvaluator extends AbstractEvaluator {
             Object arg = polyad.evalArg(i, state);
             checkNull(arg, polyad.getArgAt(i));
             stems[i - 1] = arg;
-            allScalars = allScalars && (!(arg instanceof QDLStem));
+            allScalars = allScalars && (!isStem(arg));
         }
         ExpressionImpl f;
         try {
@@ -930,7 +951,7 @@ public class StemEvaluator extends AbstractEvaluator {
         QDLStem output = new QDLStem();
 
         // Fixes https://github.com/ncsa/qdl/issues/17
-        forEachRecursion(output, f, state, stems, new IndexList(), new ArrayList(), 0);
+        forEachRecursion2(output, f, state, stems, new IndexList(), new ArrayList(), 0);
         polyad.setResult(output);
         polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
@@ -960,7 +981,7 @@ public class StemEvaluator extends AbstractEvaluator {
                                     ArrayList values,
                                     int currentIndex) {
 
-        while (!(args[currentIndex] instanceof QDLStem)) {
+        while (!isStem(args[currentIndex])) {
             values.add(args[currentIndex]); // we can add scalars to the end of this, but it will recurse on the next stem
             currentIndex++;
             if (currentIndex == args.length) {
@@ -970,7 +991,8 @@ public class StemEvaluator extends AbstractEvaluator {
             }
         }
         QDLStem currentStem = (QDLStem) args[currentIndex++];
-        ArrayList allIndices = currentStem.indices().getQDLList().getArrayList();
+        // Next, get *every* index
+        ArrayList allIndices = currentStem.indicesByRank().getQDLList().getArrayList();
         for (Object index : allIndices) {
             IndexList currentIndexList = new IndexList((QDLStem) index); // index looks like [0,0,1]
             IndexList nextIndexList = new IndexList(); // index looks like [0,0,1]
@@ -988,7 +1010,80 @@ public class StemEvaluator extends AbstractEvaluator {
             }
         }
     }
+    protected void forEachRecursion2(QDLStem output,
+                                    ExpressionImpl f,
+                                    State state,
+                                    Object[] args,
+                                    IndexList indexList,
+                                    ArrayList values,
+                                    int currentIndex) {
 
+        while (!isStem(args[currentIndex])) {
+            values.add(args[currentIndex]); // we can add scalars to the end of this, but it will recurse on the next stem
+            currentIndex++;
+            if (currentIndex == args.length) {
+                // end of the line for recursion. Evaluate
+                output.set(indexList, forEachEval(f, state, values));
+                return;
+            }
+        }
+        QDLStem currentStem;
+        Long axis = 0L;
+        ArrayList allIndices;
+        boolean isAxisExpression = args[currentIndex] instanceof AxisExpression;
+
+        if (isAxisExpression) {
+            AxisExpression ae = (AxisExpression) args[currentIndex];
+            currentStem = ae.getStem();
+            axis = ae.getAxis();
+            //allIndices = currentStem.indicesByRank(axis+1).getQDLList().getArrayList();
+            allIndices = currentStem.keysByAxis(axis).getQDLList().getArrayList();
+        } else {
+            currentStem = (QDLStem) args[currentIndex];
+            allIndices = currentStem.indicesByRank().getQDLList().getArrayList();
+        }
+        currentIndex++;
+
+
+        for (Object index : allIndices) {
+            IndexList currentIndexList = new IndexList((QDLStem) index); // index looks like [0,0,1]
+            IndexList nextIndexList = new IndexList(); // index looks like [0,0,1]
+            nextIndexList.addAll(indexList);
+            nextIndexList.addAll(currentIndexList);
+            ArrayList valuesList1 = new ArrayList();
+            valuesList1.addAll(values);
+            //     valuesList1.add(currentStem.get(currentIndexList, true).get(0));
+            valuesList1.add(currentStem.get(index));
+            if (currentIndex == args.length || (isAxisExpression && args.length == axis)) {
+                // end of the line for recursion. Evaluate
+                output.set(nextIndexList, forEachEval(f, state, valuesList1));
+            } else {
+                forEachRecursion2(output, f, state, args, nextIndexList, valuesList1, currentIndex);
+            }
+        }
+    }
+    // Processor that replaces each stem at a given level with the constant "foo".
+    public static class ARForEachImpl extends AxisRestrictionIdentity {
+        public ARForEachImpl(ExpressionImpl f, State state, int axis) {
+            this.f = f;
+            this.state = state;
+            this.axis = axis;
+        }
+        ExpressionImpl f;
+        State state;
+
+        @Override
+        public Object getDefaultValue(List<Object> index,Object key, Object value) {
+            ArgList argList1 = new ArgList();
+            argList1.add(new ConstantNode(value));
+            f.setArguments(argList1);
+            return f.evaluate(state);
+        }
+    }
+/*
+f(x.)→x.0+x.1;
+@f∀[n(3,4,4,[;3*4*4])|0]
+ */
 
     protected Object forEachEval(ExpressionImpl f, State state, List args) {
         if (f instanceof Monad) {
@@ -2380,15 +2475,15 @@ public class StemEvaluator extends AbstractEvaluator {
                 polyad.setResult(esn2.remove(state));
                 break;
             case ExpressionInterface.FUNCTION_REFERENCE_NODE:
-                if(!isFunction){
+                if (!isFunction) {
                     throw new BadArgException(REMOVE + " requires a n argument count", polyad);
                 }
                 FunctionReferenceNode functionReferenceNode = (FunctionReferenceNode) polyad.getArgAt(0);
-                if(argCount == -1){
-                 for(FunctionRecordInterface fr : functionReferenceNode.getFunctionRecords()){
-                     state.getFTStack().remove(new FKey(functionReferenceNode.getFunctionName(), fr.getArgCount()));
-                 }
-                }else {
+                if (argCount == -1) {
+                    for (FunctionRecordInterface fr : functionReferenceNode.getFunctionRecords()) {
+                        state.getFTStack().remove(new FKey(functionReferenceNode.getFunctionName(), fr.getArgCount()));
+                    }
+                } else {
                     state.getFTStack().remove(new FKey(functionReferenceNode.getFunctionName(), argCount.intValue()));
                 }
                 polyad.setResult(Boolean.TRUE);
@@ -3017,7 +3112,7 @@ z. :=  join3(q.,w.)
         }
         QDLStem stem = (QDLStem) arg0;
 
-        QDLStem oldIndices = stem.indices(-1L);
+        QDLStem oldIndices = stem.indicesByRank(-1L);
         // kludge, assume that the rank of all at the last axis is the same.
         int rank = ((QDLStem) oldIndices.get(0L)).size();
 

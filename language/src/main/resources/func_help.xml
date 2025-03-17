@@ -774,7 +774,7 @@ E.g: Turn an array into a flat list
    a. := [;5]
    a.'foo' := 'bar'
   remap(a., indices(a.))
-[bar,0,1,2,3,4,5,6,7,8,9,10,11]
+[bar,0,1,2,3,4]
 
 E.g. Remapping the result to a non-list stem
    r. := remap(3*[;15], {'foo':3,'bar':5,'baz':7})
@@ -4014,6 +4014,10 @@ E.g. Operation on higher rank lists
   [0,1,2,3]
  ]
 
+ A common idiom is to want to append a stem to a list.
+ Incorrect: my_list. ~ my_stem.; // will try to put elements of stem into my_list.,
+  Correct : my_list. ~ [my_stem.]; // adds my_stem. to my_list.
+
 Monadic operation.
 ~a. is equivalent to []~a. and has the effect of re-ordering the list
 from index 0. This is a very common idiom.
@@ -4084,23 +4088,43 @@ E.g. Making a table with headings. Make the table with ~| then stick
     </entry>
     <entry id="indices">
         <body>
-            <![CDATA[indices(args. ,[axis]) - return all the indices for either the entire stem
-            or for the given axis. The axis may be signed, so, e.g.
-            axis == -1 is the last axis.]]>
+            <![CDATA[indices(args. ,[rank]) - return all the indices for either the entire stem
+            or of a given rank. The rank may be signed, so, e.g.
+            rank == -1 is the last rank.
+
+Note that there is an idiom. Rank is a positive integer generally, but the specific case of
+rank 1 (scalar) indices means that one is probably working with scalars, so we let rank be zero
+which returns the indices as scalars.
+
+]]>
         </body>
         <example>
             <![CDATA[E.g.
     a. := [;5]~n(2,3, n(6))
     a.
 [0,1,2,3,4,[0,1,2],[3,4,5]]
-    indices(a., 0); // get the first axis
+    indices(a.); // get every index
+[[0],[1],[2],[3],[4],[5,0],[5,1],[5,2],[6,0],[6,1],[6,2]]
+    indices(a., 0); // get the indices of rank 1, **as scalars**
 [0,1,2,3,4]
-    indices(a., 1); // get the last axis
+    indices(a., 1); // get the indices of rank 1, **as lists**
+[[0],[1],[2],[3],[4]]
+    indices(a., 2); // get the indices whose rank is 2
+[[5,0],[5,1],[5,2],[6,0],[6,1],[6,2]]
+    indices(a., -1); // get the indices with the highest rank, here 2
 [[5,0],[5,1],[5,2],[6,0],[6,1],[6,2]]
     a.[6,2]
 5
 
-Note that indices(a., 1) == indices(a., -1) in this case.]]>
+Note that indices(a., 2) == indices(a., -1) in this case.
+
+A typical use of rank=0 is in a loop:
+   while[i∈indices(a.,0)]
+      do[
+          // bunch of stuff with i and a.i
+        ];
+Which would save having to unwrap each index from a trivial list of one element.
+]]>
         </example>
 
     </entry>
@@ -6857,16 +6881,65 @@ Type )help for help.
    ]]>
         </example>
     </entry>
-    <!--
+    <entry id="`">
+        <body>
+            <![CDATA[stem`axis  is the axis restriction operator
+   stem = a stem
+   axis = a signed integer denoting the axis, 0,1,2,.... Negative indices start
+          from teh end, so a`(-1) means to restrict to the last axis.
+
+In certain operations, you may specify a single axis to restrict the operation at. A typical
+example might be a stem like
+a.:= [
+  [1,3,5],
+  [2,4,6],
+  [3,5,7]
+];
+
+where each row is to be treated as an entity. A good example is the for_each function.
+Let us say we wanted to sum each row. Define a function and loop:
+   sum(a.) -> reduce(@+, a.);
+   for_each(@sum, a.`0)
+[9,12,15]
+
+This is [sum(a.0), sum(a.1), sum(a.2)]
+
+In other functional languages this is referred to as a map. IN QDL paralance, a map is a monadic
+function applies to the zero-th axis only. The QDL approach (as usual) is extremely general.
+
+For instance, here we define a function that sums stems and multiplies them by the elements of
+a list, outputting
+   sum2(a, b)->sum(a)*b;
+   for_each(@sum2, a.`0, [3;7])
+[                       [
+  [27,36,45,54],         [sum(a.0) * b.],
+  [36,48,60,72],   ==    [sum(a.1) * b.],
+  [45,60,75,90]          [sum(a.2) * b.]
+]                       ]
+
+Axes also work on reduce. Remember that the reduce function can accept an axis as the
+argument, so passing it with ` just does that. The default is axis 0
+   reduce(@+, a.) == reduce(@+, a., 0) == reduce(@+, a.`0)
+[6,12,18]
+   reduce(@+, a.`1) == reduce(@+, a., 1)
+[9,12,15]
+
+The axis operator does not work with the join function, since the axis argument there is saying to join
+the arguments along their common axis. If you supply it, it will be ignored.
+  ]]>
+        </body>
+        <example>
+            <![CDATA[
+   ]]>
+        </example>
+    </entry>
+
+    <!-- template without example  block
     <entry id="">
        <body>
   <![CDATA[
   ]]>
        </body>
-       <basic>
-   <![CDATA[
-   ]]>
-        </basic>
     </entry>
    -->
     <!--
@@ -6878,10 +6951,10 @@ Type )help for help.
   <![CDATA[
   ]]>
        </body>
-       <basic>
+       <example>
    <![CDATA[
    ]]>
-        </basic>
+        </example>
     </entry>
           -->
 </help>

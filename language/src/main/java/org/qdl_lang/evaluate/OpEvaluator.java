@@ -649,19 +649,6 @@ apply([@f,@g],[2])
     protected Object doSingleApply(Object lArg, DyadicFunctionReferenceNode fNode, Object defaultValue, State state, Dyad dyad) {
 
         State actualState = fNode.hasModuleState() ? fNode.getModuleState() : state; // determined per fNode
-/*        return doSingleApply(lArg, fNode.getFunctionRecord(), fNode.getFunctionArgCount(),
-                defaultValue,
-                actualState, dyad);*/
-//    }
-
-
-
-/*protected Object doSingleApply(Object lArg,
-                               FunctionReferenceNodeInterface fNode,
-
-                               Object defaultValue, State actualState, Dyad dyad) {
- */
-        //State actualState = fRecord.hasModuleState() ? fRecord.getModuleState() : state; // determined per fRecord
     FunctionRecordInterface fRecord = fNode.getFunctionRecord();
     boolean isBuiltin = fRecord == null;
     if (lArg == null) {

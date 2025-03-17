@@ -995,7 +995,18 @@ public class SystemEvaluator extends AbstractEvaluator {
         if (!doReduce && !isStem(arg1)) {
             throw new BadArgException(EXPAND + " requires a list as its argument", polyad.getArgAt(1));
         }
-        QDLStem stemVariable = (QDLStem) arg1;
+        int axis = 0; // default
+        boolean hasAxisExpression = false;
+        QDLStem stemVariable;
+        if(arg1 instanceof AxisExpression) {
+            hasAxisExpression = true;
+            AxisExpression ax = (AxisExpression) arg1;
+            axis = ax.getAxis().intValue();
+            stemVariable =  ax.getStem();
+
+        }else{
+            stemVariable = (QDLStem) arg1;
+        }
 
         if (!doReduce && !stemVariable.isList()) {
             throw new BadArgException(EXPAND + " requires a list as its argument", polyad.getArgAt(1));
@@ -1033,8 +1044,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             return;
         }
 
-        int axis = 0; // default
-        if (polyad.getArgCount() == 3) {
+        if (!hasAxisExpression && polyad.getArgCount() == 3) {
             Object axisObj = polyad.evalArg(2, state);
             checkNull(axisObj, polyad.getArgAt(2));
             if (!isLong(axisObj)) {

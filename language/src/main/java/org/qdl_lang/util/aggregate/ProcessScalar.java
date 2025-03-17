@@ -7,6 +7,9 @@ import org.qdl_lang.variables.QDLNull;
 
 import java.math.BigDecimal;
 
+/**
+ * Processing interface for stems and sets. This handles the individual set values.
+ */
 public interface ProcessScalar extends ProcessStemValues{
     // The following are for sets
     Object process(Boolean booleanValue);

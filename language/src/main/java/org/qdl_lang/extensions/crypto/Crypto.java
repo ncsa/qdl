@@ -778,11 +778,11 @@ System.out.println("JOSE:"+ jwk.toJSONString());
 
         @Override
         public Object process(String stringValue) {
-            return process(null, stringValue);
+            return process(null, null, stringValue);
         }
 
         @Override
-        public Object process(Object key, String inString) {
+        public Object process(List index, Object key, String inString) {
             String result;
             try {
                 if (usePrivateKey) {
@@ -1002,7 +1002,7 @@ kazrnybI9mX73qv6NqA
         }
 
         @Override
-        public Object process(Object key, String stringValue) {
+        public Object process(List index, Object key, String stringValue) {
             return process(stringValue);
         }
     }
@@ -1296,7 +1296,7 @@ kazrnybI9mX73qv6NqA
 
             X509Certificate x509Certificate;
             @Override
-            public Object getDefaultValue(Object value) {
+            public Object getDefaultValue(List<Object> index,Object key, Object value) {
                 return QDLNull.getInstance();
             }
 
@@ -1310,7 +1310,7 @@ kazrnybI9mX73qv6NqA
             }
 
             @Override
-            public Object process(Object key, String oidKey) {
+            public Object process(List index, Object key, String oidKey) {
                 return process(oidKey);
             }
         }
@@ -1598,12 +1598,12 @@ kazrnybI9mX73qv6NqA
         JSONWebKey webKey;
 
         @Override
-        public Object getDefaultValue(Object value) {
+        public Object getDefaultValue(List<Object> index,Object key, Object value) {
             return Boolean.FALSE;
         }
 
         @Override
-        public Object process(Object key, String jwt) {
+        public Object process(List index, Object key, String jwt) {
             try {
                 return process(jwt);
             } catch (Throwable ex) {
@@ -1667,7 +1667,7 @@ kazrnybI9mX73qv6NqA
         }
 
         @Override
-        public Object process(Object key, String jwt) {
+        public Object process(List index, Object key, String jwt) {
             try {
                 return process(jwt);
             } catch (Throwable ex) {

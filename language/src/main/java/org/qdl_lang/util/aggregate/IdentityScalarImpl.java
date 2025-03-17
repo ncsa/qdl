@@ -7,6 +7,7 @@ import org.qdl_lang.module.Module;
 import org.qdl_lang.variables.QDLNull;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Basic (identity) implementation of {@link ProcessScalar}, simply returns each argument unchanged.
@@ -59,4 +60,13 @@ public class IdentityScalarImpl extends AbstractIdentityStemProcess implements P
         return getDefaultValue(dyadicFunctionReferenceNode);
     }
 
+    /**
+     * Since the assumption is that this is being called resolving nested sets (which are unordered
+     * hence unindexed) there is no index or key really possible.
+     * @param value
+     * @return
+     */
+    public Object getDefaultValue(Object value) {
+        return getDefaultValue(null, null, value);
+    }
 }

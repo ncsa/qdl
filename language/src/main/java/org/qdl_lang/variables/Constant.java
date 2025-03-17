@@ -1,5 +1,6 @@
 package org.qdl_lang.variables;
 
+import org.qdl_lang.expressions.AxisExpression;
 import org.qdl_lang.functions.DyadicFunctionReferenceNode;
 import org.qdl_lang.functions.FunctionReferenceNode;
 import org.qdl_lang.module.Module;
@@ -24,6 +25,7 @@ public class Constant {
         if(object instanceof Module) return MODULE_TYPE;
         if(object instanceof FunctionReferenceNode) return FUNCTION_TYPE;
         if(object instanceof DyadicFunctionReferenceNode) return DYADIC_FUNCTION_TYPE;
+        if(object instanceof AxisExpression) return AXIS_RESTRICTION_TYPE;
         return UNKNOWN_TYPE;
     }
     public static final int UNKNOWN_TYPE = -1;
@@ -35,6 +37,7 @@ public class Constant {
     public static final int DECIMAL_TYPE = 5;
     public static final int FUNCTION_TYPE = 6;
     public static final int DYADIC_FUNCTION_TYPE = 11;
+    public static final int AXIS_RESTRICTION_TYPE = 12;
     public static final int SET_TYPE = 10;
     public static final int MODULE_TYPE = 7;
     Object value;
