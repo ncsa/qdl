@@ -855,7 +855,13 @@ public class StemEvaluator extends AbstractEvaluator {
         if (hasAxisExpression) {
             AxisExpression ae = (AxisExpression) arg0;
             stem = ae.getStem();
-            axis = ae.getAxis();
+            if(ae.isStar()){
+                // In this case, the effect is to nullify the argument.
+                // the user is asking for all axes.
+                hasAxisExpression = false;
+            }else {
+                axis = ae.getAxis();
+            }
         } else {
             stem = (QDLStem) arg0;
         }
@@ -1031,9 +1037,13 @@ public class StemEvaluator extends AbstractEvaluator {
         Long axis = 0L;
         ArrayList allIndices;
         boolean isAxisExpression = args[currentIndex] instanceof AxisExpression;
+        AxisExpression ae = null;
+        if(isAxisExpression) {
+             ae = (AxisExpression) args[currentIndex];
+        }
 
-        if (isAxisExpression) {
-            AxisExpression ae = (AxisExpression) args[currentIndex];
+        if (isAxisExpression && !ae.isStar()) {
+            // star for axis is same as ignoring it.
             currentStem = ae.getStem();
             axis = ae.getAxis();
             //allIndices = currentStem.indicesByRank(axis+1).getQDLList().getArrayList();

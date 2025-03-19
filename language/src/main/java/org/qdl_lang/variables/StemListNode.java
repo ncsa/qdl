@@ -105,7 +105,8 @@ public class StemListNode implements ExpressionInterface {
             stmt.setResultType(Constant.getType(stmt.getResult()));
             result.put(i++, stmt.getResult());
         }
-
+setResultType(Constant.getType(result));
+        setEvaluated(true);
         return result;
     }
 

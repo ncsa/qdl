@@ -67,16 +67,7 @@ public class DyadicFunctionReferenceNode extends ExpressionImpl implements Funct
             setFunctionRecord(getFRByArgCount(state,argCount,getFunctionName()));
         }
         Map<Integer, FunctionRecord> foundFRs = new HashMap<>();
-/*
-        FunctionRecord functionRecord = (FunctionRecord) state.getFTStack().get(new FKey(getFunctionName(), argCount));
-         if(functionRecord == null){
-             if(!state.getFTStack().getByAllName(getFunctionName()).isEmpty()){
-               throw new UndefinedFunctionException("unknown valence of " + getFunctionArgCount() + " for " + getFunctionName(), getArgAt(0));
-             }
-             throw new UndefinedFunctionException("no such function " + getFunctionName(), getArgAt(1));
-         }
-        setFunctionRecord(functionRecord);
-*/
+
         // if this was e.g. in a module, it might have an arbitraily complex path to get here.
         // set the state that was finally constructed elsewhere for this specific call.
         if (state.isModuleState()) {

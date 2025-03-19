@@ -1844,49 +1844,50 @@ illegal argument:no module named "b" was  imported at (1, 67)
                         indexArg.strictOrder = true;
 
                 }
-/*                if (p.getText().equals("\\!")) {
-                    indexArg.strictOrder = true; // This gets set in a different pass, so must be stored
-                }
-
-                if (p.getText().equals("\\*") || p.getText().equals("\\!*")) {
-                    // mark the node as a
-                    indexArg.swri = new StemSubsettingNode.AllIndices();
-                    ssn.addArgument(indexArg);
-                }*/
 
             } else {
-                ExpressionInterface swri = (ExpressionInterface) resolveChild(p);
-                if (i == 0) {
-                    if (swri instanceof VariableNode) {
-                        VariableNode vNode = (VariableNode) swri;
-                        vNode.setVariableReference(vNode.getVariableReference() + STEM_INDEX_MARKER);
-                        indexArg.swri = vNode;
-                        ssn.addArgument(indexArg);
-                    } else {
-                        if (swri instanceof ModuleExpression) {
-                            // If it's a module (e.g. a#b.i) then mark the variable, b here, as b. so
-                            // it is interpreted as a stem in later resolution.
-                            ModuleExpression moduleExpression = (ModuleExpression) swri;
-                            if (moduleExpression.getExpression() instanceof VariableNode) {
-                                VariableNode vNode = (VariableNode) moduleExpression.getExpression();
-                                vNode.setVariableReference(vNode.getVariableReference() + STEM_INDEX_MARKER);
-                            }
-                            indexArg.swri = moduleExpression;
-                            ssn.addArgument(indexArg);
-
-                        } else {
-                            indexArg.swri = swri;
-
-                            ssn.addArgument(indexArg);
-                        }
-                    }
-                } else {
-                    indexArg.swri = swri;
-                    ssn.addArgument(indexArg);
+                Statement s = resolveChild(p);
+                if(s instanceof ExpressionInterface) {
+                    indexArg = doSubsetExpressionInterface((ExpressionInterface) s, i, indexArg, ssn);
                 }
-                indexArg = new IndexArg();
+                if(s instanceof FunctionDefinitionStatement) {
+
+                }
             }
         }
+    }
+
+    private IndexArg doSubsetExpressionInterface(ExpressionInterface swri, int i, IndexArg indexArg, StemExtractionNode ssn) {
+        if (i == 0) {
+            if (swri instanceof VariableNode) {
+                VariableNode vNode = (VariableNode) swri;
+                vNode.setVariableReference(vNode.getVariableReference() + STEM_INDEX_MARKER);
+                indexArg.swri = vNode;
+                ssn.addArgument(indexArg);
+            } else {
+                if (swri instanceof ModuleExpression) {
+                    // If it's a module (e.g. a#b.i) then mark the variable, b here, as b. so
+                    // it is interpreted as a stem in later resolution.
+                    ModuleExpression moduleExpression = (ModuleExpression) swri;
+                    if (moduleExpression.getExpression() instanceof VariableNode) {
+                        VariableNode vNode = (VariableNode) moduleExpression.getExpression();
+                        vNode.setVariableReference(vNode.getVariableReference() + STEM_INDEX_MARKER);
+                    }
+                    indexArg.swri = moduleExpression;
+                    ssn.addArgument(indexArg);
+
+                } else {
+                    indexArg.swri = swri;
+
+                    ssn.addArgument(indexArg);
+                }
+            }
+        } else {
+            indexArg.swri = swri;
+            ssn.addArgument(indexArg);
+        }
+        indexArg = new IndexArg();
+        return indexArg;
     }
 
     /*
@@ -2065,7 +2066,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
         QDLParserParser.ExpressionContext expressionContext = lambdaContext.expression();
         if (expressionContext != null && !expressionContext.isEmpty()) {
 
-            // its a single expression most likely. Check to see if it needs wrapped in
+            // it's a single expression most likely. Check to see if it needs wrapped in
             // a return
             Statement stmt = resolveChild(expressionContext);
             // Contract: Wrap simple expressions in a return.
@@ -2791,11 +2792,14 @@ illegal argument:no module named "b" was  imported at (1, 67)
     @Override
     public void exitAxis(QDLParserParser.AxisContext ctx) {
         AxisExpression expr = new AxisExpression();
-        ExpressionInterface lArg = (ExpressionInterface) resolveChild(ctx.expression(0));
-        ExpressionInterface rArg = (ExpressionInterface) resolveChild(ctx.expression(1));
+        expr.setStar(null != ctx.Times());
         ArrayList<ExpressionInterface> args = new ArrayList<>();
+        ExpressionInterface lArg = (ExpressionInterface) resolveChild(ctx.expression(0));
         args.add(lArg);
-        args.add(rArg);
+        if (!expr.isStar()) {
+            ExpressionInterface rArg = (ExpressionInterface) resolveChild(ctx.expression(1));
+            args.add(rArg);
+        }
         expr.setArguments(args);
         expr.setTokenPosition(tp(ctx));
         expr.setSourceCode(getSource(ctx));

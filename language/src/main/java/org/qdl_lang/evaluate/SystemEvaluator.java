@@ -23,6 +23,8 @@ import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TryCatch;
 import org.qdl_lang.util.InputFormUtil;
 import org.qdl_lang.util.QDLFileUtil;
+import org.qdl_lang.util.aggregate.IdentityScalarImpl;
+import org.qdl_lang.util.aggregate.QDLAggregateUtil;
 import org.qdl_lang.variables.*;
 import org.qdl_lang.vfs.VFSPaths;
 import org.qdl_lang.workspace.QDLWorkspace;
@@ -996,17 +998,19 @@ public class SystemEvaluator extends AbstractEvaluator {
             throw new BadArgException(EXPAND + " requires a list as its argument", polyad.getArgAt(1));
         }
         int axis = 0; // default
-        boolean hasAxisExpression = false;
+        boolean hasAxisExpression = arg1 instanceof AxisExpression;
+        AxisExpression ax = null;
         QDLStem stemVariable;
-        if(arg1 instanceof AxisExpression) {
-            hasAxisExpression = true;
-            AxisExpression ax = (AxisExpression) arg1;
-            axis = ax.getAxis().intValue();
+        if(hasAxisExpression) {
+            ax = (AxisExpression) arg1;
+            if(!ax.isStar()) {
+                axis = ax.getAxis().intValue();
+            }
             stemVariable =  ax.getStem();
-
         }else{
             stemVariable = (QDLStem) arg1;
         }
+
 
         if (!doReduce && !stemVariable.isList()) {
             throw new BadArgException(EXPAND + " requires a list as its argument", polyad.getArgAt(1));
@@ -1022,6 +1026,12 @@ public class SystemEvaluator extends AbstractEvaluator {
             } catch (UndefinedFunctionException ufx) {
                 ufx.setStatement(polyad.getArgAt(0));
                 throw ufx;
+            }
+            // Special case. Axis expression and has star as the axis ==> reduce all. This uses
+            // the QDLAggregate Util and is way simpler than the walker below.
+            if(hasAxisExpression && ax.isStar()){
+                doReduceAll(polyad, f, state, stemVariable);
+                return;
             }
             Object lastResult = null;
             ArrayList<Object> args = new ArrayList<>();
@@ -1083,7 +1093,11 @@ public class SystemEvaluator extends AbstractEvaluator {
             }
             return;
         }
-
+// @*⊙n(3,3,[;9])`*
+        if(doReduce && hasAxisExpression && ax.isStar()){
+            doReduceAll(polyad, getOperator(state, frn, 2), state, stemVariable);
+            return;
+        }
         StemUtility.StemAxisWalkerAction1 axisWalker;
         try {
             if (doReduce) {
@@ -1101,7 +1115,41 @@ public class SystemEvaluator extends AbstractEvaluator {
         polyad.setEvaluated(true);
     }
 
+    private static void doReduceAll(Polyad polyad, ExpressionImpl f, State state, QDLStem stemVariable) {
+        Object rrr;
+        ReduceAll reduceAll = new ReduceAll(f, state);
+        QDLAggregateUtil.process(stemVariable, reduceAll);
+        rrr = reduceAll.out;
+        polyad.setResult(rrr);
+        polyad.setResultType(Constant.getType(rrr));
+        polyad.setEvaluated(true);
+    }
 
+    public static class ReduceAll extends IdentityScalarImpl {
+        public ReduceAll(ExpressionImpl f, State state) {
+            this.f = f;
+            this.state = state;
+        }
+
+        Object out = null;
+        ExpressionImpl f;
+        State state;
+        @Override
+        public Object getDefaultValue(List<Object> index, Object key, Object value) {
+            if(out == null) {
+                out = value;
+            }else {
+                ConstantNode arg1 = new ConstantNode(out);
+                ConstantNode arg2 = new ConstantNode(value);
+                f.getArguments().clear();
+                f.getArguments().add(arg1);
+                f.getArguments().add(arg2);
+                f.evaluate(state);
+                out = f.getResult();
+            }
+            return super.getDefaultValue(index, key, value);
+        }
+    }
     public class AxisReduce implements StemUtility.StemAxisWalkerAction1 {
         ExpressionImpl operator;
         State state;

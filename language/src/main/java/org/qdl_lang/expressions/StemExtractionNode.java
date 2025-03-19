@@ -106,7 +106,7 @@ public class StemExtractionNode extends ExpressionImpl {
             setResult(inStem);
             return getResult();
         }
-        Object out = recurse(inStem, indexArgs);
+        Object out = recurse(inStem, indexArgs, state);
         setResult(out);
         setResultType(Constant.getType(out));
         setEvaluated(true);
@@ -146,7 +146,7 @@ a.
      * @param sourceIndices
      * @return
      */
-    protected Object recurse(QDLStem in, IndexArgs sourceIndices) {
+    protected Object recurse(QDLStem in, IndexArgs sourceIndices, State state) {
         QDLStem out = new QDLStem();
         Object otherOut = null;
         int startIndex = 1;
@@ -156,7 +156,7 @@ a.
         // Very simple case of list only -- this is just an optimization for a very common case, so we don't
         // start the recursion.
         if (isList) {
-            for (Object key : root.createKeySet(in)) {
+            for (Object key : root.createKeySet(in, state)) {
                 Object value = in.get(key);
                 if (Constant.isScalar(root.swri.getResult())) {
                     if (value == null) {
@@ -179,7 +179,7 @@ a.
         }
 
 
-        for (Object key : root.createKeySet(in)) {
+        for (Object key : root.createKeySet(in, state)) {
             Object value = in.get(key);
             if (value == null) {
                 if (Constant.isScalar(root.swri.getResult()) && sourceIndices.size() == 2) {
@@ -205,7 +205,7 @@ a.
                         }
                     }
                 }
-                otherOut = recurse((QDLStem) value, out, indexList, sourceIndices, startIndex + 1, 0L);
+                otherOut = recurse((QDLStem) value, out, indexList, sourceIndices, startIndex + 1, 0L, state);
             } else {
                 if (indexArgs.size() - 1 == startIndex) {
                     //       System.out.println("recurse: last args index size =" + (indexArgs.size() - 1));
@@ -246,7 +246,8 @@ a.
                              IndexList targetIndex,
                              List<IndexArg> sourceIndices,
                              int indexLocation,
-                             long strictIndex) {
+                             long strictIndex,
+                             State state) {
 
         if (sourceIndices.size() <= indexLocation) {
            /* System.out.println("*** recurseNEW: " +
@@ -269,7 +270,7 @@ a.
         }
         IndexArg indexArg = sourceIndices.get(indexLocation);
         Object otherOut = null;
-        for (Object key : indexArg.createKeySet(in)) {
+        for (Object key : indexArg.createKeySet(in, state)) {
             Object value = in.get(key);
             //    System.out.println("recurse 2 key =" + key + ", value=" + value);
 
@@ -304,7 +305,7 @@ a.
                     }
                     out.set(indexList, value);
                 }
-                //System.out.println("    recurseNEW: setting value key =" + indexList + ", value = " + value);
+              //  System.out.println("    recurse: setting value key =" + indexList + ", value = " + value);
             } else {
                 if (value instanceof QDLStem) {
                     IndexList indexList = targetIndex.clone();
@@ -328,16 +329,17 @@ a.
                         }
 
                     } else {
-                        otherOut = recurse((QDLStem) value, out, indexList, sourceIndices, indexLocation + 1, 0L);
+                        otherOut = recurse((QDLStem) value, out, indexList, sourceIndices, indexLocation + 1, 0L, state);
                     }
                 }
             }
 
 
         }
-        if (!(otherOut instanceof QDLStem)) {
+        if (otherOut!= null && !(otherOut instanceof QDLStem)) {
             return otherOut;
         }
+   //     System.out.println(getClass().getSimpleName() + ".recurse:" + out.toString(1));
         return out;
     }
 

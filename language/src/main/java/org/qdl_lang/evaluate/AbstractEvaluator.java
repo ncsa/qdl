@@ -892,8 +892,15 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             } else {
                 //FunctionRecord functionRecord = state.getFTStack().get(operatorName, nAry); // It's a dyad!
                 FR_WithState fr_withState = state.resolveFunction(operatorName, nAry, true); // It's a dyad!
-
+// ((x)→x^2)∀[;5]
                 if (fr_withState == null || fr_withState.functionRecord == null) {
+                    if(frNode.isAnonymous()){
+                       List<FunctionRecordInterface> anons =  state.getFTStack().getByAllName(frNode.getFunctionName());
+                       for(FunctionRecordInterface anon : anons){
+                           state.getFTStack().remove(anon.getKey());
+                       }
+                        throw new UndefinedFunctionException("no anonymous lambda function is defined with " + nAry + " arguments", null);
+                    }
                     throw new UndefinedFunctionException("'" + operatorName + "' is not defined with " + nAry + " arguments", null);
                 }
                 Polyad polyad1 = new Polyad(operatorName);
@@ -951,19 +958,31 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     }
 
     /**
+     * <p></p>
      * This will take a node that is either a function reference, {@link FunctionDefinitionStatement}
      * or perhaps a {@link LambdaDefinitionNode} and determine the right {@link FunctionReferenceNode},
      * updating the state (including adding local state as needed for the duration of the evaluation).
      * It will also throw an exception if the argument is not of the right type.<p/><p/>
      * Any place you want to use a function as an argument, pass it to this and let
      * it do the work.
+     * </p>
+     * <p>
+     *     This also does some housekeeping, like assigning random names locally to anonymous lambda
+     *     functions. Be <i>sure</i> to remove them from any state table if you need to when done.
+     *     If they are in local state only (usual case), then no need to.
+     * </p>
      *
-     * @param state
-     * @param arg0
+     * @param state - The current state
+     * @param arg0 - the function definition, etc.
+     * @param pushNewState - create a new {@link FTable} and add this function. If this is being called as part of e.g. evaluating
+     *                     a function, it should probably set true
      * @return
      */
     public FunctionReferenceNodeInterface getFunctionReferenceNode(State state, ExpressionInterface arg0, boolean pushNewState) {
         FunctionReferenceNodeInterface frn = null;
+        while(arg0 instanceof ParenthesizedExpression){
+            arg0 = ((ParenthesizedExpression) arg0).getExpression();
+        }
         if (arg0 instanceof LambdaDefinitionNode) {
             LambdaDefinitionNode lds = (LambdaDefinitionNode) arg0;
             if (!lds.hasName()) {
@@ -1022,7 +1041,6 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         }
         if (frn == null) {
             throw new IllegalArgumentException("the argument is not a function reference or lambda");
-
         }
         return frn;
     }
@@ -1042,7 +1060,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param objects
      * @return
      */
-    protected ArrayList<ExpressionInterface> toConstants(ArrayList<Object> objects) {
+    public static ArrayList<ExpressionInterface> toConstants(ArrayList<Object> objects) {
         ArrayList<ExpressionInterface> args = new ArrayList<>();
         for (Object obj : objects) {
             int type = Constant.getType(obj);

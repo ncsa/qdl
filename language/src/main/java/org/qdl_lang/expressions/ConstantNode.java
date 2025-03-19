@@ -13,6 +13,8 @@ import java.math.BigDecimal;
 public class ConstantNode extends ExpressionImpl {
     @Override
     public Object evaluate(State state) {
+        setResultType(Constant.getType(result));
+        setEvaluated(true);
         return result;
     }
 

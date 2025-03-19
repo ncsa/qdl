@@ -7,7 +7,7 @@ import org.qdl_lang.statements.TokenPosition;
 import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLStem;
 
-public class AxisExpression extends ExpressionImpl{
+public class AxisExpression extends ExpressionImpl {
     public AxisExpression() {
     }
 
@@ -36,20 +36,27 @@ public class AxisExpression extends ExpressionImpl{
     @Override
     public Object evaluate(State state) {
         Object arg0 = evalArg(0, state);
-        if(arg0 instanceof QDLStem) {
+        if (arg0 instanceof QDLStem) {
             setStem((QDLStem) arg0);
-        }else{
-            if(arg0 instanceof AxisExpression) {
-                setAxisExpression( (AxisExpression) arg0);
-            }else{
+        } else {
+            if (arg0 instanceof AxisExpression) {
+                setAxisExpression((AxisExpression) arg0);
+            } else {
                 throw new BadArgException("only stems have axes", getArgAt(0));
             }
         }
-        Object arg1 = evalArg(1, state);
-        if(arg1 instanceof Long) {
-            setAxis((Long) arg1);
-        }else{
-            throw new BadArgException("axis must be an integer", getArgAt(1));
+        Object arg1;
+        if (getArguments().size() > 1) {
+            arg1 = evalArg(1, state);
+            if (arg1 instanceof AllIndices) {
+                setStar(true);
+            } else {
+                if (arg1 instanceof Long) {
+                    setAxis((Long) arg1);
+                } else {
+                    throw new BadArgException("axis must be an integer", getArgAt(1));
+                }
+            }
         }
         setEvaluated(true);
         setResult(this);
@@ -57,9 +64,10 @@ public class AxisExpression extends ExpressionImpl{
         return this;
     }
 
-    public boolean hasAxis(){
+    public boolean hasAxis() {
         return axis != null;
     }
+
     public Long getAxis() {
         return axis;
     }
@@ -80,9 +88,10 @@ public class AxisExpression extends ExpressionImpl{
 
     QDLStem stem = null;
 
-    public boolean hasStem(){
+    public boolean hasStem() {
         return stem != null;
     }
+
     public AxisExpression getAxisExpression() {
         return axisExpression;
     }
@@ -92,7 +101,8 @@ public class AxisExpression extends ExpressionImpl{
     }
 
     AxisExpression axisExpression = null;
-    public boolean hasAxisExpression(){
+
+    public boolean hasAxisExpression() {
         return axisExpression != null;
     }
 
@@ -100,8 +110,19 @@ public class AxisExpression extends ExpressionImpl{
     public String toString() {
         return "AxisExpression{" +
                 "axis=" + axis +
-                (hasStem()?  ", stem=" + stem : "")+
-                (hasAxisExpression()? ", axisExpression=" + axisExpression :"") +
+                ", stem=" + stem +
+                ", axisExpression=" + axisExpression +
+                ", star=" + star +
                 '}';
     }
+
+    public boolean isStar() {
+        return star;
+    }
+
+    public void setStar(boolean star) {
+        this.star = star;
+    }
+
+    boolean star = false;
 }

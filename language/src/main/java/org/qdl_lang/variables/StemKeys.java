@@ -83,15 +83,22 @@ public class StemKeys implements Set {
 
     @Override
     public Object[] toArray() {
-        throw new NotImplementedException("toArray not implemented in " + getClass().getSimpleName());
-        //return new Object[0];
+      return toArray(new Object[listkeys.size()]);
     }
 
     @Override
     public Object[] toArray(Object[] a) {
-        throw new NotImplementedException("toArray(Object[]) not implemented in " + getClass().getSimpleName());
-
-//        return new Object[0];
+        Object[] ooo;
+        if(a.length < listkeys.size()) {
+            ooo = a;
+        }else{
+            ooo = new Object[listkeys.size()];
+        }
+        int i = 0;
+        for(Object kkk : listkeys) {
+                ooo[i++] = kkk;
+        }
+        return ooo;
     }
 
     @Override

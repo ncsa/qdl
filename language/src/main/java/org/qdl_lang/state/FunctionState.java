@@ -54,22 +54,22 @@ public abstract class FunctionState extends VariableState {
     /**
      * Adds a function to the correct stack (intrinsic, extrinsic or regular. To get the
      * function, call {@link #resolveFunction(Polyad, boolean)} or one of its variants.
+     *
      * @param function
      */
     public void putFunction(FunctionRecordInterface function) {
-        if(function.isExtrinsic() || isExtrinsic(function.getName())){
+        if (function.isExtrinsic() || isExtrinsic(function.getName())) {
             getExtrinsicFuncs().put(function);
-        }else{
-            if(isIntrinsic(function.getName())){
+        } else {
+            if (isIntrinsic(function.getName())) {
                 getIntrinsicFunctions().put(function);
-            }else{
+            } else {
                 getFTStack().put(function);
             }
         }
-if(hasCompletionProvider()){
-    getCompletionProvider().addCompletion(new BasicCompletion(getCompletionProvider(), function.getName()+"("));
-
-}
+        if (hasCompletionProvider()) {
+            getCompletionProvider().addCompletion(new BasicCompletion(getCompletionProvider(), function.getName() + "("));
+        }
     }
 
     FStack<? extends FTable<? extends FKey, ? extends FunctionRecordInterface>> fStack = new FStack();

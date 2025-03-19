@@ -146,7 +146,7 @@ expression
  | '(' expression ')'                                                          #association
 //| expression '&'+ expression                                                  #typeCheck
 // | expression '`'+ expression                                                  #index
- | expression '`'+ expression                                                  #axis
+ | expression '`' (Times | expression )                                                  #axis
 // | prefix=',' expression                                                       #unravel
 // | expression ((Stile + expression ) | (Stile '*'))                            #restriction
 // Fix https://github.com/ncsa/qdl/issues/97
