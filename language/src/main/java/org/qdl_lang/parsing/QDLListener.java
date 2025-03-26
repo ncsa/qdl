@@ -327,11 +327,41 @@ public class QDLListener implements QDLParserListener {
         parenthesizedExpression.setTokenPosition(tp(ctx));
         parenthesizedExpression.setSourceCode(getSource(ctx));
         ParseTree p = ctx.expression();
-        ExpressionInterface v = (ExpressionInterface) parsingMap.getStatementFromContext(p);
+        Statement s = parsingMap.getStatementFromContext(p);
+        if (s instanceof FunctionDefinitionStatement) {
+            LambdaDefinitionNode lambdaDefinitionNode = new LambdaDefinitionNode((FunctionDefinitionStatement) s);
+            lambdaDefinitionNode.setTokenPosition(tp(ctx));
+            parenthesizedExpression.setExpression(lambdaDefinitionNode);
+        }else{
+            ExpressionInterface v = (ExpressionInterface) s;
+            if (v == null) {
+                v = (ExpressionInterface) resolveChild(p);
+            }
+            parenthesizedExpression.setExpression(v);
+        }
+
+
+        /*
+          Statement s = parsingMap.getStatementFromContext(p);
+        if (s instanceof FunctionDefinitionStatement) {
+            LambdaDefinitionNode lambdaDefinitionNode = new LambdaDefinitionNode((FunctionDefinitionStatement) s);
+            lambdaDefinitionNode.setTokenPosition(tp(ctx));
+            parenthesizedExpression.setExpression(lambdaDefinitionNode);
+        }
+        if(s instanceof ExpressionInterface){
+
+            ExpressionInterface v = (ExpressionInterface) parsingMap.getStatementFromContext(p);
+            if (v == null) {
+                v = (ExpressionInterface) resolveChild(p);
+            }
+            parenthesizedExpression.setExpression(v);
+        }
+         */
+/*        ExpressionInterface v = (ExpressionInterface) parsingMap.getStatementFromContext(p);
         if (v == null) {
             v = (ExpressionInterface) resolveChild(p);
         }
-        parenthesizedExpression.setExpression(v);
+        parenthesizedExpression.setExpression(v);*/
 
         stash(ctx, parenthesizedExpression);
     }
@@ -2804,14 +2834,6 @@ illegal argument:no module named "b" was  imported at (1, 67)
         expr.setTokenPosition(tp(ctx));
         expr.setSourceCode(getSource(ctx));
         stash(ctx, expr);
-/*
-      ExpressionInterface lArg = (ExpressionInterface) resolveChild(ctx.expression(0));
-        ExpressionInterface expression = (ExpressionInterface) resolveChild(ctx.expression(1));
-         fNode.setFunctionName(symbol);
-        fNode.setTokenPosition(tp(ctx));
-        fNode.setSourceCode(getSource(ctx));
-        stash(ctx, fNode);
- */
     }
 }
 

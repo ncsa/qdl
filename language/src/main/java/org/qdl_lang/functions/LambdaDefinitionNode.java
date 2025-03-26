@@ -6,7 +6,7 @@ import org.qdl_lang.statements.ExpressionInterface;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 
 /**
- * To treat defined lambda expressions they must be {@link edu.uiuc.ncsa.qdl.expressions.ExpressionNode}s
+ * To treat defined lambda expressions they must be {@link org.qdl_lang.expressions.ExpressionNode}s
  * This wraps a {@link FunctionDefinitionStatement}, which cannot be replaced. The strategy
  * is to swap out FDS for these at very specific places to allow for passing lambdas as arguments.
  * <p>Created by Jeff Gaynor<br>

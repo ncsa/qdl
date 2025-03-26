@@ -910,7 +910,45 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         }
         return operator;
     }
+/*
+ if(frn instanceof DyadicFunctionReferenceNode){
+                ((DyadicFunctionReferenceNode) frn).evaluate(state);
+                //((DyadicFunctionReferenceNode) frn).evalArg(0,state);
+                Object ooo = ((DyadicFunctionReferenceNode) frn).getArgAt(0).getResult();
+                if(ooo instanceof Long){
+                    argCount = ((Long) ooo).intValue();
+                    if(argCount !=1 && argCount !=2){
+                        throw new ExtraArgException(PICK + " function reference has illegal valence, must be 1 or 2.", polyad.getArgAt(0));
+                    }
+                }else{
+                    throw new ExtraArgException(PICK + " function reference has non-integer valence", polyad.getArgAt(0));
+                }
+            }else{
+                // not qualified. Try and find the right one
+                List<FunctionRecordInterface> functionRecordList = state.getFTStack().getByAllName(frn.getFunctionName());
+                if (functionRecordList.isEmpty()) {
+                    throw new UndefinedFunctionException("no functions found for pick function at all.", polyad.getArgAt(0));
+                }
+                int totalCount = 0;
+                for (FunctionRecordInterface fr : functionRecordList) {
 
+                    if (2 == fr.getArgCount()) {
+                        totalCount = totalCount +2;
+                    }
+                    if (1 == fr.getArgCount()) {
+                        totalCount = totalCount +1;
+                    }
+
+                    argCount = Math.max(argCount, fr.getArgCount());
+                }
+                if(totalCount == 0 || totalCount == 3){
+                    // then there are multiple functions with the name and different valences. Don't
+                    // try to choose one, just throw an exception.
+                    throw new BadArgException(PICK + " unqualified function reference, both monad and dyad found. Specify which to use.", polyad.getArgAt(0));
+                }
+            }
+
+ */
     public static final int FILE_OP_AUTO = -100; // Let the system determine it.
     public static final int FILE_OP_BINARY = 0; // file is treated as b64 string
     public static final int FILE_OP_TEXT_STEM = 1; //File is treated as a stem of lines

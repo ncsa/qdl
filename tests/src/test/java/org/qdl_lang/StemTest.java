@@ -3,9 +3,7 @@ package org.qdl_lang;
 import org.qdl_lang.evaluate.ListEvaluator;
 import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.evaluate.StemEvaluator;
-import org.qdl_lang.exceptions.IndexError;
-import org.qdl_lang.exceptions.QDLException;
-import org.qdl_lang.exceptions.QDLExceptionWithTrace;
+import org.qdl_lang.exceptions.*;
 import org.qdl_lang.expressions.ConstantNode;
 import org.qdl_lang.expressions.Polyad;
 import org.qdl_lang.expressions.VariableNode;
@@ -980,6 +978,7 @@ public class StemTest extends AbstractQDLTester {
 
     /**
      * Test for signed indices in stems.
+     *
      * @throws Throwable
      */
     public void testRelativeIndices() throws Throwable {
@@ -1015,54 +1014,54 @@ public class StemTest extends AbstractQDLTester {
         addLine(script, "a.(-100);"); // way outside range. Has to fail
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         boolean testOK = true;
-        try{
+        try {
             interpreter.execute(script.toString());
             testOK = false;
-        }catch(IndexError t){
+        } catch (IndexError t) {
         }
         assert testOK : "attempt to get relative index outside of range should have failed";
     }
 
     public void testRelativeIndicesSet() throws Throwable {
-           State state = testUtils.getNewState();
-           StringBuffer script = new StringBuffer();
-           addLine(script, "  a.:= [;5];\n" +
-                   "  a.100 := 11;\n" +
-                   "  a.200 := 12;\n" +
-                   "  a.300 := 14;\n" +
-                   "  a.400 := 15;");
-           addLine(script, "a.(-1):=42;");
-           addLine(script, "a.(-4):=1000;");
-           addLine(script, "a.(-6):=1111;");
-           addLine(script, "ok0 := a.400==42;"); // gets the last sparse index
-           addLine(script, "ok1 := a.100==1000;"); // gets the nest to last sparse index
-           addLine(script, "ok2 := a.3==1111;"); // gets the first sparse index
-           QDLInterpreter interpreter = new QDLInterpreter(null, state);
-           interpreter.execute(script.toString());
-           assert getBooleanValue("ok0", state) : "failed to set last sparse entry using relative index -1";
-           assert getBooleanValue("ok2", state) : "failed to set next to last sparse entry using relative index -4";
-           assert getBooleanValue("ok1", state) : "failed to set contiguous entry using relative index -6";
-       }
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "  a.:= [;5];\n" +
+                "  a.100 := 11;\n" +
+                "  a.200 := 12;\n" +
+                "  a.300 := 14;\n" +
+                "  a.400 := 15;");
+        addLine(script, "a.(-1):=42;");
+        addLine(script, "a.(-4):=1000;");
+        addLine(script, "a.(-6):=1111;");
+        addLine(script, "ok0 := a.400==42;"); // gets the last sparse index
+        addLine(script, "ok1 := a.100==1000;"); // gets the nest to last sparse index
+        addLine(script, "ok2 := a.3==1111;"); // gets the first sparse index
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "failed to set last sparse entry using relative index -1";
+        assert getBooleanValue("ok2", state) : "failed to set next to last sparse entry using relative index -4";
+        assert getBooleanValue("ok1", state) : "failed to set contiguous entry using relative index -6";
+    }
 
     public void testBadRelativeIndicesSet() throws Throwable {
-           State state = testUtils.getNewState();
-           StringBuffer script = new StringBuffer();
-           addLine(script, "  a.:= [;5];\n" +
-                   "  a.100 := 11;\n" +
-                   "  a.200 := 12;\n" +
-                   "  a.300 := 14;\n" +
-                   "  a.400 := 15;");
-           addLine(script, "a.(-100):=0;");
-           QDLInterpreter interpreter = new QDLInterpreter(null, state);
-           boolean testOk = true;
-           try {
-               interpreter.execute(script.toString());
-               testOk = false;
-           }catch (IndexError indexError){
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "  a.:= [;5];\n" +
+                "  a.100 := 11;\n" +
+                "  a.200 := 12;\n" +
+                "  a.300 := 14;\n" +
+                "  a.400 := 15;");
+        addLine(script, "a.(-100):=0;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        boolean testOk = true;
+        try {
+            interpreter.execute(script.toString());
+            testOk = false;
+        } catch (IndexError indexError) {
 
-           }
-           assert testOk : "Was able to set relative index outside of list";
-       }
+        }
+        assert testOk : "Was able to set relative index outside of list";
+    }
 
     /*
     a.:=[;10];
@@ -2147,6 +2146,34 @@ public class StemTest extends AbstractQDLTester {
     }
 
     /**
+     * Previous test using axis and other operators.
+     *
+     * @throws Throwable
+     */
+    public void testAxisOperator2() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ξ.  := n(3,4,5,n(60));");
+        addLine(script, "ξ0. := ⊗+ ⊙ µξ`0;");
+        addLine(script, "ξ1. := ⊗+ ⊙ µξ`1;");
+        addLine(script, "ξ2. := ⊗+ ⊙ µξ`2;");
+        // Check against computed output. We break this up in statements or these get really long
+        addLine(script, "η0. := [[60,63,66,69,72],[75,78,81,84,87],[90,93,96,99,102],[105,108,111,114,117]];");
+        addLine(script, "η1. := [[30,34,38,42,46],[110,114,118,122,126],[190,194,198,202,206]];");
+        addLine(script, "η2. := [[10,35,60,85],[110,135,160,185],[210,235,260,285]];");
+
+        addLine(script, "ok0 := @∧ ⊙ (η0. ≡ ξ0.)`*;"); // reduce all with axis operator
+        addLine(script, "ok1 := @∧ ⊙ (η1. ≡ ξ1.)`*;");
+        addLine(script, "ok2 := @∧ ⊙ (η2. ≡ ξ2.)`*;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : StemEvaluator.TRANSPOSE + " operator failed for axis = 0.";
+        assert getBooleanValue("ok1", state) : StemEvaluator.TRANSPOSE + " operator failed for axis = 1.";
+        assert getBooleanValue("ok2", state) : StemEvaluator.TRANSPOSE + " operator failed for axis = 2.";
+    }
+
+    /**
      * Test that a scalar as an argument to for_each does not change the shape of the result.
      *
      * @throws Throwable
@@ -2238,8 +2265,8 @@ public class StemTest extends AbstractQDLTester {
      * Random note: For an n-ary function we could generalize this to apply in sequence to the next n-1 args,
      * so for a ternary function, we'd need 5 arguments
      * <pre>[a,b,c,d,e] --> f(f(a,b,c),d,e)</pre>
-     * but then the hoops to jump through get larger, e.g., if the function f has defintions for multiple
-     * arg counts, which do we use? No canonical solution, so we stick with the dyadic case (or ficure out a way to
+     * but then the hoops to jump through get larger, e.g., if the function f has definitions for multiple
+     * arg counts, which do we use? No canonical solution, so we stick with the dyadic case (or figure out a way to
      * specify exactly which function to use...)
      * </p>
      *
@@ -2249,7 +2276,11 @@ public class StemTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "z.:=@*" + OpEvaluator.FOR_ALL_KEY + "[[1;5],[-3;0],[4;7]];");
-        addLine(script, "test.:=[[[-12,-15,-18],[-8,-10,-12],[-4,-5,-6]],[[-24,-30,-36],[-16,-20,-24],[-8,-10,-12]],[[-36,-45,-54],[-24,-30,-36],[-12,-15,-18]],[[-48,-60,-72],[-32,-40,-48],[-16,-20,-24]]];");
+        addLine(script, "test.:=[" +
+                "[[-12,-15,-18],[-8,-10,-12],[-4,-5,-6]]," +
+                "[[-24,-30,-36],[-16,-20,-24],[-8,-10,-12]]," +
+                "[[-36,-45,-54],[-24,-30,-36],[-12,-15,-18]]," +
+                "[[-48,-60,-72],[-32,-40,-48],[-16,-20,-24]]];");
         addLine(script, " ok := rank(z.)==3 && reduce(@&&,  dim(z.)==[4,3,3]);");
         addLine(script, " ok1 := reduce(@&&,reduce(@&&,reduce(@&&, test.==z.)));");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
@@ -2293,6 +2324,26 @@ public class StemTest extends AbstractQDLTester {
     }
 
     /**
+     * Previous test using nothing but operators
+     *
+     * @throws Throwable
+     */
+    public void testForEach4Axes2() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "a. := @* ∀ [n(2,3,[;6]), n(3,4,[;12]+100)]; ");
+        addLine(script, "check. := [" +
+                "[[[0,0,0,0],[0,0,0,0],[0,0,0,0]]," +
+                "[[100,101,102,103],[104,105,106,107],[108,109,110,111]],[[200,202,204,206],[208,210,212,214],[216,218,220,222]]]," +
+                "[[[300,303,306,309],[312,315,318,321],[324,327,330,333]],[[400,404,408,412],[416,420,424,428],[432,436,440,444]],[[500,505,510,515],[520,525,530,535],[540,545,550,555]]]];");
+        addLine(script, "ok :=  ⊗∧⊙(check. ≡ a.)`*;"); // 4 axes
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : StemEvaluator.FOR_EACH + " failed for 4 axes ";
+    }
+
+    /**
      * Here three 1 rank stems are passed in and create a 3 rank stem
      *
      * @throws Throwable
@@ -2304,6 +2355,95 @@ public class StemTest extends AbstractQDLTester {
         addLine(script, "a.:=@f∀[[;5],[5;9],[9;12]];");
         addLine(script, "check. := [[['0_5_9','0_5_10','0_5_11'],['0_6_9','0_6_10','0_6_11'],['0_7_9','0_7_10','0_7_11'],['0_8_9','0_8_10','0_8_11']],[['1_5_9','1_5_10','1_5_11'],['1_6_9','1_6_10','1_6_11'],['1_7_9','1_7_10','1_7_11'],['1_8_9','1_8_10','1_8_11']],[['2_5_9','2_5_10','2_5_11'],['2_6_9','2_6_10','2_6_11'],['2_7_9','2_7_10','2_7_11'],['2_8_9','2_8_10','2_8_11']],[['3_5_9','3_5_10','3_5_11'],['3_6_9','3_6_10','3_6_11'],['3_7_9','3_7_10','3_7_11'],['3_8_9','3_8_10','3_8_11']],[['4_5_9','4_5_10','4_5_11'],['4_6_9','4_6_10','4_6_11'],['4_7_9','4_7_10','4_7_11'],['4_8_9','4_8_10','4_8_11']]];");
         addLine(script, "ok :=  reduce(@∧,reduce(@∧,reduce(@∧, check. ≡ a.)));"); // 3 axes
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : StemEvaluator.FOR_EACH + " failed for 3 axes ";
+    }
+// ((x)→rank(x))∀[n(2,3,5,7)`1]
+
+    /**
+     * This uses a lambda with the for_each operator to check that the axis restriction
+     * works. It computes the rank of each returned element, so as the axis increases,
+     * the size of the result increases. This is actually a pretty slick test and checks
+     * the rank an axis. This is for a single argument and monadic function.
+     * @throws Throwable
+     */
+    // Fix https://github.com/ncsa/qdl/issues/109
+    public void testForEachAxisRestriction() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "a. := n(3,3,3,3); // really any higher-order stem works");
+        addLine(script, "define[check(a., axis)][\n" +
+                "   r ≔ rank(a.); \n" +
+                "   z. ≔ ((x)→rank(x))∀[a`(axis)]; // actual loop over stem\n" +
+                "   ok ≔ axis+1 ≡ rank(z.); // check the shape of the result  \n" +
+                "   q ≔  ⊗∧⊙((r-axis-1) ≡ z.)`*; // every entry is the same \n" +
+                "    return(ok ∧ q);\n" +
+                "  ];\n");
+        addLine(script, "ok.:=[];");
+        addLine(script,"while[j∈[;rank(a.)]][ok.j := check(a.,j);];");
+        addLine(script, "ok := ⊗∧⊙ok.; // checks every axis worked."); // 3 axes
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : StemEvaluator.FOR_EACH + " failed to loop over axis correctly";
+    }
+    public void testSizeOnAxis() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "a. := n(2,2,2,2);");
+        addLine(script, "ok0 := 2 == size(a`0); "); // size on axis 0
+        addLine(script, "ok1 := 4 == size(a`1); "); // size on axis 1
+        addLine(script, "ok2 := 8 == size(a`2); "); // size on axis 2
+        addLine(script, "ok3 := 16 == size(a`3); "); // size on axis 3
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : StemEvaluator.SIZE + " failed for axis 0";
+        assert getBooleanValue("ok1", state) : StemEvaluator.SIZE + " failed for axis 1";
+        assert getBooleanValue("ok2", state) : StemEvaluator.SIZE + " failed for axis 2";
+        assert getBooleanValue("ok3", state) : StemEvaluator.SIZE + " failed for axis 3";
+    }
+
+    /**
+     * The contract is that <i>only</i> the number of elements at a given axis are returned.
+     * So [0,[;2]] =: b. means size(b`0) == 1 and size(b`1) == 2
+     * @throws Throwable
+     */
+    public void testSizeOnAxisContract() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "b. :=[0,[0,1,2,3,4,5,6],{1,{10,11,12},2,3,4,5,6},[[0,1,2],[0,1,2]],4, true, 2/17]~{'a':['a','b','c']};");
+        addLine(script, "ok0 := 8 == size(b`0); "); // size on axis 0
+        addLine(script, "ok1 := 12 == size(b`1); "); // size on axis 1
+        addLine(script, "ok2 := 6 == size(b`2); "); // size on axis 2
+        addLine(script, "ok3 := 0 == size(b`3); "); // size on axis 3
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        /*
+            Compare with
+            indices(b.)
+        [[0],[2],[4],[5],[6],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[a,0],[a,1],[a,2],[3,0,0],[3,0,1],[3,0,2],[3,1,0],[3,1,1],[3,1,2]]
+
+        */
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : StemEvaluator.SIZE + " failed for axis 0";
+        assert getBooleanValue("ok1", state) : StemEvaluator.SIZE + " failed for axis 1";
+        assert getBooleanValue("ok2", state) : StemEvaluator.SIZE + " failed for axis 2";
+        assert getBooleanValue("ok3", state) : StemEvaluator.SIZE + " failed for axis 3";
+    }
+
+    /**
+     * Previous test but with all operators and lambdas
+     *
+     * @throws Throwable
+     */
+    public void testForEach3Axes2() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "a.:=((x,y,z)->x+'_' + y + '_' + z)∀[[;5],[5;9],[9;12]];");
+        addLine(script, "check. := [[['0_5_9','0_5_10','0_5_11'],['0_6_9','0_6_10','0_6_11'],['0_7_9','0_7_10','0_7_11'],['0_8_9','0_8_10','0_8_11']],[['1_5_9','1_5_10','1_5_11'],['1_6_9','1_6_10','1_6_11'],['1_7_9','1_7_10','1_7_11'],['1_8_9','1_8_10','1_8_11']],[['2_5_9','2_5_10','2_5_11'],['2_6_9','2_6_10','2_6_11'],['2_7_9','2_7_10','2_7_11'],['2_8_9','2_8_10','2_8_11']],[['3_5_9','3_5_10','3_5_11'],['3_6_9','3_6_10','3_6_11'],['3_7_9','3_7_10','3_7_11'],['3_8_9','3_8_10','3_8_11']],[['4_5_9','4_5_10','4_5_11'],['4_6_9','4_6_10','4_6_11'],['4_7_9','4_7_10','4_7_11'],['4_8_9','4_8_10','4_8_11']]];");
+        addLine(script, "ok :=  ⊗∧⊙( check. ≡ a.)`*;"); // 3 axes
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
 
         interpreter.execute(script.toString());
@@ -2394,9 +2534,54 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok1", state);
     }
 
-    // Managed to break subset doing a refactor, so these are the regression tests to detect that
+    /**
+     * Tests that pick will raise an error if the user requests a pick function with the
+     * wrong valence
+     *
+     * @throws Throwable
+     */
+    // https://github.com/ncsa/qdl/issues/107
+    public void testPickFQFunction() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        // Get elements with even indices
+        addLine(script, "f(x,y)-> true;");
+        addLine(script, "pick(1@f,n(3,4));"); // no function 1@f defined
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        boolean good = false;
+        try {
+            interpreter.execute(script.toString());
+        } catch (UndefinedFunctionException e) {
+            good = true;
+        }
+        assert good : "Could specify incorrect valence of function for pick";
+    }
+
+    /**
+     * If there are multiple functions and the valence is not given, raise an error
+     *
+     * @throws Throwable
+     */
+    // https://github.com/ncsa/qdl/issues/107
+    public void testPickNoQFunction() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        // Get elements with even indices
+        addLine(script, "f(x,y)-> true;f(x)->false;");
+        addLine(script, "pick(@f,n(3,4));"); // two functions @f defined
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        boolean good = false;
+        try {
+            interpreter.execute(script.toString());
+        } catch (BadArgException e) {
+            good = true;
+        }
+        assert good : "Could specify incorrect valence of function for pick";
+    }
+
+    // Managed to break sublist doing a refactor, so these are the regression tests to detect that
     // should something like it happen again.  These test a contiguous list
-    public void testSubsetContract() throws Throwable {
+    public void testSublistContract() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "ok0 := reduce(@&&, sublist([;10],7) == [7,8,9]);");
@@ -2415,7 +2600,7 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok5", state) : "count of 0 should return empty list";
     }
 
-    public void testSubsetSparseContract() throws Throwable {
+    public void testSublistSparseContract() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "b. := [;15];remove(b.4);remove(b.7);remove(b.10);remove(b.11);"); // sparse list with gaps
@@ -2762,6 +2947,51 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok42", state) : "failure processing a\\>[star(),[0,0,0]]";
     }
 
+    /**
+     * Tests that using functions for extractions works for multiple axes.
+     *
+     * @throws Throwable
+     */
+    public void testFunctionExtraction() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "even(k,v)→mod(k,2)≡0;\n" +
+                "odd(k,v)→mod(k,2)≡1;\n");
+        addLine(script, "z. := n(4,4,n(16))\\2@even\\2@odd;");
+        addLine(script, "w. := n(4,4,n(16))\\!2@even\\!2@odd;"); // preserve indices
+        addLine(script,"ok_size0 := rank(z.)==2 && (@&& ⊙ 2==dim(z.));");
+        addLine(script,"ok_values0 := @&& ⊙ ([[1,3],[9,11]] == z.)`*;");
+        addLine(script,"ok_size1 := rank(w.)==2 && (@&& ⊙ 2==dim(w.));");
+        addLine(script,"ok_values1 := @&& ⊙ ({0:{1:1, 3:3}, 2:{1:9, 3:11}} == w.)`*;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok_size0", state) : "extraction failed to give correct shape of result";
+        assert getBooleanValue("ok_values0", state) : "extraction failed to give correct values of result";
+        assert getBooleanValue("ok_size1", state) : "extraction failed to give correct shape of strict result";
+        assert getBooleanValue("ok_values1", state) : "extraction failed to give correct values of strict result";
+    }
+
+    /**
+     * The contract is that extractions using stem indices, \> must be lists and not
+     * just function references, so trying to do one with a function should raise an error.
+     * @throws Throwable
+     */
+    public void testFunctionExtractionStemIndexFailure() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "even(k,v)→mod(k,2)≡0;\n" +
+                "odd(k,v)→mod(k,2)≡1;\n");
+        addLine(script, "n(3,4)\\>2@even;");
+        boolean good = false;
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        try {
+            interpreter.execute(script.toString());
+        }catch(BadArgException bax){
+            good = true;
+        }
+        assert good : "passing a function reference to the \\> operator should fail.";
+
+    }
     public static String BIG_JSON_OBJECT = DebugUtil.getDevPath() + "/qdl/language/src/main/resources/test.json";
 
     /**
@@ -2922,6 +3152,63 @@ public class StemTest extends AbstractQDLTester {
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "testing ever element in an extraction failed failed";
     }
+
+    /**
+     * Tests using a function for extraction with another axis
+     *
+     * @throws Throwable
+     */
+    public void testExtractionWithFunction1() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "z. := n(5,5,n(25))\\((k,v)→k<2)\\[1,3];");
+        addLine(script, "ok1 := (rank(z.) == 2) && reduce(@&&,2==dim(z.) );"); // result of == is stem with keys
+        addLine(script, "ok2 := reduce(@&&, (z.== [[1,3],[6,8]])`*);"); // result of == is stem with keys
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok1", state) : "wrong dimension from extract with function";
+        assert getBooleanValue("ok2", state) : "wrong value(s) from extract with function";
+    }
+
+    /**
+     * Tests using a function to extract non-lists
+     *
+     * @throws Throwable
+     */
+    public void testExtractionWithFunction2() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        // (a\*\((k,v)→!is_list(v)))\*\((k)→k≡'a')
+        addLine(script, "a. ≔ n(3,4,5,6,[;3*4*5*6]);\n" +
+                "a.0.'a' ≔ 'a';\n" +
+                "a.1.'b' ≔ 'b';\n" +
+                "a.0.'c' ≔ 'c';\n" +
+                "a.2.'a' ≔ 'd';\n" +
+                "a.3.'a' ≔ 'e';"); // big stem that has mixed stypes
+        /*
+        Note that in the next expression it is of the form (X)\*\@f the reason is that X is an extraction
+        of non-lists, so the shape of X is very different from a. This is computed first then the rest of
+        the extraction is using the new stem.
+         */
+        addLine(script, "z. := (a\\*\\((k,v)→!is_list(v)))\\*\\((k)→k≡'a');"); // result is [{a:a}]
+        addLine(script, "ok1 := (rank(z.) == 1) && reduce(@&&,1==dim(z.) );"); // result of == is stem with keys
+        addLine(script, "ok2 := z.0.'a' == 'a';"); // result of == is stem with keys
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok1", state) : "wrong dimension from extract with function";
+        assert getBooleanValue("ok2", state) : "wrong value(s) from extract with function";
+    }
+/*
+a. ≔ n(3,4,5,6,[;3*4*5*6]);
+a.0.'a' ≔ 'a';
+a.1.'b' ≔ 'b';
+a.0.'c' ≔ 'c';
+a.2.'a' ≔ 'd';
+a.3.'a' ≔ 'e';
+
+(a\*\((k,v)→!is_list(v)))\*\((k)→k≡'a'); // extracts [{'a':'a'}]
+input_form((a\*\((k,v)→!is_list(v)))); // extracts all non-lists elements
+ */
 
     /**
      * test contract for {@link StemEvaluator#DIFF} function.

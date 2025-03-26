@@ -2542,11 +2542,13 @@ ws_file - the current file to save to/load from by default. If you save or load 
             <![CDATA[reduce(@f, arg) - Apply the function between all elements of the set
     or generic (i.e. not a list) argument, stem, set or (trivially) scalar.
     The result is always a scalar.
-reduce(@f(), arg. {,axis}) - Takes a dyadic function f and applied it between
-             all members of the argument. The final result is a scalar.
-  @f⊙arg. - operator format. Note it is not possible to specify an axis,
+reduce(@f(), arg. {,axis | star()}) - Takes a dyadic function f and applied it between
+             all members of the argument. If an axis is specified, the function is
+             applied along that axis. If the special function star() is used, then
+             this applies reduce to every axis and the final result is a scalar.
+  @f⊙arg. - operator format. Note you can specify an axis with the ` operator,
 
-See also: expand()]]>
+See also: ` (the axis operator), star, expand()]]>
         </body>
         <example>
             <![CDATA[E.g.
@@ -2561,12 +2563,26 @@ E.g. on a set
 120
      @*⊙{1,2,3,4,5}; // Same as previous, with operator.
 120
+E.g. using the * operator to compute the factorial of 8.
+The stem is the 3 rank array of integers 1,2,...8 and this
+applies multiplication between every element across every axis,
+effectively creating the product of all elements:
+
+    reduce(@*, n(2,2,2,[1;9]), star())
+40320
+
+or in wholly operator notation
+
+    ⊗*⊙n(2,2,2,[1;9])`*
+40320
+
 E.g. on a stem
    reduce(@+, {'foo':'a', 'bar':'b', 'baz':'c'})
 bac
 Do remember that for this (rather simple-minded) case, since there
 is *no* canonical ordering of elements in a stem, the result is
-a more or less random concatenation of the elements.
+a more or less random concatenation of the elements. Make sure your
+operators are commutative in such cases if need be!
 
 E.g. On a higher dimension list
   q. := n(3,4,n(12));
@@ -2579,7 +2595,13 @@ E.g. On a higher dimension list
   reduce(@+, q., 1); // apply to first axis, so sum the rows
 [6,
  22,
- 38]]]>
+ 38]
+Alterante notation for the last example:
+   @+⊙q.`1; == reduce(@+, q., 1)
+To apply this to every axis (i.e. keep applying reduce until only a scalar remains), use *:
+   @+⊙q.`*; == reduce(@+, reduce(@+, q.))
+66
+]]>
         </example>
 
     </entry>
@@ -3296,11 +3318,18 @@ sets the value in the result to be the value of the function there.
 
 Note the syntax for the ∀ (unicode 2200) operator is
 
-@func ∀ [list of arguments]
+(@func | lambda) ∀ [list of arguments]
 
-where @func is a function reference and a list of arguments. Only function references
-are supported as the first argument of ∀. If any of the arg are scalars, they will be passed
+where @func is a function reference and a list of arguments. You may also use
+a lmabda expression, though do put it in parentheses so QDL knows where the definition
+ends.  If any of the arg are scalars, they will be passed
 to the function, but do not determine the shape of the result.
+
+Functional languages have a functor (that's an operator that applies a function, aka
+a "higher-order function") usually called "map",
+"array_map", "maplist" or some such, that evaluates a function over a
+list. QDL's analog is  for_each and, as expected,
+is considerably more general.
 
 Simple example, making a multiplication table.
    x. := 1+[;5];
@@ -3328,6 +3357,54 @@ a 5 x 6 array that results. a.i.j = x.i * y.j.
 |           your liking.                        |
 +-----------------------------------------------+
 
+About using the axis operator.
+------------------------------
+The basic contract for for_each will apply to every element, however, many times
+this is too much. For instance, if we had a list of like
+status. := [{'client_id':42, 'status':'active'},
+ {'client_id':11, 'status':'inactive'},
+ {'client_id':99, 'status':'suspended'},
+ {'client_id':17, 'status':'active'}
+ ];
+
+and we wanted to iterate over the elements to find the elements that have a status of 'active'.
+One way is to write a loop:
+
+out. ≔ [];
+while[x.∈status.]
+   do[
+        out. := out. ~ x.'status' == 'active';
+     ];
+     out.
+[true,false,false,true]
+
+Or, we can note that we are really just able to loop over axis 0 and do this with
+a lmabda function and restricting the axis in the for_each function:
+   status_map. := for_each((x.)→x.'status' ≡ 'active',status`0)
+[true,false,false,true]
+
+or in operator notation:
+
+   status_map. := ((x.)→x.'status' ≡ 'active')∀[status`0]
+[true,false,false,true]
+
+You could get carried away and get the ids directly with a statement like
+   (~status_map.⌆status.)\*\client_id
+[42,17]
+
+Tip: If you are using a lambda, be sure to put it in parentheses so that it
+is clear where the definition ends! These are not needed for function references.
+
+Tip: Each argument to for_each may have an axis specified, so this is perfectly
+fine:
+   out. := for_each(3@f, a'3, b'0, c'2)
+meaning that f has 3 arguments, and the resulting shape of the result has
+rank 3x1x2 and
+   out.0.0.0.0.0.0 := f(a.0.0.0, b.0, c.0.0)
+   etc.
+
+Monads and dyads.
+-----------------
 Note that if f is a monad, then it can only operate on a single argument, hence
   for_each(@monad, x.,y.)
 will fail.
@@ -4143,7 +4220,7 @@ This does not alter x.  This has no effect on a rank 1 stem (i.e. a simple list)
 
 Operator forms are resp.
 µx.
-aµx.
+aµx. OR µx`a (uses axis operator)
 permutaton.µx.
 
 See also: shuffle
@@ -4176,7 +4253,13 @@ i.e. add this structure vertically:
     reduce(@+, [[1,2,3],[5,6,7]]);
 [6,8,10]
 What if we want to add the elements in each row together,
-i.e. add horizontally? This is summation on the last axis:
+i.e. add horizontally? There are several way to do this. One is to
+specify the axis in the reduce function. These are all equivalent:
+   reduce(@+, [[1,2,3],[5,6,7]], 1)
+   reduce(@+, [[1,2,3],[5,6,7]]`1)
+   ⊗+⊙[[1,2,3],[5,6,7]]`1
+
+ Or, you can reshuffle the stem itself using the tranpose operator.
     reduce(@+, transpose([[1,2,3],[5,6,7]]));
 [
  6,
@@ -4989,8 +5072,13 @@ keep your data by type.
 
     <entry id="@" alt="⊗">
         <body>
-            <![CDATA[A function reference. Functions may be passed as arguments by reference.
-The @ functor (a functor is something that acts on functions).
+            <![CDATA[The function reference operator.
+   @f = (all) functions that are named f inthe current scope
+   n@f = n is an integer and is the argument count. The function in the current
+         scope that takes n argument. This is called a qualified function reference.
+
+Functions may be passed as arguments by reference.
+Properly @ is a functor (a functor is something that acts on functions). You may qualify the
 
 You may use this on any operator (such as +, *, etc.) or function.
 
@@ -5000,16 +5088,24 @@ Explicitly:
    pick(@p, {2,-1,3,5,6})
 {-1,2,3}
 
-Implictly:
+Note that there is exactly one function in the workspace named p and that is used. Had there been
+multiples, there would be an error unless the call was qualified like
+
+   pick(1@p, {2,-1,3,5,6})
+
+Lambda definition:
    pick((x)->x<4, {2,-1,3,5,6})
  {-1,2,3}
 
-In the implicit case, the function is anonymous and the reference is passed.
+In the lambda case, the function is anonymous and the reference is passed.
 N.B. to access a function in a module, you need to use @ on the function:
    x#y#z#@f
 gets the function reference to the function f, that is nested in modules. This
 is because module paths may be arbitrarily complex and an expression like
-@x#y#z#f (what if z is a function??) would be in general unresolvable.]]>
+@x#y#z#f (what if z is a function??) would be in general unresolvable.
+
+This can also be the ⊗ sign, \u2297. (In fact, that is more accurate since we are
+dealing with functors and @ was chosen because it kind of sort of looks like ⊗.)]]>
         </body>
     </entry>
     <entry id="comparisons">
@@ -5392,7 +5488,7 @@ m_set(a., keys., values) - set multiple values
             <![CDATA[\ is the extraction operator for stems. This allows you to
 pull out parts of a stem.
 
-var ((\{>} scalar | stem | *) | (\{>}! scalar | stem | *))+
+var ((\{>} scalar | stem | * | function) | (\{>}! scalar | stem | * | function))+
 
  \! (uniqueness) will force the resulting stem to have exactly the
     indices of that dimension,
@@ -5402,23 +5498,68 @@ var ((\{>} scalar | stem | *) | (\{>}! scalar | stem | *))+
    a\[2,3] means extract a.2, a.3
    a\>[2,3] means extract a.2.3
  A scalar index indicates to use that for accessing the value, but do not include the index
- in the final result. Each element corresponds to a dimension in var. 
+ in the final result. Each element corresponds to a dimension in var.
 
-This will return
+ Functions must follow the contract for the pick function. Meaning they are boolean valued and
+ are
+ * monadic, getting a key and returning true if the element should be used
+ * dyadic, getting the key and value, returning tru if the element should be used
+
+Output is
 
 - a stem if the arguments are lists (e.g. [;5]\[3,1])
 - a scalar if the arguments are all scalars (e.g. [;5]\2)
 - a null if nothing at all is found (e.g. [;5]\100)
 
-Unlike other operators, extraction is "forgiving" in the sense that
-it will never give you an index error -- missing indices are simply
-skipped. This allows you to work with very ragged data sets and not
-have to do painstaking conformability tests.
+Notes:
+-------
+(1) Extraction is "forgiving" i.e., it will never give you an index error -- missing indices are simply
+    skipped. This allows you to work with very ragged data sets and not
+    have to do painstaking conformability tests.
+(2) Extraction may change the shape of the result, so be aware of where you are in the
+    resulting stem
+(3) The result values are copied. Changes to the result are not reflected in
+    the original stem.
+(4) For the stem index operator, \>, you cannot specify a function reference. You can evaluate
+    a function though, e.g. a\f(a) as long as f(a) returns stem indices.
 
-The result is independent of the original stem, i.e., the values are copied.
-Changes to the result are not reflected in the original stem.
+E.g. of (1)
+Let us define
+   b. ≔ ['a','b',[10;15]];
 
-If all scalars are used, then the following are equivalent
+Sow e can select only elements 1 and 3 from any list in axis 1:
+
+   b\*\[1,3]
+{2:[11,13]}
+
+Note that since there are scalars at b.0 and b.1 there are no error messages,
+they are simply skipped. The result is telling you that b.2 has elements 11 and 13
+at indices 1 and 3. Similarly,asking for non-existent elements like
+   b\1\2\3\4\5
+[]
+
+does not raise an error, it simply reports there are no such elements.
+
+E.g. of (2)
+If we take b. as in the last example and filter out non-lists
+
+   b\((k,v)→!is_list(v))
+[a,b]
+
+Note that the result is *not* the same shape as b. -- it has lost an axis, so
+trying to do something like the previous example (probably by accident)
+
+   b\((k,v)→!is_list(v))\[1,3]
+[]
+
+dutifully reports there are no such elements. because the first part of the expression
+removed everything with an axis.
+
+Scalars as arguments and their effect
+-------------------------------------
+Scalars as arguments will get that element, but do not give an axis.
+
+Hence, if all scalars are used, then the following are equivalent
 var\a\b\c\... == var.a.b.c...
 i.e. the extraction operator, '\', reduces to the reference operator, '.'.
 
@@ -5443,7 +5584,48 @@ preserve the indices for further uses (such as mask).
 So you can reorder elements, select multiples etc. \ lets you restructure
 the result too!
 
+Examples using functions.
+-------------------------
+The extraction operator allows for specifying functions as per the contract of the
+pick function, to whit boolean valued functions that are either
+
+* monadic, accepting the current value and returning true to keep it
+* dyadic, accepting the current key and value and returning true to keep it.
+
+Each axis may have such a function. You may use lambas or function references.
+
+E.g. Recreating pick.
+These two expressions are identical
+
+~pick(@f, arg.)
+arg\@f
+
+as are these two
+pick(@f, arg.)
+arg\!@f
+
+
+\ will also reorder the elements and  pick restricts itself to axis 0 of its argument. What gets more interesting is
+when there is a lot of structure to wade through.
+
+E.g.
+We have a list of clients and their status. Find all the client ids who are active.
+
+status. := [
+   {'client_id':42, 'status':'active'},
+   {'client_id':11, 'status':'inactive'},
+   {'client_id':99, 'status':'suspended'},
+   {'client_id':17, 'status':'active'}]
+
+   status\((k,v.)→v.'status'≡'active')\client_id
+[42,17]
+
+Note especially that we put the lambda in parentheses, since we need to tell the parser
+where the function definition ends. That is one argument for defining functions elsewhere
+and passing them by reference.
+
 Examples using >.
+-----------------
 You may specify that an argument list is to be interpreted as an index list.
 Remember that a.[p,q,r] == a.p.q.r. and [p,q,r] is an index list
 in that context.
@@ -5471,7 +5653,44 @@ You could simply get all of the clients and user ids for the 0th transactions wi
 [tom@bsu.edu,dick@bsu.edu,harry@bsu.edu]
 
 Note that this returns a subset that is independent of the original stem
-hence the values are copied.]]>
+hence the values are copied.
+
+Another example. Here we will show how functions may be used. The stem is a 3 rank
+array of integers.
+   a. := n(3,4,5,[1;61]);
+   print(a.);
+0 : [[1,2,3,4,5],
+     [6,7,8,9,10],
+     [11,12,13,14,15],
+     [16,17,18,19,20]]
+1 : [[21,22,23,24,25],
+     [26,27,28,29,30],
+     [31,32,33,34,35],
+     [36,37,38,39,40]]
+2 : [[41,42,43,44,45],
+     [46,47,48,49,50],
+     [51,52,53,54,55],
+     [56,57,58,59,60]]
+
+So let us choose the elements in axis 0 whose indices are even, and
+in axis 1 whose indices are between 1 and 4:
+
+      a\((v)->0==mod(v,2))\((v)->1<v<4)
+[[[11,12,13,14,15],[16,17,18,19,20]],[[51,52,53,54,55],[56,57,58,59,60]]]
+
+which are indeed
+
+[[a.0.2, a.0.3], [a.2.2, a.2.3]]
+
+You could also define the functions and pass them in as references using the @ operator:
+even(v)->0 == mod(v,2);
+other(v)-> 1 < v < 4;
+   a\1@even\1@other
+
+Note that the arg count probably should be specified explicitly since otherwise
+you are leaving it up to QDL to try and determine the best fitting function for
+its arguments.
+]]>
         </example>
     </entry>
     <entry id="\>">
@@ -5501,8 +5720,8 @@ not possible and all list elements must be resolvable.
     </entry>
     <entry id="star">
         <body>
-            <![CDATA[star() is a functional analog of the wildcard or * operator
-in extractions. That assumes the full set of indices in context.
+            <![CDATA[star() is a functional analog of the wildcard or * operator,
+in extractions, axes and a few other places. That assumes the full set of indices in context.
 a\* == a\star()
 
 This is most useful if you are constructing an argument for extraction, e.g.
@@ -5513,7 +5732,11 @@ This is most useful if you are constructing an argument for extraction, e.g.
 Note that this creates (in this case) the expression a\>[1,*] meaning go to the first element,
 return everything. Compare with say
    a\>[2,[1,3]]
-[9,11]]]>
+[9,11]
+
+It may also be used in the reduce function, where it specifies reducing
+over every axis until there is a scalar.
+]]>
         </body>
     </entry>
     <entry id="vfs">
@@ -5540,7 +5763,7 @@ volume   mount point      physical location
 -----    -----------      -----------------
 data     /sources         /home/public/ligo/experiment_42
          /scripts         /afs/ncsa/ligo/shared/scripts.zip
-         /hardware/uw     my sql database of equipment hosted at university #1
+         /hardware/uw     MySQL database of equipment hosted at university #1
          /hardware/psu    derby database of equipment hosted at  university #2
 
 output   /shared          /home/public/shared
@@ -6885,9 +7108,11 @@ Type )help for help.
         <body>
             <![CDATA[stem`axis  is the axis restriction operator
    stem = a stem
-   axis = a signed integer denoting the axis, 0,1,2,.... Negative indices start
-          from teh end, so a`(-1) means to restrict to the last axis.
-
+   axis = a signed integer denoting the axis, 0,1,2,.... or '*' or star(). Negative indices start
+          from the end, so a`(-1) means to restrict to the last axis.
+          An argument of * or the function star() means to take every axis. This may mean the
+          argument is ignored (e.g. in for_each) or it may mean to apply the operation to every
+          axis (e.g. reduce)
 In certain operations, you may specify a single axis to restrict the operation at. A typical
 example might be a stem like
 a.:= [
@@ -6899,7 +7124,7 @@ a.:= [
 where each row is to be treated as an entity. A good example is the for_each function.
 Let us say we wanted to sum each row. Define a function and loop:
    sum(a.) -> reduce(@+, a.);
-   for_each(@sum, a.`0)
+   for_each(@sum, a`0)
 [9,12,15]
 
 This is [sum(a.0), sum(a.1), sum(a.2)]
@@ -6910,7 +7135,7 @@ function applies to the zero-th axis only. The QDL approach (as usual) is extrem
 For instance, here we define a function that sums stems and multiplies them by the elements of
 a list, outputting
    sum2(a, b)->sum(a)*b;
-   for_each(@sum2, a.`0, [3;7])
+   for_each(@sum2, a`0, [3;7])
 [                       [
   [27,36,45,54],         [sum(a.0) * b.],
   [36,48,60,72],   ==    [sum(a.1) * b.],
@@ -6919,13 +7144,16 @@ a list, outputting
 
 Axes also work on reduce. Remember that the reduce function can accept an axis as the
 argument, so passing it with ` just does that. The default is axis 0
-   reduce(@+, a.) == reduce(@+, a., 0) == reduce(@+, a.`0)
+   reduce(@+, a.) == reduce(@+, a., 0) == reduce(@+, a`0)
 [6,12,18]
    reduce(@+, a.`1) == reduce(@+, a., 1)
 [9,12,15]
+   reduce(@+, a`*); // reduce all axes. Result is a scalar
+36
 
 The axis operator does not work with the join function, since the axis argument there is saying to join
 the arguments along their common axis. If you supply it, it will be ignored.
+See also: for_each, reduce, indices
   ]]>
         </body>
         <example>
@@ -6933,7 +7161,39 @@ the arguments along their common axis. If you supply it, it will be ignored.
    ]]>
         </example>
     </entry>
+    <entry id="axis">
+        <body>
+            <![CDATA[The dimension of a stem is the number of independent
+indices. Each index refers to an axis. The axes (plural of axis) are numbered
+from 0.
 
+The rank of a stem is the maximum number of dimensions.
+
+Scalars are dimensionless, i.e. are simple values with no indices.
+
+A list has a single dimension. These are also called vectors in some languages.
+
+A rank 2 array, i.e., dimension 2 or having 2 axes is referred to as a matrix.
+
+Higher rank arrays (of numbers) may be referred to as tensors, or n-arrays. It should be noted
+that matrices and tensors in Mathematics have specific properties and operations
+on them, which are not in QDL -- you won't find covariant tensors unless you
+write a system for that and manage it yourself for instance.
+
+Stems  are the very general multi-dimensional data structure of QDL and
+each entry may be a scalar or a stem. Very unlike a matrix, they
+may be "ragged" meaning that not every axis has the same dimension.
+
+   my_stem. := {0:4, 'b':[0,1,2]}
+
+my_stem.0 is a scalar, but my_stem.'b' is a list. The rank would be 2
+and there are 2 dimensions because this is the maximum possible number
+of independent indices, but it is "ragged".
+
+See also: rank, dim, ` (the axis operator)
+  ]]>
+        </body>
+    </entry>
     <!-- template without example  block
     <entry id="">
        <body>

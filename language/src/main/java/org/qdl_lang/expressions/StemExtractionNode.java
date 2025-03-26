@@ -81,6 +81,9 @@ public class StemExtractionNode extends ExpressionImpl {
         indexArgs = normalize(args);
         for (int i = 0; i < indexArgs.size(); i++) {
             IndexArg ia = indexArgs.get(i);
+            if(ia.isFunctionDefinition()){
+                continue; // gets passed in toto later to the pick function to be unscrambled.
+            }
             ia.swri.evaluate(state);
             if (0 < i) {
                 if (ia.swri.getResult() == null) {
@@ -309,9 +312,9 @@ a.
             } else {
                 if (value instanceof QDLStem) {
                     IndexList indexList = targetIndex.clone();
-                    if (indexLocation + 1 < sourceIndices.size()) {
-                        //  System.out.println("recurseNEW: INDEX CHECK, targetIndex = " + targetIndex + ", strictIndex=" + strictIndex + ", loc=" + indexLocation + ", in=" + in + ", out=" + out);
-                    }
+              /*      if (indexLocation + 1 < sourceIndices.size()) {
+                          System.out.println("recurseNEW: INDEX CHECK, targetIndex = " + targetIndex + ", strictIndex=" + strictIndex + ", loc=" + indexLocation + ", in=" + in + ", out=" + out);
+                    }*/
 
                     if ((indexArg.swri instanceof AllIndices) || !Constant.isScalar(indexArg.swri.getResult())) {
                         if (indexArg.strictOrder && indexArg.isWildcard()) {
@@ -339,7 +342,7 @@ a.
         if (otherOut!= null && !(otherOut instanceof QDLStem)) {
             return otherOut;
         }
-   //     System.out.println(getClass().getSimpleName() + ".recurse:" + out.toString(1));
+      //  System.out.println(getClass().getSimpleName() + ".recurse:" + out.toString(1));
         return out;
     }
 

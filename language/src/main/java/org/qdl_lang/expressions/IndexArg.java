@@ -6,6 +6,7 @@ import org.qdl_lang.evaluate.ListEvaluator;
 import org.qdl_lang.functions.DyadicFunctionReferenceNode;
 import org.qdl_lang.functions.FunctionReferenceNode;
 import org.qdl_lang.functions.FunctionReferenceNodeInterface;
+import org.qdl_lang.functions.LambdaDefinitionNode;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.variables.Constant;
@@ -32,56 +33,80 @@ public class IndexArg implements Serializable {
     public IndexArg() {
     }
 
+    Boolean function = null;
+    Boolean functionDefinition = null;
+
+    protected boolean isFunctionDefinition() {
+        if (functionDefinition == null) {
+            isFunction(); // computes if it is a definition too
+        }
+        return functionDefinition;
+    }
+
     protected boolean isFunction() {
-        return swri instanceof FunctionReferenceNodeInterface;
+        ExpressionInterface exi = swri;
+        if (function == null) {
+            while (exi instanceof ParenthesizedExpression) {
+                exi = ((ParenthesizedExpression) exi).getExpression();
+            }
+            function = exi instanceof FunctionReferenceNodeInterface;
+            functionDefinition = exi instanceof LambdaDefinitionNode;
+        }
+        return function;
     }
 
     protected FunctionReferenceNodeInterface getFunction() {
-        return (FunctionReferenceNodeInterface) swri;
+        ExpressionInterface exi = swri;
+        while (exi instanceof ParenthesizedExpression) {
+            exi = ((ParenthesizedExpression) exi).getExpression();
+        }
+        return (FunctionReferenceNodeInterface) exi;
+    }
+    protected LambdaDefinitionNode getFunctionDefinition() {
+        ExpressionInterface exi = swri;
+        while (exi instanceof ParenthesizedExpression) {
+            exi = ((ParenthesizedExpression) exi).getExpression();
+        }
+        return (LambdaDefinitionNode) exi;
     }
 
     /*
     a.≔n(2,3,4,[1;1+2*3*4]);
     k(v)→v<2;
     a\*\1@k\[1,3]
+
+    a.≔n(2,3,4,[;1+2*3*4]);
+k(v)→v<2;
+f(k,v)→k+v<5;
+a\*\(2@f)\[1,3]
      */
     public Collection createKeySet(QDLStem in, State state) {
         if ((in != null) && isWildcard()) {
             return in.keySet();
         }
         List stemKeys = new ArrayList();
-        if (isFunction()) {
+        if (isFunction() || isFunctionDefinition()) {
             Polyad pick = new Polyad(ListEvaluator.PICK);
-            pick.addArgument((ExpressionImpl)getFunction()); // trick. This is either a dyadic FR or a FR. Both extend this
+            if(isFunctionDefinition()) {
+                pick.addArgument(getFunctionDefinition()); // Send along lambda
+            }else{
+                pick.addArgument((ExpressionImpl) getFunction()); // trick. This is either a dyadic FR or a FR. Both extend this
+            }
+/*
             QDLStem ndx = new QDLStem();
             ndx.getQDLList().appendAll(Arrays.asList(in.keySet().toArray()));
-            pick.addArgument(new ConstantNode(ndx));
+*/
+            pick.addArgument(new ConstantNode(in));
             pick.evaluate(state);
             Object keys = pick.getResult();
             swri.setResult(keys);
-            if(keys instanceof QDLStem) {
-                for(Object key : ((QDLStem)keys).keySet()) {
+            swri.setEvaluated(true);
+            swri.setResultType(Constant.getType(keys));
+            if (keys instanceof QDLStem) {
+                for (Object key : ((QDLStem) keys).keySet()) {
                     stemKeys.add(key);
                 }
             }
-
-/*
-            FunctionReferenceNodeInterface frn = getFunction();
-            ExpressionImpl f = getOperator(state, frn, 1);
-            ArrayList<Object> rawArgs = new ArrayList<>();
-
-            for (Object key : in.keySet()) {
-                rawArgs.clear();
-                rawArgs.add(key);
-                f.setArguments(toConstants(rawArgs));
-                Object test = f.evaluate(state);
-                if (isBoolean(test)) {
-                    if ((Boolean) test) {
-                        stemKeys.add(key);
-                    }
-                }
-            }
-*/
             return stemKeys;
         }
         Object obj = swri.getResult();

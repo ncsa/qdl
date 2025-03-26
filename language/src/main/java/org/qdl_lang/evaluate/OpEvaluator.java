@@ -135,11 +135,11 @@ public class OpEvaluator extends AbstractEvaluator {
      * → or #. "->"
      */
     public static String[] OTHER_MATH_OPS = new String[]{
-            "->","→",State.NS_DELIMITER,
+            "->", "→", State.NS_DELIMITER,
             "⊨",
-            "|^", "⊢","\\",QDLStem.STEM_INDEX_MARKER,
-            "¿","?",
-         "≔",":=","≕","=:" ,"+=","-=","^=","*=","~=", "×=","÷=","%="
+            "|^", "⊢", "\\", QDLStem.STEM_INDEX_MARKER,
+            "¿", "?",
+            "≔", ":=", "≕", "=:", "+=", "-=", "^=", "*=", "~=", "×=", "÷=", "%="
     };
 
     /**
@@ -649,105 +649,105 @@ apply([@f,@g],[2])
     protected Object doSingleApply(Object lArg, DyadicFunctionReferenceNode fNode, Object defaultValue, State state, Dyad dyad) {
 
         State actualState = fNode.hasModuleState() ? fNode.getModuleState() : state; // determined per fNode
-    FunctionRecordInterface fRecord = fNode.getFunctionRecord();
-    boolean isBuiltin = fRecord == null;
-    if (lArg == null) {
-        lArg = defaultValue;
-    }
-    if (lArg instanceof QDLStem) {
-        QDLStem lStem = (QDLStem) lArg;
-        if (lStem.isEmpty()) {
-            if (lStem.hasDefaultValue()) {
-                if (!(lStem.getDefaultValue() instanceof QDLStem)) {
-                    // So they used a scalar as the default value. Assume they mean it.
-                    Polyad polyad = new Polyad(fRecord.getName());
-                    polyad.setBuiltIn(false);
-                    polyad.addArgument(new ConstantNode(lStem.getDefaultValue()));
-                    return polyad.evaluate(actualState);
-                }
-                lStem = (QDLStem) lStem.getDefaultValue();
-            }
+        FunctionRecordInterface fRecord = fNode.getFunctionRecord();
+        boolean isBuiltin = fRecord == null;
+        if (lArg == null) {
+            lArg = defaultValue;
         }
-        ExpressionImpl expression = null;
-        boolean isOperator = false;
-        if (isBuiltin) {
-            Polyad polyad = new Polyad(fRecord.getName());
-            polyad.setBuiltIn(true);
-            if (actualState.getMetaEvaluator().isBuiltInFunction(fRecord.getName())) {
-                expression = polyad;
-            } else {
-                if (!actualState.getOpEvaluator().isMathOperator(fRecord.getName())) {
-                    throw new UnknownSymbolException("unknown function '" + fRecord.getName() + "'", dyad.getLeftArgument());
+        if (lArg instanceof QDLStem) {
+            QDLStem lStem = (QDLStem) lArg;
+            if (lStem.isEmpty()) {
+                if (lStem.hasDefaultValue()) {
+                    if (!(lStem.getDefaultValue() instanceof QDLStem)) {
+                        // So they used a scalar as the default value. Assume they mean it.
+                        Polyad polyad = new Polyad(fRecord.getName());
+                        polyad.setBuiltIn(false);
+                        polyad.addArgument(new ConstantNode(lStem.getDefaultValue()));
+                        return polyad.evaluate(actualState);
+                    }
+                    lStem = (QDLStem) lStem.getDefaultValue();
                 }
-                // so it's an operator.
-                if (lStem.size() == 1) {
-                    Monad monad = new Monad(actualState.getOperatorType(fRecord.getName()), null); // arg set later
-                    expression = monad;
-                }
-                if (lStem.size() == 2) {
-                    Dyad dyad1 = new Dyad(actualState.getOperatorType(fRecord.getName()), null, null);
-                    expression = dyad1;
-                }
-                expression.setArguments(new ArrayList<>()); // zero this out since we are adding argument later and just set them to null
-                isOperator = true;
-                isBuiltin = true;
             }
-        } else {
-            // user-defined case
-            // May need to pass in argCount = -1 for general case?
-                if(lStem.size() != fNode.getFunctionArgCount()){
+            ExpressionImpl expression = null;
+            boolean isOperator = false;
+            if (isBuiltin) {
+                Polyad polyad = new Polyad(fRecord.getName());
+                polyad.setBuiltIn(true);
+                if (actualState.getMetaEvaluator().isBuiltInFunction(fRecord.getName())) {
+                    expression = polyad;
+                } else {
+                    if (!actualState.getOpEvaluator().isMathOperator(fRecord.getName())) {
+                        throw new UnknownSymbolException("unknown function '" + fRecord.getName() + "'", dyad.getLeftArgument());
+                    }
+                    // so it's an operator.
+                    if (lStem.size() == 1) {
+                        Monad monad = new Monad(actualState.getOperatorType(fRecord.getName()), null); // arg set later
+                        expression = monad;
+                    }
+                    if (lStem.size() == 2) {
+                        Dyad dyad1 = new Dyad(actualState.getOperatorType(fRecord.getName()), null, null);
+                        expression = dyad1;
+                    }
+                    expression.setArguments(new ArrayList<>()); // zero this out since we are adding argument later and just set them to null
+                    isOperator = true;
+                    isBuiltin = true;
+                }
+            } else {
+                // user-defined case
+                // May need to pass in argCount = -1 for general case?
+                if (lStem.size() != fNode.getFunctionArgCount()) {
                     throw new BadArgException("incompatible argument list length, function requires " + fNode.getFunctionArgCount(), dyad.getArgAt(0));
                 }
-            Polyad polyad = new Polyad(fRecord.getName());
+                Polyad polyad = new Polyad(fRecord.getName());
 
-            polyad.setBuiltIn(false);
-            expression = polyad;
-        }
-        if (lStem.isList()) {
-            for (Object key : lStem.keySet()) {
-                expression.getArguments().add(new ConstantNode(lStem.get(key)));
+                polyad.setBuiltIn(false);
+                expression = polyad;
             }
-
-        } else {
-            if (isBuiltin) {
-                for (int i = 0; i < lStem.size(); i++) {
-                    Object obj = lStem.get(FunctionEvaluator.DUMMY_BUILT_IN_FUNCTION_NAME_CAPUT + i);
-                    if (obj == null) {
-                        throw new BadArgException("missing argument for '" + FunctionEvaluator.DUMMY_BUILT_IN_FUNCTION_NAME_CAPUT + i + "'", dyad.getLastArg());
-                    }
-                    expression.getArguments().add(new ConstantNode(obj));
+            if (lStem.isList()) {
+                for (Object key : lStem.keySet()) {
+                    expression.getArguments().add(new ConstantNode(lStem.get(key)));
                 }
+
             } else {
-                //FunctionRecordInterface fRec = fRecord.getByArgCount(lStem.size());
-                for (String name : fRecord.getArgNames()) {
-                    Object object = lStem.get(name);
-                    if (object == null) {
-                        throw new BadArgException(APPLY_OP_KEY + " '" + fRecord.getName() + "' missing value for " + name, dyad.getLeftArgument());
+                if (isBuiltin) {
+                    for (int i = 0; i < lStem.size(); i++) {
+                        Object obj = lStem.get(FunctionEvaluator.DUMMY_BUILT_IN_FUNCTION_NAME_CAPUT + i);
+                        if (obj == null) {
+                            throw new BadArgException("missing argument for '" + FunctionEvaluator.DUMMY_BUILT_IN_FUNCTION_NAME_CAPUT + i + "'", dyad.getLastArg());
+                        }
+                        expression.getArguments().add(new ConstantNode(obj));
                     }
-                    expression.getArguments().add(new ConstantNode(object));
+                } else {
+                    //FunctionRecordInterface fRec = fRecord.getByArgCount(lStem.size());
+                    for (String name : fRecord.getArgNames()) {
+                        Object object = lStem.get(name);
+                        if (object == null) {
+                            throw new BadArgException(APPLY_OP_KEY + " '" + fRecord.getName() + "' missing value for " + name, dyad.getLeftArgument());
+                        }
+                        expression.getArguments().add(new ConstantNode(object));
+                    }
+
                 }
+            }
 
+            if (isOperator) {
+                if (expression instanceof Monad) {
+                    actualState.getOpEvaluator().evaluate((Monad) expression, actualState);
+                }
+                if (expression instanceof Dyad) {
+                    actualState.getOpEvaluator().evaluate((Dyad) expression, actualState);
+                }
+                return expression.getResult();
             }
+            return expression.evaluate(actualState);
         }
+        // so this is a scalar
+        Polyad polyad = new Polyad(fRecord.getName());
+        polyad.setBuiltIn(false);
+        polyad.addArgument(new ConstantNode(lArg));
+        return polyad.evaluate(actualState);
 
-        if (isOperator) {
-            if (expression instanceof Monad) {
-                actualState.getOpEvaluator().evaluate((Monad) expression, actualState);
-            }
-            if (expression instanceof Dyad) {
-                actualState.getOpEvaluator().evaluate((Dyad) expression, actualState);
-            }
-            return expression.getResult();
-        }
-        return expression.evaluate(actualState);
     }
-    // so this is a scalar
-    Polyad polyad = new Polyad(fRecord.getName());
-    polyad.setBuiltIn(false);
-    polyad.addArgument(new ConstantNode(lArg));
-    return polyad.evaluate(actualState);
-
-}
 
     /**
      * apply the argument to a single function. Note that the dyad here is passed along to make
@@ -1009,7 +1009,11 @@ a.⌆b.
 
     private void doIsA1(Dyad dyad, State state) {
         Object lhs = dyad.evalArg(0, state);
-
+        if (lhs instanceof AxisExpression) {
+            // If it's a stem with an axis, it is still a stem, get that
+            // and let the machinery do its work here.
+            lhs = ((AxisExpression) lhs).getStem();
+        }
         if (!(dyad.getRightArgument() instanceof VariableNode)) {
             List<String> source = dyad.getRightArgument().getSourceCode();
             String text;

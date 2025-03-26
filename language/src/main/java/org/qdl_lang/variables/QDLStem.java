@@ -355,9 +355,55 @@ public class QDLStem implements Map<String, Object>, Serializable {
     }
 
 
+    /**
+     * As per usual Java {@link Map#size()} contract, return axis 0 count
+     *
+     * @return
+     */
     @Override
     public int size() {
         return getQDLMap().size() + getQDLList().size();
+    }
+
+    /**
+     * Return count down to a given axis. This accepts {@link org.qdl_lang.util.aggregate.ProcessStemAxisRestriction#ALL_AXES}
+     * as well, which gives the count of every entry, i.e., the cardinality of the stem.
+     *
+     * @param axis
+     * @return
+     */
+    public long size(int axis) {
+        SizeOf s = new SizeOf(axis);
+        Object x = QDLAggregateUtil.process(this, s);
+        return s.size;
+    }
+
+    /*
+       b. :=[0,[0,1,2,3,4,5,6],{1,{10,11,12},2,3,4,5,6},[[0,1,2],[0,1,2]],4, true, 2/17]~{'a':['a','b','c']};
+       indices(b.)
+    [[0],[2],[4],[5],[6]
+     [1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[a,0],[a,1],[a,2],
+     [3,0,0],[3,0,1],[3,0,2],[3,1,0],[3,1,1],[3,1,2]]
+
+     Idiom is
+        while[ j∈[;size(b.) ]do[...
+     so changing contract for axis 0 breaks things badly.
+     */
+    public static class SizeOf extends AxisRestrictionIdentity {
+        Long size = 0L;
+
+        public SizeOf(int axis) {
+            this.axis = axis;
+        }
+
+        @Override
+        public Object getDefaultValue(List<Object> index, Object key, Object value) {
+            size++;
+            return value;
+        }
+        public Long getSize(){
+            return size;
+        }
     }
 
     @Override
@@ -1188,6 +1234,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
         /**
          * Flat list of all keys. Otherwise this returns a structured list of each
          * key in its proper location.
+         *
          * @return
          */
         public QDLList getAccumulator() {

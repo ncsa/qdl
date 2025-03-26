@@ -614,6 +614,20 @@ public class StatementTest extends AbstractQDLTester {
         assert getBooleanValue("ok", state) : "define statement variable visibility contract violated.";
     }
 
+    /**
+     * Test for https://github.com/ncsa/qdl/issues/103. Invoking return() inside the argument to the
+     * interpret function should actually just return the value. This is done inside a conditional to
+     * test that scope is immaterial too.
+     * @throws Throwable
+     */
+    public void testInterpretReturn() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok := 11 ≡ interpret('if[2^2<3^3][return(11);];');");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "define statement variable visibility contract violated.";
+    }
 /*
 tokens.:={'foo':{'bar':'baz'},'fnord':'woof'};
 at.:=tokens.;

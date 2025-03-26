@@ -89,18 +89,25 @@ public class StemKeys implements Set {
     @Override
     public Object[] toArray(Object[] a) {
         Object[] ooo;
-        if(a.length < listkeys.size()) {
+
+        if(a.length == size()) {
             ooo = a;
         }else{
-            ooo = new Object[listkeys.size()];
+            ooo = new Object[size()];
         }
         int i = 0;
         for(Object kkk : listkeys) {
+            ooo[i++] = kkk;
+        }
+        for(Object kkk : stemKeys) {
                 ooo[i++] = kkk;
         }
         return ooo;
     }
-
+/*
+status.:=[{'client_id':42, 'status':'active'},{'client_id':11, 'status':'inactive'},{'client_id':99, 'status':'suspended'},{'client_id':17, 'status':'active'}];
+status\*\((k,v.)→v.'status'≡'active')
+ */
     @Override
     public boolean add(Object o) {
         if (o instanceof Long) {

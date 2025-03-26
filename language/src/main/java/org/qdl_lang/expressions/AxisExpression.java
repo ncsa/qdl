@@ -1,6 +1,7 @@
 package org.qdl_lang.expressions;
 
 import org.qdl_lang.exceptions.BadArgException;
+import org.qdl_lang.exceptions.QDLExceptionWithTrace;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
@@ -35,7 +36,18 @@ public class AxisExpression extends ExpressionImpl {
 
     @Override
     public Object evaluate(State state) {
-        Object arg0 = evalArg(0, state);
+        Object arg0 = null;
+        if(getArgAt(0) instanceof VariableNode) {
+            VariableNode vNode = (VariableNode)getArgAt(0);
+            String varName = vNode.getVariableReference();
+            if (vNode.getVariableReference().endsWith(QDLStem.STEM_INDEX_MARKER)) {
+                arg0 = state.getValue(varName);
+            }else{
+                arg0 = state.getValue(varName + QDLStem.STEM_INDEX_MARKER);
+            }
+        }else {
+             arg0 = evalArg(0, state);
+        }
         if (arg0 instanceof QDLStem) {
             setStem((QDLStem) arg0);
         } else {

@@ -1,6 +1,7 @@
 package org.qdl_lang.expressions;
 
 import org.qdl_lang.evaluate.StemEvaluator;
+import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.exceptions.QDLExceptionWithTrace;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.Constant;
@@ -125,11 +126,11 @@ d  |  [0,      2,       0]
              */
             indexArg.swri.evaluate(state);
             if (!(indexArg.swri.getResult() instanceof QDLStem)) {
-                throw new QDLExceptionWithTrace("argument for stem extraction must be a list", indexArg.swri);
+                throw new BadArgException("stem index for extraction " + StemExtractionNode.EXTRACT_LIST + " must be a list", indexArg.swri);
             }
             QDLStem args = (QDLStem) indexArg.swri.getResult();
             if (!args.isList()) {
-                throw new QDLExceptionWithTrace("argument for stem extraction must be a list", indexArg.swri);
+                throw new BadArgException("stem index for extraction " + StemExtractionNode.EXTRACT_LIST + " must be a list", indexArg.swri);
             }
             for (Object key : args.keySet()) {
                 IndexArg indexArg1 = new IndexArg();

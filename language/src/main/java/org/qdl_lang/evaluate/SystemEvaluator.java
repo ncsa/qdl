@@ -446,20 +446,20 @@ public class SystemEvaluator extends AbstractEvaluator {
 
             case BREAK:
                 if (polyad.isSizeQuery()) {
-                    polyad.setResult(new int[]{0,1});
+                    polyad.setResult(new int[]{0, 1});
                     polyad.setEvaluated(true);
                     return true;
                 }
                 boolean doBreak = true;
-                if(0 == polyad.getArgCount()){
+                if (0 == polyad.getArgCount()) {
                     // niladic break -- just break
                 }
-                if(1 == polyad.getArgCount()){
-                     Object output = polyad.evalArg(0,state);
-                     if(!(output instanceof Boolean)){
-                         throw new BadArgException(BREAK + " requires a boolean as its argument", polyad.getArgAt(0));
-                     }
-                     doBreak = (Boolean)output;
+                if (1 == polyad.getArgCount()) {
+                    Object output = polyad.evalArg(0, state);
+                    if (!(output instanceof Boolean)) {
+                        throw new BadArgException(BREAK + " requires a boolean as its argument", polyad.getArgAt(0));
+                    }
+                    doBreak = (Boolean) output;
                 }
                 if (1 < polyad.getArgCount()) {
                     throw new ExtraArgException(BREAK + " takes at most an argument", polyad.getArgAt(1));
@@ -468,7 +468,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 polyad.setEvaluated(true);
                 polyad.setResultType(Constant.BOOLEAN_TYPE);
                 polyad.setResult(doBreak);
-                if(doBreak) {
+                if (doBreak) {
                     throw new BreakException();
                 }
                 return true;
@@ -489,20 +489,20 @@ public class SystemEvaluator extends AbstractEvaluator {
                 return true;
             case CONTINUE:
                 if (polyad.isSizeQuery()) {
-                    polyad.setResult(new int[]{0,1});
+                    polyad.setResult(new int[]{0, 1});
                     polyad.setEvaluated(true);
                     return true;
                 }
                 boolean doContinue = false;
-                if(0 == polyad.getArgCount()){
+                if (0 == polyad.getArgCount()) {
                     doContinue = true;
                 }
-                if( 1== polyad.getArgCount()){
-                    Object output = polyad.evalArg(0,state);
-                    if(!(output instanceof Boolean)){
+                if (1 == polyad.getArgCount()) {
+                    Object output = polyad.evalArg(0, state);
+                    if (!(output instanceof Boolean)) {
                         throw new BadArgException(CONTINUE + " require an boolean as its argument", polyad.getArgAt(0));
                     }
-                    doContinue = (Boolean)output;
+                    doContinue = (Boolean) output;
                 }
                 if (1 < polyad.getArgCount()) {
                     throw new ExtraArgException(CONTINUE + " does not take an argument", polyad.getArgAt(0));
@@ -510,7 +510,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 polyad.setEvaluated(true);
                 polyad.setResultType(Constant.BOOLEAN_TYPE);
                 polyad.setResult(doContinue);
-                if(doContinue) {
+                if (doContinue) {
                     throw new ContinueException();
                 }
                 return true;
@@ -886,6 +886,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     /**
      * Module remove works ONLY for old modules. New system uses unload.
+     *
      * @param polyad
      * @param state
      */
@@ -1000,14 +1001,17 @@ public class SystemEvaluator extends AbstractEvaluator {
         int axis = 0; // default
         boolean hasAxisExpression = arg1 instanceof AxisExpression;
         AxisExpression ax = null;
+        boolean isStar = false;
         QDLStem stemVariable;
-        if(hasAxisExpression) {
+        if (hasAxisExpression) {
             ax = (AxisExpression) arg1;
-            if(!ax.isStar()) {
+            if (ax.isStar()) {
+                isStar = true;
+            } else {
                 axis = ax.getAxis().intValue();
             }
-            stemVariable =  ax.getStem();
-        }else{
+            stemVariable = ax.getStem();
+        } else {
             stemVariable = (QDLStem) arg1;
         }
 
@@ -1029,7 +1033,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             }
             // Special case. Axis expression and has star as the axis ==> reduce all. This uses
             // the QDLAggregate Util and is way simpler than the walker below.
-            if(hasAxisExpression && ax.isStar()){
+            if (hasAxisExpression && isStar) {
                 doReduceAll(polyad, f, state, stemVariable);
                 return;
             }
@@ -1056,11 +1060,16 @@ public class SystemEvaluator extends AbstractEvaluator {
 
         if (!hasAxisExpression && polyad.getArgCount() == 3) {
             Object axisObj = polyad.evalArg(2, state);
-            checkNull(axisObj, polyad.getArgAt(2));
-            if (!isLong(axisObj)) {
-                throw new BadArgException("third argument of " + (doReduce ? REDUCE : EXPAND) + ", the axis, must be an integer", polyad.getArgAt(2));
+            if (axisObj instanceof AllIndices) {
+                isStar = true;
+            } else {
+                checkNull(axisObj, polyad.getArgAt(2));
+
+                if (!isLong(axisObj)) {
+                    throw new BadArgException("third argument of " + (doReduce ? REDUCE : EXPAND) + ", the axis, must be an integer", polyad.getArgAt(2));
+                }
+                axis = ((Long) axisObj).intValue();
             }
-            axis = ((Long) axisObj).intValue();
         }
 
         if (stemVariable.size() == 0) {
@@ -1094,7 +1103,8 @@ public class SystemEvaluator extends AbstractEvaluator {
             return;
         }
 // @*⊙n(3,3,[;9])`*
-        if(doReduce && hasAxisExpression && ax.isStar()){
+        //if(doReduce && hasAxisExpression && ax.isStar()){
+        if (doReduce && isStar) {
             doReduceAll(polyad, getOperator(state, frn, 2), state, stemVariable);
             return;
         }
@@ -1134,11 +1144,12 @@ public class SystemEvaluator extends AbstractEvaluator {
         Object out = null;
         ExpressionImpl f;
         State state;
+
         @Override
         public Object getDefaultValue(List<Object> index, Object key, Object value) {
-            if(out == null) {
+            if (out == null) {
                 out = value;
-            }else {
+            } else {
                 ConstantNode arg1 = new ConstantNode(out);
                 ConstantNode arg2 = new ConstantNode(value);
                 f.getArguments().clear();
@@ -1150,6 +1161,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             return super.getDefaultValue(index, key, value);
         }
     }
+
     public class AxisReduce implements StemUtility.StemAxisWalkerAction1 {
         ExpressionImpl operator;
         State state;
@@ -1248,9 +1260,9 @@ public class SystemEvaluator extends AbstractEvaluator {
             ModuleExpression moduleExpression = (ModuleExpression) polyad.getArguments().get(0);
             Module module;
             Object object = state.getValue(moduleExpression.getAlias());
-            if(object instanceof Module){
+            if (object instanceof Module) {
                 module = (Module) object;
-            }else {
+            } else {
                 module = state.getMInstances().getModule(new XKey(moduleExpression.getAlias()));
             }
             if (module == null) {
@@ -1270,7 +1282,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             argName = ((VariableNode) polyad.getArguments().get(0)).getVariableReference();
             gotOne = true;
         } else {
-            if ((!gotOne) && (polyad.getArguments().get(0) instanceof ExpressionImpl || polyad.getArguments().get(0) instanceof ConstantNode)) {
+            if ((!gotOne) && (polyad.getArguments().get(0) instanceof ExpressionImpl || polyad.getArguments().get(0) instanceof ExpressionNode)) {
                 String out = InputFormUtil.inputForm(polyad.evalArg(0, state));
                 if (out == null) {
                     out = "";
@@ -1279,7 +1291,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 polyad.setResultType(Constant.STRING_TYPE);
                 polyad.setResult(out);
                 return;
-            }else{
+            } else {
             }
         }
 
@@ -1376,6 +1388,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
 
     public static final String SHEBANG = "#!";
+
     private void doCheckSyntax(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{1});
@@ -2295,7 +2308,7 @@ public class SystemEvaluator extends AbstractEvaluator {
         String resourceName = arg1.toString();
         QDLScript script;
         // stash stack trace elements, but don't do anything unless there is an error, then format result
-        AbstractState.QDLStackTraceElement stackTraceElement = new AbstractState.QDLStackTraceElement(resourceName,polyad.getArgAt(0).getTokenPosition());
+        AbstractState.QDLStackTraceElement stackTraceElement = new AbstractState.QDLStackTraceElement(resourceName, polyad.getArgAt(0).getTokenPosition());
         state.getScriptStack().add(stackTraceElement);
         try {
             script = resolveScript(resourceName, paths, state);
@@ -2427,8 +2440,8 @@ public class SystemEvaluator extends AbstractEvaluator {
         polyad.setEvaluated(true);
         // set the message in the exception to the message from the error, so if it happens in the course of execution
         // they get a message
-        if(stateCode == TryCatch.RESERVED_ASSERTION_CODE){
-            throw new AssertionException(message,  stateStem);
+        if (stateCode == TryCatch.RESERVED_ASSERTION_CODE) {
+            throw new AssertionException(message, stateStem);
         }
         throw new RaiseErrorException(polyad, message, stateCode, stateStem);
     }
@@ -2752,7 +2765,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             // QDLModules create the local state, java modules assume the state is exactly the local state.
             // Get a new instance and then set the state to the local state later for Java modules.
             State newModuleState = null;
-            newModuleState = state.newSelectiveState(null,true,true,true, true);
+            newModuleState = state.newSelectiveState(null, true, true, true, true);
             newModuleState.setModuleState(true);
 
 /*
@@ -2771,14 +2784,14 @@ public class SystemEvaluator extends AbstractEvaluator {
                 newModuleState.setModuleState(true);
             }*/
             //State newModuleState = StateUtils.clone(state).newLocalState(state);
-            Module newInstance ;// = m.newInstance((m instanceof JavaModule) ? null : state);
+            Module newInstance;// = m.newInstance((m instanceof JavaModule) ? null : state);
             //Module newInstance = m.newInstance(null);
             if (m instanceof JavaModule) {
                 //State newModuleState = state.newLocalState(state);
                 newInstance = m.newInstance(null);
                 ((JavaModule) newInstance).init(newModuleState);
-            }else{
-                 newInstance = m.newInstance(newModuleState);
+            } else {
+                newInstance = m.newInstance(newModuleState);
             }
             newInstance.setInheritanceMode(ModuleEvaluator.IMPORT_STATE_SHARE_VALUE); // default for old system
             if (alias == null) {
@@ -2855,7 +2868,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             runner = p.execute(stringReader);
         } catch (Throwable t) {
             // Fix for https://github.com/ncsa/qdl/issues/103
-            if(t instanceof ReturnException){
+            if (t instanceof ReturnException) {
                 ReturnException re = (ReturnException) t;
                 // they've set the value directly.
                 polyad.setEvaluated(true);
@@ -3060,7 +3073,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 checkNull(flag, polyad.getArgAt(1));
                 if (flag instanceof Boolean) {
                     prettyPrintForStems = (Boolean) flag;
-                } else{
+                } else {
                     throw new BadArgException("the second argument to " + SAY_FUNCTION + " requires a boolean", polyad.getArgAt(1));
                 }
             }

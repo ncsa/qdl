@@ -2310,7 +2310,7 @@ public class ParserTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "x. := sin(n(2,3,4,[|-pi()/2;pi()/2; 24|]))^2 + cos(n(2,3,4,[|-pi()/2;pi()/2; 24|]))^2;");
-        addLine(script, "y := reduce(@+, reduce(@+, reduce(@+, x.)));");  // add em all up
+        addLine(script, "y := @+ ⊙ x`*;");  // add em all up
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert areEqual(getBDValue("y", state), new BigDecimal("24.0000000"));
@@ -2406,6 +2406,11 @@ public class ParserTest extends AbstractQDLTester {
         assert ok : "Was able to request an slice with increment of zero";
     }
 
+    /**
+     * Tests for closed slice, but the division count is negative, so this should raise
+     * an error.
+     * @throws Throwable
+     */
     public void testClosedSliceIllegalArg() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();

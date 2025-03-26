@@ -11,6 +11,8 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.Statement;
 import org.qdl_lang.util.aggregate.AxisRestrictionIdentity;
+import org.qdl_lang.util.aggregate.ProcessStemAxisRestriction;
+import org.qdl_lang.util.aggregate.QDLAggregateUtil;
 import org.qdl_lang.variables.*;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import net.sf.json.JSON;
@@ -23,6 +25,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import static org.qdl_lang.state.VariableState.var_regex;
+import static org.qdl_lang.util.aggregate.ProcessStemAxisRestriction.ALL_AXES;
 import static org.qdl_lang.variables.Constant.*;
 import static org.qdl_lang.variables.QDLStem.STEM_INDEX_MARKER;
 import static org.qdl_lang.variables.StemUtility.LAST_AXIS_ARGUMENT_VALUE;
@@ -168,7 +171,7 @@ public class StemEvaluator extends AbstractEvaluator {
     public String[] getFunctionNames() {
         if (fNames == null) {
             fNames = new String[]{
-                //    MAP,
+                    //    MAP,
                     EXCISE,
                     HAS_KEYS,
                     DISPLAY,
@@ -855,11 +858,11 @@ public class StemEvaluator extends AbstractEvaluator {
         if (hasAxisExpression) {
             AxisExpression ae = (AxisExpression) arg0;
             stem = ae.getStem();
-            if(ae.isStar()){
+            if (ae.isStar()) {
                 // In this case, the effect is to nullify the argument.
                 // the user is asking for all axes.
                 hasAxisExpression = false;
-            }else {
+            } else {
                 axis = ae.getAxis();
             }
         } else {
@@ -1016,13 +1019,14 @@ public class StemEvaluator extends AbstractEvaluator {
             }
         }
     }
+
     protected void forEachRecursion2(QDLStem output,
-                                    ExpressionImpl f,
-                                    State state,
-                                    Object[] args,
-                                    IndexList indexList,
-                                    ArrayList values,
-                                    int currentIndex) {
+                                     ExpressionImpl f,
+                                     State state,
+                                     Object[] args,
+                                     IndexList indexList,
+                                     ArrayList values,
+                                     int currentIndex) {
 
         while (!isStem(args[currentIndex])) {
             values.add(args[currentIndex]); // we can add scalars to the end of this, but it will recurse on the next stem
@@ -1038,8 +1042,8 @@ public class StemEvaluator extends AbstractEvaluator {
         ArrayList allIndices;
         boolean isAxisExpression = args[currentIndex] instanceof AxisExpression;
         AxisExpression ae = null;
-        if(isAxisExpression) {
-             ae = (AxisExpression) args[currentIndex];
+        if (isAxisExpression) {
+            ae = (AxisExpression) args[currentIndex];
         }
 
         if (isAxisExpression && !ae.isStar()) {
@@ -1072,6 +1076,7 @@ public class StemEvaluator extends AbstractEvaluator {
             }
         }
     }
+
     // Processor that replaces each stem at a given level with the constant "foo".
     public static class ARForEachImpl extends AxisRestrictionIdentity {
         public ARForEachImpl(ExpressionImpl f, State state, int axis) {
@@ -1079,11 +1084,12 @@ public class StemEvaluator extends AbstractEvaluator {
             this.state = state;
             this.axis = axis;
         }
+
         ExpressionImpl f;
         State state;
 
         @Override
-        public Object getDefaultValue(List<Object> index,Object key, Object value) {
+        public Object getDefaultValue(List<Object> index, Object key, Object value) {
             ArgList argList1 = new ArgList();
             argList1.add(new ConstantNode(value));
             f.setArguments(argList1);
@@ -1765,6 +1771,16 @@ f(x.)→x.0+x.1;
         if (isSet(arg)) {
             size = ((QDLSet) arg).size();
         }
+        // Do https://github.com/ncsa/qdl/issues/108
+        if (arg instanceof AxisExpression) {
+            // get size along an axis
+            AxisExpression ae = (AxisExpression) arg;
+            Long count = ae.getStem().size(ae.isStar()? ALL_AXES :  ae.getAxis().intValue());
+            polyad.setResult(count);
+            polyad.setResultType(LONG_TYPE);
+            polyad.setEvaluated(true);
+            return;
+        }
         if (isStem(arg)) {
             size = ((QDLStem) arg).size();
         }
@@ -1776,6 +1792,30 @@ f(x.)→x.0+x.1;
         polyad.setEvaluated(true);
     }
 
+    public static class SizeOf extends AxisRestrictionIdentity {
+        Long out = 0L;
+
+        public SizeOf(int axis) {
+            this.axis = axis;
+        }
+
+        @Override
+        public Object getDefaultValue(List<Object> index, Object key, Object value) {
+            return super.getDefaultValue(index, key, value);
+        }
+
+        @Override
+        public Object process(List index, Object key, QDLStem value) {
+            out++;
+            return value.size();
+        }
+
+        @Override
+        public Object process(List index, Object key, Long value) {
+            out++;
+            return value;
+        }
+    }
 
     static final int all_keys = 0;
     static final int only_stems = 1;
@@ -2407,11 +2447,13 @@ f(x.)→x.0+x.1;
         }
         Object arg1 = polyad.evalArg(0, state);
         checkNull(arg1, polyad.getArgAt(0));
+        Boolean isList;
         if (!isStem(arg1)) {
-            throw new BadArgException(IS_LIST + " requires stem as its first argument", polyad.getArgAt(0));
+            //throw new BadArgException(IS_LIST + " requires stem as its first argument", polyad.getArgAt(0));
+            isList = Boolean.FALSE;
+        } else {
+            isList = ((QDLStem) arg1).isList();
         }
-        QDLStem stemVariable = (QDLStem) arg1;
-        Boolean isList = stemVariable.isList();
         polyad.setResult(isList);
         polyad.setResultType(BOOLEAN_TYPE);
         polyad.setEvaluated(true);
@@ -3117,10 +3159,25 @@ z. :=  join3(q.,w.)
 
         Object arg0 = polyad.evalArg(0, state);
         checkNull(arg0, polyad.getArgAt(0), state);
-        if (!isStem(arg0)) {
-            throw new BadArgException(TRANSPOSE + " requires a stem as its first argument", polyad.getArgAt(0));
+        AxisExpression ae = null;
+        boolean hasAxisExpression = false;
+        QDLStem stem;
+        Long axis = null;
+        if (arg0 instanceof AxisExpression) {
+            ae = (AxisExpression) arg0;
+            stem = ae.getStem();
+            if (ae.isStar()) {
+                hasAxisExpression = false;
+            } else {
+                axis = ae.getAxis();
+                hasAxisExpression = true;
+            }
+        } else {
+            if (!isStem(arg0)) {
+                throw new BadArgException(TRANSPOSE + " requires a stem as its first argument", polyad.getArgAt(0));
+            }
+            stem = (QDLStem) arg0;
         }
-        QDLStem stem = (QDLStem) arg0;
 
         QDLStem oldIndices = stem.indicesByRank(-1L);
         // kludge, assume that the rank of all at the last axis is the same.
@@ -3139,14 +3196,61 @@ z. :=  join3(q.,w.)
         OpenSliceNode sliceNode = new OpenSliceNode(polyad.getTokenPosition());
         sliceNode.getArguments().add(new ConstantNode(0L, LONG_TYPE));
         sliceNode.getArguments().add(new ConstantNode(Integer.toUnsignedLong(rank), LONG_TYPE));
+        Object arg2 = null;
+        boolean arg2ok = false;
+        QDLStem stem1 = null;
+        boolean hasArg2 = polyad.getArgCount() == 2;
+        if (!hasAxisExpression && hasArg2) {
+            arg2 = polyad.evalArg(1, state);
+            checkNull(arg2, polyad.getArgAt(1), state);
+            if (arg2 instanceof Long) {
+                axis = (Long) arg2;
+                hasAxisExpression = true; //either it is set here or comes with axis operator
+                arg2ok = true;
+            }
+        }
+        // handle case that there is an axis
+        if (hasAxisExpression) {
+            if (axis == 0L) {
+                // They are requesting essentially the identity permutation, so don't jump through hoops.
+                polyad.setResult(stem);
+                polyad.setResultType(STEM_TYPE);
+                polyad.setEvaluated(Boolean.TRUE);
+                return;
+            }
+            stem1 = new QDLStem();
+            if (axis < 0) {
+                long newArg = rank + axis;
+                if (newArg < 0) {
+                    throw new IndexError("the requested axis of " + axis + " is not valid for a stem of rank " + rank, polyad.getArgAt(1));
+                }
+                stem1.listAdd(newArg);
+            } else {
+                if (rank <= axis) {
+                    throw new IndexError("the requested axis of " + axis + " is not valid for a stem of rank " + rank, polyad.getArgAt(1));
+                }
+                stem1.listAdd(axis);
+            }
+            arg2ok = true;
+            hasArg2 = true;
+        } else {
+            if (isStem(arg2)) {
+                stem1 = (QDLStem) arg2;
+                arg2ok = true;
+            }
+        }
+        if (hasArg2) {
+            // Can finally decide whether or not second argument is a dud.
+            if (!arg2ok) {
+                throw new BadArgException(TRANSPOSE + " requires an axis or stem of them as its second argument", polyad.getArgAt(1));
+            }
+/*
+             arg2 = polyad.evalArg(1, state);
+            checkNull(arg2, polyad.getArgAt(1), state);
+             arg2ok = false;
+            if (isLong(arg2)) {
+                Long longArg = (Long) arg2;
 
-        if (polyad.getArgCount() == 2) {
-            Object arg1 = polyad.evalArg(1, state);
-            checkNull(arg1, polyad.getArgAt(1), state);
-            QDLStem stem1 = null;
-            boolean arg2ok = false;
-            if (isLong(arg1)) {
-                Long longArg = (Long) arg1;
                 if (longArg == 0L) {
                     // They are requesting essentially the identity permutation, so don't jump through hoops.
                     polyad.setResult(stem);
@@ -3154,6 +3258,7 @@ z. :=  join3(q.,w.)
                     polyad.setEvaluated(Boolean.TRUE);
                     return;
                 }
+
                 stem1 = new QDLStem();
                 if (longArg < 0) {
                     long newArg = rank + longArg;
@@ -3165,17 +3270,18 @@ z. :=  join3(q.,w.)
                     if (rank <= longArg) {
                         throw new IndexError("the requested axis of " + longArg + " is not valid for a stem of rank " + rank, polyad.getArgAt(1));
                     }
-                    stem1.listAdd(arg1);
+                    stem1.listAdd(arg2);
                 }
                 arg2ok = true;
             }
-            if (isStem(arg1)) {
-                stem1 = (QDLStem) arg1;
+            if (isStem(arg2)) {
+                stem1 = (QDLStem) arg2;
                 arg2ok = true;
             }
             if (!arg2ok) {
                 throw new BadArgException(TRANSPOSE + " requires an axis or stem of them as its second argument", polyad.getArgAt(1));
             }
+*/
             // If the second argument is p., then the new reshuffing is
             // p. ~ ~ exclude_keys([;rank], p.)
             Polyad excludeKeys = new Polyad(EXCLUDE_KEYS);

@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Actua implementation of {@link FunctionRecordInterface}. Cf. with {@link FR_WithState}
+ * which is a facade for this with added state.
  * <p>Created by Jeff Gaynor<br>
  * on 1/22/20 at  10:48 AM
  */

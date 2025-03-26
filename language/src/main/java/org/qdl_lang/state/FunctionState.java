@@ -137,6 +137,15 @@ public abstract class FunctionState extends VariableState {
         return list;
     }
 
+    /**
+     * Takes the name and arg count and resolves across extrinsics, modules, intrinsics and returns the
+     * {@link FR_WithState} with a pointer to this state object, since at the point of invocation, that is
+     * the right one vis-a-vis scope considerations.
+     * @param name
+     * @param argCount
+     * @param checkForDuplicates
+     * @return
+     */
     public FR_WithState resolveFunction(String name, int argCount, boolean checkForDuplicates) {
         if (name == null || name.isEmpty()) {
             throw new NFWException(("Internal error: The function has not been named"));

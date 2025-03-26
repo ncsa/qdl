@@ -144,6 +144,15 @@ public class QDLAggregateUtil {
         return newValue;
     }
 
+    /**
+     * Processes a value in a stem, i.e., a scalar
+     * @param processStemValues
+     * @param index
+     * @param key
+     * @param value
+     * @param currentDepth
+     * @return
+     */
     private static Object processStemValue(ProcessStemAxisRestriction processStemValues,
                                            List index,
                                            Object key,
@@ -216,7 +225,8 @@ public class QDLAggregateUtil {
         for (Object key : inStem.keySet()) {
             Object value = inStem.get(key);
             try {
-                if(currentDepth == processRankRestriction.getAxis()){
+                if(currentDepth == processRankRestriction.getAxis()
+                || processRankRestriction.getAxis() == ProcessStemAxisRestriction.ALL_AXES && !((value instanceof QDLStem))) {
                     outStem.putLongOrString(key, processStemValue(processRankRestriction, index, key, value, currentDepth + 1));
                 }else{
                     if(value instanceof QDLStem){
