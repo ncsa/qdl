@@ -7,6 +7,7 @@ import org.qdl_lang.exceptions.NamespaceException;
 import org.qdl_lang.exceptions.QDLIllegalAccessException;
 import org.qdl_lang.exceptions.UndefinedFunctionException;
 import org.qdl_lang.expressions.Polyad;
+import org.qdl_lang.expressions.UserFunction;
 import org.qdl_lang.module.MIStack;
 import org.qdl_lang.module.MIWrapper;
 import org.qdl_lang.module.MTStack;
@@ -75,12 +76,17 @@ public abstract class FunctionState extends VariableState {
     FStack<? extends FTable<? extends FKey, ? extends FunctionRecordInterface>> fStack = new FStack();
 
     /**
-     * Convenience, just looks up name and arg count
+     * Convenience, just looks up name and arg count. If this is a {@link UserFunction}, then any existing
+     * {@link FR_WithState} is just returned since the actual lookup is quite expensive.
      *
-     * @param polyad
+     * @param polyad - polyad
+     * @param checkForDuplicates - check for duplicates across other modules
      * @return
      */
     public FR_WithState resolveFunction(Polyad polyad, boolean checkForDuplicates) {
+        if(polyad instanceof UserFunction && (((UserFunction) polyad).hasFR_WithState())){
+            return (FR_WithState) ((UserFunction) polyad).getFunctionRecord();
+        }
         return resolveFunction(polyad.getName(), polyad.getArgCount(), checkForDuplicates);
     }
 
@@ -131,7 +137,6 @@ public abstract class FunctionState extends VariableState {
             }
             for (FunctionRecordInterface fr : wrapper.getModule().getState().getFTStack().getByAllName(name)) {
                 list.add(new FR_WithState(fr.clone(), wrapper.getModule().getState(), true));
-                // list.add(new FR_WithState(fr, wrapper.getModule().getState(), true));
             }
         }
         return list;
@@ -141,9 +146,9 @@ public abstract class FunctionState extends VariableState {
      * Takes the name and arg count and resolves across extrinsics, modules, intrinsics and returns the
      * {@link FR_WithState} with a pointer to this state object, since at the point of invocation, that is
      * the right one vis-a-vis scope considerations.
-     * @param name
-     * @param argCount
-     * @param checkForDuplicates
+     * @param name - name of the function
+     * @param argCount - number of arguments
+     * @param checkForDuplicates - check for like-named functions in other modules
      * @return
      */
     public FR_WithState resolveFunction(String name, int argCount, boolean checkForDuplicates) {

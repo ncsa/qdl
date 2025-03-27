@@ -1834,11 +1834,25 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok", state);
     }
 
+    public void testBadForEach3() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "w(x,y,z)->x^2+y^2 + z^3;");
+        addLine(script, "a. := for_each(2@w, n(5),n(7),n(9));");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        boolean good = false;
+        try {
+            interpreter.execute(script.toString());
+        }catch(UndefinedFunctionException e) {
+            good = true;
+        }
+        assert good : "Was able to invoke for_each on function with wrong airty";
+    }
     public void testForEach3() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "w(x,y,z)->x^2+y^2 + z^3;");
-        addLine(script, "a. := for_each(@w, n(5),n(7),n(9));");
+        addLine(script, "a. := for_each(3@w, n(5),n(7),n(9));");
         // The test is that a.i.j.k == w(i,j,ka) testing all of them is a pain, so we test some
         addLine(script, "b.0 := a.0.0.0 == w(0,0,0);");
         addLine(script, "b.1 := a.1.1.1 == w(1,1,1);");
@@ -2404,6 +2418,54 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok1", state) : StemEvaluator.SIZE + " failed for axis 1";
         assert getBooleanValue("ok2", state) : StemEvaluator.SIZE + " failed for axis 2";
         assert getBooleanValue("ok3", state) : StemEvaluator.SIZE + " failed for axis 3";
+    }
+
+    public void testForEachOnAxes() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "w. ≔ n(2,3,4,[;24]);");
+        addLine(script, "f(x,y)→rank(x)+rank(y); ");
+        addLine(script, "a. ≔ 2@f∀[w`1,w`2];");
+        addLine(script, "ok0 ≔ (5 ≡ rank(a.)) ∧ (⊗∧⊙(a.≡1)`*) ; "); // rank is 5, every element is a 1
+        addLine(script, "b. ≔ 2@f∀[w`0,w`0];");
+        addLine(script, "ok1 ≔ (2 ≡ rank(b.)) ∧ (⊗∧⊙(b.≡4)`*) ; "); // rank is 2, every element is a 4
+        addLine(script, "c. ≔ 2@f∀[w`0,w`1];");
+        addLine(script, "ok2 ≔ (3 ≡ rank(c.)) ∧ (⊗∧⊙(c.≡3)`*) ; "); // rank is 3, every element is a 3
+        addLine(script, "d. ≔ 2@f∀[w`(¯1),w`(¯1)];"); // Same as specifying no axes. Should reduce all to scalars
+        addLine(script, "ok3 ≔ (6 ≡ rank(d.)) ∧ (⊗∧⊙(d.≡0)`*) ; "); // rank is 6, every element is a 0
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "∀ failed for axes 1,2";
+        assert getBooleanValue("ok1", state) : "∀ failed for axes 0,0";
+        assert getBooleanValue("ok2", state) : "∀ failed for axes 0,1";
+        assert getBooleanValue("ok3", state) : "∀ failed for axes -1,-1";
+    }
+
+    /**
+     * regression test to show that LHS λ function is processed correctly.
+     * @throws Throwable
+     */
+    public void testForEachOnAxesWithLambda() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "w. ≔ n(2,3,4,[;24]);");
+        addLine(script, "f(x,y)→rank(x)+rank(y); ");
+        addLine(script, "a. ≔ ((x,y)→rank(x)+rank(y))∀[w`1,w`2];");
+        addLine(script, "ok0 ≔ (5 ≡ rank(a.)) ∧ (⊗∧⊙(a.≡1)`*) ; "); // rank is 5, every element is a 1
+        addLine(script, "b. ≔ ((x,y)→rank(x)+rank(y))∀[w`0,w`0];");
+        addLine(script, "ok1 ≔ (2 ≡ rank(b.)) ∧ (⊗∧⊙(b.≡4)`*) ; "); // rank is 2, every element is a 4
+        addLine(script, "c. ≔ ((x,y)→rank(x)+rank(y))∀[w`0,w`1];");
+        addLine(script, "ok2 ≔ (3 ≡ rank(c.)) ∧ (⊗∧⊙(c.≡3)`*) ; "); // rank is 3, every element is a 3
+        addLine(script, "d. ≔ ((x,y)→rank(x)+rank(y))∀[w`(¯1),w`(¯1)];"); // Same as specifying no axes. Should reduce all to scalars
+        addLine(script, "ok3 ≔ (6 ≡ rank(d.)) ∧ (⊗∧⊙(d.≡0)`*) ; "); // rank is 6, every element is a 0
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "∀ with λ failed for axes 1,2";
+        assert getBooleanValue("ok1", state) : "∀ with λ failed for axes 0,0";
+        assert getBooleanValue("ok2", state) : "∀ with λ failed for axes 0,1";
+        assert getBooleanValue("ok3", state) : "∀ with λ failed for axes -1,-1";
     }
 
     /**

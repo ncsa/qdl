@@ -9,6 +9,7 @@ import org.qdl_lang.vfs.VFSEntry;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import org.apache.commons.codec.binary.Base32;
 import org.qdl_lang.functions.*;
+import software.amazon.awssdk.services.mq.model.User;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
@@ -75,6 +76,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * if so, it evaluates it and returns true. This function actually just dispatches it
      * to {@link #dispatch(Polyad, State)} where the work is done and manages putting better
      * trace information in if there is a failure.
+     *
      * @param polyad
      * @param state
      * @return
@@ -92,6 +94,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
 
     /**
      * Does the actual evaluation of the {@link Polyad}.
+     *
      * @param polyad
      * @param state
      * @return
@@ -253,9 +256,9 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param state
      */
     public static void process1(ExpressionImpl polyad,
-                            fPointer pointer,
-                            String name,
-                            State state) {
+                                fPointer pointer,
+                                String name,
+                                State state) {
         if (polyad.getArgCount() == 0) {
             throw new MissingArgException(name + " requires at least 1 argument", polyad);
         }
@@ -340,9 +343,9 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param state
      */
     public static void process2(ExpressionImpl polyad,
-                            fPointer pointer,
-                            String name,
-                            State state
+                                fPointer pointer,
+                                String name,
+                                State state
     ) {
         process2(polyad, pointer, name, state, false);
     }
@@ -370,10 +373,10 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param optionalArgs
      */
     public static void process2(ExpressionImpl polyad,
-                            fPointer pointer,
-                            String name,
-                            State state,
-                            boolean optionalArgs) {
+                                fPointer pointer,
+                                String name,
+                                State state,
+                                boolean optionalArgs) {
         if (!optionalArgs && polyad.getArgCount() != 2) {
             throw new IllegalArgumentException(name + " requires 2 arguments");
         }
@@ -584,10 +587,10 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
       c. + d.
      */
     public static void processStem2(QDLStem outStem,
-                                QDLStem stem1,
-                                QDLStem stem2,
-                                fPointer pointer,
-                                ExpressionImpl polyad, boolean optionalArgs) {
+                                    QDLStem stem1,
+                                    QDLStem stem2,
+                                    fPointer pointer,
+                                    ExpressionImpl polyad, boolean optionalArgs) {
         CommonKeyIterator iterator = getCommonKeys(stem1, stem2);
         // now we loop -- note that we must still preserve which is the first and second argument
         // so all this is basically to figure out how to loop over what.
@@ -633,10 +636,10 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param optionalArguments
      */
     public static void process3(ExpressionImpl polyad,
-                            fPointer pointer,
-                            String name,
-                            State state,
-                            boolean optionalArguments) {
+                                fPointer pointer,
+                                String name,
+                                State state,
+                                boolean optionalArguments) {
         if (!optionalArguments && polyad.getArgCount() != 3) {
             throw new IllegalArgumentException(name + " requires at least 3  arguments");
         }
@@ -678,11 +681,11 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
 
 
     public static void processStem3(QDLStem outStem,
-                                QDLStem stem1,
-                                QDLStem stem2,
-                                QDLStem stem3,
-                                fPointer pointer,
-                                ExpressionImpl polyad, boolean optionalArgs) {
+                                    QDLStem stem1,
+                                    QDLStem stem2,
+                                    QDLStem stem3,
+                                    fPointer pointer,
+                                    ExpressionImpl polyad, boolean optionalArgs) {
         CommonKeyIterator iterator = getCommonKeys(stem1, stem2, stem3);
         // now we loop -- note that we must still preserve which is the first and second argument
         // so all this is basically to figure out how to loop over what.
@@ -890,65 +893,74 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             if (state.getMetaEvaluator().isBuiltInFunction(operatorName)) {
                 operator = new Polyad(operatorName);
             } else {
-                //FunctionRecord functionRecord = state.getFTStack().get(operatorName, nAry); // It's a dyad!
-                FR_WithState fr_withState = state.resolveFunction(operatorName, nAry, true); // It's a dyad!
-// ((x)→x^2)∀[;5]
-                if (fr_withState == null || fr_withState.functionRecord == null) {
-                    if(frNode.isAnonymous()){
-                       List<FunctionRecordInterface> anons =  state.getFTStack().getByAllName(frNode.getFunctionName());
-                       for(FunctionRecordInterface anon : anons){
-                           state.getFTStack().remove(anon.getKey());
-                       }
-                        throw new UndefinedFunctionException("no anonymous lambda function is defined with " + nAry + " arguments", null);
+                FunctionRecordInterface fri;
+                if (frNode instanceof DyadicFunctionReferenceNode) {
+                    DyadicFunctionReferenceNode dfr = (DyadicFunctionReferenceNode) frNode;
+                    dfr.evaluate(state);
+                    fri = dfr.getFunctionRecord();
+                } else {
+                    FR_WithState fr_withState = state.resolveFunction(operatorName, nAry, true); // It's a dyad!
+                    if (fr_withState == null || fr_withState.functionRecord == null) {
+                        if (frNode.isAnonymous()) {
+                            List<FunctionRecordInterface> anons = state.getFTStack().getByAllName(frNode.getFunctionName());
+                            for (FunctionRecordInterface anon : anons) {
+                                state.getFTStack().remove(anon.getKey());
+                            }
+                            throw new UndefinedFunctionException("no anonymous lambda function is defined with " + nAry + " arguments", null);
+                        }
+                        throw new UndefinedFunctionException("'" + operatorName + "' is not defined with " + nAry + " arguments", null);
                     }
-                    throw new UndefinedFunctionException("'" + operatorName + "' is not defined with " + nAry + " arguments", null);
+                    fri = fr_withState;
                 }
-                Polyad polyad1 = new Polyad(operatorName);
-                polyad1.setBuiltIn(false); // or it will not execute!
-                operator = polyad1;
+// ((x)→x^2)∀[;5]
+                UserFunction userFunction = new UserFunction(operatorName);
+                userFunction.setBuiltIn(false); // or it will not execute!
+                userFunction.setFunctionRecord(fri);
+                operator = userFunction;
             }
         }
         return operator;
     }
-/*
- if(frn instanceof DyadicFunctionReferenceNode){
-                ((DyadicFunctionReferenceNode) frn).evaluate(state);
-                //((DyadicFunctionReferenceNode) frn).evalArg(0,state);
-                Object ooo = ((DyadicFunctionReferenceNode) frn).getArgAt(0).getResult();
-                if(ooo instanceof Long){
-                    argCount = ((Long) ooo).intValue();
-                    if(argCount !=1 && argCount !=2){
-                        throw new ExtraArgException(PICK + " function reference has illegal valence, must be 1 or 2.", polyad.getArgAt(0));
+
+    /*
+     if(frn instanceof DyadicFunctionReferenceNode){
+                    ((DyadicFunctionReferenceNode) frn).evaluate(state);
+                    //((DyadicFunctionReferenceNode) frn).evalArg(0,state);
+                    Object ooo = ((DyadicFunctionReferenceNode) frn).getArgAt(0).getResult();
+                    if(ooo instanceof Long){
+                        argCount = ((Long) ooo).intValue();
+                        if(argCount !=1 && argCount !=2){
+                            throw new ExtraArgException(PICK + " function reference has illegal valence, must be 1 or 2.", polyad.getArgAt(0));
+                        }
+                    }else{
+                        throw new ExtraArgException(PICK + " function reference has non-integer valence", polyad.getArgAt(0));
                     }
                 }else{
-                    throw new ExtraArgException(PICK + " function reference has non-integer valence", polyad.getArgAt(0));
-                }
-            }else{
-                // not qualified. Try and find the right one
-                List<FunctionRecordInterface> functionRecordList = state.getFTStack().getByAllName(frn.getFunctionName());
-                if (functionRecordList.isEmpty()) {
-                    throw new UndefinedFunctionException("no functions found for pick function at all.", polyad.getArgAt(0));
-                }
-                int totalCount = 0;
-                for (FunctionRecordInterface fr : functionRecordList) {
-
-                    if (2 == fr.getArgCount()) {
-                        totalCount = totalCount +2;
+                    // not qualified. Try and find the right one
+                    List<FunctionRecordInterface> functionRecordList = state.getFTStack().getByAllName(frn.getFunctionName());
+                    if (functionRecordList.isEmpty()) {
+                        throw new UndefinedFunctionException("no functions found for pick function at all.", polyad.getArgAt(0));
                     }
-                    if (1 == fr.getArgCount()) {
-                        totalCount = totalCount +1;
+                    int totalCount = 0;
+                    for (FunctionRecordInterface fr : functionRecordList) {
+
+                        if (2 == fr.getArgCount()) {
+                            totalCount = totalCount +2;
+                        }
+                        if (1 == fr.getArgCount()) {
+                            totalCount = totalCount +1;
+                        }
+
+                        argCount = Math.max(argCount, fr.getArgCount());
                     }
-
-                    argCount = Math.max(argCount, fr.getArgCount());
+                    if(totalCount == 0 || totalCount == 3){
+                        // then there are multiple functions with the name and different valences. Don't
+                        // try to choose one, just throw an exception.
+                        throw new BadArgException(PICK + " unqualified function reference, both monad and dyad found. Specify which to use.", polyad.getArgAt(0));
+                    }
                 }
-                if(totalCount == 0 || totalCount == 3){
-                    // then there are multiple functions with the name and different valences. Don't
-                    // try to choose one, just throw an exception.
-                    throw new BadArgException(PICK + " unqualified function reference, both monad and dyad found. Specify which to use.", polyad.getArgAt(0));
-                }
-            }
 
- */
+     */
     public static final int FILE_OP_AUTO = -100; // Let the system determine it.
     public static final int FILE_OP_BINARY = 0; // file is treated as b64 string
     public static final int FILE_OP_TEXT_STEM = 1; //File is treated as a stem of lines
@@ -1005,20 +1017,20 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * it do the work.
      * </p>
      * <p>
-     *     This also does some housekeeping, like assigning random names locally to anonymous lambda
-     *     functions. Be <i>sure</i> to remove them from any state table if you need to when done.
-     *     If they are in local state only (usual case), then no need to.
+     * This also does some housekeeping, like assigning random names locally to anonymous lambda
+     * functions. Be <i>sure</i> to remove them from any state table if you need to when done.
+     * If they are in local state only (usual case), then no need to.
      * </p>
      *
-     * @param state - The current state
-     * @param arg0 - the function definition, etc.
+     * @param state        - The current state
+     * @param arg0         - the function definition, etc.
      * @param pushNewState - create a new {@link FTable} and add this function. If this is being called as part of e.g. evaluating
      *                     a function, it should probably set true
      * @return
      */
     public FunctionReferenceNodeInterface getFunctionReferenceNode(State state, ExpressionInterface arg0, boolean pushNewState) {
         FunctionReferenceNodeInterface frn = null;
-        while(arg0 instanceof ParenthesizedExpression){
+        while (arg0 instanceof ParenthesizedExpression) {
             arg0 = ((ParenthesizedExpression) arg0).getExpression();
         }
         if (arg0 instanceof LambdaDefinitionNode) {
@@ -1058,21 +1070,21 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             frn.setAnonymous(lds.getFunctionRecord().isAnonymous());
 
         }
-        while(arg0 instanceof ParenthesizedExpression){
-            arg0 = ((ParenthesizedExpression)arg0).getExpression();
+        while (arg0 instanceof ParenthesizedExpression) {
+            arg0 = ((ParenthesizedExpression) arg0).getExpression();
         } //   g(x,y,n)->x^n+y^n ;(@g)∀[4,[;5],1]
         if (arg0 instanceof FunctionReferenceNodeInterface) {
             frn = (FunctionReferenceNodeInterface) arg0;
         }
-        if(arg0 instanceof ModuleExpression){
-            ModuleExpression moduleExpression = (ModuleExpression)  arg0;
+        if (arg0 instanceof ModuleExpression) {
+            ModuleExpression moduleExpression = (ModuleExpression) arg0;
             Object r = arg0.evaluate(state);
-            while(!(r instanceof FunctionReferenceNode)){
-               if(r instanceof ModuleExpression){
-                   r = ((ModuleExpression)r).getExpression();
-               }
+            while (!(r instanceof FunctionReferenceNode)) {
+                if (r instanceof ModuleExpression) {
+                    r = ((ModuleExpression) r).getExpression();
+                }
             }
-            if(r instanceof FunctionReferenceNodeInterface){
+            if (r instanceof FunctionReferenceNodeInterface) {
                 frn = (FunctionReferenceNodeInterface) r;
             }
 
@@ -1082,11 +1094,12 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         }
         return frn;
     }
-        /*
-         f(x)->x^2
-  g(@z, y)->y*z(y)
-  g(1@f, 2)
-         */
+
+    /*
+     f(x)->x^2
+g(@z, y)->y*z(y)
+g(1@f, 2)
+     */
     public boolean isScalar(Object arg) {
         return !isStem(arg) && !isSet(arg);
     }

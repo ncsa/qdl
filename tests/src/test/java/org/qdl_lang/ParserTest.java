@@ -2587,6 +2587,23 @@ public class ParserTest extends AbstractQDLTester {
     }
 
     /**
+     * Regression test fora  common idiom. This makes sure we don't alter this by accident
+     * @throws Throwable
+     */
+    public void testSizeInLoop() throws Throwable {
+        // regression test for https://github.com/ncsa/qdl/issues/108
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "x. := [;10];");
+        addLine(script, "y. := [];");
+        addLine(script, "while[ i∈[;size(x.)] ] [y. := y. ~ i;];");
+        addLine(script, "ok := ⊗∧⊙x.≡y.;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state);
+    }
+
+    /**
      * Same conceptually as ∈ loop. Tests that using has_value works the same
      *
      * @throws Throwable

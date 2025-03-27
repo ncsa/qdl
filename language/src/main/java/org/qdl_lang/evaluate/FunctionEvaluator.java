@@ -78,7 +78,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
         // However, we do NOT want to do this all the time, i.e. for every call,
         // since it really slows down system performance.
         // this next conditional won't apply unless the call has either
-        // (1) a fully qualified call, like function#apply (but not apply, which is unqualified)
+        // (1) a fully qualified call, like my_module#apply (but not apply, which is unqualified)
         // (2) the same name as one of these built-ins but in a Java module. QDL modules are
         //     handled with their overrides elsewhere (in the parser, actually, since there is a
         //     static list of built in system names, see tests at
@@ -557,7 +557,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
     }
 
     protected void figureOutEvaluation(Polyad polyad, State state, boolean checkForDuplicates) throws Throwable {
-        FR_WithState frs;
+        FR_WithState frs = null;
         try {
             if (AbstractState.isIntrinsic(polyad.getName()) && polyad.hasAlias()) {
                 // if it is in a module and at the top of the stack, then this is an access violation
@@ -566,7 +566,11 @@ public class FunctionEvaluator extends AbstractEvaluator {
                     throw new IntrinsicViolation("cannot access intrinsic function directly.", polyad);
                 }
             }
-            frs = state.resolveFunction(polyad, checkForDuplicates);
+            /*if(polyad instanceof UserFunction && ((UserFunction) polyad).hasFR_WithState()){
+                    frs = (FR_WithState) ((UserFunction) polyad).getFunctionRecord();
+            }else {*/
+                frs = state.resolveFunction(polyad, checkForDuplicates); // Do the heavy work of getting it
+            //}
         } catch (UndefinedFunctionException udx) {
             if (!state.isEnableLibrarySupport()) {
                 throw udx; // don't try to resolve libraries if support is off.
