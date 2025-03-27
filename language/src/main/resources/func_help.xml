@@ -1066,11 +1066,68 @@ tells you there was no previous default set.]]>
         <body>
             <![CDATA[size(arg) -  return the size of the argument.
 
-arg is a stem - return the number of elements in the stem
+arg is a stem - return the number of elements in the stem. Default is
+                axis 0, but you specify any axis.
 arg is a string - return the number of characters in the string, i.e., its
                 length
-args is a scalar - zero, since scalars (such as integers) have no size.]]>
+args is a scalar - zero, since scalars (such as integers) have no size.
+See also: indices]]>
         </body>
+<example>
+    <![CDATA[   size('If you can’t be kind, at least be vague.'); // gets the number of characters
+40
+   size(3/17); // scalars have no size
+0
+   size({1,2,3,'a', 3/17}); // count the elements in a set.
+5
+
+Examples for size along axes
+----------------------------
+    a. := n(3,4,5);
+   size(a.); // get the size, i.e., number of elements in axis 0
+3
+   size(a`0); // Identical to the previous example
+3
+   size(a`1); // The number of elements in axis 1, i.e., the 3x4 array of numbers
+12
+   size(a`2); // The number of elements in the 3x4x5 array, i.e., total number of elements
+60
+   size(a`(-1)); // -1 is always the last axis, so this is another way of counting everything.
+60
+
+E.g. Show difference in size and the number of elements from indices.
+   a. ≔ [0,1,'asd',[;7],{2,4,6,8}]
+   indices(a.); //all indices
+[[0],[1],[2],[4],[3,0],[3,1],[3,2],[3,3],[3,4],[3,5],[3,6]]
+     indices(a.,0); // Only rank 1, so the entries are scalars
+[0,1,2,4]
+     indices(a.,2); // rank 2 indices
+[[3,0],[3,1],[3,2],[3,3],[3,4],[3,5],[3,6]]
+
+now compare the size, which simply counts entries along an axis
+    size(a`0)
+5
+Number of elements with any entry along axis 0.
+    size(a`1)
+7
+Number of elements with any entry along axis 1.
+
+Why the difference? A common construct is to loop over all the elements of stem like so
+   i := 0;
+   while[ i < size(a.)]
+      do[
+          a.i ... // Get a.i and process it, probably by determing its type and doing something
+
+         ]; //end while
+
+versus loopinig over specific ones
+   while[ i ∈ index(a,0) ]
+      do[
+          a.i ... ; is a scalar automatically since it is a rank 1 index
+        ];
+
+]]>
+</example>
     </entry>
     <entry id="to_json">
         <body>
@@ -3306,34 +3363,69 @@ assert[script_arg() ≡  2 ][ 'you must supply both a username and password'];]]
 
     <entry id="for_each" alt="∀">
         <body>
-            <![CDATA[for_each(@f, arg_1., arg_2., ..., arg_n.) - Apply the n-adic function, f, to
+            <![CDATA[for_each({n}@f | lambda, arg_1., arg_2., ..., arg_n.) - Apply the n-adic function, f, to
            each element of the outer product of the arg_k. The contract is
+{n}@f a function reference. The n is the argument count so the correct one is resolved. It
+    n is omitted, the system will try to infer the correct count from the number of arguments.
+    It is in general a good idea to include n.
+ lambda = a function definition as a lambda.
 
-a. := for_each(@f, arg0, arg1, ..., argn)
+  a. := for_each(n@f, arg0, arg1, ..., argn)
 
    a.i0.i1,...in == f(arg0.i0, arg1.i1,...,argn.in)
 
 So this function visits each element of the Cartesian product of the arguments and
-sets the value in the result to be the value of the function there.
+sets the value in the result to be the value of the function there. This may be modified
+by supplying axes for the operation (see below).
 
 Note the syntax for the ∀ (unicode 2200) operator is
 
-(@func | lambda) ∀ [list of arguments]
+   ({n}@func | lambda) ∀ [list of arguments]
 
 where @func is a function reference and a list of arguments. You may also use
-a lmabda expression, though do put it in parentheses so QDL knows where the definition
+a lambda expression, though do put it in parentheses so QDL knows where the definition
 ends.  If any of the arg are scalars, they will be passed
 to the function, but do not determine the shape of the result.
+ E.g. The following are equivalent
+    f(x,y) -> x*y;
+    for_each(@f, a., b.)
+    for_each(2@f, a., b.)
+    for_each((x,y) -> x*y, a., b.)
+    @f∀[a., b.]
+    2@f∀[a., b.]
+    ((x,y) -> x*y)∀[a., b.]
 
+Tip: If you are using a lambda, with the ∀ operator, be sure to put it
+in parentheses so that it is clear where the definition ends! Parentheses
+are not needed for function references.
+
+Axes and for_each
+-----------------
 Functional languages have a functor (that's an operator that applies a function, aka
 a "higher-order function") usually called "map",
 "array_map", "maplist" or some such, that evaluates a function over a
 list. QDL's analog is  for_each and, as expected,
-is considerably more general.
+is considerably more general. You specify the axis (see also `) for each argument.
+This essentially tells QDL that starting at that axis, each element is to be treated
+as the entire argument.
+   ((x)->rank(x))∀[n(3,4,5)`0]; // apply the rank operator to axis 0, so to the 3 vector of 4x5 arrays
+[2,2,2]
+   ((x)->rank(x))∀[n(3,4,5)`1]; // apply the rank operator to axis 1, , i.e. the 3x4 array of 5-vectors
+[[1,1,1,1],[1,1,1,1],[1,1,1,1]]
+   ((x)->rank(x))∀[n(3,4,5)`3]; // since this is the last axis, this is a 3x4x5 array of scalars
+[[[0,0,0,0,0],[0,0,0,0,0],...   // with rank applied to each (rank of a scalar is 0, btw).
 
+Since the last example has rank 3, the following are equivalent too
+   ((x)->rank(x))∀[n(3,4,5)];      // Default, implicit last axis
+   ((x)->rank(x))∀[n(3,4,5)`(-1)]; // Axes are signed, so -1 is always last axis
+
+
+
+More examples.
+--------------
 Simple example, making a multiplication table.
-   x. := 1+[;5];
-   y. := 1+[;6];
+   x. := [1;6];
+   y. := [1;7];
    a. := for_each(@*, x., y.)
    a.
 [
@@ -3357,17 +3449,18 @@ a 5 x 6 array that results. a.i.j = x.i * y.j.
 |           your liking.                        |
 +-----------------------------------------------+
 
-About using the axis operator.
-------------------------------
-The basic contract for for_each will apply to every element, however, many times
-this is too much. For instance, if we had a list of like
+E.g. With axis operator.
+For instance, if we had a list of stems like
+
 status. := [{'client_id':42, 'status':'active'},
  {'client_id':11, 'status':'inactive'},
  {'client_id':99, 'status':'suspended'},
  {'client_id':17, 'status':'active'}
  ];
 
-and we wanted to iterate over the elements to find the elements that have a status of 'active'.
+Each stem in the list should be treated as a unit. We really don't just want to break it
+up into scalars.
+Let us say we wanted to iterate over the elements to find the elements that have a status of 'active'.
 One way is to write a loop:
 
 out. ≔ [];
@@ -3379,7 +3472,7 @@ while[x.∈status.]
 [true,false,false,true]
 
 Or, we can note that we are really just able to loop over axis 0 and do this with
-a lmabda function and restricting the axis in the for_each function:
+a lambda function and restricting the axis in the for_each function:
    status_map. := for_each((x.)→x.'status' ≡ 'active',status`0)
 [true,false,false,true]
 
@@ -3392,9 +3485,6 @@ You could get carried away and get the ids directly with a statement like
    (~status_map.⌆status.)\*\client_id
 [42,17]
 
-Tip: If you are using a lambda, be sure to put it in parentheses so that it
-is clear where the definition ends! These are not needed for function references.
-
 Tip: Each argument to for_each may have an axis specified, so this is perfectly
 fine:
    out. := for_each(3@f, a'3, b'0, c'2)
@@ -3406,23 +3496,23 @@ rank 3x1x2 and
 Monads and dyads.
 -----------------
 Note that if f is a monad, then it can only operate on a single argument, hence
-  for_each(@monad, x.,y.)
+  for_each(1@monad, x.,y.)
 will fail.
 However, if f is a dyad, call it δ, them it will be extended to each element
 
-   for_each(@δ, x0., x1., x2., ...)
+   for_each(2@δ, x0., x1., x2., ...)
 evaluates as
   x0. δ x1. δ x2. δ ...
 For commutative δ (like *, +, ~ etc.) this is straightforward, but for operators
-like / or - do be aware of the contract!
+like / or,  do be aware of the contract!
 
 In general n-adic functions though require n arguments or they will fail. So
 if γ(x,y,z)->... then the following fail since there is not a general way to
 extend a contract to multiple arguments (unlike dyads where statements like
 a+b+c+d are standard usages).
 
-  for_each(@γ, x., y.) ;// too few arguments
-  for_each(@γ, x., y., z., w.) ;// too many arguments
+  for_each(3@γ, x., y.) ;// too few arguments
+  for_each(3@γ, x., y., z., w.) ;// too many arguments
 
 Note that this means that default values for stems don't work. If you write
   @+∀[['a','a','a','a'],{*:'b'}]
