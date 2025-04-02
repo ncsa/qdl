@@ -566,11 +566,22 @@ public class FunctionEvaluator extends AbstractEvaluator {
                     throw new IntrinsicViolation("cannot access intrinsic function directly.", polyad);
                 }
             }
-            /*if(polyad instanceof UserFunction && ((UserFunction) polyad).hasFR_WithState()){
-                    frs = (FR_WithState) ((UserFunction) polyad).getFunctionRecord();
-            }else {*/
+            /*
+            f(x,y)→x*y;
+2@f∀[[1;5],[2;6],[3;7]]
+             */
+            if(polyad instanceof UserFunction ){
+                UserFunction userFunction = (UserFunction) polyad;
+                if(userFunction.hasFunctionRecord()){
+                    if (((UserFunction) polyad).hasFR_WithState()){
+                        frs = (FR_WithState) ((UserFunction) polyad).getFunctionRecord();
+                    }else{
+                        frs = new FR_WithState(userFunction.getFunctionRecord(),state);
+                    }
+                }
+            }else {
                 frs = state.resolveFunction(polyad, checkForDuplicates); // Do the heavy work of getting it
-            //}
+            }
         } catch (UndefinedFunctionException udx) {
             if (!state.isEnableLibrarySupport()) {
                 throw udx; // don't try to resolve libraries if support is off.
@@ -604,17 +615,14 @@ public class FunctionEvaluator extends AbstractEvaluator {
             moduleState = (State) frs.state;
         }
         if (functionRecord == null) {
-            // see if its a reference instead
+            // see if it's a reference instead
             functionRecord = state.getFTStack().getFunctionReference(polyad.getName());
             if (functionRecord == null) {
                 throw new UndefinedFunctionException(" the function '" + polyad.getName() + "' with "
                         + polyad.getArgCount() + " arguments was not found.", polyad);
             }
         }
-        if (!functionRecord.isFuncRef()) {
-            //functionRecord = functionRecord.newInstance();
-            functionRecord = functionRecord.clone();
-        }
+
         State localState;
         if (moduleState == null) {
 

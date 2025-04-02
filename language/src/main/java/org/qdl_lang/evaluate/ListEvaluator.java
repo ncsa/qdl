@@ -527,7 +527,12 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
         if (2 < polyad.getArgCount()) {
             throw new ExtraArgException(PICK + " requires 2 arguments", polyad.getArgAt(3));
         }
-        FunctionReferenceNodeInterface frn = getFunctionReferenceNode(state, polyad.getArgAt(0), true);
+
+        // addresses https://github.com/ncsa/qdl/issues/110
+
+        State localState = state.newLocalState();
+        FunctionReferenceNodeInterface frn = getFunctionReferenceNode(localState, polyad.getArgAt(0), true);
+        //FunctionReferenceNodeInterface frn = getFunctionReferenceNode(state, polyad.getArgAt(0), true);
         Object arg1 = polyad.evalArg(1, state);
         if(arg1 == null){
             throw new MissingArgException(PICK + " second argument not found ", polyad.getArgAt(1));
@@ -537,8 +542,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
         try {
             // addresses https://github.com/ncsa/qdl/issues/107
             if(frn instanceof DyadicFunctionReferenceNode){
-                ((DyadicFunctionReferenceNode) frn).evaluate(state);
-                //((DyadicFunctionReferenceNode) frn).evalArg(0,state);
+                ((DyadicFunctionReferenceNode) frn).evaluate(localState);
                 Object ooo = ((DyadicFunctionReferenceNode) frn).getArgAt(0).getResult();
                 if(ooo instanceof Long){
                     argCount = ((Long) ooo).intValue();
@@ -550,7 +554,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
                 }
             }else{
                 // not qualified. Try and find the right one
-                List<FunctionRecordInterface> functionRecordList = state.getFTStack().getByAllName(frn.getFunctionName());
+                List<FunctionRecordInterface> functionRecordList = localState.getFTStack().getByAllName(frn.getFunctionName());
                 if (functionRecordList.isEmpty()) {
                     throw new UndefinedFunctionException("no functions found for pick function at all.", polyad.getArgAt(0));
                 }
@@ -573,7 +577,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
                 }
             }
 
-            f = getOperator(state, frn, argCount); // single argument
+            f = getOperator(localState, frn, argCount); // single argument
         } catch (UndefinedFunctionException ufx) {
             ufx.setStatement(polyad.getArgAt(0));
             throw ufx;
@@ -590,16 +594,15 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
                 rawArgs.clear();
                 rawArgs.add(element);
                 f.setArguments(toConstants(rawArgs));
-                Object test = f.evaluate(state);
+                //Object test = f.evaluate(state);
+                Object test = f.evaluate(localState);
                 if (isBoolean(test)) {
                     if ((Boolean) test) {
                         result.add(element);
                     }
                 }
             }
-            if (frn.isAnonymous()) {
-                state.getFTStack().remove(new FKey(frn.getFunctionName(), f.getArgCount()));
-            }
+
             polyad.setResult(result);
             polyad.setResultType(Constant.SET_TYPE);
             polyad.setEvaluated(true);
@@ -621,16 +624,15 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
                 }
                 rawArgs.add(stemArg.get(key));
                 f.setArguments(toConstants(rawArgs));
-                Object test = f.evaluate(state);
+                //Object test = f.evaluate(state);
+                Object test = f.evaluate(localState);
                 if (isBoolean(test)) {
                     if ((Boolean) test) {
                         outStem.putLongOrString(key, value);
                     }
                 }
             }
-            if (frn.isAnonymous()) {
-                state.getFTStack().remove(new FKey(frn.getFunctionName(), f.getArgCount()));
-            }
+
             polyad.setResult(outStem);
             polyad.setResultType(Constant.STEM_TYPE);
             polyad.setEvaluated(true);
@@ -640,7 +642,8 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
         ArrayList<Object> rawArgs = new ArrayList<>();
         rawArgs.add(arg1);
         f.setArguments(toConstants(rawArgs));
-        Object test = f.evaluate(state);
+        //Object test = f.evaluate(state);
+        Object test = f.evaluate(localState);
         Object result = null;
         if (isBoolean(test)) {
             if ((Boolean) test) {

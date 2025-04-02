@@ -930,28 +930,41 @@ public class StemEvaluator extends AbstractEvaluator {
         if (polyad.getArgCount() == 0) {
             throw new MissingArgException(FOR_EACH + " requires at least 2 arguments", polyad);
         }
-        FunctionReferenceNodeInterface frn = getFunctionReferenceNode(state, polyad.getArgAt(0), true);
+        // Fix for https://github.com/ncsa/qdl/issues/110 use local state here.
+        State localState = state.newLocalState();
+        //FunctionReferenceNodeInterface frn = getFunctionReferenceNode(state, polyad.getArgAt(0), true);
+        FunctionReferenceNodeInterface frn = getFunctionReferenceNode(localState, polyad.getArgAt(0), true);
         if (polyad.getArgCount() == 1) {
             throw new MissingArgException(FOR_EACH + " requires at least 2 arguments", polyad.getArgAt(0));
         }
         Object[] stems = new Object[polyad.getArgCount() - 1];
         boolean allScalars = true;
         for (int i = 1; i < polyad.getArgCount(); i++) {
-            Object arg = polyad.evalArg(i, state);
+            //Object arg = polyad.evalArg(i, state);
+            Object arg = polyad.evalArg(i, localState);
             checkNull(arg, polyad.getArgAt(i));
             stems[i - 1] = arg;
             allScalars = allScalars && (!isStem(arg));
         }
         ExpressionImpl f;
         try {
-            f = getOperator(state, frn, stems.length);
+            // One special case is they have defined an anonymous lambda with precisely 2 arguments
+            // and want o apply this as a dyadic function to all arguments. Allow that explicitly.
+            if(frn.isAnonymous() && frn.hasFunctionRecord(2)){
+                f = getOperator(localState, frn, 2);
+            }else{
+                // usual case: Just get the function based on the number of arguments.
+                f = getOperator(localState, frn, stems.length);
+            }
         } catch (UndefinedFunctionException ufx) {
             ufx.setStatement(polyad.getArgAt(0));
+            // Other option -- might be trying to do a dyadic function
             throw ufx;
         }
         if (allScalars) {
             // Just skip the machinery below and evaluate it.
-            Object y = forEachEval(f, state, Arrays.asList(stems));
+            //Object y = forEachEval(f, state, Arrays.asList(stems));
+            Object y = forEachEval(f, localState, Arrays.asList(stems));
             polyad.setResult(y);
             polyad.setResultType(Constant.getType(y));
             polyad.setEvaluated(true);
@@ -960,7 +973,8 @@ public class StemEvaluator extends AbstractEvaluator {
         QDLStem output = new QDLStem();
 
         // Fixes https://github.com/ncsa/qdl/issues/17
-        forEachRecursion2(output, f, state, stems, new IndexList(), new ArrayList(), 0);
+        //forEachRecursion2(output, f, state, stems, new IndexList(), new ArrayList(), 0);
+        forEachRecursion2(output, f, localState, stems, new IndexList(), new ArrayList(), 0);
         polyad.setResult(output);
         polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
@@ -1108,9 +1122,17 @@ f(x.)→x.0+x.1;
             }
         }
         // Fix https://github.com/ncsa/qdl/issues/38
+
+        ExpressionImpl dd = null;
+        boolean isDyad = false;
         if (f instanceof Dyad) {
+            //       f(x,y)→x*y;
+            //2@f∀[[1;5],[2;6],[-1;2]]
             // have to apply pairwise
-            Dyad dyad = (Dyad) f;
+            dd = (Dyad) f;
+            isDyad = true;
+
+           /* Dyad dyad = (Dyad) f;
             dyad.setLeftArgument(new ConstantNode(args.get(0)));
             dyad.setRightArgument(new ConstantNode(args.get(1)));
             Object out = dyad.evaluate(state);
@@ -1119,7 +1141,36 @@ f(x.)→x.0+x.1;
                 dyad.setRightArgument(new ConstantNode(args.get(i)));
                 out = dyad.evaluate(state);
             }
+            return out;*/
+        }
+            if(f instanceof UserFunction) {
+                UserFunction userFunction = (UserFunction) f;
+                if(userFunction.getFunctionRecord().getArgCount() == 2){
+                    dd = userFunction;
+                    isDyad = true;
+                   /* userFunction.addArgument(new ConstantNode(args.get(0)));
+                    userFunction.addArgument(new ConstantNode(args.get(1)));
+                    Object out = userFunction.evaluate(state);
+                    for (int i = 2; i < args.size(); i++) {
+                        dyad.setLeftArgument(new ConstantNode(out));
+                        dyad.setRightArgument(new ConstantNode(args.get(i)));
+                        out = dyad.evaluate(state);
+                    }
+                    return out;*/
+                }
+            }
+        if(isDyad){
+            dd.addArgument(new ConstantNode(args.get(0)));
+            dd.addArgument(new ConstantNode(args.get(1)));
+            Object out = dd.evaluate(state);
+            for (int i = 2; i < args.size(); i++) {
+                dd.getArguments().set(0, new ConstantNode(dd.getResult()));
+                dd.getArguments().set(1, new ConstantNode(args.get(i)));
+                out = dd.evaluate(state);
+            }
+            dd.getArguments().clear(); // so the next iteration does not have cruft.
             return out;
+
         }
         ArgList argList1 = new ArgList();
         for (Object arg : args) {

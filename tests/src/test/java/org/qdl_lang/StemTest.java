@@ -1843,11 +1843,12 @@ public class StemTest extends AbstractQDLTester {
         boolean good = false;
         try {
             interpreter.execute(script.toString());
-        }catch(UndefinedFunctionException e) {
+        } catch (UndefinedFunctionException e) {
             good = true;
         }
         assert good : "Was able to invoke for_each on function with wrong airty";
     }
+
     public void testForEach3() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -2381,6 +2382,7 @@ public class StemTest extends AbstractQDLTester {
      * works. It computes the rank of each returned element, so as the axis increases,
      * the size of the result increases. This is actually a pretty slick test and checks
      * the rank an axis. This is for a single argument and monadic function.
+     *
      * @throws Throwable
      */
     // Fix https://github.com/ncsa/qdl/issues/109
@@ -2396,13 +2398,14 @@ public class StemTest extends AbstractQDLTester {
                 "    return(ok ∧ q);\n" +
                 "  ];\n");
         addLine(script, "ok.:=[];");
-        addLine(script,"while[j∈[;rank(a.)]][ok.j := check(a.,j);];");
+        addLine(script, "while[j∈[;rank(a.)]][ok.j := check(a.,j);];");
         addLine(script, "ok := ⊗∧⊙ok.; // checks every axis worked."); // 3 axes
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
 
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : StemEvaluator.FOR_EACH + " failed to loop over axis correctly";
     }
+
     public void testSizeOnAxis() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -2444,6 +2447,7 @@ public class StemTest extends AbstractQDLTester {
 
     /**
      * regression test to show that LHS λ function is processed correctly.
+     *
      * @throws Throwable
      */
     public void testForEachOnAxesWithLambda() throws Throwable {
@@ -2468,9 +2472,46 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok3", state) : "∀ with λ failed for axes -1,-1";
     }
 
+
+    /**
+     * The contract for for_each allows for extending dyadic functions to multiple arguments. This tests
+     * that lambdas and FQ references work. Unqualified references do not work.
+     *
+     * @throws Throwable
+     */
+    public void testDyadicForEach() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "f(x,y)→x*y;");
+        addLine(script, "r. := [[-2,0,2],[-4,0,4],[-6,0,6],[-8,0,8]];");
+        addLine(script,"x.:= 2@f∀[[1;5],2,[-1;2]];");
+        addLine(script,"y. := ((x,y)→x*y)∀[[1;5],2,[-1;2]];");
+        addLine(script,"ok_x := (rank(x.) ≡ 2) ∧ (⊗∧⊙(dim(x.)≡[4,3])) ∧ (⊗∧⊙(x.≡r.)`*); ");
+        addLine(script,"ok_y := (rank(y.) ≡ 2) ∧ (⊗∧⊙(dim(y.)≡[4,3])) ∧ (⊗∧⊙(y.≡r.)`*); ");
+        addLine(script,"ok_z := false;");
+        addLine(script,"try[@f∀[[1;5],2,[-1;2]];]catch[ok_z:=true;];");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok_x", state) : "dyadic extension of ∀ failed for fully qualified function reference ";
+        assert getBooleanValue("ok_y", state) : "dyadic extension of ∀ failed for lambda ";
+        assert getBooleanValue("ok_z", state) : "dyadic extension of ∀ worked for unqualified function reference. Should fail. ";
+    }
+    /* All of these should work and return
+    f(x,y)→x*y;
+   2@f∀[[1;5],2,[-1;2]]
+   ((x,y)→x*y)∀[[1;5],2,[-1;2]]
+   and return
+   r. :=[[-2,0,2],[-4,0,4],[-6,0,6],[-8,0,8]];
+
+   @f∀[[1;5],2,[-1;2]]
+   fails
+     */
+
     /**
      * The contract is that <i>only</i> the number of elements at a given axis are returned.
      * So [0,[;2]] =: b. means size(b`0) == 1 and size(b`1) == 2
+     *
      * @throws Throwable
      */
     public void testSizeOnAxisContract() throws Throwable {
@@ -3021,10 +3062,10 @@ public class StemTest extends AbstractQDLTester {
                 "odd(k,v)→mod(k,2)≡1;\n");
         addLine(script, "z. := n(4,4,n(16))\\2@even\\2@odd;");
         addLine(script, "w. := n(4,4,n(16))\\!2@even\\!2@odd;"); // preserve indices
-        addLine(script,"ok_size0 := rank(z.)==2 && (@&& ⊙ 2==dim(z.));");
-        addLine(script,"ok_values0 := @&& ⊙ ([[1,3],[9,11]] == z.)`*;");
-        addLine(script,"ok_size1 := rank(w.)==2 && (@&& ⊙ 2==dim(w.));");
-        addLine(script,"ok_values1 := @&& ⊙ ({0:{1:1, 3:3}, 2:{1:9, 3:11}} == w.)`*;");
+        addLine(script, "ok_size0 := rank(z.)==2 && (@&& ⊙ 2==dim(z.));");
+        addLine(script, "ok_values0 := @&& ⊙ ([[1,3],[9,11]] == z.)`*;");
+        addLine(script, "ok_size1 := rank(w.)==2 && (@&& ⊙ 2==dim(w.));");
+        addLine(script, "ok_values1 := @&& ⊙ ({0:{1:1, 3:3}, 2:{1:9, 3:11}} == w.)`*;");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok_size0", state) : "extraction failed to give correct shape of result";
@@ -3036,6 +3077,7 @@ public class StemTest extends AbstractQDLTester {
     /**
      * The contract is that extractions using stem indices, \> must be lists and not
      * just function references, so trying to do one with a function should raise an error.
+     *
      * @throws Throwable
      */
     public void testFunctionExtractionStemIndexFailure() throws Throwable {
@@ -3048,12 +3090,13 @@ public class StemTest extends AbstractQDLTester {
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         try {
             interpreter.execute(script.toString());
-        }catch(BadArgException bax){
+        } catch (BadArgException bax) {
             good = true;
         }
         assert good : "passing a function reference to the \\> operator should fail.";
 
     }
+
     public static String BIG_JSON_OBJECT = DebugUtil.getDevPath() + "/qdl/language/src/main/resources/test.json";
 
     /**
@@ -3233,7 +3276,8 @@ public class StemTest extends AbstractQDLTester {
     }
 
     /**
-     * Tests using a function to extract non-lists
+     * Tests using a function to extract non-lists. This has two functions embedded in a nested
+     * extraction and the test shows that they are kept distinct.
      *
      * @throws Throwable
      */
@@ -3271,6 +3315,58 @@ a.3.'a' ≔ 'e';
 (a\*\((k,v)→!is_list(v)))\*\((k)→k≡'a'); // extracts [{'a':'a'}]
 input_form((a\*\((k,v)→!is_list(v)))); // extracts all non-lists elements
  */
+
+    /**
+     * This is a pretty complex example. It has a 4 rank stem with various
+     * functions at each axis to extract bits. The QDL is
+     * <pre>
+     * i ≔ 0;
+     * X. ≔[];
+     * nn()&rarr;n(3,4,[12*i;12*(++i)]);
+     * first. ≔ ['a','b','c'];
+     * second. ≔ ['A','B','C'];
+     * while[k&isin;first.]
+     *    [while[m&isin;second.]
+     *          [X.k.m ≔ nn();
+     *          ]; // end inner
+     *    ];// end outer
+     * print(X.);
+     * Y. ≔ X\*\((k,v)&rarr;k&equiv;'A')\((k,v)&rarr;k&lt;3)\((k,v)&rarr;mod(v,3)&equiv;1);
+     * </pre>
+     * It selects per axis (all) (key = A) (key < 2) (value mod(3)==1)
+     * The result is
+     * <pre>
+     *     {'a':[[[1],[4,7],[10]]],
+     *      'b':[[[37],[40,43],[46]]],
+     *      'c':[[[73],[76,79],[82]]]
+     *      };
+     * </pre>
+     * @throws Throwable
+     */
+    public void testExtractionWithFunction3() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script,"i ≔ 0;\n" +
+                "X. ≔[];\n" +
+                "nn()→n(3,4,[12*i;12*(++i)]);\n" +
+                "first. ≔ ['a','b','c'];\n" +
+                "second. ≔ ['A','B','C'];\n" +
+                "while[k∈first.]\n" +
+                "   [while[m∈second.]\n" +
+                "         [X.k.m ≔ nn();\n" +
+                "         ]; // end inner\n" +
+                "   ];// end outer");
+        addLine(script,"Y. ≔ X\\*\\((k,v)→k≡'A')\\((k,v)→k<3)\\((k,v)→mod(v,3)≡1);\n"); // result
+        addLine(script,"check.≔{'a':[[[1],[4,7],[10]]], 'b':[[[37],[40,43],[46]]], 'c':[[[73],[76,79],[82]]]};"); // check
+        addLine(script,"ok1 := 12 == size(Y`*);");
+        addLine(script,"ok2 := ⊗∧⊙(Y.a.0 ≡ check.a.0)`*;");
+        addLine(script,"ok2 := ok2 ∧ (⊗∧⊙(Y.b.0 ≡ check.b.0)`*);");
+        addLine(script,"ok2 := ok2 ∧ (⊗∧⊙(Y.c.0 ≡ check.c.0)`*);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok1", state) : "wrong size from extract with function";
+        assert getBooleanValue("ok2", state) : "wrong  elements extract with function";
+    }
 
     /**
      * test contract for {@link StemEvaluator#DIFF} function.

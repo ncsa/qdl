@@ -7,6 +7,7 @@ import org.qdl_lang.functions.DyadicFunctionReferenceNode;
 import org.qdl_lang.functions.FunctionRecordInterface;
 import org.qdl_lang.functions.FunctionReferenceNode;
 import org.qdl_lang.state.State;
+import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.types.Types;
 import org.qdl_lang.variables.*;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
@@ -556,27 +557,34 @@ public class OpEvaluator extends AbstractEvaluator {
                                                State state,
                                                Dyad dyad) {
         Object result;
-        if (rArg instanceof QDLStem) {
-            if (!(lArg instanceof QDLStem) && defaultValue == null) {
-                throw new BadArgException("non-conformable left argument (should be a stem)", dyad.getLeftArgument());
+        if(rArg instanceof ExpressionInterface){
+            switch (((ExpressionInterface)rArg).getNodeType()){
+                case ExpressionInterface.FUNCTION_REFERENCE_NODE:
+                    result = doSingleApply(lArg, (FunctionReferenceNode) rArg, defaultValue, state, dyad);
+                    break;
+                case ExpressionInterface.DYADIC_FUNCTION_REFERENCE_NODE:
+                    result = doSingleApply(lArg, (DyadicFunctionReferenceNode) rArg, defaultValue, state, dyad);
+                    break;
+                default:
+                    result = rArg;
+                    break;
             }
-            result = applyToStem((QDLStem) lArg, (QDLStem) rArg, defaultValue, state, dyad);
-        } else {
-            if (rArg instanceof QDLSet) {
-                result = applyToSet((QDLStem) lArg, (QDLSet) rArg, defaultValue, state, dyad);
-            } else {
+        }else{
+            // stems and sets are not nodes. The are created from nodes which have been consumed by this point.
+            if(rArg instanceof QDLStem) {
+                if (!(lArg instanceof QDLStem) && defaultValue == null) {
+                    throw new BadArgException("non-conformable left argument (should be a stem)", dyad.getLeftArgument());
+                }
+                result = applyToStem((QDLStem) lArg, (QDLStem) rArg, defaultValue, state, dyad);
+            }else {
                 if (rArg instanceof FunctionReferenceNode) {
                     result = doSingleApply(lArg, (FunctionReferenceNode) rArg, defaultValue, state, dyad);
                 } else {
-                    if (rArg instanceof DyadicFunctionReferenceNode) {
-                        result = doSingleApply(lArg, (DyadicFunctionReferenceNode) rArg, defaultValue, state, dyad);
-
-                    } else {
-                        result = rArg;
-                    }
+                    result = rArg;
                 }
             }
         }
+
         return result;
     }
 
@@ -933,7 +941,11 @@ a.⌆b.
         Polyad polyad = new Polyad(StemEvaluator.FOR_EACH);
         polyad.setTokenPosition(dyad.getTokenPosition());
         polyad.setSourceCode(dyad.getSourceCode());
-        polyad.addArgument(dyad.getLeftArgument()); // should be a function reference
+        ExpressionInterface ei = dyad.getLeftArgument();
+        while((ei instanceof ParenthesizedExpression)){
+            ei = ((ParenthesizedExpression) ei).getArgAt(0);
+        }
+        polyad.addArgument(ei); // should be a function reference
         Object obj = dyad.getRightArgument().evaluate(state);
         if (!(obj instanceof QDLStem)) {
             throw new QDLExceptionWithTrace("right argument of " + FOR_ALL_KEY + " must be a list", dyad.getRightArgument());

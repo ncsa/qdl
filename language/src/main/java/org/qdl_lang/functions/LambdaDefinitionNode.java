@@ -12,7 +12,7 @@ import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
  * <p>Created by Jeff Gaynor<br>
  * on 6/3/21 at  8:45 AM
  */
-public class LambdaDefinitionNode extends ExpressionImpl {
+public class LambdaDefinitionNode extends ExpressionImpl implements FunctionNodeInterface{
 
     public boolean hasName(){
         if(functionRecord == null){

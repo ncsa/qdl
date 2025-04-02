@@ -40,11 +40,6 @@ public class DyadicFunctionReferenceNode extends ExpressionImpl implements Funct
      * @return
      */
     public int getFunctionArgCount(){
-/*
-        if(!isEvaluated()){
-            throw new UnevaluatedExpressionException();
-        }
-*/
         return ((Long)getArgAt(0).getResult()).intValue();
     }
     @Override
@@ -62,7 +57,6 @@ public class DyadicFunctionReferenceNode extends ExpressionImpl implements Funct
         Object lArg = getArgAt(0).getResult();
         getArguments().get(1).setEvaluated(true); // so things don't bomb elsewhere
         if ((lArg instanceof Long)) {
-            //throw new BadArgException("left argument must be an integer", getArgAt(0));
             int argCount = ((Long) lArg).intValue();
             setFunctionRecord(getFRByArgCount(state,argCount,getFunctionName()));
         }

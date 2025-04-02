@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Main workhorse class. Expressions from the parser are some subclass of this.
  * <p>Created by Jeff Gaynor<br>
  * on 1/13/20 at  3:15 PM
  */
@@ -275,5 +276,7 @@ public abstract class ExpressionImpl implements ExpressionNode {
     public boolean hasEvaluatedArgs() {
         return evaluatedArgs != null;
     }
-
+    public void addArgument(ExpressionInterface expr) {
+        getArguments().add(expr);
+    }
 }

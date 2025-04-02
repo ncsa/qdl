@@ -871,7 +871,6 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         }
         return null;
     }
-
     /**
      * get a polyad or dyad (for the operator) from the {@link FunctionReferenceNode}.
      * You must still set any arguments, but the type and name should be correctly set.
@@ -881,6 +880,24 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @return
      */
     public static ExpressionImpl getOperator(State state, FunctionReferenceNodeInterface frNode, int nAry) {
+        return OLDgetOperator(state, frNode, nAry);
+    }
+    protected static ExpressionImpl NEWgetOperator(State state, FunctionReferenceNodeInterface frNode, int nAry) {
+        UserFunction operator = null;
+        String operatorName = frNode.getFunctionName();
+        if (state.getOpEvaluator().isMathOperator(operatorName)) {
+            if (nAry == 1) {
+                return new Monad(state.getOperatorType(operatorName), false); // only post fix allowed for monads here
+            } else {
+                return new Dyad(state.getOperatorType(operatorName));
+            }
+        }
+        if (state.getMetaEvaluator().isBuiltInFunction(operatorName)) {
+            return new Polyad(operatorName);
+        }
+        return operator;
+    }
+    protected static ExpressionImpl OLDgetOperator(State state, FunctionReferenceNodeInterface frNode, int nAry) {
         ExpressionImpl operator;
         String operatorName = frNode.getFunctionName();
         if (state.getOpEvaluator().isMathOperator(operatorName)) {
@@ -1009,8 +1026,10 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
 
     /**
      * <p></p>
-     * This will take a node that is either a function reference, {@link FunctionDefinitionStatement}
-     * or perhaps a {@link LambdaDefinitionNode} and determine the right {@link FunctionReferenceNode},
+     * This will take a node that is either a parenthesized expression, a {@link FunctionNodeInterface} such as
+     * {@link FunctionReferenceNode}, {@link DyadicFunctionReferenceNode} or {@link LambdaDefinitionNode}
+     * or is {@link ModuleExpression}
+     * and determine the right {@link FunctionReferenceNode},
      * updating the state (including adding local state as needed for the duration of the evaluation).
      * It will also throw an exception if the argument is not of the right type.<p/><p/>
      * Any place you want to use a function as an argument, pass it to this and let
@@ -1030,27 +1049,51 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      */
     public FunctionReferenceNodeInterface getFunctionReferenceNode(State state, ExpressionInterface arg0, boolean pushNewState) {
         FunctionReferenceNodeInterface frn = null;
-        while (arg0 instanceof ParenthesizedExpression) {
+        while(arg0.getNodeType() == ExpressionInterface.PARENTHESIZED_NODE){
             arg0 = ((ParenthesizedExpression) arg0).getExpression();
         }
-        if (arg0 instanceof LambdaDefinitionNode) {
-            LambdaDefinitionNode lds = (LambdaDefinitionNode) arg0;
-            if (!lds.hasName()) {
-                lds.getFunctionRecord().setName(tempFname(state));
-                lds.getFunctionRecord().setAnonymous(true);
-            }
-            if (pushNewState) {
-                FTable ft = new FTable();
-                ft.put(lds.getFunctionRecord());
-                state.getFTStack().push(ft);
-            } else {
-                lds.evaluate(state);
-            }
-            frn = new FunctionReferenceNode();
-            frn.setFunctionName(lds.getFunctionRecord().getName());
-            frn.setAnonymous(lds.getFunctionRecord().isAnonymous());
+        //   g(x,y,n)->x^n+y^n ;((@g))∀[4,[;5],1]
+
+        switch (arg0.getNodeType()) {
+            case ExpressionInterface.LAMBDA_DEFINITION_NODE:
+                LambdaDefinitionNode lds = (LambdaDefinitionNode) arg0;
+                if (!lds.hasName()) {
+                    lds.getFunctionRecord().setName(tempFname(state));
+                    lds.getFunctionRecord().setAnonymous(true);
+                }
+                if (pushNewState) {
+                    FTable ft = new FTable();
+                    ft.put(lds.getFunctionRecord());
+                    state.getFTStack().push(ft);
+                } else {
+                    lds.evaluate(state);
+                }
+                FunctionReferenceNode functionReferenceNode = new FunctionReferenceNode();
+                functionReferenceNode.setFunctionName(lds.getFunctionRecord().getName());
+                functionReferenceNode.setAnonymous(lds.getFunctionRecord().isAnonymous());
+                functionReferenceNode.getFunctionRecords().add(lds.getFunctionRecord());
+                frn = functionReferenceNode;
+                break;
+                case ExpressionInterface.FUNCTION_REFERENCE_NODE:
+            case ExpressionInterface.DYADIC_FUNCTION_REFERENCE_NODE:
+                    frn = (FunctionReferenceNodeInterface) arg0;
+                    break;
+            case ExpressionInterface.MODULE_NODE:
+                ModuleExpression moduleExpression = (ModuleExpression) arg0;
+                Object r = moduleExpression.evaluate(state);
+                while (!(r instanceof FunctionReferenceNode)) {
+                    if (r instanceof ModuleExpression) {
+                        r = ((ModuleExpression) r).getExpression();
+                    }
+                }
+                if (r instanceof FunctionReferenceNodeInterface) {
+                    frn = (FunctionReferenceNodeInterface) r;
+                }
+                break;
         }
 
+/*   ????? Don't think this case can happen from the now current inheritence structure. Leave
+           for now in case it comes back to haunt us.
         if ((arg0 instanceof FunctionDefinitionStatement)) {
             LambdaDefinitionNode lds = new LambdaDefinitionNode(((FunctionDefinitionStatement) arg0));
             if (!lds.hasName()) {
@@ -1069,26 +1112,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             frn.setFunctionName(lds.getFunctionRecord().name);
             frn.setAnonymous(lds.getFunctionRecord().isAnonymous());
 
-        }
-        while (arg0 instanceof ParenthesizedExpression) {
-            arg0 = ((ParenthesizedExpression) arg0).getExpression();
-        } //   g(x,y,n)->x^n+y^n ;(@g)∀[4,[;5],1]
-        if (arg0 instanceof FunctionReferenceNodeInterface) {
-            frn = (FunctionReferenceNodeInterface) arg0;
-        }
-        if (arg0 instanceof ModuleExpression) {
-            ModuleExpression moduleExpression = (ModuleExpression) arg0;
-            Object r = arg0.evaluate(state);
-            while (!(r instanceof FunctionReferenceNode)) {
-                if (r instanceof ModuleExpression) {
-                    r = ((ModuleExpression) r).getExpression();
-                }
-            }
-            if (r instanceof FunctionReferenceNodeInterface) {
-                frn = (FunctionReferenceNodeInterface) r;
-            }
-
-        }
+        }*/
         if (frn == null) {
             throw new IllegalArgumentException("the argument is not a function reference or lambda");
         }

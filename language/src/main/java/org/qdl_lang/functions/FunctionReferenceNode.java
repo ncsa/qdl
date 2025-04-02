@@ -38,6 +38,9 @@ FunctionReferenceNode extends ExpressionImpl implements FunctionReferenceNodeInt
 
 
     public List<FunctionRecordInterface> getFunctionRecords() {
+        if(functionRecords == null) {
+            functionRecords = new ArrayList<>();
+        }
         return functionRecords;
     }
 

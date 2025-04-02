@@ -6,7 +6,7 @@ import org.qdl_lang.state.State;
  * <p>Created by Jeff Gaynor<br>
  * on 6/11/24 at  12:23 AM
  */
-public interface FunctionReferenceNodeInterface {
+public interface FunctionReferenceNodeInterface extends FunctionNodeInterface{
     String getFunctionName();
 
      void setFunctionName(String functionName);

@@ -88,10 +88,6 @@ public class Polyad extends ExpressionImpl {
         return getResult();
     }
 
-    public void addArgument(ExpressionInterface expr) {
-        getArguments().add(expr);
-    }
-
     @Override
     public String toString() {
         return "Polyad[" +
