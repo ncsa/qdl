@@ -3336,10 +3336,15 @@ input_form((a\*\((k,v)→!is_list(v)))); // extracts all non-lists elements
      * It selects per axis (all) (key = A) (key < 2) (value mod(3)==1)
      * The result is
      * <pre>
-     *     {'a':[[[1],[4,7],[10]]],
+     *     check. ≔ {
+     *      'a':[[[1],[4,7],[10]]],
      *      'b':[[[37],[40,43],[46]]],
      *      'c':[[[73],[76,79],[82]]]
      *      };
+     * </pre>
+     * and the function that checks these across a specific axis then checks all values match is
+     * <pre>
+     *     cc(a) → ⊗∧⊙(Y.a.0 ≡ check.a.0)`*
      * </pre>
      * @throws Throwable
      */
@@ -3358,10 +3363,9 @@ input_form((a\*\((k,v)→!is_list(v)))); // extracts all non-lists elements
                 "   ];// end outer");
         addLine(script,"Y. ≔ X\\*\\((k,v)→k≡'A')\\((k,v)→k<3)\\((k,v)→mod(v,3)≡1);\n"); // result
         addLine(script,"check.≔{'a':[[[1],[4,7],[10]]], 'b':[[[37],[40,43],[46]]], 'c':[[[73],[76,79],[82]]]};"); // check
+        addLine(script,"cc(a) → ⊗∧⊙(Y.a.0 ≡ check.a.0)`*;"); // checks a stem value
         addLine(script,"ok1 := 12 == size(Y`*);");
-        addLine(script,"ok2 := ⊗∧⊙(Y.a.0 ≡ check.a.0)`*;");
-        addLine(script,"ok2 := ok2 ∧ (⊗∧⊙(Y.b.0 ≡ check.b.0)`*);");
-        addLine(script,"ok2 := ok2 ∧ (⊗∧⊙(Y.c.0 ≡ check.c.0)`*);");
+        addLine(script,"ok2 := cc('a') ∧ cc('b') ∧ cc('c');");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok1", state) : "wrong size from extract with function";
