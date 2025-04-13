@@ -238,10 +238,15 @@ public abstract class JavaModule extends Module {
         docs.add("default alias : " + getAlias());
         docs.add("   java class : " + getClass().getCanonicalName());
         if (getDescription() != null) {
+            docs.add("\n:");
+            docs.add("Description:");
+            docs.add("------------");
             docs.addAll(getDescription());
         }
         if (!funcs.isEmpty()) {
-            docs.add("functions:");
+            docs.add("\n:");
+            docs.add("Functions:");
+            docs.add("----------");
             // Now sort the functions
             TreeSet<String> treeSet = new TreeSet<>();
             for (QDLFunction f : funcs) {
@@ -255,7 +260,9 @@ public abstract class JavaModule extends Module {
             docs.addAll(treeSet);
         }
         if (!vars.isEmpty()) {
-            docs.add("variables:");
+            docs.add("\n");
+            docs.add("Variables:");
+            docs.add("----------");
             TreeSet<String> treeSet = new TreeSet<>();
             for (QDLVariable variable : vars) {
                 treeSet.add("  " + variable.getName()); // indent
@@ -266,16 +273,7 @@ public abstract class JavaModule extends Module {
         return docs;
     }
 
-    /**
-     * The {@link #createDefaultDocs()} will create basic documentation for functions and such,
-     * and is called automatically during module {@link #init(State)},
-     * but the actual description of this module -- if any -- is done here. Override and return your description.
-     *
-     * @return
-     */
-    public List<String> getDescription() {
-        return null;
-    }
+
 
     List<String> documentation = new ArrayList<>();
 

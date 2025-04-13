@@ -65,7 +65,8 @@ public class ModuleStatement implements Statement {
         module.setAlias(getAlias());
         module.setTemplate(true);
         module.setModuleStatement(this);
-        module.setDocumentation(getDocumentation());
+        module.setDescription(getDocumentation());
+     //   module.setDocumentation(getDocumentation());
         //state.getMTemplates().put(new MTKey(getNamespace()), module);
         if (state.isImportMode()) {
             // This creates the instance from the statement.
@@ -87,6 +88,7 @@ public class ModuleStatement implements Statement {
             }
             localState.setImportMode(false);
             module.setState(localState);
+         //   module.setDocumentation(module.createDefaultDocs());
             //state.getMInstances().put(module);
             this.mInstance = module;
         } else {

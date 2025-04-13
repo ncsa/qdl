@@ -54,6 +54,11 @@ define[to_load(s, arg)]
 » to_load(s, arg) - create a load scriplet from a script name and argument list.
 » If arg is empty, then no arguments are given
 » Returns a JSON string that is the anaphor.
+» E.g.
+»   anaphors#to_load('util/init.qdl', ['foo', 'bar'])
+» {"qdl":{"args":["foo","bar"],"load":"util/init.qdl"}}
+
+
 if[var_type(arg) == constants().'var_type'.'stem'][
    if[size(arg) == 0]
    then[// empty arg list, so don't pass it
@@ -79,6 +84,8 @@ define[json_in(string)]
   » {"qdl" : {"load" : "path/my.qdl", "args":[1,"foo"]}}
   » would be turned into the stem
   » {'load':'path/my.qdl', 'args' : [1,'foo']}
+  » which may be run using the exec(x) function in this module.
+
         s. ≔ from_json(string);
         ⊨∃s.'qdl' : 'no anaphor found';
         in. ≔ s.'qdl'; // either a singleton or list
@@ -106,8 +113,8 @@ block[
 » exec(x) - execute a generic anaphor`` (includes lists of them).
 » x is one of
 »   * the JSON string for this anaphor
-»   * The full anaphor, e.g. {'qdl':{'load':....}}
-»   * The executable part of the anaphor, e.g. {'load:'...}
+»   * The full anaphor as a stem, e.g. {'qdl':{'load':....}}
+»   * The executable part of the anaphor as a stem, e.g. {'load:'...}
 »     or a list of these
 » The result is the result of running the anaphor.
 s. := (var_type(x) == constants().'var_type'.'string') ⇒ from_json(x) : x;

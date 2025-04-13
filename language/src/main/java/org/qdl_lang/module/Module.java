@@ -530,4 +530,24 @@ public abstract class Module implements XThing, Serializable {
     }
 
     int inheritMode = ModuleEvaluator.IMPORT_STATE_ANY_VALUE;
+
+// {@link #createDefaultDocs()}
+    /**
+     * The  will create basic documentation for functions and such,
+     * and is called automatically during module initialization,
+     * but the actual description of this module -- if any -- is done here. Override and return your description.
+     *
+     * @return
+     */
+    public List<String> getDescription() {
+        return description;
+    }
+
+    public void setDescription(List<String> description) {
+        this.description = description;
+    }
+
+    List<String> description;
+    public abstract List<String> createDefaultDocs();
+
 }

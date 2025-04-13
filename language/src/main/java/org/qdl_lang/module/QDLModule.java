@@ -2,6 +2,8 @@ package org.qdl_lang.module;
 
 import org.qdl_lang.evaluate.ModuleEvaluator;
 import org.qdl_lang.exceptions.ModuleInstantiationException;
+import org.qdl_lang.extensions.QDLFunction;
+import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ModuleStatement;
@@ -20,6 +22,7 @@ import javax.xml.stream.events.XMLEvent;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 import static org.qdl_lang.xml.SerializationConstants.*;
 
@@ -75,6 +78,9 @@ public class QDLModule extends Module {
             localState.setImportMode(true);
             getModuleStatement().evaluate(localState);
             Module m = getModuleStatement().getmInstance();
+            if(this instanceof QDLModule) {
+                ((QDLModule)m).setFilePath(getFilePath());
+            }
             getModuleStatement().clearInstance();
             localState.setImportMode(false);
             setupModule(m);
@@ -109,12 +115,12 @@ public class QDLModule extends Module {
             means a huge explosion in the size of the serialization. Only save it if there
             was a bonda fide change.
          */
-        if(isTemplate()){
+        if (isTemplate()) {
             json.put(MODULE_INPUT_FORM_TAG, Base64.encodeBase64URLSafeString(InputFormUtil.inputForm(this).getBytes()));
-        }else{
+        } else {
             // not a template. be sure there is a template
             Module template = serializationState.getTemplate(getParentTemplateID());
-            if(template == null){
+            if (template == null) {
                 json.put(MODULE_INPUT_FORM_TAG, Base64.encodeBase64URLSafeString(InputFormUtil.inputForm(this).getBytes()));
             }
         }
@@ -132,17 +138,17 @@ public class QDLModule extends Module {
     public void deserializeFromJSON(JSONObject json, SerializationState serializationState) throws Throwable {
         super.deserializeFromJSON(json, serializationState);
         String source = null;
-        if(isTemplate()){
+        if (isTemplate()) {
             if (!json.containsKey(MODULE_INPUT_FORM_TAG)) {
                 throw new NFWException("missing input form for module.");
             }
             source = new String(Base64.decodeBase64(json.getString(MODULE_INPUT_FORM_TAG)), StandardCharsets.UTF_8);
-        }else{
+        } else {
             // so we are deserializing an instance. Now we check if there is template
             Module template = serializationState.getTemplate(getParentTemplateID());
             if (template != null) {
                 source = InputFormUtil.inputForm(template);
-            }else{
+            } else {
                 // last resort. No template by UUID, so the
                 if (!json.containsKey(MODULE_INPUT_FORM_TAG)) {
                     throw new NFWException("missing input form for module.");
@@ -166,7 +172,7 @@ public class QDLModule extends Module {
             qdlInterpreter.execute(source);
             QDLModule tempM = (QDLModule) newState.getMTemplates().getAll().get(0);
             setModuleStatement(tempM.getModuleStatement());
-            setDocumentation(tempM.getModuleStatement().getDocumentation());
+          //  setDocumentation(tempM.getModuleStatement().getDocumentation());
 
         } catch (Throwable e) {
             e.printStackTrace();
@@ -201,6 +207,40 @@ public class QDLModule extends Module {
 
     @Override
     public List<String> getDocumentation() {
+        if(documentation.isEmpty()) {
+            documentation = createDefaultDocs();
+        }
         return documentation;
+    }
+
+    // Fix for https://github.com/ncsa/qdl/issues/111
+    @Override
+    public List<String> createDefaultDocs() {
+        List<String> docs = new ArrayList<>();
+        docs.add("  module path : " + getFilePath());
+        docs.add("    namespace : " + getNamespace());
+        docs.add("        alias : " + getAlias());
+        if (getDescription() != null) {
+            docs.add("\n");
+            docs.add("Description:");
+            docs.add("------------");
+            docs.addAll(getDescription());
+        }
+
+        TreeSet<String> set = getState().getFTStack().listFunctions(null);
+        if(set.size() != 0) {
+            docs.add("\n");
+            docs.add("Functions:");
+            docs.add("----------");
+            docs.addAll(set);
+        }
+        set = getState().getVStack().listVariables();
+        if(set.size() != 0) {
+            docs.add("\n");
+            docs.add("Variables:");
+            docs.add("----------");
+            docs.addAll(set);
+        }
+        return docs;
     }
 }

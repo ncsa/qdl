@@ -13,6 +13,7 @@ import org.qdl_lang.functions.FKey;
 import org.qdl_lang.functions.FStack;
 import org.qdl_lang.module.MTKey;
 import org.qdl_lang.module.Module;
+import org.qdl_lang.module.QDLModule;
 import org.qdl_lang.state.State;
 import org.qdl_lang.state.StateUtils;
 import org.qdl_lang.util.ModuleUtils;
@@ -1068,6 +1069,9 @@ docs(c#2@ini_out) ;
                     throw new BadArgException(IMPORT + " with unknown state inheritene mode", polyad.getArgAt(1));
             }
             Module module = template.newInstance(newState);
+            if(template instanceof QDLModule) {
+                ((QDLModule)module).setFilePath(((QDLModule)template).getFilePath());
+            }
             module.setInheritanceMode(inhertianceMode);
             newState.setModule(module);
             switch (inhertianceMode){

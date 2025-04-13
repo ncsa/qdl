@@ -6716,7 +6716,14 @@ See also: j_load, j_use, unload, rename
   ]]>
        </body>
        <example>
-   <![CDATA[
+   <![CDATA[E.g. load a QDL module that can be found in the module_path()
+      load('complex')
+   qdl:/math/complex
+
+   If a simple string for a name is given, the module path is checked for name.mdl
+and that is loaded if found. You can now import this and run various operations
+on it.
+
    ]]>
         </example>
     </entry>

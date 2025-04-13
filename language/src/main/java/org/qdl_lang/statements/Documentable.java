@@ -12,7 +12,8 @@ import java.util.TreeSet;
  */
 public interface Documentable extends Serializable {
     /**
-     * List first lines of function documentation given a regular expression.
+     * List first lines of function documentation given a regular expression. If the regular
+     * expression is null, then no filtering is done.
      * @param regex
      * @return
      */

@@ -12,6 +12,7 @@ import org.qdl_lang.extensions.QDLLoader;
 import org.qdl_lang.functions.FTable;
 import org.qdl_lang.module.MTKey;
 import org.qdl_lang.module.Module;
+import org.qdl_lang.module.QDLModule;
 import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.parsing.QDLParserDriver;
 import org.qdl_lang.parsing.QDLRunner;
@@ -215,7 +216,11 @@ public class ModuleUtils implements Serializable {
         List<String> afterLoad = new ArrayList<>();
         for (Object k : state.getMTemplates().getChangeList()) {
             MTKey mtKey = (MTKey) k;
-            state.getMTemplates().getModule(mtKey).setTemplate(true);
+            Module m = state.getMTemplates().getModule(mtKey);
+            m.setTemplate(true);
+            if(m instanceof QDLModule){
+                ((QDLModule) m).setFilePath(script.getPath());
+            }
             afterLoad.add(mtKey.getKey());
         }
         state.getMTemplates().clearChangeList();

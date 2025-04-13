@@ -1415,6 +1415,11 @@ public class State extends FunctionState implements QDLConstants {
                             public List<String> getDocumentation() {
                                 return doc;
                             }
+
+                            @Override
+                            public List<String> createDefaultDocs() {
+                                return doc;
+                            }
                         };
                     }
                     break;

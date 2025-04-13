@@ -2199,12 +2199,15 @@ public class SystemEvaluator extends AbstractEvaluator {
      */
     public static QDLScript resolveScript(String name, List<String> paths, State state) throws Throwable {
         // case 1. This starts with a # so they want to force getting a regular file
+        QDLScript qdlScript;
         if (name.startsWith(SCHEME_DELIMITER)) {
             if (state.isServerMode()) {
                 throw new IllegalArgumentException("File access forbidden in server mode.");
             }
             name = name.substring(1);
-            return new QDLScript(QDLFileUtil.readTextFileAsLines(state, name), null);
+            qdlScript =  new QDLScript(QDLFileUtil.readTextFileAsLines(state, name), null);
+            qdlScript.setPath(name);
+            return qdlScript;
 
         }
         // case 2: Scheme qualified.
@@ -2212,7 +2215,9 @@ public class SystemEvaluator extends AbstractEvaluator {
             String tempName = name.substring(1 + name.indexOf(SCHEME_DELIMITER));
             File testFile = new File(tempName);
             if (QDLFileUtil.isAbsolute(tempName)) {
-                return new QDLScript(QDLFileUtil.readTextFileAsLines(state, name), null);
+                qdlScript = new QDLScript(QDLFileUtil.readTextFileAsLines(state, name), null);
+                qdlScript.setPath(name);
+                return qdlScript;
             }
             // So it is of the form volume#relative/path
             String caput = name.substring(0, name.indexOf(SCHEME_DELIMITER));
@@ -2221,7 +2226,9 @@ public class SystemEvaluator extends AbstractEvaluator {
                     //         DebugUtil.trace(SystemEvaluator.class, " trying path = " + p + tempName);
                     try {
                         List<String> lines = QDLFileUtil.readTextFileAsLines(state, p + tempName);
-                        return new QDLScript(lines, null);
+                        qdlScript = new QDLScript(lines, null);
+                        qdlScript.setPath(p + tempName);
+                        return qdlScript;
                     } catch (FileNotFoundException | QDLFileNotFoundException fnf) {
                         // rock on
                     }
@@ -2243,7 +2250,9 @@ public class SystemEvaluator extends AbstractEvaluator {
                 if (state.isServerMode()) {
                     throw new QDLServerModeException("File access forbidden in server mode.");
                 } else {
-                    return new QDLScript(QDLFileUtil.readFileAsLines(name), null);
+                    qdlScript = new QDLScript(QDLFileUtil.readFileAsLines(name), null);
+                    qdlScript.setPath(name);
+                    return qdlScript;
                 }
             }
             for (String p : paths) {
@@ -2251,14 +2260,18 @@ public class SystemEvaluator extends AbstractEvaluator {
                 //    DebugUtil.trace(SystemEvaluator.class, " path = " + resourceName);
                 if (QDLFileUtil.isVFSPath(resourceName)) {
                     try {
-                        return new QDLScript(QDLFileUtil.readTextFileAsLines(state, resourceName), null);
+                        qdlScript = new QDLScript(QDLFileUtil.readTextFileAsLines(state, resourceName), null);
+                        qdlScript.setPath(resourceName);
+                        return qdlScript;
                     } catch (FileNotFoundException | QDLFileNotFoundException fnf) {
                         // rock on
                     }
                 } else {
                     testFile = new File(resourceName);
                     if (testFile.exists() && testFile.isFile() && testFile.canRead()) {
-                        return new QDLScript(QDLFileUtil.readFileAsLines(testFile.getCanonicalPath()), null);
+                        qdlScript = new QDLScript(QDLFileUtil.readFileAsLines(testFile.getCanonicalPath()), null);
+                        qdlScript.setPath(resourceName);
+                        return qdlScript;
                     }
                 }
             }
