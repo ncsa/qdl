@@ -219,7 +219,7 @@ public class QDLModule extends Module {
         List<String> docs = new ArrayList<>();
         docs.add("  module path : " + getFilePath());
         docs.add("    namespace : " + getNamespace());
-        docs.add("        alias : " + getAlias());
+        docs.add("instance name : " + getAlias());
         if (getDescription() != null) {
             docs.add("\n");
             docs.add("Description:");

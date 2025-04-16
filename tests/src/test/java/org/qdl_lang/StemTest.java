@@ -3371,7 +3371,21 @@ input_form((a\*\((k,v)→!is_list(v)))); // extracts all non-lists elements
         assert getBooleanValue("ok1", state) : "wrong size from extract with function";
         assert getBooleanValue("ok2", state) : "wrong  elements extract with function";
     }
+/*Zzdrfjk,,*/
 
+    /**
+     * Tests that passing in a stem restricted to an axis is preserved
+     * @throws Throwable
+     */
+    public void testAxisAsFunctionArgument() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script,"qqq(x)→@size∀[x];");
+        addLine(script,"ok := ⊗∧⊙(qqq(n(3,4)`0) ≡ [4,4,4])`*;"); // tests that the axis is preserved
+       QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "Did not preserve passing axis as argument to a function";
+    }
     /**
      * test contract for {@link StemEvaluator#DIFF} function.
      *

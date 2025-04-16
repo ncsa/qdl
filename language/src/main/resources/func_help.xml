@@ -7254,7 +7254,12 @@ See also: for_each, reduce, indices
   ]]>
         </body>
         <example>
-            <![CDATA[
+            <![CDATA[E.g. You may pass axes as arguments:
+   qqq(x)→@size∀[x]; // defines a function
+   qqq(n(3,4)`0); // pass in a stem with an axis
+[4,4,4]
+
+In this case, the axis is preserved in the argument and passed.
    ]]>
         </example>
     </entry>

@@ -235,16 +235,16 @@ public abstract class JavaModule extends Module {
         List<String> docs = new ArrayList<>();
         docs.add("  module name : " + getClass().getSimpleName());
         docs.add("    namespace : " + getNamespace());
-        docs.add("default alias : " + getAlias());
+        docs.add("instance name : " + getAlias());
         docs.add("   java class : " + getClass().getCanonicalName());
         if (getDescription() != null) {
-            docs.add("\n:");
+            docs.add("\n");
             docs.add("Description:");
             docs.add("------------");
             docs.addAll(getDescription());
         }
         if (!funcs.isEmpty()) {
-            docs.add("\n:");
+            docs.add("\n");
             docs.add("Functions:");
             docs.add("----------");
             // Now sort the functions
