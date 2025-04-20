@@ -390,6 +390,18 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitNumbers(QDLParserParser.NumbersContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code squartExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterSquartExpression(QDLParserParser.SquartExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code squartExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitSquartExpression(QDLParserParser.SquartExpressionContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code notExpression}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree

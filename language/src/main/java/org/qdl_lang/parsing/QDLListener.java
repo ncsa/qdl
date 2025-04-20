@@ -1,8 +1,6 @@
 package org.qdl_lang.parsing;
 
-import org.qdl_lang.evaluate.MetaEvaluator;
-import org.qdl_lang.evaluate.OpEvaluator;
-import org.qdl_lang.evaluate.SystemEvaluator;
+import org.qdl_lang.evaluate.*;
 import org.qdl_lang.exceptions.IntrinsicViolation;
 import org.qdl_lang.exceptions.NamespaceException;
 import org.qdl_lang.exceptions.ParsingException;
@@ -31,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import static org.qdl_lang.evaluate.OpEvaluator.NROOT;
 import static org.qdl_lang.exceptions.ParsingException.*;
 import static org.qdl_lang.statements.ExpressionInterface.*;
 import static org.qdl_lang.variables.QDLStem.STEM_INDEX_MARKER;
@@ -514,6 +513,20 @@ public class QDLListener implements QDLParserListener {
         dyad.setTokenPosition(tp(ctx));
         stash(ctx, dyad);
         finish(dyad, ctx);
+    }
+    @Override
+    public void enterSquartExpression(QDLParserParser.SquartExpressionContext ctx) {
+
+    }
+
+    @Override
+    public void exitSquartExpression(QDLParserParser.SquartExpressionContext ctx) {
+        Polyad polyad = new Polyad(TMathEvaluator.N_ROOT);
+        polyad.setTokenPosition(tp(ctx));
+        polyad.setSourceCode(getSource(ctx));
+        polyad.addArgument((ExpressionInterface) resolveChild(ctx.getChild(1)));
+        polyad.addArgument(new ConstantNode(2L));
+        stash(ctx, polyad);
     }
 
     @Override
@@ -2840,6 +2853,8 @@ illegal argument:no module named "b" was  imported at (1, 67)
         expr.setSourceCode(getSource(ctx));
         stash(ctx, expr);
     }
+
+
 }
 
 

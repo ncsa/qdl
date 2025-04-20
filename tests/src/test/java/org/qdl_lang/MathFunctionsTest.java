@@ -484,6 +484,21 @@ public class MathFunctionsTest extends AbstractQDLTester {
     }
 
     /**
+     * Repeat previous test with √ operator.
+     * @throws Throwable
+     */
+
+    public void testNRoot() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "r≔(3√((27+3*√69)/2) +  3√((27-3*√69)/2))/3;"); //
+        addLine(script, "s := r^3 - r - 1;"); // should return zero
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert areEqual(getBDValue("s", state), BigDecimal.ZERO);
+    }
+
+    /**
      * If the modulus operation would get lost in rounding, then {@link BigDecimal} throws
      * and {@link ArithmeticException}. This test sets the digits high enough and computes
      * it. This tests one with two huge numbers (easy case) then sets the precision high enough.
