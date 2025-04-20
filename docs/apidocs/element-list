@@ -32,6 +32,7 @@ org.qdl_lang.state
 org.qdl_lang.statements
 org.qdl_lang.types
 org.qdl_lang.util
+org.qdl_lang.util.aggregate
 org.qdl_lang.variables
 org.qdl_lang.variables.codecs
 org.qdl_lang.vfs

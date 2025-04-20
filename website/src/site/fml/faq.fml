@@ -196,7 +196,7 @@
                 </p>
             </answer>
         </faq>
-        <faq>
+        <faq id="productivity">
             <question>QDL seems awfully abstract. Would there be any other reason to use it?
             </question>
             <answer>
@@ -205,7 +205,8 @@
                     that software engineers write between 350 - 750 lines of
                     production code a month (this sample is 12,000 commercial projects) <it>regardless of
                     language level</it>. The higher the level of the language, the more productive the programmer
-                    is, simple as that. I can attest that the Q in QDL can indeed stand for "quick".
+                    is, simple as that. I can attest that the Q in QDL can indeed stand for "quick". A few characters
+                    is often sufficient for an entire task.
                </p>
             </answer>
         </faq>
