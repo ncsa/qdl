@@ -57,6 +57,7 @@ public class QDLTerminal extends ISO6429Terminal  {
             charMap['l'] = '⌊';
             charMap['m'] = '⌆';
             charMap['n'] = '∅';
+            charMap['N'] = '√';
             charMap['p'] = 'π';
             charMap['r'] = '≈';
             charMap['s'] = '⊢';
@@ -184,6 +185,8 @@ public class QDLTerminal extends ISO6429Terminal  {
                     return new KeyStroke('⌈');
                 case 'n':
                     return new KeyStroke('∅');
+                case 'N':
+                    return new KeyStroke('√');
                 case 'p':
                     return new KeyStroke('π');
                 case 's':

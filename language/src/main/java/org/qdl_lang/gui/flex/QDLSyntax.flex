@@ -1,7 +1,7 @@
 /*
- * Generated on 7/16/24, 9:11 AM
+ * Generated on 4/20/25, 8:42 AM
  */
-package edu.uiuc.ncsa.qdl.gui.flex;
+package org.qdl_lang.gui.flex;
 
 import java.io.*;
 import javax.swing.text.Segment;
@@ -275,6 +275,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "∉" |
 "∋" |
 "∌" |
+"√" |
 "∧" |
 "∨" |
 "∩" |

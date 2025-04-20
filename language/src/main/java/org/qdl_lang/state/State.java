@@ -431,6 +431,7 @@ public class State extends FunctionState implements QDLConstants {
         characterMap.put("2306", OpEvaluator.MASK_OP_KEY);
         characterMap.put("00B5", OpEvaluator.TRANSPOSE_OP_KEY);
         characterMap.put("03c0", TMathEvaluator.PI2);
+        characterMap.put("221A", "√");
         characterMap.put("2229", "∩");
         characterMap.put("222a", "∪");
         characterMap.put("2208", "∈");

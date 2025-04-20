@@ -1179,6 +1179,10 @@ subset(b., 3, 6)
 
     @Override
     public boolean add(Object o) {
+        if(o instanceof Integer) {
+            // assume they are adding just an number to the list
+            o = ((Integer) o).longValue();
+        }
         if (hasSparseEntries()) {
             SparseEntry lastEntry = getSparseEntries().last();
             SparseEntry newEntry = new SparseEntry(lastEntry.index + 1, o);
@@ -1389,16 +1393,10 @@ subset(b., 3, 6)
     @Override
     public Object set(int index, Object element) {
         return getArrayList().set(index, element);
-        //throw new NotImplementedException("set(int, Object)");
-
     }
 
     @Override
     public void add(int index, Object element) {
-   /*    if(!hasSparseEntries()){
-            getArrayList().add(index, element);
-        }
-   */
         throw new NotImplementedException("add(int, Object) -- need logic for sparse entries");
     }
 

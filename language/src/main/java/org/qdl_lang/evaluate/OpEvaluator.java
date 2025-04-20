@@ -60,6 +60,7 @@ public class OpEvaluator extends AbstractEvaluator {
     public static final String PLUS2 = "⁺"; // unciode 207a unary plus
     public static final String PLUS_PLUS = "++";
     public static final String POWER = "^";
+    public static final String NROOT = "√";
     public static final String UNION = "∪"; //unicode 2229
     public static final String UNION_2 = "\\/";
     public static final String INTERSECTION = "∩"; //unicode 222a
@@ -131,6 +132,8 @@ public class OpEvaluator extends AbstractEvaluator {
     public static final int REDUCE_OP_VALUE = 232; //2a00
     public static final int EXPAND_OP_VALUE = 233; //2a01
     public static final int APPLY_OP_VALUE = 234; // 	U+2202
+    public static final int NROOT_VALUE = 235; // 	U+221A
+
     /**
      * This is for operators that are in the parser and never are created directly, e.g.
      * → or #. "->"
@@ -154,7 +157,7 @@ public class OpEvaluator extends AbstractEvaluator {
             TO_SET, TO_SET2,
             FLOOR, CEILING,
             UNION, UNION_2, INTERSECTION, INTERSECTION_2,
-            POWER,
+            POWER, NROOT,
             TILDE, TILDE_STILE, TILDE_STILE2,
             TIMES,
             TIMES2,
@@ -338,6 +341,8 @@ public class OpEvaluator extends AbstractEvaluator {
                 return PLUS_VALUE;
             case POWER:
                 return POWER_VALUE;
+            case NROOT:
+                return NROOT_VALUE;
             case TIMES:
             case TIMES2:
                 return TIMES_VALUE;
@@ -425,6 +430,9 @@ public class OpEvaluator extends AbstractEvaluator {
             case POWER_VALUE:
                 doPower(dyad, state);
                 return;
+            case NROOT_VALUE:
+                doNroot(dyad, state);
+                return;
             case TIMES_VALUE:
                 doDyadTimesOrDivide(dyad, state, true);
                 return;
@@ -469,6 +477,18 @@ public class OpEvaluator extends AbstractEvaluator {
             default:
                 throw new NotImplementedException("Unknown dyadic operator " + dyad.getOperatorType());
         }
+    }
+
+    private void doNroot(Dyad dyad, State state) {
+        Polyad             polyad = new Polyad(TMathEvaluator.N_ROOT);
+        polyad.addArgument(dyad.getArgAt(1));
+        polyad.addArgument(dyad.getArgAt(0));
+        polyad.setSourceCode(dyad.getSourceCode());
+        polyad.setTokenPosition(dyad.getTokenPosition());
+        state.getMetaEvaluator().evaluate(polyad, state);
+        dyad.setResult(polyad.getResult());
+        dyad.setResultType(polyad.getResultType());
+        dyad.setEvaluated(polyad.isEvaluated());
     }
 
 

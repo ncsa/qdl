@@ -505,7 +505,12 @@ public class QDLListener implements QDLParserListener {
 
     @Override
     public void exitPowerExpression(QDLParserParser.PowerExpressionContext ctx) {
-        Dyad dyad = new Dyad(OpEvaluator.POWER_VALUE);
+        Dyad dyad;
+        if(ctx.Nroot() != null) {
+            dyad = new Dyad(OpEvaluator.NROOT_VALUE);
+        }else{
+            dyad = new Dyad(OpEvaluator.POWER_VALUE);
+        }
         dyad.setTokenPosition(tp(ctx));
         stash(ctx, dyad);
         finish(dyad, ctx);

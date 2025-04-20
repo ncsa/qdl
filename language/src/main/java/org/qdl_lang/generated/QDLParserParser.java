@@ -27,13 +27,13 @@ public class QDLParserParser extends Parser {
 		Plus=47, MinusMinus=48, Minus=49, LessThan=50, GreaterThan=51, SingleEqual=52, 
 		DoubleQuote=53, SingleQuote=54, To_Set=55, LessEquals=56, MoreEquals=57, 
 		IsA=58, Equals=59, NotEquals=60, RegexMatches=61, LogicalNot=62, Membership=63, 
-		IsDefined=64, ForAll=65, ContainsKey=66, Exponentiation=67, Transpose=68, 
-		Apply=69, ExprDyadicOps=70, FRefDyadicOps=71, And=72, Or=73, Backtick=74, 
-		Percent=75, Tilde=76, Backslash=77, Backslash2=78, Backslash3=79, Backslash4=80, 
-		Hash=81, Stile=82, TildeRight=83, StemDot=84, UnaryMinus=85, UnaryPlus=86, 
-		Floor=87, Ceiling=88, FunctionMarker=89, AltIfMarker=90, SwitchMarker=91, 
-		ASSIGN=92, Identifier=93, FuncStart=94, OP_REF=95, FDOC=96, WS=97, COMMENT=98, 
-		LINE_COMMENT=99;
+		IsDefined=64, ForAll=65, ContainsKey=66, Exponentiation=67, Nroot=68, 
+		Transpose=69, Apply=70, ExprDyadicOps=71, FRefDyadicOps=72, And=73, Or=74, 
+		Backtick=75, Percent=76, Tilde=77, Backslash=78, Backslash2=79, Backslash3=80, 
+		Backslash4=81, Hash=82, Stile=83, TildeRight=84, StemDot=85, UnaryMinus=86, 
+		UnaryPlus=87, Floor=88, Ceiling=89, FunctionMarker=90, AltIfMarker=91, 
+		SwitchMarker=92, ASSIGN=93, Identifier=94, FuncStart=95, OP_REF=96, FDOC=97, 
+		WS=98, COMMENT=99, LINE_COMMENT=100;
 	public static final int
 		RULE_elements = 0, RULE_element = 1, RULE_statement = 2, RULE_conditionalStatement = 3, 
 		RULE_ifStatement = 4, RULE_ifElseStatement = 5, RULE_loopStatement = 6, 
@@ -69,9 +69,9 @@ public class QDLParserParser extends Parser {
 			"'while'", null, null, null, null, null, "'['", "']'", "','", "':'", 
 			"';'", null, null, null, null, null, "'++'", "'+'", "'--'", "'-'", "'<'", 
 			"'>'", "'='", "'\"'", "'''", null, null, null, "'<<'", null, null, null, 
-			null, null, null, "'\u2200'", null, "'^'", "'\u00B5'", "'\u2202'", "'\u2306'", 
-			null, null, null, "'`'", null, "'~'", null, null, null, null, "'#'", 
-			"'|'", null, "'.'", "'\u00AF'", "'\u207A'", "'\u230A'", "'\u2308'"
+			null, null, null, "'\u2200'", null, "'^'", "'\u221A'", "'\u00B5'", "'\u2202'", 
+			"'\u2306'", null, null, null, "'`'", null, "'~'", null, null, null, null, 
+			"'#'", "'|'", null, "'.'", "'\u00AF'", "'\u207A'", "'\u230A'", "'\u2308'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
@@ -87,8 +87,8 @@ public class QDLParserParser extends Parser {
 			"SingleEqual", "DoubleQuote", "SingleQuote", "To_Set", "LessEquals", 
 			"MoreEquals", "IsA", "Equals", "NotEquals", "RegexMatches", "LogicalNot", 
 			"Membership", "IsDefined", "ForAll", "ContainsKey", "Exponentiation", 
-			"Transpose", "Apply", "ExprDyadicOps", "FRefDyadicOps", "And", "Or", 
-			"Backtick", "Percent", "Tilde", "Backslash", "Backslash2", "Backslash3", 
+			"Nroot", "Transpose", "Apply", "ExprDyadicOps", "FRefDyadicOps", "And", 
+			"Or", "Backtick", "Percent", "Tilde", "Backslash", "Backslash2", "Backslash3", 
 			"Backslash4", "Hash", "Stile", "TildeRight", "StemDot", "UnaryMinus", 
 			"UnaryPlus", "Floor", "Ceiling", "FunctionMarker", "AltIfMarker", "SwitchMarker", 
 			"ASSIGN", "Identifier", "FuncStart", "OP_REF", "FDOC", "WS", "COMMENT", 
@@ -2676,6 +2676,7 @@ public class QDLParserParser extends Parser {
 			return getRuleContext(ExpressionContext.class,i);
 		}
 		public TerminalNode Exponentiation() { return getToken(QDLParserParser.Exponentiation, 0); }
+		public TerminalNode Nroot() { return getToken(QDLParserParser.Nroot, 0); }
 		public PowerExpressionContext(ExpressionContext ctx) { copyFrom(ctx); }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
@@ -3684,7 +3685,15 @@ public class QDLParserParser extends Parser {
 						setState(411);
 						if (!(precpred(_ctx, 37))) throw new FailedPredicateException(this, "precpred(_ctx, 37)");
 						setState(412);
-						match(Exponentiation);
+						_la = _input.LA(1);
+						if ( !(_la==Exponentiation || _la==Nroot) ) {
+						_errHandler.recoverInline(this);
+						}
+						else {
+							if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+							_errHandler.reportMatch(this);
+							consume();
+						}
 						setState(413);
 						expression(38);
 						}
@@ -4348,7 +4357,7 @@ public class QDLParserParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3e\u01fd\4\2\t\2\4"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3f\u01fd\4\2\t\2\4"+
 		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t"+
 		"\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31\t\31"+
@@ -4383,15 +4392,15 @@ public class QDLParserParser extends Parser {
 		"!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\3!\5!\u01e0\n!\3!\3!\3!\3!\3!\5!\u01e7"+
 		"\n!\3!\3!\3!\3!\3!\5!\u01ee\n!\7!\u01f0\n!\f!\16!\u01f3\13!\3\"\3\"\3"+
 		"#\3#\3$\3$\3%\3%\3%\2\3@&\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&"+
-		"(*,.\60\62\64\668:<>@BDFH\2\16\3\2\22\23\4\2\60\60\62\62\3\2YZ\5\2\61"+
-		"\61\63\63WX\3\2\13\f\4\2NNUU\3\2\6\t\4\2./MM\4\2\61\61\63\63\4\2\64\65"+
-		":;\3\2=>\3\2\"#\2\u0242\2M\3\2\2\2\4R\3\2\2\2\6a\3\2\2\2\be\3\2\2\2\n"+
-		"g\3\2\2\2\fn\3\2\2\2\16w\3\2\2\2\20~\3\2\2\2\22\u008a\3\2\2\2\24\u0093"+
-		"\3\2\2\2\26\u009a\3\2\2\2\30\u00a7\3\2\2\2\32\u00ac\3\2\2\2\34\u00b4\3"+
-		"\2\2\2\36\u00b7\3\2\2\2 \u00ba\3\2\2\2\"\u00c0\3\2\2\2$\u00cb\3\2\2\2"+
-		"&\u00db\3\2\2\2(\u00e7\3\2\2\2*\u00eb\3\2\2\2,\u00ed\3\2\2\2.\u00fa\3"+
-		"\2\2\2\60\u0114\3\2\2\2\62\u0116\3\2\2\2\64\u0123\3\2\2\2\66\u0135\3\2"+
-		"\2\28\u013a\3\2\2\2:\u013c\3\2\2\2<\u0142\3\2\2\2>\u0144\3\2\2\2@\u0185"+
+		"(*,.\60\62\64\668:<>@BDFH\2\17\3\2\22\23\4\2\60\60\62\62\3\2Z[\5\2\61"+
+		"\61\63\63XY\3\2\13\f\4\2OOVV\3\2EF\3\2\6\t\4\2./NN\4\2\61\61\63\63\4\2"+
+		"\64\65:;\3\2=>\3\2\"#\2\u0242\2M\3\2\2\2\4R\3\2\2\2\6a\3\2\2\2\be\3\2"+
+		"\2\2\ng\3\2\2\2\fn\3\2\2\2\16w\3\2\2\2\20~\3\2\2\2\22\u008a\3\2\2\2\24"+
+		"\u0093\3\2\2\2\26\u009a\3\2\2\2\30\u00a7\3\2\2\2\32\u00ac\3\2\2\2\34\u00b4"+
+		"\3\2\2\2\36\u00b7\3\2\2\2 \u00ba\3\2\2\2\"\u00c0\3\2\2\2$\u00cb\3\2\2"+
+		"\2&\u00db\3\2\2\2(\u00e7\3\2\2\2*\u00eb\3\2\2\2,\u00ed\3\2\2\2.\u00fa"+
+		"\3\2\2\2\60\u0114\3\2\2\2\62\u0116\3\2\2\2\64\u0123\3\2\2\2\66\u0135\3"+
+		"\2\2\28\u013a\3\2\2\2:\u013c\3\2\2\2<\u0142\3\2\2\2>\u0144\3\2\2\2@\u0185"+
 		"\3\2\2\2B\u01f4\3\2\2\2D\u01f6\3\2\2\2F\u01f8\3\2\2\2H\u01fa\3\2\2\2J"+
 		"L\5\4\3\2KJ\3\2\2\2LO\3\2\2\2MK\3\2\2\2MN\3\2\2\2NP\3\2\2\2OM\3\2\2\2"+
 		"PQ\7\2\2\3Q\3\3\2\2\2RS\5\6\4\2ST\7*\2\2T\5\3\2\2\2Ub\5\22\n\2Vb\5\b\5"+
@@ -4435,7 +4444,7 @@ public class QDLParserParser extends Parser {
 		"*\2\2\u00de\u00df\5@!\2\u00df\u00e0\7*\2\2\u00e0\u00e2\3\2\2\2\u00e1\u00de"+
 		"\3\2\2\2\u00e2\u00e3\3\2\2\2\u00e3\u00e1\3\2\2\2\u00e3\u00e4\3\2\2\2\u00e4"+
 		"\u00e5\3\2\2\2\u00e5\u00e6\7\'\2\2\u00e6\'\3\2\2\2\u00e7\u00e8\7&\2\2"+
-		"\u00e8\u00e9\5@!\2\u00e9\u00ea\7\'\2\2\u00ea)\3\2\2\2\u00eb\u00ec\7b\2"+
+		"\u00e8\u00e9\5@!\2\u00e9\u00ea\7\'\2\2\u00ea)\3\2\2\2\u00eb\u00ec\7c\2"+
 		"\2\u00ec+\3\2\2\2\u00ed\u00ef\7&\2\2\u00ee\u00f0\5@!\2\u00ef\u00ee\3\2"+
 		"\2\2\u00ef\u00f0\3\2\2\2\u00f0\u00f1\3\2\2\2\u00f1\u00f2\7*\2\2\u00f2"+
 		"\u00f6\5@!\2\u00f3\u00f7\7*\2\2\u00f4\u00f5\7*\2\2\u00f5\u00f7\5@!\2\u00f6"+
@@ -4462,21 +4471,21 @@ public class QDLParserParser extends Parser {
 		"\2\2\u0135\u0128\3\2\2\2\u0135\u0133\3\2\2\2\u0136\67\3\2\2\2\u0137\u013b"+
 		"\5@!\2\u0138\u013b\5\62\32\2\u0139\u013b\5\66\34\2\u013a\u0137\3\2\2\2"+
 		"\u013a\u0138\3\2\2\2\u013a\u0139\3\2\2\2\u013b9\3\2\2\2\u013c\u013e\7"+
-		"`\2\2\u013d\u013f\5> \2\u013e\u013d\3\2\2\2\u013e\u013f\3\2\2\2\u013f"+
-		"\u0140\3\2\2\2\u0140\u0141\7\5\2\2\u0141;\3\2\2\2\u0142\u0143\7a\2\2\u0143"+
+		"a\2\2\u013d\u013f\5> \2\u013e\u013d\3\2\2\2\u013e\u013f\3\2\2\2\u013f"+
+		"\u0140\3\2\2\2\u0140\u0141\7\5\2\2\u0141;\3\2\2\2\u0142\u0143\7b\2\2\u0143"+
 		"=\3\2\2\2\u0144\u0149\58\35\2\u0145\u0146\7(\2\2\u0146\u0148\58\35\2\u0147"+
 		"\u0145\3\2\2\2\u0148\u014b\3\2\2\2\u0149\u0147\3\2\2\2\u0149\u014a\3\2"+
 		"\2\2\u014a?\3\2\2\2\u014b\u0149\3\2\2\2\u014c\u014d\b!\1\2\u014d\u0186"+
 		"\5:\36\2\u014e\u0150\5B\"\2\u014f\u014e\3\2\2\2\u014f\u0150\3\2\2\2\u0150"+
-		"\u0151\3\2\2\2\u0151\u0152\7S\2\2\u0152\u0186\5@!:\u0153\u0154\7[\2\2"+
-		"\u0154\u0186\5@!8\u0155\u0156\7G\2\2\u0156\u0186\5@!\61\u0157\u0186\5"+
+		"\u0151\3\2\2\2\u0151\u0152\7T\2\2\u0152\u0186\5@!:\u0153\u0154\7\\\2\2"+
+		"\u0154\u0186\5@!8\u0155\u0156\7H\2\2\u0156\u0186\5@!\61\u0157\u0186\5"+
 		"\62\32\2\u0158\u0186\5\66\34\2\u0159\u0186\5\60\31\2\u015a\u0186\5.\30"+
 		"\2\u015b\u0186\5,\27\2\u015c\u015d\79\2\2\u015d\u0186\5@!+\u015e\u015f"+
 		"\t\3\2\2\u015f\u0186\5@!(\u0160\u0161\t\4\2\2\u0161\u0186\5@!$\u0162\u0163"+
 		"\t\5\2\2\u0163\u0186\5@!#\u0164\u0165\7\n\2\2\u0165\u0166\5@!\2\u0166"+
 		"\u0167\7\5\2\2\u0167\u0186\3\2\2\2\u0168\u0169\7B\2\2\u0169\u0186\5@!"+
 		"\31\u016a\u016b\t\6\2\2\u016b\u0186\5@!\27\u016c\u016d\t\7\2\2\u016d\u0186"+
-		"\5@!\16\u016e\u016f\7F\2\2\u016f\u0186\5@!\r\u0170\u0186\7%\2\2\u0171"+
+		"\5@!\16\u016e\u016f\7G\2\2\u016f\u0186\5@!\r\u0170\u0186\7%\2\2\u0171"+
 		"\u0186\5<\37\2\u0172\u0186\5F$\2\u0173\u0186\5D#\2\u0174\u0186\5B\"\2"+
 		"\u0175\u0186\5H%\2\u0176\u0186\7$\2\2\u0177\u0186\7\33\2\2\u0178\u0182"+
 		"\5:\36\2\u0179\u017d\7\n\2\2\u017a\u017c\5> \2\u017b\u017a\3\2\2\2\u017c"+
@@ -4491,51 +4500,51 @@ public class QDLParserParser extends Parser {
 		"\2\2\u0185\u0170\3\2\2\2\u0185\u0171\3\2\2\2\u0185\u0172\3\2\2\2\u0185"+
 		"\u0173\3\2\2\2\u0185\u0174\3\2\2\2\u0185\u0175\3\2\2\2\u0185\u0176\3\2"+
 		"\2\2\u0185\u0177\3\2\2\2\u0185\u0181\3\2\2\2\u0186\u01f1\3\2\2\2\u0187"+
-		"\u0188\f;\2\2\u0188\u0189\7[\2\2\u0189\u01f0\5@!<\u018a\u018c\f9\2\2\u018b"+
-		"\u018d\7V\2\2\u018c\u018b\3\2\2\2\u018d\u018e\3\2\2\2\u018e\u018c\3\2"+
-		"\2\2\u018e\u018f\3\2\2\2\u018f\u0190\3\2\2\2\u0190\u01f0\5@!:\u0191\u0192"+
-		"\f\66\2\2\u0192\u0193\7O\2\2\u0193\u01f0\5@!\67\u0194\u0195\f\64\2\2\u0195"+
-		"\u0196\7Q\2\2\u0196\u01f0\5@!\65\u0197\u0198\f\62\2\2\u0198\u0199\7G\2"+
-		"\2\u0199\u01f0\5@!\63\u019a\u019b\f*\2\2\u019b\u019c\t\7\2\2\u019c\u01f0"+
-		"\5@!+\u019d\u019e\f\'\2\2\u019e\u019f\7E\2\2\u019f\u01f0\5@!(\u01a0\u01a1"+
-		"\f&\2\2\u01a1\u01a2\t\b\2\2\u01a2\u01f0\5@!\'\u01a3\u01a4\f%\2\2\u01a4"+
-		"\u01a5\t\t\2\2\u01a5\u01f0\5@!&\u01a6\u01a7\f\"\2\2\u01a7\u01a8\t\n\2"+
-		"\2\u01a8\u01f0\5@!#\u01a9\u01aa\f!\2\2\u01aa\u01ab\t\13\2\2\u01ab\u01f0"+
-		"\5@!\"\u01ac\u01ad\f \2\2\u01ad\u01ae\t\f\2\2\u01ae\u01f0\5@!!\u01af\u01b0"+
-		"\f\37\2\2\u01b0\u01b1\7?\2\2\u01b1\u01f0\5@! \u01b2\u01b3\f\36\2\2\u01b3"+
-		"\u01b4\7<\2\2\u01b4\u01f0\5@!\37\u01b5\u01b6\f\33\2\2\u01b6\u01b7\7A\2"+
-		"\2\u01b7\u01f0\5@!\34\u01b8\u01b9\f\32\2\2\u01b9\u01ba\7D\2\2\u01ba\u01f0"+
-		"\5@!\33\u01bb\u01bc\f\30\2\2\u01bc\u01bd\7B\2\2\u01bd\u01f0\5@!\31\u01be"+
-		"\u01bf\f\26\2\2\u01bf\u01c0\7J\2\2\u01c0\u01f0\5@!\27\u01c1\u01c2\f\25"+
-		"\2\2\u01c2\u01c3\7K\2\2\u01c3\u01f0\5@!\26\u01c4\u01c5\f\22\2\2\u01c5"+
-		"\u01c6\7C\2\2\u01c6\u01f0\5@!\23\u01c7\u01c8\f\21\2\2\u01c8\u01c9\7F\2"+
-		"\2\u01c9\u01f0\5@!\22\u01ca\u01cb\f\20\2\2\u01cb\u01cc\7H\2\2\u01cc\u01f0"+
-		"\5@!\21\u01cd\u01ce\f\17\2\2\u01ce\u01cf\7I\2\2\u01cf\u01f0\5@!\20\u01d0"+
-		"\u01d1\f\4\2\2\u01d1\u01d2\7^\2\2\u01d2\u01f0\5@!\5\u01d3\u01d4\f\67\2"+
-		"\2\u01d4\u01f0\7V\2\2\u01d5\u01d6\f\65\2\2\u01d6\u01f0\7P\2\2\u01d7\u01d8"+
-		"\f\63\2\2\u01d8\u01f0\7R\2\2\u01d9\u01da\f)\2\2\u01da\u01f0\t\3\2\2\u01db"+
-		"\u01dc\f\34\2\2\u01dc\u01df\7L\2\2\u01dd\u01e0\7.\2\2\u01de\u01e0\5@!"+
-		"\2\u01df\u01dd\3\2\2\2\u01df\u01de\3\2\2\2\u01e0\u01f0\3\2\2\2\u01e1\u01e2"+
-		"\f\24\2\2\u01e2\u01e3\7\\\2\2\u01e3\u01e6\5@!\2\u01e4\u01e5\7)\2\2\u01e5"+
-		"\u01e7\5@!\2\u01e6\u01e4\3\2\2\2\u01e6\u01e7\3\2\2\2\u01e7\u01f0\3\2\2"+
-		"\2\u01e8\u01e9\f\23\2\2\u01e9\u01ea\7]\2\2\u01ea\u01ed\5@!\2\u01eb\u01ec"+
-		"\7)\2\2\u01ec\u01ee\5@!\2\u01ed\u01eb\3\2\2\2\u01ed\u01ee\3\2\2\2\u01ee"+
-		"\u01f0\3\2\2\2\u01ef\u0187\3\2\2\2\u01ef\u018a\3\2\2\2\u01ef\u0191\3\2"+
-		"\2\2\u01ef\u0194\3\2\2\2\u01ef\u0197\3\2\2\2\u01ef\u019a\3\2\2\2\u01ef"+
-		"\u019d\3\2\2\2\u01ef\u01a0\3\2\2\2\u01ef\u01a3\3\2\2\2\u01ef\u01a6\3\2"+
-		"\2\2\u01ef\u01a9\3\2\2\2\u01ef\u01ac\3\2\2\2\u01ef\u01af\3\2\2\2\u01ef"+
-		"\u01b2\3\2\2\2\u01ef\u01b5\3\2\2\2\u01ef\u01b8\3\2\2\2\u01ef\u01bb\3\2"+
-		"\2\2\u01ef\u01be\3\2\2\2\u01ef\u01c1\3\2\2\2\u01ef\u01c4\3\2\2\2\u01ef"+
-		"\u01c7\3\2\2\2\u01ef\u01ca\3\2\2\2\u01ef\u01cd\3\2\2\2\u01ef\u01d0\3\2"+
-		"\2\2\u01ef\u01d3\3\2\2\2\u01ef\u01d5\3\2\2\2\u01ef\u01d7\3\2\2\2\u01ef"+
-		"\u01d9\3\2\2\2\u01ef\u01db\3\2\2\2\u01ef\u01e1\3\2\2\2\u01ef\u01e8\3\2"+
-		"\2\2\u01f0\u01f3\3\2\2\2\u01f1\u01ef\3\2\2\2\u01f1\u01f2\3\2\2\2\u01f2"+
-		"A\3\2\2\2\u01f3\u01f1\3\2\2\2\u01f4\u01f5\7_\2\2\u01f5C\3\2\2\2\u01f6"+
-		"\u01f7\t\r\2\2\u01f7E\3\2\2\2\u01f8\u01f9\7!\2\2\u01f9G\3\2\2\2\u01fa"+
-		"\u01fb\7\r\2\2\u01fbI\3\2\2\2)Maejqz\u0085\u008f\u0096\u009f\u00a3\u00be"+
-		"\u00c6\u00cf\u00d7\u00e3\u00ef\u00f6\u00fc\u0103\u010d\u0114\u011c\u0123"+
-		"\u012e\u0135\u013a\u013e\u0149\u014f\u017d\u0181\u0185\u018e\u01df\u01e6"+
-		"\u01ed\u01ef\u01f1";
+		"\u0188\f;\2\2\u0188\u0189\7\\\2\2\u0189\u01f0\5@!<\u018a\u018c\f9\2\2"+
+		"\u018b\u018d\7W\2\2\u018c\u018b\3\2\2\2\u018d\u018e\3\2\2\2\u018e\u018c"+
+		"\3\2\2\2\u018e\u018f\3\2\2\2\u018f\u0190\3\2\2\2\u0190\u01f0\5@!:\u0191"+
+		"\u0192\f\66\2\2\u0192\u0193\7P\2\2\u0193\u01f0\5@!\67\u0194\u0195\f\64"+
+		"\2\2\u0195\u0196\7R\2\2\u0196\u01f0\5@!\65\u0197\u0198\f\62\2\2\u0198"+
+		"\u0199\7H\2\2\u0199\u01f0\5@!\63\u019a\u019b\f*\2\2\u019b\u019c\t\7\2"+
+		"\2\u019c\u01f0\5@!+\u019d\u019e\f\'\2\2\u019e\u019f\t\b\2\2\u019f\u01f0"+
+		"\5@!(\u01a0\u01a1\f&\2\2\u01a1\u01a2\t\t\2\2\u01a2\u01f0\5@!\'\u01a3\u01a4"+
+		"\f%\2\2\u01a4\u01a5\t\n\2\2\u01a5\u01f0\5@!&\u01a6\u01a7\f\"\2\2\u01a7"+
+		"\u01a8\t\13\2\2\u01a8\u01f0\5@!#\u01a9\u01aa\f!\2\2\u01aa\u01ab\t\f\2"+
+		"\2\u01ab\u01f0\5@!\"\u01ac\u01ad\f \2\2\u01ad\u01ae\t\r\2\2\u01ae\u01f0"+
+		"\5@!!\u01af\u01b0\f\37\2\2\u01b0\u01b1\7?\2\2\u01b1\u01f0\5@! \u01b2\u01b3"+
+		"\f\36\2\2\u01b3\u01b4\7<\2\2\u01b4\u01f0\5@!\37\u01b5\u01b6\f\33\2\2\u01b6"+
+		"\u01b7\7A\2\2\u01b7\u01f0\5@!\34\u01b8\u01b9\f\32\2\2\u01b9\u01ba\7D\2"+
+		"\2\u01ba\u01f0\5@!\33\u01bb\u01bc\f\30\2\2\u01bc\u01bd\7B\2\2\u01bd\u01f0"+
+		"\5@!\31\u01be\u01bf\f\26\2\2\u01bf\u01c0\7K\2\2\u01c0\u01f0\5@!\27\u01c1"+
+		"\u01c2\f\25\2\2\u01c2\u01c3\7L\2\2\u01c3\u01f0\5@!\26\u01c4\u01c5\f\22"+
+		"\2\2\u01c5\u01c6\7C\2\2\u01c6\u01f0\5@!\23\u01c7\u01c8\f\21\2\2\u01c8"+
+		"\u01c9\7G\2\2\u01c9\u01f0\5@!\22\u01ca\u01cb\f\20\2\2\u01cb\u01cc\7I\2"+
+		"\2\u01cc\u01f0\5@!\21\u01cd\u01ce\f\17\2\2\u01ce\u01cf\7J\2\2\u01cf\u01f0"+
+		"\5@!\20\u01d0\u01d1\f\4\2\2\u01d1\u01d2\7_\2\2\u01d2\u01f0\5@!\5\u01d3"+
+		"\u01d4\f\67\2\2\u01d4\u01f0\7W\2\2\u01d5\u01d6\f\65\2\2\u01d6\u01f0\7"+
+		"Q\2\2\u01d7\u01d8\f\63\2\2\u01d8\u01f0\7S\2\2\u01d9\u01da\f)\2\2\u01da"+
+		"\u01f0\t\3\2\2\u01db\u01dc\f\34\2\2\u01dc\u01df\7M\2\2\u01dd\u01e0\7."+
+		"\2\2\u01de\u01e0\5@!\2\u01df\u01dd\3\2\2\2\u01df\u01de\3\2\2\2\u01e0\u01f0"+
+		"\3\2\2\2\u01e1\u01e2\f\24\2\2\u01e2\u01e3\7]\2\2\u01e3\u01e6\5@!\2\u01e4"+
+		"\u01e5\7)\2\2\u01e5\u01e7\5@!\2\u01e6\u01e4\3\2\2\2\u01e6\u01e7\3\2\2"+
+		"\2\u01e7\u01f0\3\2\2\2\u01e8\u01e9\f\23\2\2\u01e9\u01ea\7^\2\2\u01ea\u01ed"+
+		"\5@!\2\u01eb\u01ec\7)\2\2\u01ec\u01ee\5@!\2\u01ed\u01eb\3\2\2\2\u01ed"+
+		"\u01ee\3\2\2\2\u01ee\u01f0\3\2\2\2\u01ef\u0187\3\2\2\2\u01ef\u018a\3\2"+
+		"\2\2\u01ef\u0191\3\2\2\2\u01ef\u0194\3\2\2\2\u01ef\u0197\3\2\2\2\u01ef"+
+		"\u019a\3\2\2\2\u01ef\u019d\3\2\2\2\u01ef\u01a0\3\2\2\2\u01ef\u01a3\3\2"+
+		"\2\2\u01ef\u01a6\3\2\2\2\u01ef\u01a9\3\2\2\2\u01ef\u01ac\3\2\2\2\u01ef"+
+		"\u01af\3\2\2\2\u01ef\u01b2\3\2\2\2\u01ef\u01b5\3\2\2\2\u01ef\u01b8\3\2"+
+		"\2\2\u01ef\u01bb\3\2\2\2\u01ef\u01be\3\2\2\2\u01ef\u01c1\3\2\2\2\u01ef"+
+		"\u01c4\3\2\2\2\u01ef\u01c7\3\2\2\2\u01ef\u01ca\3\2\2\2\u01ef\u01cd\3\2"+
+		"\2\2\u01ef\u01d0\3\2\2\2\u01ef\u01d3\3\2\2\2\u01ef\u01d5\3\2\2\2\u01ef"+
+		"\u01d7\3\2\2\2\u01ef\u01d9\3\2\2\2\u01ef\u01db\3\2\2\2\u01ef\u01e1\3\2"+
+		"\2\2\u01ef\u01e8\3\2\2\2\u01f0\u01f3\3\2\2\2\u01f1\u01ef\3\2\2\2\u01f1"+
+		"\u01f2\3\2\2\2\u01f2A\3\2\2\2\u01f3\u01f1\3\2\2\2\u01f4\u01f5\7`\2\2\u01f5"+
+		"C\3\2\2\2\u01f6\u01f7\t\16\2\2\u01f7E\3\2\2\2\u01f8\u01f9\7!\2\2\u01f9"+
+		"G\3\2\2\2\u01fa\u01fb\7\r\2\2\u01fbI\3\2\2\2)Maejqz\u0085\u008f\u0096"+
+		"\u009f\u00a3\u00be\u00c6\u00cf\u00d7\u00e3\u00ef\u00f6\u00fc\u0103\u010d"+
+		"\u0114\u011c\u0123\u012e\u0135\u013a\u013e\u0149\u014f\u017d\u0181\u0185"+
+		"\u018e\u01df\u01e6\u01ed\u01ef\u01f1";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

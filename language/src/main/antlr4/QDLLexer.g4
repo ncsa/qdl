@@ -123,6 +123,7 @@ SCIENTIFIC_NUMBER : Decimal (E SIGN? Integer)?;
             ForAll : '∀' ;       // unicode 2200
        ContainsKey : '∋' | '∌';  // unicode 220B, 220C
     Exponentiation : '^';
+             Nroot : '√';  // unicode 221A
          Transpose : 'µ';  // unicode 00B5
              Apply : '∂';  // unicode 2202
      ExprDyadicOps : '⌆' ; // unicode 2306
@@ -176,7 +177,7 @@ SCIENTIFIC_NUMBER : Decimal (E SIGN? Integer)?;
     // get flagged as a possible match.
 
 fragment AllOps :
-     Times | Divide | Plus | Minus | LessThan | LessEquals | GreaterThan | Exponentiation |
+     Times | Divide | Plus | Minus | LessThan | LessEquals | GreaterThan | Exponentiation | Nroot |
      LessEquals | MoreEquals | Equals | NotEquals | And | Or | Percent | Tilde | TildeRight |
      LogicalNot | RegexMatches | Floor | Ceiling | Membership | To_Set | IsA | IsDefined |
      ContainsKey | ForAll | Apply;

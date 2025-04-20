@@ -2902,12 +2902,13 @@ E.g. Set the logging level
         </example>
     </entry>
 
-    <entry id="nroot">
+    <entry id="nroot" alt="√">
         <body>
             <![CDATA[nroot(x,n) - compute the n-th root of x.
              n is an integer.
              If n is odd, x may be any number,
              If n is even, 0 <= x
+             n√x is unicode equvalent
 The general case of exponentiation x^y will fail for fractional roots and
 negative numbers. This is because there is no way to check if an exponent
 is an n-th root, due to internal computer representation not being exact,
@@ -2921,6 +2922,23 @@ works.
 
 See also: Reference manual on ^]]>
         </body>
+        <example>
+            <![CDATA[
+   nroot(5,3)
+1.7099759466767
+
+Or as a dyad:
+
+   3√5
+1.7099759466767
+
+Both compute the cube root of 5.
+   [1;6]√7
+[7,2.64575131106459,1.91293118277239,1.62657656169779,1.47577316159455]
+computes the 1ist through 6th roots of 7.
+   ]]>
+        </example>
+
     </entry>
     <entry id="join">
         <body>
@@ -5279,7 +5297,7 @@ a   |s   |d   |f   |g   |h   |j   |k   |l   |;   |'   |
 ∂   |⊢   |→   |    |    |∋   |    |⌈   |⌊   |    | »  |
 
   Z |  X |  C |  V |  B |  N |  M |  < |  > |  ? |
-    |  ⊕ |    |    |    |    |    |  ≤ |  ≥ |  ⇒ |
+    |  ⊕ |    |    |    |  √ |    |  ≤ |  ≥ |  ⇒ |
 z   |x   |c   |v   |b   |n   |m   |,   |.   |/   |
     |⊙   |    |    |    |∅   |⌆   |    |    |    |
 See also: unicode, greek]]>
@@ -7296,6 +7314,7 @@ See also: rank, dim, ` (the axis operator)
   ]]>
         </body>
     </entry>
+
     <!-- template without example  block
     <entry id="">
        <body>

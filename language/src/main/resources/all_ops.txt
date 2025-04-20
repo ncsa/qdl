@@ -252,3 +252,4 @@ Note: The parser does the work and the following do not end up in any QDL list
  ⟦
  |]
  ⟧
+ √
