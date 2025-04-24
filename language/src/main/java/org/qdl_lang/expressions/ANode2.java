@@ -88,12 +88,7 @@ public class ANode2 extends ExpressionImpl {
 
     @Override
     public Object evaluate(State state) {
-        //     return oldAssign(state);
-        return newAssign(state);
-    }
-
-    public Object newAssign(State state) {
-        Dyad d = null;
+      Dyad d = null;
 
         if (getAssignmentType() != leftAssignmentType && getAssignmentType() != rightAssignmentType) {
             // Do other assignments like +=
@@ -117,6 +112,10 @@ public class ANode2 extends ExpressionImpl {
                     // edge case where someone is trying to assign a value from a return();
                     throw new QDLExceptionWithTrace("no value", getRightArg() );
                 }
+            }
+            // Next block fixes https://github.com/ncsa/qdl/issues/113
+            if(getRightArg().getResult() == null){
+                throw new QDLExceptionWithTrace("value not found", getRightArg() );
             }
             setResult(getRightArg().getResult());
             setResultType(getRightArg().getResultType());
