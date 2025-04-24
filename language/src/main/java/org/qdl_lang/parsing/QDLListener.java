@@ -1523,7 +1523,6 @@ illegal argument:no module named "b" was  imported at (1, 67)
     @Override
     public void enterRegexMatches(QDLParserParser.RegexMatchesContext ctx) {
         stash(ctx, new ComparisonDyad(OpEvaluator.UNKNOWN_VALUE, tp(ctx)));
-
     }
 
     @Override
@@ -2854,6 +2853,48 @@ illegal argument:no module named "b" was  imported at (1, 67)
         stash(ctx, expr);
     }
 
+    @Override
+    public void enterExcise(QDLParserParser.ExciseContext ctx) {
+
+    }
+
+    @Override
+    public void exitExcise(QDLParserParser.ExciseContext ctx) {
+
+        Dyad dyad = new Dyad(OpEvaluator.UNKNOWN_VALUE, tp(ctx));
+        stash(ctx, dyad);
+        dyad.setOperatorType(state.getOperatorType(ctx.op.getText()));
+        finish(dyad, ctx);
+    }
+
+    @Override
+    public void enterNotTildeExpression(QDLParserParser.NotTildeExpressionContext ctx) {
+
+    }
+
+    // Fix https://github.com/ncsa/qdl/issues/114 Note that without qualification that !~ is only dyadic
+    // there will be parser errors for the monadic case which is, in fact ! ~list (reorder, neagate).
+    // This explicitly adds this important case to the parser.
+    @Override
+    public void exitNotTildeExpression(QDLParserParser.NotTildeExpressionContext ctx) {
+        // create the join
+        Dyad dyad;
+        dyad = new Dyad(OpEvaluator.TILDE_VALUE);
+        dyad.setUnary(true);
+        dyad.setTokenPosition(tp(ctx));
+        dyad.setLeftArgument(new ConstantNode(new QDLStem(), Constant.STEM_TYPE));
+        dyad.setRightArgument((ExpressionInterface) resolveChild(ctx.expression()));
+
+        // create the wrapping logical not.
+        stash(ctx, new Monad(OpEvaluator.NOT_VALUE, false));// automatically prefix
+        Monad monad = (Monad) parsingMap.getStatementFromContext(ctx);
+        monad.setArgument(dyad);
+        monad.setTokenPosition(tp(ctx));
+        monad.setPostFix(false);
+        List<String> source = new ArrayList<>();
+        source.add(ctx.getText());
+        monad.setSourceCode(source);
+    }
 
 }
 

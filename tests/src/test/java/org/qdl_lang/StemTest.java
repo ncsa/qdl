@@ -3428,6 +3428,17 @@ input_form((a\*\((k,v)→!is_list(v)))); // extracts all non-lists elements
         assert getBooleanValue("ok", state) : StemEvaluator.EXCISE + " incorrect shape of result";
         assert getBooleanValue("ok1", state) : StemEvaluator.EXCISE + " incorrect values for result";
     }
+    public void testExciseOperator() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ϱ. := n(5,5,[;3]) !~ [0,2];"); // matrix
+        addLine(script, "ok:=reduce(@&&, dim(ϱ.)==[5,2]) && rank(ϱ.)==2;");
+        addLine(script, "ok1:=reduce(@&&, reduce(@&&,ϱ.==[[1,1],[1],[1,1],[1,1],[1]]));");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : OpEvaluator.EXCISE + " incorrect shape of result";
+        assert getBooleanValue("ok1", state) : OpEvaluator.EXCISE + " incorrect values for result";
+    }
 
     public void testExciseStem() throws Throwable {
         State state = testUtils.getNewState();
@@ -3444,6 +3455,38 @@ input_form((a\*\((k,v)→!is_list(v)))); // extracts all non-lists elements
         assert getBooleanValue("ok1", state) : StemEvaluator.EXCISE + " incorrect values for result";
     }
 
+    public void testExciseStemOperator() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        // Note that the second argument is a stem. The function only looks at the values and this
+        // tests that as well.
+        addLine(script, "ϱ. := {'a':{'p':'c','q':'d'},'f':'c','c':'w'} !~ {'a':'c'};");
+        addLine(script, "ok:= size(ϱ.)==2;"); // dim and rank only work on lists. Best we can do is count
+        addLine(script, "b.:=ϱ. == {'a':{'q':'d'}, 'c':'w'};"); // resule is the stem  {a:{q:true}, c:true}
+        addLine(script, "ok1 := b.'a'.'q' && b.'c';");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : OpEvaluator.EXCISE + " incorrect shape of result";
+        assert getBooleanValue("ok1", state) : OpEvaluator.EXCISE + " incorrect values for result";
+    }
+
+    /**
+     * There is an idiom of !~list. which reorders a list then negates it. We have to handle this explicitly
+     * in the parser as a monadic function. This is a simple regression test.
+     * @throws Throwable
+     */
+    public void testNotJoin() throws Throwable{
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        // Note that the second argument is a stem. The function only looks at the values and this
+        // tests that as well.
+        addLine(script, "ϱ. := !~{2:false,4:true,5:false};");
+        addLine(script,"ok := ⊗∧⊙ϱ. ≡ [true,false,true];" );
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : OpEvaluator.EXCISE + " as monad incorrect result";
+
+    }
 }
 /*
    zeta.'Communities:LSCVirgoLIGOGroupMembers' := ['read:/DQSegDB' ,'read:/frames', 'read:/GraceDB'];

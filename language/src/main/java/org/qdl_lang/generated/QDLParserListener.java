@@ -582,6 +582,18 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitLambdaDef(QDLParserParser.LambdaDefContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code notTildeExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterNotTildeExpression(QDLParserParser.NotTildeExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code notTildeExpression}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitNotTildeExpression(QDLParserParser.NotTildeExpressionContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code containsKey}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
@@ -761,6 +773,18 @@ public interface QDLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitForAll(QDLParserParser.ForAllContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code excise}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterExcise(QDLParserParser.ExciseContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code excise}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitExcise(QDLParserParser.ExciseContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code association}
 	 * labeled alternative in {@link QDLParserParser#expression}.

@@ -3085,6 +3085,17 @@ Apply the given regex (which is a string) to match the string representation
 of the expression.
 Result is always a boolean.
 
+Trick: Sometimes you have a complex expression that has regex metacharacters in
+       it and you need to match on it. QDL supports escaping between \Q and \E
+       so that anything between those markers is treated as a literal.
+
+E.g.
+   '.*\\Qad.*^$v\\E.*' ≈ 'wooad.*^$vasd'
+true
+
+This checks if the literal ad.*^$v (with metacharachters ., * and $) is embedded in the
+right hand side.
+
 See also: tokenize, replace.]]>
         </body>
         <example>
@@ -7313,6 +7324,35 @@ of independent indices, but it is "ragged".
 See also: rank, dim, ` (the axis operator)
   ]]>
         </body>
+    </entry>
+    <entry id="!~">
+        <body>
+            <![CDATA[Operator form of the excise function.
+a. !~ b. <==> excise(a., b.);
+
+This removes every value of b. from a. by value, so that b.∉a. returns
+true for every entry of b.
+
+Note that monadically, !~ would mean to reorder the argument and
+take the logical not of every element, E.g.
+
+   !~{2:false,4:true,5:false}
+[true,false,true]
+
+Hence if you get a strange error from !~, it probably means you have made it dyadic
+somehow.
+
+See also: excise
+  ]]>
+        </body>
+        <example>
+            <![CDATA[
+   ['a','d']!~['a','b','c']
+[d]
+
+This removes a, b and c from the left hand side, leaving only d.
+   ]]>
+        </example>
     </entry>
 
     <!-- template without example  block

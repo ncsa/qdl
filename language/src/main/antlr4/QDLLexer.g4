@@ -118,6 +118,7 @@ SCIENTIFIC_NUMBER : Decimal (E SIGN? Integer)?;
          NotEquals : '!=' | '≠';  // unicode 2260
       RegexMatches : '=~' | '≈';  // unicode 2248
         LogicalNot : '!'  | '¬';  // unicode ac
+            Excise : '!~'  | '¬';
         Membership : '∈' | '∉';  // unicode 2208, 2209
          IsDefined : '∃' | '∄';  // unicode 2203, 2204
             ForAll : '∀' ;       // unicode 2200
@@ -180,7 +181,7 @@ fragment AllOps :
      Times | Divide | Plus | Minus | LessThan | LessEquals | GreaterThan | Exponentiation | Nroot |
      LessEquals | MoreEquals | Equals | NotEquals | And | Or | Percent | Tilde | TildeRight |
      LogicalNot | RegexMatches | Floor | Ceiling | Membership | To_Set | IsA | IsDefined |
-     ContainsKey | ForAll | Apply;
+     ContainsKey | ForAll | Apply | Excise;
 
 fragment FUNCTION_NAME :
      [a-zA-Z_$\u03b1-\u03c9\u0391-\u03a9\u03d1\u03d6\u03f0\u03f1][a-zA-Z_$0-9\u03b1-\u03c9\u0391-\u03a9\u03d1]*;

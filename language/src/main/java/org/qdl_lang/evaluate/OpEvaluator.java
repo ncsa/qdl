@@ -36,6 +36,7 @@ public class OpEvaluator extends AbstractEvaluator {
     public static final String DIVIDE2 = "÷"; // unicode f7
     public static final String EQUALS = "==";
     public static final String EQUALS2 = "≡";  // unicode 2261
+    public static final String EXCISE = "!~";
     public static final String FLOOR = "⌊";  // unicode 230a
     public static final String INTEGER_DIVIDE = "%";
     public static final String SYMMETRIC_DIFFERENCE = "∆"; // unicode 2206
@@ -133,6 +134,7 @@ public class OpEvaluator extends AbstractEvaluator {
     public static final int EXPAND_OP_VALUE = 233; //2a01
     public static final int APPLY_OP_VALUE = 234; // 	U+2202
     public static final int NROOT_VALUE = 235; // 	U+221A
+    public static final int EXCISE_VALUE = 236; // 	U+221A
 
     /**
      * This is for operators that are in the parser and never are created directly, e.g.
@@ -143,7 +145,7 @@ public class OpEvaluator extends AbstractEvaluator {
             "⊨",
             "|^", "⊢", "\\", QDLStem.STEM_INDEX_MARKER,
             "¿", "?",
-            "≔", ":=", "≕", "=:", "+=", "-=", "^=", "*=", "~=", "×=", "÷=", "%="
+            "≔", ":=", "≕", "=:", "+=", "-=", "^=", "*=", "~=", "×=", "÷=", "%=", "!~"
     };
 
     /**
@@ -171,6 +173,7 @@ public class OpEvaluator extends AbstractEvaluator {
             OR2,
             EQUALS,
             EQUALS2,
+            EXCISE,
             NOT_EQUAL,
             NOT_EQUAL2,
             LESS_THAN,
@@ -270,6 +273,8 @@ public class OpEvaluator extends AbstractEvaluator {
      */
     public int getType(String oo) {
         switch (oo) {
+            case EXCISE:
+                return EXCISE_VALUE;
             case EXPAND_OP_KEY:
                 return EXPAND_OP_VALUE;
             case REDUCE_OP_KEY:
@@ -387,6 +392,9 @@ public class OpEvaluator extends AbstractEvaluator {
 
     public void evaluate2(Dyad dyad, State state) {
         switch (dyad.getOperatorType()) {
+            case EXCISE_VALUE:
+                doExcise(dyad, state);
+                return;
             case REDUCE_OP_VALUE:
                 doFRefDyadicOperator(dyad, SystemEvaluator.REDUCE, state);
                 return;
@@ -479,8 +487,21 @@ public class OpEvaluator extends AbstractEvaluator {
         }
     }
 
+    // Fix https://github.com/ncsa/qdl/issues/114
+    private void doExcise(Dyad dyad, State state) {
+        Polyad polyad = new Polyad(StemEvaluator.EXCISE);
+        polyad.addArgument(dyad.getArgAt(0));
+        polyad.addArgument(dyad.getArgAt(1));
+        polyad.setSourceCode(dyad.getSourceCode());
+        polyad.setTokenPosition(dyad.getTokenPosition());
+        state.getMetaEvaluator().evaluate(polyad, state);
+        dyad.setResult(polyad.getResult());
+        dyad.setResultType(polyad.getResultType());
+        dyad.setEvaluated(polyad.isEvaluated());
+    }
+
     private void doNroot(Dyad dyad, State state) {
-        Polyad             polyad = new Polyad(TMathEvaluator.N_ROOT);
+        Polyad polyad = new Polyad(TMathEvaluator.N_ROOT);
         polyad.addArgument(dyad.getArgAt(1));
         polyad.addArgument(dyad.getArgAt(0));
         polyad.setSourceCode(dyad.getSourceCode());
@@ -577,8 +598,8 @@ public class OpEvaluator extends AbstractEvaluator {
                                                State state,
                                                Dyad dyad) {
         Object result;
-        if(rArg instanceof ExpressionInterface){
-            switch (((ExpressionInterface)rArg).getNodeType()){
+        if (rArg instanceof ExpressionInterface) {
+            switch (((ExpressionInterface) rArg).getNodeType()) {
                 case ExpressionInterface.FUNCTION_REFERENCE_NODE:
                     result = doSingleApply(lArg, (FunctionReferenceNode) rArg, defaultValue, state, dyad);
                     break;
@@ -589,14 +610,14 @@ public class OpEvaluator extends AbstractEvaluator {
                     result = rArg;
                     break;
             }
-        }else{
+        } else {
             // stems and sets are not nodes. The are created from nodes which have been consumed by this point.
-            if(rArg instanceof QDLStem) {
+            if (rArg instanceof QDLStem) {
                 if (!(lArg instanceof QDLStem) && defaultValue == null) {
                     throw new BadArgException("non-conformable left argument (should be a stem)", dyad.getLeftArgument());
                 }
                 result = applyToStem((QDLStem) lArg, (QDLStem) rArg, defaultValue, state, dyad);
-            }else {
+            } else {
                 if (rArg instanceof FunctionReferenceNode) {
                     result = doSingleApply(lArg, (FunctionReferenceNode) rArg, defaultValue, state, dyad);
                 } else {
@@ -962,7 +983,7 @@ a.⌆b.
         polyad.setTokenPosition(dyad.getTokenPosition());
         polyad.setSourceCode(dyad.getSourceCode());
         ExpressionInterface ei = dyad.getLeftArgument();
-        while((ei instanceof ParenthesizedExpression)){
+        while ((ei instanceof ParenthesizedExpression)) {
             ei = ((ParenthesizedExpression) ei).getArgAt(0);
         }
         polyad.addArgument(ei); // should be a function reference

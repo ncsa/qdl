@@ -652,6 +652,18 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterNotTildeExpression(QDLParserParser.NotTildeExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitNotTildeExpression(QDLParserParser.NotTildeExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterContainsKey(QDLParserParser.ContainsKeyContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -827,6 +839,18 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitForAll(QDLParserParser.ForAllContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExcise(QDLParserParser.ExciseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExcise(QDLParserParser.ExciseContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

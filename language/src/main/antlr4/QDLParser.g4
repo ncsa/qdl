@@ -143,6 +143,7 @@ expression
  | expression op=(LessThan | GreaterThan | LessEquals | MoreEquals) expression #compExpression
  | expression op=(Equals | NotEquals) expression                               #eqExpression
  | expression op=RegexMatches expression                                       #regexMatches
+ | expression op=Excise expression                                             #excise
  | expression '<<' expression                                                  #is_a
  | '(' expression ')'                                                          #association
 //| expression '&'+ expression                                                  #typeCheck
@@ -167,6 +168,7 @@ expression
  | expression op=ExprDyadicOps expression                                      #expressionDyadicOps
  | expression op=FRefDyadicOps expression                                      #frefDyadicOps
  | (Tilde | TildeRight) expression                                             #unaryTildeExpression
+ | (Excise) expression                                                         #notTildeExpression
  | Transpose expression                                                        #unaryTransposeExpression
  | STRING                                                                      #strings
  |  op_ref                                                                     #operatorReference
