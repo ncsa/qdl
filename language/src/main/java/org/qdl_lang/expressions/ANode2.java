@@ -115,6 +115,10 @@ public class ANode2 extends ExpressionImpl {
             }
             // Next block fixes https://github.com/ncsa/qdl/issues/113
             if(getRightArg().getResult() == null){
+                if(getRightArg() instanceof VariableNode){
+                    throw new QDLExceptionWithTrace("the variable named '" +
+                            ((VariableNode)getRightArg()).getVariableReference() + "' was not found", getRightArg() );
+                }
                 throw new QDLExceptionWithTrace("value not found", getRightArg() );
             }
             setResult(getRightArg().getResult());
