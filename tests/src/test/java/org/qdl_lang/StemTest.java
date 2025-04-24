@@ -3434,10 +3434,12 @@ input_form((a\*\((k,v)→!is_list(v)))); // extracts all non-lists elements
         addLine(script, "ϱ. := n(5,5,[;3]) !~ [0,2];"); // matrix
         addLine(script, "ok:=reduce(@&&, dim(ϱ.)==[5,2]) && rank(ϱ.)==2;");
         addLine(script, "ok1:=reduce(@&&, reduce(@&&,ϱ.==[[1,1],[1],[1,1],[1,1],[1]]));");
+        addLine(script, "ok2 := ⊗∧⊙[0,2] ∉ ϱ.;"); // actual contract for excise. a. !~ b. <==> b. ∉ a.
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : OpEvaluator.EXCISE + " incorrect shape of result";
         assert getBooleanValue("ok1", state) : OpEvaluator.EXCISE + " incorrect values for result";
+        assert getBooleanValue("ok2", state) : OpEvaluator.EXCISE + " contract not fulfilled";
     }
 
     public void testExciseStem() throws Throwable {
