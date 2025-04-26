@@ -284,7 +284,7 @@ public class State extends FunctionState implements QDLConstants {
             }
             qdl_props.put(SYS_BOOT_CONFIG_NAME, qe.getName());
             qdl_props.put(SYS_BOOT_CONFIG_FILE, qe.getCfgFile());
-            if(qe.getMyLogger().getFileName() !=null) {
+            if (qe.getMyLogger().getFileName() != null) {
                 qdl_props.put(SYS_BOOT_LOG_FILE, qe.getMyLogger().getFileName());
                 qdl_props.put(SYS_BOOT_LOG_NAME, qe.getMyLogger().getClassName());
             }
@@ -292,7 +292,15 @@ public class State extends FunctionState implements QDLConstants {
             qdl_props.put(SYS_BOOT_RESTRICTED_IO_MODE, isRestrictedIO());
             qdl_props.put(SYS_SCRIPTS_PATH, qe.getScriptPath());
             systemInfo.put(SYS_BOOT, qdl_props);
-            buildInfo = addManifestConstants(qe.getWSHomeDir());
+            // Fix https://github.com/ncsa/qdl/issues/115
+            String buildInfoPath = System.getenv("QDL_HOME");
+            if (buildInfoPath == null) {
+                buildInfoPath = qe.getWSHomeDir();
+                if (buildInfoPath == null) {
+                    buildInfoPath = System.getProperty("user.dir"); // last ditch effort...
+                }
+            }
+            buildInfo = addManifestConstants(buildInfoPath);
             if (buildInfo != null) {
                 systemInfo.put(SYS_QDL_BUILD, buildInfo);
             }
@@ -312,7 +320,14 @@ public class State extends FunctionState implements QDLConstants {
             scriptPath.addList(getScriptPaths());
             qdl_props.put(SYS_SCRIPTS_PATH, scriptPath);
             systemInfo.put(SYS_BOOT, qdl_props);
-            buildInfo = addManifestConstants(null);
+            String buildInfoPath = System.getenv("QDL_HOME");
+            if (buildInfoPath == null) {
+                buildInfoPath = System.getProperty("user.dir");
+                if (buildInfoPath == null) {
+                    buildInfoPath = System.getProperty("user.home"); // last ditch effort...
+                }
+            }
+            buildInfo = addManifestConstants(buildInfoPath);
             if (buildInfo != null) {
                 systemInfo.put(SYS_QDL_BUILD, buildInfo);
             }
@@ -447,11 +462,11 @@ public class State extends FunctionState implements QDLConstants {
 
         systemConstants.put(SYS_VAR_TYPE_CHARACTER_MAP, characterMap);
         QDLStem characters = new QDLStem();
-        characters.put("alphanumeric",ALPHA_CHARS);
-        characters.put("all",ALL_CHARS);
-        characters.put("ascii",ASCII_CHARS);
-        characters.put("unicode",UNICODE_CHARS);
-        characters.put("greek",GREEK_CHARS);
+        characters.put("alphanumeric", ALPHA_CHARS);
+        characters.put("all", ALL_CHARS);
+        characters.put("ascii", ASCII_CHARS);
+        characters.put("unicode", UNICODE_CHARS);
+        characters.put("greek", GREEK_CHARS);
         systemConstants.put(SYS_VAR_TYPE_CHARACTERS, characters);
         systemConstants.put(SYS_VAR_TYPE_RESERVED, getQDLReservedNames());
         QDLStem varTypes = new QDLStem();
@@ -562,9 +577,10 @@ public class State extends FunctionState implements QDLConstants {
 
     /**
      * Get a listing of all the functions, operators and keywords for QDL.
+     *
      * @return
      */
-    protected QDLStem getQDLReservedNames(){
+    protected QDLStem getQDLReservedNames() {
         // See also $NCSA_DEV/qdl/language/src/main/resources/all_ops.txt
         QDLStem out = new QDLStem();
         QDLStem keywords = new QDLStem();
@@ -578,7 +594,7 @@ public class State extends FunctionState implements QDLConstants {
         QDLStem ops = new QDLStem();
         ArrayList<String> allOps = new ArrayList<>(OpEvaluator.ALL_MATH_OPS.length + OpEvaluator.OTHER_MATH_OPS.length);
         List<String> x = Arrays.asList(OpEvaluator.ALL_MATH_OPS);
-              allOps.addAll(x);
+        allOps.addAll(x);
         allOps.addAll(Arrays.asList(OpEvaluator.OTHER_MATH_OPS));
         HashSet<String> opsSet = new HashSet<>();
         opsSet.addAll(allOps); // uniquefy them
@@ -586,6 +602,7 @@ public class State extends FunctionState implements QDLConstants {
         out.put("operators", ops);
         return out;
     }
+
     /**
      * Debug utility for QDL. Note that this is completely independent of the {@link edu.uiuc.ncsa.security.core.util.DebugUtil}
      * for the JVM, which can be toggled with the WS variable 'debug'
@@ -616,6 +633,7 @@ public class State extends FunctionState implements QDLConstants {
      */
     protected QDLStem addManifestConstants(String path) {
         QDLStem versionInfo = new QDLStem();
+
         versionInfo.put(SYS_QDL_VERSION, QDLVersion.VERSION);
         if (path == null) {
             return versionInfo;
@@ -651,7 +669,8 @@ public class State extends FunctionState implements QDLConstants {
 
         return versionInfo = processManifest2(versionInfo, manifest);
     }
-   // Old version was too restrictive. Should just read all manifest constants
+
+    // Old version was too restrictive. Should just read all manifest constants
     // and have special handling of the few items like class path that are constant.
     protected QDLStem processManifest(QDLStem versionInfo, ArrayList<String> manifest) {
         for (int i = 0; i < manifest.size(); i++) {
@@ -721,7 +740,7 @@ public class State extends FunctionState implements QDLConstants {
     protected QDLStem processManifest2(QDLStem versionInfo, ArrayList<String> manifest) {
         for (int i = 0; i < manifest.size(); i++) {
             String linein = manifest.get(i);
-            if(StringUtils.isTrivial(linein)){
+            if (StringUtils.isTrivial(linein)) {
                 continue;
             }
             String head = linein.substring(0, linein.indexOf(":")).trim();
@@ -1032,7 +1051,7 @@ public class State extends FunctionState implements QDLConstants {
             if (!getIntrinsicVariables().isEmpty()) {
                 iStack.appendTables(getIntrinsicVariables());
             }
- //and now functions
+            //and now functions
             if (moduleState != null && !moduleState.getIntrinsicFunctions().isEmpty()) {
                 iftStack.appendTables(moduleState.getIntrinsicFunctions());
             }
@@ -1211,10 +1230,10 @@ public class State extends FunctionState implements QDLConstants {
         //getSymbolStack().toXML(xsw);
         getVStack().toXML(xsw, serializationState);
         getFTStack().toXML(xsw, serializationState);
-        if(!getIntrinsicVariables().isEmpty()) {
+        if (!getIntrinsicVariables().isEmpty()) {
             getIntrinsicVariables().toXML(xsw, serializationState);
         }
-        if(!getIntrinsicFunctions().isEmpty()) {
+        if (!getIntrinsicFunctions().isEmpty()) {
             getIntrinsicFunctions().toXML(xsw, serializationState);
         }
         getMTemplates().toXML(xsw, serializationState);
@@ -1613,8 +1632,8 @@ public class State extends FunctionState implements QDLConstants {
         State.extrinsicFuncs = extrinsicFuncs;
     }
 
-    public  FStack getExtrinsicFuncs() {
-        if(extrinsicFuncs == null){
+    public FStack getExtrinsicFuncs() {
+        if (extrinsicFuncs == null) {
             extrinsicFuncs = new FStack();
         }
         return extrinsicFuncs;
@@ -1686,10 +1705,10 @@ public class State extends FunctionState implements QDLConstants {
         doLocalSerialization(getMInstances(), MODULE_INSTANCES_TAG, jsonObject, serializationState);
         doLocalSerialization(getFTStack(), FUNCTION_TABLE_STACK_TAG, jsonObject, serializationState);
         doLocalSerialization(getVStack(), VARIABLE_STACK, jsonObject, serializationState);
-        if(!getIntrinsicVariables().isEmpty()) {
+        if (!getIntrinsicVariables().isEmpty()) {
             doLocalSerialization(getIntrinsicVariables(), INTRINSIC_VARIABLES_TAG, jsonObject, serializationState);
         }
-        if(!getIntrinsicFunctions().isEmpty()) {
+        if (!getIntrinsicFunctions().isEmpty()) {
             doLocalSerialization(getIntrinsicFunctions(), INTRINSIC_FUNCTIONS_TAG, jsonObject, serializationState);
         }
 
@@ -1717,7 +1736,7 @@ public class State extends FunctionState implements QDLConstants {
         addJSONtoState(jsonObject, MODULE_INSTANCES_TAG, getMInstances(), serializationState);
         addJSONtoState(jsonObject, FUNCTION_TABLE_STACK_TAG, getFTStack(), serializationState);
         addJSONtoState(jsonObject, VARIABLE_STACK, getVStack(), s);
-        if(!getIntrinsicVariables().isEmpty()) {
+        if (!getIntrinsicVariables().isEmpty()) {
             addJSONtoState(jsonObject, INTRINSIC_VARIABLES_TAG, getIntrinsicVariables(), s);
         }
         if (!getUsedModules().isEmpty()) {
@@ -1770,10 +1789,10 @@ public class State extends FunctionState implements QDLConstants {
 
 
     public static void main(String[] args) {
-     State state = new State();
-     MyLoggingFacade logger = new MyLoggingFacade("State");
-     state.setLogger(logger);
-     QDLStem stem =state.addManifestConstants("/home/ncsa/apps/qdl");
-     System.out.println(stem);
- }
+        State state = new State();
+        MyLoggingFacade logger = new MyLoggingFacade("State");
+        state.setLogger(logger);
+        QDLStem stem = state.addManifestConstants("/home/ncsa/apps/qdl");
+        System.out.println(stem);
+    }
 }
