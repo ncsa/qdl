@@ -2045,17 +2045,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
                 justArgs.add(nameAndArgsNode.f_args());
             }
         }
-        //List<QDLParserParser.F_argsContext> justArgs = new ArrayList<>();
-/*        if (nameAndArgsNode != null) {
-            name = nameAndArgsNode.getChild(0).getText();
-            if (name.endsWith("(")) {
-                name = name.substring(0, name.length() - 1);
-            }
-            //justArgs = nameAndArgsNode.f_args();
-            if(nameAndArgsNode.f_args() != null) {
-                justArgs.add(nameAndArgsNode.f_args());
-            }
-        }*/
+
 
         FunctionRecord functionRecord = new FunctionRecord();
         functionRecord.setTokenPosition(tp(lambdaContext));
