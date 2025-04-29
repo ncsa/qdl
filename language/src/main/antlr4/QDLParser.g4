@@ -106,7 +106,7 @@ assertStatement2:
 // will use these for generating method names in Java. Be careful of altering these, they are
 // parser directives, not comments!
 
-
+my_integer : Integer;
 expression
  :
    function                                                                    #functions
@@ -114,6 +114,7 @@ expression
  //| expression '::' expression                                                  #arg_concat
  | variable? Hash expression                                                   #moduleExpression
  | expression StemDot+ expression                                              #dotOp
+ | StemDot my_integer                                                          #decimalNumber2
  | FunctionMarker expression                                                   #functionReference // REUSED
  | expression postfix=StemDot                                                  #dotOp2
  | expression Backslash  expression                                            #extract

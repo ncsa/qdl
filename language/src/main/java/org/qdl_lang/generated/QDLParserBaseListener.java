@@ -388,6 +388,18 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterMy_integer(QDLParserParser.My_integerContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMy_integer(QDLParserParser.My_integerContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterFunctions(QDLParserParser.FunctionsContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1067,6 +1079,18 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitIsDefinedExpression(QDLParserParser.IsDefinedExpressionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterDecimalNumber2(QDLParserParser.DecimalNumber2Context ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDecimalNumber2(QDLParserParser.DecimalNumber2Context ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

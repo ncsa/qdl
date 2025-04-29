@@ -2909,6 +2909,11 @@ E.g. Set the logging level
              If n is odd, x may be any number,
              If n is even, 0 <= x
              n√x is unicode equvalent
+
+In operator form
+√x - monadic is the square root of x
+n√x -- dyadic is the n-th root of x
+
 The general case of exponentiation x^y will fail for fractional roots and
 negative numbers. This is because there is no way to check if an exponent
 is an n-th root, due to internal computer representation not being exact,
@@ -2936,6 +2941,10 @@ Both compute the cube root of 5.
    [1;6]√7
 [7,2.64575131106459,1.91293118277239,1.62657656169779,1.47577316159455]
 computes the 1ist through 6th roots of 7.
+
+E.g. Computing square roots, here from 1 through 9
+   √[1;10]
+[1,1.4142135623731,1.73205080756888,2,2.23606797749979,2.44948974278318,2.64575131106459,2.82842712474619,3]
    ]]>
         </example>
 

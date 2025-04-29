@@ -331,7 +331,7 @@ public class QDLListener implements QDLParserListener {
             LambdaDefinitionNode lambdaDefinitionNode = new LambdaDefinitionNode((FunctionDefinitionStatement) s);
             lambdaDefinitionNode.setTokenPosition(tp(ctx));
             parenthesizedExpression.setExpression(lambdaDefinitionNode);
-        }else{
+        } else {
             ExpressionInterface v = (ExpressionInterface) s;
             if (v == null) {
                 v = (ExpressionInterface) resolveChild(p);
@@ -505,15 +505,16 @@ public class QDLListener implements QDLParserListener {
     @Override
     public void exitPowerExpression(QDLParserParser.PowerExpressionContext ctx) {
         Dyad dyad;
-        if(ctx.Nroot() != null) {
+        if (ctx.Nroot() != null) {
             dyad = new Dyad(OpEvaluator.NROOT_VALUE);
-        }else{
+        } else {
             dyad = new Dyad(OpEvaluator.POWER_VALUE);
         }
         dyad.setTokenPosition(tp(ctx));
         stash(ctx, dyad);
         finish(dyad, ctx);
     }
+
     @Override
     public void enterSquartExpression(QDLParserParser.SquartExpressionContext ctx) {
 
@@ -1894,10 +1895,10 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
             } else {
                 Statement s = resolveChild(p);
-                if(s instanceof ExpressionInterface) {
+                if (s instanceof ExpressionInterface) {
                     indexArg = doSubsetExpressionInterface((ExpressionInterface) s, i, indexArg, ssn);
                 }
-                if(s instanceof FunctionDefinitionStatement) {
+                if (s instanceof FunctionDefinitionStatement) {
 
                 }
             }
@@ -2896,6 +2897,35 @@ illegal argument:no module named "b" was  imported at (1, 67)
         monad.setSourceCode(source);
     }
 
+    @Override
+    public void enterMy_integer(QDLParserParser.My_integerContext ctx) {
+
+    }
+
+    @Override
+    public void exitMy_integer(QDLParserParser.My_integerContext ctx) {
+// Only exists as part of a decimal. If not a string of  digits, ANTLR sets Integer() to null.
+        if (ctx.Integer() == null) {
+            TokenPosition tp = tp(ctx);
+            throw new ParsingException("invalid decimal number: " + ctx.getText(), tp.line, tp.col, SYNTAX_TYPE);
+
+        }
+
+    }
+
+    @Override
+    public void enterDecimalNumber2(QDLParserParser.DecimalNumber2Context ctx) {
+
+    }
+
+    @Override
+    public void exitDecimalNumber2(QDLParserParser.DecimalNumber2Context ctx) {
+        String text = ctx.my_integer().getText();
+
+        BigDecimal bd = new BigDecimal("." + text);
+        ConstantNode constantNode = new ConstantNode(bd, Constant.DECIMAL_TYPE);
+        stash(ctx, constantNode);
+    }
 }
 
 

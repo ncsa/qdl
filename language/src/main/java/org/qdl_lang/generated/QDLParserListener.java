@@ -318,6 +318,16 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitF_args(QDLParserParser.F_argsContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link QDLParserParser#my_integer}.
+	 * @param ctx the parse tree
+	 */
+	void enterMy_integer(QDLParserParser.My_integerContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link QDLParserParser#my_integer}.
+	 * @param ctx the parse tree
+	 */
+	void exitMy_integer(QDLParserParser.My_integerContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code functions}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree
@@ -1001,6 +1011,18 @@ public interface QDLParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitIsDefinedExpression(QDLParserParser.IsDefinedExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code decimalNumber2}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterDecimalNumber2(QDLParserParser.DecimalNumber2Context ctx);
+	/**
+	 * Exit a parse tree produced by the {@code decimalNumber2}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitDecimalNumber2(QDLParserParser.DecimalNumber2Context ctx);
 	/**
 	 * Enter a parse tree produced by the {@code extract2}
 	 * labeled alternative in {@link QDLParserParser#expression}.

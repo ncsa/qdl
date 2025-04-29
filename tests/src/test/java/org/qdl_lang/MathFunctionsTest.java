@@ -562,5 +562,37 @@ public class MathFunctionsTest extends AbstractQDLTester {
         }
         assert false : "was able to pass multiple arguments like \"3 4 5\" to a function.";
     }
+
+    /**
+     * As of version 1.6.1 can drop lead 0 in decimals. This tests that.
+     * @throws Throwable
+     */
+    public void testDecimals() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok := 0.3 == .3;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state):"Did not process decimal without leading 0 correctly";
+    }
+
+    /**
+     * Bad case where a wrong expression like .a3 is entered. Parser should blow up with the correct
+     * paring errors.
+     * @throws Throwable
+     */
+    public void testBadDecimals() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, ".a3;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        boolean isGood = false;
+        try {
+            interpreter.execute(script.toString());
+        }catch(ParsingException t){
+            isGood = true;
+        }
+        assert isGood : "failed to parse bad decimal without leading 0 correctly";
+    }
 }
 

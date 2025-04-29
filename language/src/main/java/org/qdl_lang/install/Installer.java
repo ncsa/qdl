@@ -178,7 +178,7 @@ public class Installer {
         say("(none) = same as help");
         say(INSTALL_OPTION + " = install");
         say(UPGRADE_OPTION + " = upgrade");
-        say(UPGRADE_OPTION + " = same as " + UPGRADE_OPTION);
+        say(UPDATE_OPTION + " = same as " + UPGRADE_OPTION);
         say(REMOVE_OPTION + " = remove");
         say(HELP_OPTION + " = show help and exit. Note you can also use the flag " + HELP_FLAG);
         say(LIST_OPTION + " = list all the files in the distribution. Nothing is done.");
