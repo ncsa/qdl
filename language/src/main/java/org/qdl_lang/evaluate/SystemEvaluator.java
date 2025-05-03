@@ -3209,39 +3209,15 @@ public class SystemEvaluator extends AbstractEvaluator {
         }
         try {
             polyad.evalArg(0, state);
-        } catch (IndexError | UnknownSymbolException |
-                 IllegalStateException exception) { // ESN's can throw illegal arg exception
+        } catch (IndexError exception) {
+            // ESN's can throw illegal arg exception
+            // Fix https://github.com/ncsa/qdl/issues/118
             polyad.setResult(false);
             polyad.setResultType(Constant.BOOLEAN_TYPE);
             polyad.setEvaluated(true);
             return;
         }
         isDef = checkDefined(polyad.getArgAt(0), state);
-/*
-        if (polyad.getArgAt(0) instanceof VariableNode) {
-            VariableNode variableNode = (VariableNode) polyad.getArgAt(0);
-            // Don't evaluate this because it might not exist (that's what we are testing for). Just check
-            // if the name is defined.
-            isDef = state.isDefined(variableNode.getVariableReference());
-        }
-        if (polyad.getArgAt(0) instanceof ConstantNode) {
-            ConstantNode variableNode = (ConstantNode) polyad.getArgAt(0);
-            Object x = variableNode.getResult();
-            if (x == null) {
-                isDef = false;
-            } else {
-                isDef = state.isDefined(x.toString());
-            }
-        }
-        if (polyad.getArgAt(0) instanceof ESN2) {
-            Object object = polyad.getArgAt(0).getResult();
-            if (object == null) {
-                isDef = false;
-            } else {
-                isDef = true;
-            }
-        }
-*/
         polyad.setResult(isDef);
         polyad.setResultType(Constant.BOOLEAN_TYPE);
         polyad.setEvaluated(true);

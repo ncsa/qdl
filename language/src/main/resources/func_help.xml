@@ -5971,30 +5971,30 @@ width - the total width of the display
 Table of values for format.
 Name          Default   Description
 -----------------+---------+----------------------------------------------
-width            |  -1     | The total width the output should fit in. The
-                 |         | values may be wrapped as needed. A value of
-                 |         | -1 means the line length is infinite.
+box              | false   | Draw a (simple ASCII) box around the result.
+-----------------+---------+----------------------------------------------
+indent           |  0      | How much the entire output should be indented
+                 |         | from the left
 -----------------+---------+----------------------------------------------
 keys             |  --     | list of keys that are a subset to be printed
 -----------------+---------+----------------------------------------------
-sort             |  true   | If the elements should be sorted
+no_keys          | false   | Do not put line numbers/keys in at the start of
+                 |         | each line. Useful with drawing a box around
+                 |         | the output in many cases.
 -----------------+---------+----------------------------------------------
 short            |  false  | Restrict the value printed to a single line
                  |         | within the given width.
                  |         | This is useful for large values to get a quick
                  |         | overview
 -----------------+---------+----------------------------------------------
+sort             |  true   | If the elements should be sorted
+-----------------+---------+----------------------------------------------
 string_output    |  true   | If true, then the output is a string. If false
                  |         | The output will be a list of lines.
 -----------------+---------+----------------------------------------------
-indent           |  0      | How much the entire output should be indented
-                 |         | from the left
------------------+---------+----------------------------------------------
-box              | false   | Draw a (simple ASCII) box around the result.
------------------+---------+----------------------------------------------
-omit_line_numbers| false   | Do not put line numbers in at the start of
-                 |         | each line. Useful with drawing a box around
-                 |         | the output in many cases.
+width            |  -1     | The total width the output should fit in. The
+                 |         | values may be wrapped as needed. A value of
+                 |         | -1 means the line length is infinite.
 -----------------+---------+----------------------------------------------
 
 Output is columnar and of the form
