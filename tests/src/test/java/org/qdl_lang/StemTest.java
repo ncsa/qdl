@@ -3442,6 +3442,34 @@ input_form((a\*\((k,v)→!is_list(v)))); // extracts all non-lists elements
         assert getBooleanValue("ok2", state) : OpEvaluator.EXCISE + " contract not fulfilled";
     }
 
+    /**
+     * The parser has the . operator outranking everything since that usuall works. Special case is
+     * <pre>
+     *     x. !~ y
+     * </pre>
+     * which would get parsed normally as
+     * <pre>
+     *      .
+     *    /  \
+     *   x    !~ y  <--- monadic operator
+     * </pre>
+     * We fix it in {@link QDLListener#exitDotOp(QDLParserParser.DotOpContext)} to specifically
+     * do the right thing. The alternative is to change OOO in the parser which is complex and
+     * has seemingly unending consequences.
+     * @throws Throwable
+     */
+    public void testExciseOperatorOOO() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "w ≔ 'wlcg.groups';");
+        addLine(script, "g. ≔ [w,'/cms/uscms','/cms/ALARM','/cms/users'];");
+        addLine(script, "h.:=g. !~ w;");
+        addLine(script, "ok:=⊗∧⊙h.≡['/cms/uscms','/cms/ALARM','/cms/users'];");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : OpEvaluator.EXCISE + " incorrect parsing of g. !~ w (?)";
+    }
+
     public void testExciseStem() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();

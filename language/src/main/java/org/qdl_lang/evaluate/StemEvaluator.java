@@ -4,6 +4,7 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.JsonPathException;
 import com.jayway.jsonpath.Option;
+import org.checkerframework.checker.units.qual.A;
 import org.qdl_lang.exceptions.*;
 import org.qdl_lang.expressions.*;
 import org.qdl_lang.functions.*;
@@ -466,17 +467,19 @@ public class StemEvaluator extends AbstractEvaluator {
         throw new BadArgException("unknown type for " + EXCISE, polyad.getArgAt(0));
     }
 
-    public static String DISPLAY_WIDTH = "width";
-    public static int DISPLAY_WIDTH_DEFAULT = -1;
-    public static String DISPLAY_KEYS = "keys";
-    public static String DISPLAY_SORT = "sort";
-    public static boolean DISPLAY_SORT_DEFAULT = true;
-    public static String DISPLAY_SHORT_FORM = "short";
-    public static boolean DISPLAY_SHORT_FORM_DEFAULT = false; // display first line of value one
-    public static String DISPLAY_STRING_OUTPUT = "string_output";
-    public static boolean DISPLAY_STRING_OUTPUT_DEFAULT = true;
+    public static String BOX_AROUND_RESULT = "box";
     public static String DISPLAY_INDENT = "indent";
+    public static String DISPLAY_KEYS = "keys";
+    public static String DISPLAY_SHORT_FORM = "short";
+    public static String DISPLAY_SORT = "sort";
+    public static String DISPLAY_STRING_OUTPUT = "string_output";
+    public static String DISPLAY_WIDTH = "width";
+    public static boolean DISPLAY_SHORT_FORM_DEFAULT = false; // display first line of value one
+    public static boolean DISPLAY_SORT_DEFAULT = true;
+    public static boolean DISPLAY_STRING_OUTPUT_DEFAULT = true;
     public static int DISPLAY_INDENT_DEFAULT = 0;
+    public static int DISPLAY_WIDTH_DEFAULT = -1;
+    public static String LINE_NUMBERING_OFF = "omit_line_numbers";
 
      /*
      q. :=     {'at_lifetime':900000, 'callback_uri':'["http://localhost/callback","http://localhost/callback2","http://localhost/callback3"]', 'client_id':'cilogon:/client_id/26e0aef76c6685473909b08c179cbc85', 'creation_ts':'2021-10-13T17:47:46.000Z', 'debug_on':false, 'df_interval':-1, 'df_lifetime':-1, 'email':'your.email@here.org', 'extended_attributes':'{"xoauth_attributes":{"grant_type":["refresh_token","urn:ietf:params:oauth:grant-type:device_code"]},"oidc-cm_attributes":{"comment":["This is a basic basic from the specification to test if a public client has been created correctly","Note that this also includes a refresh token lifetime parameter (rt_lifetime). Omitting this disables refresh tokens.","The lifetime is in seconds.","To create a public client, the scope must be \'openid\' and the auth method must be \'none\'."]}}', 'home_url':'', 'last_modified_ts':'2021-10-13T17:47:46.000Z', 'name':'Another test client', 'proxy_limited':false, 'public_client':true, 'public_key':'', 'rt_lifetime':2592000000, 'scopes':'["openid"]', 'sign_tokens':true, 'strict_scopes':true}
@@ -506,6 +509,10 @@ public class StemEvaluator extends AbstractEvaluator {
         }
         Object arg0 = polyad.evalArg(0, state);
         if (arg0 == null) {
+            if(polyad.getArgAt(0) instanceof VariableNode){
+                throw new QDLExceptionWithTrace("the variable named '" +
+                        ((VariableNode)polyad.getArgAt(0)).getVariableReference() + "' was not found", polyad.getArgAt(0) );
+            }
             // It is possible to try and print a variable that has not been set.
             throw new BadArgException("value not found", polyad.getArgAt(0));
         }
@@ -516,7 +523,8 @@ public class StemEvaluator extends AbstractEvaluator {
         int indent = DISPLAY_INDENT_DEFAULT;
         int width = DISPLAY_WIDTH_DEFAULT;
         boolean returnAsString = DISPLAY_STRING_OUTPUT_DEFAULT;
-
+        boolean boxResult = false;
+        boolean lineNumberingOff = false;
         if (polyad.getArgCount() == 2) {
             Object arg1 = polyad.evalArg(1, state);
             if (isLong(arg1)) {
@@ -538,8 +546,14 @@ public class StemEvaluator extends AbstractEvaluator {
                         keySubset = zzz.getQDLList().values();
                         // Must be a list of keys.
                     }
+                    if(c.containsKey(LINE_NUMBERING_OFF)){
+                        lineNumberingOff = c.getBoolean(LINE_NUMBERING_OFF);
+                    }
                     if (c.containsKey(DISPLAY_INDENT)) {
                         indent = c.getLong(DISPLAY_INDENT).intValue();
+                    }
+                    if(c.containsKey(BOX_AROUND_RESULT)) {
+                        boxResult = c.getBoolean(BOX_AROUND_RESULT);
                     }
                     if (c.containsKey(DISPLAY_SORT)) {
                         sortKeys = c.getBoolean(DISPLAY_SORT);
@@ -555,26 +569,63 @@ public class StemEvaluator extends AbstractEvaluator {
                 }
             }
         }
-        if (!isStem(arg0)) {
-            polyad.setEvaluated(true);
-            polyad.setResult(arg0.toString());
-            polyad.setResultType(STRING_TYPE);
-            return;
-        }
-        QDLStem stem = (QDLStem) arg0;
+        List<String> list = null;
+        if (isStem(arg0)) {
+            QDLStem stem = (QDLStem) arg0;
 
-        Map map = new HashMap<>();
-        for (Object key : stem.keySet()) {
-            map.put(key, stem.get(key));
-        }
+            Map map = new HashMap<>();
+            for (Object key : stem.keySet()) {
+                map.put(key, stem.get(key));
+            }
 
-        List<String> list = StringUtils.formatMap(map,
-                keySubset,
-                sortKeys,
-                multilineMode,
-                indent,
-                width,
-                false); // don't let it try to turn random stems into JSON.
+             list = StringUtils.formatMap(map,
+                    keySubset,
+                    sortKeys,
+                    multilineMode,
+                    indent,
+                    width,
+                    false,
+                    lineNumberingOff); // don't let it try to turn random stems into JSON.
+        }else{
+                if(arg0 instanceof String){
+                    String inString = (String)arg0;
+                    int lineNumber = 0;
+                    if(-1 < inString.indexOf("\n")){
+                        StringTokenizer st = new StringTokenizer(inString, "\n");
+                        int count = st.countTokens();
+                        Double dColWidth = Math.log10(count*1.0d) + 1;
+                        int colWidth = dColWidth.intValue(); // if line numbering, how wide to make that column
+                        list    = new ArrayList<>(count);
+                        while(st.hasMoreTokens()){
+                            if(lineNumberingOff) {
+                                list.add(st.nextToken());
+                            }else{
+                                list.add(StringUtils.RJustify(Integer.toString(lineNumber++), colWidth) + " : " + st.nextToken());
+                            }
+                        }
+                    }
+                }else{
+                    list    = new ArrayList<>(1);
+                    if(lineNumberingOff){
+                        list.add(arg0.toString());
+                    }else{
+                        list.add("0 : " + arg0.toString()); // only a single number
+                    }
+                }
+        }
+        if(boxResult){
+            int maxWidth = 0;
+            for(String s : list) {
+                maxWidth = Math.max(maxWidth, s.length());
+            }
+            List<String> boxedList = new ArrayList<>(list.size()+2);
+            boxedList.add("+" + StringUtils.hLine("-", maxWidth) + "+");
+            for(String s : list) {
+                boxedList.add("|" +  StringUtils.pad2(s,maxWidth) + "|");
+            }
+            boxedList.add("+" + StringUtils.hLine("-", maxWidth) + "+");
+            list = boxedList;
+        }
         if (returnAsString) {
             String x = "";
             boolean firstPass = true;

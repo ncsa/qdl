@@ -115,7 +115,6 @@ public class SystemEvaluator extends AbstractEvaluator {
     public static final int EXPAND_TYPE = 14 + SYSTEM_BASE_VALUE;
 
     public static final String SAY_FUNCTION = "say";
-    // public static final String PRINT_FUNCTION = "print";
     public static final int SAY_TYPE = 15 + SYSTEM_BASE_VALUE;
 
     public static final String TO_STRING = "to_string";

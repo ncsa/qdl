@@ -56,7 +56,7 @@ public class AltIfExpressionNode extends ExpressionImpl {
             for(Object key : inStem.keySet()){
                    Object obj = inStem.get(key);
                    if(!(obj instanceof Boolean)){
-                       throw new IllegalArgumentException("expression requires a boolean at index '" + key + "'");
+                       throw new IllegalArgumentException("expression requires a boolean at index '" + key + "', got '" + obj + "'");
                    }
                 Boolean flag = (Boolean) obj;
                 Object arg1;

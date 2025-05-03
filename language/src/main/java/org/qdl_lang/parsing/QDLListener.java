@@ -1375,6 +1375,27 @@ illegal argument:no module named "b" was  imported at (1, 67)
             return;
         }
 
+        if (dotOpContext.getChild(2) instanceof QDLParserParser.NotTildeExpressionContext) {
+            QDLParserParser.NotTildeExpressionContext um = (QDLParserParser.NotTildeExpressionContext) dotOpContext.getChild(2);
+            Dyad d = new Dyad(OpEvaluator.EXCISE_VALUE);
+            d.setTokenPosition(tp(dotOpContext));
+            d.setSourceCode(getSource(dotOpContext));
+            d.setRightArgument((ExpressionInterface) resolveChild(um.getChild(1)));
+            ESN2 leftArg = new ESN2();
+            Statement s = resolveChild(dotOpContext.getChild(0));
+            if (s instanceof VariableNode) {
+                VariableNode vNode = (VariableNode) s;
+                vNode.setVariableReference(vNode.getVariableReference() + STEM_INDEX_MARKER);
+                leftArg.setLeftArg(vNode);
+            } else {
+                leftArg.setLeftArg((ExpressionInterface) s);
+            }
+            leftArg.setRightArg(null);
+            d.setLeftArgument(leftArg);
+            stash(dotOpContext, d);
+            return;
+        }
+
         if (dotOpContext.getChild(2) instanceof QDLParserParser.UnaryMinusExpressionContext) {
             QDLParserParser.UnaryMinusExpressionContext um = (QDLParserParser.UnaryMinusExpressionContext) dotOpContext.getChild(2);
             // Important bit: If the user actually uses leading high minus ¯ or plus ⁺ then they really do want a negative
