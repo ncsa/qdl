@@ -424,6 +424,7 @@ public class State extends FunctionState implements QDLConstants {
         characterMap.put("207a", OpEvaluator.PLUS2);
         characterMap.put("2192", "→");
         characterMap.put("2205", "∅");
+        characterMap.put("221a", "√");
         characterMap.put("2227", OpEvaluator.AND2);
         characterMap.put("2228", OpEvaluator.OR2);
         characterMap.put("2248", "≈");

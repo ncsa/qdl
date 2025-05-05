@@ -622,6 +622,7 @@ public class ParserTest extends AbstractQDLTester {
         addLine(script, "i := 0 < 3 ∧  1 < 3 && 2 < 3;"); //true
         addLine(script, "j := false ||  true || d.5 == 5;"); //true
         addLine(script, "k := true ||  false || d.5 == 5;"); //true
+        addLine(script, "yyy. := [;10];"); //true
         // Making sure very important case of is_defined short circuits right.
         // CIL-1498 regression tests
         addLine(script, "l := is_defined(d.) && d.3 ≤ 5 ;"); //false -- d. undefined
@@ -990,7 +991,7 @@ public class ParserTest extends AbstractQDLTester {
         String slash = "\\";
         addLine(script, "a:='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\\n" + //alphanumeric
                 "  ~`!@#$%^&*()[]{}<>\\\\/\\'\"-_=+|;:,.?\\n" + // other ASCII symbols
-                "  ¬¿¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧≁⊕⊗⊙⌆µ⊢∈∉∀∋∌∃∄∩∪∆∂\\n" + // unicode
+                "  ¬¿¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧√≁⊕⊗⊙⌆µ⊢∈∉∀∋∌∃∄∩∪∆∂\\n" + // unicode
                 "  ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω';" // Greek
         );
         addLine(script, "say('\\nprinting all base characters with say:');");

@@ -1648,28 +1648,40 @@ See also: info()]]>
                   has been named.
 Note: the argument is not a string, it is the actual variable.
 
+This will raise an undefined symbol exception at times. See the examples.
+
 See also: is_function]]>
         </body>
         <example>
-            It works on parts of stems
-            z. := {'a':'foo'}
-            ∃z.
-            true
-            ∃z.'a'
-            true
-            ∃z.'b'
-            false
+It works on parts of stems
 
-            It works on lists and stems too
-            b:=3
-            ∃[p,q,b]
-            [false,false,true]
+   z. := {'a':'foo'}
+   ∃z.
+true
+   ∃z.'a'
+true
+   ∃z.'b'
+false
 
-            ∃{'a':p,'b':q}
-            {
-            a:false,
-            b:false
-            }
+But on a stem that is not defined in the first plave
+   ∃y.'b'
+variable 'y.' is undefined at (1, 1)
+
+Among other reasons for this is to tell you the stem is not in the
+current scope,rather than give a false positive that y. is defined
+but is just missing an entry for b. A lot of scope issues get found
+this way.
+
+It works on lists and stems too
+   b:=3
+   ∃[p,q,b]
+   [false,false,true]
+
+   ∃{'a':p,'b':q}
+{
+   a:false,
+   b:false
+}
         </example>
     </entry>
     <entry id="is_function" alt="∃">
@@ -5969,9 +5981,12 @@ format. - stem of formatting parameters
 width - the total width of the display
 
 Table of values for format.
-Name          Default   Description
+Name             | Default |  Description
+=================+=========+==============================================
+box              | false   | Draw a  box around the result.
 -----------------+---------+----------------------------------------------
-box              | false   | Draw a (simple ASCII) box around the result.
+box_unicode      | true    | Use unicode characters for box. Display depends
+                 |         | on the font you are using.
 -----------------+---------+----------------------------------------------
 indent           |  0      | How much the entire output should be indented
                  |         | from the left

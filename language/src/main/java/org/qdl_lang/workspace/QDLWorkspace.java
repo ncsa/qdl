@@ -109,7 +109,7 @@ public class QDLWorkspace implements Serializable {
             return;
         }
         if (t instanceof StackOverflowError) {
-            workspaceCommands.say("Error: Stack overflow" + errorStatement);
+            workspaceCommands.say("Error " + errorStatement + ": Stack overflow" );
             return;
         }
         if (t instanceof UndefinedFunctionException) {
@@ -151,20 +151,20 @@ public class QDLWorkspace implements Serializable {
             return;
         }
         if (t instanceof IllegalStateException) {
-            workspaceCommands.say("illegal state:" + t.getMessage() + errorStatement);
+            workspaceCommands.say("illegal state " + errorStatement + ": " + t.getMessage() );
             return;
         }
         if (t instanceof IllegalArgumentException) {
-            workspaceCommands.say("illegal argument:" + t.getMessage() + errorStatement);
+            workspaceCommands.say("illegal argument " + errorStatement + ": " + t.getMessage());
             return;
         }
         if (t instanceof AssertionException) {
-            workspaceCommands.say("assertion failed: " + t.getMessage());
+            workspaceCommands.say("assertion failed " + errorStatement + ": '" + t.getMessage() + "'");
             return;
         }
 
         if (t instanceof QDLException) {
-            workspaceCommands.say(t.getMessage() + errorStatement);
+            workspaceCommands.say("exception " + errorStatement + ": " + t.getMessage());
             return;
         }
         // In case a jar is corrupted (e.g. maven builds it wrong, partial upgrade failed, so missing dependency)

@@ -1591,16 +1591,6 @@ public class SystemEvaluator extends AbstractEvaluator {
             QDLStem stem = new QDLStem();
             if (isDebug) {
                 stem.fromJSON(state.getDebugUtil().toJSON());
-/*
-                stem.put(DEBUGGER_PROPERTY_NAME_TITLE, state.getDebugUtil().getTitle());
-                stem.put(DEBUGGER_PROPERTY_NAME_TS_ON, state.getDebugUtil().isPrintTS());
-                long lll = (long) state.getDebugUtil().getDebugLevel();
-                stem.put(DEBUGGER_PROPERTY_NAME_LEVEL, lll);
-                stem.put(DEBUGGER_PROPERTY_NAME_DELIMITER, state.getDebugUtil().getDelimiter());
-                if(state.getDebugUtil().hasHost()) {
-                    stem.put(DEBUGGER_PROPERTY_NAME_HOST, state.getDebugUtil().getHost());
-                }
-*/
             } else {
                 Level lll = state.getLogger().getLogLevel();
                 long llll = (long) getMyLogLevel(lll);
@@ -1758,8 +1748,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
         if (polyad.getArgCount() == 2) {
             // then the arguments are 0 is the level, 1 is the message
-            Object arg1 = polyad.evalArg(1, state);
-            checkNull(arg1, polyad.getArgAt(1), state);
+
             if (isLong(arg0)) {
                 newLogLevel = ((Long) arg0).intValue();
                 if (!isValidLoggingLevel((Long) arg0)) {
@@ -1776,6 +1765,18 @@ public class SystemEvaluator extends AbstractEvaluator {
                     throw new BadArgException("unknown logging level of " + arg0 + " encountered.", polyad.getArgAt(0));
                 }
             }
+            if(newLogLevel < currentLongLevel){
+                // Fix https://github.com/ncsa/qdl/issues/119
+                // short circuit this. do not evaluate the possibly very complex
+                // second argument every time if nothing is getting done.
+                // This can be an enormous drag on the system if the messages are complex.
+                polyad.setResult(Boolean.TRUE);
+                polyad.setResultType(Constant.BOOLEAN_TYPE);
+                polyad.setEvaluated(true);
+                return;
+            }
+            Object arg1 = polyad.evalArg(1, state);
+            checkNull(arg1, polyad.getArgAt(1), state);
             message = arg1.toString();
         }
 
@@ -2453,7 +2454,7 @@ public class SystemEvaluator extends AbstractEvaluator {
         // set the message in the exception to the message from the error, so if it happens in the course of execution
         // they get a message
         if (stateCode == TryCatch.RESERVED_ASSERTION_CODE) {
-            throw new AssertionException(message, stateStem);
+            throw new AssertionException(message, stateStem, polyad.getArgAt(0));
         }
         throw new RaiseErrorException(polyad, message, stateCode, stateStem);
     }

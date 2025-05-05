@@ -65,17 +65,17 @@ public class AssertStatement implements Statement {
             if (!b) {
                 AssertionException assertionException = null;
                 if (getMesssge() == null) {
-                    assertionException = new AssertionException(""); // no message implies empty message
+                    assertionException = new AssertionException("", getConditional()); // no message implies empty message
                 } else {
                     Object m = getMesssge().evaluate(state);
                     if (m instanceof String) {
-                        assertionException = new AssertionException((String) m);
+                        assertionException = new AssertionException((String) m, getConditional());
                     } else {
                         if(m instanceof QDLStem) {
-                            assertionException = new AssertionException("assertion failed");
+                            assertionException = new AssertionException("assertion failed", getConditional());
                             assertionException.setAssertionState((QDLStem) m);
                         }else{
-                            assertionException = new AssertionException(m.toString());
+                            assertionException = new AssertionException(m.toString(), getConditional());
                         }
                     }
                 }

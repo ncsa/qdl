@@ -465,6 +465,7 @@ public class StemEvaluator extends AbstractEvaluator {
     }
 
     public static final String BOX_AROUND_RESULT = "box";
+    public static final String BOX_UNICODE = "box_unicode";
     public static final String DISPLAY_INDENT = "indent";
     public static final String DISPLAY_KEYS = "keys";
     public static final String DISPLAY_SHORT_FORM = "short";
@@ -522,6 +523,7 @@ public class StemEvaluator extends AbstractEvaluator {
         boolean returnAsString = DISPLAY_STRING_OUTPUT_DEFAULT;
         boolean boxResult = false;
         boolean lineNumberingOff = false;
+        boolean unicodeBoxChars = true;
         if (polyad.getArgCount() == 2) {
             Object arg1 = polyad.evalArg(1, state);
             if (isLong(arg1)) {
@@ -534,6 +536,9 @@ public class StemEvaluator extends AbstractEvaluator {
                             case BOX_AROUND_RESULT:
                                 boxResult = c.getBoolean(BOX_AROUND_RESULT);
                                 break;
+                                case BOX_UNICODE:
+                                    unicodeBoxChars = c.getBoolean(BOX_UNICODE);
+                                    break;
                             case DISPLAY_INDENT:
                                 indent = c.getLong(DISPLAY_INDENT).intValue();
                                 break;
@@ -563,7 +568,7 @@ public class StemEvaluator extends AbstractEvaluator {
                                 lineNumberingOff = c.getBoolean(OMIT_KEYS);
                                 break;
                             default:
-                                throw new BadArgException("second argument to " + DISPLAY + " must be a stem", polyad.getArgAt(1));
+                                throw new BadArgException("unknown option ;" + k + "'", polyad.getArgAt(1));
                         }
                     }
                 }
@@ -603,6 +608,14 @@ public class StemEvaluator extends AbstractEvaluator {
                             list.add(StringUtils.RJustify(Integer.toString(lineNumber++), colWidth) + " : " + st.nextToken());
                         }
                     }
+                }else{
+                    list = new ArrayList<>(1);
+                    if (lineNumberingOff) {
+                        list.add(inString);
+                    } else {
+                        list.add("0 : " + inString); // only a single number
+                    }
+
                 }
             } else {
                 list = new ArrayList<>(1);
@@ -614,6 +627,22 @@ public class StemEvaluator extends AbstractEvaluator {
             }
         }
         if (boxResult) {
+            char leftTopCorner = '+';
+            char rightTopCorner = '+';
+            char leftBottomCorner = '+';
+            char rightBottomCorner = '+';
+            char rightSide = '|';
+            char leftSide = '|';
+            String horizontal = "-";
+            if(unicodeBoxChars){
+                leftTopCorner = '╔'; //u 2554
+                rightTopCorner = '╗'; //u 2557
+                leftBottomCorner = '╚'; // u 255A
+                rightBottomCorner = '╝'; // u 255D
+                rightSide = '║'; // u 2551
+                leftSide = '║'; // u 2551
+                horizontal = "═"; // u2550
+            }
             int maxWidth = 0;
             List<String> boxedList = new LinkedList<>();
             for (String s : list) {
@@ -624,10 +653,10 @@ public class StemEvaluator extends AbstractEvaluator {
                 }
             }
             for (int i = 0; i < boxedList.size(); i++) {
-                boxedList.set(i, "|" + StringUtils.pad2(boxedList.get(i), maxWidth) + "|");
+                boxedList.set(i, leftSide + StringUtils.pad2(boxedList.get(i), maxWidth) + rightSide);
             }
-            boxedList.add(0, "+" + StringUtils.hLine("-", maxWidth) + "+");
-            boxedList.add("+" + StringUtils.hLine("-", maxWidth) + "+");
+            boxedList.add(0, leftTopCorner + StringUtils.hLine(horizontal, maxWidth) + rightTopCorner);
+            boxedList.add(leftBottomCorner + StringUtils.hLine(horizontal, maxWidth) + rightBottomCorner);
             list = boxedList;
         }
         if (returnAsString) {

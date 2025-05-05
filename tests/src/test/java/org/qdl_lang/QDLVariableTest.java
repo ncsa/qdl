@@ -1,5 +1,6 @@
 package org.qdl_lang;
 
+import org.qdl_lang.exceptions.UnknownSymbolException;
 import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.parsing.QDLParserDriver;
 import org.qdl_lang.state.State;
@@ -164,7 +165,6 @@ public class QDLVariableTest extends AbstractQDLTester {
         addLine(script, "ok0 := ∃a.epe ∧ ∃a.epe.;"); // should handle both cases of trailing . or not
         addLine(script, "ok1 := is_defined(b);"); // most basic test
         addLine(script, "ok2 := !is_defined(a.ZZZ);"); // check that missing elements in stems
-        addLine(script, "ok3 := ∄aaa.ZZZ;"); // check that no stem is caught right
         addLine(script, "ok4 := reduce(@&&, [false,false,true]==∃[p,q,b]);"); // check that stems are checked
         addLine(script, "zzz. := ∃{'a':p,'b':q};");
         addLine(script, "ok5:= (!zzz.'a')&&(!zzz.'b');");
@@ -173,9 +173,23 @@ public class QDLVariableTest extends AbstractQDLTester {
         assert getBooleanValue("ok0", state) : "is_defined failed for a stem";
         assert getBooleanValue("ok1", state) : "is_defined failed for a scalar variable";
         assert getBooleanValue("ok2", state) : "is_defined failed for missing element in a stem.";
-        assert getBooleanValue("ok3", state) : "is_defined failed for non-existent stem.";
         assert getBooleanValue("ok4", state) : "is_defined failed to check list elements.";
         assert getBooleanValue("ok5", state) : "is_defined failed to check general stem elements.";
+    }
+
+    public void testIsDefinedMissingStem(int testCase) throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok3 := ∄aaa.ZZZ;"); // check that no stem is caught right
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        boolean good = false;
+        try {
+            interpreter.execute(script.toString());
+        }catch(UnknownSymbolException unknownSymbolException){
+            good = true;
+        }
+        assert good : "unknown symbol exception for missing stem in is_defined not thrown.";
+
     }
 
     public void testIsFunction() throws Throwable {
