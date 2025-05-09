@@ -521,13 +521,13 @@ public class IOEvaluator extends AbstractEvaluator {
         // Now grab defaults
         String mountPoint = null;
         if (!cfg.containsKey(VFS_MOUNT_POINT_TAG)) {
-            throw new IllegalArgumentException("No " + VFS_MOUNT_POINT_TAG + "  specified for VFS");
+            throw new QDLExceptionWithTrace("No " + VFS_MOUNT_POINT_TAG + "  specified for VFS", polyad.getArgAt(0));
         } else {
             mountPoint = cfg.getString(VFS_MOUNT_POINT_TAG);
         }
         String scheme = null;
         if (!cfg.containsKey(VFS_SCHEME_TAG)) {
-            throw new IllegalArgumentException("No " + VFS_SCHEME_TAG + " specified for VFS");
+            throw new QDLExceptionWithTrace("No " + VFS_SCHEME_TAG + " specified for VFS", polyad.getArgAt(0));
         } else {
             scheme = cfg.getString(VFS_SCHEME_TAG);
         }
@@ -543,7 +543,7 @@ public class IOEvaluator extends AbstractEvaluator {
                 break;
             case VFS_TYPE_PASS_THROUGH:
                 if (!cfg.containsKey(VFS_ROOT_DIR_TAG)) {
-                    throw new IllegalArgumentException("VFS type of " + VFS_TYPE_PASS_THROUGH + " requires a " + VFS_ROOT_DIR_TAG);
+                    throw new QDLExceptionWithTrace("VFS type of " + VFS_TYPE_PASS_THROUGH + " requires a " + VFS_ROOT_DIR_TAG, polyad.getArgAt(0));
                 }
                 vfs = new VFSPassThruFileProvider(cfg.getString(VFS_ROOT_DIR_TAG),
                         scheme,
@@ -564,7 +564,7 @@ public class IOEvaluator extends AbstractEvaluator {
 
             case VFS_TYPE_ZIP:
                 if (!cfg.containsKey(VFS_ZIP_FILE_PATH)) {
-                    throw new IllegalArgumentException("VFS type of " + VFS_TYPE_ZIP + " requires a " + VFS_ZIP_FILE_PATH);
+                    throw new QDLExceptionWithTrace("VFS type of " + VFS_TYPE_ZIP + " requires a " + VFS_ZIP_FILE_PATH, polyad.getArgAt(0));
                 }
                 vfs = new VFSZipFileProvider(cfg.getString(VFS_ZIP_FILE_PATH),
                         scheme,
@@ -573,7 +573,7 @@ public class IOEvaluator extends AbstractEvaluator {
                         access.contains("w"));
                 break;
             default:
-                throw new IllegalArgumentException("unknown VFS type '" + cfg.getString(VFS_ATTR_TYPE) + "'");
+                throw new QDLExceptionWithTrace("unknown VFS type '" + cfg.getString(VFS_ATTR_TYPE) + "'", polyad.getArgAt(0));
 
         }
         state.addVFSProvider(vfs);

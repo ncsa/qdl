@@ -1,5 +1,6 @@
 package org.qdl_lang.expressions;
 
+import org.qdl_lang.exceptions.QDLExceptionWithTrace;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.variables.Constant;
@@ -56,7 +57,7 @@ public class AltIfExpressionNode extends ExpressionImpl {
             for(Object key : inStem.keySet()){
                    Object obj = inStem.get(key);
                    if(!(obj instanceof Boolean)){
-                       throw new IllegalArgumentException("expression requires a boolean at index '" + key + "', got '" + obj + "'");
+                       throw new QDLExceptionWithTrace("expression requires a boolean at index '" + key + "', got '" + obj + "'", getIF());
                    }
                 Boolean flag = (Boolean) obj;
                 Object arg1;
@@ -74,7 +75,7 @@ public class AltIfExpressionNode extends ExpressionImpl {
 
         }
         if (!(arg0 instanceof Boolean)) {
-            throw new IllegalArgumentException("error: expression requires a boolean as its first argument");
+            throw new QDLExceptionWithTrace("error: expression requires a boolean as its first argument, got '" + arg0 + "'", getIF());
         }
         Boolean flag = (Boolean) arg0;
         Object arg1;

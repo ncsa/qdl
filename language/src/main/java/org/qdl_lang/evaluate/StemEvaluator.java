@@ -467,12 +467,12 @@ public class StemEvaluator extends AbstractEvaluator {
     public static final String BOX_AROUND_RESULT = "box";
     public static final String BOX_UNICODE = "box_unicode";
     public static final String DISPLAY_INDENT = "indent";
-    public static final String DISPLAY_KEYS = "keys";
+    public static final String DISPLAY_ATTRIBUTES = "attr";
     public static final String DISPLAY_SHORT_FORM = "short";
     public static final String DISPLAY_SORT = "sort";
     public static final String DISPLAY_STRING_OUTPUT = "string_output";
     public static final String DISPLAY_WIDTH = "width";
-    public static final String OMIT_KEYS = "no_keys";
+    public static final String SHOW_KEYS = "show_keys";
     public static boolean DISPLAY_SHORT_FORM_DEFAULT = false; // display first line of value one
     public static boolean DISPLAY_SORT_DEFAULT = true;
     public static boolean DISPLAY_STRING_OUTPUT_DEFAULT = true;
@@ -522,7 +522,7 @@ public class StemEvaluator extends AbstractEvaluator {
         int width = DISPLAY_WIDTH_DEFAULT;
         boolean returnAsString = DISPLAY_STRING_OUTPUT_DEFAULT;
         boolean boxResult = false;
-        boolean lineNumberingOff = false;
+        boolean showKeys = true;
         boolean unicodeBoxChars = true;
         if (polyad.getArgCount() == 2) {
             Object arg1 = polyad.evalArg(1, state);
@@ -531,45 +531,92 @@ public class StemEvaluator extends AbstractEvaluator {
             } else {
                 if (isStem(arg1)) {
                     QDLStem c = (QDLStem) arg1;
-                    for (Object k : c.keySet()) {
-                        switch (k.toString()) {
-                            case BOX_AROUND_RESULT:
-                                boxResult = c.getBoolean(BOX_AROUND_RESULT);
-                                break;
+                    if(c.isList()){
+                        // can be a list for the form [flag, flag, ... width] in any order
+                        QDLList list = c.getQDLList();
+                        for(Object o : list){
+                            if(o instanceof Long){
+                                width = ((Long) o).intValue();
+                                continue;
+                            }
+                            if(!(o instanceof String)){
+                                throw new QDLExceptionWithTrace("illegal argument, must be a string or integer", polyad.getArgAt(1));
+                            }
+                            String key = (String)o;
+                            boolean value = true;
+                            if(key.startsWith("!") || key.startsWith("¬")){
+                                value = false;
+                                key = key.substring(1);
+                            }
+                            switch (key){
+                                case BOX_AROUND_RESULT:
+                                    boxResult = value;
+                                    break;
+                                case BOX_UNICODE:
+                                    unicodeBoxChars = value;
+                                    break;
+                                case DISPLAY_SHORT_FORM:
+                                    multilineMode = !value; // since option is actually backwards
+                                    break;
+                                case DISPLAY_SORT:
+                                    sortKeys = value;
+                                    break;
+                                case DISPLAY_STRING_OUTPUT:
+                                    returnAsString = value;
+                                    break;
+                                case SHOW_KEYS:
+                                    showKeys = value;
+                                    break;
+                                case DISPLAY_INDENT:
+                                case DISPLAY_ATTRIBUTES:
+                                    // just ignore them
+                                    break;
+                                default:
+                                    throw new BadArgException("unknown option ;" + o + "'", polyad.getArgAt(1));
+                            }
+                        }
+                    }else {
+
+                        for (Object k : c.keySet()) {
+                            switch (k.toString()) {
+                                case BOX_AROUND_RESULT:
+                                    boxResult = c.getBoolean(BOX_AROUND_RESULT);
+                                    break;
                                 case BOX_UNICODE:
                                     unicodeBoxChars = c.getBoolean(BOX_UNICODE);
                                     break;
-                            case DISPLAY_INDENT:
-                                indent = c.getLong(DISPLAY_INDENT).intValue();
-                                break;
-                            case DISPLAY_KEYS:
-                                if (!(c.get(DISPLAY_KEYS) instanceof QDLStem)) {
-                                    throw new BadArgException(DISPLAY_KEYS + " in second argument to " + DISPLAY + " must be a list", polyad.getArgAt(1));
-                                }
-                                QDLStem zzz = (QDLStem) c.get(DISPLAY_KEYS);
-                                if (!zzz.isList()) {
-                                    throw new BadArgException(DISPLAY_KEYS + " in second argument to " + DISPLAY + " must be a list", polyad.getArgAt(1));
-                                }
-                                keySubset = zzz.getQDLList().values();
-                                break;
-                            case DISPLAY_SHORT_FORM:
-                                multilineMode = !c.getBoolean(DISPLAY_SHORT_FORM);
-                                break;
-                            case DISPLAY_SORT:
-                                sortKeys = c.getBoolean(DISPLAY_SORT);
-                                break;
-                            case DISPLAY_STRING_OUTPUT:
-                                returnAsString = c.getBoolean(DISPLAY_STRING_OUTPUT);
-                                break;
-                            case DISPLAY_WIDTH:
-                                width = c.getLong(DISPLAY_WIDTH).intValue();
-                                break;
-                            case OMIT_KEYS:
-                                lineNumberingOff = c.getBoolean(OMIT_KEYS);
-                                break;
-                            default:
-                                throw new BadArgException("unknown option ;" + k + "'", polyad.getArgAt(1));
-                        }
+                                case DISPLAY_INDENT:
+                                    indent = c.getLong(DISPLAY_INDENT).intValue();
+                                    break;
+                                case DISPLAY_ATTRIBUTES:
+                                    if (!(c.get(DISPLAY_ATTRIBUTES) instanceof QDLStem)) {
+                                        throw new BadArgException(DISPLAY_ATTRIBUTES + " in second argument to " + DISPLAY + " must be a list", polyad.getArgAt(1));
+                                    }
+                                    QDLStem zzz = (QDLStem) c.get(DISPLAY_ATTRIBUTES);
+                                    if (!zzz.isList()) {
+                                        throw new BadArgException(DISPLAY_ATTRIBUTES + " in second argument to " + DISPLAY + " must be a list", polyad.getArgAt(1));
+                                    }
+                                    keySubset = zzz.getQDLList().values();
+                                    break;
+                                case DISPLAY_SHORT_FORM:
+                                    multilineMode = !c.getBoolean(DISPLAY_SHORT_FORM);
+                                    break;
+                                case DISPLAY_SORT:
+                                    sortKeys = c.getBoolean(DISPLAY_SORT);
+                                    break;
+                                case DISPLAY_STRING_OUTPUT:
+                                    returnAsString = c.getBoolean(DISPLAY_STRING_OUTPUT);
+                                    break;
+                                case DISPLAY_WIDTH:
+                                    width = c.getLong(DISPLAY_WIDTH).intValue();
+                                    break;
+                                case SHOW_KEYS:
+                                    showKeys = c.getBoolean(SHOW_KEYS);
+                                    break;
+                                default:
+                                    throw new BadArgException("unknown option ;" + k + "'", polyad.getArgAt(1));
+                            }
+                        } //end for
                     }
                 }
             }
@@ -590,7 +637,7 @@ public class StemEvaluator extends AbstractEvaluator {
                     indent,
                     width,
                     false,
-                    lineNumberingOff); // don't let it try to turn random stems into JSON.
+                    !showKeys); // don't let it try to turn random stems into JSON.
         } else {
             if (arg0 instanceof String) {
                 String inString = (String) arg0;
@@ -602,27 +649,27 @@ public class StemEvaluator extends AbstractEvaluator {
                     int colWidth = dColWidth.intValue(); // if line numbering, how wide to make that column
                     list = new ArrayList<>(count);
                     while (st.hasMoreTokens()) {
-                        if (lineNumberingOff) {
-                            list.add(st.nextToken());
-                        } else {
+                        if (showKeys) {
                             list.add(StringUtils.RJustify(Integer.toString(lineNumber++), colWidth) + " : " + st.nextToken());
+                        } else {
+                            list.add(st.nextToken());
                         }
                     }
                 }else{
                     list = new ArrayList<>(1);
-                    if (lineNumberingOff) {
-                        list.add(inString);
-                    } else {
+                    if (showKeys) {
                         list.add("0 : " + inString); // only a single number
+                    } else {
+                        list.add(inString);
                     }
 
                 }
             } else {
                 list = new ArrayList<>(1);
-                if (lineNumberingOff) {
-                    list.add(arg0.toString());
-                } else {
+                if (showKeys) {
                     list.add("0 : " + arg0.toString()); // only a single number
+                } else {
+                    list.add(arg0.toString());
                 }
             }
         }

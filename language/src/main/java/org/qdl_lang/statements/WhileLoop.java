@@ -226,14 +226,14 @@ public class WhileLoop implements Statement {
             case 4:
                 arg = conditional.getArguments().get(3).evaluate(localState);
                 if (!(arg instanceof Long)) {
-                    throw new IllegalArgumentException("Error: the loop increment must be a number");
+                    throw new QDLExceptionWithTrace("Error: the loop increment must be a number", conditional.getArgAt(3));
                 }
                 Long zzz = (Long) arg;
                 increment = zzz.intValue();
             case 3:
                 arg = conditional.getArguments().get(2).evaluate(localState);
                 if (!(arg instanceof Long)) {
-                    throw new IllegalArgumentException("Error: the loop starting value must be a number");
+                    throw new QDLExceptionWithTrace("Error: the loop starting value must be a number", conditional.getArgAt(2));
                 }
                 Long yyy = (Long) arg;
                 start = yyy.intValue();
@@ -254,11 +254,11 @@ public class WhileLoop implements Statement {
 
                 }
                 if (!gotArg2) {
-                    throw new IllegalArgumentException("error: the argument \"" + arg + "\" must be a stem or long value");
+                    throw new QDLExceptionWithTrace("error: the argument \"" + arg + "\" must be a stem or long value", conditional.getArgAt(1));
                 }
             case 1:
                 if (!hasEndvalue) {
-                    throw new IllegalArgumentException("Error: You did not specify the ending value for this loop!");
+                    throw new QDLExceptionWithTrace("Error: You did not specify the ending value for this loop!", conditional.getArgAt(1));
                 }
                 // Now, the first argument is supposed to be a variable. We don't evaluate it since
                 // we are going to set the value in the local state table and increment it manually.
@@ -269,7 +269,7 @@ public class WhileLoop implements Statement {
                 loopArg = node.getVariableReference();
                 break;
             default:
-                throw new IllegalArgumentException("Error: incorrect number of arguments for " + FOR_NEXT + ".");
+                throw new QDLExceptionWithTrace("Error: incorrect number of arguments for " + FOR_NEXT + ".", conditional.getArgAt(0));
         }
         if (doList) {
             for (Object key : list.keySet()) {
@@ -326,7 +326,7 @@ public class WhileLoop implements Statement {
             }
             return Boolean.TRUE;
         } catch (ClassCastException cce) {
-            throw new IllegalStateException("Error: You must have a boolean value for your conditional");
+            throw new QDLExceptionWithTrace("Error: You must have a boolean value for your conditional", conditional);
         }
     }
 

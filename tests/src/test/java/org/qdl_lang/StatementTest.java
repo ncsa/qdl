@@ -35,7 +35,7 @@ public class StatementTest extends AbstractQDLTester {
         boolean bad = true;
         try {
             interpreter.execute(script.toString());
-        } catch (IllegalStateException isx) {
+        } catch (QDLExceptionWithTrace isx) {
             bad = false;
         }
         if (bad) {

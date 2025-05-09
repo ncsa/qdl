@@ -5,10 +5,15 @@ import org.qdl_lang.exceptions.QDLExceptionWithTrace;
 import org.qdl_lang.exceptions.ReturnException;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
+import org.qdl_lang.statements.Statement;
 import org.qdl_lang.statements.TokenPosition;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.StemEntryNode;
 import org.qdl_lang.variables.StemListNode;
 import org.qdl_lang.module.Module;
+import org.qdl_lang.variables.StemVariableNode;
+
+import java.util.List;
 
 /**
  * Very much improved way to handle assignments. Use this
@@ -150,53 +155,84 @@ public class ANode2 extends ExpressionImpl {
         while (realLeftArg instanceof ParenthesizedExpression) {
             realLeftArg = ((ParenthesizedExpression) realLeftArg).getExpression();
         }
-        if (realLeftArg instanceof StemListNode) {
-            StemListNode stemListNode = (StemListNode) realLeftArg;
-            QDLStem rStem;
-            if (getResult() instanceof QDLStem) {
-                rStem = (QDLStem) getResult();
-                if (!rStem.isList()) {
-                    throw new QDLExceptionWithTrace("unknown rh node type", getRightArg());
+        QDLStem rStem;
+        switch (realLeftArg.getNodeType()){
+            case ExpressionInterface.LIST_NODE:
+                StemListNode stemListNode = (StemListNode) realLeftArg;
+                rStem = resultToStem();
+                if(rStem.size() != 0 && (rStem.size() != stemListNode.getStatements().size())) {
+                    throw new QDLExceptionWithTrace("length error for assignment statement." , stemListNode.getStatements().get(0));
                 }
-            } else {
-                rStem = new QDLStem();
-                rStem.setDefaultValue(getResult());
-            }
-
-            for (int i = 0; i < stemListNode.getStatements().size(); i++) {
-                ExpressionInterface swri = stemListNode.getStatements().get(i);
-                if (!(swri instanceof VariableNode)) {
-                    throw new QDLExceptionWithTrace("unknown left assignment statement ", getLeftArg());
+                for (int i = 0; i < stemListNode.getStatements().size(); i++) {
+                    setValueFromSWRI(stemListNode.getStatements().get(i), rStem.get(i), i, state);
                 }
-                Object value = rStem.get(i);
+                return getResult();
+            case ExpressionInterface.VARIABLE_NODE:
                 // https://github.com/ncsa/qdl/issues/20
-                state.getTargetState().setValue(((VariableNode) swri).getVariableReference(), value);
-            }
-            return getResult();
-        }
-        if (realLeftArg instanceof VariableNode) {
-            // https://github.com/ncsa/qdl/issues/20
-            state.getTargetState().setValue(((VariableNode) realLeftArg).getVariableReference(), getResult());
-            // last detail that cannot be done until this point is to set the alias if it is a module assigned to the variable.
-            if(getResult() instanceof Module){
-                ((Module)getResult()).setAlias(((VariableNode) realLeftArg).getVariableReference());
-            }
-            return getResult();
-        }
-        if (realLeftArg instanceof ConstantNode) {
-            throw new IllegalArgumentException("error: cannot assign value to constant \"" + getLeftArg().getResult() + "\"");
-        }
-        // So all we have in the LHS is an ESN2
-        if (realLeftArg instanceof ESN2) {
-            ((ESN2) realLeftArg).set(state, getResult());
-            return getResult();
-        }
-        if (realLeftArg instanceof ModuleExpression) {
-            ((ModuleExpression) realLeftArg).set(state, getResult());
-            return getResult();
-        }
+                state.getTargetState().setValue(((VariableNode) realLeftArg).getVariableReference(), getResult());
+                // last detail that cannot be done until this point is to set the alias if it is a module assigned to the variable.
+                if(getResult() instanceof Module){
+                    ((Module)getResult()).setAlias(((VariableNode) realLeftArg).getVariableReference());
+                }
+                return getResult();
+            case ExpressionInterface.CONSTANT_NODE:
+                throw new IllegalArgumentException("error: cannot assign value to constant \"" + getLeftArg().getResult() + "\"");
+            case EXPRESSION_STEM2_NODE:
+                ((ESN2) realLeftArg).set(state, getResult());
+                return getResult();
+            case MODULE_NODE:
+                ((ModuleExpression) realLeftArg).set(state, getResult());
+                return getResult();
+            case STEM_NODE:
+                StemVariableNode svn = (StemVariableNode) realLeftArg;
+                    rStem = resultToStem();
+                    if(rStem.size() != 0 && (rStem.size() != svn.getStatements().size())) {
+                        throw new QDLExceptionWithTrace("length error for assignment statement." , svn.getStatements().get(0));
+                    }
+                    for (int i = 0; i < svn.getStatements().size(); i++) {
+                        StemEntryNode stemEntryNode = svn.getStatements().get(i);
+                        Statement ss = stemEntryNode.getValue();
+                        if(!(ss instanceof ExpressionInterface)) {
+                            throw new QDLExceptionWithTrace("Unknown element in assignment statement.", stemEntryNode.getKey());
+                        }
+                        setValueFromSWRI((ExpressionInterface) ss, rStem.get(stemEntryNode.getKey().getResult()), stemEntryNode.getKey(), state);
+                    }
+                    return getResult();
+                }
+
+        StemVariableNode s;
         throw new QDLExceptionWithTrace("unknown type for left hand side", getLeftArg());
     }
+protected void setValueFromSWRI(ExpressionInterface swri, Object value, Object i, State state){
+    if(value == null){
+        throw new QDLExceptionWithTrace("length error for assignment statement at index " + i, swri);
+    }
+    if(swri instanceof ESN2){
+        ESN2 esn2 = (ESN2) swri;
+        esn2.set(state, value);
+    }else{
+        if (!(swri instanceof VariableNode)) {
+            throw new QDLExceptionWithTrace("unknown left assignment statement ", getLeftArg());
+        }
+        // https://github.com/ncsa/qdl/issues/20
+        state.getTargetState().setValue(((VariableNode) swri).getVariableReference(), value);
+    }
+}
+
+    /**
+     * if the RHS is a stem, return it. If a scalar, return a stem with that has that as the default value.
+     * @return
+     */
+    protected QDLStem resultToStem(){
+        QDLStem rStem;
+    if (getResult() instanceof QDLStem) {
+        rStem = (QDLStem) getResult();
+    } else {
+        rStem = new QDLStem();
+        rStem.setDefaultValue(getResult());
+    }
+    return rStem;
+}
 
 
     @Override
