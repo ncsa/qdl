@@ -1,0 +1,62 @@
+The State Indicator (SI) needs some tweaking to make it even more usable.
+
+[Thoughts on https://github.com/ncsa/qdl/issues/120]
+
+The halt command sends an interrupt, but we need to manage these far better
+for more complex code. Therefore
+
+halt(message)
+halt(label, message)
+
+where label is any QDL value, but warn the user that matching strings and integers
+works best.
+
+Then allow for setting
+
+-include_interrupts or -ii = list of labels that will be executed, skipping all others
+-exclude_interrupts or -xi = list of labels to skip
+
+Contract for these is
+1. Reference to a QDL list using >
+2. A scalar is assumed to be a regex
+
+E.g. With regex
+
+   )si set pid -xi ^setup:.*
+
+Sets the exclusion criteria for the pid, so that any label that starts with 'setup:'
+will be skipped.
+
+E.g. With a list or set. Has halt commands like
+
+halt('init', 'starting initialization');
+...
+halt('post_init1', 'Made past command line args');
+...
+halt('post_init2', 'Loaded modules');
+...
+halt('post_init3', 'Modules initialized');
+...
+
+   skip_list. := ['init', 'post_init1'];
+   )si set pid -xi >skip_list.
+
+would set the list of labels explicitly, stopping at post_init2
+
+Also shorthand should allow for
+
+   )si set -xi ∅|{}|[] to clear the list
+   )si set -xi * = skip all = )si set -go = exclude all, i.e. run to return
+
+Should be able to have these on the ) and )) commands too. Typical session
+
+   ) 0 -ii ^init:.*  // starts running, stops on first init: label
+process ID 101
+   )) 101 -xi ^post:.* // resumes but now skips all post:* labels
+// runs to something of interest for the programmer, who decides to run it to the end
+   )) -go
+process done!
+
+In resume or run setting the list would set it for the pid.
+
+--> All lists are specific to a pid <--
