@@ -3,7 +3,7 @@
     <parent>
         <artifactId>qdl</artifactId>
         <groupId>org.qdl_lang</groupId>
-        <version>1.6.1-rc1</version>
+        <version>1.6.1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>sas</artifactId>
@@ -23,13 +23,13 @@
         <dependency>
             <groupId>edu.uiuc.ncsa.security</groupId>
             <artifactId>sas-server</artifactId>
-            <version>6.1-rc1</version>
+            <version>6.1.0</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.qdl_lang</groupId>
             <artifactId>language</artifactId>
-            <version>1.6.1-rc1</version>
+            <version>1.6.1.0</version>
         </dependency>
 
         <dependency>
@@ -41,7 +41,7 @@
         <dependency>
             <groupId>org.qdl_lang</groupId>
             <artifactId>language</artifactId>
-            <version>1.6.1-rc1</version>
+            <version>1.6.1.0</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

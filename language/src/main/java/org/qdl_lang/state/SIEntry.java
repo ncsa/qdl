@@ -3,6 +3,7 @@ package org.qdl_lang.state;
 import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.parsing.QDLRunner;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
+import org.qdl_lang.statements.Statement;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -20,14 +21,15 @@ public class SIEntry implements Serializable {
     public Date timestamp = new Date();
     public State state = null;
     public String message = null;
+    public Statement statement;
     public QDLRunner qdlRunner;  // needed to restart where the interpreter left off
-    public int lineNumber = -1;
+    public int statementNumber = -1;
     public QDLInterpreter interpreter = null; // Can't be set at the point of the interrupt.
     public void toXML(XMLStreamWriter xsw) throws XMLStreamException{
         xsw.writeStartElement("si_entry");
         xsw.writeAttribute("pid", Integer.toString(pid));
         xsw.writeAttribute("timestamp", Iso8601.date2String(timestamp));
-        xsw.writeAttribute("line_number", Integer.toString(lineNumber));
+        xsw.writeAttribute("statement_number", Integer.toString(statementNumber));
         xsw.writeAttribute("initialized", Boolean.toString(initialized));
         xsw.writeStartElement("message");
         xsw.writeCData(message);

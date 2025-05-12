@@ -90,12 +90,12 @@ public class QDLRunner implements Serializable {
 
     public void run() throws Throwable {
         State currentState = getState();
-        run(0, currentState);
+        run(0, currentState, false);
 
     }
 
-    public void restart(SIEntry siEntry) {
-        run(siEntry.lineNumber + 1, siEntry.state);
+    public void restart(SIEntry siEntry, boolean noInterrupt) throws Throwable {
+        run(siEntry.statementNumber + 1, siEntry.state, noInterrupt);
     }
 
     public Object getLastResult() {
@@ -103,7 +103,7 @@ public class QDLRunner implements Serializable {
     }
 
     Object lastResult = null;
-    protected void run(int startIndex, State currentState) {
+    protected void run(int startIndex, State currentState, boolean noInterrupt) throws Throwable {
         for (int i = startIndex; i < elements.size(); i++) {
             //for (Element element : elements) {
             Element element = elements.get(i);
@@ -152,14 +152,16 @@ public class QDLRunner implements Serializable {
                     try {
                        lastResult = stmt.evaluate(currentState);
                     } catch (InterruptException ix) {
+                        if(!noInterrupt) {
                         if (!ix.getSiEntry().initialized) {
                             // if it was set up, pass it up the stack
                             ix.getSiEntry().qdlRunner = this;
-                            ix.getSiEntry().lineNumber = i; // number where this happened.
+                            ix.getSiEntry().statementNumber = i; // number where this happened.
                             ix.getSiEntry().interpreter = getInterpreter();
                             ix.getSiEntry().initialized = true;
                         }
                         throw ix;
+                        }
                     }
                 }
             }

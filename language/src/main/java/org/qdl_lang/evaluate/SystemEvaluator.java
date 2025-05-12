@@ -1468,7 +1468,9 @@ public class SystemEvaluator extends AbstractEvaluator {
         sie.state = state;
         sie.message = message;
 
-        throw new InterruptException(sie);
+        InterruptException interruptException = new InterruptException(sie.message ,  polyad, sie);
+        sie.statement = polyad;
+        throw interruptException;
     }
 
 

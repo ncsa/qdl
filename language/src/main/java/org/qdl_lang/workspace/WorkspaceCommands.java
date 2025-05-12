@@ -605,7 +605,8 @@ public class WorkspaceCommands implements Logable, Serializable {
 
         }
     }
-
+public static final String SI_MESSAGES = "messages";
+    boolean siMessagesOn = true;
     protected Object doSICommand(InputLine inputLine) {
         if (inputLine.size() <= ACTION_INDEX) {
             say("Sorry, please supply an argument (e.g. --help)");
@@ -614,22 +615,54 @@ public class WorkspaceCommands implements Logable, Serializable {
         if (!inputLine.hasArgAt(ACTION_INDEX)) {
             return _doSIList(inputLine);
         }
+
         switch (inputLine.getArg(ACTION_INDEX)) {
             case "--help":
                 say("State indicator commands:");
                 sayi("      --help - this message");
+                sayi("    messages - on | off. Echo halt messages to the console.");
                 sayi("        list - list all current states in the indicator by process id (pid)");
                 sayi("       reset - clear the entire state indicator, restoring the system process as the default");
                 sayi("resume [pid] - resume running the given process. No arguments means restart the current one.");
+                sayi("               Supplying the -go switch means to run the process with no more breakpoints.");
                 sayi("      rm pid - remove the given state from the system, losing all of it. If it is the");
                 sayi("               current state, the system default will replace it.");
                 sayi("   set [pid] - set the current process id. No argument means to display the current pid.");
                 sayi("     threads - List threads by process id and name.");
                 return RC_NO_OP;
             case "list":
+                if(_doHelp(inputLine)){
+                    say("list  - list the current process ids. The system reserves 0 for itself");
+                    return RC_NO_OP;
+                }
                 // list all current pids.
                 return _doSIList(inputLine);
-            case "reset":
+            case SI_MESSAGES:
+                if(_doHelp(inputLine)){
+                    say(SI_MESSAGES + "  [on|off] - echo halt command messagfes to console.");
+                    say("No argument shows current value. Passing in a value sets it.");
+                    return RC_NO_OP;
+                }
+                if(inputLine.getArgCount() == 1){
+                    // no arguments => query
+                    say("State indicator messages are " + (siMessagesOn?"on":"off"));
+                    return RC_NO_OP;
+                }
+                Boolean yeahOrNay = inputLine.getBooleanLastArg();
+                if(yeahOrNay == null) {
+                    say("Sorry, but " + inputLine.getLastArg() + " could not be parsed as a boolean.");
+                    return RC_NO_OP;
+                }
+                boolean oldSiMessage = siMessagesOn;
+                siMessagesOn = yeahOrNay;
+                say("State indicator messages are now " + (siMessagesOn?"on":"off") + ", were "+ (oldSiMessage?"on":"off"));
+                return RC_NO_OP;
+            case "clear":
+                if(_doHelp(inputLine)){
+                    say("clear - clears all pending entries to teh state indicator and restores the workspace ");
+                    say("        with the default pid of 0");
+                    return RC_NO_OP;
+                }
                 SIEntry sie = siEntries.get(new Integer(0));
                 siEntries = new SIEntries();
                 siEntries.put(0, sie);
@@ -637,13 +670,38 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("state indicator reset.");
                 return RC_CONTINUE;
             case "resume":
+                if(_doHelp(inputLine)){
+                    say("resume [-go] - resume the current process id.");
+                    say("               If the flag -go is supplied, the pid will run with no more halts");
+                    say("               until it ends. ");
+                    return RC_NO_OP;
+                }
                 // resume the execution of a process by pid
                 return _doSIResume(inputLine);
             case "rm":
+                if(_doHelp(inputLine)){
+                    say("rm pid - remove the given state from the system, losing all of it.");
+                    say("         If the pid is the current one, the state will reset to the default system");
+                    say("         pid of 0.");
+                    return RC_NO_OP;
+                }
                 return _doSIRemove(inputLine);
             case "set":
+                if(_doHelp(inputLine)){
+                    say("set [pid]-  set the current process id.");
+                    say("No argument means to display the current pid.");
+                    return RC_NO_OP;
+                }
                 return _doSISet(inputLine);
             case "threads":
+                if(_doHelp(inputLine)){
+                    say("threads - list the threads by process id. Threads are created with the fork command.");
+                    return RC_NO_OP;
+                }
+                if(getState().getThreadTable().isEmpty()){
+                    say("(no active threads)");
+                    return RC_CONTINUE;
+                }
                 for (Integer key : getState().getThreadTable().keySet()) {
                     say(key + " : " + state.getThreadTable().get(key).name);
                 }
@@ -719,8 +777,10 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_NO_OP;
     }
 
-    protected Object _doSIResume(InputLine inputLine) {
+    protected Object _doSIResume(InputLine inputLine)  {
         try {
+            boolean noInterrupt = inputLine.hasArg("-go");
+            inputLine.removeSwitch("-go");
             int pid = 0;
             if (inputLine.getCommand().equals(RESUME_COMMAND)) {
                 if (inputLine.getArgCount() == 0) {
@@ -742,12 +802,6 @@ public class WorkspaceCommands implements Logable, Serializable {
                     pid = currentPID;
                 }
             }
-/*
-            if (pid == 0) {
-                // no resume on current thread
-                return RC_NO_OP;
-            }
-*/
             if (!siEntries.containsKey(pid)) {
                 say("invalid pid " + pid);
                 return RC_NO_OP;
@@ -758,7 +812,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                     say("si damage"); // something is out of whack. Don't kill the workspace, just tell them.
                     return RC_NO_OP;
                 }
-                sie.qdlRunner.restart(sie);
+                sie.qdlRunner.restart(sie, noInterrupt);
                 // if it finishes, then reset to default.
                 state = defaultState;
                 currentPID = 0;
@@ -766,12 +820,28 @@ public class WorkspaceCommands implements Logable, Serializable {
                 siEntries.remove(sie.pid);
                 say("exit pid " + sie.pid);
             } catch (InterruptException ix) {
-                sie.lineNumber = ix.getSiEntry().lineNumber;
+                sie.statementNumber = ix.getSiEntry().statementNumber;
                 sie.message = ix.getSiEntry().message;
+                sie.statement = ix.getSiEntry().statement;
+                if(siMessagesOn){
+                    if(sie.statement.hasTokenPosition()){
+                        say(sie.message + ": at line " + sie.statement.getTokenPosition().line);
+                    }else{
+                        say(sie.message);
+                    }
+                }
                 sie.timestamp = ix.getSiEntry().timestamp;
             }
         } catch (ArgumentNotFoundException ax) {
             say("Sorry, but that was not a valid pid");
+        }catch (Throwable x) {
+            if(x instanceof QDLException){
+                throw new QDLException((QDLException)x);
+            }
+            if(isDebugOn()){
+                x.printStackTrace();
+            }
+            say("sorry but the process could not be restarted");
         }
         return RC_NO_OP;
     }
@@ -809,12 +879,14 @@ public class WorkspaceCommands implements Logable, Serializable {
         say(pad2("pid", ___SI_PID) +
                 " | active | " +
                 pad2("stmt", ___SI_LINE_NR) + " | " +
+                pad2("line", ___SI_LINE_NR) + " | " +
                 pad2("time", ___SI_TIMESTAMP) + " | " +
                 pad2("size", ___SI_SIZE) + " | " +
                 "message");
         // do system separate since it is never stored in the si entries
         String lineOut = pad2(0, ___SI_PID) +
                 " | " + pad2((0 == currentPID ? "  * " : " ---"), ___SI_ACTIVE) +
+                " | " + pad2(" ", ___SI_LINE_NR) + // statement number
                 " | " + pad2(" ", ___SI_LINE_NR) + // line number
                 " | " + pad2(startTimeStamp, ___SI_TIMESTAMP) + // timestamp
                 " | " + pad2(StateUtils.size(defaultState), ___SI_SIZE) +
@@ -823,10 +895,15 @@ public class WorkspaceCommands implements Logable, Serializable {
 
         for (Integer key : siEntries.keySet()) {
             SIEntry siEntry = siEntries.get(key);
-            int lineNr = siEntry.lineNumber;
+            int statementNumber = siEntry.statementNumber;
+            int lineNumber =-1;
+            if(siEntry.statement.hasTokenPosition()) {
+                 lineNumber = siEntry.statement.getTokenPosition().line;
+            };
             lineOut = pad2(key, ___SI_PID) +
                     " | " + pad2((siEntry.pid == currentPID ? "  * " : " ---"), ___SI_ACTIVE) +
-                    " | " + pad2(lineNr, ___SI_LINE_NR) +
+                    " | " + pad2(statementNumber, ___SI_LINE_NR) +
+                    " | " + pad2(lineNumber==-1?"--":Integer.toString(lineNumber), ___SI_LINE_NR) +
                     " | " + pad2(siEntry.timestamp, ___SI_TIMESTAMP) +
                     " | " + pad2(StateUtils.size(siEntry.state), ___SI_SIZE) +
                     " | " + siEntry.message;
@@ -1281,11 +1358,12 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     protected Object _doBufferRun(InputLine inputLine) {
         if (_doHelp(inputLine)) {
-            say("run (handle | alias) [& | !]");
+            say("run (handle | alias) [-go] [& | !]");
             sayi("Run the given buffer. This will execute as if you had typed it in to the current session. ");
-            sayi("If you supply an &, then the current workspace is cloned and the code is run in that. ");
-            sayi("If you supply an !, then completely clean state is created (VFS and script path are still set,");
-            sayi("but no imports etc.) and the code is run in that. ");
+            sayi("-go - run with no interrupts.");
+            sayi("& -  the current workspace is cloned and the code is run in that. ");
+            sayi("! -  completely clean state is created (VFS and script path are still set,");
+            sayi("     but no imports etc.) and the code is run in that. ");
             sayi("N.B. & and ! are mutually exclusive.");
             sayi("See the state indicator documentation for more");
             sayi(" Synonyms: ");
@@ -1293,6 +1371,8 @@ public class WorkspaceCommands implements Logable, Serializable {
             sayi("   )) pid -- resume a suspended process by process if (pid)");
             return RC_NO_OP;
         }
+        boolean noInterrupts = inputLine.hasArg("-go");
+        inputLine.removeSwitch("-go");
         if (inputLine.getArgCount() == 0) {
             say("you must supply either a buffer index or name to run");
             return RC_NO_OP;
@@ -1393,15 +1473,17 @@ public class WorkspaceCommands implements Logable, Serializable {
                     say("sorry, but there was an error:" + ((t instanceof NullPointerException) ? "(no message)" : t.getMessage()));
                 }
             } else {
-                if (t instanceof InterruptException) {
-                    InterruptException ie = (InterruptException) t;
-                    int nextPID = siEntries.nextKey();
-                    ie.getSiEntry().pid = nextPID;
-                    // ie.getSiEntry().interpreter = interpreter;
-                    siEntries.put(nextPID, ie.getSiEntry());
-                    say(Integer.toString(nextPID));
-                } else {
-                    say("could not interpret buffer:" + t.getMessage());
+                if(!noInterrupts) {
+                    if (t instanceof InterruptException) {
+                        InterruptException ie = (InterruptException) t;
+                        int nextPID = siEntries.nextKey();
+                        ie.getSiEntry().pid = nextPID;
+                        // ie.getSiEntry().interpreter = interpreter;
+                        siEntries.put(nextPID, ie.getSiEntry());
+                        say(Integer.toString(nextPID));
+                    } else {
+                        say("could not interpret buffer:" + t.getMessage());
+                    }
                 }
             }
         }

@@ -16,7 +16,7 @@ halt('Stop #1.');
 a. := [2,4,6];
 halt('Stop #2. a. is set');
 b. := 4+3*a.;
-halt('Stop #3. b. is set');
+   2 < 1 ? halt('Stop #3. b. is set'); // won't execute since condition is false.
 r := random_string(32);
 halt('Stop #4. Check your variables');
 define[
