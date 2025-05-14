@@ -45,7 +45,7 @@ would set the list of labels explicitly, stopping at post_init2
 
 Also shorthand should allow for
 
-   )si set -xi ∅|{}|[] to clear the list
+   )si set -xi ∅|{}|[] or a reference to an epty list to clear the list
    )si set -xi * = skip all = )si set -go = exclude all, i.e. run to return
 
 Should be able to have these on the ) and )) commands too. Typical session

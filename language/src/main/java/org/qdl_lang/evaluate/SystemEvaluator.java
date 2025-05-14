@@ -1444,31 +1444,42 @@ public class SystemEvaluator extends AbstractEvaluator {
         }
 
 
-        if (1 < polyad.getArgCount()) {
-            throw new ExtraArgException(INTERRUPT + " requires at most 1 argument", polyad.getArgAt(1));
+        if (0 == polyad.getArgCount()) {
+            throw new ExtraArgException(INTERRUPT + " requires at least 1 argument", polyad.getArgAt(1));
         }
 
         String message = "";
+        Object rawMessage;
+        Object label = null;
         switch (polyad.getArgCount()) {
             case 0:
+                rawMessage = null;
                 // do nothing.
                 break;
             case 1:
-                Object obj = polyad.evalArg(0, state);
-                if (obj == null || (obj instanceof QDLNull)) {
-                    message = "(null)";
-                } else {
-                    message = obj.toString();
-                }
+                rawMessage = polyad.evalArg(0, state);
+                break;
+            case 2:
+                label = polyad.evalArg(0, state);
+                rawMessage = polyad.evalArg(1, state);
                 break;
             default:
                 throw new ExtraArgException(INTERRUPT + " accepts at most one argument.", polyad.getArgAt(1));
         }
+        if (rawMessage == null || (rawMessage instanceof QDLNull)) {
+            message = "(null)";
+        } else {
+            message = rawMessage.toString();
+        }
+
         SIEntry sie = new SIEntry();
         sie.state = state;
         sie.message = message;
+        if (label != null) {
+            sie.setLabel(label);
+        }
 
-        InterruptException interruptException = new InterruptException(sie.message ,  polyad, sie);
+        InterruptException interruptException = new InterruptException(sie.message, polyad, sie);
         sie.statement = polyad;
         throw interruptException;
     }
@@ -1747,7 +1758,16 @@ public class SystemEvaluator extends AbstractEvaluator {
             throw new BadArgException("unknown logging type of " + arg0 + " encountered.", polyad.getArgAt(0));
         }
 
-
+        String title = state.getDebugUtil().getTitle();
+        if (state.getScriptName() != null) {
+            title = state.getScriptName();
+            title = title.substring(title.lastIndexOf('/') + 1);
+            if(StringUtils.isTrivial(title)) {
+                // if for some reason the name of the script cannot be determined, do not
+                // just print garbage.
+                title = state.getDebugUtil().getTitle();
+            }
+        }
         if (polyad.getArgCount() == 2) {
             // then the arguments are 0 is the level, 1 is the message
 
@@ -1767,7 +1787,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                     throw new BadArgException("unknown logging level of " + arg0 + " encountered.", polyad.getArgAt(0));
                 }
             }
-            if(newLogLevel < currentLongLevel){
+            if (newLogLevel < currentLongLevel) {
                 // Fix https://github.com/ncsa/qdl/issues/119
                 // short circuit this. do not evaluate the possibly very complex
                 // second argument every time if nothing is getting done.
@@ -1789,35 +1809,35 @@ public class SystemEvaluator extends AbstractEvaluator {
                 break;
             case LOG_LEVEL_TRACE:
                 if (isDebug) {
-                    state.getDebugUtil().trace(message);
+                    state.getDebugUtil().trace(title, message);
                 } else {
                     state.getLogger().debug(message);
                 }
                 break;
             case LOG_LEVEL_INFO:
                 if (isDebug) {
-                    state.getDebugUtil().info(message);
+                    state.getDebugUtil().info(title, message);
                 } else {
                     state.getLogger().info(message);
                 }
                 break;
             case LOG_LEVEL_WARN:
                 if (isDebug) {
-                    state.getDebugUtil().warn(message);
+                    state.getDebugUtil().warn(title, message);
                 } else {
                     state.getLogger().warn(message);
                 }
                 break;
             case LOG_LEVEL_ERROR:
                 if (isDebug) {
-                    state.getDebugUtil().error(message);
+                    state.getDebugUtil().error(title, message);
                 } else {
                     state.getLogger().error(message);
                 }
                 break;
             case LOG_LEVEL_SEVERE:
                 if (isDebug) {
-                    state.getDebugUtil().severe(message);
+                    state.getDebugUtil().severe(title, message);
                 } else {
                     state.getLogger().warn(message); // no other options
                 }
@@ -2207,7 +2227,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 throw new IllegalArgumentException("File access forbidden in server mode.");
             }
             name = name.substring(1);
-            qdlScript =  new QDLScript(QDLFileUtil.readTextFileAsLines(state, name), null);
+            qdlScript = new QDLScript(QDLFileUtil.readTextFileAsLines(state, name), null);
             qdlScript.setPath(name);
             return qdlScript;
 

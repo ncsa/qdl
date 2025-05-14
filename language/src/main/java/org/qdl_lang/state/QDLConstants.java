@@ -95,6 +95,7 @@ public interface QDLConstants {
     String SYS_INFO_USER = "user.";
     String SYS_INFO_USER_INVOCATION_DIR = "invocation_dir";
     String SYS_INFO_USER_HOME_DIR = "home_dir";
+    String SYS_INFO_QDL_HOME_DIR = "qdl_home";
 
     String SYS_INFO_SYSTEM = "system.";
     String SYS_INFO_SYSTEM_PROCESSORS = "processors";

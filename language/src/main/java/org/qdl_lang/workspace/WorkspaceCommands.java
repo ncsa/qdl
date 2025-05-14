@@ -26,7 +26,7 @@ import org.qdl_lang.util.InputFormUtil;
 import org.qdl_lang.util.QDLFileUtil;
 import org.qdl_lang.util.QDLVersion;
 import org.qdl_lang.variables.Constant;
-import org.qdl_lang.variables.QDLNull;
+import org.qdl_lang.variables.QDLSet;
 import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.VStack;
 import org.qdl_lang.vfs.AbstractVFSFileProvider;
@@ -268,6 +268,12 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     /**
+     * On command line, this tells the CLI to interpret the attached name as a variable
+     * in QDL and retrieve its value
+     */
+    public static final String QDL_VARIABLE_REFERENCE_MARKER = ">";
+
+    /**
      * Replaces ) commands prefixed with a by their value from the symbol table.
      *
      * @param inputLine
@@ -276,10 +282,23 @@ public class WorkspaceCommands implements Logable, Serializable {
     protected InputLine variableLookup(InputLine inputLine) {
         for (int i = 1; i < inputLine.size(); i++) {
             String input = inputLine.getArg(i);
-            if (input.startsWith(">")) {
+            if (input.startsWith(QDL_VARIABLE_REFERENCE_MARKER)) {
                 Object rawValue = getState().getValue(input.substring(1));
-                if (rawValue != null && !(rawValue instanceof QDLNull)) {
-                    inputLine.setArg(i, rawValue.toString());
+                if (rawValue != null) {
+                    switch (Constant.getType(rawValue)) {
+                        // Special handling for QDL aggregates
+                        case Constant.STEM_TYPE:
+                        case Constant.SET_TYPE:
+                        case Constant.MODULE_TYPE:
+                        case Constant.FUNCTION_TYPE:
+                        case Constant.NULL_TYPE:
+                        case Constant.DYADIC_FUNCTION_TYPE:
+                            inputLine.getOtherValues().put(i, rawValue);
+                            break;
+                        default:
+                            // scalars, so inputline can function normally.
+                            inputLine.setArg(i, rawValue.toString());
+                    }
                 }
             }
         }
@@ -557,8 +576,32 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
     }
 
+    /**
+     * the interrupts (inclusions and exclusions) per pid.
+     */
+    HashMap<Integer, SIInterrupts> interruptList = new HashMap<>();
+
+    /**
+     * Set of SIEntries by Process ID. Note that there is one active {@link SIEntry} per pid.
+     */
     public static class SIEntries extends TreeMap<Integer, SIEntry> {
         int maxKey = 100; // system pid is 0, but that is not stored here.
+
+        HashMap<Object, SIEntry> labelMap = new HashMap<>();
+
+        public void addLabel(SIEntry entry) {
+            if (entry.hasLabel()) {
+                labelMap.put(entry.getLabel(), entry);
+            }
+        }
+
+        public boolean hasLabel(Object label) {
+            return labelMap.containsKey(label);
+        }
+
+        public SIEntry getByLabel(Object label) {
+            return labelMap.get(label);
+        }
 
         @Override
         public SIEntry put(Integer key, SIEntry value) {
@@ -573,7 +616,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 }
             }
             maxKey = Math.max(maxKey, key0);
-
+            addLabel(value);
             return super.put(key0, value);
         }
 
@@ -605,60 +648,69 @@ public class WorkspaceCommands implements Logable, Serializable {
 
         }
     }
-public static final String SI_MESSAGES = "messages";
+
+    public static final String SI_MESSAGES = "messages";
     boolean siMessagesOn = true;
+
     protected Object doSICommand(InputLine inputLine) {
-        if (inputLine.size() <= ACTION_INDEX) {
-            say("Sorry, please supply an argument (e.g. --help)");
-            return RC_NO_OP;
-        }
-        if (!inputLine.hasArgAt(ACTION_INDEX)) {
+        if (!_doHelp(inputLine) && inputLine.getArgCount() == 0) {
+            // no help specified, nothing else on input line
+           // say("Sorry, please supply an argument (e.g. --help)");
             return _doSIList(inputLine);
         }
 
         switch (inputLine.getArg(ACTION_INDEX)) {
             case "--help":
                 say("State indicator commands:");
-                sayi("      --help - this message");
-                sayi("    messages - on | off. Echo halt messages to the console.");
-                sayi("        list - list all current states in the indicator by process id (pid)");
-                sayi("       reset - clear the entire state indicator, restoring the system process as the default");
-                sayi("resume [pid] - resume running the given process. No arguments means restart the current one.");
-                sayi("               Supplying the -go switch means to run the process with no more breakpoints.");
-                sayi("      rm pid - remove the given state from the system, losing all of it. If it is the");
-                sayi("               current state, the system default will replace it.");
-                sayi("   set [pid] - set the current process id. No argument means to display the current pid.");
-                sayi("     threads - List threads by process id and name.");
+                say("    (no arg) - same as the list action");
+                say("   get [pid] - Get information about a specific PID or the currently active");
+                say("               one if no arguments is given. Any breakpoints set will be shown");
+                say("      --help - this message");
+                say("    messages - on | off. Echo halt messages to the console. No argument will show the");
+                say("               current setting.");
+                say("        list - list all current states in the indicator by process id (pid)");
+                say("       reset - clear the entire state indicator, restoring the system process as the default");
+                say("resume [pid] - resume running the given process. No arguments means restart the current one.");
+                say("               Supplying the -go switch means to run the process with no more breakpoints.");
+                say("    )) [pid] - shorthand for: )si resume [pid]");
+                say("      rm pid - remove the given state from the system, losing all of it. If it is the");
+                say("               current state, the system default will replace it.");
+                say("   set [pid] - set the current process id. No argument means to display the current pid.");
+                say("               you may also supply a list of interrupts to exclude (i.e. skip) or ");
+                say("               a list to include (i.e. only those are evaluated).");
+                say("     threads - List threads by process id and name. Threads are only started with the");
+                say("               fork command. Threads run asynchronously, and all you can do to stop one");
+                say("               is use kill(pid) on it if it is misbehaving.");
                 return RC_NO_OP;
             case "list":
-                if(_doHelp(inputLine)){
+                if (_doHelp(inputLine)) {
                     say("list  - list the current process ids. The system reserves 0 for itself");
                     return RC_NO_OP;
                 }
                 // list all current pids.
                 return _doSIList(inputLine);
             case SI_MESSAGES:
-                if(_doHelp(inputLine)){
+                if (_doHelp(inputLine)) {
                     say(SI_MESSAGES + "  [on|off] - echo halt command messagfes to console.");
                     say("No argument shows current value. Passing in a value sets it.");
                     return RC_NO_OP;
                 }
-                if(inputLine.getArgCount() == 1){
+                if (inputLine.getArgCount() == 1) {
                     // no arguments => query
-                    say("State indicator messages are " + (siMessagesOn?"on":"off"));
+                    say("State indicator messages are " + (siMessagesOn ? "on" : "off"));
                     return RC_NO_OP;
                 }
                 Boolean yeahOrNay = inputLine.getBooleanLastArg();
-                if(yeahOrNay == null) {
+                if (yeahOrNay == null) {
                     say("Sorry, but " + inputLine.getLastArg() + " could not be parsed as a boolean.");
                     return RC_NO_OP;
                 }
                 boolean oldSiMessage = siMessagesOn;
                 siMessagesOn = yeahOrNay;
-                say("State indicator messages are now " + (siMessagesOn?"on":"off") + ", were "+ (oldSiMessage?"on":"off"));
+                say("State indicator messages are now " + (siMessagesOn ? "on" : "off") + ", were " + (oldSiMessage ? "on" : "off"));
                 return RC_NO_OP;
             case "clear":
-                if(_doHelp(inputLine)){
+                if (_doHelp(inputLine)) {
                     say("clear - clears all pending entries to teh state indicator and restores the workspace ");
                     say("        with the default pid of 0");
                     return RC_NO_OP;
@@ -670,7 +722,7 @@ public static final String SI_MESSAGES = "messages";
                 say("state indicator reset.");
                 return RC_CONTINUE;
             case "resume":
-                if(_doHelp(inputLine)){
+                if (_doHelp(inputLine)) {
                     say("resume [-go] - resume the current process id.");
                     say("               If the flag -go is supplied, the pid will run with no more halts");
                     say("               until it ends. ");
@@ -679,7 +731,7 @@ public static final String SI_MESSAGES = "messages";
                 // resume the execution of a process by pid
                 return _doSIResume(inputLine);
             case "rm":
-                if(_doHelp(inputLine)){
+                if (_doHelp(inputLine)) {
                     say("rm pid - remove the given state from the system, losing all of it.");
                     say("         If the pid is the current one, the state will reset to the default system");
                     say("         pid of 0.");
@@ -687,18 +739,21 @@ public static final String SI_MESSAGES = "messages";
                 }
                 return _doSIRemove(inputLine);
             case "set":
-                if(_doHelp(inputLine)){
+                if (_doHelp(inputLine)) {
                     say("set [pid]-  set the current process id.");
                     say("No argument means to display the current pid.");
                     return RC_NO_OP;
                 }
                 return _doSISet(inputLine);
+            case "get":
+                return _doSIGet(inputLine);
+
             case "threads":
-                if(_doHelp(inputLine)){
+                if (_doHelp(inputLine)) {
                     say("threads - list the threads by process id. Threads are created with the fork command.");
                     return RC_NO_OP;
                 }
-                if(getState().getThreadTable().isEmpty()){
+                if (getState().getThreadTable().isEmpty()) {
                     say("(no active threads)");
                     return RC_CONTINUE;
                 }
@@ -741,33 +796,196 @@ public static final String SI_MESSAGES = "messages";
         return RC_NO_OP;
     }
 
-    protected Object _doSISet(InputLine inputLine) {
-        if (!inputLine.hasArgAt(FIRST_ARG_INDEX)) {
-            say("currently active process id is " + currentPID);
+    public static final String SI_INTERRUPT_INCLUDE = "-interrupt_include";
+    public static final String SI_INTERRUPT_INCLUDE_SHORT = "-ii";
+    public static final String SI_INTERRUPT_EXCLUDE = "-interrupt_exclude";
+    public static final String SI_INTERRUPT_EXCLUDE_SHORT = "-xi";
+
+    protected Object _doSIGet(InputLine inputLine) {
+        if (_doHelp(inputLine)) {
+            say("Case 1. No argument means to display the current process id and any interrupts.");
+            say("Case 2. Display the interrupts for a specific pid.");
+            return RC_NO_OP;
+        }
+            if (inputLine.getArgCount() == 1) {
+                if (currentPID == 0) {
+                    say("The system process is the current one, (pid = 0)");
+                    return RC_CONTINUE;
+                }
+                SIEntry si = siEntries.get(currentPID);
+                SIInterrupts interrupts = si.getInterrupts();
+                say("the current process id is " + currentPID);
+                if (interrupts.hasInclusions()) {
+                    say("included interrupts are " + interrupts.getInclusions() + (interrupts.getInclusions().hasRegex() ? " (regex)" : ""));
+                }
+                if (interrupts.hasExclusions()) {
+                    say("excluded interrupts are " + interrupts.getExclusions() + (interrupts.getExclusions().hasRegex() ? " (regex)" : ""));
+                }
+                return RC_CONTINUE;
+            }
+        int pid = inputLine.getIntArg(FIRST_ARG_INDEX);
+        if (!siEntries.containsKey(pid)) {
+            say("invalid pid " + pid);
+            return RC_NO_OP;
+        }
+        SIEntry si = siEntries.get(pid);
+        SIInterrupts interrupts = si.getInterrupts();
+        if (!interrupts.hasInterrupts()) {
+            say("no interrupts set for pid " + pid);
             return RC_CONTINUE;
         }
-        try {
-            int pid = inputLine.getIntArg(FIRST_ARG_INDEX);
-            if (pid == currentPID) {
+
+        say("interrupts for pid " + pid);
+        if (interrupts.hasInclusions()) {
+            String msg;
+            if(interrupts.getInclusions().hasList() ){
+                msg = interrupts.getInclusions().interrupts.toString();
+            }else{
+                msg = interrupts.getInclusions().regex + " (regex)";
+            }
+            say("included interrupts are " + msg);
+        }
+        if (interrupts.hasExclusions()) {
+            String msg;
+            if(interrupts.getExclusions().hasList() ){
+                msg = interrupts.getExclusions().interrupts.toString();
+            }else{
+                msg = interrupts.getExclusions().regex + " (regex)";
+            }
+            say("excluded interrupts are " + msg);
+        }
+        return RC_CONTINUE;
+    }
+
+    protected Object _doSISet(InputLine inputLine) {
+        if (_doHelp(inputLine)) {
+            say("Case 1. Set the current pid -- no arguments");
+            say("set pid");
+            say("This makes this the current process.");
+            say("Case 2. Set interrupts for a pid");
+            say("set [pid] [" + SI_INTERRUPT_INCLUDE_SHORT + " list | regex] [" + SI_INTERRUPT_EXCLUDE_SHORT + " >list | regex] -  set the current process id and/or");
+            say("   the excluded or included interrupt labels. You may also use the long forms of the flags ");
+            say("   " + SI_INTERRUPT_INCLUDE + " or " + SI_INTERRUPT_EXCLUDE);
+            say("If interrupts have been set, these will be replace the current ones. ");
+        }
+        if (inputLine.getArgCount() == 2) {
+            // Case 1. Only a pid is passed in.
+            int pid = 0;
+            try {
+                pid = inputLine.getIntArg(FIRST_ARG_INDEX);
+                if (pid == 0) {
+                    interpreter = defaultInterpreter;
+                    state = defaultState;
+                    currentPID = 0;
+                    say("system process restored ");
+                    return RC_CONTINUE;
+                }
+                if (!siEntries.containsKey(pid)) {
+                    say("invalid pid " + pid);
+                    return RC_NO_OP;
+                }
+            } catch (ArgumentNotFoundException ax) {
+                say("sorry but that is not a valid integer");
                 return RC_NO_OP;
+            }
+
+
+            SIEntry sie = siEntries.get(pid);
+            interpreter = sie.interpreter;
+            // bare bones what new
+            interpreter.setEchoModeOn(isEchoModeOn());
+            interpreter.setPrettyPrint(isPrettyPrint());
+            sie.state.setIoInterface(state.getIoInterface());
+            state = sie.state;
+            currentPID = pid;
+            say("pid set to " + pid);
+            return RC_CONTINUE;
+        }
+        // Case 2. Setting interrupts for a pid
+        // whittle off interrupts
+        SIInterruptList includes = getSIInterruptList(inputLine, SI_INTERRUPT_INCLUDE, SI_INTERRUPT_INCLUDE_SHORT);
+        SIInterruptList excludes = getSIInterruptList(inputLine, SI_INTERRUPT_EXCLUDE, SI_INTERRUPT_EXCLUDE_SHORT);
+        boolean gotIncludes = includes != null;
+        boolean gotExcludes = excludes != null;
+
+        int pid = 0;
+        if (inputLine.getArgCount() == 0) {
+            pid = currentPID;
+        } else {
+            try {
+                pid = inputLine.getIntArg(FIRST_ARG_INDEX);
+                if (!siEntries.containsKey(pid)) {
+                    say("invalid pid " + pid);
+                    return RC_NO_OP;
+                }
+            } catch (ArgumentNotFoundException ax) {
+                say("sorry but that is not a valid integer");
+                return RC_NO_OP;
+            }
+        }
+
+        // handle case that there is no pid sent
+        SIEntry sie = siEntries.get(pid);
+        SIInterrupts interrupts = sie.getInterrupts();
+        if (gotIncludes) {
+            interrupts.setInclusions(includes);
+        }
+        if (gotExcludes) {
+            interrupts.setExclusions(excludes);
+        }
+        String message;
+        if (gotIncludes) {
+            if (gotExcludes) {
+                message = "updated excluded and included interrupts for pid " + currentPID;
+            } else {
+                message = "updated included interrupts for pid " + currentPID;
+            }
+        } else {
+            if (gotExcludes) {
+                message = "updated excluded interrupts for pid " + currentPID;
+            } else {
+                // no includes or excludes, so just a query
+                message = "currently active process id is " + currentPID;
+            }
+        }
+        say(message);
+        return RC_CONTINUE;
+  /*      try {
+            int pid = inputLine.getIntArg(FIRST_ARG_INDEX);
+            if (pid == 0) {
+                interpreter = defaultInterpreter;
+                state = defaultState;
+                currentPID = 0;
+                say("system process restored ");
+                return RC_CONTINUE;
             }
             if (!siEntries.containsKey(pid)) {
                 say("invalid pid " + pid);
                 return RC_NO_OP;
             }
-            if (pid == 0) {
-                interpreter = defaultInterpreter;
-                state = defaultState;
 
-            } else {
-                SIEntry sie = siEntries.get(pid);
-                interpreter = sie.interpreter;
-                // bare bones what new
-                interpreter.setEchoModeOn(isEchoModeOn());
-                interpreter.setPrettyPrint(isPrettyPrint());
-                sie.state.setIoInterface(state.getIoInterface());
-                state = sie.state;
+            SIInterrupts interrupts = interruptTable.get(pid);
+
+            if (gotIncludes) {
+                interrupts.setInclusions(includes);
             }
+            if (gotExcludes) {
+                interrupts.setExclusions(excludes);
+            }
+            if (pid == currentPID) {
+                if (gotIncludes || gotExcludes) {
+                    say("interrupts updated for pid " + currentPID);
+                }
+                return RC_NO_OP;
+            }
+
+            SIEntry sie = siEntries.get(pid);
+            interpreter = sie.interpreter;
+            // bare bones what new
+            interpreter.setEchoModeOn(isEchoModeOn());
+            interpreter.setPrettyPrint(isPrettyPrint());
+            sie.state.setIoInterface(state.getIoInterface());
+            state = sie.state;
             currentPID = pid;
             say("pid set to " + pid);
         } catch (ArgumentNotFoundException ax) {
@@ -775,12 +993,66 @@ public static final String SI_MESSAGES = "messages";
         }
 
         return RC_NO_OP;
+   */
     }
 
-    protected Object _doSIResume(InputLine inputLine)  {
+    protected SIInterruptList getSIInterruptList(InputLine inputLine, String... flags) {
+        if (!inputLine.hasArg(flags)) {
+            return null;
+        }
+        int iIndex = inputLine.getIndexOfKey(flags) + 1; // want next argument after flag
+        // options are that the argument is a string, which means we have a regex, or it references
+        // a list.
+        SIInterruptList interrupts = null;
+        if (-1 < iIndex) {
+            if (inputLine.getOtherValues().containsKey(iIndex)) {
+                Object qdlObject = inputLine.getOtherValues().get(iIndex);
+                switch (Constant.getType(qdlObject)) {
+                    case Constant.STEM_TYPE:
+                        QDLStem stem = (QDLStem) qdlObject;
+                        interrupts = new SIInterruptList(stem.valueSet());
+                        break;
+                    case Constant.SET_TYPE:
+                        interrupts = new SIInterruptList((QDLSet) qdlObject);
+                        break;
+                    case Constant.STRING_TYPE:
+                        interrupts = new SIInterruptList((String) qdlObject);
+                        break;
+                    case Constant.LONG_TYPE:
+                    case Constant.DECIMAL_TYPE:
+                    case Constant.BOOLEAN_TYPE:
+                    case Constant.NULL_TYPE:
+                        interrupts = new SIInterruptList(qdlObject.toString());
+                        break;
+                    default:
+                        throw new IllegalArgumentException("unsupported label type " + qdlObject);
+                }
+            } else {
+                String raw = inputLine.getNextArgFor(flags);
+                //Special cases. These aren't really parsed and must be passed as it.
+                // This allows to easily zero out these lists.
+                if(raw.equals("∅") || raw.equals("[]") || raw.equals("{}") ) {
+                    // basically this means to clear the list
+                    interrupts = null;
+                }else{
+                    interrupts = new SIInterruptList(inputLine.getNextArgFor(flags));
+                }
+            }
+        }
+        inputLine.removeSwitchAndValue(flags);
+
+        return interrupts;
+    }
+
+    protected Object _doSIResume(InputLine inputLine) {
         try {
             boolean noInterrupt = inputLine.hasArg("-go");
             inputLine.removeSwitch("-go");
+            // whittle off interrupts
+            SIInterruptList includes = getSIInterruptList(inputLine, SI_INTERRUPT_INCLUDE, SI_INTERRUPT_INCLUDE_SHORT);
+            SIInterruptList excludes = getSIInterruptList(inputLine, SI_INTERRUPT_EXCLUDE, SI_INTERRUPT_EXCLUDE_SHORT);
+            boolean gotIncludes = includes != null;
+            boolean gotExcludes = excludes != null;
             int pid = 0;
             if (inputLine.getCommand().equals(RESUME_COMMAND)) {
                 if (inputLine.getArgCount() == 0) {
@@ -812,7 +1084,13 @@ public static final String SI_MESSAGES = "messages";
                     say("si damage"); // something is out of whack. Don't kill the workspace, just tell them.
                     return RC_NO_OP;
                 }
-                sie.qdlRunner.restart(sie, noInterrupt);
+                if (includes != null) {
+                    sie.getInterrupts().setInclusions(includes);
+                }
+                if (excludes != null) {
+                    sie.getInterrupts().setExclusions(excludes);
+                }
+                sie.qdlRunner.restart(sie, sie.getInterrupts(), noInterrupt);
                 // if it finishes, then reset to default.
                 state = defaultState;
                 currentPID = 0;
@@ -823,10 +1101,10 @@ public static final String SI_MESSAGES = "messages";
                 sie.statementNumber = ix.getSiEntry().statementNumber;
                 sie.message = ix.getSiEntry().message;
                 sie.statement = ix.getSiEntry().statement;
-                if(siMessagesOn){
-                    if(sie.statement.hasTokenPosition()){
+                if (siMessagesOn) {
+                    if (sie.statement.hasTokenPosition()) {
                         say(sie.message + ": at line " + sie.statement.getTokenPosition().line);
-                    }else{
+                    } else {
                         say(sie.message);
                     }
                 }
@@ -834,11 +1112,11 @@ public static final String SI_MESSAGES = "messages";
             }
         } catch (ArgumentNotFoundException ax) {
             say("Sorry, but that was not a valid pid");
-        }catch (Throwable x) {
-            if(x instanceof QDLException){
-                throw new QDLException((QDLException)x);
+        } catch (Throwable x) {
+            if (x instanceof QDLException) {
+                throw new QDLException((QDLException) x);
             }
-            if(isDebugOn()){
+            if (isDebugOn()) {
                 x.printStackTrace();
             }
             say("sorry but the process could not be restarted");
@@ -896,14 +1174,15 @@ public static final String SI_MESSAGES = "messages";
         for (Integer key : siEntries.keySet()) {
             SIEntry siEntry = siEntries.get(key);
             int statementNumber = siEntry.statementNumber;
-            int lineNumber =-1;
-            if(siEntry.statement.hasTokenPosition()) {
-                 lineNumber = siEntry.statement.getTokenPosition().line;
-            };
+            int lineNumber = -1;
+            if (siEntry.statement.hasTokenPosition()) {
+                lineNumber = siEntry.statement.getTokenPosition().line;
+            }
+            ;
             lineOut = pad2(key, ___SI_PID) +
                     " | " + pad2((siEntry.pid == currentPID ? "  * " : " ---"), ___SI_ACTIVE) +
                     " | " + pad2(statementNumber, ___SI_LINE_NR) +
-                    " | " + pad2(lineNumber==-1?"--":Integer.toString(lineNumber), ___SI_LINE_NR) +
+                    " | " + pad2(lineNumber == -1 ? "--" : Integer.toString(lineNumber), ___SI_LINE_NR) +
                     " | " + pad2(siEntry.timestamp, ___SI_TIMESTAMP) +
                     " | " + pad2(StateUtils.size(siEntry.state), ___SI_SIZE) +
                     " | " + siEntry.message;
@@ -1358,21 +1637,41 @@ public static final String SI_MESSAGES = "messages";
 
     protected Object _doBufferRun(InputLine inputLine) {
         if (_doHelp(inputLine)) {
-            say("run (handle | alias) [-go] [& | !]");
-            sayi("Run the given buffer. This will execute as if you had typed it in to the current session. ");
-            sayi("-go - run with no interrupts.");
-            sayi("& -  the current workspace is cloned and the code is run in that. ");
-            sayi("! -  completely clean state is created (VFS and script path are still set,");
-            sayi("     but no imports etc.) and the code is run in that. ");
-            sayi("N.B. & and ! are mutually exclusive.");
-            sayi("See the state indicator documentation for more");
-            sayi(" Synonyms: ");
-            sayi("   ) index|name  - start running a buffer. You must start a process before it can be suspended.");
-            sayi("   )) pid -- resume a suspended process by process if (pid)");
+            say("run (handle | alias) [-go] [-i_msg on|off] [& | !]");
+            say("Run the given buffer. This will execute as if you had typed the contents ");
+            say("in to the current session.");
+            say("         -go - run with no interrupts.");
+            say("-i_msg on|off - turn off or on interrupt messages. Default is on.");
+            say("           & - the current workspace is cloned and the code is run in that. ");
+            say("           ! - completely clean state is created (VFS and script path are still set,");
+            say("               but no imports etc.) and the code is run in that. ");
+            say("N.B. & and ! are mutually exclusive.");
+            say("See the state indicator documentation for more");
+            say(" Synonyms: ");
+            say("   ) index|name  - start running a buffer. You must start a process before it can be suspended.");
+            say("   )) pid -- resume a suspended process by process if (pid)");
             return RC_NO_OP;
         }
         boolean noInterrupts = inputLine.hasArg("-go");
         inputLine.removeSwitch("-go");
+        if(inputLine.hasArg("-i_msg")){
+            Boolean iMsg = inputLine.getBooleanNextArgFor("i_msg");
+            if(iMsg != null) {
+                siMessagesOn = iMsg;
+            }
+        }
+        // whittle off interrupts
+        SIInterruptList includes = getSIInterruptList(inputLine, SI_INTERRUPT_INCLUDE, SI_INTERRUPT_INCLUDE_SHORT);
+        SIInterruptList excludes = getSIInterruptList(inputLine, SI_INTERRUPT_EXCLUDE, SI_INTERRUPT_EXCLUDE_SHORT);
+        boolean gotIncludes = includes != null;
+        boolean gotExcludes = excludes != null;
+        SIInterrupts siInterrupts = null;
+        if(gotIncludes || gotExcludes){
+            siInterrupts = new SIInterrupts();
+            siInterrupts.setExclusions(excludes);
+            siInterrupts.setInclusions(includes);
+        }
+
         if (inputLine.getArgCount() == 0) {
             say("you must supply either a buffer index or name to run");
             return RC_NO_OP;
@@ -1449,7 +1748,7 @@ public static final String SI_MESSAGES = "messages";
             stringBuffer.append(x + "\n");
         }
         try {
-            interpreter.execute(stringBuffer.toString());
+            interpreter.execute(stringBuffer.toString(), siInterrupts, noInterrupts);
             interpreter.setEchoModeOn(origEchoMode);
             interpreter.setPrettyPrint(ppOn);
         } catch (Throwable t) {
@@ -1473,17 +1772,20 @@ public static final String SI_MESSAGES = "messages";
                     say("sorry, but there was an error:" + ((t instanceof NullPointerException) ? "(no message)" : t.getMessage()));
                 }
             } else {
-                if(!noInterrupts) {
-                    if (t instanceof InterruptException) {
-                        InterruptException ie = (InterruptException) t;
-                        int nextPID = siEntries.nextKey();
-                        ie.getSiEntry().pid = nextPID;
-                        // ie.getSiEntry().interpreter = interpreter;
-                        siEntries.put(nextPID, ie.getSiEntry());
-                        say(Integer.toString(nextPID));
-                    } else {
-                        say("could not interpret buffer:" + t.getMessage());
+                if (t instanceof InterruptException) {
+                    InterruptException ie = (InterruptException) t;
+                    int nextPID = siEntries.nextKey();
+                    SIEntry siEntry = ie.getSiEntry();
+                    siEntry.pid = nextPID;
+                    // ie.getSiEntry().interpreter = interpreter;
+                    siEntries.put(nextPID, siEntry);
+                    siEntry.setInterrupts(siInterrupts);
+                    if(siMessagesOn){
+                        say(siEntry.message + " at line " + ie.getStatement().getTokenPosition().line);
                     }
+                    say("pid: " + nextPID);
+                } else {
+                    say("could not interpret buffer:" + t.getMessage());
                 }
             }
         }
@@ -5411,15 +5713,15 @@ public static final String SI_MESSAGES = "messages";
             gzipOutputStream.close();
             if (isTargetVFS) {
                 VFSFileProvider vfsFileProvider = getState().getVFS(fullPath);
-                String parentPath = fullPath.substring(0,fullPath.lastIndexOf(VFSPaths.PATH_SEPARATOR));
-                if(!vfsFileProvider.isDirectory(parentPath)) {
+                String parentPath = fullPath.substring(0, fullPath.lastIndexOf(VFSPaths.PATH_SEPARATOR));
+                if (!vfsFileProvider.isDirectory(parentPath)) {
                     vfsFileProvider.mkdir(parentPath);
                 }
                 saveDir = parentPath;
                 writeBinaryVFS(getState(), fullPath, baos.toByteArray());
             } else {
                 File fff = new File(fullPath);
-                if(!fff.getParentFile().exists()) {
+                if (!fff.getParentFile().exists()) {
                     fff.getParentFile().mkdirs();
                 }
                 saveDir = fff.getParent();
@@ -6150,7 +6452,7 @@ public static final String SI_MESSAGES = "messages";
         if (inputLine.hasArg(CLA_SHOW_BANNER)) {
             // allows for override.
             String raw = inputLine.getNextArgFor(CLA_SHOW_BANNER);
-                showBanner = "true".equals(raw);
+            showBanner = "true".equals(raw);
             inputLine.removeSwitchAndValue(CLA_SHOW_BANNER);
         }
         logoName = qe.getLogoName();
@@ -6355,9 +6657,9 @@ public static final String SI_MESSAGES = "messages";
             getIoInterface().setBufferingOn(true);
         }
         ClassMigrator.init(); // for now...
-        if(!getLibLoaders().isEmpty()){
-            for(LibLoader loader : getLibLoaders()) {
-             loader.add(   getState());
+        if (!getLibLoaders().isEmpty()) {
+            for (LibLoader loader : getLibLoaders()) {
+                loader.add(getState());
             }
         }
         // Set up the help.
@@ -6933,7 +7235,7 @@ public static final String SI_MESSAGES = "messages";
     transient SwingTerminal swingTerminal;
 
     public static WorkspaceCommandsProvider getWorkspaceCommandsProvider() {
-        if(workspaceCommandsProvider == null){
+        if (workspaceCommandsProvider == null) {
             workspaceCommandsProvider = new WorkspaceCommandsProvider();
         }
         return workspaceCommandsProvider;
@@ -6967,6 +7269,7 @@ public static final String SI_MESSAGES = "messages";
         }
         return workspaceCommands;
     }
+
     public static void setInstance(WorkspaceCommands wc) {
         workspaceCommands = wc;
     }
@@ -7006,9 +7309,10 @@ public static final String SI_MESSAGES = "messages";
 
     /**
      * Override for custom {@link LibLoader}s. These will be processed in the order given.
+     *
      * @return
      */
-    public List<LibLoader> getLibLoaders(){
+    public List<LibLoader> getLibLoaders() {
         return new ArrayList<>();
     }
 }

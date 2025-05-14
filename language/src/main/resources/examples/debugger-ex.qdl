@@ -1,0 +1,17 @@
+/*
+  An example of how the debugger() works. This has various levels of debugging in it
+  and you simply set the level of the debugger in the workspace, say
+
+  debugger(10)
+
+(turns all of it off, this is the default at startup). vs.
+
+debugger(1)
+
+trace logging.
+*/
+
+say('current debugger settings:\n' + print(debugger())); // prints current debugger settings
+while[k ∈ [1;6]]
+     [debugger(k, 'this is a debugger message at level ' + k);];
+return('debugger example done!');

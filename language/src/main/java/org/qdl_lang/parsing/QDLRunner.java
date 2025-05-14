@@ -15,6 +15,7 @@ import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLSetNode;
 import org.qdl_lang.variables.StemListNode;
 import org.qdl_lang.variables.StemVariableNode;
+import org.qdl_lang.workspace.SIInterrupts;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -88,14 +89,25 @@ public class QDLRunner implements Serializable {
 
     ArrayList<Element> elements;
 
+    /**
+     * For running a buffer that may have breakpoints set
+     * @param siInterrupts
+     * @param noInterrupt
+     * @throws Throwable
+     */
+    public void run(SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
+        State currentState = getState();
+        run(0, currentState, siInterrupts, noInterrupt);
+
+    }
     public void run() throws Throwable {
         State currentState = getState();
-        run(0, currentState, false);
+        run(0, currentState, null, false);
 
     }
 
-    public void restart(SIEntry siEntry, boolean noInterrupt) throws Throwable {
-        run(siEntry.statementNumber + 1, siEntry.state, noInterrupt);
+    public void restart(SIEntry siEntry,SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
+        run(siEntry.statementNumber + 1, siEntry.state, siInterrupts,  noInterrupt);
     }
 
     public Object getLastResult() {
@@ -103,7 +115,8 @@ public class QDLRunner implements Serializable {
     }
 
     Object lastResult = null;
-    protected void run(int startIndex, State currentState, boolean noInterrupt) throws Throwable {
+
+    protected void run(int startIndex, State currentState, SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
         for (int i = startIndex; i < elements.size(); i++) {
             //for (Element element : elements) {
             Element element = elements.get(i);
@@ -121,7 +134,7 @@ public class QDLRunner implements Serializable {
                         // Checking for expression nodes allows for printing things like
                         // (((2+2)))
                         // correctly
-                        if (((stmt instanceof ExpressionNode) && (((ExpressionNode) stmt).getNodeType()!=ExpressionInterface.ASSIGNMENT_NODE))) {
+                        if (((stmt instanceof ExpressionNode) && (((ExpressionNode) stmt).getNodeType() != ExpressionInterface.ASSIGNMENT_NODE))) {
                             ExpressionNode expression = (ExpressionNode) stmt;
                             if (expression instanceof Polyad) {
                                 // so if this is already a print statement, don't wrap it in one
@@ -150,17 +163,25 @@ public class QDLRunner implements Serializable {
                         }
                     }
                     try {
-                       lastResult = stmt.evaluate(currentState);
+                        lastResult = stmt.evaluate(currentState);
                     } catch (InterruptException ix) {
-                        if(!noInterrupt) {
-                        if (!ix.getSiEntry().initialized) {
-                            // if it was set up, pass it up the stack
-                            ix.getSiEntry().qdlRunner = this;
-                            ix.getSiEntry().statementNumber = i; // number where this happened.
-                            ix.getSiEntry().interpreter = getInterpreter();
-                            ix.getSiEntry().initialized = true;
+                        Object label = ix.getSiEntry().getLabel();
+                        boolean dointerrupt = true;
+                        if(siInterrupts == null){
+                            dointerrupt = !noInterrupt;
+                        }else{
+                           dointerrupt = (!noInterrupt) && siInterrupts.doInterrupt(label);
                         }
-                        throw ix;
+                        if (dointerrupt) {
+                            if (!ix.getSiEntry().initialized) {
+                                // if it was set up, pass it up the stack
+                                ix.getSiEntry().setInterrupts(siInterrupts);
+                                ix.getSiEntry().qdlRunner = this;
+                                ix.getSiEntry().statementNumber = i; // number where this happened.
+                                ix.getSiEntry().interpreter = getInterpreter();
+                                ix.getSiEntry().initialized = true;
+                            }
+                            throw ix;
                         }
                     }
                 }

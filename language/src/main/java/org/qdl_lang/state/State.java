@@ -266,6 +266,7 @@ public class State extends FunctionState implements QDLConstants {
             QDLStem user = new QDLStem();
             user.put(SYS_INFO_USER_INVOCATION_DIR, System.getProperty("user.dir"));
             user.put(SYS_INFO_USER_HOME_DIR, System.getProperty("user.home"));
+            user.put(SYS_INFO_QDL_HOME_DIR, System.getenv("QDL_HOME")==null?"(not set)":System.getenv("QDL_HOME"));
             systemInfo.put(SYS_INFO_USER, user);
         }
 

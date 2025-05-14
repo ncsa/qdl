@@ -6266,7 +6266,7 @@ See also: kill
     <entry id="kill">
         <body>
             <![CDATA[kill(pid) - kill a process given its process identifier.
-This returns 1 if success and 0 otherwise.
+This returns true if success and false otherwise.
 
 Note to view current threads in the workspace, issue
    )si threads

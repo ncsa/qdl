@@ -3470,7 +3470,7 @@ public class QDLParserParser extends Parser {
 				setState(356);
 				((SquartExpressionContext)_localctx).prefix = match(Nroot);
 				setState(357);
-				expression(39);
+				expression(40);
 				}
 				break;
 			case 14:
@@ -3830,7 +3830,7 @@ public class QDLParserParser extends Parser {
 						_localctx = new PowerExpressionContext(new ExpressionContext(_parentctx, _parentState));
 						pushNewRecursionContext(_localctx, _startState, RULE_expression);
 						setState(421);
-						if (!(precpred(_ctx, 40))) throw new FailedPredicateException(this, "precpred(_ctx, 40)");
+						if (!(precpred(_ctx, 39))) throw new FailedPredicateException(this, "precpred(_ctx, 39)");
 						setState(422);
 						_la = _input.LA(1);
 						if ( !(_la==Exponentiation || _la==Nroot) ) {
@@ -3842,7 +3842,7 @@ public class QDLParserParser extends Parser {
 							consume();
 						}
 						setState(423);
-						expression(41);
+						expression(40);
 						}
 						break;
 					case 8:
@@ -4465,7 +4465,7 @@ public class QDLParserParser extends Parser {
 		case 5:
 			return precpred(_ctx, 43);
 		case 6:
-			return precpred(_ctx, 40);
+			return precpred(_ctx, 39);
 		case 7:
 			return precpred(_ctx, 38);
 		case 8:
@@ -4650,7 +4650,7 @@ public class QDLParserParser extends Parser {
 		"\5B\";\u015b\u015c\7I\2\2\u015c\u0190\5B\"\64\u015d\u0190\5\62\32\2\u015e"+
 		"\u0190\5\66\34\2\u015f\u0190\5\60\31\2\u0160\u0190\5.\30\2\u0161\u0190"+
 		"\5,\27\2\u0162\u0163\79\2\2\u0163\u0190\5B\".\u0164\u0165\t\3\2\2\u0165"+
-		"\u0190\5B\"+\u0166\u0167\7G\2\2\u0167\u0190\5B\")\u0168\u0169\t\4\2\2"+
+		"\u0190\5B\"+\u0166\u0167\7G\2\2\u0167\u0190\5B\"*\u0168\u0169\t\4\2\2"+
 		"\u0169\u0190\5B\"&\u016a\u016b\t\5\2\2\u016b\u0190\5B\"%\u016c\u016d\7"+
 		"\n\2\2\u016d\u016e\5B\"\2\u016e\u016f\7\5\2\2\u016f\u0190\3\2\2\2\u0170"+
 		"\u0171\7C\2\2\u0171\u0190\5B\"\32\u0172\u0173\t\6\2\2\u0173\u0190\5B\""+
@@ -4677,7 +4677,7 @@ public class QDLParserParser extends Parser {
 		"\u019d\7Q\2\2\u019d\u01fd\5B\":\u019e\u019f\f\67\2\2\u019f\u01a0\7S\2"+
 		"\2\u01a0\u01fd\5B\"8\u01a1\u01a2\f\65\2\2\u01a2\u01a3\7I\2\2\u01a3\u01fd"+
 		"\5B\"\66\u01a4\u01a5\f-\2\2\u01a5\u01a6\t\7\2\2\u01a6\u01fd\5B\".\u01a7"+
-		"\u01a8\f*\2\2\u01a8\u01a9\t\b\2\2\u01a9\u01fd\5B\"+\u01aa\u01ab\f(\2\2"+
+		"\u01a8\f)\2\2\u01a8\u01a9\t\b\2\2\u01a9\u01fd\5B\"*\u01aa\u01ab\f(\2\2"+
 		"\u01ab\u01ac\t\t\2\2\u01ac\u01fd\5B\")\u01ad\u01ae\f\'\2\2\u01ae\u01af"+
 		"\t\n\2\2\u01af\u01fd\5B\"(\u01b0\u01b1\f$\2\2\u01b1\u01b2\t\13\2\2\u01b2"+
 		"\u01fd\5B\"%\u01b3\u01b4\f#\2\2\u01b4\u01b5\t\f\2\2\u01b5\u01fd\5B\"$"+

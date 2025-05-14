@@ -113,7 +113,7 @@ if(hasCompletionProvider()){
                     }
                 }
                 if (!(value instanceof QDLStem) && !(value instanceof QDLNull)) {
-                    throw new IndexError("Error: You cannot set a scalar value '" + value + "' to the stem variable '" + variableName + "'", null);
+                    throw new IndexError("Error: You cannot set the " + ((value instanceof QDLSet)?"set '": "scalar value '") + value + "' to the stem variable '" + variableName + "'", null);
                 }
             } else {
                 if (value instanceof QDLStem) {

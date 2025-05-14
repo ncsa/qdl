@@ -132,8 +132,8 @@ expression
  | expression (Tilde | TildeRight ) expression                                 #tildeExpression
  | expression postfix=(PlusPlus | MinusMinus)                                  #postfix
  | prefix=(PlusPlus | MinusMinus) expression                                   #prefix
- | expression (Exponentiation | Nroot) expression                              #powerExpression
  | prefix= Nroot  expression                                                   #squartExpression
+ | expression (Exponentiation | Nroot) expression                              #powerExpression
 // Comment -- do set ops here since doing it in the lexer causes issues with / and /\ not being distinct.
 // Keep lexical tokens separate and just glom them together here
  | expression op=('\\/' | '∩' | '/\\' | '∪') expression                        #intersectionOrUnion

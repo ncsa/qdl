@@ -2,6 +2,7 @@ package org.qdl_lang.parsing;
 
 import org.qdl_lang.state.State;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
+import org.qdl_lang.workspace.SIInterrupts;
 
 import java.io.Reader;
 import java.io.Serializable;
@@ -56,17 +57,34 @@ public class QDLInterpreter implements Serializable {
      * the command line this is ok but does not scale in any way.
      */
     public void execute(String line) throws Throwable {
-        if(line == null || line.length() == 0){
+        if (line == null || line.length() == 0) {
             return;
         }
         StringReader reader = new StringReader(line);
         execute(reader);
     }
 
+    public void execute(String line, SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
+        if (line == null || line.length() == 0) {
+            return;
+        }
+        StringReader reader = new StringReader(line);
+        execute(reader, siInterrupts, noInterrupt);
+    }
+
+    public void execute(List<String> lines, SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
+        StringBuffer stringBuffer = new StringBuffer();
+        for (String line : lines) {
+            stringBuffer.append(line + "\n");
+        }
+        StringReader reader = new StringReader(stringBuffer.toString());
+        execute(reader);
+    }
+
     public void execute(List<String> lines) throws Throwable {
         StringBuffer stringBuffer = new StringBuffer();
-        for(String line : lines){
-             stringBuffer.append(line + "\n");
+        for (String line : lines) {
+            stringBuffer.append(line + "\n");
         }
         StringReader reader = new StringReader(stringBuffer.toString());
         execute(reader);
@@ -74,6 +92,10 @@ public class QDLInterpreter implements Serializable {
 
 
     public QDLRunner execute(Reader r) throws Throwable {
+        return execute(r, null, false);
+    }
+
+    public QDLRunner execute(Reader r, SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
         QDLParserDriver driver = new QDLParserDriver(environment, state);
         driver.setDebugOn(isDebugOn());
         QDLRunner runner = new QDLRunner(driver.parse(r));
@@ -81,7 +103,7 @@ public class QDLInterpreter implements Serializable {
         runner.setEchoModeOn(isEchoModeOn());
         runner.setPrettyPrint(isPrettyPrint());
         runner.setInterpreter(this); // needed for state indicator operations.
-        runner.run();
+        runner.run(siInterrupts, noInterrupt);
         return runner;
     }
 
@@ -94,10 +116,11 @@ public class QDLInterpreter implements Serializable {
     }
 
     boolean prettyPrint = false;
+
     /*
     Mostly this is needed for deserializing workspaces
      */
-    public State getState(){
+    public State getState() {
         return state;
     }
 }

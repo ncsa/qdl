@@ -4,6 +4,8 @@ import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.parsing.QDLRunner;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
 import org.qdl_lang.statements.Statement;
+import org.qdl_lang.variables.Constant;
+import org.qdl_lang.workspace.SIInterrupts;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -25,7 +27,8 @@ public class SIEntry implements Serializable {
     public QDLRunner qdlRunner;  // needed to restart where the interpreter left off
     public int statementNumber = -1;
     public QDLInterpreter interpreter = null; // Can't be set at the point of the interrupt.
-    public void toXML(XMLStreamWriter xsw) throws XMLStreamException{
+
+    public void toXML(XMLStreamWriter xsw) throws XMLStreamException {
         xsw.writeStartElement("si_entry");
         xsw.writeAttribute("pid", Integer.toString(pid));
         xsw.writeAttribute("timestamp", Iso8601.date2String(timestamp));
@@ -36,4 +39,42 @@ public class SIEntry implements Serializable {
         xsw.writeEndElement();// end message tag
         xsw.writeEndElement(); // end si entry tag
     }
+
+    public Object getLabel() {
+        return label;
+    }
+
+    public void setLabel(Object label) {
+        this.label = label;
+    }
+
+    public Object label;
+
+    public boolean hasLabel() {
+        return label != null;
+    }
+
+    public Long getIntLabel() {
+        return (Long) label;
+    }
+
+    public String getStringLabel() {
+        return (String) label;
+    }
+    public int getLabelType(){
+        return Constant.getType(label);
+    }
+
+    public SIInterrupts getInterrupts() {
+        if(interrupts == null) {
+            interrupts = new SIInterrupts();
+        }
+        return interrupts;
+    }
+
+    public void setInterrupts(SIInterrupts interrupts) {
+        this.interrupts = interrupts;
+    }
+
+    SIInterrupts interrupts;
 }

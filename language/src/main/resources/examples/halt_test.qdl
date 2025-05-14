@@ -9,21 +9,43 @@
    Use. Create a buffer, then run it in the workspace. Everytime it hits a halt call, it will stop and the message
    in the state indicator will update. You can then set the default pid to whatever this is and resume.
 
+   Run as
+     )b create h_test /path/to/halt-test.qdl
+     A couple of options are
+
+     excludes ≔ {false, 'label1',4,5}; // set up interrupts to skip
+     ) h_test -xi >excludes
+
+     includes ≔ {false, {'c'}, 'label2'}; // set up interrupts to do -- all  others are skipped
+     ) h_test -ii >includes
+
+     next one stops at every label that starts with 'label' using a regex to check
+     ) h_test -ii ^label.*
+
+This will skip labels that are equal to the elements of the excludes set. Note that
+means that a couple of the interrupts have boolean 'labels' are one is skipped since it
+evaluates to false.
 
 */
+A := {'a','b','c'};
+B := {'b','c','d'};
+C := {'b','p'};
 say('starting halt test');
-halt('Stop #1.');
+halt('label1', 'Stop #1.');
+halt(0 <= size(args()) , 'arg stop #1.'); // 'label' is true
 a. := [2,4,6];
-halt('Stop #2. a. is set');
+halt('label2', 'Stop #2. a. is set');
+halt(A∩B/C, 'Set test stop #2'); // set contains 'c' only
 b. := 4+3*a.;
-   2 < 1 ? halt('Stop #3. b. is set'); // won't execute since condition is false.
+   2 < 1 ? halt(3, 'Stop #3. b. is set'); // won't execute since condition is false.
 r := random_string(32);
-halt('Stop #4. Check your variables');
+halt(4, 'Stop #4. Check your variables');
+halt(size(args()) == -1, 'arg stop #2.'); // 'label' is false
 define[
   q(x,y)
 ][
 »> A function to concatenate a couple of arguments.
   return(x + y);
 ];
-halt('Stop #5. Check your functions. Set the pid to this and execute the function.');
+halt('label 5', 'Stop #5. Check your functions.');
 say('done!');
