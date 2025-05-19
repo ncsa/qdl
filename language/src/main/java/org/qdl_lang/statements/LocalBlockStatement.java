@@ -7,7 +7,7 @@ import org.qdl_lang.variables.VThing;
 import java.util.List;
 
 /**
- * Local block statments.These have completely local state an know nothing of the ambient space.
+ * Local block statments.These have completely local state and know nothing of the ambient space.
  * <p>Created by Jeff Gaynor<br>
  * on 4/8/22 at  12:59 PM
  */

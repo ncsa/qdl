@@ -64,12 +64,12 @@ public class QDLInterpreter implements Serializable {
         execute(reader);
     }
 
-    public void execute(String line, SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
+    public void execute(String line, boolean startProcess, SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
         if (line == null || line.length() == 0) {
             return;
         }
         StringReader reader = new StringReader(line);
-        execute(reader, siInterrupts, noInterrupt);
+        execute(reader, startProcess, siInterrupts, noInterrupt);
     }
 
     public void execute(List<String> lines, SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
@@ -92,10 +92,10 @@ public class QDLInterpreter implements Serializable {
 
 
     public QDLRunner execute(Reader r) throws Throwable {
-        return execute(r, null, false);
+        return execute(r, false, null, false);
     }
 
-    public QDLRunner execute(Reader r, SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
+    public QDLRunner execute(Reader r, boolean startProcess, SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
         QDLParserDriver driver = new QDLParserDriver(environment, state);
         driver.setDebugOn(isDebugOn());
         QDLRunner runner = new QDLRunner(driver.parse(r));
@@ -103,7 +103,7 @@ public class QDLInterpreter implements Serializable {
         runner.setEchoModeOn(isEchoModeOn());
         runner.setPrettyPrint(isPrettyPrint());
         runner.setInterpreter(this); // needed for state indicator operations.
-        runner.run(siInterrupts, noInterrupt);
+        runner.run(startProcess, siInterrupts, noInterrupt);
         return runner;
     }
 

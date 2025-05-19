@@ -1,3 +1,5 @@
+#! /usr/bin/env -S qdl-run
+
 /*
    This is a file to test the halt() function. It has several halts in it which you can then resume and run until
    the next one. It is intended to be a mini-tutorial in how this operates. You should issue
@@ -30,15 +32,14 @@ evaluates to false.
 A := {'a','b','c'};
 B := {'b','c','d'};
 C := {'b','p'};
-say('starting halt test');
+say('starting halt test:' + args());
 halt('label1', 'Stop #1.');
 halt(0 <= size(args()) , 'arg stop #1.'); // 'label' is true
 a. := [2,4,6];
 halt('label2', 'Stop #2. a. is set');
 halt(A∩B/C, 'Set test stop #2'); // set contains 'c' only
 b. := 4+3*a.;
-   2 < 1 ? halt(3, 'Stop #3. b. is set'); // won't execute since condition is false.
-r := random_string(32);
+r :=   2 < 1 ? halt(3, 'Stop #3. b. is set') : random_string(32); // won't send interrupt since condition is false.
 halt(4, 'Stop #4. Check your variables');
 halt(size(args()) == -1, 'arg stop #2.'); // 'label' is false
 define[
@@ -48,4 +49,4 @@ define[
   return(x + y);
 ];
 halt('label 5', 'Stop #5. Check your functions.');
-say('done!');
+return('halt test done!');

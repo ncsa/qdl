@@ -168,6 +168,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     protected static final String HISTORY_COMMAND = ")h";
     protected static final String REPEAT_COMMAND = ")r";
     protected static final String STATE_INDICATOR_COMMAND = ")si";
+    protected static final String ECHO_COMMAND = ")echo";
 
     public static final int RC_NO_OP = -1;
     public static final int RC_RELOAD = -2;
@@ -250,6 +251,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         sayi(RJustify(BUFFER2_COMMAND, length) + " - commands relating to using buffers. Alias is " + SHORT_BUFFER2_COMMAND);
         sayi(RJustify(CLEAR_COMMAND, length) + " - clear the state of the workspace. All variables, functions etc. will be lost.");
         sayi(RJustify(ENV_COMMAND, length) + " - commands relating to environment variables in this workspace.");
+        sayi(RJustify(ECHO_COMMAND, length) + " - echo whatever is passed in. Useful in ws_macro, e.g.");
         sayi(RJustify(FUNCS_COMMAND, length) + " - list all of the imported and user defined functions this workspace knows about.");
         sayi(RJustify(RESUME_COMMAND, length) + " - short hand to resume execution for a halted process. Note the argument is the process id (pid), not the buffer number. ");
         sayi(RJustify(HELP_COMMAND, length) + " - this message.");
@@ -325,6 +327,9 @@ public class WorkspaceCommands implements Logable, Serializable {
         try {
             return execute2(inline);
         } catch (Throwable t) {
+            if(t instanceof ReturnException) {
+                throw (ReturnException) t;
+            }
             say("uh-oh. That did not work:" + t.getMessage());
             if (isDebugOn()) {
                 t.printStackTrace();
@@ -376,6 +381,10 @@ public class WorkspaceCommands implements Logable, Serializable {
                 return doModulesCommand(inputLine);
             case STATE_INDICATOR_COMMAND:
                 return doSICommand(inputLine);
+            case ECHO_COMMAND:
+                // Fix https://github.com/ncsa/qdl/issues/121
+                say(inline.substring(inputLine.getCommand().length()).trim());
+                return RC_CONTINUE;
             case OFF_COMMAND:
                 if (inputLine.hasArg(HELP_SWITCH)) {
                     say(OFF_COMMAND + " [y||n] - exit the system. If you do not supply an argument, you will be prompted.");
@@ -400,7 +409,6 @@ public class WorkspaceCommands implements Logable, Serializable {
                 inline = inline.replace(LIB_COMMAND, WS_COMMAND + " lib ");
                 inputLine = new InputLine(CLT.tokenize(inline));
                 return doWS(inputLine);
-            //return _wsLibList(inputLine);
             case SAVE_COMMAND:
                 inline = inline.replace(SAVE_COMMAND, WS_COMMAND + " save ");
                 inputLine = new InputLine(CLT.tokenize(inline));
@@ -625,6 +633,10 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
     }
 
+    public SIEntries getSIEntries() {
+        return siEntries;
+    }
+
     SIEntries siEntries = new SIEntries();
 
     public static class WSInternals implements Serializable {
@@ -655,7 +667,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     protected Object doSICommand(InputLine inputLine) {
         if (!_doHelp(inputLine) && inputLine.getArgCount() == 0) {
             // no help specified, nothing else on input line
-           // say("Sorry, please supply an argument (e.g. --help)");
+            // say("Sorry, please supply an argument (e.g. --help)");
             return _doSIList(inputLine);
         }
 
@@ -807,22 +819,22 @@ public class WorkspaceCommands implements Logable, Serializable {
             say("Case 2. Display the interrupts for a specific pid.");
             return RC_NO_OP;
         }
-            if (inputLine.getArgCount() == 1) {
-                if (currentPID == 0) {
-                    say("The system process is the current one, (pid = 0)");
-                    return RC_CONTINUE;
-                }
-                SIEntry si = siEntries.get(currentPID);
-                SIInterrupts interrupts = si.getInterrupts();
-                say("the current process id is " + currentPID);
-                if (interrupts.hasInclusions()) {
-                    say("included interrupts are " + interrupts.getInclusions() + (interrupts.getInclusions().hasRegex() ? " (regex)" : ""));
-                }
-                if (interrupts.hasExclusions()) {
-                    say("excluded interrupts are " + interrupts.getExclusions() + (interrupts.getExclusions().hasRegex() ? " (regex)" : ""));
-                }
+        if (inputLine.getArgCount() == 1) {
+            if (currentPID == 0) {
+                say("The system process is the current one, (pid = 0)");
                 return RC_CONTINUE;
             }
+            SIEntry si = siEntries.get(currentPID);
+            SIInterrupts interrupts = si.getInterrupts();
+            say("the current process id is " + currentPID);
+            if (interrupts.hasInclusions()) {
+                say("included interrupts are " + interrupts.getInclusions() + (interrupts.getInclusions().hasRegex() ? " (regex)" : ""));
+            }
+            if (interrupts.hasExclusions()) {
+                say("excluded interrupts are " + interrupts.getExclusions() + (interrupts.getExclusions().hasRegex() ? " (regex)" : ""));
+            }
+            return RC_CONTINUE;
+        }
         int pid = inputLine.getIntArg(FIRST_ARG_INDEX);
         if (!siEntries.containsKey(pid)) {
             say("invalid pid " + pid);
@@ -838,18 +850,18 @@ public class WorkspaceCommands implements Logable, Serializable {
         say("interrupts for pid " + pid);
         if (interrupts.hasInclusions()) {
             String msg;
-            if(interrupts.getInclusions().hasList() ){
+            if (interrupts.getInclusions().hasList()) {
                 msg = interrupts.getInclusions().interrupts.toString();
-            }else{
+            } else {
                 msg = interrupts.getInclusions().regex + " (regex)";
             }
             say("included interrupts are " + msg);
         }
         if (interrupts.hasExclusions()) {
             String msg;
-            if(interrupts.getExclusions().hasList() ){
+            if (interrupts.getExclusions().hasList()) {
                 msg = interrupts.getExclusions().interrupts.toString();
-            }else{
+            } else {
                 msg = interrupts.getExclusions().regex + " (regex)";
             }
             say("excluded interrupts are " + msg);
@@ -1031,10 +1043,10 @@ public class WorkspaceCommands implements Logable, Serializable {
                 String raw = inputLine.getNextArgFor(flags);
                 //Special cases. These aren't really parsed and must be passed as it.
                 // This allows to easily zero out these lists.
-                if(raw.equals("∅") || raw.equals("[]") || raw.equals("{}") ) {
+                if (raw.equals("∅") || raw.equals("[]") || raw.equals("{}")) {
                     // basically this means to clear the list
                     interrupts = null;
-                }else{
+                } else {
                     interrupts = new SIInterruptList(inputLine.getNextArgFor(flags));
                 }
             }
@@ -1045,6 +1057,8 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     protected Object _doSIResume(InputLine inputLine) {
+        SIEntry sie = null; // needed for visibility in catch block
+        int originalPID = currentPID;
         try {
             boolean noInterrupt = inputLine.hasArg("-go");
             inputLine.removeSwitch("-go");
@@ -1061,6 +1075,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 } else {
                     try {
                         pid = inputLine.getIntArg(1);
+                        currentPID = pid;
                     } catch (Throwable n) {
                         say("sorry but the pid could not be determined");
                         return RC_CONTINUE;
@@ -1078,7 +1093,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("invalid pid " + pid);
                 return RC_NO_OP;
             }
-            SIEntry sie = siEntries.get(pid);
+            sie = siEntries.get(pid);
             try {
                 if (sie.qdlRunner == null) {
                     say("si damage"); // something is out of whack. Don't kill the workspace, just tell them.
@@ -1092,29 +1107,30 @@ public class WorkspaceCommands implements Logable, Serializable {
                 }
                 sie.qdlRunner.restart(sie, sie.getInterrupts(), noInterrupt);
                 // if it finishes, then reset to default.
-                state = defaultState;
-                currentPID = 0;
-                interpreter = defaultInterpreter;
-                siEntries.remove(sie.pid);
-                say("exit pid " + sie.pid);
+                endProcess(sie);
             } catch (InterruptException ix) {
-                sie.statementNumber = ix.getSiEntry().statementNumber;
-                sie.message = ix.getSiEntry().message;
-                sie.statement = ix.getSiEntry().statement;
-                if (siMessagesOn) {
-                    if (sie.statement.hasTokenPosition()) {
-                        say(sie.message + ": at line " + sie.statement.getTokenPosition().line);
-                    } else {
-                        say(sie.message);
-                    }
-                }
-                sie.timestamp = ix.getSiEntry().timestamp;
+                InterruptUtil.updateSIE(ix, sie);
+                InterruptUtil.printUpdateMessage(this, sie);
             }
         } catch (ArgumentNotFoundException ax) {
             say("Sorry, but that was not a valid pid");
         } catch (Throwable x) {
+
+            if (x instanceof ReturnException) {
+                ReturnException rx = (ReturnException) x;
+                if (rx.resultType != Constant.NULL_TYPE) {
+                    getIoInterface().println(rx.result);
+                    getIoInterface().flush();
+                }
+                if (sie != null) {
+                    endProcess(sie);
+                    throw rx;
+                }
+
+                return RC_NO_OP;
+            }
             if (x instanceof QDLException) {
-                throw new QDLException((QDLException) x);
+                throw (QDLException) x;
             }
             if (isDebugOn()) {
                 x.printStackTrace();
@@ -1122,6 +1138,18 @@ public class WorkspaceCommands implements Logable, Serializable {
             say("sorry but the process could not be restarted");
         }
         return RC_NO_OP;
+    }
+
+    private void endProcess(SIEntry sie) {
+        if(sie.state.getSuperState() == null){
+            state = defaultState;
+        }else{
+            state = sie.state.getSuperState();
+        }
+        currentPID = 0;
+        interpreter = defaultInterpreter;
+        siEntries.remove(sie.pid);
+        say("exit pid " + sie.pid);
     }
 
     protected QDLInterpreter cloneInterpreter(InputLine inputLine) {
@@ -1167,7 +1195,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 " | " + pad2(" ", ___SI_LINE_NR) + // statement number
                 " | " + pad2(" ", ___SI_LINE_NR) + // line number
                 " | " + pad2(startTimeStamp, ___SI_TIMESTAMP) + // timestamp
-                " | " + pad2(StateUtils.size(defaultState), ___SI_SIZE) +
+                " | " + pad2(StateUtils.size(getState()), ___SI_SIZE) +
                 " | " + "system";
         say(lineOut);
 
@@ -1654,9 +1682,9 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         boolean noInterrupts = inputLine.hasArg("-go");
         inputLine.removeSwitch("-go");
-        if(inputLine.hasArg("-i_msg")){
+        if (inputLine.hasArg("-i_msg")) {
             Boolean iMsg = inputLine.getBooleanNextArgFor("i_msg");
-            if(iMsg != null) {
+            if (iMsg != null) {
                 siMessagesOn = iMsg;
             }
         }
@@ -1666,7 +1694,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         boolean gotIncludes = includes != null;
         boolean gotExcludes = excludes != null;
         SIInterrupts siInterrupts = null;
-        if(gotIncludes || gotExcludes){
+        if (gotIncludes || gotExcludes) {
             siInterrupts = new SIInterrupts();
             siInterrupts.setExclusions(excludes);
             siInterrupts.setInclusions(includes);
@@ -1748,7 +1776,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             stringBuffer.append(x + "\n");
         }
         try {
-            interpreter.execute(stringBuffer.toString(), siInterrupts, noInterrupts);
+            interpreter.execute(stringBuffer.toString(), true, siInterrupts, noInterrupts);
             interpreter.setEchoModeOn(origEchoMode);
             interpreter.setPrettyPrint(ppOn);
         } catch (Throwable t) {
@@ -1772,21 +1800,29 @@ public class WorkspaceCommands implements Logable, Serializable {
                     say("sorry, but there was an error:" + ((t instanceof NullPointerException) ? "(no message)" : t.getMessage()));
                 }
             } else {
-                if (t instanceof InterruptException) {
-                    InterruptException ie = (InterruptException) t;
-                    int nextPID = siEntries.nextKey();
-                    SIEntry siEntry = ie.getSiEntry();
-                    siEntry.pid = nextPID;
-                    // ie.getSiEntry().interpreter = interpreter;
-                    siEntries.put(nextPID, siEntry);
-                    siEntry.setInterrupts(siInterrupts);
-                    if(siMessagesOn){
-                        say(siEntry.message + " at line " + ie.getStatement().getTokenPosition().line);
+                if(t instanceof InterruptException){
+                    if (SystemEvaluator.newInterruptHandler) {
+
+                    }else{
+                        InterruptException ie = (InterruptException) t;
+                        InterruptUtil.createInterrupt(ie, siInterrupts);
+                        InterruptUtil.printSetupMessage(this, ie);
                     }
-                    say("pid: " + nextPID);
+
+                }else{
+             /*       if (!SystemEvaluator.newInterruptHandler) {
+                        say("could not interpret buffer:" + t.getMessage());
+                    }*/
+                }
+/*
+                if (!SystemEvaluator.newInterruptHandler && (t instanceof InterruptException)) {
+                    InterruptException ie = (InterruptException) t;
+                    InterruptUtil.createInterrupt(ie, siInterrupts);
+                    InterruptUtil.printSetupMessage(this, ie);
                 } else {
                     say("could not interpret buffer:" + t.getMessage());
                 }
+*/
             }
         }
         return RC_CONTINUE;
@@ -1803,6 +1839,11 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     QDLInterpreter defaultInterpreter;
     State defaultState;
+
+    public int getCurrentPID() {
+        return currentPID;
+    }
+
     int currentPID = 0;
 
     /**
@@ -6284,7 +6325,14 @@ public class WorkspaceCommands implements Logable, Serializable {
         try {
             getWorkspace().runMacro(commands);
         } catch (Throwable t) {
-            say("could not execute macro");
+            if(t instanceof ReturnException){
+                ReturnException re = (ReturnException)t;
+                if(re.hasResult()) {
+                    say(re.result.toString());
+                }
+            }else {
+                say("could not execute macro");
+            }
         }
     }
 
@@ -6445,6 +6493,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         assertionsOn = qe.isAssertionsOn();
         if (isRunScript) {
             runScriptPath = inputLine.getNextArgFor(CLA_RUN_SCRIPT_ON);
+            inputLine.removeSwitchAndValue(CLA_RUN_SCRIPT_ON);
         }
         state.setAllowBaseFunctionOverrides(qe.isAllowOverwriteBaseFunctions());
         boolean isVerbose = qe.isWSVerboseOn();
@@ -6954,7 +7003,8 @@ public class WorkspaceCommands implements Logable, Serializable {
      * Contract is that there is the argument is of the form
      * <pre>-run path_to_script x y z ... </pre>
      * path_to_script is the name of QDL file. Below it is referred to as {@link #runScriptPath}
-     * and x,y,z,... are passed to the script.
+     * and x,y,z,... are passed to the script. This <b>must</b> be the last thing on the command line,
+     * so it's processing is positional.
      * <br/><br/>
      * Note especially that {@link #runScriptPath} is set as state for the workspace, but normally not settable by
      * the user.
@@ -6966,18 +7016,12 @@ public class WorkspaceCommands implements Logable, Serializable {
 
             ArrayList<String> argList = new ArrayList<>();
 
-            boolean addArg = false;
-            for (int i = 0; i < inputLine.size(); i++) {
-                if (addArg) {
-                    argList.add(inputLine.getArg(i));
-                }
-                if (inputLine.getArg(i).equals(CLA_RUN_SCRIPT_ON)) {
-                    i++;
-                    addArg = true;
-                }
-
+            // At this point, everything left in the input line is supposed
+            // to be an argument to the script.
+            // zero-th inputline argument is the name of the calling function. Omit
+            for (int i = 1; i < inputLine.size(); i++) {
+                argList.add(inputLine.getArg(i));
             }
-            //String[] args = argList.toArray(new String[0]);
             QDLStem argStem = new QDLStem();
             argStem.addList(argList);
             getState().setScriptArgStem(argStem);
@@ -6997,6 +7041,35 @@ public class WorkspaceCommands implements Logable, Serializable {
                     System.exit(0); // make sure to use this so external programs (like shell scripts) know all is ok
                 }
             } catch (Throwable t) {
+                if (!SystemEvaluator.newInterruptHandler && (t instanceof InterruptException)) {
+                    InterruptException ie = (InterruptException) t;
+                    InterruptUtil.createInterrupt(ie,  null);
+                    InterruptUtil.printSetupMessage(this, ie);
+                    try {
+                        getWorkspace().mainLoop();
+                        System.exit(0); // exit once they exit the main loop
+
+                    } catch (Throwable e) {
+                        // it is possible the script has a return. Handle it gracefully
+                        if (e instanceof ReturnException) {
+                            // script cammed return(X), so return the agument.
+                            ReturnException rx = (ReturnException) e;
+                            if (rx.resultType != Constant.NULL_TYPE) {
+                                getIoInterface().println(rx.result);
+                                getIoInterface().flush();
+                            }
+                            System.exit(0); // exit once they exit the main loop
+                        }
+                        e.printStackTrace();
+                        throw new RuntimeException(e);
+                    }
+
+                }
+                if (t instanceof ParsingException) {
+                    ParsingException pe = (ParsingException) t;
+                    say("Parsing exception: in " + pe.getScriptName() + " at line " + pe.getLineNumber() + ": '" + pe.getMessage() + "'");
+                    return;
+                }
                 if (t instanceof ReturnException) {
                     // script cammed return(X), so return the agument.
                     ReturnException rx = (ReturnException) t;
@@ -7314,5 +7387,8 @@ public class WorkspaceCommands implements Logable, Serializable {
      */
     public List<LibLoader> getLibLoaders() {
         return new ArrayList<>();
+    }
+    public SIEntry getCurrentSIEntry(){
+        return getSIEntries().get(getCurrentPID());
     }
 }

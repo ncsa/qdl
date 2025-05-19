@@ -15,7 +15,6 @@ import edu.uiuc.ncsa.security.util.cli.InputLine;
 import edu.uiuc.ncsa.security.util.terminal.ISO6429IO;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
-import javax.inject.Provider;
 import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
@@ -117,9 +116,14 @@ public class QDLWorkspace implements Serializable {
             return;
         }
         if (t instanceof InterruptException) {
-            // add a bunch of stuff to state table.
-            workspaceCommands.say("sorry, cannot interrupt main workspace process.");
-            return;
+            InterruptException ie = (InterruptException)t;
+            if(getWorkspaceCommands().getInterpreter() == ie.getSiEntry().interpreter){
+                workspaceCommands.say("sorry, cannot interrupt main workspace process.");
+                return;
+            }
+            InterruptUtil.createInterrupt(ie, null);
+            InterruptUtil.printSetupMessage(getWorkspaceCommands(), ie);
+            return; // or the interrupt exception gets a nicely printed stack trace
         }
         if (t instanceof ParsingException) {
             ParsingException parsingException = (ParsingException) t;

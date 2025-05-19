@@ -28,6 +28,22 @@ public class SIEntry implements Serializable {
     public int statementNumber = -1;
     public QDLInterpreter interpreter = null; // Can't be set at the point of the interrupt.
 
+    /**
+     * For the cases where this is the existing SIEntry and new one has been created
+     * by the interrupt handler. Update with that state
+     *
+     * @param entry
+     */
+
+    public void update(SIEntry entry) {
+        state = entry.state;
+        message = entry.message;
+        statementNumber = entry.statementNumber;
+        if (entry.label != null) {
+            label = entry.label;
+        }
+    }
+
     public void toXML(XMLStreamWriter xsw) throws XMLStreamException {
         xsw.writeStartElement("si_entry");
         xsw.writeAttribute("pid", Integer.toString(pid));
@@ -61,12 +77,13 @@ public class SIEntry implements Serializable {
     public String getStringLabel() {
         return (String) label;
     }
-    public int getLabelType(){
+
+    public int getLabelType() {
         return Constant.getType(label);
     }
 
     public SIInterrupts getInterrupts() {
-        if(interrupts == null) {
+        if (interrupts == null) {
             interrupts = new SIInterrupts();
         }
         return interrupts;

@@ -27,6 +27,7 @@ import org.qdl_lang.util.aggregate.IdentityScalarImpl;
 import org.qdl_lang.util.aggregate.QDLAggregateUtil;
 import org.qdl_lang.variables.*;
 import org.qdl_lang.vfs.VFSPaths;
+import org.qdl_lang.workspace.InterruptUtil;
 import org.qdl_lang.workspace.QDLWorkspace;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
@@ -34,6 +35,8 @@ import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.MetaDebugUtil;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import org.qdl_lang.state.*;
+import org.qdl_lang.workspace.SIInterruptList;
+import org.qdl_lang.workspace.SIInterrupts;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -514,7 +517,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 }
                 return true;
             case INTERRUPT:
-                doInterrupt(polyad, state);
+                doSendInterrupt(polyad, state);
                 return true;
             case RETURN:
                 doReturn(polyad, state);
@@ -1427,11 +1430,31 @@ public class SystemEvaluator extends AbstractEvaluator {
         polyad.setResultType(Constant.STRING_TYPE);
     }
 
-    protected void doInterrupt(Polyad polyad, State state) {
+    protected void doSendInterrupt(Polyad polyad, State state) {
+       doOLDSendInterrupt(polyad, state);
+    }
+    protected void doNEWSendInterrupt(Polyad polyad, State state) {
+        InterruptException ie = startHalt(polyad,state);
+        if (ie == null) {
+            return;
+        }
+        throw ie;
+    }
+    public static boolean newInterruptHandler = true;
+
+    protected void doOLDSendInterrupt(Polyad polyad, State state) {
+        InterruptException ie = startHalt(polyad,state);
+        if (ie == null) {
+            return;
+        }
+        throw ie;
+    }
+
+    protected InterruptException startHalt(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setResult(new int[]{0, 1});
             polyad.setEvaluated(true);
-            return;
+            return null;
         }
         if (state.isServerMode()) {
             // no interrupts in server mode.
@@ -1440,7 +1463,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             polyad.setResult(-1L);
             polyad.setResultType(Constant.LONG_TYPE);
             polyad.setEvaluated(true);
-            return;
+            return null;
         }
 
 
@@ -1471,19 +1494,17 @@ public class SystemEvaluator extends AbstractEvaluator {
         } else {
             message = rawMessage.toString();
         }
-
         SIEntry sie = new SIEntry();
         sie.state = state;
         sie.message = message;
         if (label != null) {
             sie.setLabel(label);
         }
-
         InterruptException interruptException = new InterruptException(sie.message, polyad, sie);
         sie.statement = polyad;
-        throw interruptException;
-    }
+        return interruptException;
 
+    }
 
     public static final int LOG_LEVEL_UNKNOWN = -100;
     public static final int LOG_LEVEL_NONE = DEBUG_LEVEL_OFF;
@@ -2311,6 +2332,11 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     }
 
+    public static final String SI_KEY = "si";
+    public static final String SCRIPT_PATH_KEY = "path";
+    public static final String SI_INCLUDES_KEY = "includes";
+    public static final String SI_EXCLUDES_KEY = "excludes";
+    public static final String SI_NO_INTERRUPTS_KEY = "no_interrupts";
     public static int runnit(Polyad polyad, State state, List<String> paths, boolean hasNewState, boolean newThread) {
 
         if (polyad.getArgCount() == 0) {
@@ -2318,9 +2344,9 @@ public class SystemEvaluator extends AbstractEvaluator {
         }
         // Contract is that script_load runs in the current state -- it does not make its own. This
         // allows scripts to inject state and have it remain.
-        State localState = state;
+        State localState = state; // script load
         if (hasNewState) {
-            localState = state.newCleanState();
+            localState = state.newCleanState(); // script run
         }
 
         Object arg1 = polyad.evalArg(0, state);
@@ -2335,12 +2361,64 @@ public class SystemEvaluator extends AbstractEvaluator {
                 Object arg;
                 arg = polyad.evalArg(i, state);
                 checkNull(arg, polyad.getArgAt(i), state);
-                aa.add(arg);
+                // Look for args() and send those
+                if(polyad.getArgAt(i) instanceof Polyad){
+                    Polyad expr = (Polyad)polyad.getArgAt(i);
+                    if(expr.getName().equals(SystemEvaluator.SCRIPT_ARGS2_COMMAND)){
+                        QDLStem args = (QDLStem)expr.getResult();
+                        for(Object aaa : args.getQDLList()){
+                            aa.add(aaa);
+                        }
+                    }else{
+                        aa.add(arg);
+                    }
+                }else {
+                    aa.add(arg);
+                }
             }
             argList = aa.toArray(new Object[0]);
         }
         state.setTargetState(null);
-        String resourceName = arg1.toString();
+        String resourceName = null;
+        SIInterrupts siInterrupts =null;
+        boolean noInterrupts = false;
+        if(arg1 instanceof QDLStem) {
+            // default if the stem is present at all or no break points
+            noInterrupts = false;
+            QDLStem inStem = (QDLStem) arg1;
+            if((inStem).containsKey(SCRIPT_PATH_KEY)){
+                resourceName = inStem.getString(SCRIPT_PATH_KEY);
+            }
+            if(inStem.containsKey(SI_KEY)){
+                QDLStem inStem2 =  inStem.getStem(SI_KEY);
+                siInterrupts = new SIInterrupts();
+
+                if((inStem2).containsKey(SI_INCLUDES_KEY)){
+                    setupSIList(polyad, inStem2.get(SI_INCLUDES_KEY), siInterrupts);
+                }
+                if((inStem2).containsKey(SI_EXCLUDES_KEY)){
+                    setupSIList(polyad, inStem2.get(SI_EXCLUDES_KEY), siInterrupts);
+                }
+                if((inStem2).containsKey(SI_NO_INTERRUPTS_KEY)){
+                    Object obj = inStem2.get(SI_NO_INTERRUPTS_KEY);
+                    // if the explicitly set it, use that.
+                    if(obj instanceof Boolean){
+                        noInterrupts = (Boolean) obj;
+                    }else{
+                        throw new QDLExceptionWithTrace("The " + SI_NO_INTERRUPTS_KEY + " key requires a boolean value. Got " + obj, polyad.getArgAt(0));
+                    }
+                }
+            }
+        }else{
+            if(arg1 instanceof String){
+                resourceName = arg1.toString();
+            }else{
+                throw new QDLExceptionWithTrace("first argument must be a string", polyad.getArgAt(0));
+            }
+        }
+        if(resourceName == null) {
+            throw new QDLExceptionWithTrace("could not determine script name", polyad);
+        }
         QDLScript script;
         // stash stack trace elements, but don't do anything unless there is an error, then format result
         AbstractState.QDLStackTraceElement stackTraceElement = new AbstractState.QDLStackTraceElement(resourceName, polyad.getArgAt(0).getTokenPosition());
@@ -2387,29 +2465,35 @@ public class SystemEvaluator extends AbstractEvaluator {
                     qdlThread.start();
                     return pid;
                 } else {
-                    script.execute(localState);
+                    script.execute(localState, siInterrupts, noInterrupts);
                     localState.setScriptArgStem(oldArgs);
                     localState.setScriptName(oldScriptName);
                 }
             } catch (QDLException qe) {
-                if (qe instanceof ParsingException) {
-                    ParsingException parsingException = (ParsingException) qe;
-                    parsingException.setScriptName(resourceName);   // make sure this gets propagated back
-                }
-                if (qe instanceof QDLExceptionWithTrace) {
-                    QDLExceptionWithTrace qq = (QDLExceptionWithTrace) qe;
-                    qq.setScriptName(resourceName);
-                    qq.getScriptStack().addAll(state.getScriptStack()); // clone the stack so the trace has it
-                    qq.setScript(true);
-                    state.getScriptStack().clear(); // or all errors just accumulate
-                    throw qq;
-                }
                 if (qe instanceof ReturnException) {
                     ReturnException rx = (ReturnException) qe;
                     polyad.setResult(rx.result);
                     polyad.setResultType(rx.resultType);
                     polyad.setEvaluated(true);
                     return 0;
+                }
+                if(qe instanceof InterruptException){
+                    if(!newInterruptHandler){
+                        throw qe;
+                    }
+                }else{
+                    if (qe instanceof QDLExceptionWithTrace) {
+                        QDLExceptionWithTrace qq = (QDLExceptionWithTrace) qe;
+                        qq.setScriptName(resourceName);
+                        qq.getScriptStack().addAll(state.getScriptStack()); // clone the stack so the trace has it
+                        qq.setScript(true);
+                        state.getScriptStack().clear(); // or all errors just accumulate
+                        throw qq;
+                    }
+                }
+                if (qe instanceof ParsingException) {
+                    ParsingException parsingException = (ParsingException) qe;
+                    parsingException.setScriptName(resourceName);   // make sure this gets propagated back
                 }
                 throw qe;
             } catch (Throwable t) {
@@ -2424,6 +2508,20 @@ public class SystemEvaluator extends AbstractEvaluator {
         polyad.setResultType(Constant.NULL_TYPE);
         polyad.setResult(QDLNull.getInstance());
         return 0;
+    }
+
+    private static void setupSIList(Polyad polyad, Object obj, SIInterrupts siInterrupts) {
+        SIInterruptList incl;
+        if(obj instanceof String){
+            incl = new SIInterruptList((String)obj);
+        }else{
+            if(obj instanceof Collection){
+                 incl = new SIInterruptList((Collection) obj);
+            }else{
+               throw new QDLExceptionWithTrace("unknown SI includes type:" + obj, polyad.getArgAt(0));
+            }
+        }
+        siInterrupts.setInclusions(incl);
     }
 
     protected void doRaiseError(Polyad polyad, State state) {
@@ -2803,26 +2901,8 @@ public class SystemEvaluator extends AbstractEvaluator {
             newModuleState = state.newSelectiveState(null, true, true, true, true);
             newModuleState.setModuleState(true);
 
-/*
-            try {
-                newModuleState = StateUtils.clone(state);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-*/
-            // put tables and such in the right place so ambient state is not altered.
-  /*          if(newModuleState != null) {
-                // null possible on system load.
-//                newModuleState = newModuleState.newLocalState(newModuleState);
-                newModuleState.setModuleState(true);
-            }*/
-            //State newModuleState = StateUtils.clone(state).newLocalState(state);
-            Module newInstance;// = m.newInstance((m instanceof JavaModule) ? null : state);
-            //Module newInstance = m.newInstance(null);
+            Module newInstance;
             if (m instanceof JavaModule) {
-                //State newModuleState = state.newLocalState(state);
                 newInstance = m.newInstance(null);
                 ((JavaModule) newInstance).init(newModuleState);
             } else {
@@ -2832,7 +2912,6 @@ public class SystemEvaluator extends AbstractEvaluator {
             if (alias == null) {
                 alias = m.getAlias();
             }
-            //  newModuleState.setSuperState(null); // get rid of it now.
             state.getMInstances().localPut(new MIWrapper(new XKey(alias), newInstance));
             if (isLong(key)) {
                 outputStem.put((Long) key, alias);
@@ -2857,7 +2936,6 @@ public class SystemEvaluator extends AbstractEvaluator {
         polyad.setEvaluated(true);
 
     }
-
 
     protected void doInterpret(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {

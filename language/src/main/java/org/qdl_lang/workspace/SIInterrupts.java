@@ -1,10 +1,12 @@
 package org.qdl_lang.workspace;
 
+import java.io.Serializable;
+
 /**
  * The set of current interrupt inclusions and exclusions. These are managed on per
  * pid
  */
-public class SIInterrupts {
+public class SIInterrupts implements Serializable {
     public int getProcessID() {
         return processID;
     }

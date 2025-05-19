@@ -1552,42 +1552,69 @@ script_args(n)          args(n) OR args().n      get arg with index n
 Note that this is always defined, even if the current call is not in
 a script, then it is simply empty.
 
-Question: My script gets 4  of arguments, why can't I
-          just pass all of them along to another script like this?
+Note: You may pass along the arguuments to another script directly:
 
    script_load("other_script.qdl', args())
 
-           rather than
+To send all of the args() as a single entity, make a list of them:
 
-   script_load("other_script.qdl', args().0, args().1, args().2, args().3)
+   script_load("other_script.qdl', [args()])
 
-Answer:   Because the script that received them would have ambiguous information.
-          What if the zeroth argument were a single stem? Does that mean the script
-          is expecting a stem or do we just split the stem up?
-          The options are either to pass in exactly the arguments you want
-          (what QDL requires) vs. perhaps doing some complex
-          surgery on an argument with limited information about what the
-          arguments are.
+Note that this only works with the args() call. If you did something like
+   foo. := args();
+   script_load("other_script.qdl', foo.)
+
+the net effect would be the same as
+
+   script_load("other_script.qdl', [args()])
+
 See also: script_load,  script_run]]>
         </body>
         <example>
-            <![CDATA[To check the number of arguments passed to a script
+            <![CDATA[E.g. Check the number of arguments passed to a script
     if[size(args()) < 2][...
 
-Calling another script and passing along arguments 0 and 3
+E.g. Call another script and pass along arguments 0 and 3
    script_load('my_script.qdl', args(0),args(3));
 Or
-   script_load('my_script.qdl', args().0,args().3);]]>
+   script_load('my_script.qdl', args().0,args().3);
+
+E.g. Pass along all args.
+Let us say your current script was invoked with the arguments
+
+   args()
+[2, true, bob]
+
+and you wanted to invoke another script with these arguments plus others.
+You could issue
+
+   script_run('process_password.qdl', 'w00fw00fw00f', args());
+
+and in the script process_password.qdl, you would have
+
+   args()
+[w00fw00fw00f, 2, true, bob]]]>
         </example>
     </entry>
 
     <entry id="script_load">
         <body>
-            <![CDATA[script_load(file_name) - load the script and run it.
-script_load(file_name, arg0, arg1, ...) - load the script, passing in the given
+            <![CDATA[script_load(file_name | cfg. {, arg}*) - load the script, passing in the given
                          arguments
 Note: Loading a script means to run it in the current session.
+The first argument is either just a string that is the path to the script
+or it may be a configuration object that includes the path and other
+information for the SI (State Indicator) if debugging is required.
 
+The cfg. stem has the structure
+cfg.path = path to the script
+cfg.si = a stem of includes, excludes or just a flag to scip all interrupts.
+cfg.si.excludes = Either a set, stem or list of interrupt labels to skip or
+                  if a string, a regular expression to use.
+cfg.si.includes = Same as excludes, except this is a list of interrupts
+                  to process, skipping all others.
+cfg.si.no_interrupts = a boolean that if true, skips any interrupts.
+           The default is false if a cfg. stem is passed in.
 Gotcha: If you are running a script and wish to pass along the arguments
 with something like
 
@@ -1606,17 +1633,23 @@ you must construct the call like
 
 See Also: script_run, args]]>
         </body>
+        <example><![CDATA[script_load({'path':'my_script.qdl','si':{'includes':'^setup.*'}}, username, password);
+
+This would start the script (resolvable via the script_path)
+and (assuming that the halt commands were in place)
+would stop only at interrupts whose labels starts with 'setup'. This also
+supplies two arguments, a username and password.]]></example>
     </entry>
     <entry id="script_run">
         <body>
-            <![CDATA[script_run(file_name) - run the script
-script_run(file_name, arg0, arg1,...) - run the script, passing in the given
+            <![CDATA[script_run(cfg. |file_name{, arg}*) - run the script, passing in the given
                         arguments
 Note: Running a script means that a new clean environment is created and the
       script is run there. Output and input, however, are done in the current
       console.
 
 Please read the "Gotcha" in script_load!
+Please read the note on passing in a cfg. as the first argument.
 See Also: script_load, args, scan, say, print]]>
         </body>
     </entry>
@@ -4206,7 +4239,8 @@ See also: floor
     <entry id="%" alt="∆">
         <body>
             <![CDATA[Integer division (numbers) or symmetric difference (sets).
-For numbers.
+
+For numbers
 -----------
 This is normal division, but the remainder is discarded.
 The result is always an integer.
@@ -4221,9 +4255,9 @@ E.g.
 
 For sets
 --------
-  The symmetric difference of two sets is defined as
-  A∆B == (A/B)∪(B/a) == (A / B) \/ (B / A)  which is everything
-  except the starred area below:
+The symmetric difference of two sets is defined as
+A∆B == (A/B)∪(B/a) == (A / B) \/ (B / A)  which is everything
+except the starred area below:
 
 ╔═══════════════════════╗
 ║                       ║   A
@@ -4876,7 +4910,10 @@ there is one active. The intent is not to let you write massive
 programs (use scripts) but to allow for customization of the
 workspace from inside QDL, e.g. in an __initialize() function,
 so the workspace can be initialized etc.
-As such, it should be used minimally and with discretion.]]>
+
+This will print out results from calls to QDL to the console.
+A useful WS call is )echo, which just prints its argument.
+This can be inserted to help document what a long macro is doing.]]>
         </body>
         <example>
             <![CDATA[E.g.

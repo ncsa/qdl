@@ -29,11 +29,6 @@ public class InterruptException extends QDLExceptionWithTrace
         this.siEntry = siEntry;
     }
 
-    /*
-        public InterruptException(SIEntry siEntry) {
-            this.siEntry = siEntry;
-        }
-    */
     public SIEntry getSiEntry() {
         return siEntry;
     }

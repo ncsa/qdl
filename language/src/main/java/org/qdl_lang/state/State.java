@@ -266,7 +266,7 @@ public class State extends FunctionState implements QDLConstants {
             QDLStem user = new QDLStem();
             user.put(SYS_INFO_USER_INVOCATION_DIR, System.getProperty("user.dir"));
             user.put(SYS_INFO_USER_HOME_DIR, System.getProperty("user.home"));
-            user.put(SYS_INFO_QDL_HOME_DIR, System.getenv("QDL_HOME")==null?"(not set)":System.getenv("QDL_HOME"));
+            user.put(SYS_INFO_QDL_HOME_DIR, System.getenv("QDL_HOME") == null ? "(not set)" : System.getenv("QDL_HOME"));
             systemInfo.put(SYS_INFO_USER, user);
         }
 
@@ -1117,8 +1117,10 @@ public class State extends FunctionState implements QDLConstants {
         newState.setModulePaths(getModulePaths());
         newState.setVfsFileProviders(getVfsFileProviders());
         newState.setIoInterface(getIoInterface());
+        newState.setWorkspaceCommands(getWorkspaceCommands());
         newState.systemInfo = systemInfo;
         newState.setDebugUtil(getDebugUtil()); // share the debugger.
+        newState.setSuperState(moduleState);
         if (moduleState != null) {
             newState.setModuleState(moduleState.isModuleState());
         }
@@ -1187,8 +1189,8 @@ public class State extends FunctionState implements QDLConstants {
         newState.setModulePaths(getModulePaths());
         newState.setVfsFileProviders(getVfsFileProviders());
         newState.setDebugUtil(getDebugUtil());
-        newState.systemInfo = systemInfo;//systemInfo can onlybe be created at startup.
-
+        newState.systemInfo = systemInfo;//systemInfo can only be be created at startup.
+        newState.setWorkspaceCommands(getWorkspaceCommands());
         return newState;
     }
 

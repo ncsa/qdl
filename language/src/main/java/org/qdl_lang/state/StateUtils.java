@@ -51,6 +51,7 @@ public abstract class StateUtils {
                 json = state.serializeToJSON(serializationState);
                 newState.deserializeFromJSON(json, serializationState);
             }
+            newState.setWorkspaceCommands(state.getWorkspaceCommands());
             return newState;
         } catch(net.sf.json.JSONException | StackOverflowError sox){
             // In this case, there the system will get overwhelmed with JSON messages
@@ -89,6 +90,7 @@ public abstract class StateUtils {
         newState.setVfsFileProviders(state.getVfsFileProviders());
         newState.setServerMode(state.isServerMode());
         newState.setRestrictedIO(state.isRestrictedIO());
+        newState.setWorkspaceCommands(state.getWorkspaceCommands());
         return newState;
 
     }
@@ -99,9 +101,11 @@ public abstract class StateUtils {
             save(state, baos);
             return baos.toByteArray().length;
         } catch (IOException iox) {
-            iox.printStackTrace();
+            if(state.isDebugOn()) {
+                iox.printStackTrace();
+            }
         }
-        return 0;
+        return -1;
     }
 
     /**

@@ -12,6 +12,12 @@ trace logging.
 */
 
 say('current debugger settings:\n' + print(debugger())); // prints current debugger settings
+say('debugger-ex args:' + to_string(args()));
+debugger(1);
+//   ws_macro([')echo ** running SI test **', ')ws set java_trace on',  ')si set 101', '))', ')) -go', ')echo ** SI test done **'])
+//script_load('/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/examples/hello_world.qdl', args(), 2, [args()], 3);
+script_load('/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/examples/halt_test.qdl');
+
 while[k ∈ [1;6]]
      [debugger(k, 'this is a debugger message at level ' + k);];
 return('debugger example done!');

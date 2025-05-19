@@ -1,6 +1,5 @@
 package org.qdl_lang.state;
 
-import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.qdl_lang.evaluate.MetaEvaluator;
 import org.qdl_lang.evaluate.OpEvaluator;
@@ -53,7 +52,7 @@ public static class QDLStackTraceElement{
         this.completionProvider = completionProvider;
     }
 
-    DefaultCompletionProvider completionProvider = null;
+    transient DefaultCompletionProvider completionProvider = null;
     public UUID getUuid() {
         return uuid;
     }
@@ -72,7 +71,7 @@ public static class QDLStackTraceElement{
     Map<UUID, AbstractState> stateRegistry = new HashMap<>();
 
     /**
-     * Superstate is used in modules. If a module is created, then its state sets the super
+     * Superstate is used in modules, functions, scripts etc. If a module is created, then its state sets the super
      * state so that references to the state vs. local module state can be cleanly separated.
      * <br/>
      * For instance, in an expression like a#b#f(x) the instance of b would have a superstate that

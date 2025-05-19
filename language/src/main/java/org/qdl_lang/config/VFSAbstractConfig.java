@@ -1,10 +1,12 @@
 package org.qdl_lang.config;
 
+import java.io.Serializable;
+
 /**
  * <p>Created by Jeff Gaynor<br>
  * on 3/4/20 at  3:13 PM
  */
-public abstract class VFSAbstractConfig implements VFSConfig {
+public abstract class VFSAbstractConfig implements VFSConfig, Serializable {
     public VFSAbstractConfig(String scheme, String mountPoint, boolean readable, boolean writeable) {
         this.scheme = scheme;
         this.mountPoint = mountPoint;

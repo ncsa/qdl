@@ -10,6 +10,7 @@ import org.qdl_lang.vfs.FileEntry;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.util.scripting.ScriptInterface;
 import edu.uiuc.ncsa.security.util.scripting.StateInterface;
+import org.qdl_lang.workspace.SIInterrupts;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,6 +34,7 @@ public class QDLScript extends FileEntry implements ScriptInterface {
 
     /**
      * Flag if this was loaded from a code block. Part of CIL-1302
+     *
      * @return
      */
     public boolean isFromCode() {
@@ -88,7 +90,6 @@ public class QDLScript extends FileEntry implements ScriptInterface {
 
     /**
      * Returns the lines of text representation. Mostly the corresponding constructor is a convenience.
-     *
      */
     protected void renderContent(Reader rawScript) {
         if (!hasContent()) {
@@ -109,6 +110,10 @@ public class QDLScript extends FileEntry implements ScriptInterface {
 
 
     public void execute(StateInterface state) {
+        execute(state, null, true);
+    }
+
+    public void execute(StateInterface state, SIInterrupts siInterrupts, boolean noInterrupts) {
         QDLInterpreter parser = new QDLInterpreter((State) state);
         if (isRunScript()) {
             if (getScriptArglist() != null && !getScriptArglist().isEmpty()) {
@@ -116,7 +121,7 @@ public class QDLScript extends FileEntry implements ScriptInterface {
             }
         }
         try {
-            parser.execute(getText(SHEBANG_REGEX));
+            parser.execute(getText(SHEBANG_REGEX), true, siInterrupts, noInterrupts);
         } catch (Throwable t) {
             if (t instanceof RuntimeException) {
                 throw (RuntimeException) t;

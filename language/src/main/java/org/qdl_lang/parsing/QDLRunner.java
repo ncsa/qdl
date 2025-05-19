@@ -1,5 +1,6 @@
 package org.qdl_lang.parsing;
 
+import org.qdl_lang.evaluate.SystemEvaluator;
 import org.qdl_lang.expressions.ExpressionNode;
 import org.qdl_lang.expressions.ExpressionStemNode;
 import org.qdl_lang.exceptions.InterruptException;
@@ -15,7 +16,9 @@ import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLSetNode;
 import org.qdl_lang.variables.StemListNode;
 import org.qdl_lang.variables.StemVariableNode;
+import org.qdl_lang.workspace.InterruptUtil;
 import org.qdl_lang.workspace.SIInterrupts;
+import org.qdl_lang.workspace.WorkspaceCommands;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -91,23 +94,25 @@ public class QDLRunner implements Serializable {
 
     /**
      * For running a buffer that may have breakpoints set
+     *
      * @param siInterrupts
      * @param noInterrupt
      * @throws Throwable
      */
-    public void run(SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
+    public void run(boolean startProcess, SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
         State currentState = getState();
-        run(0, currentState, siInterrupts, noInterrupt);
+        run(0, currentState, startProcess, siInterrupts, noInterrupt);
 
     }
+
     public void run() throws Throwable {
         State currentState = getState();
-        run(0, currentState, null, false);
+        run(0, currentState, false, null, false);
 
     }
 
-    public void restart(SIEntry siEntry,SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
-        run(siEntry.statementNumber + 1, siEntry.state, siInterrupts,  noInterrupt);
+    public void restart(SIEntry siEntry, SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
+        run(siEntry.statementNumber + 1, siEntry.state, false, siInterrupts, noInterrupt);
     }
 
     public Object getLastResult() {
@@ -116,7 +121,8 @@ public class QDLRunner implements Serializable {
 
     Object lastResult = null;
 
-    protected void run(int startIndex, State currentState, SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
+
+    protected void run(int startIndex, State currentState, boolean startProcess, SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
         for (int i = startIndex; i < elements.size(); i++) {
             //for (Element element : elements) {
             Element element = elements.get(i);
@@ -167,22 +173,46 @@ public class QDLRunner implements Serializable {
                     } catch (InterruptException ix) {
                         Object label = ix.getSiEntry().getLabel();
                         boolean dointerrupt = true;
-                        if(siInterrupts == null){
+                        if (siInterrupts == null) {
                             dointerrupt = !noInterrupt;
-                        }else{
-                           dointerrupt = (!noInterrupt) && siInterrupts.doInterrupt(label);
+                        } else {
+                            dointerrupt = (!noInterrupt) && siInterrupts.doInterrupt(label);
                         }
                         if (dointerrupt) {
-                            if (!ix.getSiEntry().initialized) {
-                                // if it was set up, pass it up the stack
-                                ix.getSiEntry().setInterrupts(siInterrupts);
-                                ix.getSiEntry().qdlRunner = this;
-                                ix.getSiEntry().statementNumber = i; // number where this happened.
-                                ix.getSiEntry().interpreter = getInterpreter();
+                            if (startProcess) {
+                                InterruptUtil.createInterrupt(ix, siInterrupts);
+                                InterruptUtil.printSetupMessage(state.getWorkspaceCommands(), ix);
                                 ix.getSiEntry().initialized = true;
+                                ix.getSiEntry().setInterrupts(siInterrupts);
+                            } else {
+                                // ix always comes with a new SIEntry but it is only at this
+                                // point if we can determine if a new process is being set up
+                                SIEntry currentSIE = state.getWorkspaceCommands().getCurrentSIEntry();
+                                currentSIE.update(ix.getSiEntry());
+                                ix.setSiEntry(currentSIE);
+                                if (siInterrupts != null) {
+                                    // if they actually updated them
+                                    ix.getSiEntry().setInterrupts(siInterrupts);
+                                }
                             }
+                            ix.getSiEntry().qdlRunner = this;
+                            ix.getSiEntry().statementNumber = i; // number where this happened.
+                            ix.getSiEntry().interpreter = getInterpreter();
+                            if (startProcess && SystemEvaluator.newInterruptHandler) {
+                                // If we have a new process, start a thread for the SI to manage.
+                                InterruptUtil.SIThread siThread = new InterruptUtil.SIThread(ix, state);
+                                startProcess = false;
+                                siThread.start();
+                                siThread.join();
+                                throw siThread.getLastException();
+                            }
+                            //}
+                            //    if(SystemEvaluator.newInterruptHandler) {
                             throw ix;
+                            //  }
                         }
+
+
                     }
                 }
             }
