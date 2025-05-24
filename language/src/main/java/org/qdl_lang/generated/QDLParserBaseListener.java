@@ -688,6 +688,18 @@ public class QDLParserBaseListener implements QDLParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterStemDefaultValue(QDLParserParser.StemDefaultValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitStemDefaultValue(QDLParserParser.StemDefaultValueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterSwitchExpression(QDLParserParser.SwitchExpressionContext ctx) { }
 	/**
 	 * {@inheritDoc}

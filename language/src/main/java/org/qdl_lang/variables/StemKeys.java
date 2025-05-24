@@ -113,7 +113,10 @@ status\*\((k,v.)→v.'status'≡'active')
         if (o instanceof Long) {
             return listkeys.add((Long) o);
         }
-        return stemKeys.add((String) o);
+        if(o instanceof String) {
+            return stemKeys.add((String) o);
+        }
+        throw new IllegalArgumentException("Cannot add key '" + o + "'. Must be a Long or String object");
     }
 
     @Override

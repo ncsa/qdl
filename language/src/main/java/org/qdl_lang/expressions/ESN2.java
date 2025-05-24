@@ -1,6 +1,8 @@
 package org.qdl_lang.expressions;
 
 import org.qdl_lang.exceptions.IndexError;
+import org.qdl_lang.exceptions.NoDefaultValue;
+import org.qdl_lang.exceptions.QDLExceptionWithTrace;
 import org.qdl_lang.exceptions.UnknownSymbolException;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
@@ -25,6 +27,15 @@ public class ESN2 extends ExpressionImpl {
         return get(state);
     }
 
+    public boolean isDefaultValueNode() {
+        return defaultValueNode;
+    }
+
+    public void setDefaultValueNode(boolean defaultValueNode) {
+        this.defaultValueNode = defaultValueNode;
+    }
+
+    boolean defaultValueNode = false;
 
     @Override
     public ExpressionInterface makeCopy() {
@@ -61,7 +72,20 @@ public class ESN2 extends ExpressionImpl {
         return getArguments().get(1);
     }
 
+    public Object getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(Object defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    Object defaultValue;
+
     protected Object get(State state) {
+        if (isDefaultValueNode()) {
+            return processDefaultValue(state);
+        }
         ArrayList<ExpressionInterface> leftArgs = new ArrayList<>();
         ArrayList<ExpressionInterface> rightArgs = new ArrayList<>();
         linearizeTree(leftArgs, rightArgs);
@@ -72,20 +96,20 @@ public class ESN2 extends ExpressionImpl {
             // just wants whole stem, no indices
             ExpressionInterface ei = leftArgs.get(leftArgs.size() - 1);
             Object r0 = ei.evaluate(state);
-            if(r0 == null){
+            if (r0 == null) {
                 // try to make an error report
-                if(ei instanceof VariableNode){
-                    VariableNode vn = (VariableNode)ei;
-                    throw new UnknownSymbolException("the stem '" + vn.getVariableReference() + "' was not found.",this);
+                if (ei instanceof VariableNode) {
+                    VariableNode vn = (VariableNode) ei;
+                    throw new UnknownSymbolException("the stem '" + vn.getVariableReference() + "' was not found.", this);
                 }
-                throw new UnknownSymbolException("left argument must evaluate to a stem ",this);
+                throw new UnknownSymbolException("left argument must evaluate to a stem ", this);
             }
             if (!(r0 instanceof QDLStem)) {
-                if(ei instanceof VariableNode){
-                    VariableNode vn = (VariableNode)ei;
-                    throw new UnknownSymbolException("the variable '" + vn.getVariableReference() + "' is not a stem.",this);
+                if (ei instanceof VariableNode) {
+                    VariableNode vn = (VariableNode) ei;
+                    throw new UnknownSymbolException("the variable '" + vn.getVariableReference() + "' is not a stem.", this);
                 }
-                throw new UnknownSymbolException("left argument must evaluate to a stem ",this);
+                throw new UnknownSymbolException("left argument must evaluate to a stem ", this);
             }
             QDLStem stemVariable = (QDLStem) r0;
             setResult(stemVariable);
@@ -96,7 +120,7 @@ public class ESN2 extends ExpressionImpl {
         // Made it this far. Now we need to do this again, but handing off indices
         // to the stem as needed.
         try {
-            whittleIndices(indexList);
+            computeNullity(indexList);
         } catch (IndexError indexError) {
             indexError.setStatement(this);
             throw indexError;
@@ -117,8 +141,8 @@ public class ESN2 extends ExpressionImpl {
         IndexList r;
         try {
             r = stemVariable.get(indexList, true);
-        }catch (IndexError indexError){
-            if(stemVariable.hasDefaultValue()){
+        } catch (IndexError indexError) {
+            if (stemVariable.hasDefaultValue()) {
                 setResult(stemVariable.getDefaultValue());
                 setResultType(Constant.getType(result));
                 setEvaluated(true);
@@ -135,24 +159,94 @@ public class ESN2 extends ExpressionImpl {
 
     }
 
+    private Object processDefaultValue(State state) {
+        getLeftArg().evaluate(state);
+        Object defaultValue = null;
+        ExpressionInterface ei = getLeftArg();
+        while (ei instanceof ParenthesizedExpression) {
+            ei = ((ParenthesizedExpression) ei).getExpression();
+        }
+        switch (ei.getNodeType()) {
+            case ExpressionInterface.VARIABLE_NODE:
+                VariableNode vn = (VariableNode) ei;
+                if (vn.getResultType() == Constant.STEM_TYPE) {
+                    QDLStem stem = (QDLStem) vn.getResult();
+                    if (stem.hasDefaultValue()) {
+                        defaultValue = stem.getDefaultValue();
+                    } else {
+                        throw new NoDefaultValue("No default value set for this stem", getLeftArg());
+                    }
+                } else {
+                    throw new QDLExceptionWithTrace("Variable does not reference a stem", getLeftArg());
+                }
+                break;
+            case ExpressionInterface.STEM_NODE:
+                QDLStem stem = (QDLStem) ei.getResult();
+                if (stem.hasDefaultValue()) {
+                    defaultValue = stem.getDefaultValue();
+                } else {
+                    throw new NoDefaultValue("No default value set for this stem", getLeftArg());
+                }
+                break;
+            case ExpressionInterface.EXPRESSION_STEM2_NODE:
+                ESN2 esn2 = (ESN2) ei;
+                if(isDefaultValueNode()){
+                    if(esn2.getResult() instanceof QDLStem){
+                        QDLStem stem2 = (QDLStem) esn2.getResult();
+                        if(stem2.hasDefaultValue()){
+                            defaultValue = ((QDLStem)esn2.getResult()).getDefaultValue();
+                        }else{
+                            throw new NoDefaultValue("No default value set for this stem", getLeftArg());
+                        }
+                    }else{
+                        throw new QDLExceptionWithTrace("only stems have default values", getLeftArg());
+                    }
+                }else {
+                    defaultValue = esn2.getResult();
+                }
+                break;
+            default:
+                throw new QDLExceptionWithTrace("variable does not support default", getLeftArg());
+        }
+
+        setEvaluated(true);
+        setResult(defaultValue);
+        setResultType(Constant.getType(defaultValue));
+        return defaultValue;
+    }
+
     /**
      * Actual stem contract: Evaluates the indices from right to left and does the
-     * evaluations, When this is done, the index set is simply indices, ready fo
-     * set or get in the stem.
+     * evaluations, Nullity refers to how many of the indices "go away" on actual evaluation.
+     * When this is done, the index set is simply indices, ready for set or get in the stem:
+     * <pre>
+     *     rank(stem) + nullity(stem) == dim(stem)
+     * </pre>
+     * <i>for a given index.</i> So if we have
+     * <pre>
+     *     x.1.2 := 5; p := 1; q := 2;
+     * </pre>
+     * Computing
+     * <pre>
+     *     w.x.p.q
+     *       |---|  = dim is 3
+     *         => x.1.2 = 5
+     *              |-|
+     *                + - nullity is 2, since these 2 go away
+     *     = w.5
+     *         |
+     *         +- rank is 1
+     * </pre>
+     * hence
+     * <pre>
+     *     rank + nullity = dim
+     *       1  +   2     =  3
+     * </pre>
      *
      * @param indexList
      */
-    protected void whittleIndices(IndexList indexList) {
-        newWhittle(indexList);
-    }
+    protected void computeNullity(IndexList indexList) {
 
-
-    /**
-     * Turns on or off all machinery associated with the allowing . to accept stem lists
-     * as multi indices.
-     */
-
-    protected void newWhittle(IndexList indexList) {
         IndexList r;
 
         for (int i = indexList.size() - 1; 0 <= i; i--) {
@@ -229,7 +323,7 @@ public class ESN2 extends ExpressionImpl {
     }
 
     /**
-     * Takes the node structure and converts it to a list structure.
+     * Takes the node (which is a tree) structure and converts it to a list structure.
      *
      * @param leftArgs
      * @param rightArgs
@@ -260,7 +354,7 @@ public class ESN2 extends ExpressionImpl {
 
         // Made it this far. Now we need to do this again, but handing off indices
         // to the stem as needed.
-        whittleIndices(indexList);
+        computeNullity(indexList);
         QDLStem stemVariable = null;
         boolean gotOne = false;
         ExpressionInterface realLeftArg = leftArgs.get(leftArgs.size() - 1);
@@ -286,7 +380,7 @@ public class ESN2 extends ExpressionImpl {
 
         // Made it this far. Now we need to do this again, but handing off indices
         // to the stem as needed.
-        whittleIndices(indexList);
+        computeNullity(indexList);
         QDLStem stemVariable = null;
         boolean gotOne = false;
         ExpressionInterface realLeftArg = leftArgs.get(leftArgs.size() - 1);
@@ -318,8 +412,16 @@ public class ESN2 extends ExpressionImpl {
         if (stemVariable == null) {
             stemVariable = new QDLStem();
         }
+        if (isDefaultValueNode()) {
+            stemVariable.setDefaultValue(newValue);
+        }
         try {
-            stemVariable.set(indexList, newValue); // let the stem set its value internally
+            if (isDefaultValueNode()) {
+                stemVariable.setDefaultValue(newValue);
+            } else {
+
+                stemVariable.set(indexList, newValue); // let the stem set its value internally
+            }
         } catch (IndexError indexError) {
             indexError.setStatement(this);
             throw indexError;
@@ -329,8 +431,9 @@ public class ESN2 extends ExpressionImpl {
         setEvaluated(true);
 
     }
+
     @Override
-        public int getNodeType() {
-            return EXPRESSION_STEM2_NODE;
-        }
+    public int getNodeType() {
+        return EXPRESSION_STEM2_NODE;
+    }
 }

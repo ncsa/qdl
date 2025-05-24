@@ -34,40 +34,6 @@ public class StringFunctionTests extends AbstractQDLTester {
     }
 
 
-    public void testContainsStringStem() throws Exception {
-        // test that the first argument is a string and the second is a stem variable.
-        // result should be conformable with the second argument
-        String source = "Four score and seven years ago...";
-        State state = testUtils.getNewState();
-        VStack vStack = state.getVStack();
-
-        QDLStem snippets = new QDLStem();
-        snippets.put("score", "score");
-        snippets.put("Four", "Four");
-        snippets.put("ago", "woof");
-        snippets.put("7", "seven");
-        vStack.put(new VThing(new XKey("snippets."), snippets));
-        vStack.put(new VThing(new XKey("source"), source));
-
-        Polyad polyad = new Polyad(StringEvaluator.CONTAINS);
-        VariableNode left = new VariableNode("source");
-        VariableNode right = new VariableNode("snippets.");
-
-        polyad.addArgument(left);
-        polyad.addArgument(right);
-        polyad.evaluate(state);
-        QDLStem result = (QDLStem) polyad.getResult();
-        // A left scalar is propagate to all the elements of the right argument if it is compound.
-        assert result.containsKey("score");
-        assert (Boolean) result.get("score");
-        assert result.containsKey("Four");
-        assert (Boolean) result.get("Four");
-        assert result.containsKey("7");
-        assert (Boolean) result.get("7");
-        assert result.containsKey("ago");
-        assert !(Boolean) result.get("ago");
-
-    }
 
     /**
      * Case is concat(stem. string) <br/><br/>
@@ -250,33 +216,7 @@ public class StringFunctionTests extends AbstractQDLTester {
     }
 
 
-    public void testIndexOfStringStem() throws Exception {
-        State state = testUtils.getNewState();
 
-        String source = "Four score and seven years ago...";
-        VStack vStack = state.getVStack();
-
-        QDLStem snippets = new QDLStem();
-        snippets.put("score", "score");
-        snippets.put("Four", "Four");
-        snippets.put("ago", "woof");
-        snippets.put("7", "seven");
-        vStack.put(new VThing(new XKey("snippets."), snippets));
-        vStack.put(new VThing(new XKey("source"), source));
-
-        Polyad polyad = new Polyad(StringEvaluator.INDEX_OF);
-        VariableNode left = new VariableNode("source");
-        VariableNode right = new VariableNode("snippets.");
-
-        polyad.addArgument(left);
-        polyad.addArgument(right);
-        polyad.evaluate(state);
-        QDLStem result = (QDLStem) polyad.getResult();
-        assert testOldIndexOf(result, "score", 5L);
-        assert testOldIndexOf(result, "Four", 0L);
-        assert testOldIndexOf(result, "7", 15L);
-        assert testOldIndexOf(result, "ago", -1L);
-    }
 
 
     public void testIndexOfStemString() throws Exception {

@@ -1118,10 +1118,10 @@ public class WorkspaceCommands implements Logable, Serializable {
 
             if (x instanceof ReturnException) {
                 ReturnException rx = (ReturnException) x;
-                if (rx.resultType != Constant.NULL_TYPE) {
+               /* if (rx.resultType != Constant.NULL_TYPE) {
                     getIoInterface().println(rx.result);
                     getIoInterface().flush();
-                }
+                }*/
                 if (sie != null) {
                     endProcess(sie);
                     throw rx;

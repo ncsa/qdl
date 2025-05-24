@@ -201,7 +201,6 @@ public class QDLRunner implements Serializable {
                             if (startProcess && SystemEvaluator.newInterruptHandler) {
                                 // If we have a new process, start a thread for the SI to manage.
                                 InterruptUtil.SIThread siThread = new InterruptUtil.SIThread(ix, state);
-                                startProcess = false;
                                 siThread.start();
                                 siThread.join();
                                 throw siThread.getLastException();

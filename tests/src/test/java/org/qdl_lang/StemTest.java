@@ -3517,6 +3517,81 @@ input_form((a\*\((k,v)→!is_list(v)))); // extracts all non-lists elements
         assert getBooleanValue("ok", state) : OpEvaluator.EXCISE + " as monad incorrect result";
 
     }
+
+    /**
+     * This is a regression test that setting the default value for a higher rank stem
+     * has the default value faithfully propagated to all included stems.
+     * @throws Throwable
+     */
+    /*
+       Test for https://github.com/ncsa/qdl/issues/122
+       A. ≔ [[9,0,-8],[-6,1,-4],[6,7,9]];
+       B. ≔ {*:0}~[[1],{1:2},{2:3},{3:3}];
+       C. := A. + B.;
+       ⊗∧⊙(C. ≡ [[10,0,-8],[-6,3,-4],[6,7,12]])`*;
+    */
+
+    public void testDefaultValueMatrix() throws Throwable{
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        // Note that the second argument is a stem. The function only looks at the values and this
+        // tests that as well.
+        addLine(script, "A. ≔ [[9,0,-8],[-6,1,-4],[6,7,9]];");
+        addLine(script,"B. ≔ {*:0}~[[1],{1:2},{2:3},{3:3}];");
+        addLine(script,"C. ≔ A. + B.;");
+        addLine(script,"D. ≔ B. + A.;");// the code has to decide which set of indices to take
+        addLine(script,"ok := ⊗∧⊙(C. ≡ [[10,0,-8],[-6,3,-4],[6,7,12]])`*;");
+        addLine(script,"ok1 := size(indices(A.)) ≡ size(indices(C.)); ");
+        addLine(script,"ok2 := ⊗∧⊙(D. ≡ [[10,0,-8],[-6,3,-4],[6,7,12]])`*;");
+        addLine(script,"ok3 := size(indices(A.)) ≡ size(indices(D.)); ");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) :  "Default value second test failed for some values";
+        assert getBooleanValue("ok1", state) : "Default value second test failed to return correct size of result";
+        assert getBooleanValue("ok2", state) :  "Default value first test failed for some values ";
+        assert getBooleanValue("ok3", state) : "Default value first test failed to return correct size of result";
+
+    }
+
+    /**
+     * In this test, both stems have default values and none of the actual keys are common. This should create
+     * a new stem that is all of the keys and carry out the given operation on the default
+     * values of one or the other. The test graphically:
+     * <pre>
+     *      P.                          Q.                            R.
+     *     2 | 3                     |    | 11                  17 | 18 | 18
+     *   ----+---                ----+----+-----               ----+----+-----
+     *     4 | 5                     |    | 12                  19 | 20 | 19
+     *   ----+---      +         ----+----+-----      =        ----+----+-----
+     *                               |    | 14                     |    | 21
+     *                           ----+----+-----               ----+----+-----
+     *    * = 7                  * = 15
+     * </pre>
+     * where the sum is the given value and the default of the <i>other</i> stem, The test
+     * is also repeated with the order swapped as a regression test for internal bookkeeping.
+     * @throws Throwable
+     */
+    public void testTwoDefaultValueMatrix() throws Throwable{
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        // Note that the second argument is a stem. The function only looks at the values and this
+        // tests that as well.
+        addLine(script, "P. ≔ [[2,3],[4,5]]; P.* ≔ 7;");
+        addLine(script,"Q.* ≔ 15; Q.0.2 ≔11; Q.1.2≔12; Q.2.2≔14;");
+        addLine(script,"R. ≔ P. + Q.;");
+        addLine(script,"ok ≔ ⊗∧⊙(R.  ≡ [[17,18,18],[19,20,19],{2:21}])`*;");
+        addLine(script,"ok1 ≔ ⊗∧⊙(indices(R.)≡ [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,2]])`*;" );
+        addLine(script,"S. ≔ Q. + P.;"); // test with order swapped, just in case
+        addLine(script,"ok2 ≔ ⊗∧⊙(S.  ≡ [[17,18,18],[19,20,19],{2:21}])`*;");
+        addLine(script,"ok3 ≔ ⊗∧⊙(indices(S.)≡ [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,2]])`*;" );
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) :  "test for 2 stems with default values failed for some values";
+        assert getBooleanValue("ok1", state) : "test for 2 stems with default values failed to return indices";
+        assert getBooleanValue("ok2", state) :  "test for 2 stems with default values failed for some values";
+        assert getBooleanValue("ok3", state) : "test for 2 stems with default values failed to return indices";
+
+    }
 }
 /*
    zeta.'Communities:LSCVirgoLIGOGroupMembers' := ['read:/DQSegDB' ,'read:/frames', 'read:/GraceDB'];

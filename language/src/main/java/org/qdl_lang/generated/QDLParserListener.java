@@ -616,6 +616,18 @@ public interface QDLParserListener extends ParseTreeListener {
 	 */
 	void exitContainsKey(QDLParserParser.ContainsKeyContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code stemDefaultValue}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void enterStemDefaultValue(QDLParserParser.StemDefaultValueContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code stemDefaultValue}
+	 * labeled alternative in {@link QDLParserParser#expression}.
+	 * @param ctx the parse tree
+	 */
+	void exitStemDefaultValue(QDLParserParser.StemDefaultValueContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code switchExpression}
 	 * labeled alternative in {@link QDLParserParser#expression}.
 	 * @param ctx the parse tree

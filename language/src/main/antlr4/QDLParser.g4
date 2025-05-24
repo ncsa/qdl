@@ -8,7 +8,6 @@ import QDLLexer;
 
 elements : element* EOF;
 
-//element : (statement ';' ) | (moduleStatement ';') ;
 element : statement ';' ;
 
 statement :
@@ -114,6 +113,7 @@ expression
  //| expression '::' expression                                                  #arg_concat
  | variable? Hash expression                                                   #moduleExpression
  | expression StemDot+ expression                                              #dotOp
+ | expression StemDot Times                                                    #stemDefaultValue
  | StemDot my_integer                                                          #decimalNumber2
  | FunctionMarker expression                                                   #functionReference // REUSED
  | expression postfix=StemDot                                                  #dotOp2

@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import static org.qdl_lang.evaluate.OpEvaluator.NROOT;
 import static org.qdl_lang.exceptions.ParsingException.*;
 import static org.qdl_lang.statements.ExpressionInterface.*;
 import static org.qdl_lang.variables.QDLStem.STEM_INDEX_MARKER;
@@ -1423,11 +1422,10 @@ illegal argument:no module named "b" was  imported at (1, 67)
         }
         ESN2 expressionStemNode = new ESN2();
         expressionStemNode.setTokenPosition(tp(dotOpContext));
+        expressionStemNode.setSourceCode(getSource(dotOpContext));
         stash(dotOpContext, expressionStemNode);
 
-        expressionStemNode.setSourceCode(getSource(dotOpContext));
         List<QDLParserParser.ExpressionContext> list = dotOpContext.expression();
-        ExpressionInterface exp = (ExpressionInterface) resolveChild(list.get(0));
         for (int i = 0; i < dotOpContext.getChildCount(); i++) {
             ParseTree p = dotOpContext.getChild(i);
             // If it is a termminal node (a node consisting of just the stem marker) skip it
@@ -2936,6 +2934,28 @@ illegal argument:no module named "b" was  imported at (1, 67)
         BigDecimal bd = new BigDecimal("." + text);
         ConstantNode constantNode = new ConstantNode(bd, Constant.DECIMAL_TYPE);
         stash(ctx, constantNode);
+    }
+
+    @Override
+    public void enterStemDefaultValue(QDLParserParser.StemDefaultValueContext ctx) {
+
+    }
+
+    @Override
+    public void exitStemDefaultValue(QDLParserParser.StemDefaultValueContext ctx) {
+        ESN2 esn = new ESN2();
+        esn.setTokenPosition(tp(ctx));
+        esn.setSourceCode(getSource(ctx));
+        esn.setDefaultValueNode(true);
+        stash(ctx, esn);
+        Statement s = resolveChild(ctx.getChild(0));
+        if (s instanceof VariableNode) {
+            VariableNode vNode = (VariableNode) s;
+            vNode.setVariableReference(vNode.getVariableReference() + STEM_INDEX_MARKER);
+            esn.setLeftArg(vNode);
+        } else {
+            esn.setLeftArg((ExpressionInterface) s);
+        }
     }
 }
 

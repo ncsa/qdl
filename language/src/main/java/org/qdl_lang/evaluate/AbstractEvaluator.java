@@ -728,6 +728,12 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
 
     }
 
+    /**
+     * An iterator for the keys that are common between stems. These are the keys of the
+     * final result of operations on stems. Contract is that this has a list of keys
+     * and {@link #add(StemKeys)} will add the set to the list. When this iterates, it
+     * iterates over this list and looks for a key.
+     */
 
     public static class CommonKeyIterator implements Iterator {
         ArrayList<StemKeys> stemKeys = new ArrayList<>();
@@ -736,6 +742,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             if (smallestKeys == null) {
                 smallestKeys = keys;
             } else {
+                //keys.removeAll(smallestKeys); // Don't add redundant keys since that just adds un-needed looping
                 smallestKeys = keys.size() < smallestKeys.size() ? keys : smallestKeys;
                 stemKeys.add(keys);
             }
@@ -754,6 +761,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
                 }
                 iterator = smallestKeys.iterator();
             }
+
             while (iterator.hasNext()) {
                 Object v = iterator.next();
                 if (allHaveValue(v)) {
@@ -762,6 +770,17 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
                 }
             }
             return false;
+
+
+        }
+
+        /**
+         * Since {@link #next()} has to peek inside of the iterator to tell if the
+         * next key is really valid, {@link #hasNext()} consumes the iterator. This resets the iterator
+         * so {@link #hasNext()} works from the start.
+         */
+        protected void reset() {
+
         }
 
         protected boolean allHaveValue(Object value) {
@@ -781,6 +800,20 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
 
     public static CommonKeyIterator getCommonKeys(QDLStem... stems) {
         CommonKeyIterator iterator = new CommonKeyIterator();
+        boolean gotKeys = false;
+        StemKeys stemKey = new StemKeys();
+        if (stems[0].hasDefaultValue()) {
+            stemKey.addAll(stems[1].keySet());
+            gotKeys = true;
+        }
+        if (stems[1].hasDefaultValue()) {
+            stemKey.addAll(stems[0].keySet());
+            gotKeys = true;
+        }
+        if (gotKeys) {
+            iterator.add(stemKey);
+            return iterator;
+        }
         for (QDLStem stem : stems) {
             if (stem.hasDefaultValue()) {
                 continue;
@@ -871,6 +904,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         }
         return null;
     }
+
     /**
      * get a polyad or dyad (for the operator) from the {@link FunctionReferenceNode}.
      * You must still set any arguments, but the type and name should be correctly set.
@@ -882,6 +916,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     public static ExpressionImpl getOperator(State state, FunctionReferenceNodeInterface frNode, int nAry) {
         return OLDgetOperator(state, frNode, nAry);
     }
+
     protected static ExpressionImpl NEWgetOperator(State state, FunctionReferenceNodeInterface frNode, int nAry) {
         UserFunction operator = null;
         String operatorName = frNode.getFunctionName();
@@ -897,6 +932,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         }
         return operator;
     }
+
     protected static ExpressionImpl OLDgetOperator(State state, FunctionReferenceNodeInterface frNode, int nAry) {
         ExpressionImpl operator;
         String operatorName = frNode.getFunctionName();
@@ -1049,7 +1085,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      */
     public FunctionReferenceNodeInterface getFunctionReferenceNode(State state, ExpressionInterface arg0, boolean pushNewState) {
         FunctionReferenceNodeInterface frn = null;
-        while(arg0.getNodeType() == ExpressionInterface.PARENTHESIZED_NODE){
+        while (arg0.getNodeType() == ExpressionInterface.PARENTHESIZED_NODE) {
             arg0 = ((ParenthesizedExpression) arg0).getExpression();
         }
         //   g(x,y,n)->x^n+y^n ;((@g))∀[4,[;5],1]
@@ -1074,10 +1110,10 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
                 functionReferenceNode.getFunctionRecords().add(lds.getFunctionRecord());
                 frn = functionReferenceNode;
                 break;
-                case ExpressionInterface.FUNCTION_REFERENCE_NODE:
+            case ExpressionInterface.FUNCTION_REFERENCE_NODE:
             case ExpressionInterface.DYADIC_FUNCTION_REFERENCE_NODE:
-                    frn = (FunctionReferenceNodeInterface) arg0;
-                    break;
+                frn = (FunctionReferenceNodeInterface) arg0;
+                break;
             case ExpressionInterface.MODULE_NODE:
                 ModuleExpression moduleExpression = (ModuleExpression) arg0;
                 Object r = moduleExpression.evaluate(state);

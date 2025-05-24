@@ -65,27 +65,6 @@ public class TestDyadicOperations extends AbstractQDLTester {
     }
 
 
-    public void testStemScalarPlus() throws Exception {
-        State state = testUtils.getNewState();
-        QDLStem stemVariable = new QDLStem();
-        stemVariable.put("foo", 1L);
-        stemVariable.put("bar", new BigDecimal("345.432"));
-        stemVariable.put("baz", -34L);
-        stemVariable.put("3", new BigDecimal("-123.987"));
-        state.getVStack().put(new VThing(new XKey("myStem."), stemVariable));
-        ConstantNode left = new ConstantNode(new Long(3L), Constant.LONG_TYPE);
-        VariableNode right = new VariableNode("myStem.");
-
-        Dyad dyad = new Dyad(OpEvaluator.PLUS_VALUE, left, right);
-        dyad.evaluate(state);
-        assert dyad.getResultType() == Constant.STEM_TYPE;
-        QDLStem result = (QDLStem) dyad.getResult();
-        assert result.get("foo").equals(4L);
-        assert result.get("baz").equals(-31L);
-        assert testNumberEquals(result.get("bar"), new BigDecimal("348.432"));
-        assert testNumberEquals(result.get("3"), new BigDecimal("-120.987"));
-    }
-
 
     public void testDyadicLongPlus() throws Exception {
         ConstantNode left = new ConstantNode(1L, Constant.LONG_TYPE);

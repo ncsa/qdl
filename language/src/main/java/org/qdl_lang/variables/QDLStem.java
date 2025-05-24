@@ -1,6 +1,8 @@
 package org.qdl_lang.variables;
 
 import org.qdl_lang.exceptions.IndexError;
+import org.qdl_lang.exceptions.NoDefaultValue;
+import org.qdl_lang.expressions.AllIndices;
 import org.qdl_lang.expressions.IndexList;
 import org.qdl_lang.state.QDLConstants;
 import org.qdl_lang.state.StemMultiIndex;
@@ -472,21 +474,30 @@ public class QDLStem implements Map<String, Object>, Serializable {
             return r.get(0);
         }
         if (key instanceof Integer) {
-            return get(Long.valueOf((Integer) key));
+            key = Long.valueOf((Integer) key);
         }
+        Object value = null;
         if (key instanceof Long) {
-            return get((Long) key);
+            value = get((Long) key);
         }
         if (key instanceof String) {
             String sKey = (String) key;
             if (StemPath.isPath(sKey)) {
                 StemPath stemPath = new StemPath();
                 stemPath.parsePath(sKey);
-                return get(stemPath);
+                value =  get(stemPath);
+            }else {
+                value = get((String) key);
             }
-            return get((String) key);
         }
-        return getQDLMap().get(key);
+        if(value == null) {
+            value = getQDLMap().get(key);
+        }
+        // Fixes https://github.com/ncsa/qdl/issues/122
+        if(hasDefaultValue() && (value  instanceof QDLStem)) {
+            ((QDLStem) value).setDefaultValue(getDefaultValue());
+        }
+        return value;
     }
 
     @Override
@@ -1004,7 +1015,18 @@ public class QDLStem implements Map<String, Object>, Serializable {
                 rc.add(indexList.get(i));
                 continue;
             }
-            obj = currentStem.get(indexList.get(i));
+            if(indexList.get(i) instanceof AllIndices) {
+                if(currentStem.hasDefaultValue()){
+                    obj = currentStem.getDefaultValue();
+
+                }else{
+                    throw new NoDefaultValue("No default value for this stem", null);
+                }
+
+            }else{
+
+                obj = currentStem.get(indexList.get(i));
+            }
             if (obj == null) {
                 if (hasDefaultValue()) {
                     obj = getDefaultValue();
@@ -1643,7 +1665,11 @@ public class QDLStem implements Map<String, Object>, Serializable {
             //rock on. Just means the list is sparse so use full notation.
         }
         if (isEmpty()) {
-            return "[]";
+            String out = "";
+            if(hasDefaultValue()){
+                out = out + "{*:" + getDefaultValue() + "}~";
+            }
+            return out + "[]";
         }
         String output = "{";
         boolean isFirst = true;
