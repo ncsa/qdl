@@ -65,7 +65,7 @@ public class StemListNode implements ExpressionInterface {
     @Override
     public void setResultType(int type) {
         // No op, actually, since this only returns a single type of object.
-        if (type != Constant.STEM_TYPE) {
+        if (type != Constants.STEM_TYPE && type != Constants.LIST_TYPE) {
             throw new NFWException("Internal error: Attempt to set stem to type = " + type);
         }
     }

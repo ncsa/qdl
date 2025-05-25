@@ -12,34 +12,63 @@ import java.math.BigDecimal;
  * <p>Created by Jeff Gaynor<br>
  * on 1/13/20 at  3:07 PM
  */
-public class Constant {
-    public static int getType(Object object){
-
-        if(object instanceof QDLNull) return NULL_TYPE;
-        if(object instanceof String) return STRING_TYPE;
-        if(object instanceof Long) return LONG_TYPE;
-        if(object instanceof Boolean) return BOOLEAN_TYPE;
-        if(object instanceof QDLStem) return STEM_TYPE;
-        if(object instanceof BigDecimal) return DECIMAL_TYPE;
-        if(object instanceof QDLSet) return SET_TYPE;
-        if(object instanceof Module) return MODULE_TYPE;
-        if(object instanceof FunctionReferenceNode) return FUNCTION_TYPE;
-        if(object instanceof DyadicFunctionReferenceNode) return DYADIC_FUNCTION_TYPE;
-        if(object instanceof AxisExpression) return AXIS_RESTRICTION_TYPE;
+public class Constant implements Constants {
+    public static int getType(Object object) {
+        if (object instanceof QDLNull) return NULL_TYPE;
+        if (object instanceof String) return STRING_TYPE;
+        if (object instanceof Long) return LONG_TYPE;
+        if (object instanceof Boolean) return BOOLEAN_TYPE;
+        if (object instanceof QDLStem) {
+            // Next line, while right, breaks stuff (every place there is
+            // a check if the type is stem, it fails), so eventually use it
+            //if(((QDLStem)object).isList()) return LIST_TYPE;
+            return STEM_TYPE;
+        };
+        if (object instanceof BigDecimal) return DECIMAL_TYPE;
+        if (object instanceof QDLSet) return SET_TYPE;
+        if (object instanceof Module) return MODULE_TYPE;
+        if (object instanceof FunctionReferenceNode) return FUNCTION_TYPE;
+        if (object instanceof DyadicFunctionReferenceNode) return DYADIC_FUNCTION_TYPE;
+        if (object instanceof AxisExpression) return AXIS_RESTRICTION_TYPE;
         return UNKNOWN_TYPE;
     }
-    public static final int UNKNOWN_TYPE = -1;
-    public static final int NULL_TYPE = 0;
-    public static final int BOOLEAN_TYPE = 1;
-    public static final int LONG_TYPE = 2;
-    public static final int STRING_TYPE = 3;
-    public static final int STEM_TYPE = 4; // these are mixed type
-    public static final int DECIMAL_TYPE = 5;
-    public static final int FUNCTION_TYPE = 6;
-    public static final int DYADIC_FUNCTION_TYPE = 11;
-    public static final int AXIS_RESTRICTION_TYPE = 12;
-    public static final int SET_TYPE = 10;
-    public static final int MODULE_TYPE = 7;
+
+    /**
+     * Given the (integer) type, return the string name. This is used mostly for error or
+     * diagnostic messsages.
+     *
+     * @param type
+     * @return
+     */
+    public static String getName(int type) {
+        switch (type) {
+            case STRING_TYPE:
+                return STRING_NAME;
+            case LONG_TYPE:
+                return LONG_NAME;
+            case BOOLEAN_TYPE:
+                return BOOLEAN_NAME;
+            case DECIMAL_TYPE:
+                return DECIMAL_NAME;
+            case SET_TYPE:
+                return SET_NAME;
+            case MODULE_TYPE:
+                return MODULE_NAME;
+            case FUNCTION_TYPE:
+                return FUNCTION_NAME;
+            case DYADIC_FUNCTION_TYPE:
+                return DYADIC_FUNCTION_NAME;
+            case AXIS_RESTRICTION_TYPE:
+                return AXIS_RESTRICTION_NAME;
+            case NULL_TYPE:
+                return NULL_NAME;
+            default:
+                return UNKNOWN_NAME;
+        }
+    }
+
+
+
     Object value;
     int type = UNKNOWN_TYPE;
 
@@ -47,7 +76,9 @@ public class Constant {
         return key instanceof String;
     }
 
-    public static boolean isModule(Object key){return key instanceof Module;}
+    public static boolean isModule(Object key) {
+        return key instanceof Module;
+    }
 
     public int getType() {
         return type;
@@ -61,21 +92,26 @@ public class Constant {
         if (value == null) return null;
         return value.toString();
     }
-    public Long getLong(){
-        if(value instanceof Long) return (Long)value;
+
+    public Long getLong() {
+        if (value instanceof Long) return (Long) value;
         return 0L;
     }
-    public static boolean isNull(Object obj){
+
+    public static boolean isNull(Object obj) {
         return obj instanceof QDLNull;
     }
-    public static boolean isScalar(Object obj){
-         int type = getType(obj);
-         return type != STEM_TYPE && type != SET_TYPE && type != FUNCTION_TYPE && type != UNKNOWN_TYPE;
+
+    public static boolean isScalar(Object obj) {
+        int type = getType(obj);
+        return type != STEM_TYPE && type != SET_TYPE && type != FUNCTION_TYPE && type != UNKNOWN_TYPE;
     }
-    public static boolean isStem(Object obj){
-        return getType(obj) == STEM_TYPE ;
+
+    public static boolean isStem(Object obj) {
+        return getType(obj) == STEM_TYPE;
     }
-    public static boolean isSet(Object obj){
+
+    public static boolean isSet(Object obj) {
         return getType(obj) == SET_TYPE;
     }
 }

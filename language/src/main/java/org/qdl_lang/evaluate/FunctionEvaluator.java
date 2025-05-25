@@ -20,6 +20,7 @@ import java.util.*;
 import static org.qdl_lang.state.QDLConstants.FUNCTION_REFERENCE_MARKER;
 import static org.qdl_lang.state.QDLConstants.FUNCTION_REFERENCE_MARKER2;
 import static org.qdl_lang.variables.Constant.STEM_TYPE;
+import static org.qdl_lang.variables.Constants.LIST_TYPE;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -315,6 +316,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
                     argCounts = new QDLStem();
                     argCounts.put(0L, object2);
                     break;
+                case LIST_TYPE:
                 case STEM_TYPE:
                     argCounts = (QDLStem) object2;
                     isScalarArgCount = false;

@@ -81,7 +81,7 @@ public class StemVariableNode implements ExpressionInterface {
 
     @Override
     public void setResultType(int type) {
-        if (type != Constant.STEM_TYPE) {
+        if (type != Constants.STEM_TYPE && type != Constants.LIST_TYPE) {
             throw new NFWException("error: Attempt to reset stem to type " + type);
         }
         // result type is fixed since these are created to only manage stems

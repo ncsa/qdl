@@ -2029,6 +2029,7 @@ a.⌆b.
                 monad.setResultType(SET_TYPE);
                 monad.setResult(r);
                 return;
+            case LIST_TYPE:
             case STEM_TYPE:
                 Polyad p = new Polyad(StemEvaluator.UNIQUE_VALUES);
                 p.setArguments(monad.getArguments());

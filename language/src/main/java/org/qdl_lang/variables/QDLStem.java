@@ -15,6 +15,7 @@ import net.sf.json.JSONObject;
 import org.qdl_lang.statements.WhileLoop;
 import org.qdl_lang.util.aggregate.AxisRestrictionIdentity;
 import org.qdl_lang.util.aggregate.QDLAggregateUtil;
+import software.amazon.awssdk.services.kendra.model.QuerySuggestionsBlockListStatus;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -1575,6 +1576,12 @@ public class QDLStem implements Map<String, Object>, Serializable {
        toString methods
        *************** */
 
+    /**
+     * Used as a utility, this prints with an indent relative to a current indent.
+     * @param indentFactor
+     * @param currentIndent
+     * @return
+     */
     public String toString(int indentFactor, String currentIndent) {
         if (isEmpty()) {
             if (hasDefaultValue()) {
@@ -1650,12 +1657,22 @@ public class QDLStem implements Map<String, Object>, Serializable {
 
     @Override
     public String toString() {
+        return toString(true);
+    }
+
+    /**
+     * Whether or not to show default values. This shows the top level, but not any
+     * embedded stems, or the output becomes huge and unreadable fast.
+     * @param showDefaultValues
+     * @return
+     */
+    protected String toString(boolean showDefaultValues) {
         String list = null;
         try {
             if (!getQDLList().isEmpty()) {
                 list = getQDLList().toString();
                 if (isList()) {
-                    if (getDefaultValue() != null) {
+                    if (showDefaultValues && hasDefaultValue()) {
                         list = "{*:" + getDefaultValue() + "}~" + list;
                     }
                     return list;
@@ -1666,7 +1683,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
         }
         if (isEmpty()) {
             String out = "";
-            if(hasDefaultValue()){
+            if(showDefaultValues && hasDefaultValue()){
                 out = out + "{*:" + getDefaultValue() + "}~";
             }
             return out + "[]";
@@ -1674,7 +1691,7 @@ public class QDLStem implements Map<String, Object>, Serializable {
         String output = "{";
         boolean isFirst = true;
 
-        if (getDefaultValue() != null) {
+        if (showDefaultValues && hasDefaultValue()) {
             if (getDefaultValue() instanceof BigDecimal) {
                 output = output + "*:" + InputFormUtil.inputForm((BigDecimal) getDefaultValue());
             } else {
@@ -1695,7 +1712,12 @@ public class QDLStem implements Map<String, Object>, Serializable {
             if (vv instanceof BigDecimal) {
                 ss = InputFormUtil.inputForm((BigDecimal) vv);
             } else {
-                ss = vv.toString();
+                if(vv instanceof QDLStem){
+                    ss = ((QDLStem)vv).toString(false);
+
+                }else{
+                    ss = vv.toString();
+                }
             }
             output = output + key + STEM_ENTRY_CONNECTOR + ss;
         }
