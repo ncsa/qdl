@@ -212,7 +212,7 @@ public class TMathEvaluator extends AbstractEvaluator {
 
     private void doLCM(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
@@ -253,7 +253,7 @@ public class TMathEvaluator extends AbstractEvaluator {
 
     private void doGCD(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
@@ -321,7 +321,7 @@ public class TMathEvaluator extends AbstractEvaluator {
     private void doFloorOrCeiling(Polyad polyad, State state, boolean isFloor) {
 
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -372,7 +372,7 @@ public class TMathEvaluator extends AbstractEvaluator {
 
     private void doNRoot(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
@@ -459,7 +459,7 @@ public class TMathEvaluator extends AbstractEvaluator {
 
     private void computePi(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1});
+            polyad.setAllowedArgCounts(new int[]{0, 1});
             polyad.setEvaluated(true);
             return;
         }
@@ -622,7 +622,7 @@ public class TMathEvaluator extends AbstractEvaluator {
     private void doTranscendentalMath(Polyad polyad, String op, State state) {
         // The next test hits all but the case of exp()
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -640,7 +640,7 @@ public class TMathEvaluator extends AbstractEvaluator {
     private void doTranscendentalMath(Polyad polyad, String op, boolean doPowers, State state) {
         if (doPowers) {
             if (polyad.isSizeQuery()) {
-                polyad.setResult(new int[]{0, 1});
+                polyad.setAllowedArgCounts(new int[]{0, 1});
                 polyad.setEvaluated(true);
                 return;
             }

@@ -47,7 +47,7 @@ public class QDLMailModule extends JavaModule {
         d.add("directly from QDL with a minimum of fuss.");
         d.add("This is not intended to be a toolkit to let you write a full");
         d.add("fledged mail program, it is mostly intended for sending quick messages");
-        d.add("say, from within a server. It supports emails (various content types");
+        d.add("say, from within a server. It supports emails (various content values");
         d.add("are allowed, such as html, default is plain text, of course)");
         d.add("but does not directly support attachments");
         d.add("or multipart mime messages.");

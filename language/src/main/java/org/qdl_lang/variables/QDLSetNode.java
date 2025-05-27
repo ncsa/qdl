@@ -5,7 +5,7 @@ import org.qdl_lang.expressions.VariableNode;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
-import edu.uiuc.ncsa.security.core.exceptions.NFWException;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,32 +15,29 @@ import java.util.List;
  * on 4/6/22 at  4:06 PM
  */
 public class QDLSetNode implements ExpressionInterface {
-    QDLSet result;
+    QDLValue result;
 
     @Override
-    public Object getResult() {
+    public QDLValue getResult() {
         return result;
     }
 
     @Override
-    public void setResult(Object object) {
-        if (!(result instanceof QDLSet)) {
-            throw new IllegalStateException("error: cannot set a " + getClass().getSimpleName() + " to type " + object.getClass().getSimpleName());
+    public void setResult(QDLValue qdlValue) {
+        if (!(qdlValue.isSet())) {
+            throw new IllegalStateException("error: cannot set a " + getClass().getSimpleName() + " to type " + qdlValue.getClass().getSimpleName());
         }
-
     }
-
+    @Override
+    public void setResult(Object result) {
+        setResult(QDLValue.asQDLValue( result));
+    }
     @Override
     public int getResultType() {
-        return Constant.SET_TYPE;
+        return getResult().getType();
     }
 
-    @Override
-    public void setResultType(int type) {
-        if (type != Constant.SET_TYPE) {
-            throw new NFWException("Internal error: Attempt to set stem to type = " + type);
-        }
-    }
+
 
     boolean evaluated = false;
 
@@ -65,8 +62,8 @@ public class QDLSetNode implements ExpressionInterface {
     ArrayList<ExpressionInterface> statements = new ArrayList<>();
 
     @Override
-    public Object evaluate(State state) {
-        result = new QDLSet();
+    public QDLValue evaluate(State state) {
+        QDLSet setOut = new QDLSet();
         long i = 0;
         for (ExpressionInterface stmt : statements) {
             stmt.evaluate(state);
@@ -74,10 +71,10 @@ public class QDLSetNode implements ExpressionInterface {
                      throw new UnknownSymbolException("\'" + ((VariableNode)stmt).getVariableReference() + "' not found for set value", stmt);
                  }
             stmt.setEvaluated(true);
-            stmt.setResultType(Constant.getType(stmt.getResult()));
-            result.add(stmt.getResult());
+            setOut.add(stmt.getResult());
         }
-        return result;
+        setResult(setOut);
+        return getResult();
     }
 
     List<String> sourceCode = new ArrayList<>();
@@ -136,7 +133,7 @@ public class QDLSetNode implements ExpressionInterface {
         QDLSet qdlSet = new QDLSet();
 
         // Kludge, but it works.
-        qdlSet.fromJSON(((QDLSet) getResult()).toJSON());
+        qdlSet.fromJSON(getResult().asSet().toJSON());
         setNode.setResult(qdlSet);
         setNode.setSourceCode(getSourceCode());
         setNode.setEvaluated(isEvaluated());

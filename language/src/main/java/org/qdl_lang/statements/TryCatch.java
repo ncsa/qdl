@@ -4,6 +4,7 @@ import org.qdl_lang.exceptions.*;
 import org.qdl_lang.state.State;
 import org.qdl_lang.state.XKey;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.variables.VThing;
 import edu.uiuc.ncsa.security.core.util.DebugConstants;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
@@ -55,7 +56,7 @@ public class TryCatch implements Statement {
 
       */
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         State localState = state.newLocalState();
         try {
             for (Statement s : tryStatements) {
@@ -70,17 +71,17 @@ public class TryCatch implements Statement {
             String message = t.getPolyad().getArguments().get(0).getResult().toString();
             switch (t.getPolyad().getArgCount()) {
                 case 3:
-                    Object sss = t.getPolyad().getArguments().get(2).getResult();
-                    if (!(sss instanceof QDLStem)) {
+                    QDLValue sss = t.getPolyad().getArguments().get(2).getResult();
+                    if (!(sss.isStem())) {
                         throw new IllegalArgumentException("the last argument must be a stem");
                     }
                     //localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), t.getPolyad().getArguments().get(2).getResult()));
-                    errorState = (QDLStem) t.getPolyad().getArguments().get(2).getResult();
+                    errorState = t.getPolyad().getArguments().get(2).getResult().asStem();
                 case 2:
-                    if(t.getPolyad().getArguments().get(1).getResult() instanceof Long){
+                    if(t.getPolyad().getArguments().get(1).getResult().isLong()){
                         throw new IllegalArgumentException("second argument must be an integer");
                     }
-                    errorCode = (Long) t.getPolyad().getArguments().get(1).getResult();
+                    errorCode = t.getPolyad().getArguments().get(1).getResult().asLong();
                     //localState.getVStack().localPut(new VThing(new XKey(ERROR_CODE_NAME),  t.getPolyad().getArguments().get(1).getResult()));
                     break;
                 case 1:

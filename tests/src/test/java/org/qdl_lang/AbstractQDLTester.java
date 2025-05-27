@@ -239,7 +239,7 @@ public class AbstractQDLTester extends TestBase {
      * @return
      */
     protected boolean checkVThing(String variableName, Object newValue, State state) {
-        return ((VThing) state.getVStack().get(new XKey(variableName))).getValue().equals(newValue);
+        return ((VThing) state.getVStack().get(new XKey(variableName))).getVariable().equals(newValue);
     }
 
     /**

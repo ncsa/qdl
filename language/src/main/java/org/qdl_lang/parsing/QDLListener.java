@@ -21,6 +21,7 @@ import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.qdl_lang.functions.*;
 import org.qdl_lang.statements.*;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -53,7 +54,7 @@ public class QDLListener implements QDLParserListener {
 
     /**
      * Note that the state is supplied here not for evaluation, but because it has the evaluators needed
-     * to resolve the various types of operators that are being produced by the parser. The state
+     * to resolve the various values of operators that are being produced by the parser. The state
      * should be injected at runtime where it is actually known.
      *
      * @param parsingMap
@@ -1467,15 +1468,15 @@ illegal argument:no module named "b" was  imported at (1, 67)
         }
 
         if (expressionStemNode.getRightArg() instanceof ConstantNode) {
-            if (expressionStemNode.getRightArg().getResult() instanceof BigDecimal) {
+            if (expressionStemNode.getRightArg().getResult().isDecimal()) {
                 String a = expressionStemNode.getRightArg().getResult().toString();
                 String[] lr = a.split("\\.");
                 ESN2 childESN = new ESN2();
                 childESN.setTokenPosition(tp(ctx));
                 childESN.setLeftArg(expressionStemNode.getLeftArg());
-                childESN.setRightArg(new ConstantNode(Long.parseLong(lr[0]), Constant.LONG_TYPE));
+                childESN.setRightArg(new ConstantNode(new QDLValue(Long.parseLong(lr[0]))));
                 expressionStemNode.setLeftArg(childESN);
-                expressionStemNode.setRightArg(new ConstantNode(Long.parseLong(lr[1]), Constant.LONG_TYPE));
+                expressionStemNode.setRightArg(new ConstantNode(new QDLValue(Long.parseLong(lr[1]))));
                 // ISSUE: Parser needs some way (probably predicates???) to know that in the course of
                 // a stem, decimals are not allowed. This is hard, since we want to allow arbitrary expression.
                 // which should evaluate to integers. What is next is a temporary

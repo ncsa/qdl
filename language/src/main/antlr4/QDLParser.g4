@@ -184,7 +184,7 @@ expression
  | (function | '(' f_args* ')') LambdaConnector expression                     #lambdaDef
  // removed the next expression (and keeping it for reference wit this comment) because empty expressions were
  // being misinterpreted inside of slices in certain edge cases. It is better to just get errors if a
- // user types in something like ;;;; rather than have wrong slices.
+ // user values in something like ;;;; rather than have wrong slices.
  //| ';'                                                                         #semi_for_empty_expressions
  ;
 

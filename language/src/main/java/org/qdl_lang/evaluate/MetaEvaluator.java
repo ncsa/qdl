@@ -103,7 +103,7 @@ public class MetaEvaluator extends AbstractEvaluator {
         } else {
             evaluate(polyad, null);
         }
-        return (int[]) polyad.getResult();
+        return polyad.getAllowedArgCounts();
     }
 
 

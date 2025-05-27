@@ -282,7 +282,7 @@ public static class QDLStackTraceElement{
     /**
      * Command line arguments if this is being run in script mode.  This is an array of objects.
      * If invoked from inside QDL then it may be any QDL variable. When coming from outside, these
-     * will be strings (since, e.g., bash is unaware of QDL variable types).
+     * will be strings (since, e.g., bash is unaware of QDL variable values).
      *
      * @return
      */

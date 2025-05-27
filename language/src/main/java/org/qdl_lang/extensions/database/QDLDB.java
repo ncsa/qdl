@@ -286,7 +286,7 @@ public class QDLDB implements QDLMetaModule {
             // Args are list of form
             /*
                 [a0,a1,...]
-                where a's are either simple types - long, big decimal, string, boolean or null
+                where a's are either simple values - long, big decimal, string, boolean or null
                 or are an explicit record
                 [value, type]
                 In which case the type will be asserted (and the value may be changed too).
@@ -333,10 +333,10 @@ public class QDLDB implements QDLMetaModule {
             doc.add("A query is  a select, query, count or anything else that");
             doc.add("has  a result. The statement may be simply a statement or it may be a prepared statement.");
             doc.add("If it is prepared, then arg_list is a list of either scalars or pairs of the form [value, type]");
-            doc.add("where type is one of the types in the variable " + TYPE_VAR_NAME);
+            doc.add("where type is one of the values in the variable " + TYPE_VAR_NAME);
             doc.add("E.g.");
-            doc.add("db#query('select * from my_table where user_id=?',['2355',types.SMALLINT]);");
-            doc.add("Note that the types are specific to the table structure of the database! ");
+            doc.add("db#query('select * from my_table where user_id=?',['2355',values.SMALLINT]);");
+            doc.add("Note that the values are specific to the table structure of the database! ");
             doc.add("If you do not supply them then the default will be ");
             doc.add("int -> BIGINT");
             doc.add("decimal -> NUMERIC");
@@ -690,7 +690,7 @@ public class QDLDB implements QDLMetaModule {
         if (argStatement.isEmpty()) {
             argStatement.add("The argument list is used for prepared statements and is of the form");
             argStatement.add(" [a0,a1,...]\n" +
-                    "where a's are either simple types - long, big decimal, string, boolean or null\n" +
+                    "where a's are either simple values - long, big decimal, string, boolean or null\n" +
                     "or are an explicit record\n" +
                     "   [value, sql_type]\n" +
                     "In which case the type will be asserted (and the value may be changed too).\n" +
@@ -817,7 +817,7 @@ public class QDLDB implements QDLMetaModule {
         }
     }
 
-    /* Handy dandy table of SQL types and calls.
+    /* Handy dandy table of SQL values and calls.
     SQL 	        JDBC/Java 	            setXXX 	        updateXXX
     VARCHAR 	    java.lang.String 	    setString 	    updateString
     CHAR 	        java.lang.String 	    setString 	    updateString

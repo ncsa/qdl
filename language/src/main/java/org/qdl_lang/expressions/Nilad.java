@@ -1,6 +1,7 @@
 package org.qdl_lang.expressions;
 
 import org.qdl_lang.state.State;
+import org.qdl_lang.variables.values.QDLValue;
 
 /**
  * This would be an <b>operator</b> that takes no arguments. Niladic user defined
@@ -19,7 +20,7 @@ public class Nilad extends ExpressionImpl {
 
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         state.getOpEvaluator().evaluate(this, state);
         return getResult();
     }

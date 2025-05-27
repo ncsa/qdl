@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 /**
  * Basic implementation of {@link ProcessScalar} that simply throws an exception for each argument.
  * This is extended in the case that unknown values cause an exception, hence only explicitly
- * allowed types are permitted. This is the most restrictive type of processing, cf. {@link IdentityScalarImpl}
+ * allowed values are permitted. This is the most restrictive type of processing, cf. {@link IdentityScalarImpl}
  * which is the least restrictive.
  */
 public class NoOpScalarImpl extends AbstractNoOpStemImpl implements ProcessScalar {

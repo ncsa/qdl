@@ -26,8 +26,8 @@ import org.qdl_lang.util.QDLFileUtil;
 import org.qdl_lang.util.aggregate.IdentityScalarImpl;
 import org.qdl_lang.util.aggregate.QDLAggregateUtil;
 import org.qdl_lang.variables.*;
+import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.vfs.VFSPaths;
-import org.qdl_lang.workspace.InterruptUtil;
 import org.qdl_lang.workspace.QDLWorkspace;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
@@ -448,7 +448,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
             case BREAK:
                 if (polyad.isSizeQuery()) {
-                    polyad.setResult(new int[]{0, 1});
+                    polyad.setAllowedArgCounts(new int[]{0, 1});
                     polyad.setEvaluated(true);
                     return true;
                 }
@@ -491,7 +491,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 return true;
             case CONTINUE:
                 if (polyad.isSizeQuery()) {
-                    polyad.setResult(new int[]{0, 1});
+                    polyad.setAllowedArgCounts(new int[]{0, 1});
                     polyad.setEvaluated(true);
                     return true;
                 }
@@ -558,7 +558,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     private void doScriptName(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0});
+            polyad.setAllowedArgCounts(new int[]{0});
             polyad.setEvaluated(true);
             return;
         }
@@ -574,7 +574,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     protected void doKillProcess(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -603,7 +603,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     private void doSleep(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -648,7 +648,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     private void doIsNull(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -669,7 +669,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     private void doForLines(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
@@ -678,7 +678,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     private void doCheckAfter(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -687,7 +687,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     private void doForKeys(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
@@ -696,7 +696,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     private void doForNext(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3, 4});
+            polyad.setAllowedArgCounts(new int[]{2, 3, 4});
             polyad.setEvaluated(true);
             return;
         }
@@ -706,7 +706,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     private void doClipboardRead(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0});
+            polyad.setAllowedArgCounts(new int[]{0});
             polyad.setEvaluated(true);
             return;
         }
@@ -738,7 +738,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     private void doClipboardWrite(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -789,7 +789,7 @@ public class SystemEvaluator extends AbstractEvaluator {
         // stack traces that the last thing someone left on their clipboard can't be
         // easily converted to a string.
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0});
+            polyad.setAllowedArgCounts(new int[]{0});
             polyad.setEvaluated(true);
             return;
         }
@@ -827,7 +827,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     private void doWSMacro(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -894,7 +894,7 @@ public class SystemEvaluator extends AbstractEvaluator {
      */
     private void doModuleRemove(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -943,7 +943,7 @@ public class SystemEvaluator extends AbstractEvaluator {
      */
     private void doReduceOrExpand(Polyad polyad, State state0, boolean doReduce) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3});
+            polyad.setAllowedArgCounts(new int[]{2, 3});
             polyad.setEvaluated(true);
             return;
         }
@@ -1231,7 +1231,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     private void doInputForm(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -1393,7 +1393,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     private void doCheckSyntax(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -1452,7 +1452,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     protected InterruptException startHalt(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1});
+            polyad.setAllowedArgCounts(new int[]{0, 1});
             polyad.setEvaluated(true);
             return null;
         }
@@ -1579,7 +1579,7 @@ public class SystemEvaluator extends AbstractEvaluator {
      */
     private void doSysLog(Polyad polyad, State state, boolean isDebug) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1, 2});
+            polyad.setAllowedArgCounts(new int[]{0, 1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -1874,7 +1874,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     protected void doModulePaths(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1});
+            polyad.setAllowedArgCounts(new int[]{0, 1});
             polyad.setEvaluated(true);
             return;
         }
@@ -1941,7 +1941,7 @@ public class SystemEvaluator extends AbstractEvaluator {
      */
     protected void doScriptPaths(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1});
+            polyad.setAllowedArgCounts(new int[]{0, 1});
             polyad.setEvaluated(true);
             return;
         }
@@ -2005,7 +2005,7 @@ public class SystemEvaluator extends AbstractEvaluator {
      */
     protected void doScriptArgs(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1});
+            polyad.setAllowedArgCounts(new int[]{0, 1});
             polyad.setEvaluated(true);
             return;
         }
@@ -2059,7 +2059,7 @@ public class SystemEvaluator extends AbstractEvaluator {
      */
     protected void doScriptArgs2(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1});
+            polyad.setAllowedArgCounts(new int[]{0, 1});
             polyad.setEvaluated(true);
             return;
         }
@@ -2154,7 +2154,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     protected void doSysInfo(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1});
+            polyad.setAllowedArgCounts(new int[]{0, 1});
             polyad.setEvaluated(true);
             return;
         }
@@ -2166,7 +2166,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     protected void doConstants(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1});
+            polyad.setAllowedArgCounts(new int[]{0, 1});
             polyad.setEvaluated(true);
             return;
         }
@@ -2526,7 +2526,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     protected void doRaiseError(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 3});
+            polyad.setAllowedArgCounts(new int[]{1, 3});
             polyad.setEvaluated(true);
             return;
         }
@@ -2581,7 +2581,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     protected void doReturn(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1});
+            polyad.setAllowedArgCounts(new int[]{0, 1});
             polyad.setEvaluated(true);
             return;
         }
@@ -2625,7 +2625,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     protected void doNewLoadModule(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -2700,7 +2700,8 @@ public class SystemEvaluator extends AbstractEvaluator {
     private List<String> doJavaModuleLoad(State state, String resourceName) {
         try {
             Class klasse = state.getClass().forName(resourceName);
-            Object newThingy = klasse.newInstance();
+            //Object newThingy = klasse.newInstance();
+            Object newThingy = klasse.getDeclaredConstructor().newInstance();
             QDLLoader qdlLoader;
             if (newThingy instanceof JavaModule) {
                 // For a single instance, just create a barebones loader on the fly.
@@ -2824,7 +2825,7 @@ public class SystemEvaluator extends AbstractEvaluator {
      */
     protected void doModuleImport(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -2939,7 +2940,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     protected void doInterpret(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -3028,7 +3029,7 @@ public class SystemEvaluator extends AbstractEvaluator {
     // be string from external sources, e.g.
     private void doToBoolean(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -3082,7 +3083,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     private void doToNumber(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -3148,13 +3149,12 @@ public class SystemEvaluator extends AbstractEvaluator {
      */
     protected void doSay(Polyad polyad, State state, boolean printIt) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1, 2});
+            polyad.setAllowedArgCounts(new int[]{0, 1, 2});
             polyad.setEvaluated(true);
             return;
         }
         if (printIt && state.isRestrictedIO()) {
-            polyad.setResult(QDLNull.getInstance());
-            polyad.setResultType(Constant.NULL_TYPE);
+            polyad.setResult(QDLNull.getInstance().getResult());
             polyad.setEvaluated(true);
             return;
         }
@@ -3235,7 +3235,7 @@ public class SystemEvaluator extends AbstractEvaluator {
      */
     public void doVarType(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1});
+            polyad.setAllowedArgCounts(new int[]{0, 1});
             polyad.setEvaluated(true);
             return;
         }
@@ -3245,15 +3245,13 @@ public class SystemEvaluator extends AbstractEvaluator {
         }
 
         if (polyad.getArgCount() == 0) {
-            polyad.setResult(Constant.NULL_TYPE);
-            polyad.setResultType(Constant.NULL_TYPE);
+            polyad.setResult(new QDLValue((long)Constants.NULL_TYPE));
             polyad.setEvaluated(true);
             return;
         }
         polyad.evalArg(0, state);
         if (polyad.getArgCount() == 1) {
-            polyad.setResult(new Long(Constant.getType(polyad.getArgAt(0).getResult())));
-            polyad.setResultType(Constant.LONG_TYPE);
+            polyad.setResult(new QDLValue((long) Constant.getType(polyad.getArgAt(0).getResult())));
             polyad.setEvaluated(true);
             return;
         }
@@ -3263,14 +3261,13 @@ public class SystemEvaluator extends AbstractEvaluator {
             Object r = polyad.evalArg(i, state);
             output.put(new Long(i), new Long(Constant.getType(r)));
         }
-        polyad.setResultType(Constant.STEM_TYPE);
-        polyad.setResult(output);
+        polyad.setResult(new QDLValue(output));
         polyad.setEvaluated(true);
     }
 
     protected void isDefined(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -3291,8 +3288,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 list.add(checkDefined(stemListNode.getStatements().get(i), state));
             }
             QDLStem stem = new QDLStem(list);
-            polyad.setResult(stem);
-            polyad.setResultType(Constant.STEM_TYPE);
+            polyad.setResult(new QDLValue(stem));
             polyad.setEvaluated(true);
             return;
         }
@@ -3303,8 +3299,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             for (StemEntryNode sem : stemVariableNode.getStatements()) {
                 stem.putLongOrString(sem.getKey().evaluate(state), checkDefined((ExpressionInterface) sem.getValue(), state));
             }
-            polyad.setResult(stem);
-            polyad.setResultType(Constant.STEM_TYPE);
+            polyad.setResult(new QDLValue(stem));
             polyad.setEvaluated(true);
             return;
         }
@@ -3313,14 +3308,12 @@ public class SystemEvaluator extends AbstractEvaluator {
         } catch (IndexError exception) {
             // ESN's can throw illegal arg exception
             // Fix https://github.com/ncsa/qdl/issues/118
-            polyad.setResult(false);
-            polyad.setResultType(Constant.BOOLEAN_TYPE);
+            polyad.setResult(new QDLValue(Boolean.FALSE));
             polyad.setEvaluated(true);
             return;
         }
         isDef = checkDefined(polyad.getArgAt(0), state);
-        polyad.setResult(isDef);
-        polyad.setResultType(Constant.BOOLEAN_TYPE);
+        polyad.setResult(new QDLValue(isDef));
         polyad.setEvaluated(true);
     }
 

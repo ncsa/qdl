@@ -4,6 +4,7 @@ import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,13 +65,18 @@ public class ParenthesizedExpression implements ExpressionNode {
 
 
     @Override
-    public Object getResult() {
+    public QDLValue getResult() {
         return getExpression().getResult();
     }
 
     @Override
-    public void setResult(Object object) {
+    public void setResult(QDLValue object) {
         getExpression().setResult(object);
+    }
+
+    @Override
+    public void setResult(Object result) {
+           setResult(QDLValue.asQDLValue( result));
     }
 
     @Override
@@ -78,10 +84,6 @@ public class ParenthesizedExpression implements ExpressionNode {
         return getExpression().getResultType();
     }
 
-    @Override
-    public void setResultType(int type) {
-        getExpression().setResultType(type);
-    }
 
     @Override
     public boolean isEvaluated() {
@@ -94,7 +96,7 @@ public class ParenthesizedExpression implements ExpressionNode {
     }
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         return getExpression().evaluate(state);
     }
 

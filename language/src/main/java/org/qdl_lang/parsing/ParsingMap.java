@@ -173,7 +173,7 @@ public class ParsingMap extends HashMap<String, ParseRecord> {
 
     /**
      * In this case we have the id of a node that is <b>not</b> in this map
-     * because there are many types of intermediate node created by the parser we just don't
+     * because there are many values of intermediate node created by the parser we just don't
      * record. This will take an id then look at the parent child relations and return the first child it finds
      * in this map. E.g.,
      * <pre>

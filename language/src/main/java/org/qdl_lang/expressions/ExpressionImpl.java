@@ -7,6 +7,7 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
 import org.qdl_lang.variables.Constant;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,7 +79,7 @@ public abstract class ExpressionImpl implements ExpressionNode {
         return getArgAt(getArgCount() - 1);
     }
 
-    public Object evalLastArg(State state) {
+    public QDLValue evalLastArg(State state) {
         try {
             return getArguments().get(getArgCount() - 1).evaluate(state);
         } catch (QDLException returnException) {
@@ -115,7 +116,7 @@ public abstract class ExpressionImpl implements ExpressionNode {
         return getArguments().get(index);
     }
 
-    public Object evalArg(int index, State state) {
+    public QDLValue evalArg(int index, State state) {
         try {
             return getArguments().get(index).evaluate(state);
         } catch (QDLException returnException) {
@@ -133,7 +134,7 @@ public abstract class ExpressionImpl implements ExpressionNode {
         this.arguments = arguments;
     }
 
-    protected Object result;
+    protected QDLValue result;
 
     @Override
     public boolean isEvaluated() {
@@ -146,7 +147,7 @@ public abstract class ExpressionImpl implements ExpressionNode {
     }
 
     @Override
-    public Object getResult() {
+    public QDLValue getResult() {
         if (!evaluated) {
             throw new UnevaluatedExpressionException("source='" + (getSourceCode() == null ? "(none)" : getSourceCode()) + "'");
         }
@@ -173,17 +174,17 @@ public abstract class ExpressionImpl implements ExpressionNode {
 
     @Override
     public int getResultType() {
-        return resultType;
+        return getResult().getType();
     }
 
     @Override
-    public void setResult(Object result) {
+    public void setResult(QDLValue result) {
         this.result = result;
     }
 
     @Override
-    public void setResultType(int resultType) {
-        this.resultType = resultType;
+    public void setResult(Object result) {
+setResult(QDLValue.asQDLValue(result));
     }
 
     boolean evaluated = false;
@@ -233,7 +234,7 @@ public abstract class ExpressionImpl implements ExpressionNode {
      *
      * @return
      */
-    public List<Object> getEvaluatedArgs() {
+    public List<QDLValue> getEvaluatedArgs() {
         return evaluatedArgs;
     }
 
@@ -243,11 +244,11 @@ public abstract class ExpressionImpl implements ExpressionNode {
      * @param state
      * @return
      */
-    public List<Object> evaluatedArgs(State state) {
+    public List<QDLValue> evaluatedArgs(State state) {
         evaluatedArgs = new ArrayList<>(getArgCount());
         for (int i = 0; i < getArgCount(); i++) {
             // Fix https://github.com/ncsa/qdl/issues/87
-            Object eval = evalArg(i, state);
+            QDLValue eval = evalArg(i, state);
             if(eval == null) {
                 Object x = getArgAt(i);
                 String message;
@@ -267,11 +268,11 @@ public abstract class ExpressionImpl implements ExpressionNode {
     }
 
 
-    public void setEvaluatedArgs(List<Object> evaluatedArgs) {
+    public void setEvaluatedArgs(List<QDLValue> evaluatedArgs) {
         this.evaluatedArgs = evaluatedArgs;
     }
 
-    List<Object> evaluatedArgs = null;
+    List<QDLValue> evaluatedArgs = null;
 
     public boolean hasEvaluatedArgs() {
         return evaluatedArgs != null;

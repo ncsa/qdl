@@ -5,6 +5,7 @@ import org.qdl_lang.statements.Statement;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,12 +47,12 @@ public class ParseStatementBlock implements ExpressionInterface {
     }
 
     @Override
-    public Object getResult() {
+    public QDLValue getResult() {
         return null;
     }
 
     @Override
-    public void setResult(Object object) {
+    public void setResult(QDLValue object) {
 
     }
 
@@ -60,10 +61,6 @@ public class ParseStatementBlock implements ExpressionInterface {
         return 0;
     }
 
-    @Override
-    public void setResultType(int type) {
-
-    }
 
     public List<Statement> getStatements() {
         return statements;

@@ -4,6 +4,7 @@ import org.qdl_lang.functions.FKey;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
+import org.qdl_lang.variables.values.QDLValue;
 
 /**
  * For multiple arguments. This is used, e.g., for all functions.
@@ -52,7 +53,7 @@ public class Polyad extends ExpressionImpl {
     }
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         /*
          Some finagling. If this is being evaluated in a module, check that
          there is an override in place. If not, kick it up to the main system
@@ -111,4 +112,18 @@ public class Polyad extends ExpressionImpl {
     public int getNodeType() {
         return POLYAD_NODE;
     }
+
+    /**
+     * Used in bootstrapping to find what the numbers of arguments are to a function.
+     * @return
+     */
+    public int[] getAllowedArgCounts() {
+        return allowedArgCounts;
+    }
+
+    public void setAllowedArgCounts(int[] allowedArgCounts) {
+        this.allowedArgCounts = allowedArgCounts;
+    }
+
+    int[] allowedArgCounts;
 }

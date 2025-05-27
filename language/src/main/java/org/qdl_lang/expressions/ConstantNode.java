@@ -1,10 +1,7 @@
 package org.qdl_lang.expressions;
 
 import org.qdl_lang.state.State;
-import org.qdl_lang.variables.Constant;
-import org.qdl_lang.variables.QDLNull;
-
-import java.math.BigDecimal;
+import org.qdl_lang.variables.values.QDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -13,17 +10,16 @@ import java.math.BigDecimal;
 public class ConstantNode extends ExpressionImpl {
     @Override
     public Object evaluate(State state) {
-        setResultType(Constant.getType(result));
         setEvaluated(true);
         return result;
     }
 
-    public ConstantNode(String result) {
-        this(result, Constant.STRING_TYPE);
+/*    public ConstantNode(String result) {
+        this(new QDLValue(result));
     }
 
     public ConstantNode(Long result) {
-        this(result, Constant.LONG_TYPE);
+        this(new QDLValue(result));
     }
 
     public ConstantNode(BigDecimal result) {
@@ -40,20 +36,18 @@ public class ConstantNode extends ExpressionImpl {
 
     public ConstantNode(Object result) {
         this(result, Constant.getType(result));
-    }
+    }*/
 
-    public ConstantNode(Object result, int resultType) {
+    public ConstantNode(QDLValue result) {
         valence = 0;
         this.result = result;
-        this.resultType = resultType;
         evaluated = true; //trivally
-
         getSourceCode().add(result == null ? "null" : result.toString());
     }
 
     @Override
     public ExpressionNode makeCopy() {
-        ConstantNode constantNode = new ConstantNode(result, resultType);
+        ConstantNode constantNode = new ConstantNode(new QDLValue(result));
         return constantNode;
     }
     @Override

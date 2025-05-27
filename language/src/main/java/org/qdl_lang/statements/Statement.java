@@ -1,6 +1,7 @@
 package org.qdl_lang.statements;
 
 import org.qdl_lang.state.State;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.io.Serializable;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.List;
  * on 1/14/20 at  9:11 AM
  */
 public interface Statement extends Serializable {
-    Object evaluate(State state);
+    QDLValue evaluate(State state);
 
     List<String> getSourceCode();
 

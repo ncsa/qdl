@@ -184,7 +184,7 @@ public class DynamoDB implements QDLMetaModule {
         public List<String> getDocumentation(int argCount) {
             List<String> d = new ArrayList<>();
             d.add(getName() + "(key) - get the results for the given key");
-            d.add("Note that these will be converted to native QDL types, so numbers");
+            d.add("Note that these will be converted to native QDL values, so numbers");
             d.add("are indeed numbers, binary values are b64 encoded strings and such.");
             d.add("Maps and lists are faithfully converted as well.");
             return d;
@@ -196,8 +196,8 @@ public class DynamoDB implements QDLMetaModule {
       Below starts the outline for writing values. There are some technical issues involved
       since roundtripping values would seem impossible. The fly in the ointment is binary values
       which end up as b64 encoded strings. Unless there is some way to track these by type,
-      then they are identical to just messy strings. This implies that, perhaps, types should be
-      added to them, so you get {'value':v, 'type':'b64'} or some such. Don't want to add types for
+      then they are identical to just messy strings. This implies that, perhaps, values should be
+      added to them, so you get {'value':v, 'type':'b64'} or some such. Don't want to add values for
       all values since that would be redundant and make stems hugely messy.
      */
     protected Map<String, AttributeValue> stemToMap(QDLStem stem) {

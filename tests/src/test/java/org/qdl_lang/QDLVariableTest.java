@@ -20,7 +20,7 @@ public class QDLVariableTest extends AbstractQDLTester {
     QDLParserDriver runner;
 
     /**
-     * test that the basic value for basic types get stored right.
+     * test that the basic value for basic values get stored right.
      *
      * @throws Exception
      */
@@ -30,14 +30,14 @@ public class QDLVariableTest extends AbstractQDLTester {
         VTable vTable = new VTable();
 
         vTable.put(new VThing(new XKey("a"), 12345L));
-        assert ((VThing) vTable.get(new XKey("a"))).getValue().equals(12345L);
+        assert ((VThing) vTable.get(new XKey("a"))).getVariable().equals(12345L);
         vTable.put(new VThing(new XKey("b"), Boolean.TRUE));
-        assert ((VThing) vTable.get(new XKey("b"))).getValue() == Boolean.TRUE;
+        assert ((VThing) vTable.get(new XKey("b"))).getVariable() == Boolean.TRUE;
         vTable.put(new VThing(new XKey("c"), Boolean.FALSE));
-        assert ((VThing) vTable.get(new XKey("c"))).getValue() == Boolean.FALSE;
+        assert ((VThing) vTable.get(new XKey("c"))).getVariable() == Boolean.FALSE;
         String value = "mairzy((%^998e98nfg98u";
         vTable.put(new VThing(new XKey("e"), value));
-        assert ((VThing) vTable.get(new XKey("e"))).getValue().equals(value);
+        assert ((VThing) vTable.get(new XKey("e"))).getVariable().equals(value);
     }
 
     /**

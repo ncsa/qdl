@@ -6,6 +6,7 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.statements.Statement;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,7 +84,7 @@ public class StemEntryNode implements ExpressionInterface {
     }
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         if(!isDefaultValue) {
             getKey().evaluate(state);
             if(getKey() instanceof VariableNode){
@@ -122,12 +123,17 @@ public class StemEntryNode implements ExpressionInterface {
 
     // None of these should **ever** be called, but the interface requires them.
     @Override
-    public Object getResult() {
+    public QDLValue getResult() {
         return null;
     }
 
     @Override
-    public void setResult(Object object) {
+    public void setResult(QDLValue object) {
+
+    }
+
+    @Override
+    public void setResult(Object result) {
 
     }
 
@@ -136,10 +142,6 @@ public class StemEntryNode implements ExpressionInterface {
         return 0;
     }
 
-    @Override
-    public void setResultType(int type) {
-
-    }
     @Override
         public int getNodeType() {
             return STEM_ENTRY_NODE;

@@ -7,13 +7,8 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.Statement;
 import org.qdl_lang.statements.TokenPosition;
-import org.qdl_lang.variables.QDLStem;
-import org.qdl_lang.variables.StemEntryNode;
-import org.qdl_lang.variables.StemListNode;
-import org.qdl_lang.module.Module;
-import org.qdl_lang.variables.StemVariableNode;
-
-import java.util.List;
+import org.qdl_lang.variables.*;
+import org.qdl_lang.variables.values.QDLValue;
 
 /**
  * Very much improved way to handle assignments. Use this
@@ -92,7 +87,7 @@ public class ANode2 extends ExpressionImpl {
     }
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
       Dyad d = null;
 
         if (getAssignmentType() != leftAssignmentType && getAssignmentType() != rightAssignmentType) {
@@ -107,7 +102,6 @@ public class ANode2 extends ExpressionImpl {
             d.setRightArgument(getRightArg());
             d.evaluate(state);
             setResult(d.getResult());
-            setResultType(d.getResultType());
         } else {
             // regular assignment, evaluate RHS. That is result.
             try {
@@ -127,7 +121,6 @@ public class ANode2 extends ExpressionImpl {
                 throw new QDLExceptionWithTrace("value not found", getRightArg() );
             }
             setResult(getRightArg().getResult());
-            setResultType(getRightArg().getResultType());
         }
         setEvaluated(true);
         ANode2 lastAnode = this;
@@ -149,7 +142,6 @@ public class ANode2 extends ExpressionImpl {
             // value from earlier has been altered. Update it.
             lastAnode.evaluate(state);
             setResult(lastAnode.getResult());
-            setResultType(lastAnode.getResultType());
             setEvaluated(true);
         }
         while (realLeftArg instanceof ParenthesizedExpression) {
@@ -171,8 +163,8 @@ public class ANode2 extends ExpressionImpl {
                 // https://github.com/ncsa/qdl/issues/20
                 state.getTargetState().setValue(((VariableNode) realLeftArg).getVariableReference(), getResult());
                 // last detail that cannot be done until this point is to set the alias if it is a module assigned to the variable.
-                if(getResult() instanceof Module){
-                    ((Module)getResult()).setAlias(((VariableNode) realLeftArg).getVariableReference());
+                if(getResult().isModule()){
+                    getResult().asModule().setAlias(((VariableNode) realLeftArg).getVariableReference());
                 }
                 return getResult();
             case ExpressionInterface.CONSTANT_NODE:

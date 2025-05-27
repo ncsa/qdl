@@ -5,13 +5,12 @@ import org.qdl_lang.expressions.ExpressionImpl;
 import org.qdl_lang.expressions.Polyad;
 import org.qdl_lang.expressions.VariableNode;
 import org.qdl_lang.functions.DyadicFunctionReferenceNode;
-import org.qdl_lang.functions.FKey;
 import org.qdl_lang.functions.FunctionRecordInterface;
 import org.qdl_lang.functions.FunctionReferenceNodeInterface;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.variables.*;
-import edu.uiuc.ncsa.security.core.exceptions.NFWException;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -21,6 +20,7 @@ import java.util.List;
 
 import static org.qdl_lang.state.NamespaceAwareState.NS_DELIMITER;
 import static org.qdl_lang.variables.StemUtility.axisWalker;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -142,7 +142,7 @@ public class ListEvaluator extends AbstractEvaluator {
      */
     protected void doListSort(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -155,7 +155,7 @@ public class ListEvaluator extends AbstractEvaluator {
         }
         // Contract is to take everything in a list sort it and return it.
         Object arg0 = polyad.evalArg(0, state);
-        ArrayList list = null;
+        ArrayList<QDLValue> list = null;
         switch (Constant.getType(arg0)) {
             case Constant.SET_TYPE:
                 list = new ArrayList();
@@ -172,10 +172,9 @@ public class ListEvaluator extends AbstractEvaluator {
                 break;
             default:
                 QDLStem stemVariable = new QDLStem();
-                stemVariable.put(0, arg0);
+                stemVariable.put(0, asQDLValue(arg0));
                 polyad.setEvaluated(true);
                 polyad.setResult(stemVariable);
-                polyad.setResultType(Constant.getType(arg0));
                 return;
         }
         boolean sortUp = true;
@@ -189,10 +188,9 @@ public class ListEvaluator extends AbstractEvaluator {
         }
         try {
             doSorting(list, sortUp);
-            QDLStem output = new QDLStem((long) list.size(), list.toArray());
+            QDLStem output = new QDLStem((long) list.size(), list.toArray(new QDLValue[list.size()]));
             polyad.setEvaluated(true);
             polyad.setResult(output);
-            polyad.setResultType(Constant.STEM_TYPE);
             return;
         } catch (ClassCastException classCastException) {
 
@@ -245,11 +243,9 @@ public class ListEvaluator extends AbstractEvaluator {
             list.addAll(nulls);
 
         }
-        QDLStem output = new QDLStem((long) list.size(), list.toArray());
+        QDLStem output = new QDLStem((long) list.size(), list.toArray(new QDLValue[list.size()]));
         polyad.setEvaluated(true);
         polyad.setResult(output);
-        polyad.setResultType(Constant.STEM_TYPE);
-
     }
 
     private void doSorting(ArrayList list, boolean sortUp) {
@@ -267,7 +263,7 @@ public class ListEvaluator extends AbstractEvaluator {
     protected void doListCopyOrInsert(Polyad polyad, State state, boolean doInsert) {
         // Fixes https://github.com/ncsa/qdl/issues/31
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3, 45});
+            polyad.setAllowedArgCounts(new int[]{2, 3, 45});
             polyad.setEvaluated(true);
             return;
         }
@@ -342,7 +338,6 @@ public class ListEvaluator extends AbstractEvaluator {
             sourceStem.listCopy(startIndex, length, targetStem, targetIndex);
         }
         polyad.setResult(targetStem);
-        polyad.setResultType(Constant.STEM_TYPE);
         polyad.setEvaluated(true);
     }
 
@@ -367,7 +362,7 @@ public class ListEvaluator extends AbstractEvaluator {
        */
     protected boolean doListSubset(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3});
+            polyad.setAllowedArgCounts(new int[]{2, 3});
             polyad.setEvaluated(true);
             return true;
         }
@@ -384,11 +379,10 @@ public class ListEvaluator extends AbstractEvaluator {
         checkNull(arg1, polyad.getArgAt(0));
         if (isScalar(arg1)) {
             QDLList qdlList = new QDLList();
-            qdlList.add(arg1);
+            qdlList.add(asQDLValue(arg1));
             QDLStem stemVariable = new QDLStem();
             stemVariable.setQDLList(qdlList);
             polyad.setResult(stemVariable);
-            polyad.setResultType(Constant.STEM_TYPE);
             polyad.setEvaluated(true);
             return true;
         }
@@ -453,11 +447,10 @@ public class ListEvaluator extends AbstractEvaluator {
                 break;
             default:
                 QDLList qdlList = new QDLList();
-                qdlList.add(arg1);
+                qdlList.add(asQDLValue(arg1));
                 QDLStem stemVariable = new QDLStem();
                 stemVariable.setQDLList(qdlList);
                 polyad.setResult(stemVariable);
-                polyad.setResultType(Constant.STEM_TYPE);
                 polyad.setEvaluated(true);
                 return true;
         }
@@ -465,14 +458,13 @@ public class ListEvaluator extends AbstractEvaluator {
 
         if (set != null) {
             QDLSet outSet = new QDLSet();
-            Iterator iterator = set.iterator();
+            Iterator<QDLValue> iterator = set.iterator();
 
             for (long i = 0; i < count; i++) {
                 outSet.add(iterator.next());
             }
 
             polyad.setResult(outSet);
-            polyad.setResultType(Constant.SET_TYPE);
             polyad.setEvaluated(true);
             return true;
         }
@@ -484,7 +476,6 @@ public class ListEvaluator extends AbstractEvaluator {
             outStem = stem.listSubset(startIndex, count);
         }
         polyad.setResult(outStem);
-        polyad.setResultType(Constant.STEM_TYPE);
         polyad.setEvaluated(true);
         return true;
 
@@ -516,7 +507,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
      */
     protected boolean doPickSubset(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return true;
         }
@@ -598,13 +589,12 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
                 Object test = f.evaluate(localState);
                 if (isBoolean(test)) {
                     if ((Boolean) test) {
-                        result.add(element);
+                        result.add(asQDLValue(element));
                     }
                 }
             }
 
             polyad.setResult(result);
-            polyad.setResultType(Constant.SET_TYPE);
             polyad.setEvaluated(true);
             return true;
         }
@@ -628,13 +618,12 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
                 Object test = f.evaluate(localState);
                 if (isBoolean(test)) {
                     if ((Boolean) test) {
-                        outStem.putLongOrString(key, value);
+                        outStem.putLongOrString(key, asQDLValue(value));
                     }
                 }
             }
 
             polyad.setResult(outStem);
-            polyad.setResultType(Constant.STEM_TYPE);
             polyad.setEvaluated(true);
             return true;
         }
@@ -653,7 +642,6 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
             }
         }
         polyad.setResult(result);
-        polyad.setResultType(Constant.getType(result));
         polyad.setEvaluated(true);
         return true;
     }
@@ -668,7 +656,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
     // starts_with(['a','qrs','pqr'],['a','p','s','t'])
     protected void doListStartsWith(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
@@ -685,7 +673,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
         QDLStem leftStem = null;
         if (isString(leftArg)) {
             leftStem = new QDLStem();
-            leftStem.put(0L, leftArg);
+            leftStem.put(0L, asQDLValue(leftArg));
         }
         if (leftStem == null) {
             if (isStem(leftArg)) {
@@ -701,7 +689,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
         QDLStem rightStem = null;
         if (isString(rightArg)) {
             rightStem = new QDLStem();
-            rightStem.put(0L, rightArg);
+            rightStem.put(0L, asQDLValue(rightArg));
         }
         if (rightStem == null) {
             if (isStem(rightArg)) {
@@ -726,24 +714,23 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
                 }
                 Long rightIndex = (Long) rightKey;
                 if (leftStem.getString(leftIndex).startsWith(rightStem.getString(rightIndex))) {
-                    output.put(leftIndex, rightIndex);
+                    output.put(leftIndex, asQDLValue(rightIndex));
                     gotOne = true;
                     break;
                 }
             }
             if (!gotOne) {
-                output.put(leftIndex, -1L);
+                output.put(leftIndex, asQDLValue(-1L));
             }
 
         }
         polyad.setResult(output);
-        polyad.setResultType(Constant.STEM_TYPE);
         polyad.setEvaluated(true);
     }
 
     protected void doListReverse(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -778,7 +765,6 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
 
         Object result = axisWalker(input, axis, reverse);
         polyad.setResult(result);
-        polyad.setResultType(Constant.getType(result));
         polyad.setEvaluated(true);
 
     }
@@ -787,7 +773,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
         @Override
         public Object action(QDLStem inStem) {
             QDLStem output = new QDLStem();
-            Iterator iterator = inStem.getQDLList().descendingIterator(true);
+            Iterator<QDLValue> iterator = inStem.getQDLList().descendingIterator(true);
             while (iterator.hasNext()) {
                 output.listAdd(iterator.next());
             }

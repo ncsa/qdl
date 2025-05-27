@@ -5,8 +5,8 @@ import org.qdl_lang.expressions.VariableNode;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
-import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import net.sf.json.JSONObject;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,26 +42,29 @@ public class StemListNode implements ExpressionInterface {
          this.alias = alias;
     }
 
-    QDLStem result;
+    QDLValue result;
 
     @Override
-    public Object getResult() {
+    public QDLValue getResult() {
         return result;
     }
 
     @Override
-    public void setResult(Object object) {
-        if (!(result instanceof QDLStem)) {
-            throw new IllegalStateException("error: cannot set a " + getClass().getSimpleName() + " to type " + object.getClass().getSimpleName());
+    public void setResult(QDLValue qdlValue) {
+        if (!(qdlValue.isStem())) {
+            throw new IllegalStateException("error: cannot set a " + getClass().getSimpleName() + " to type " + qdlValue.getClass().getSimpleName());
         }
-
     }
-
+    @Override
+    public void setResult(Object result) {
+        setResult(QDLValue.asQDLValue( result));
+    }
     @Override
     public int getResultType() {
-        return Constant.STEM_TYPE;
+        return getResult().getType();
     }
 
+/*
     @Override
     public void setResultType(int type) {
         // No op, actually, since this only returns a single type of object.
@@ -69,6 +72,7 @@ public class StemListNode implements ExpressionInterface {
             throw new NFWException("Internal error: Attempt to set stem to type = " + type);
         }
     }
+*/
 
     boolean evaluated = false;
 
@@ -93,8 +97,8 @@ public class StemListNode implements ExpressionInterface {
     ArrayList<ExpressionInterface> statements = new ArrayList<>();
 
     @Override
-    public Object evaluate(State state) {
-        result = new QDLStem();
+    public QDLValue evaluate(State state) {
+        QDLStem stemOut = new QDLStem();
         long i = 0;
         for (ExpressionInterface stmt : statements) {
             stmt.evaluate(state);
@@ -102,12 +106,11 @@ public class StemListNode implements ExpressionInterface {
                 throw new UnknownSymbolException("\'" + ((VariableNode)stmt).getVariableReference() + "' not found", stmt);
             }
             stmt.setEvaluated(true);
-            stmt.setResultType(Constant.getType(stmt.getResult()));
-            result.put(i++, stmt.getResult());
+            //stmt.setResultType(Constant.getType(stmt.getResult()));
+            stemOut.put(i++, stmt.getResult());
         }
-setResultType(Constant.getType(result));
         setEvaluated(true);
-        return result;
+        return new QDLValue(stemOut);
     }
 
     List<String> sourceCode = new ArrayList<>();
@@ -131,7 +134,7 @@ setResultType(Constant.getType(result));
         QDLStem newStem = new QDLStem();
 
         // Kludge, but it works.
-        newStem.fromJSON((JSONObject) ((QDLStem) getResult()).toJSON());
+        newStem.fromJSON((JSONObject) getResult().asStem().toJSON());
         newSLN.setResult(newStem);
         newSLN.setSourceCode(getSourceCode());
         newSLN.setEvaluated(isEvaluated());

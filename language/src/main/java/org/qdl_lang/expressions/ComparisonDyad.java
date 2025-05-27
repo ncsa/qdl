@@ -4,13 +4,14 @@ import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
-import org.qdl_lang.variables.Constant;
+import org.qdl_lang.variables.values.QDLValue;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Dyad that compares the arguments, such as with comparisons, regex matching and types of equality.
+ * Dyad that compares the arguments, such as with comparisons, regex matching and values of equality.
  * <p>Created by Jeff Gaynor<br>
  * on 10/26/21 at  12:34 PM
  */
@@ -28,23 +29,22 @@ public class ComparisonDyad extends Dyad {
     }
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         return newEvaluate(state);
     }
 
 
-    protected Object newEvaluate(State state) {
+    protected QDLValue newEvaluate(State state) {
         boolean anyCD = isLeftArgCD() || (getRightArgument() instanceof ComparisonDyad);
         if (isOpEquality() && anyCD ) {
               Object r = handleEquals(state);
-              setResult(r);
-              setResultType(Constant.getType(r));
+              setResult(new QDLValue(r));
               setEvaluated(true);
-              return r;
+              return getResult();
           }
         if (!anyCD) {
             // handles simple case and stops descent
-            Object obj = super.evaluate(state);
+            QDLValue obj = super.evaluate(state);
             leftmostNode = getLeftArgument();
             return obj;
         }
@@ -97,7 +97,7 @@ public class ComparisonDyad extends Dyad {
         // There is some trickery here: By letting the dyad do the operation, if there are embedded
         // stems (like 1 < [;10]/6 < 2)  then the scalars are seamless converted to default values of stems
         // so there is never subsetting.
-        Object actualResult = Boolean.TRUE;
+        QDLValue actualResult = new QDLValue(Boolean.TRUE);
         for (int i = 0; i < evaluatedDyads.size(); i++) {
             dyad = evaluatedDyads.get(i);
             Dyad and = new Dyad(OpEvaluator.AND_VALUE);
@@ -106,7 +106,6 @@ public class ComparisonDyad extends Dyad {
             actualResult = and.evaluate(state);
         }
         setResult(actualResult);
-        setResultType(Constant.getType(actualResult));
         setEvaluated(true);
         return actualResult;
     }
@@ -136,10 +135,10 @@ public class ComparisonDyad extends Dyad {
      * @param state
      * @return
      */
-    protected Object handleEquals(State state) {
+    protected QDLValue handleEquals(State state) {
         Dyad dyad = new Dyad(getOperatorType());
-        Object leftResult = Boolean.TRUE;
-        Object rightResult = Boolean.TRUE;
+        QDLValue leftResult = new QDLValue(Boolean.TRUE);
+        QDLValue rightResult = new QDLValue(Boolean.TRUE);
 
         if (getLeftArgument() instanceof ComparisonDyad) {
             ComparisonDyad cdLeft = getLeftCD();
@@ -156,7 +155,7 @@ public class ComparisonDyad extends Dyad {
             dyad.setRightArgument(getRightArgument());
         }
     //    System.out.println(dyad.getLeftArgument() + " " + dyad.getOperatorType() + " " + dyad.getRightArgument());
-        Object r = dyad.evaluate(state);
+        QDLValue r = dyad.evaluate(state);
         // Now we logically AND this with the previous results.
         // Left && this && right <==> (left && this) && right
         Dyad and0 = new Dyad(OpEvaluator.AND_VALUE);
@@ -167,7 +166,7 @@ public class ComparisonDyad extends Dyad {
         Dyad and1 = new Dyad(OpEvaluator.AND_VALUE);
         and1.setLeftArgument(new ConstantNode(and0.getResult()));
         and1.setRightArgument(new ConstantNode(rightResult));
-        Object actualValue = and1.evaluate(state);
+        QDLValue actualValue = and1.evaluate(state);
 
         return actualValue;
     }

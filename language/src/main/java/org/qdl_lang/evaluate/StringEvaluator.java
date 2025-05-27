@@ -10,6 +10,9 @@ import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLSet;
 import org.qdl_lang.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
+import org.qdl_lang.variables.values.LongValue;
+import org.qdl_lang.variables.values.QDLValue;
+import org.qdl_lang.variables.values.StringValue;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -204,7 +207,7 @@ public class StringEvaluator extends AbstractEvaluator {
     //   tail('qweaAzxc', '[aA]*,', true)
     protected void doTail(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3});
+            polyad.setAllowedArgCounts(new int[]{2, 3});
             polyad.setEvaluated(true);
             return;
         }
@@ -235,21 +238,20 @@ public class StringEvaluator extends AbstractEvaluator {
                     if (isRegEx) {
                         String[] x = s0.split(s1);
                         if (x == null || x.length == 0) {
-                            r.result = "";
+                            r.result = new StringValue();
                         } else {
-                            r.result = x[x.length - 1];
+                            r.result = new StringValue(x[x.length - 1]);
                         }
                     } else {
                         pos = s0.lastIndexOf(s1);
                         if (pos < 0) {
                             // not found
-                            r.result = "";
+                            r.result = new StringValue();
                         } else {
-                            r.result = s0.substring(pos + s1.length());
+                            r.result = new StringValue(s0.substring(pos + s1.length()));
                         }
                     }
                 }
-                r.resultType = Constant.STRING_TYPE;
                 return r;
             }
         };
@@ -259,7 +261,7 @@ public class StringEvaluator extends AbstractEvaluator {
 
     protected void doDiff(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
@@ -282,8 +284,7 @@ public class StringEvaluator extends AbstractEvaluator {
                     String s0 = (String) objects[0];
                     String s1 = (String) objects[1];
                     if (StringUtils.isTrivial(s0) || StringUtils.isTrivial(s1)) {
-                        r.result = 0L;
-                        r.resultType = Constant.LONG_TYPE;
+                        r.result = new LongValue(0L);
                         return r;
                     }
                     char[] b0 = s0.toCharArray();
@@ -291,18 +292,15 @@ public class StringEvaluator extends AbstractEvaluator {
                     int stop = Math.min(b0.length, b1.length);
                     for (int i = 0; i < stop; i++) {
                         if (b0[i] != b1[i]) {
-                            r.result = (long) i;
-                            r.resultType = Constant.LONG_TYPE;
+                            r.result = new LongValue(i);
                             return r;
                         }
                     }
                     if (b0.length == stop && b1.length == stop) {
-                        r.result = -1L;
-                        r.resultType = Constant.LONG_TYPE;
+                        r.result = new LongValue(-1L);
                         return r;
                     }
-                    r.result = (long) stop;
-                    r.resultType = Constant.LONG_TYPE;
+                    r.result = new LongValue( stop);
                     return r;
                 }
                 Statement s = isString(objects[0]) ? polyad.getArgAt(0) : polyad.getArgAt(1);
@@ -314,7 +312,7 @@ public class StringEvaluator extends AbstractEvaluator {
 
     protected void doCaput(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3});
+            polyad.setAllowedArgCounts(new int[]{2, 3});
             polyad.setEvaluated(true);
             return;
         }
@@ -346,22 +344,21 @@ public class StringEvaluator extends AbstractEvaluator {
                         String[] x = s0.split(s1);
                         if (x.length == 1) {
                             // no match
-                            r.result = "";
+                            r.result = new StringValue();
                         } else {
-                            r.result = x[0];
+                            r.result = new StringValue(x[0]);
                         }
                     } else {
                         pos = s0.indexOf(s1);
                         if (pos < 0) {
                             // not found
-                            r.result = "";
+                            r.result = new StringValue();
                         } else {
-                            r.result = s0.substring(0, pos);
+                            r.result = new StringValue(s0.substring(0, pos));
                         }
                     }
 
                 }
-                r.resultType = Constant.STRING_TYPE;
                 return r;
             }
         };
@@ -371,7 +368,7 @@ public class StringEvaluator extends AbstractEvaluator {
 
     private void doFromURI(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -392,11 +389,11 @@ public class StringEvaluator extends AbstractEvaluator {
         try {
             Long port = s.getLong(URI_PORT);
             String path;
-            if(s.get(URI_PATH) instanceof QDLStem ){
+            if(s.get(URI_PATH).isStem() ){
                 QDLStem pathStem = s.getStem(URI_PATH);
                 path="";
-                for(Object v : pathStem.getQDLList().values()){
-                     if(!isString(v)){
+                for(QDLValue v : pathStem.getQDLList().values()){
+                     if(!v.isString()){
                          throw new BadArgException("uri path must consist of strings only if a list", polyad.getArgAt(0));
                      }
                          path = path + "/" + v;
@@ -412,7 +409,6 @@ public class StringEvaluator extends AbstractEvaluator {
                     s.getString(URI_QUERY),
                     s.getString(URI_FRAGMENT));
             polyad.setResult(uri.toString());
-            polyad.setResultType(Constant.STRING_TYPE);
             polyad.setEvaluated(Boolean.TRUE);
         } catch (URISyntaxException usx) {
             throw new BadArgException("not a valid uri", polyad.getArgAt(0));
@@ -427,7 +423,7 @@ public class StringEvaluator extends AbstractEvaluator {
      */
     private void doToURI(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -438,14 +434,14 @@ public class StringEvaluator extends AbstractEvaluator {
         if (2 < polyad.getArgCount()) {
             throw new ExtraArgException(TO_URI + " requires at most 2 arguments", polyad.getArgAt(1));
         }
-        Object object = polyad.evalArg(0, state);
-        if (!isString(object)) {
+        QDLValue object = polyad.evalArg(0, state);
+        if (!object.isString()) {
             throw new BadArgException(TO_URI + " requires a string as its argument", polyad.getArgAt(0));
         }
         boolean pathToList = false;
         
         try {
-            URI uri = URI.create(object.toString());
+            URI uri = URI.create(object.asString());
             QDLStem output = new QDLStem();
             putURIAttrib(output, URI_AUTHORITY, uri.getAuthority());
             putURIAttrib(output, URI_FRAGMENT, uri.getFragment());
@@ -455,9 +451,8 @@ public class StringEvaluator extends AbstractEvaluator {
             putURIAttrib(output, URI_SCHEME_SPECIFIC_PART, uri.getSchemeSpecificPart());
             putURIAttrib(output, URI_SCHEME, uri.getScheme());
             putURIAttrib(output, URI_USER_INFO, uri.getUserInfo());
-            output.put(URI_PORT, new Long(uri.getPort()));
-            polyad.setResult(output);
-            polyad.setResultType(Constant.STEM_TYPE);
+            output.put(URI_PORT, new LongValue((long) uri.getPort()));
+            polyad.setResult(new QDLValue(output));
             polyad.setEvaluated(Boolean.TRUE);
             return;
         } catch (Throwable t) {
@@ -471,7 +466,7 @@ public class StringEvaluator extends AbstractEvaluator {
         if (StringUtils.isTrivial(value)) {
             return;
         }
-        s.put(key, value);
+        s.put(key, QDLValue.asQDLValue(value));
     }
 
     public static final Long DETOKENIZE_PREPEND_VALUE = 1L;
@@ -483,7 +478,7 @@ public class StringEvaluator extends AbstractEvaluator {
      */
     protected void doDetokeninze(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3});
+            polyad.setAllowedArgCounts(new int[]{2, 3});
             polyad.setEvaluated(true);
             return;
         }
@@ -495,16 +490,17 @@ public class StringEvaluator extends AbstractEvaluator {
             throw new ExtraArgException(DETOKENIZE + " requires at most 3 arguments", polyad.getArgAt(3));
         }
 
-        Object leftArg = polyad.evalArg(0, state);
-        Object rightArg = polyad.evalArg(1, state);
+        QDLValue leftQV = polyad.evalArg(0, state);
+        QDLValue rightQV = polyad.evalArg(1, state);
+
         boolean isPrepend = false;
         boolean omitDanglingDelimiter = true;
         if (polyad.getArgCount() == 3) {
-            Object prepend = polyad.evalArg(2, state);
-            if (!isLong(prepend)) {
+            QDLValue prepend = polyad.evalArg(2, state);
+            if (!prepend.isLong()) {
                 throw new BadArgException("the third argument for " + DETOKENIZE + " must be a n integer. You supplied '" + prepend + "'", polyad.getArgAt(2));
             }
-            int options = ((Long) prepend).intValue();
+            int options = prepend.asLong().intValue();
             switch (options) {
                 case 0:
                     isPrepend = false;
@@ -527,9 +523,10 @@ public class StringEvaluator extends AbstractEvaluator {
             }
         }
         String result = "";
-
-        if (isSet(leftArg)) {
-            leftArg = ((QDLSet) leftArg).toStem();
+        Object leftArg = leftQV.getValue();
+        Object rightArg = rightQV.getValue();
+        if (leftQV.isSet()) {
+            leftArg = (leftQV.asSet()).toStem();
         }
         if (isStem(leftArg)) {
             QDLStem leftStem = (QDLStem) leftArg;
@@ -569,7 +566,7 @@ public class StringEvaluator extends AbstractEvaluator {
                         if (omitDanglingDelimiter && currentCount == 0) {
                             result = String.valueOf(leftStem.get(key));
                         } else {
-                            result = result + rightArg + leftStem.get(key);
+                            result = result + rightQV + leftStem.get(key);
 
                         }
 
@@ -577,7 +574,7 @@ public class StringEvaluator extends AbstractEvaluator {
                         if (omitDanglingDelimiter && currentCount == lsize - 1) {
                             result = result + leftStem.get(key);
                         } else {
-                            result = result + leftStem.get(key) + rightArg;
+                            result = result + leftStem.get(key) + rightQV;
                         }
                     }
                     currentCount++;
@@ -585,7 +582,7 @@ public class StringEvaluator extends AbstractEvaluator {
             }
 
         } else {
-            if (isStem(rightArg)) {
+            if (rightQV.isStem()) {
                 throw new BadArgException("a stem of delimiters cannot be applied to a scalar.", polyad.getArgAt(1));
             }
             if (omitDanglingDelimiter) {
@@ -600,7 +597,6 @@ public class StringEvaluator extends AbstractEvaluator {
 
         }
         polyad.setResult(result);
-        polyad.setResultType(Constant.STRING_TYPE);
         polyad.setEvaluated(true);
 
     }
@@ -608,7 +604,7 @@ public class StringEvaluator extends AbstractEvaluator {
 
     protected void doSubstring(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2, 3, 4});
+            polyad.setAllowedArgCounts(new int[]{1, 2, 3, 4});
             polyad.setEvaluated(true);
             return;
         }
@@ -672,7 +668,7 @@ public class StringEvaluator extends AbstractEvaluator {
 
     protected void doTrim(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -703,7 +699,7 @@ public class StringEvaluator extends AbstractEvaluator {
 
     protected void doIndexOf(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3});
+            polyad.setAllowedArgCounts(new int[]{2, 3});
             polyad.setEvaluated(true);
             return;
         }
@@ -765,7 +761,7 @@ public class StringEvaluator extends AbstractEvaluator {
      */
     protected void doContains(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3});
+            polyad.setAllowedArgCounts(new int[]{2, 3});
             polyad.setEvaluated(true);
             return;
         }
@@ -810,7 +806,7 @@ public class StringEvaluator extends AbstractEvaluator {
 
     protected void doSwapCase(Polyad polyad, State state, boolean isLower) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -949,7 +945,7 @@ public class StringEvaluator extends AbstractEvaluator {
 
     protected void doReplace(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3, 4});
+            polyad.setAllowedArgCounts(new int[]{2, 3, 4});
             polyad.setEvaluated(true);
             return;
         }
@@ -1079,7 +1075,7 @@ public class StringEvaluator extends AbstractEvaluator {
 
     protected void doInsert(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{3});
+            polyad.setAllowedArgCounts(new int[]{3});
             polyad.setEvaluated(true);
             return;
         }
@@ -1122,7 +1118,7 @@ public class StringEvaluator extends AbstractEvaluator {
 
     protected void doTokenize(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3});
+            polyad.setAllowedArgCounts(new int[]{2, 3});
             polyad.setEvaluated(true);
             return;
         }

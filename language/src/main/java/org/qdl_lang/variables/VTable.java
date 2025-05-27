@@ -58,8 +58,8 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
         xsw.writeStartElement("e");
         xsw.writeAttribute("k", vThing.getKey().getKey());
         Module m = null;
-        if (vThing.getValue() instanceof Module) {
-            m = (Module) vThing.getValue();
+        if (vThing.getVariable() instanceof Module) {
+            m = (Module) vThing.getVariable();
         }
         if (m == null) {
             xsw.writeAttribute("type", "qdl");
@@ -98,11 +98,11 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
         jsonObject.put(KEY_KEY, xThing.getKey().getKey());
         String raw;
         Module m = null;
-        if (xThing.getValue() instanceof Module) {
-            m = (Module) xThing.getValue();
+        if (xThing.getVariable() instanceof Module) {
+            m = (Module) xThing.getVariable();
         }
         if (m == null) {
-            raw = xThing.getKey().getKey() + ":=" + InputFormUtil.inputForm(xThing.getValue()) + ";";
+            raw = xThing.getKey().getKey() + ":=" + InputFormUtil.inputForm(xThing.getVariable()) + ";";
             jsonObject.put(TYPE_TAG, QDL_TYPE_TAG);
             // Base 64 encode the raw QDL since it is possible to get escaping issues.
             // Just side-step the whole issue.
@@ -175,10 +175,10 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
     @Override
     public String toJSONEntry(V xThing, SerializationState serializationState) {
         String raw;
-        if (xThing.getValue() instanceof Module) {
-            raw = InputFormUtil.inputForm(xThing.getValue()) + ";";
+        if (xThing.getVariable() instanceof Module) {
+            raw = InputFormUtil.inputForm(xThing.getVariable()) + ";";
         } else {
-            raw = xThing.getKey().getKey() + ":=" + InputFormUtil.inputForm(xThing.getValue()) + ";";
+            raw = xThing.getKey().getKey() + ":=" + InputFormUtil.inputForm(xThing.getVariable()) + ";";
         }
         return Base64.encodeBase64URLSafeString(raw.getBytes(StandardCharsets.UTF_8));
     }

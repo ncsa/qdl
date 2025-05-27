@@ -12,6 +12,7 @@ import org.qdl_lang.types.Types;
 import org.qdl_lang.variables.*;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
+import org.qdl_lang.variables.values.*;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -20,6 +21,7 @@ import java.util.*;
 
 import static org.qdl_lang.types.Types.NULL;
 import static org.qdl_lang.variables.Constant.*;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * Class charged with evaluating algebraic expressions.
@@ -496,7 +498,6 @@ public class OpEvaluator extends AbstractEvaluator {
         polyad.setTokenPosition(dyad.getTokenPosition());
         state.getMetaEvaluator().evaluate(polyad, state);
         dyad.setResult(polyad.getResult());
-        dyad.setResultType(polyad.getResultType());
         dyad.setEvaluated(polyad.isEvaluated());
     }
 
@@ -508,7 +509,6 @@ public class OpEvaluator extends AbstractEvaluator {
         polyad.setTokenPosition(dyad.getTokenPosition());
         state.getMetaEvaluator().evaluate(polyad, state);
         dyad.setResult(polyad.getResult());
-        dyad.setResultType(polyad.getResultType());
         dyad.setEvaluated(polyad.isEvaluated());
     }
 
@@ -523,7 +523,6 @@ public class OpEvaluator extends AbstractEvaluator {
                     State actualState = fNode.hasModuleState() ? fNode.getModuleState() : state; // determined per fNode
 
                     r.result = doSingleApply(objects[0], (FunctionReferenceNode) objects[1], actualState);
-                    r.resultType = Constant.getType(r.result);
                     return r;
                 }
                 if (areAllSets(objects)) {
@@ -535,8 +534,7 @@ public class OpEvaluator extends AbstractEvaluator {
                 }
                 String regex = objects[0].toString();
                 String ob = objects[1].toString();
-                r.result = new Boolean(ob.matches(regex));
-                r.resultType = BOOLEAN_TYPE;
+                r.result = new BooleanValue(ob.matches(regex));
                 return r;
             }
         };
@@ -569,7 +567,7 @@ public class OpEvaluator extends AbstractEvaluator {
         } else {
             // arguments are wrapper, so if they sent a scalar or set,
             QDLStem s = new QDLStem();
-            s.getQDLList().add(lArg);
+            s.getQDLList().add(asQDLValue(lArg));
             wrapper = new QDLStem();
             wrapper.setDefaultValue(s);
         }
@@ -577,8 +575,6 @@ public class OpEvaluator extends AbstractEvaluator {
         result = evaluateNextArgForApplies(wrapper, rArg, wrapper.getDefaultValue(), state, dyad);
         dyad.setEvaluated(true);
         dyad.setResult(result);
-        dyad.setResultType(Constant.getType(result));
-
     }
 
     protected QDLSet applyToSet(QDLStem lArg, QDLSet rArg, Object defaultValue, State state, Dyad dyad) {
@@ -587,8 +583,7 @@ public class OpEvaluator extends AbstractEvaluator {
         while (rIterator.hasNext()) {
             Object nextRArg = rIterator.next();
             Object result = evaluateNextArgForApplies(lArg, nextRArg, defaultValue, state, dyad);
-            output.add(result);
-        }
+            output.add(asQDLValue(result));        }
         return output;
     }
 
@@ -652,7 +647,7 @@ public class OpEvaluator extends AbstractEvaluator {
 
             Object nextRArg = rArg.get(key);
             Object result = evaluateNextArgForApplies(nextLArg, nextRArg, defaultValue, state, dyad);
-            output.putLongOrString(key, result);
+            output.putLongOrString(key, asQDLValue(result));
         }
         return output;
     }
@@ -707,14 +702,14 @@ apply([@f,@g],[2])
             QDLStem lStem = (QDLStem) lArg;
             if (lStem.isEmpty()) {
                 if (lStem.hasDefaultValue()) {
-                    if (!(lStem.getDefaultValue() instanceof QDLStem)) {
+                    if (!lStem.getDefaultValue().isStem()) {
                         // So they used a scalar as the default value. Assume they mean it.
                         Polyad polyad = new Polyad(fRecord.getName());
                         polyad.setBuiltIn(false);
                         polyad.addArgument(new ConstantNode(lStem.getDefaultValue()));
                         return polyad.evaluate(actualState);
                     }
-                    lStem = (QDLStem) lStem.getDefaultValue();
+                    lStem = lStem.getDefaultValue().asStem();
                 }
             }
             ExpressionImpl expression = null;
@@ -764,7 +759,7 @@ apply([@f,@g],[2])
                         if (obj == null) {
                             throw new BadArgException("missing argument for '" + FunctionEvaluator.DUMMY_BUILT_IN_FUNCTION_NAME_CAPUT + i + "'", dyad.getLastArg());
                         }
-                        expression.getArguments().add(new ConstantNode(obj));
+                        expression.getArguments().add(new ConstantNode(asQDLValue(obj)));
                     }
                 } else {
                     //FunctionRecordInterface fRec = fRecord.getByArgCount(lStem.size());
@@ -773,7 +768,7 @@ apply([@f,@g],[2])
                         if (object == null) {
                             throw new BadArgException(APPLY_OP_KEY + " '" + fRecord.getName() + "' missing value for " + name, dyad.getLeftArgument());
                         }
-                        expression.getArguments().add(new ConstantNode(object));
+                        expression.getArguments().add(new ConstantNode(asQDLValue(object)));
                     }
 
                 }
@@ -793,7 +788,7 @@ apply([@f,@g],[2])
         // so this is a scalar
         Polyad polyad = new Polyad(fRecord.getName());
         polyad.setBuiltIn(false);
-        polyad.addArgument(new ConstantNode(lArg));
+        polyad.addArgument(new ConstantNode(asQDLValue(lArg)));
         return polyad.evaluate(actualState);
 
     }
@@ -815,14 +810,14 @@ apply([@f,@g],[2])
             QDLStem lStem = (QDLStem) lArg;
             if (lStem.isEmpty()) {
                 if (lStem.hasDefaultValue()) {
-                    if (!(lStem.getDefaultValue() instanceof QDLStem)) {
+                    if (!lStem.getDefaultValue().isStem()) {
                         // So they used a scalar as the default value. Assume they mean it.
                         Polyad polyad = new Polyad(fNode.getFunctionName());
                         polyad.setBuiltIn(false);
                         polyad.addArgument(new ConstantNode(lStem.getDefaultValue()));
                         return polyad.evaluate(actualState);
                     }
-                    lStem = (QDLStem) lStem.getDefaultValue();
+                    lStem = lStem.getDefaultValue().asStem();
                 }
             }
             ExpressionImpl expression = null;
@@ -869,7 +864,7 @@ apply([@f,@g],[2])
                         if (obj == null) {
                             throw new BadArgException("missing argument for '" + FunctionEvaluator.DUMMY_BUILT_IN_FUNCTION_NAME_CAPUT + i + "'", dyad.getLastArg());
                         }
-                        expression.getArguments().add(new ConstantNode(obj));
+                        expression.getArguments().add(new ConstantNode(asQDLValue(obj)));
                     }
                 } else {
                     FunctionRecordInterface fRec = fNode.getByArgCount(lStem.size());
@@ -878,7 +873,7 @@ apply([@f,@g],[2])
                         if (object == null) {
                             throw new BadArgException(APPLY_OP_KEY + " '" + fNode.getFunctionName() + "' missing value for " + name, dyad.getLeftArgument());
                         }
-                        expression.getArguments().add(new ConstantNode(object));
+                        expression.getArguments().add(new ConstantNode(asQDLValue(object)));
                     }
 
                 }
@@ -898,23 +893,12 @@ apply([@f,@g],[2])
         // so this is a scalar
         Polyad polyad = new Polyad(fNode.getFunctionName());
         polyad.setBuiltIn(false);
-        polyad.addArgument(new ConstantNode(lArg));
+        polyad.addArgument(new ConstantNode(asQDLValue(lArg)));
         return polyad.evaluate(actualState);
-
-        //  throw new BadArgException("unknown argument type", dyad.getLeftArgument());
     }
 
-    protected Object doSingleApply(Object lArg, FunctionReferenceNode fNode, State actualState) {
+    protected QDLValue doSingleApply(Object lArg, FunctionReferenceNode fNode, State actualState) {
 
-    /*    if (lArg instanceof Long) {
-            int argCount = ((Long) lArg).intValue();
-            FunctionRecordInterface fRec = fNode.getByArgCount(argCount);
-            QDLStem out = new QDLStem();
-            if (fRec != null) {
-                out.getQDLList().addAll(fRec.getArgNames());
-            }
-            return out;
-        }*/
         if (lArg instanceof QDLStem) {
             QDLStem lStem = (QDLStem) lArg;
             Polyad polyad = new Polyad(fNode.getFunctionName());
@@ -935,7 +919,7 @@ apply([@f,@g],[2])
                     if (object == null) {
                         throw new BadArgException(APPLY_OP_KEY + " '" + fNode.getFunctionName() + "' missing value for " + name, null);
                     }
-                    polyad.addArgument(new ConstantNode(object));
+                    polyad.addArgument(new ConstantNode(asQDLValue(object)));
                 }
             }
             return polyad.evaluate(actualState);
@@ -949,10 +933,9 @@ apply([@f,@g],[2])
         polyad.setSourceCode(dyad.getSourceCode());
         polyad.addArgument(dyad.getLeftArgument()); // should be a function reference
         Object obj = dyad.getRightArgument().evaluate(state);
-        polyad.addArgument(new ConstantNode(obj));
+        polyad.addArgument(new ConstantNode(asQDLValue(obj)));
         state.getMetaEvaluator().evaluate(polyad, state);
         dyad.setResult(polyad.getResult());
-        dyad.setResultType(polyad.getResultType());
         dyad.setEvaluated(polyad.isEvaluated());
     }
 
@@ -969,7 +952,6 @@ apply([@f,@g],[2])
         }
         state.getMetaEvaluator().evaluate(polyad, state);
         dyad.setResult(polyad.getResult());
-        dyad.setResultType(polyad.getResultType());
         dyad.setEvaluated(polyad.isEvaluated());
     }
 
@@ -1002,7 +984,6 @@ a.⌆b.
         //polyad.addArgument(dyad.getRightArgument());
         state.getMetaEvaluator().evaluate(polyad, state);
         dyad.setResult(polyad.getResult());
-        dyad.setResultType(polyad.getResultType());
         dyad.setEvaluated(polyad.isEvaluated());
     }
 
@@ -1019,13 +1000,11 @@ a.⌆b.
             monad.setSourceCode(polyad.getSourceCode());
             state.getOpEvaluator().evaluate(monad, state);
             dyad.setResult(monad.getResult());
-            dyad.setResultType(monad.getResultType());
             dyad.setEvaluated(monad.isEvaluated());
             return;
         }
         state.getMetaEvaluator().evaluate(polyad, state);
         dyad.setResult(polyad.getResult());
-        dyad.setResultType(polyad.getResultType());
         dyad.setEvaluated(polyad.isEvaluated());
 
     }
@@ -1035,9 +1014,7 @@ a.⌆b.
         polyad.setTokenPosition(dyad.getTokenPosition());
         polyad.setSourceCode(dyad.getSourceCode());
         polyad.addArgument(dyad.getLeftArgument());
-//        if (dyad.getRightArgument().getNodeType() == ExpressionInterface.CONSTANT_NODE && dyad.getRightArgument().getResult() != QDLNull.getInstance()) {
         polyad.addArgument(dyad.getRightArgument());
-//        }
         if (!isDefined) {
             // The request is for !whatever, so wrap the whole thing in a negation.
             Monad monad = new Monad(OpEvaluator.NOT_VALUE, false);
@@ -1046,13 +1023,11 @@ a.⌆b.
             monad.setSourceCode(polyad.getSourceCode());
             state.getOpEvaluator().evaluate(monad, state);
             dyad.setResult(monad.getResult());
-            dyad.setResultType(monad.getResultType());
             dyad.setEvaluated(monad.isEvaluated());
             return;
         }
         state.getMetaEvaluator().evaluate(polyad, state);
         dyad.setResult(polyad.getResult());
-        dyad.setResultType(polyad.getResultType());
         dyad.setEvaluated(polyad.isEvaluated());
     }
 
@@ -1115,7 +1090,6 @@ a.⌆b.
                 throw new BadArgException("unkown type", dyad.getRightArgument());
         }
         dyad.setResult(x ? Boolean.TRUE : Boolean.FALSE);
-        dyad.setResultType(BOOLEAN_TYPE);
         dyad.setEvaluated(true);
 
     }
@@ -1134,13 +1108,11 @@ a.⌆b.
             monad.setSourceCode(polyad.getSourceCode());
             state.getOpEvaluator().evaluate(monad, state);
             dyad.setResult(monad.getResult());
-            dyad.setResultType(monad.getResultType());
             dyad.setEvaluated(monad.isEvaluated());
             return;
         }
         state.getMetaEvaluator().evaluate(polyad, state);
         dyad.setResult(polyad.getResult());
-        dyad.setResultType(polyad.getResultType());
         dyad.setEvaluated(polyad.isEvaluated());
     }
 
@@ -1166,8 +1138,7 @@ a.⌆b.
                 }
                 String regex = objects[0].toString();
                 String ob = objects[1].toString();
-                r.result = new Boolean(ob.matches(regex));
-                r.resultType = BOOLEAN_TYPE;
+                r.result = new BooleanValue(ob.matches(regex));
                 return r;
             }
         };
@@ -1178,10 +1149,9 @@ a.⌆b.
         Polyad joinPolyad = new Polyad(StemEvaluator.JOIN);
         joinPolyad.getArguments().add(dyad.getLeftArgument());
         joinPolyad.getArguments().add(dyad.getRightArgument());
-        joinPolyad.getArguments().add(new ConstantNode(-1L, LONG_TYPE));
+        joinPolyad.getArguments().add(new ConstantNode(new LongValue(-1L)));
         state.getMetaEvaluator().evaluate(joinPolyad, state);
         dyad.setResult(joinPolyad.getResult());
-        dyad.setResultType(joinPolyad.getResultType());
         dyad.setEvaluated(true);
     }
 
@@ -1194,7 +1164,6 @@ a.⌆b.
             // ignored.
             if (dyad.isUnary()) {
                 dyad.setResult(set.toStem());
-                dyad.setResultType(STEM_TYPE);
                 dyad.setEvaluated(true);
                 return;
 
@@ -1214,7 +1183,7 @@ a.⌆b.
                 stem0 = (QDLStem) obj0;
             } else {
                 stem0 = new QDLStem();
-                stem0.put(0L, obj0);
+                stem0.put(0L, asQDLValue(obj0));
             }
             outStem = outStem.union(stem0); // copy over elements
             long index = -1L;
@@ -1223,30 +1192,26 @@ a.⌆b.
                 sparseEntry = outStem.getQDLList().last();
                 index = sparseEntry.index;
             }
-            SparseEntry newEntry = new SparseEntry(index + 1, set);
+            SparseEntry newEntry = new SparseEntry(index + 1, new SetValue(set));
 
             outStem.getQDLList().add(newEntry);
             dyad.setResult(outStem);
-            dyad.setResultType(STEM_TYPE);
             dyad.setEvaluated(true);
             return;
         }
         Object obj0 = dyad.evalArg(0, state);
-/*        if ((obj0 instanceof QDLNull)) {
-            throw new QDLExceptionWithTrace("cannot do union on a null", dyad.getLeftArgument());
-        }*/
 
         QDLStem stem0 = null;
         QDLStem stem1 = null;
         if ((obj0 instanceof QDLNull)) {
             stem0 = new QDLStem();
-            stem0.put(0L, QDLNull.getInstance());
+            stem0.put(0L, QDLValue.getNullValue());
         } else {
             if (obj0 instanceof QDLStem) {
                 stem0 = (QDLStem) obj0;
             } else {
                 stem0 = new QDLStem();
-                stem0.put(0L, obj0);
+                stem0.put(0L, asQDLValue(obj0));
             }
         }
 
@@ -1255,7 +1220,7 @@ a.⌆b.
             stem1 = (QDLStem) obj1;
         } else {
             stem1 = new QDLStem();
-            stem1.put(0L, obj1);
+            stem1.put(0L, asQDLValue(obj1));
         }
         // NOTE this is done so we don't end up shlepping around references to things and modifying them
         // without warning.
@@ -1263,7 +1228,6 @@ a.⌆b.
         //       stem1 = (StemVariable)stem1.clone();
         QDLStem newStem = stem0.union(stem1);
         dyad.setResult(newStem);
-        dyad.setResultType(STEM_TYPE);
         dyad.setEvaluated(true);
     }
 
@@ -1275,16 +1239,14 @@ a.⌆b.
                 if (areAllSets(objects)) {
                     QDLSet leftSet = (QDLSet) objects[0];
                     QDLSet rightSet = (QDLSet) objects[1];
-                    r.result = leftSet.symmetricDifference(rightSet);
-                    r.resultType = SET_TYPE;
+                    r.result = asQDLValue(leftSet.symmetricDifference(rightSet));
                     return r;
                 }
                 if (!areAllNumbers(objects)) {
-                    throw new QDLExceptionWithTrace("division is not defined for  non-numeric types", dyad.getLeftArgument());
+                    throw new QDLExceptionWithTrace("division is not defined for  non-numeric values", dyad.getLeftArgument());
                 }
                 if (areAllLongs(objects)) {
-                    r.result = (Long) objects[0] / (Long) objects[1];
-                    r.resultType = LONG_TYPE;
+                    r.result = asQDLValue((Long) objects[0] / (Long) objects[1]);
                 } else {
                     BigDecimal left = toBD(objects[0]);
                     BigDecimal right = toBD(objects[1]);
@@ -1295,14 +1257,12 @@ a.⌆b.
                         throw new QDLExceptionWithTrace("Insufficient precision to divide. Please increase " + MathEvaluator.NUMERIC_DIGITS, dyad.getRightArgument());
                     }
                     try {
-                        r.result = rr.longValueExact();
-                        r.resultType = LONG_TYPE;
+                        r.result = asQDLValue(rr.longValueExact());
                         return r;
                     } catch (ArithmeticException ax) {
 
                     }
-                    r.result = rr;
-                    r.resultType = DECIMAL_TYPE;
+                    r.result = asQDLValue(rr);
                 }
                 return r;
             }
@@ -1329,15 +1289,12 @@ a.⌆b.
                     }
                     if (!doBigD) {
                         try {
-                            r.result = result.longValueExact();
-                            r.resultType = LONG_TYPE;
+                            r.result = asQDLValue(result.longValueExact());
                             return r;
                         } catch (ArithmeticException ax) {
                         }
                     }
-                    r.result = result;
-                    r.resultType = DECIMAL_TYPE;
-
+                    r.result = asQDLValue(result);
                 } else {
                     throw new QDLExceptionWithTrace("Exponentiation requires a int or decimal be raised to an int power", dyad.getLeftArgument());
                 }
@@ -1357,45 +1314,43 @@ a.⌆b.
                 if (areAllSets(objects)) {
                     QDLSet leftSet = (QDLSet) objects[0];
                     QDLSet rightSet = (QDLSet) objects[1];
+                    Object tempValue = null;
                     switch (dyad.getOperatorType()) {
                         case LESS_THAN_VALUE:
-                            r.result = leftSet.isSubsetOf(rightSet) && (leftSet.size() != rightSet.size());
-                            r.resultType = BOOLEAN_TYPE;
+                            tempValue=  leftSet.isSubsetOf(rightSet) && (leftSet.size() != rightSet.size());
                             break;
                         case LESS_THAN_EQUAL_VALUE:
-                            r.result = leftSet.isSubsetOf(rightSet);
-                            r.resultType = BOOLEAN_TYPE;
+                            tempValue = leftSet.isSubsetOf(rightSet);
                             break;
                         case MORE_THAN_VALUE:
-                            r.result = rightSet.isSubsetOf(leftSet) && (leftSet.size() != rightSet.size());
-                            r.resultType = BOOLEAN_TYPE;
+                            tempValue = rightSet.isSubsetOf(leftSet) && (leftSet.size() != rightSet.size());
                             break;
                         case MORE_THAN_EQUAL_VALUE:
-                            r.result = rightSet.isSubsetOf(leftSet);
-                            r.resultType = BOOLEAN_TYPE;
+                            tempValue = rightSet.isSubsetOf(leftSet);
                             break;
                     }
+                    r.result = asQDLValue(tempValue);
                     return r;
                 }
                 if (areAllStrings(objects)) {
                     String left = (String) objects[0];
                     String right = (String) objects[1];
-                    r.resultType = BOOLEAN_TYPE;
-
+Object  tempValue = null;
                     switch (dyad.getOperatorType()) {
                         case LESS_THAN_VALUE:
-                            r.result = -1 < right.indexOf(left) && left.length() < right.length();
+                            tempValue = -1 < right.indexOf(left) && left.length() < right.length();
                             break;
                         case LESS_THAN_EQUAL_VALUE:
-                            r.result = -1 < right.indexOf(left);
+                            tempValue = -1 < right.indexOf(left);
                             break;
                         case MORE_THAN_VALUE:
-                            r.result = -1 < left.indexOf(right) && right.length() < left.length();
+                            tempValue = -1 < left.indexOf(right) && right.length() < left.length();
                             break;
                         case MORE_THAN_EQUAL_VALUE:
-                            r.result = -1 < left.indexOf(right);
+                            tempValue = -1 < left.indexOf(right);
                             break;
                     }
+                    r.result = asQDLValue(tempValue);
                     return r;
                 }
                 if (!areAllNumbers(objects)) {
@@ -1419,9 +1374,7 @@ a.⌆b.
                         result = (0 == leftToRight) || (0 < leftToRight);
                         break;
                 }
-                r.result = result;
-                r.resultType = BOOLEAN_TYPE;
-
+                r.result = new BooleanValue(result);
                 return r;
             }
         };
@@ -1453,28 +1406,26 @@ a.⌆b.
                 if (areAllSets(objects)) {
                     QDLSet leftSet = (QDLSet) objects[0];
                     QDLSet rightSet = (QDLSet) objects[1];
+                    Boolean tempValue = null;
                     switch (dyad.getOperatorType()) {
                         case EQUALS_VALUE:
-                            r.result = leftSet.isEqualTo(rightSet);
+                            tempValue = leftSet.isEqualTo(rightSet);
                             break;
                         case NOT_EQUAL_VALUE:
-                            r.result = !leftSet.isEqualTo(rightSet);
+                            tempValue = !leftSet.isEqualTo(rightSet);
                             break;
                     }
-
-                    r.resultType = BOOLEAN_TYPE;
+                    r.result = asQDLValue(tempValue);
                     return r;
                 }
                 if (isSet(objects[0])) {
                     QDLSet leftSet = (QDLSet) objects[0];
-                    r.result = leftSet.contains(objects[1]);
-                    r.resultType = BOOLEAN_TYPE;
+                    r.result = asQDLValue(leftSet.contains(objects[1]));
                     return r;
                 }
                 if (isSet(objects[1])) {
                     QDLSet set = (QDLSet) objects[1];
-                    r.result = set.contains(objects[0]);
-                    r.resultType = BOOLEAN_TYPE;
+                    r.result = asQDLValue(set.contains(objects[0]));
                     return r;
                 }
 
@@ -1486,50 +1437,54 @@ a.⌆b.
                         right = toBD(objects[1]);
                     } catch (IllegalArgumentException iax) {
                         // means that something cannot be converted to a big decimal
+                        Boolean v = null;
                         switch (dyad.getOperatorType()) {
                             case EQUALS_VALUE:
-                                r.result = Boolean.FALSE;
+                                v = Boolean.FALSE;
                                 break;
                             case NOT_EQUAL_VALUE:
-                                r.result = Boolean.TRUE;
+                                v = Boolean.TRUE;
                                 break;
                         }
-                        r.resultType = BOOLEAN_TYPE;
+                        r.result = asQDLValue(v);
                         return r;
                     }
+                    Boolean v = null;
                     switch (dyad.getOperatorType()) {
                         case EQUALS_VALUE:
-                            r.result = bdEquals(left, right);
+                            v = bdEquals(left, right);
                             break;
                         case NOT_EQUAL_VALUE:
-                            r.result = !bdEquals(left, right);
+                            v = !bdEquals(left, right);
                             break;
                     } // end switch
+                    r.result = asQDLValue(v);
                 } else {
+                    Boolean temp = null;
                     // just do object comparison
                     switch (dyad.getOperatorType()) {
                         case EQUALS_VALUE:
                             if (objects[0] == null) {
-                                r.result = objects[1] == objects[0];
+                                temp = objects[1] == objects[0];
                             } else {
                                 // edge case == null
                                 if (objects[1] instanceof QDLNull) {
-                                    r.result = objects[0] instanceof QDLNull;
+                                    temp = objects[0] instanceof QDLNull;
                                 } else {
-                                    r.result = objects[0].equals(objects[1]);
+                                    temp = objects[0].equals(objects[1]);
                                 }
                             }
                             break;
                         case NOT_EQUAL_VALUE:
                             if (objects[0] == null) {
-                                r.result = objects[1] != objects[0];
+                                temp = objects[1] != objects[0];
                             } else {
-                                r.result = !objects[0].equals(objects[1]);
+                                temp = !objects[0].equals(objects[1]);
                             }
                             break;
                     }//end switch
+                    r.result = asQDLValue(temp);
                 }
-                r.resultType = BOOLEAN_TYPE;
                 return r;
             }
         };
@@ -1548,16 +1503,16 @@ a.⌆b.
                 }
                 QDLSet leftSet = (QDLSet) objects[0];
                 QDLSet rightSet = (QDLSet) objects[1];
+                QDLSet outSet = null;
                 switch (dyad.getOperatorType()) {
                     case INTERSECTION_VALUE:
-                        r.result = leftSet.intersection(rightSet);
-                        r.resultType = SET_TYPE;
+                        outSet = leftSet.intersection(rightSet);
                         break;
                     case UNION_VALUE:
-                        r.result = leftSet.union(rightSet);
-                        r.resultType = SET_TYPE;
+                        outSet = leftSet.union(rightSet);
                         break;
                 }
+                r.result = asQDLValue(outSet);
                 return r;
 
 
@@ -1585,18 +1540,17 @@ a.⌆b.
                 if (areAllSets(objects)) {
                     QDLSet leftSet = (QDLSet) objects[0];
                     QDLSet rightSet = (QDLSet) objects[1];
+                    Boolean tempValue = null;
                     switch (dyad.getOperatorType()) {
                         case EQUALS_VALUE:
-                            r.result = leftSet.isEqualTo(rightSet);
-                            r.resultType = BOOLEAN_TYPE;
+                            tempValue = leftSet.isEqualTo(rightSet);
                             break;
                         case NOT_EQUAL_VALUE:
-                            r.result = !leftSet.isEqualTo(rightSet);
-                            r.resultType = BOOLEAN_TYPE;
+                            tempValue = !leftSet.isEqualTo(rightSet);
                             break;
                     }
+                    r.result = asQDLValue(tempValue);
                     return r;
-
                 }
                 if (!areAllBoolean(objects)) {
                     throw new QDLExceptionWithTrace("arguments must be boolean for logical operations", dyad.getLeftArgument());
@@ -1606,21 +1560,20 @@ a.⌆b.
                 Boolean result = null;
                 switch (dyad.getOperatorType()) {
                     case AND_VALUE:
-                        r.result = left && right;
+                        result = left && right;
                         break;
                     case OR_VALUE:
-                        r.result = left || right;
+                        result = left || right;
                         break;
                     case EQUALS_VALUE:
-                        r.result = left == right;
+                        result = left == right;
                         break;
                     case NOT_EQUAL_VALUE:
-                        r.result = left != right;
+                        result = left != right;
                         break;
                 }
-                r.resultType = BOOLEAN_TYPE;
+                r.result = asQDLValue(result);
                 return r;
-
             }
         };
         String op = "";
@@ -1637,7 +1590,6 @@ a.⌆b.
             case NOT_EQUAL_VALUE:
                 op = NOT_EQUAL;
                 break;
-
         }
         process2(dyad, pointer, op, state);
     }
@@ -1653,8 +1605,7 @@ a.⌆b.
                 if (areAllNumbers(objects)) {
                     if (areAllLongs(objects)) {
                         try {
-                            r.result = Math.subtractExact((Long) objects[0], (Long) objects[1]);
-                            r.resultType = LONG_TYPE;
+                            r.result = asQDLValue(Math.subtractExact((Long) objects[0], (Long) objects[1]));
                             return r;
                         } catch (ArithmeticException arithmeticException) {
                             // fall through to big decimal case
@@ -1663,11 +1614,10 @@ a.⌆b.
 
                     BigDecimal left = toBD(objects[0]);
                     BigDecimal right = toBD(objects[1]);
-                    r.result = left.subtract(right);
-                    r.resultType = DECIMAL_TYPE;
+                    r.result = new DecimalValue(left.subtract(right));
                 } else {
                     if (!areAllStrings(objects)) {
-                        throw new QDLExceptionWithTrace("cannot perform " + MINUS + " on mixed argument types.", dyad.getLeftArgument());
+                        throw new QDLExceptionWithTrace("cannot perform " + MINUS + " on mixed argument values.", dyad.getLeftArgument());
                     }
                     String lString = objects[0].toString();
                     String rString = objects[1].toString();
@@ -1676,8 +1626,7 @@ a.⌆b.
                         lString = lString.substring(0, ndx) + lString.substring(ndx + rString.length());
                         ndx = lString.indexOf(rString);
                     }
-                    r.result = lString;
-                    r.resultType = STRING_TYPE;
+                    r.result = new StringValue(lString);
                 }
                 return r;
             }
@@ -1696,16 +1645,14 @@ a.⌆b.
                     }
                     QDLSet leftSet = (QDLSet) objects[0];
                     QDLSet rightSet = (QDLSet) objects[1];
-                    r.result = leftSet.difference(rightSet);
-                    r.resultType = SET_TYPE;
+                    r.result = new SetValue(leftSet.difference(rightSet));
                     return r;
                 }
                 if (areAllNumbers(objects)) {
                     if (doTimes) {
                         if (areAllLongs(objects)) {
                             try {
-                                r.result = Math.multiplyExact((Long) objects[0], (Long) objects[1]);
-                                r.resultType = LONG_TYPE;
+                                r.result = new LongValue(Math.multiplyExact((Long) objects[0], (Long) objects[1]));
                                 return r;
                             } catch (ArithmeticException arithmeticException) {
                                 // fall through to BD case
@@ -1715,12 +1662,9 @@ a.⌆b.
                         BigDecimal right = toBD(objects[1]);
                         BigDecimal rr = left.multiply(right);
                         try {
-                            r.result = rr.longValueExact();
-                            r.resultType = LONG_TYPE;
-
+                            r.result = new LongValue(rr.longValueExact());
                         } catch (ArithmeticException arithmeticException) {
-                            r.result = rr;
-                            r.resultType = DECIMAL_TYPE;
+                            r.result = asQDLValue(rr);
                         }
                         return r;
                     } else {
@@ -1730,19 +1674,15 @@ a.⌆b.
                         if (MathEvaluator.isIntegerValue(res)) {
                             // try to turn it into an integer
                             try {
-                                r.result = res.longValueExact();
-                                r.resultType = LONG_TYPE;
+                                r.result = new LongValue(res.longValueExact());
                                 return r;
                             } catch (ArithmeticException arithmeticException) {
                                 // so it cannot eb turned into a long value for whatever reason
                             }
                         }
-                        r.result = res;
+                        r.result = asQDLValue(res);
                     }
-
-                    r.resultType = DECIMAL_TYPE;
                     return r;
-
                 } else {
                     long count = 0;
                     String arg = "";
@@ -1751,9 +1691,7 @@ a.⌆b.
                     if (!doTimes && isString(objects[0]) && isString(objects[1])) {
                         String left = (String) objects[0];
                         String right = (String) objects[1];
-                        long x = StringUtils.countMatches(left, right);
-                        r.resultType = LONG_TYPE;
-                        r.result = x;
+                        r.result = new LongValue(StringUtils.countMatches(left, right));
                         return r;
                     }
                     if (doTimes && isLong(objects[0]) && isString(objects[1])) {
@@ -1774,18 +1712,17 @@ a.⌆b.
                     }
 
                     if (gotOne) {
-                        r.resultType = STRING_TYPE;
                         if (count == 0) {
-                            r.result = "";
+                            r.result = new StringValue();
                             return r;
                         }
                         for (long i = 0; i < count; i++) {
                             tempOutput = tempOutput + arg;
                         }
-                        r.result = tempOutput;
+                        r.result = new StringValue(tempOutput);
                         return r;
                     }
-                    throw new QDLExceptionWithTrace((doTimes ? "multiplication" : "division") + " is undefined for  non-numeric types", dyad);
+                    throw new QDLExceptionWithTrace((doTimes ? "multiplication" : "division") + " is undefined for  non-numeric values", dyad);
                 }
             }
         };
@@ -1821,8 +1758,7 @@ a.⌆b.
                 if (areAllNumbers(objects)) {
                     if (areAllLongs(objects)) {
                         try {
-                            r.result = Math.addExact((Long) objects[0], (Long) objects[1]);
-                            r.resultType = LONG_TYPE;
+                            r.result = new LongValue(Math.addExact((Long) objects[0], (Long) objects[1]));
                             return r;
                         } catch (ArithmeticException arithmeticException) {
                             // fall through
@@ -1831,14 +1767,12 @@ a.⌆b.
 
                     BigDecimal left = toBD(objects[0]);
                     BigDecimal right = toBD(objects[1]);
-                    r.result = left.add(right);
-                    r.resultType = DECIMAL_TYPE;
+                    r.result = new DecimalValue(left.add(right));
                     return r;
                 }
 
                 if (!isStem(objects[1])) {
-                    r.result = objects[0].toString() + objects[1].toString();
-                    r.resultType = STRING_TYPE;
+                    r.result = new StringValue(objects[0].toString() + objects[1].toString());
                     return r;
                 }
                 // This is a stem
@@ -1928,8 +1862,7 @@ a.⌆b.
                             Polyad polyad = new Polyad(fNode.getFunctionName());
                             polyad.setSizeQuery(true);
                             state.getMetaEvaluator().evaluate(polyad, state);
-                            int[] argCounts = (int[]) polyad.getResult();
-                            for (int argCount : argCounts) {
+                            for (int argCount : polyad.getAllowedArgCounts()) {
                                 counts.add((long) argCount);
                             }
                         } else {
@@ -1950,10 +1883,9 @@ a.⌆b.
                     }
                     QDLStem stem = new QDLStem();
                     for (Long x : counts) {
-                        stem.getQDLList().add(x);
+                        stem.getQDLList().add(asQDLValue(x));
                     }
-                    r.result = stem;
-                    r.resultType = STEM_TYPE;
+                    r.result = new StemValue(stem);
                 }
                 return r;
             }
@@ -1969,7 +1901,6 @@ a.⌆b.
         polyad.addArgument(monad.getArgument());
         polyad.evaluate(state);
         monad.setResult(polyad.getResult());
-        monad.setResultType(polyad.getResultType());
         monad.setEvaluated(true);
     }
 
@@ -1978,11 +1909,10 @@ a.⌆b.
         dyad.setUnary(true);
         dyad.setTokenPosition(monad.getTokenPosition());
         dyad.setSourceCode(monad.getSourceCode());
-        dyad.setLeftArgument(new ConstantNode(new QDLStem(), Constant.STEM_TYPE));
+        dyad.setLeftArgument(new ConstantNode(new StemValue()));
         dyad.setRightArgument(monad.getArgument());
         dyad.evaluate(state);
         monad.setResult(dyad.getResult());
-        monad.setResultType(dyad.getResultType());
         monad.setEvaluated(true);
 
     }
@@ -2000,13 +1930,11 @@ a.⌆b.
             notMonad.setSourceCode(polyad.getSourceCode());
             state.getOpEvaluator().evaluate(notMonad, state);
             monad.setResult(notMonad.getResult());
-            monad.setResultType(notMonad.getResultType());
             monad.setEvaluated(notMonad.isEvaluated());
             return;
         }
         state.getMetaEvaluator().evaluate(polyad, state);
         monad.setResult(polyad.getResult());
-        monad.setResultType(polyad.getResultType());
         monad.setEvaluated(polyad.isEvaluated());
     }
 
@@ -2019,27 +1947,24 @@ a.⌆b.
             case LONG_TYPE:
             case NULL_TYPE:
                 QDLSet set = new QDLSet();
-                set.add(r);
+                set.add(asQDLValue(r));
                 monad.setEvaluated(true);
-                monad.setResultType(SET_TYPE);
                 monad.setResult(set);
                 return;
             case SET_TYPE:
                 monad.setEvaluated(true);
-                monad.setResultType(SET_TYPE);
-                monad.setResult(r);
+                monad.setResult(asQDLValue(r));
                 return;
             case LIST_TYPE:
             case STEM_TYPE:
                 Polyad p = new Polyad(StemEvaluator.UNIQUE_VALUES);
                 p.setArguments(monad.getArguments());
                 p.evaluate(state);
-                QDLStem stemVariable = (QDLStem) p.getResult(); // as per contract
+                QDLStem stemVariable = p.getResult().asStem(); // as per contract
                 set = new QDLSet();
                 set.addAll(stemVariable.getQDLList().values());
 
                 monad.setResult(set);
-                monad.setResultType(SET_TYPE);
                 monad.setEvaluated(true);
                 return;
         }
@@ -2058,9 +1983,7 @@ a.⌆b.
         polyad.setTokenPosition(monad.getTokenPosition());
         state.getMetaEvaluator().evaluate(polyad, state);
         monad.setResult(polyad.getResult());
-        monad.setResultType(polyad.getResultType());
         monad.setEvaluated(polyad.isEvaluated());
-
     }
 
     /**
@@ -2076,37 +1999,33 @@ a.⌆b.
             throw new QDLExceptionWithTrace("You can only " + (isPlusPlus ? "increment" : "decrement") + " a variable.", monad.getArgument());
         }
         VariableNode var = (VariableNode) monad.getArgument();
-        Object obj = var.evaluate(state);
+        QDLValue qdlValue = var.evaluate(state);
         boolean gotOne = false;
         Object resultValue = null;
-        if (isLong(obj)) {
+        if (qdlValue.isLong()) {
             gotOne = true;
-            Long x = (Long) var.evaluate(state);
+            Long x = qdlValue.asLong();
             if (isPlusPlus) {
                 resultValue = x + 1L;
             } else {
                 resultValue = x - 1L;
             }
-            monad.setResultType(LONG_TYPE); // should be redundant
-
         }
-        if (isBigDecimal(obj)) {
+        if (qdlValue.isDecimal()) {
             gotOne = true;
-            monad.setResultType(DECIMAL_TYPE); // should be redundant
-            BigDecimal bd = (BigDecimal) obj;
+            BigDecimal bd = qdlValue.asDecimal();
             BigDecimal one = new BigDecimal("1.0");
             if (isPlusPlus) {
                 resultValue = bd.add(one);
             } else {
                 resultValue = bd.subtract(one);
             }
-            monad.setResultType(DECIMAL_TYPE); // should be redundant
         }
         if (!gotOne) {
             throw new QDLExceptionWithTrace("" + (isPlusPlus ? PLUS_PLUS : MINUS_MINUS) + " requires a number value", monad.getArgument());
         }
         if (monad.isPostFix()) {
-            monad.setResult(obj); // so the returned result is NOT incremented for postfixes.
+            monad.setResult(qdlValue); // so the returned result is NOT incremented for postfixes.
         } else {
             monad.setResult(resultValue); // so the returned result is the increment for prefixes
         }
@@ -2123,8 +2042,7 @@ a.⌆b.
                 if (!isBoolean(objects[0])) {
                     throw new QDLExceptionWithTrace("negation requires a strictly boolean argument not '" + objects[0] + "'", monad.getArgument());
                 }
-                r.result = !(Boolean) objects[0];
-                r.resultType = BOOLEAN_TYPE;
+                r.result = new BooleanValue(!(Boolean) objects[0]);
                 return r;
             }
         };
@@ -2146,27 +2064,24 @@ a.⌆b.
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+
                 switch (Constant.getType(objects[0])) {
                     case LONG_TYPE:
-                        r.result = sign * (Long) objects[0];
-                        r.resultType = LONG_TYPE;
+                        r.result = asQDLValue(sign * (Long) objects[0]);
                         break;
                     case DECIMAL_TYPE:
                         BigDecimal x = toBD(objects[0]);
-                        r.result = sign < 0 ? x.negate() : x;
-                        r.resultType = DECIMAL_TYPE;
+                        r.result = asQDLValue(sign < 0 ? x.negate() : x);
                         break;
                     case STRING_TYPE:
                         if (sign > 0) {
-                            r.result = objects[0];
+                            r.result = asQDLValue(objects[0]);
                         } else {
-                            r.result = "";
+                            r.result = new StringValue();
                         }
-                        r.resultType = STRING_TYPE;
                         break;
                     default:
                         throw new QDLExceptionWithTrace("You can only take the negative of a number or string", monad.getArgument());
-
                 }
                 return r;
             }
@@ -2200,14 +2115,18 @@ a.⌆b.
         return false;
     }
 
+/*
     public int[] getArgCount(Monad monad) {
         evaluate(monad, null);
         return (int[]) monad.getResult();
     }
+*/
 
+/*
     public int[] getArgCount(Dyad dyad) {
         evaluate(dyad, null);
         return (int[]) dyad.getResult();
     }
+*/
 
 }

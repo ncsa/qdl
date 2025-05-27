@@ -12,6 +12,7 @@ import org.qdl_lang.state.StateUtils;
 import org.qdl_lang.state.XKey;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.variables.Constant;
+import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.variables.VThing;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 
@@ -65,13 +66,12 @@ public class ModuleExpression extends ExpressionImpl {
     boolean newModuleVersion = false;
 
     @Override
-    public Object evaluate(State ambientState) {
+    public QDLValue evaluate(State ambientState) {
         // resolves https://github.com/ncsa/qdl/issues/24
         if (isDefaultNamespace()) {
             if (getExpression() instanceof ConstantNode) {
                 ConstantNode cNode = (ConstantNode) getExpression();
                 setResult(cNode.getResult());
-                setResultType(cNode.getResultType());
                 setEvaluated(true);
                 return getResult();
             }
@@ -82,7 +82,6 @@ public class ModuleExpression extends ExpressionImpl {
                     throw new UnknownSymbolException("'" + vvv.getVariableReference() + "'   not found", vvv);
                 } else {
                     setResult(obj);
-                    setResultType(Constant.getType(obj));
                     setEvaluated(true);
                     return getResult();
                 }
@@ -104,7 +103,6 @@ public class ModuleExpression extends ExpressionImpl {
                 throw new IllegalArgumentException("cannot evaluate expression '" + getExpression().getSourceCode() + "' in this module");
             }
             setResult(getExpression().getResult());
-            setResultType(getExpression().getResultType());
             setEvaluated(true);
             return getResult();
 
@@ -115,7 +113,6 @@ public class ModuleExpression extends ExpressionImpl {
             if (getExpression() instanceof ConstantNode) {
                 ConstantNode cNode = (ConstantNode) getExpression();
                 setResult(cNode.getResult());
-                setResultType(cNode.getResultType());
                 setEvaluated(true);
                 return getResult();
             }
@@ -132,7 +129,6 @@ public class ModuleExpression extends ExpressionImpl {
                 throw new IllegalArgumentException("cannot evaluate expression '" + getExpression().getSourceCode() + "' in this module");
             }
             setResult(getExpression().getResult());
-            setResultType(getExpression().getResultType());
             setEvaluated(true);
             return getResult();
         }
@@ -159,7 +155,7 @@ public class ModuleExpression extends ExpressionImpl {
             setModule(ambientState.getMInstances().getModule(xKey));
             setNewModuleVersion(false);
         }
-        Object result = null;
+        QDLValue result = null;
         // no module state means to look at global state to find the module state.
         if (getExpression() instanceof ModuleExpression) {
             // Modules expression like a#b#c work within their scope, so b must be an imported module.
@@ -246,7 +242,7 @@ public class ModuleExpression extends ExpressionImpl {
                         }
                     }
                 }
-                Object r = null;
+                QDLValue r = null;
                 if (getExpression() instanceof Polyad) {
                     ((Polyad) getExpression()).evaluatedArgs(newState);
                 }
@@ -267,18 +263,10 @@ public class ModuleExpression extends ExpressionImpl {
                     throw new IllegalArgumentException("no such value or unknown expression type");
                 }
                 setResult(r);
-                setResultType(Constant.getType(r));
                 setEvaluated(true);
                 return r;
             }
-/*
-            if(obj instanceof FunctionReferenceNode){
-                setResult(obj);
-                setResultType(Constant.FUNCTION_TYPE);
-                setEvaluated(true);
-                return obj;
-            }
-*/
+
             // Simple expressions like a#b must work within the scope of a
             getExpression().setAlias(getAlias());
             State moduleState = getModuleState(ambientState); // clean state
@@ -297,7 +285,6 @@ public class ModuleExpression extends ExpressionImpl {
 
         }
         setResult(result);
-        setResultType(Constant.getType(result));
         setEvaluated(true);
         return result;
     }
@@ -402,13 +389,13 @@ http#host(qqq('https://foo'))
             XKey xKey = new XKey(getAlias());
             if (state.getVStack().containsKey(xKey)) {
                 VThing vThing = (VThing) state.getVStack().get(xKey);
-                if (vThing.getValue() instanceof Module) {
-                    Module m = (Module) vThing.getValue();
+                if (vThing.getVariable() instanceof Module) {
+                    Module m = (Module) vThing.getVariable();
                     setModule(m);
                     moduleState = m.getState();
 
                 } else {
-                    throw new NFWException("expected module for key " + xKey + ", but got a " + vThing.getValue().getClass().getSimpleName());
+                    throw new NFWException("expected module for key " + xKey + ", but got a " + vThing.getVariable().getClass().getSimpleName());
                 }
             } else {
                 if (!(alias.equals("this") || state.getMInstances().containsKey(xKey))) {
@@ -471,8 +458,8 @@ http#host(qqq('https://foo'))
             setNewModuleVersion(getModuleState() != null);
             if (isNewModuleVersion() && getModuleState().getVStack().containsKey(xKey)) {
                 VThing vThing = (VThing) getModuleState().getVStack().get(xKey);
-                if (vThing.getValue() instanceof Module) {
-                    Module m = (Module) vThing.getValue();
+                if (vThing.getVariable() instanceof Module) {
+                    Module m = (Module) vThing.getVariable();
                     nextME.setModule(m);
                     nextME.setModuleState(m.getState()); //sets the next one in the chain.
                 } else {

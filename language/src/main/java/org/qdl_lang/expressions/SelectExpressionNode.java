@@ -254,7 +254,7 @@ public class SelectExpressionNode extends ExpressionImpl {
                  // try that
                  Object ooo = getCASE().evaluate(state);
                  if(!(ooo instanceof QDLStem)) {
-                     throw new BadArgException("scalars are not  supported as case types", getCASE());
+                     throw new BadArgException("scalars are not  supported as case values", getCASE());
                  }
                  QDLStem qdlStem = (QDLStem) ooo;
                  result = qdlStem.get(foundIndex);

@@ -5,6 +5,7 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
 import org.qdl_lang.variables.Constant;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ public class Monad extends ExpressionImpl{
     boolean postFix = true; //default
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         state.getOpEvaluator().evaluate(this, state);
         return getResult();
     }

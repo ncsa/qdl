@@ -583,7 +583,7 @@ public class HTTPClient implements QDLMetaModule {
                 doxx.addAll(getURIPathBlurb());
             }
             doxx.add("If you send along a simple string, it will be treated as the entire body of the post.");
-            doxx.add("Various content types and their uses are:");
+            doxx.add("Various content values and their uses are:");
             doxx.add("(none)         \n  string only          \n   body of the post is the string, content type set to " + CONTENT_TEXT);
             doxx.add(CONTENT_TEXT + "\n  payload is a string. \n   body is the string");
             doxx.add(CONTENT_FORM + "\n  payload is a stem.   \n   body is form encoded key=value pairs. See eg. below");
@@ -635,7 +635,7 @@ public class HTTPClient implements QDLMetaModule {
             }
             doxx.add("Note that the payload will be the body of the post. If a string, the whole string is the body.");
             doxx.add("If you need to add authorization headers, set them in the header() function first.");
-            doxx.add("See " + POST_METHOD + " for details of how payloads and content types are handled");
+            doxx.add("See " + POST_METHOD + " for details of how payloads and content values are handled");
             return doxx;
         }
     }
@@ -701,7 +701,7 @@ public class HTTPClient implements QDLMetaModule {
 
         if (headers.containsKey(contentType)) {
             /*
-             Typical content types look like
+             Typical content values look like
               text/html; charset=utf-8
               application/json; charset=utf-8
               multipart/form-data; boundary=something
@@ -936,7 +936,7 @@ public class HTTPClient implements QDLMetaModule {
             List<String> dd = new ArrayList<>();
             dd.add(getName() + "(resp.) - check if the response content is text.");
             dd.add("You may supply either the whole response or just the content part of it");
-            dd.add("This includes types like text, html, java, javascript etc.");
+            dd.add("This includes values like text, html, java, javascript etc.");
             return dd;
         }
     }

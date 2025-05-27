@@ -1,17 +1,25 @@
 package org.qdl_lang.statements;
 
+import org.qdl_lang.variables.values.QDLValue;
+
 /**
  * <p>Created by Jeff Gaynor<br>
  * on 3/11/20 at  6:33 AM
  */
 public interface HasResultInterface {
-    Object getResult();
+    QDLValue getResult();
 
-    void setResult(Object object);
+    void setResult(QDLValue result);
+
+    /**
+     * Convenience method.This should turn the object into a proper {@link QDLValue)} as needed.
+     * @param result
+     */
+    void setResult(Object result);
 
     int getResultType();
 
-    void setResultType(int type);
+    //void setResultType(int type);
 
     boolean isEvaluated();
 

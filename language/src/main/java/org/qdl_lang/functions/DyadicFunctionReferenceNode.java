@@ -1,12 +1,11 @@
 package org.qdl_lang.functions;
 
-import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.exceptions.UndefinedFunctionException;
 import org.qdl_lang.expressions.ExpressionImpl;
 import org.qdl_lang.module.Module;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
-import org.qdl_lang.variables.Constant;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +39,7 @@ public class DyadicFunctionReferenceNode extends ExpressionImpl implements Funct
      * @return
      */
     public int getFunctionArgCount(){
-        return ((Long)getArgAt(0).getResult()).intValue();
+        return getArgAt(0).getResult().asLong().intValue();
     }
     @Override
     public int getNodeType() {
@@ -52,7 +51,7 @@ public class DyadicFunctionReferenceNode extends ExpressionImpl implements Funct
     // directly for anything else!
     //
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         getArguments().get(0).evaluate(state);
         Object lArg = getArgAt(0).getResult();
         getArguments().get(1).setEvaluated(true); // so things don't bomb elsewhere
@@ -67,10 +66,9 @@ public class DyadicFunctionReferenceNode extends ExpressionImpl implements Funct
         if (state.isModuleState()) {
             setModuleState(state);
         }
-        setResult(this);
-        setResultType(Constant.getType(this));
+        setResult(new QDLValue(this));
         setEvaluated(true);
-        return this;
+        return getResult();
     }
 protected FunctionRecord getFRByArgCount(State state, int argCount, String functionName){
     FunctionRecord functionRecord = (FunctionRecord) state.getFTStack().get(new FKey(getFunctionName(), argCount));

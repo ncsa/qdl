@@ -13,6 +13,7 @@ import org.qdl_lang.module.Module;
 import org.qdl_lang.variables.*;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -66,7 +67,7 @@ public abstract class VariableState extends NamespaceAwareState {
      * @param variableName
      * @return
      */
-    public Object getValue(String variableName) {
+    public QDLValue getValue(String variableName) {
         if(variableName == null){
             throw new NFWException("null variable name encountered.");
         }
@@ -75,7 +76,7 @@ public abstract class VariableState extends NamespaceAwareState {
     }
 
 
-    public Object getValue(String variableName, Set<XKey> checkedAliases) {
+    public QDLValue getValue(String variableName, Set<XKey> checkedAliases) {
         if (checkedAliases == null) {
             checkedAliases = new HashSet<>();
         }
@@ -201,7 +202,7 @@ if(hasCompletionProvider()){
      * @param value
      * @return
      */
-    protected Object gsrNSStemOp(StemMultiIndex w, int op,
+    protected QDLValue gsrNSStemOp(StemMultiIndex w, int op,
                                  Object value, Set<XKey> checkInstances) {
         w = resolveStemIndices(w);
         String variableName;
@@ -312,12 +313,12 @@ if(hasCompletionProvider()){
                     return null;
                 }
                 if (isQDLNull) {
-                    return QDLNull.getInstance();
+                    return QDLNull.getInstance().getResult();
                 }
                 if (w.isEmpty()) {
-                    return stem;
+                    return new QDLValue(stem);
                 }
-                return stem.get(w);
+                return new QDLValue(stem.get(w));
             case OP_SET:
                 VThing vValue = new VThing(new XKey(variableName), value);
                 if (w.isEmpty()) {
@@ -349,24 +350,7 @@ if(hasCompletionProvider()){
         throw new NFWException("Internal error; unknown operation type on stem variables.");
     }
 
-    /**
-     * If in import mode - if st is a SymbolTable, set value, if a symbol stack, set local<br/>
-     * otherwise, set value
-     *
-     * @param variableName
-     * @param value
-     */
-/*    private void setValueImportAware(String variableName, Object value, SymbolTable st) {
-        if (isImportMode()) {
-            if (st instanceof SymbolTable) {
-                st.setValue(variableName, value);
-            } else {
-                ((SymbolStack) st).setLocalValue(variableName, value);
-            }
-        } else {
-            st.setValue(variableName, value);
-        }
-    }*/
+
     private void setValueImportAware(String variableName, Object value) {
         VThing vThing = new VThing(new XKey(variableName), value);
         if (isExtrinsic(variableName)) {
@@ -478,7 +462,7 @@ if(hasCompletionProvider()){
                 if (v == null) {
                     return null;
                 }
-                return v.getValue();
+                return v.getVariable();
             case OP_SET:
                 setValueImportAware(variableName, value);
                 return null;

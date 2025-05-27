@@ -4,6 +4,7 @@ import org.qdl_lang.functions.DyadicFunctionReferenceNode;
 import org.qdl_lang.functions.FunctionReferenceNode;
 import org.qdl_lang.module.Module;
 import org.qdl_lang.variables.QDLNull;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -55,8 +56,9 @@ public class AbstractIdentityStemProcess implements ProcessStemValues{
      * @param value
      * @return
      */
-    public Object getDefaultValue(List<Object> index,Object key, Object value) {
-        return value;
+    public QDLValue getDefaultValue(List<Object> index, Object key, Object value) {
+        if(value instanceof QDLValue) {return (QDLValue) value;}
+        return new QDLValue(value);
     }
 
 }

@@ -17,6 +17,7 @@ import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
+import org.qdl_lang.variables.values.*;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -27,6 +28,7 @@ import static org.qdl_lang.util.aggregate.ProcessStemAxisRestriction.ALL_AXES;
 import static org.qdl_lang.variables.Constant.*;
 import static org.qdl_lang.variables.QDLStem.STEM_INDEX_MARKER;
 import static org.qdl_lang.variables.StemUtility.LAST_AXIS_ARGUMENT_VALUE;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -415,7 +417,7 @@ public class StemEvaluator extends AbstractEvaluator {
      */
     private void doExcise(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3});
+            polyad.setAllowedArgCounts(new int[]{2, 3});
             polyad.setEvaluated(true);
             return;
         }
@@ -425,39 +427,36 @@ public class StemEvaluator extends AbstractEvaluator {
         if (3 < polyad.getArgCount()) {
             throw new ExtraArgException(EXCISE + " takes at most three arguments", polyad.getArgAt(2));
         }
-        Object arg0 = polyad.evalArg(0, state);
-        Object arg1 = polyad.evalArg(1, state);
+        QDLValue arg0 = polyad.evalArg(0, state);
+        QDLValue arg1 = polyad.evalArg(1, state);
         boolean reorderLists = true; // default
         if (polyad.getArgCount() == 3) {
-            Object arg2 = polyad.evalArg(2, state);
-            if (arg2 instanceof Boolean) {
-                reorderLists = (Boolean) arg2;
+            QDLValue arg2 = polyad.evalArg(2, state);
+            if (arg2.isBoolean()) {
+                reorderLists =  arg2.asBoolean();
             } else {
                 throw new BadArgException(EXCISE + " takes a boolean as its third argument", polyad.getArgAt(2));
             }
 
         }
-        Collection values;
-        if (arg1 instanceof QDLStem) {
-            values = ((QDLStem) arg1).values();
+        Collection<QDLValue> values;
+        if (arg1.isStem()) {
+            values = arg1.asStem().values();
         } else {
             values = new QDLSet();
             values.add(arg1);
         }
-        if (arg0 instanceof QDLStem) {
-            QDLStem inStem = (QDLStem) arg0;
+        if (arg0.isStem()) {
+            QDLStem inStem = arg0.asStem();
             inStem.removeAllByValues(values, reorderLists);
             polyad.setResult(inStem);
-            polyad.setResultType(STEM_TYPE);
             polyad.setEvaluated(true);
             return;
         } // end stem processing
-        if (arg0 instanceof QDLSet) {
-            QDLSet set = (QDLSet) arg0;
+        if (arg0.isSet()) {
+            QDLSet set =  arg0.asSet();
             set.removeAll(values);
             polyad.setResult(set);
-            ;
-            polyad.setResultType(SET_TYPE);
             polyad.setEvaluated(true);
             return;
         }
@@ -495,7 +494,7 @@ public class StemEvaluator extends AbstractEvaluator {
     private void doDisplay(Polyad polyad, State state) {
 
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -505,7 +504,7 @@ public class StemEvaluator extends AbstractEvaluator {
         if (2 < polyad.getArgCount()) {
             throw new ExtraArgException(DISPLAY + " takes at most two arguments", polyad.getArgAt(2));
         }
-        Object arg0 = polyad.evalArg(0, state);
+        QDLValue arg0 = polyad.evalArg(0, state);
         if (arg0 == null) {
             if (polyad.getArgAt(0) instanceof VariableNode) {
                 throw new QDLExceptionWithTrace("the variable named '" +
@@ -525,24 +524,24 @@ public class StemEvaluator extends AbstractEvaluator {
         boolean showKeys = true;
         boolean unicodeBoxChars = true;
         if (polyad.getArgCount() == 2) {
-            Object arg1 = polyad.evalArg(1, state);
-            if (isLong(arg1)) {
-                width = ((Long) arg1).intValue();
+            QDLValue arg1 = polyad.evalArg(1, state);
+            if (arg1.isLong()) {
+                width = arg1.asLong().intValue();
             } else {
-                if (isStem(arg1)) {
-                    QDLStem c = (QDLStem) arg1;
+                if (arg1.isStem()) {
+                    QDLStem c = arg1.asStem();
                     if(c.isList()){
                         // can be a list for the form [flag, flag, ... width] in any order
                         QDLList list = c.getQDLList();
-                        for(Object o : list){
-                            if(o instanceof Long){
-                                width = ((Long) o).intValue();
+                        for(QDLValue o : list){
+                            if(o.isLong()){
+                                width = o.asLong().intValue();
                                 continue;
                             }
-                            if(!(o instanceof String)){
+                            if(!(o.isString())){
                                 throw new QDLExceptionWithTrace("illegal argument, must be a string or integer", polyad.getArgAt(1));
                             }
-                            String key = (String)o;
+                            String key = o.asString();
                             boolean value = true;
                             if(key.startsWith("!") || key.startsWith("¬")){
                                 value = false;
@@ -589,10 +588,10 @@ public class StemEvaluator extends AbstractEvaluator {
                                     indent = c.getLong(DISPLAY_INDENT).intValue();
                                     break;
                                 case DISPLAY_ATTRIBUTES:
-                                    if (!(c.get(DISPLAY_ATTRIBUTES) instanceof QDLStem)) {
+                                    if (!c.get(DISPLAY_ATTRIBUTES).isStem()) {
                                         throw new BadArgException(DISPLAY_ATTRIBUTES + " in second argument to " + DISPLAY + " must be a list", polyad.getArgAt(1));
                                     }
-                                    QDLStem zzz = (QDLStem) c.get(DISPLAY_ATTRIBUTES);
+                                    QDLStem zzz = c.get(DISPLAY_ATTRIBUTES).asStem();
                                     if (!zzz.isList()) {
                                         throw new BadArgException(DISPLAY_ATTRIBUTES + " in second argument to " + DISPLAY + " must be a list", polyad.getArgAt(1));
                                     }
@@ -622,12 +621,12 @@ public class StemEvaluator extends AbstractEvaluator {
             }
         }
         List<String> list = null;
-        if (isStem(arg0)) {
-            QDLStem stem = (QDLStem) arg0;
+        if (arg0.isStem()) {
+            QDLStem stem = arg0.asStem();
 
-            Map map = new HashMap<>();
+            Map map = new HashMap<>(); // Java values for formatting util
             for (Object key : stem.keySet()) {
-                map.put(key, stem.get(key));
+                map.put(key, stem.get(key).getValue());
             }
 
             list = StringUtils.formatMap(map,
@@ -639,8 +638,8 @@ public class StemEvaluator extends AbstractEvaluator {
                     false,
                     !showKeys); // don't let it try to turn random stems into JSON.
         } else {
-            if (arg0 instanceof String) {
-                String inString = (String) arg0;
+            if (arg0.isString()) {
+                String inString =  arg0.asString();
                 int lineNumber = 0;
                 if (-1 < inString.indexOf("\n")) {
                     StringTokenizer st = new StringTokenizer(inString, "\n");
@@ -719,7 +718,6 @@ public class StemEvaluator extends AbstractEvaluator {
             }
             polyad.setEvaluated(true);
             polyad.setResult(x);
-            polyad.setResultType(STRING_TYPE);
             return;
         }
 
@@ -728,8 +726,6 @@ public class StemEvaluator extends AbstractEvaluator {
         out.addList(list);
         polyad.setEvaluated(true);
         polyad.setResult(out);
-        polyad.setResultType(STEM_TYPE);
-
     }
 
     /*
@@ -744,11 +740,11 @@ public class StemEvaluator extends AbstractEvaluator {
                                  int width) {
         Map map = new HashMap<>();
         for (Object key : stem.keySet()) {
-            Object vvv = stem.get(key);
-            if (vvv instanceof QDLStem) {
-                map.put(key, rFormatStem((QDLStem) vvv, keySubset, sortKeys, multilineMode, indent, width));
+            QDLValue vvv = stem.get(key);
+            if (vvv.isStem()) {
+                map.put(key, rFormatStem(vvv.asStem(), keySubset, sortKeys, multilineMode, indent, width));
             } else {
-                map.put(key, vvv);
+                map.put(key, vvv.getValue());
             }
         }
 
@@ -781,7 +777,7 @@ public class StemEvaluator extends AbstractEvaluator {
      */
     private void doDiff(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3});
+            polyad.setAllowedArgCounts(new int[]{2, 3});
             polyad.setEvaluated(true);
             return;
         }
@@ -792,46 +788,43 @@ public class StemEvaluator extends AbstractEvaluator {
             throw new ExtraArgException(DIFF + " takes at most three arguments", polyad.getArgAt(3));
         }
         boolean subsettingOn = true;
-        Object arg0 = polyad.evalArg(0, state);
+        QDLValue  arg0 = polyad.evalArg(0, state);
         QDLStem stem0;
         boolean arg0Scalar = false;
-        if (arg0 instanceof QDLStem) {
-            stem0 = (QDLStem) arg0;
+        if (arg0.isStem()) {
+            stem0 =  arg0.asStem();
         } else {
             stem0 = new QDLStem();
             stem0.setDefaultValue(arg0);
             arg0Scalar = true;
-            //throw new BadArgException("first argument to " + DIFF + " must be a stem", polyad.getArgAt(0));
         }
 
-        Object arg1 = polyad.evalArg(1, state);
+        QDLValue arg1 = polyad.evalArg(1, state);
         QDLStem stem1;
         boolean arg1Scalar = false;
-        if (arg1 instanceof QDLStem) {
-            stem1 = (QDLStem) arg1;
+        if (arg1.isStem()) {
+            stem1 = arg1.asStem();
         } else {
             stem1 = new QDLStem();
             stem1.setDefaultValue(arg1);
             arg1Scalar = true;
-            //throw new BadArgException("second argument to " + DIFF + " must be a stem", polyad.getArgAt(1));
         }
         if (arg0Scalar && arg1Scalar) {
             QDLStem out = new QDLStem();
             if (!arg0.equals(arg1)) {
                 QDLStem r = new QDLStem();
-                r.put(0L, arg0);
-                r.put(1L, arg1);
-                out.put(0L, r); // give it the right shape
+                r.put(0L, asQDLValue(arg0));
+                r.put(1L, asQDLValue(arg1));
+                out.put(0L, asQDLValue(r)); // give it the right shape
             }
             polyad.setResult(out);
             polyad.setEvaluated(true);
-            polyad.setResultType(STEM_TYPE);
             return;
         }
         if (polyad.getArgCount() == 3) {
-            Object arg2 = polyad.evalArg(2, state);
-            if (arg2 instanceof Boolean) {
-                subsettingOn = (Boolean) arg2;
+            QDLValue arg2 = polyad.evalArg(2, state);
+            if (arg2.isBoolean()) {
+                subsettingOn =  arg2.asBoolean();
             } else {
                 throw new BadArgException("last argument to " + DIFF + " must be a boolean", polyad.getArgAt(2));
             }
@@ -855,41 +848,38 @@ public class StemEvaluator extends AbstractEvaluator {
             if (lArg == null) {
                 if (!subsettingOn) {
                     QDLStem r = new QDLStem();
-                    r.putLongOrString(0L, QDLNull.getInstance());
-                    r.putLongOrString(1L, rArg);
-                    out.putLongOrString(key, r);
+                    r.putLongOrString(0L, QDLValue.getNullValue());
+                    r.putLongOrString(1L, asQDLValue(rArg));
+                    out.putLongOrString(key, asQDLValue(r));
                 }
             } else {
                 if (rArg == null) {
                     if (!subsettingOn) {
                         QDLStem r = new QDLStem();
-                        r.putLongOrString(0L, lArg);
-                        r.putLongOrString(1L, QDLNull.getInstance());
-                        out.putLongOrString(key, r);
+                        r.putLongOrString(0L, asQDLValue(lArg));
+                        r.putLongOrString(1L, QDLValue.getNullValue());
+                        out.putLongOrString(key, asQDLValue(r));
                     }
 
                 } else {
                     // neither is a Java null, so NPE possible here
                     if (!lArg.equals(rArg)) {
                         QDLStem r = new QDLStem();
-                        r.putLongOrString(0L, lArg);
-                        r.putLongOrString(1L, rArg);
-                        out.putLongOrString(key, r);
-
+                        r.putLongOrString(0L, asQDLValue(lArg));
+                        r.putLongOrString(1L, asQDLValue(rArg));
+                        out.putLongOrString(key, asQDLValue(r));
                     }
                 }
             }
-
         }
 
         polyad.setResult(out);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
     }
 
     private void doStar(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0});
+            polyad.setAllowedArgCounts(new int[]{0});
             polyad.setEvaluated(true);
             return;
         }
@@ -897,51 +887,49 @@ public class StemEvaluator extends AbstractEvaluator {
             throw new MissingArgException(STAR + " takes no arguments", polyad.getArgCount() == 1 ? polyad.getArgAt(0) : polyad);
         }
         polyad.setResult(new AllIndices());
-        polyad.setResultType(NULL_TYPE);
         polyad.setEvaluated(true);
     }
 
     private void doRemap(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2, 3});
+            polyad.setAllowedArgCounts(new int[]{1, 2, 3});
             polyad.setEvaluated(true);
             return;
         }
-        Object arg1 = polyad.evalArg(0, state);
+        QDLValue arg1 = polyad.evalArg(0, state);
         checkNull(arg1, polyad.getArgAt(0));
-        if (!isStem(arg1)) {
+        if (!arg1.isStem()) {
             throw new BadArgException(REMAP + " requires stem as its first argument", polyad.getArgAt(0));
         }
-        QDLStem stem = (QDLStem) arg1;
+        QDLStem stem = arg1.asStem();
         if (polyad.getArgCount() == 1) {
             // reverse keys and values
             QDLStem out = reverseKeysAndValues(stem);
             polyad.setResult(out);
             polyad.setEvaluated(true);
-            polyad.setResultType(STEM_TYPE);
             return;
         }
 
-        Object arg2 = polyad.evalArg(1, state);
+        QDLValue arg2 = polyad.evalArg(1, state);
         checkNull(arg2, polyad.getArgAt(1));
 
-        if (!isStem(arg2)) {
+        if (!arg2.isStem()) {
             throw new BadArgException(REMAP + " requires an stem or integer as its second argument", polyad.getArgAt(1));
         }
         QDLStem newIndices = null;
         if (polyad.getArgCount() == 3) {
-            Object arg3 = polyad.evalArg(2, state);
+            QDLValue arg3 = polyad.evalArg(2, state);
             checkNull(arg3, polyad.getArgAt(2), state);
-            if (!isStem(arg3)) {
+            if (!arg3.isStem()) {
                 throw new BadArgException(REMAP + " requires an stem or integer as its third argument", polyad.getArgAt(2));
             }
 
-            newIndices = (QDLStem) arg3;
-            threeArgRemap(polyad, stem, (QDLStem) arg2, newIndices);
+            newIndices = arg3.asStem();
+            threeArgRemap(polyad, stem, arg2.asStem(), newIndices);
             return;
         }
         try {
-            twoArgRemap(polyad, stem, (QDLStem) arg2);
+            twoArgRemap(polyad, stem, arg2.asStem());
         } catch (IndexError indexError) {
             indexError.setStatement(polyad.getArgAt(1));
             throw indexError;
@@ -953,12 +941,12 @@ public class StemEvaluator extends AbstractEvaluator {
     protected QDLStem reverseKeysAndValues(QDLStem inStem) {
         QDLStem out = new QDLStem();
         for (Object kk : inStem.keySet()) {
-            Object v = inStem.get(kk);
-            if (isLong(v) || isString(v)) {
-                out.putLongOrString(v, kk);
+            QDLValue v = inStem.get(kk);
+            if (v.isLong() || v.isString()) {
+                out.putLongOrString(v, asQDLValue(kk));
             }
             if (isStem(v)) {
-                out.putLongOrString(kk, reverseKeysAndValues((QDLStem) v));
+                out.putLongOrString(kk, asQDLValue(reverseKeysAndValues(v.asStem())));
             }
         }
         return out;
@@ -966,7 +954,7 @@ public class StemEvaluator extends AbstractEvaluator {
 
     protected void doIndices(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -978,16 +966,16 @@ public class StemEvaluator extends AbstractEvaluator {
             throw new ExtraArgException(ALL_KEYS + " requires at most two arguments", polyad.getArgAt(2));
         }
 
-        Object arg0 = polyad.evalArg(0, state);
+        QDLValue arg0 = polyad.evalArg(0, state);
         checkNull(arg0, polyad.getArgAt(0), state);
-        if (!isStem(arg0)) {
+        if (!arg0.isStem()) {
             throw new BadArgException(ALL_KEYS + " requires a stem as its first argument", polyad.getArgAt(0));
         }
-        boolean hasAxisExpression = arg0 instanceof AxisExpression;
+        boolean hasAxisExpression = arg0.isAxisRestriction();
         QDLStem stem;
         long axis = 0L;
         if (hasAxisExpression) {
-            AxisExpression ae = (AxisExpression) arg0;
+            AxisExpression ae = arg0.asAxisExpression();
             stem = ae.getStem();
             if (ae.isStar()) {
                 // In this case, the effect is to nullify the argument.
@@ -997,27 +985,26 @@ public class StemEvaluator extends AbstractEvaluator {
                 axis = ae.getAxis();
             }
         } else {
-            stem = (QDLStem) arg0;
+            stem = arg0.asStem();
         }
         boolean returnAll = true;
         if (!hasAxisExpression && polyad.getArgCount() == 2) {
             returnAll = false;
-            Object arg1 = polyad.evalArg(1, state);
+            QDLValue arg1 = polyad.evalArg(1, state);
             checkNull(arg1, polyad.getArgAt(1), state);
-            if (!isLong(arg1)) {
+            if (!arg1.isLong()) {
                 throw new BadArgException(ALL_KEYS + " requires the second argument be an integer if present.", polyad.getArgAt(1));
             }
-            axis = (Long) arg1;
+            axis = arg1.asLong();
         }
         QDLStem rc = returnAll ? stem.indicesByRank() : stem.indicesByRank(axis);
         polyad.setResult(rc);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(Boolean.TRUE);
     }
 
     protected void doValues(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -1026,23 +1013,19 @@ public class StemEvaluator extends AbstractEvaluator {
         }
         // create a list of values for a stem.
         QDLStem out = new QDLStem();
-        Object object0 = polyad.evalArg(0, state);
+        QDLValue object0 = polyad.evalArg(0, state);
         checkNull(object0, polyad.getArgAt(0));
         QDLSet outSet;
-        if (isStem(object0)) {
-            QDLStem inStem = (QDLStem) object0;
+        if (object0.isStem()) {
+            QDLStem inStem =  object0.asStem();
             outSet = inStem.valueSet();
-
         } else {
-            //out.put(0L, object0);
             outSet = new QDLSet();
-            outSet.add(object0);
+            outSet.add(asQDLValue(object0));
         }
 
         polyad.setResult(outSet);
-        polyad.setResultType(SET_TYPE);
         polyad.setEvaluated(true);
-
     }
 
     /**
@@ -1068,11 +1051,11 @@ public class StemEvaluator extends AbstractEvaluator {
         if (polyad.getArgCount() == 1) {
             throw new MissingArgException(FOR_EACH + " requires at least 2 arguments", polyad.getArgAt(0));
         }
-        Object[] stems = new Object[polyad.getArgCount() - 1];
+        QDLValue[] stems = new QDLValue[polyad.getArgCount() - 1];
         boolean allScalars = true;
         for (int i = 1; i < polyad.getArgCount(); i++) {
             //Object arg = polyad.evalArg(i, state);
-            Object arg = polyad.evalArg(i, localState);
+            QDLValue arg = polyad.evalArg(i, localState);
             checkNull(arg, polyad.getArgAt(i));
             stems[i - 1] = arg;
             allScalars = allScalars && (!isStem(arg));
@@ -1097,7 +1080,6 @@ public class StemEvaluator extends AbstractEvaluator {
             //Object y = forEachEval(f, state, Arrays.asList(stems));
             Object y = forEachEval(f, localState, Arrays.asList(stems));
             polyad.setResult(y);
-            polyad.setResultType(Constant.getType(y));
             polyad.setEvaluated(true);
             return;
         }
@@ -1107,7 +1089,6 @@ public class StemEvaluator extends AbstractEvaluator {
         //forEachRecursion2(output, f, state, stems, new IndexList(), new ArrayList(), 0);
         forEachRecursion2(output, f, localState, stems, new IndexList(), new ArrayList(), 0);
         polyad.setResult(output);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
     }
 
@@ -1140,7 +1121,7 @@ public class StemEvaluator extends AbstractEvaluator {
             currentIndex++;
             if (currentIndex == args.length) {
                 // end of the line for recursion. Evaluate
-                output.set(indexList, forEachEval(f, state, values));
+                output.set(indexList, asQDLValue(forEachEval(f, state, values)));
                 return;
             }
         }
@@ -1158,7 +1139,7 @@ public class StemEvaluator extends AbstractEvaluator {
             valuesList1.add(currentStem.get(index));
             if (currentIndex == args.length) {
                 // end of the line for recursion. Evaluate
-                output.set(nextIndexList, forEachEval(f, state, valuesList1));
+                output.set(nextIndexList, asQDLValue(forEachEval(f, state, valuesList1)));
             } else {
                 forEachRecursion(output, f, state, args, nextIndexList, valuesList1, currentIndex);
             }
@@ -1178,7 +1159,7 @@ public class StemEvaluator extends AbstractEvaluator {
             currentIndex++;
             if (currentIndex == args.length) {
                 // end of the line for recursion. Evaluate
-                output.set(indexList, forEachEval(f, state, values));
+                output.set(indexList, asQDLValue(forEachEval(f, state, values)));
                 return;
             }
         }
@@ -1215,7 +1196,7 @@ public class StemEvaluator extends AbstractEvaluator {
             valuesList1.add(currentStem.get(index));
             if (currentIndex == args.length || (isAxisExpression && args.length == axis)) {
                 // end of the line for recursion. Evaluate
-                output.set(nextIndexList, forEachEval(f, state, valuesList1));
+                output.set(nextIndexList, asQDLValue(forEachEval(f, state, valuesList1)));
             } else {
                 forEachRecursion2(output, f, state, args, nextIndexList, valuesList1, currentIndex);
             }
@@ -1234,9 +1215,9 @@ public class StemEvaluator extends AbstractEvaluator {
         State state;
 
         @Override
-        public Object getDefaultValue(List<Object> index, Object key, Object value) {
+        public QDLValue getDefaultValue(List<Object> index, Object key, Object value) {
             ArgList argList1 = new ArgList();
-            argList1.add(new ConstantNode(value));
+            argList1.add(new ConstantNode(asQDLValue(value)));
             f.setArguments(argList1);
             return f.evaluate(state);
         }
@@ -1246,7 +1227,7 @@ f(x.)→x.0+x.1;
 @f∀[n(3,4,4,[;3*4*4])|0]
  */
 
-    protected Object forEachEval(ExpressionImpl f, State state, List args) {
+    protected QDLValue forEachEval(ExpressionImpl f, State state, List args) {
         if (f instanceof Monad) {
             if (args.size() != 1) {
                 throw new BadArgException("cannot apply monad to multiple arguments", f);
@@ -1263,40 +1244,21 @@ f(x.)→x.0+x.1;
             dd = (Dyad) f;
             isDyad = true;
 
-           /* Dyad dyad = (Dyad) f;
-            dyad.setLeftArgument(new ConstantNode(args.get(0)));
-            dyad.setRightArgument(new ConstantNode(args.get(1)));
-            Object out = dyad.evaluate(state);
-            for (int i = 2; i < args.size(); i++) {
-                dyad.setLeftArgument(new ConstantNode(out));
-                dyad.setRightArgument(new ConstantNode(args.get(i)));
-                out = dyad.evaluate(state);
-            }
-            return out;*/
         }
         if (f instanceof UserFunction) {
             UserFunction userFunction = (UserFunction) f;
             if (userFunction.getFunctionRecord().getArgCount() == 2) {
                 dd = userFunction;
                 isDyad = true;
-                   /* userFunction.addArgument(new ConstantNode(args.get(0)));
-                    userFunction.addArgument(new ConstantNode(args.get(1)));
-                    Object out = userFunction.evaluate(state);
-                    for (int i = 2; i < args.size(); i++) {
-                        dyad.setLeftArgument(new ConstantNode(out));
-                        dyad.setRightArgument(new ConstantNode(args.get(i)));
-                        out = dyad.evaluate(state);
-                    }
-                    return out;*/
             }
         }
         if (isDyad) {
-            dd.addArgument(new ConstantNode(args.get(0)));
-            dd.addArgument(new ConstantNode(args.get(1)));
-            Object out = dd.evaluate(state);
+            dd.addArgument(new ConstantNode(asQDLValue(args.get(0))));
+            dd.addArgument(new ConstantNode(asQDLValue(args.get(1))));
+            QDLValue out = dd.evaluate(state);
             for (int i = 2; i < args.size(); i++) {
                 dd.getArguments().set(0, new ConstantNode(dd.getResult()));
-                dd.getArguments().set(1, new ConstantNode(args.get(i)));
+                dd.getArguments().set(1, new ConstantNode(asQDLValue(args.get(i))));
                 out = dd.evaluate(state);
             }
             dd.getArguments().clear(); // so the next iteration does not have cruft.
@@ -1305,7 +1267,7 @@ f(x.)→x.0+x.1;
         }
         ArgList argList1 = new ArgList();
         for (Object arg : args) {
-            argList1.add(new ConstantNode(arg));
+            argList1.add(new ConstantNode(asQDLValue(arg)));
         }
         f.setArguments(argList1);
         return f.evaluate(state);
@@ -1314,7 +1276,7 @@ f(x.)→x.0+x.1;
 
     protected void doJPathQuery(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3});
+            polyad.setAllowedArgCounts(new int[]{2, 3});
             polyad.setEvaluated(true);
             return;
         }
@@ -1331,24 +1293,24 @@ f(x.)→x.0+x.1;
             throw new BadArgException(JSON_PATH_QUERY + " requires a stem as its first argument", polyad.getArgAt(0));
         }
         QDLStem stemVariable = (QDLStem) arg0;
-        Object arg1 = polyad.evalArg(1, state);
+        QDLValue arg1 = polyad.evalArg(1, state);
         checkNull(arg1, polyad.getArgAt(1));
 
-        if (!isString(arg1)) {
+        if (!arg1.isString()) {
             throw new BadArgException(JSON_PATH_QUERY + " requires a string as its second argument", polyad.getArgAt(1));
         }
 
-        String query = (String) arg1;
+        String query = arg1.asString();
         Configuration conf = null;
         boolean returnAsPaths = false;
         if (polyad.getArgCount() == 3) {
-            Object arg2 = polyad.evalArg(2, state);
+            QDLValue arg2 = polyad.evalArg(2, state);
             checkNull(arg2, polyad.getArgAt(2));
 
-            if (!isBoolean(arg2)) {
+            if (!arg2.isBoolean()) {
                 throw new BadArgException(JSON_PATH_QUERY + " requires a boolean as its third argument", polyad.getArgAt(2));
             }
-            returnAsPaths = (Boolean) arg2;
+            returnAsPaths = arg2.asBoolean();
             conf = Configuration.builder()
                     .options(Option.AS_PATH_LIST).build();
         }
@@ -1392,7 +1354,6 @@ f(x.)→x.0+x.1;
             }
         }
         polyad.setResult(outStem);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
     }
 
@@ -1421,9 +1382,9 @@ f(x.)→x.0+x.1;
                 if (nextOne.endsWith("'")) {
                     nextOne = nextOne.substring(0, nextOne.length() - 1);
                 }
-                r.listAdd(nextOne);
+                r.listAdd(asQDLValue(nextOne));
             }
-            arrayOut.put(i, r);
+            arrayOut.put(i, asQDLValue(r));
 
         }
         return arrayOut;
@@ -1432,7 +1393,7 @@ f(x.)→x.0+x.1;
 
     private void doRank(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -1445,20 +1406,17 @@ f(x.)→x.0+x.1;
 
         if (!isStem(polyad.evalArg(0, state))) {
             polyad.setEvaluated(true);
-            polyad.setResultType(LONG_TYPE);
             polyad.setResult(0L);
             return;
         }
         polyad.setEvaluated(true);
-        QDLStem s = (QDLStem) polyad.getArgAt(0).getResult();
+        QDLStem s = polyad.getArgAt(0).getResult().asStem();
         polyad.setResult(s.getRank());
-        polyad.setResultType(LONG_TYPE);
-
     }
 
     private void doDimension(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -1470,21 +1428,19 @@ f(x.)→x.0+x.1;
         }
         if (!isStem(polyad.evalArg(0, state))) {
             polyad.setEvaluated(true);
-            polyad.setResultType(LONG_TYPE);
             polyad.setResult(0L);
             return;
         }
         // so its a stem
         polyad.setEvaluated(true);
-        QDLStem s = (QDLStem) polyad.getArgAt(0).getResult();
+        QDLStem s = polyad.getArgAt(0).getResult().asStem();
         polyad.setResult(s.dim());
-        polyad.setResultType(STEM_TYPE);
 
     }
 
     private void doUniqueValues(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -1495,21 +1451,19 @@ f(x.)→x.0+x.1;
             throw new ExtraArgException("the " + UNIQUE_VALUES + " function requires at most 1 argument", polyad.getArgAt(1));
         }
 
-        polyad.evalArg(0, state);
-        Object arg = polyad.getArgAt(0).getResult();
+
+        QDLValue arg = polyad.evalArg(0, state);
         checkNull(arg, polyad.getArgAt(0));
 
         if (!isStem(arg)) {
             polyad.setResult(new QDLStem()); // just an empty stem
-            polyad.setResultType(STEM_TYPE);
             polyad.setEvaluated(true);
             return;
         }
-        QDLStem stemVariable = (QDLStem) arg;
+        QDLStem stemVariable = arg.asStem();
         QDLStem out = stemVariable.almostUnique().almostUnique();
 
         polyad.setResult(out);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
     }
 
@@ -1522,49 +1476,48 @@ f(x.)→x.0+x.1;
      */
     protected void doIsMemberOf(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
         if (polyad.getArgCount() != 2) {
             throw new WrongArgCountException(HAS_VALUE + " requires 2 arguments.", polyad);
         }
-        Object leftArg = polyad.evalArg(0, state);
+        QDLValue  leftArg = polyad.evalArg(0, state);
         checkNull(leftArg, polyad.getArgAt(0));
 
-        Object rightArg = polyad.evalArg(1, state);
+        QDLValue rightArg = polyad.evalArg(1, state);
         checkNull(rightArg, polyad.getArgAt(1));
         // breaks  down tidily in to 4 cases.
-        if (isStem(leftArg)) {
-            QDLStem lStem = (QDLStem) leftArg;
+        if (leftArg.isStem()) {
+            QDLStem lStem = leftArg.asStem();
             QDLStem result = new QDLStem(); // result is always conformable to left arg
 
-            if (isStem(rightArg)) {
-                QDLStem rStem = (QDLStem) rightArg;
+            if (rightArg.isStem()) {
+                QDLStem rStem = rightArg.asStem();
                 for (Object lkey : lStem.keySet()) {
-                    result.putLongOrString(lkey, rStem.hasValue(lStem.get(lkey)));
+                    result.putLongOrString(lkey, asQDLValue(rStem.hasValue(lStem.get(lkey))));
                 }
             } else {
-                if (isSet(rightArg)) {
-                    QDLSet rSet = (QDLSet) rightArg;
+                if (rightArg.isSet()) {
+                    QDLSet rSet =  rightArg.asSet();
                     for (Object key : lStem.keySet()) {
                         boolean keyIsLong = key instanceof Long;
-                        Object ooo = lStem.get(key);
-                        if (ooo instanceof BigDecimal) {
+                        QDLValue ooo = lStem.get(key);
+                        if (ooo.isDecimal()) {
                             if (keyIsLong) {
-                                result.put((Long) key, Boolean.FALSE);
+                                result.put((Long) key, asQDLValue(Boolean.FALSE));
                             } else {
-                                result.put((String) key, Boolean.FALSE);
+                                result.put((String) key, asQDLValue(Boolean.FALSE));
                             }
-                            ;
-                            for (Object element : rSet) {
-                                if (element instanceof BigDecimal) {
-                                    boolean tempB = bdEquals((BigDecimal) ooo, (BigDecimal) element);
+                            for (QDLValue element : rSet) {
+                                if (element.isDecimal()) {
+                                    boolean tempB = bdEquals(ooo.asDecimal(), element.asDecimal());
                                     if (tempB) {
                                         if (keyIsLong) {
-                                            result.put((Long) key, Boolean.TRUE);
+                                            result.put((Long) key, new BooleanValue(Boolean.TRUE));
                                         } else {
-                                            result.put((String) key, Boolean.TRUE);
+                                            result.put((String) key, new BooleanValue(Boolean.TRUE));
                                         }
                                         break;
                                     }
@@ -1573,39 +1526,35 @@ f(x.)→x.0+x.1;
 
                         } else {
                             if (keyIsLong) {
-                                result.put((Long) key, rSet.contains(ooo));
-
+                                result.put((Long) key, new BooleanValue(rSet.contains(ooo)));
                             } else {
-                                result.put((String) key, rSet.contains(ooo));
-
+                                result.put((String) key, new BooleanValue(rSet.contains(ooo)));
                             }
                         }
                     }
                 } else {
                     // check if each element in the left stem matches the value of the right arg.
                     for (Object lKey : lStem.keySet()) {
-                        result.putLongOrString(lKey, lStem.get(lKey).equals(rightArg) ? Boolean.TRUE : Boolean.FALSE); // got to finagle these are right Java objects
+                        result.putLongOrString(lKey, asQDLValue(lStem.get(lKey).equals(rightArg) ? Boolean.TRUE : Boolean.FALSE)); // got to finagle these are right Java objects
                     }
                 }
             }
             polyad.setResult(result);
-            polyad.setResultType(STEM_TYPE);
-
         } else {
             // left arg is not a stem.
             Boolean result = Boolean.FALSE;
-            if (isStem(rightArg)) {
-                QDLStem rStem = (QDLStem) rightArg;
-                result = rStem.hasValue(leftArg);
+            if (rightArg.isStem()) {
+                QDLStem rStem = rightArg.asStem();
+                result = rStem.hasValue(asQDLValue(leftArg));
             } else {
-                if (isSet(rightArg)) {
-                    if (leftArg instanceof BigDecimal) {
+                if (rightArg.isSet()) {
+                    if (leftArg.isDecimal()) {
                         // much slower, but there is no other way to compare big decimals.
-                        QDLSet qdlSet = (QDLSet) rightArg;
+                        QDLSet qdlSet = rightArg.asSet();
                         result = false;
-                        for (Object element : qdlSet) {
-                            if (element instanceof BigDecimal) {
-                                boolean tempB = bdEquals((BigDecimal) leftArg, (BigDecimal) element);
+                        for (QDLValue element : qdlSet) {
+                            if (element.isDecimal()) {
+                                boolean tempB = bdEquals(leftArg.asDecimal(), element.asDecimal());
                                 if (tempB) {
                                     result = true;
                                     break;
@@ -1613,15 +1562,13 @@ f(x.)→x.0+x.1;
                             }
                         }
                     } else {
-                        result = ((QDLSet) rightArg).contains(leftArg);
+                        result = rightArg.asSet().contains(leftArg);
                     }
                 } else {
                     result = leftArg.equals(rightArg);
                 }
             }
             polyad.setResult(result);
-            polyad.setResultType(BOOLEAN_TYPE);
-
         }
         polyad.setEvaluated(true);
     }
@@ -1629,7 +1576,7 @@ f(x.)→x.0+x.1;
 
     protected void doFromJSON(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -1639,28 +1586,28 @@ f(x.)→x.0+x.1;
         if (2 < polyad.getArgCount()) {
             throw new ExtraArgException(FROM_JSON + " takes at most two arguments", polyad.getArgAt(2));
         }
-        Object arg0 = polyad.evalArg(0, state);
+        QDLValue arg0 = polyad.evalArg(0, state);
         checkNull(arg0, polyad.getArgAt(0));
         boolean convertKeys = false;
         int converterType = -1;
         if (polyad.getArgCount() == 2) {
-            Object arg1 = polyad.evalArg(1, state);
+            QDLValue arg1 = polyad.evalArg(1, state);
             checkNull(arg1, polyad.getArgAt(2));
-            if (!isLong(arg1)) {
+            if (!arg1.isLong()) {
                 throw new BadArgException(FROM_JSON + " requires an integer boolean as its second argument, if present.", polyad.getArgAt(1));
             }
             convertKeys = true;
-            converterType = ((Long) arg1).intValue();
+            converterType = arg1.asLong().intValue();
         }
         JSONObject jsonObject = null;
         QDLStem output = new QDLStem();
         boolean gotOne = false;
-        if (isStem(arg0)) {
+        if (arg0.isStem()) {
             gotOne = true;
-            QDLStem stem = (QDLStem) arg0;
+            QDLStem stem =  arg0.asStem();
             for (Object key : stem.keySet()) {
-                Object value = stem.get(key);
-                if (!isString(value)) {
+                QDLValue value = stem.get(key);
+                if (!value.isString()) {
                     continue;
                 }
                 try {
@@ -1668,9 +1615,9 @@ f(x.)→x.0+x.1;
                     jsonObject = JSONObject.fromObject(value);
                     nextStem.fromJSON(jsonObject, convertKeys, converterType);
                     if (key instanceof Long) {
-                        output.put((Long) key, nextStem);
+                        output.put((Long) key, asQDLValue(nextStem));
                     } else {
-                        output.put((String) key, nextStem);
+                        output.put((String) key, asQDLValue(nextStem));
                     }
                 } catch (Throwable tt) {
                     // ok, so this is not valid JSON, rock on
@@ -1680,14 +1627,14 @@ f(x.)→x.0+x.1;
             }
         }
 
-        if (isString(arg0)) {
+        if (arg0.isString()) {
             gotOne = true;
             try {
-                jsonObject = JSONObject.fromObject((String) arg0);
+                jsonObject = JSONObject.fromObject(arg0.asString());
                 output.fromJSON(jsonObject, convertKeys, converterType);
             } catch (Throwable t) {
                 try {
-                    JSONArray array = JSONArray.fromObject((String) arg0);
+                    JSONArray array = JSONArray.fromObject(arg0.asString());
                     output.fromJSON(array, convertKeys, converterType);
                 } catch (Throwable tt) {
                     // ok, so this is not valid JSON. Constrcut error message with first exception since that
@@ -1705,14 +1652,13 @@ f(x.)→x.0+x.1;
         {'$2E':'a','$2E$2E':'b','$2E$2E$2Ec$2E$2E':'c'}
          */
         polyad.setResult(output);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
 
     }
 
     protected void doToJSON(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2, 3});
+            polyad.setAllowedArgCounts(new int[]{1, 2, 3});
             polyad.setEvaluated(true);
             return;
         }
@@ -1722,10 +1668,10 @@ f(x.)→x.0+x.1;
         if (3 < polyad.getArgCount()) {
             throw new ExtraArgException(TO_JSON + " takes at most 3 arguments", polyad.getArgAt(3));
         }
-        Object arg0 = polyad.evalArg(0, state);
+        QDLValue  arg0 = polyad.evalArg(0, state);
         checkNull(arg0, polyad.getArgAt(0));
 
-        if (!isStem(arg0)) {
+        if (!arg0.isStem()) {
             throw new BadArgException(TO_JSON + " requires a stem as its first argument", polyad.getArgAt(0));
         }
         int indent = -1;
@@ -1735,11 +1681,11 @@ f(x.)→x.0+x.1;
         Two args means the second is either a boolean for conversion or it an  int as the indent factor.
          */
         if (polyad.getArgCount() == 2) {
-            Object arg1 = polyad.evalArg(1, state);
+            QDLValue arg1 = polyad.evalArg(1, state);
             checkNull(arg1, polyad.getArgAt(1));
 
-            if (isLong(arg1)) {
-                Long argL = (Long) arg1;
+            if (arg1.isLong()) {
+                Long argL =  arg1.asLong();
                 indent = argL.intValue(); // best we can do
             } else {
                 throw new BadArgException(TO_JSON + " requires an integer  as its second argument", polyad.getArgAt(1));
@@ -1750,30 +1696,29 @@ f(x.)→x.0+x.1;
          */
         if (polyad.getArgCount() == 3) {
             convertNames = true;
-            Object arg1 = polyad.evalArg(1, state);
+            QDLValue arg1 = polyad.evalArg(1, state);
             checkNull(arg1, polyad.getArgAt(1));
-            if (isLong(arg1)) { // contract true = v-encode, false means no encode
-                indent = ((Long) arg1).intValue(); // best we can do
+            if (arg1.isLong()) { // contract true = v-encode, false means no encode
+                indent = arg1.asLong().intValue(); // best we can do
             } else {
                 throw new BadArgException(TO_JSON + " with 3 arguments requires an integer as its second argument", polyad.getArgAt(1));
             }
 
-            Object arg2 = polyad.evalArg(2, state);
+            QDLValue  arg2 = polyad.evalArg(2, state);
             checkNull(arg2, polyad.getArgAt(2));
-            if (!isLong(arg2)) {
+            if (!arg2.isLong()) {
                 throw new BadArgException(TO_JSON + " requires an integer as its third argument", polyad.getArgAt(2));
             }
-            Long argL = (Long) arg2;
+            Long argL = arg2.asLong();
             conversionAlgorithm = argL.intValue(); // best we can do
         }
 
-        JSON j = ((QDLStem) arg0).toJSON(convertNames, conversionAlgorithm);
+        JSON j = arg0.asStem().toJSON(convertNames, conversionAlgorithm);
         if (0 < indent) {
             polyad.setResult(j.toString(indent));
         } else {
             polyad.setResult(j.toString());
         }
-        polyad.setResultType(STRING_TYPE);
         polyad.setEvaluated(true);
     }
 
@@ -1796,22 +1741,20 @@ f(x.)→x.0+x.1;
         QDLStem outStem = new QDLStem();
 
         for (int i = 0; i < polyad.getArgCount(); i++) {
-            Object arg = polyad.evalArg(i, state);
+            QDLValue arg = polyad.evalArg(i, state);
             checkNull(arg, polyad.getArgAt(i));
             if (!isStem(arg)) {
                 throw new BadArgException(UNION + " only works on stems.", polyad.getArgAt(i));
             }
-            outStem = outStem.union((QDLStem) arg);
+            outStem = outStem.union(arg.asStem());
         }
         polyad.setResult(outStem);
         polyad.setEvaluated(true);
-        polyad.setResultType(STEM_TYPE);
-
     }
 
     private void doUnBox(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -1821,32 +1764,32 @@ f(x.)→x.0+x.1;
         if (2 < polyad.getArgCount()) {
             throw new ExtraArgException(UNBOX + " takes at most two arguments", polyad.getArgAt(2));
         }
-        Object arg0 = polyad.evalArg(0, state);
+        QDLValue  arg0 = polyad.evalArg(0, state);
         checkNull(arg0, polyad.getArgAt(0));
 
         // should take either a stem or a variable reference to it.
         QDLStem stem = null;
         Boolean safeMode = Boolean.TRUE;
         if (polyad.getArgCount() == 2) {
-            Object o = polyad.evalArg(1, state);
+            QDLValue o = polyad.evalArg(1, state);
             checkNull(o, polyad.getArgAt(1));
 
-            if (!isBoolean(o)) {
+            if (!o.isBoolean()) {
                 throw new BadArgException("The second argument of " + UNBOX + " must be a boolean.", polyad.getArgAt(1));
             }
-            safeMode = (Boolean) o;
+            safeMode =  o.asBoolean();
         }
         String varName = null;
         if (polyad.getArgAt(0) instanceof VariableNode) {
             VariableNode vn = (VariableNode) polyad.getArgAt(0);
             varName = vn.getVariableReference();
-            if (!(vn.getResult() instanceof QDLStem)) {
+            if (!(vn.getResult().isStem())) {
                 throw new BadArgException("You can only apply " + UNBOX + " to a stem.", polyad.getArgAt(0));
             }
-            stem = (QDLStem) vn.getResult();
+            stem = vn.getResult().asStem();
         }
         if (polyad.getArgAt(0) instanceof StemVariableNode) {
-            stem = (QDLStem) polyad.evalArg(0, state);
+            stem = polyad.evalArg(0, state).asStem();
         }
 
         if ((polyad.getArgAt(0) instanceof QDLStem)) {
@@ -1866,8 +1809,8 @@ f(x.)→x.0+x.1;
         for (Object k : stem.keySet()) {
             // implicit in contract that all the keys are string, not integers
             String key = (String) k;
-            Object ob = stem.get(key);
-            key = key + (isStem(ob) ? STEM_INDEX_MARKER : "");
+            QDLValue  ob = stem.get(key);
+            key = key + (ob.isStem() ? STEM_INDEX_MARKER : "");
             if (safeMode) {
                 if (!pattern.matcher(key).matches()) {
                     key = codec.encode(key);
@@ -1891,8 +1834,6 @@ f(x.)→x.0+x.1;
             state.remove(varName);
         }
         polyad.setResult(Boolean.TRUE);
-        polyad.setResultType(BOOLEAN_TYPE);
-
         polyad.setEvaluated(true);
     }
 
@@ -1931,12 +1872,11 @@ f(x.)→x.0+x.1;
         }
         polyad.setResult(stem);
         polyad.setEvaluated(true);
-        polyad.setResultType(STEM_TYPE);
     }
 
     protected void doSize(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -1946,31 +1886,29 @@ f(x.)→x.0+x.1;
         if (1 < polyad.getArgCount()) {
             throw new ExtraArgException("the " + SIZE + " function requires 1 argument", polyad.getArgAt(1));
         }
-        Object arg = polyad.evalArg(0, state);
+        QDLValue arg = polyad.evalArg(0, state);
         checkNull(arg, polyad.getArgAt(0));
 
         long size = 0;
-        if (isSet(arg)) {
-            size = ((QDLSet) arg).size();
+        if (arg.isSet()) {
+            size = arg.asSet().size();
         }
         // Do https://github.com/ncsa/qdl/issues/108
-        if (arg instanceof AxisExpression) {
+        if (arg.isAxisRestriction()) {
             // get size along an axis
-            AxisExpression ae = (AxisExpression) arg;
+            AxisExpression ae = arg.asAxisExpression();
             Long count = ae.getStem().size(ae.isStar() ? ALL_AXES : ae.getAxis().intValue());
             polyad.setResult(count);
-            polyad.setResultType(LONG_TYPE);
             polyad.setEvaluated(true);
             return;
         }
-        if (isStem(arg)) {
-            size = ((QDLStem) arg).size();
+        if (arg.isStem()) {
+            size = arg.asStem().size();
         }
-        if (arg instanceof String) {
-            size = arg.toString().length();
+        if (arg.isString()) {
+            size = arg.asString().length();
         }
         polyad.setResult(size);
-        polyad.setResultType(LONG_TYPE);
         polyad.setEvaluated(true);
     }
 
@@ -1982,7 +1920,7 @@ f(x.)→x.0+x.1;
         }
 
         @Override
-        public Object getDefaultValue(List<Object> index, Object key, Object value) {
+        public QDLValue getDefaultValue(List<Object> index, Object key, Object value) {
             return super.getDefaultValue(index, key, value);
         }
 
@@ -2011,7 +1949,7 @@ f(x.)→x.0+x.1;
      */
     protected void doListKeys(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -2021,46 +1959,44 @@ f(x.)→x.0+x.1;
         if (2 < polyad.getArgCount()) {
             throw new ExtraArgException(LIST_KEYS + " takes at most 2 arguments", polyad.getArgAt(2));
         }
-        Object arg = polyad.evalArg(0, state);
+        QDLValue arg = polyad.evalArg(0, state);
         checkNull(arg, polyad.getArgAt(0));
 
         int returnScope = all_keys;
         int returnType = UNKNOWN_TYPE;
         boolean returnByType = false;
         if (polyad.getArgCount() == 2) {
-            Object arg2 = polyad.evalArg(1, state);
+            QDLValue arg2 = polyad.evalArg(1, state);
             checkNull(arg2, polyad.getArgAt(1));
 
-            if (isBoolean(arg2)) {
+            if (arg2.isBoolean()) {
                 returnByType = false;
-                if ((Boolean) arg2) {
+                if (arg2.asBoolean()) {
                     returnScope = only_scalars;
                 } else {
                     returnScope = only_stems;
                 }
 
-            } else if (isLong(arg2)) {
+            } else if (arg2.isLong()) {
                 returnByType = true;
-                Long arg2Long = (Long) arg2;
-                returnType = arg2Long.intValue();
+                returnType = arg2.asLong().intValue();
             } else {
                 throw new BadArgException(LIST_KEYS + " second argument must be a boolean or integer if present.", polyad.getArgAt(1));
             }
         }
         long size = 0;
-        if (!isStem(arg)) {
-            polyad.setResult(new QDLStem()); // just an empty stem
-            polyad.setResultType(STEM_TYPE);
+        if (!arg.isStem()   ) {
+            polyad.setResult(new StemValue()); // just an empty stem
             polyad.setEvaluated(true);
             return;
         }
-        QDLStem stemVariable = (QDLStem) arg;
+        QDLStem stemVariable =  arg.asStem();
         QDLStem out = new QDLStem();
         if (returnByType) {
             long i = 0L;
             for (Object key : stemVariable.keySet()) {
                 if (returnType == Constant.getType(stemVariable.get(key))) {
-                    out.put(i++, key);
+                    out.put(i++, asQDLValue(key));
                 }
             }
         } else {
@@ -2069,16 +2005,16 @@ f(x.)→x.0+x.1;
             for (Object key : stemVariable.keySet()) {
                 switch (returnScope) {
                     case all_keys:
-                        out.put(i++, key);
+                        out.put(i++, asQDLValue(key));
                         break;
                     case only_scalars:
                         if (Constant.getType(stemVariable.get(key)) != STEM_TYPE) {
-                            out.put(i++, key);
+                            out.put(i++, asQDLValue(key));
                         }
                         break;
                     case only_stems:
                         if (Constant.getType(stemVariable.get(key)) == STEM_TYPE) {
-                            out.put(i++, key);
+                            out.put(i++, asQDLValue(key));
                         }
                         break;
                 }
@@ -2086,9 +2022,7 @@ f(x.)→x.0+x.1;
 
         }
         polyad.setResult(out);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
-
     }
 
     /**
@@ -2104,7 +2038,7 @@ f(x.)→x.0+x.1;
      */
     protected void doKeys(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -2114,11 +2048,10 @@ f(x.)→x.0+x.1;
         if (2 < polyad.getArgCount()) {
             throw new ExtraArgException(KEYS + " takes at most two arguments", polyad.getArgAt(2));
         }
-        Object arg = polyad.evalArg(0, state);
+        QDLValue arg = polyad.evalArg(0, state);
         checkNull(arg, polyad.getArgAt(0));
         if (!isStem(arg)) {
             polyad.setResult(new QDLStem()); // just an empty stem
-            polyad.setResultType(STEM_TYPE);
             polyad.setEvaluated(true);
             return;
         }
@@ -2126,26 +2059,26 @@ f(x.)→x.0+x.1;
         int returnType = UNKNOWN_TYPE;
         boolean returnByType = false;
         if (polyad.getArgCount() == 2) {
-            Object arg2 = polyad.evalArg(1, state);
+            QDLValue arg2 = polyad.evalArg(1, state);
             checkNull(arg2, polyad.getArgAt(1));
 
-            if (isBoolean(arg2)) {
+            if (arg2.isBoolean()) {
                 returnByType = false;
-                if ((Boolean) arg2) {
+                if (arg2.asBoolean()) {
                     returnScope = only_scalars;
                 } else {
                     returnScope = only_stems;
                 }
 
-            } else if (isLong(arg2)) {
+            } else if (arg2.isLong()) {
                 returnByType = true;
-                Long arg2Long = (Long) arg2;
+                Long arg2Long = arg2.asLong();
                 returnType = arg2Long.intValue();
             } else {
                 throw new BadArgException(LIST_KEYS + " second argument must be a boolean or integer if present.", polyad.getArgAt(1));
             }
         }
-        QDLStem stemVariable = (QDLStem) arg;
+        QDLStem stemVariable = arg.asStem();
 
         QDLStem out = new QDLStem();
 
@@ -2159,25 +2092,23 @@ f(x.)→x.0+x.1;
             for (Object key : stemVariable.keySet()) {
                 switch (returnScope) {
                     case all_keys:
-                        putLongOrStringKey(out, key);
+                        putLongOrStringKey(out, asQDLValue(key));
                         break;
                     case only_scalars:
                         if (Constant.getType(stemVariable.get(key)) != STEM_TYPE) {
-                            putLongOrStringKey(out, key);
+                            putLongOrStringKey(out, asQDLValue(key));
                         }
                         break;
                     case only_stems:
                         if (Constant.getType(stemVariable.get(key)) == STEM_TYPE) {
-                            putLongOrStringKey(out, key);
+                            putLongOrStringKey(out, asQDLValue(key));
                         }
                         break;
                 }
             }
         }
         polyad.setResult(out);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
-
     }
 
     /**
@@ -2191,12 +2122,11 @@ f(x.)→x.0+x.1;
     protected void putLongOrStringKey(QDLStem out, Object key) {
         if (key instanceof Long) {
             Long k = (Long) key;
-            out.put(k, k);
+            out.put(k, asQDLValue(k));
         } else {
             String k = (String) key;
-            out.put(k, k);
+            out.put(k, asQDLValue(k));
         }
-
     }
 
     /**
@@ -2208,7 +2138,7 @@ f(x.)→x.0+x.1;
      */
     protected void doHasKeys(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
@@ -2218,25 +2148,23 @@ f(x.)→x.0+x.1;
         if (2 < polyad.getArgCount()) {
             throw new ExtraArgException(HAS_KEYS + " requires 2 arguments", polyad.getArgAt(2));
         }
-        Object arg = polyad.evalArg(0, state);
+        QDLValue arg = polyad.evalArg(0, state);
         checkNull(arg, polyad.getArgAt(0));
-        if (!isStem(arg)) {
+        if (!arg.isStem()) {
             throw new BadArgException(HAS_KEYS + " command requires a stem as its first argument.", polyad.getArgAt(0));
         }
-        QDLStem target = (QDLStem) arg;
+        QDLStem target = arg.asStem();
         polyad.evalArg(1, state);
-        Object arg2 = polyad.getArgAt(1).getResult();
+        QDLValue arg2 = polyad.getArgAt(1).getResult();
         checkNull(arg2, polyad.getArgAt(1));
 
-        if (!isStem(arg2)) {
+        if (!arg2.isStem()) {
             polyad.setResult(target.containsKey(arg2.toString()));
-            polyad.setResultType(BOOLEAN_TYPE);
             polyad.setEvaluated(true);
             return;
         }
-        QDLStem result = target.hasKeys((QDLStem) arg2);
+        QDLStem result = target.hasKeys(arg2.asStem());
         polyad.setResult(result);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
     }
 
@@ -2248,7 +2176,7 @@ f(x.)→x.0+x.1;
      */
     protected void doHasKey(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
@@ -2258,21 +2186,21 @@ f(x.)→x.0+x.1;
         if (2 < polyad.getArgCount()) {
             throw new ExtraArgException(HAS_KEY + " requires 2 arguments", polyad.getArgAt(2));
         }
-        Object arg0 = polyad.evalArg(0, state);
+        QDLValue arg0 = polyad.evalArg(0, state);
         checkNull(arg0, polyad.getArgAt(0));
         boolean isLeftScalar = false;
         QDLStem leftArg = null;
-        if (isStem(arg0)) {
-            leftArg = (QDLStem) arg0;
+        if (arg0.isStem()) {
+            leftArg = arg0.asStem();
         } else {
             isLeftScalar = true;
         }
         QDLStem rightArg = null;
-        Object arg1 = polyad.evalArg(1, state);
+        QDLValue arg1 = polyad.evalArg(1, state);
         checkNull(arg1, polyad.getArgAt(1));
         boolean isRightScalar = false;
-        if (arg1 instanceof QDLStem) {
-            rightArg = (QDLStem) arg1;
+        if (arg1.isStem()) {
+            rightArg = arg1.asStem();
         } else {
             isRightScalar = true;
             //throw new QDLExceptionWithTrace(HAS_KEY + " requires a stem as its second argument", polyad.getArgAt(1));
@@ -2285,13 +2213,11 @@ f(x.)→x.0+x.1;
                 if (isString(arg0) || isLong(arg0)) {
                     polyad.setEvaluated(true);
                     polyad.setResult(rightArg.containsKey(arg0));
-                    polyad.setResultType(Constant.getType(polyad.getResult()));
                     return;
                 }
                 throw new BadArgException(HAS_KEY + " ", polyad.getArgAt(1));
             }
             polyad.setEvaluated(true);
-            polyad.setResultType(Constant.getType(polyad.getResult()));
             return;
         } else {
             if (isRightScalar) {
@@ -2302,7 +2228,6 @@ f(x.)→x.0+x.1;
         QDLStem result = leftArg.hasKey(rightArg);
         polyad.setEvaluated(true);
         polyad.setResult(result);
-        polyad.setResultType(STEM_TYPE);
     }
 
 
@@ -2315,12 +2240,12 @@ f(x.)→x.0+x.1;
         if (0 == polyad.getArgCount()) {
             throw new MissingArgException(SHORT_MAKE_INDICES + " requires at least 1 argument", polyad);
         }
-        Object arg = polyad.evalArg(0, state);
+        QDLValue arg = polyad.evalArg(0, state);
         checkNull(arg, polyad.getArgAt(0));
         boolean gotOne = false;
         // First argument always has to be an integer.
-        boolean isLongArg = arg instanceof Long;
-        boolean isStemArg = arg instanceof QDLStem;
+        boolean isLongArg = arg.isLong()  ;
+        boolean isStemArg = arg.isStem();
 
         if (!(isLongArg || isStemArg)) {
             throw new BadArgException(SHORT_MAKE_INDICES + " requires a non-negative integer argument or a stem as its first argument", polyad.getArgAt(0));
@@ -2329,7 +2254,7 @@ f(x.)→x.0+x.1;
         int[] lengths = null;
 
         if (isStemArg) {
-            QDLStem argStem = (QDLStem) arg;
+            QDLStem argStem = arg.asStem();
             JSON json = argStem.toJSON();
             if (!json.isArray()) {
                 throw new BadArgException("first argument must be a stem list in " + SHORT_MAKE_INDICES, polyad.getArgAt(0));
@@ -2342,18 +2267,18 @@ f(x.)→x.0+x.1;
             }
 
         }
-        Object[] fill = null;
+        QDLValue[] fill = null;
         CyclicArgList cyclicArgList = null;
         boolean hasFill = false;
         if (polyad.getArgCount() != 1) {
-            Object lastArg = polyad.evalArg(polyad.getArgCount() - 1, state);
+            QDLValue lastArg = polyad.evalArg(polyad.getArgCount() - 1, state);
             checkNull(lastArg, polyad.getArgAt(polyad.getArgCount() - 1));
 
-            if (!isStem(lastArg)) {
+            if (!lastArg.isStem()) {
                 // fine, no fill.
                 hasFill = false;
             } else {
-                QDLStem fillStem = (QDLStem) lastArg;
+                QDLStem fillStem = lastArg.asStem();
                 if (!fillStem.isList()) {
                     throw new BadArgException("fill argument must be a list of scalars", polyad.getArgAt(polyad.getArgCount() - 1)); // last arg is fill list
                 }
@@ -2368,30 +2293,23 @@ f(x.)→x.0+x.1;
         // Special case is a simple list. n(3) should yield [0,1,2] rather than a 1x3
         // array (recursion automatically boxes it into at least a 2 rank array).
         if (isLongArg && (polyad.getArgCount() == 1 || (polyad.getArgCount() == 2 && hasFill))) {
-            long size = (Long) arg;
+            long size = arg.asLong();
             QDLStem out = createSimpleStemVariable(polyad, cyclicArgList, hasFill, size);
             if (out == null) return; // special case where zero length requested
-
-
             polyad.setResult(out);
-            polyad.setResultType(STEM_TYPE);
             polyad.setEvaluated(true);
             return;
         }
         // so the left arg is a stem Check simple case
         if (isStemArg) {
-            QDLStem argStem = (QDLStem) arg;
+            QDLStem argStem = arg.asStem();
             if (argStem.size() == 1) {
-                long size = (Long) argStem.get(0L);
+                long size = argStem.get(0L).asLong();
                 QDLStem out = createSimpleStemVariable(polyad, cyclicArgList, hasFill, size);
                 if (out == null) return; // special case where zero length requested
-
-
                 polyad.setResult(out);
-                polyad.setResultType(STEM_TYPE);
                 polyad.setEvaluated(true);
                 return;
-
             }
         }
 
@@ -2403,15 +2321,14 @@ f(x.)→x.0+x.1;
         if (lengths == null) {
             lengths = new int[lastArgIndex + 1];
             for (int i = 0; i < lastArgIndex + 1; i++) {
-                Object obj = polyad.evalArg(i, state);
-                if (!isLong(obj)) {
+                QDLValue obj = polyad.evalArg(i, state);
+                if (!obj.isLong()) {
                     throw new BadArgException("argument " + i + " is not an integer. All dimensions must be positive integers.", polyad.getArgAt(i));
                 }
-                lengths[i] = ((Long) obj).intValue();
+                lengths[i] = obj.asLong().intValue();
                 // Any dimension of 0 returns an empty list
                 if (lengths[i] == 0) {
                     polyad.setResult(new QDLStem());
-                    polyad.setResultType(STEM_TYPE);
                     polyad.setEvaluated(true);
                     return;
                 }
@@ -2424,15 +2341,13 @@ f(x.)→x.0+x.1;
         QDLStem out = new QDLStem();
         indexRecursion(out, lengths, 0, cyclicArgList);
         polyad.setResult(out);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
         return;
     }
 
     private QDLStem createSimpleStemVariable(Polyad polyad, CyclicArgList cyclicArgList, boolean hasFill, long size) {
         if (size == 0) {
-            polyad.setResult(new QDLStem());
-            polyad.setResultType(STEM_TYPE);
+            polyad.setResult(new StemValue()); // set to empty stem
             polyad.setEvaluated(true);
             return null;
         }
@@ -2464,11 +2379,11 @@ f(x.)→x.0+x.1;
      * with 17 elements
      */
     public static class CyclicArgList {
-        public CyclicArgList(Object[] args) {
+        public CyclicArgList(QDLValue[] args) {
             this.args = args;
         }
 
-        Object[] args;
+        QDLValue[] args;
 
         /**
          * Cyclically get the next n elements
@@ -2476,8 +2391,8 @@ f(x.)→x.0+x.1;
          * @param n
          * @return
          */
-        public Object[] next(int n) {
-            Object[] out = new Object[n];
+        public QDLValue[] next(int n) {
+            QDLValue[] out = new QDLValue[n];
             for (int i = 0; i < n; i++) {
                 out[i] = args[((currentIndex++) % args.length)];
             }
@@ -2485,7 +2400,7 @@ f(x.)→x.0+x.1;
         }
 
         int currentIndex = 0;
-    }
+    } // end CyclicArgList class
 
     /**
      * Fills in the elements for the n(x,y,z,...) function.
@@ -2506,12 +2421,12 @@ f(x.)→x.0+x.1;
 
                     out1 = new QDLStem((long) lengths[lengths.length - 1], cyclicArgList.next(lengths[lengths.length - 1]));
                 }
-                out.put((long) i, out1);
+                out.put((long) i, asQDLValue(out1));
 
             } else {
                 QDLStem out1 = new QDLStem();
                 indexRecursion(out1, lengths, index + 1, cyclicArgList);
-                out.put((long) i, out1);
+                out.put((long) i, asQDLValue(out1));
             }
         }
 
@@ -2531,10 +2446,10 @@ f(x.)→x.0+x.1;
         QDLStem indices1 = arg1;
         QDLStem output = new QDLStem();
         for (Object key : indices1.keySet()) {
-            Object v = indices1.get(key);
+            QDLValue v = indices1.get(key);
             Object gotValue = null;
-            if (v instanceof QDLStem) {
-                QDLStem ii = (QDLStem) v;
+            if (v.isStem()) {
+                QDLStem ii = v.asStem();
                 if (!ii.isList()) {
                     throw new BadArgException("stem index " + ii + " must be a list.", polyad.getArgAt(1));
                 }
@@ -2549,12 +2464,11 @@ f(x.)→x.0+x.1;
                 gotValue = arg0.get(v);
             }
             if (gotValue != null) {
-                output.putLongOrString(key, gotValue);
+                output.putLongOrString(key, asQDLValue(gotValue));
             }
         }
 
         polyad.setResult(output);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
     }
 
@@ -2583,26 +2497,26 @@ f(x.)→x.0+x.1;
         QDLStem output = new QDLStem();
         for (long i = 0L; i < newIndices.size(); i++) {
 
-            Object newI = newIndices.get(i);
-            Object oldI = oldIndices.get(i);
+            QDLValue newI = newIndices.get(i);
+            QDLValue oldI = oldIndices.get(i);
             IndexList newIndex;
-            if (isStem(newI)) {
-                newIndex = new IndexList((QDLStem) newI);
+            if (newI.isStem()) {
+                newIndex = new IndexList(newI.asStem());
             } else {
                 newIndex = new IndexList();
                 newIndex.add(newI);
             }
             IndexList oldIndex;
-            if (isStem(oldI)) {
-                oldIndex = new IndexList((QDLStem) oldI);
+            if (oldI.isStem()) {
+                oldIndex = new IndexList(oldI.asStem());
             } else {
                 oldIndex = new IndexList();
                 oldIndex.add(oldI);
             }
-            // Note that if there is strict matching on and it works, there is a single
+            // Note that if there is strict matching on, and it works, there is a single
             // value at index 0 in the result.
             try {
-                output.set(newIndex, stem.get(oldIndex, true).get(0));
+                output.set(newIndex, asQDLValue( stem.get(oldIndex, true).get(0)));
             } catch (IndexError indexError) {
                 indexError.setStatement(polyad);// not great but it works.
                 throw indexError;
@@ -2611,13 +2525,12 @@ f(x.)→x.0+x.1;
         }
 
         polyad.setResult(output);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
     }
 
     protected void doIsList(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -2627,17 +2540,16 @@ f(x.)→x.0+x.1;
         if (1 < polyad.getArgCount()) {
             throw new ExtraArgException(IS_LIST + " requires at most 1 argument", polyad.getArgAt(1));
         }
-        Object arg1 = polyad.evalArg(0, state);
+        QDLValue arg1 = polyad.evalArg(0, state);
         checkNull(arg1, polyad.getArgAt(0));
         Boolean isList;
-        if (!isStem(arg1)) {
+        if (!arg1.isStem()) {
             //throw new BadArgException(IS_LIST + " requires stem as its first argument", polyad.getArgAt(0));
             isList = Boolean.FALSE;
         } else {
-            isList = ((QDLStem) arg1).isList();
+            isList = arg1.asStem().isList();
         }
         polyad.setResult(isList);
-        polyad.setResultType(BOOLEAN_TYPE);
         polyad.setEvaluated(true);
     }
 
@@ -2649,7 +2561,7 @@ f(x.)→x.0+x.1;
      */
     protected void doRemove(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -2666,21 +2578,19 @@ f(x.)→x.0+x.1;
         if (polyad.getArgCount() == 2) {
             isFunction = true;
             // user is trying to remove a function
-            Object arg1 = polyad.evalArg(1, state);
+            QDLValue arg1 = polyad.evalArg(1, state);
             // This should be an arg count
-            if (!(arg1 instanceof Long)) {
+            if (!arg1.isLong()) {
                 throw new BadArgException(REMOVE + " argument count must be an integer", polyad.getArgAt(1));
             }
-            argCount = (Long) arg1;
+            argCount = arg1.asLong();
         }
         try {
-
             polyad.evalArg(0, state);
         } catch (IndexError indexError) {
             // it is possible that the user is trying to grab something impossible
             polyad.setEvaluated(true);
             polyad.setResult(Boolean.TRUE);
-            polyad.setResultType(BOOLEAN_TYPE);
             return;
         }
         String var = null;
@@ -2723,7 +2633,6 @@ f(x.)→x.0+x.1;
                 polyad.setResult(Boolean.TRUE);
                 break;
         }
-        polyad.setResultType(BOOLEAN_TYPE);
         polyad.setEvaluated(true);
     }
 
@@ -2736,7 +2645,7 @@ f(x.)→x.0+x.1;
      */
     protected void doIncludeKeys(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
@@ -2748,29 +2657,27 @@ f(x.)→x.0+x.1;
             throw new ExtraArgException(INCLUDE_KEYS + " requires 2 arguments", polyad.getArgAt(2));
         }
         polyad.evalArg(0, state);
-        Object arg = polyad.getArgAt(0).getResult();
+        QDLValue arg = polyad.getArgAt(0).getResult();
         checkNull(arg, polyad.getArgAt(0));
 
-        if (!isStem(arg)) {
+        if (!arg.isStem()) {
             throw new BadArgException("The " + INCLUDE_KEYS + " command requires a stem as its first argument.", polyad.getArgAt(0));
         }
-        QDLStem target = (QDLStem) arg;
+        QDLStem target = arg.asStem();
         polyad.evalArg(1, state);
-        Object arg2 = polyad.getArgAt(1).getResult();
+        QDLValue arg2 = polyad.getArgAt(1).getResult();
         checkNull(arg2, polyad.getArgAt(1));
-        if (!isStem(arg2)) {
+        if (!arg2.isStem()) {
             QDLStem result = new QDLStem();
-            if (target.containsKey(arg2.toString())) {
+            if (target.containsKey(arg2.asString())) {
                 result.put(arg2.toString(), target.get(arg2.toString()));
             }
             polyad.setResult(result);
-            polyad.setResultType(STEM_TYPE);
             polyad.setEvaluated(true);
             return;
         }
-        QDLStem result = target.includeKeys((QDLStem) arg2);
+        QDLStem result = target.includeKeys(arg2.asStem());
         polyad.setResult(result);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
     }
 
@@ -2782,7 +2689,7 @@ f(x.)→x.0+x.1;
      */
     protected void doExcludeKeys(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
@@ -2794,17 +2701,17 @@ f(x.)→x.0+x.1;
             throw new ExtraArgException(EXCLUDE_KEYS + " requires 2 arguments", polyad.getArgAt(2));
         }
         polyad.evalArg(0, state);
-        Object arg = polyad.getArgAt(0).getResult();
+        QDLValue arg = polyad.getArgAt(0).getResult();
         checkNull(arg, polyad.getArgAt(0));
-        if (!isStem(arg)) {
+        if (!arg.isStem()) {
             throw new BadArgException("The " + EXCLUDE_KEYS + " command requires a stem as its first argument.", polyad.getArgAt(0));
         }
-        QDLStem target = (QDLStem) arg;
+        QDLStem target = arg.asStem();
         polyad.evalArg(1, state);
-        Object arg2 = polyad.getArgAt(1).getResult();
+        QDLValue arg2 = polyad.getArgAt(1).getResult();
         checkNull(arg2, polyad.getArgAt(1));
 
-        if (!isStem(arg2)) {
+        if (!arg2.isStem()) {
             QDLStem result = new QDLStem();
             String excluded = arg2.toString();
             for (Object ndx : target.keySet()) {
@@ -2816,13 +2723,11 @@ f(x.)→x.0+x.1;
             }
             result.remove(excluded);
             polyad.setResult(result);
-            polyad.setResultType(STEM_TYPE);
             polyad.setEvaluated(true);
             return;
         }
-        QDLStem result = target.excludeKeys((QDLStem) arg2);
+        QDLStem result = target.excludeKeys(arg2.asStem());
         polyad.setResult(result);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
     }
 
@@ -2847,7 +2752,7 @@ f(x.)→x.0+x.1;
      */
     protected void doShuffle(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -2859,11 +2764,11 @@ f(x.)→x.0+x.1;
             throw new ExtraArgException(SHUFFLE + " requires 2 arguments", polyad.getArgAt(2));
         }
         polyad.evalArg(0, state);
-        Object arg = polyad.getArgAt(0).getResult();
+        QDLValue  arg = polyad.getArgAt(0).getResult();
         checkNull(arg, polyad.getArgAt(0));
 
-        if (isLong(arg)) {
-            Long argL = (Long) arg;
+        if (arg.isLong()) {
+            Long argL = arg.asLong();
             int argInt = argL.intValue();
             if (argL < 0L) {
                 throw new BadArgException("the argument to" + SHUFFLE + " must be > 0", polyad.getArgAt(0));
@@ -2878,7 +2783,6 @@ f(x.)→x.0+x.1;
             QDLStem stem = new QDLStem();
             stem.addList(longList);
             polyad.setResult(stem);
-            polyad.setResultType(STEM_TYPE);
             polyad.setEvaluated(true);
             return;
         }
@@ -2887,14 +2791,14 @@ f(x.)→x.0+x.1;
             throw new BadArgException(SHUFFLE + " requires a stem as its first argument.", polyad.getArgAt(0));
         }
 
-        Object arg2 = polyad.evalArg(1, state);
+        QDLValue arg2 = polyad.evalArg(1, state);
         checkNull(arg2, polyad.getArgAt(1));
 
-        if (!isStem(arg2)) {
+        if (!arg2.isStem()) {
             throw new BadArgException(SHUFFLE + " requires a stem as its second argument.", polyad.getArgAt(1));
         }
-        QDLStem target = (QDLStem) arg;
-        QDLStem newKeyStem = (QDLStem) arg2;
+        QDLStem target = arg.asStem();
+        QDLStem newKeyStem = arg2.asStem();
         StemKeys newKeys = newKeyStem.keySet();
         StemKeys usedKeys = target.keySet();
 
@@ -2908,10 +2812,10 @@ f(x.)→x.0+x.1;
 
         for (Object key : keys) {
             if (newKeys.contains(key)) {
-                Object kk = newKeyStem.get(key);
+                QDLValue kk = newKeyStem.get(key);
                 usedKeys.remove(kk);
-                Object vv = target.get(kk);
-                output.putLongOrString((Long) key, vv);
+                QDLValue vv = target.get(kk);
+                output.putLongOrString( key, vv);
             } else {
                 throw new BadArgException("'" + key + "' is not a key in the second argument.", polyad.getArgAt(1));
             }
@@ -2921,7 +2825,6 @@ f(x.)→x.0+x.1;
         }
 
         polyad.setResult(output);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
     }
 
@@ -2952,7 +2855,7 @@ f(x.)→x.0+x.1;
 
     protected void doRenameKeys(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3});
+            polyad.setAllowedArgCounts(new int[]{2, 3});
             polyad.setEvaluated(true);
             return;
         }
@@ -2963,19 +2866,19 @@ f(x.)→x.0+x.1;
             throw new ExtraArgException(RENAME_KEYS + " takes at most 3 arguments", polyad.getArgAt(3));
         }
         polyad.evalArg(0, state);
-        Object arg = polyad.getArgAt(0).getResult();
+        QDLValue arg = polyad.getArgAt(0).getResult();
         checkNull(arg, polyad.getArgAt(0));
 
-        if (!isStem(arg)) {
+        if (!arg.isStem()) {
             throw new BadArgException(RENAME_KEYS + " requires a stem as its first argument.", polyad.getArgAt(0));
         }
         polyad.evalArg(1, state);
 
-        Object arg2 = polyad.getArgAt(1).getResult();
+        QDLValue arg2 = polyad.getArgAt(1).getResult();
         polyad.evalArg(1, state);
         checkNull(arg2, polyad.getArgAt(1));
 
-        if (!isStem(arg2)) {
+        if (!arg2.isStem()) {
             throw new BadArgException("The " + RENAME_KEYS + " command requires a stem as its second argument.", polyad.getArgAt(1));
         }
 
@@ -2983,21 +2886,20 @@ f(x.)→x.0+x.1;
         if (polyad.getArgCount() == 3) {
             polyad.evalArg(2, state);
 
-            Object arg3 = polyad.getArgAt(2).getResult();
+            QDLValue arg3 = polyad.getArgAt(2).getResult();
             polyad.evalArg(2, state);
             checkNull(arg2, polyad.getArgAt(2));
-            if (arg3 instanceof Boolean) {
-                overwriteKeys = (Boolean) arg3;
+            if (arg3.isBoolean()) {
+                overwriteKeys = arg3.asBoolean();
             } else {
                 throw new BadArgException(RENAME_KEYS + " third argument, if present, must be a boolean", polyad.getArgAt(2));
             }
 
         }
-        QDLStem target = (QDLStem) arg;
-        target.renameKeys((QDLStem) arg2, overwriteKeys);
+        QDLStem target = arg.asStem();
+        target.renameKeys(arg2.asStem(), overwriteKeys);
 
         polyad.setResult(target);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
     }
 
@@ -3009,7 +2911,7 @@ f(x.)→x.0+x.1;
      */
     protected void doCommonKeys(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
@@ -3021,26 +2923,25 @@ f(x.)→x.0+x.1;
             throw new ExtraArgException(COMMON_KEYS + " function requires 2 arguments", polyad.getArgAt(2));
         }
         polyad.evalArg(0, state);
-        Object arg = polyad.getArgAt(0).getResult();
+        QDLValue arg = polyad.getArgAt(0).getResult();
         checkNull(arg, polyad.getArgAt(0));
 
-        if (!isStem(arg)) {
+        if (!arg.isStem()) {
             throw new BadArgException(COMMON_KEYS + " requires a stem as its first argument.", polyad.getArgAt(0));
         }
-        polyad.evalArg(1, state);
+        QDLValue arg2 = polyad.evalArg(1, state);
 
-        Object arg2 = polyad.getArgAt(1).getResult();
+        //QDLValue arg2 = polyad.getArgAt(1).getResult();
         checkNull(arg2, polyad.getArgAt(1));
 
-        if (!isStem(arg2)) {
+        if (!arg2.isStem()) {
             throw new BadArgException(COMMON_KEYS + " requires a stem as its second argument.", polyad.getArgAt(1));
         }
 
-        QDLStem target = (QDLStem) arg;
-        QDLStem result = target.commonKeys((QDLStem) arg2);
+        QDLStem target = arg.asStem();
+        QDLStem result = target.commonKeys(arg2.asStem());
 
         polyad.setResult(result);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
     }
 
@@ -3052,7 +2953,7 @@ f(x.)→x.0+x.1;
      */
     protected void doSetDefault(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
@@ -3067,17 +2968,15 @@ f(x.)→x.0+x.1;
                 "the " + SET_DEFAULT + " command accepts   only a stem variable as its first argument.");
 
         polyad.evalArg(1, state);
-        Object oldDefault = stemVariable.getDefaultValue();
+        QDLValue oldDefault = stemVariable.getDefaultValue();
 
-        Object defaultValue = polyad.getArgAt(1).getResult();
+        QDLValue defaultValue = polyad.getArgAt(1).getResult();
         stemVariable.setDefaultValue(defaultValue);
         // now return the previous result or null if there was none
         if (oldDefault == null) {
             polyad.setResult(QDLNull.getInstance());
-            polyad.setResultType(NULL_TYPE);
         } else {
             polyad.setResult(oldDefault);
-            polyad.setResultType(Constant.getType(oldDefault));
         }
         polyad.setEvaluated(true);
     }
@@ -3085,7 +2984,7 @@ f(x.)→x.0+x.1;
     protected void doMask(Polyad polyad, State state) {
 
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
@@ -3096,44 +2995,40 @@ f(x.)→x.0+x.1;
         if (2 < polyad.getArgCount()) {
             throw new ExtraArgException(MASK + " requires 2 arguments", polyad.getArgAt(2));
         }
-        polyad.evalArg(0, state);
-        polyad.evalArg(1, state);
-        Object obj1 = polyad.getArgAt(0).getResult();
+        QDLValue obj1 = polyad.evalArg(0, state);
+        // QDLValue obj1 = polyad.getArgAt(0).getResult();
         checkNull(obj1, polyad.getArgAt(0));
 
-        Object obj2 = polyad.getArgAt(1).getResult();
+        QDLValue obj2 = polyad.evalArg(1, state);
+        //Object obj2 = polyad.getArgAt(1).getResult();
         checkNull(obj2, polyad.getArgAt(1));
         QDLStem stem1 = null;
         QDLStem stem2 = null;
-        if (isStem(obj1)) {
-            stem1 = (QDLStem) obj1;
+        if (obj1.isStem()) {
+            stem1 = obj1.asStem();
             // short circuit for https://github.com/ncsa/qdl/issues/25
-            if (stem1.isEmpty() && (obj2 == QDLNull.getInstance())) {
-                polyad.setResultType(STEM_TYPE);
-                polyad.setResult(new QDLStem());
-                polyad.setEvaluated(true);
+            if (stem1.isEmpty() && (obj2.isNull())) {
+                polyad.setResult(new StemValue()); // return empty stemp
+                 polyad.setEvaluated(true);
                 return;
             }
         }
-        if (isStem(obj2)) {
-            stem2 = (QDLStem) obj2;
+        if (obj2.isStem()) {
+            stem2 = obj2.asStem();
             if (stem1 != null && stem1.isEmpty() && stem2.isEmpty()) {
-                polyad.setResultType(STEM_TYPE);
-                polyad.setResult(new QDLStem());
+                polyad.setResult(new StemValue()); // return empty stem
                 polyad.setEvaluated(true);
                 return;
             }
         }
 
         if (!areAllStems(obj1, obj2)) {
-            Statement s = isStem(obj1) ? polyad.getArgAt(0) : polyad.getArgAt(1);
+            Statement s = obj1.isStem() ? polyad.getArgAt(0) : polyad.getArgAt(1);
             throw new BadArgException("the " + MASK + " requires both arguments be stem variables", s);
         }
         QDLStem result = stem1.mask(stem2);
-        polyad.setResultType(STEM_TYPE);
         polyad.setResult(result);
         polyad.setEvaluated(true);
-
     }
 
     /*
@@ -3215,7 +3110,7 @@ z. :=  join3(q.,w.)
 
     protected void doJoin(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2, 3});
+            polyad.setAllowedArgCounts(new int[]{2, 3});
             polyad.setEvaluated(true);
             return;
         }
@@ -3309,7 +3204,7 @@ z. :=  join3(q.,w.)
 
     protected void doTransform(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -3339,14 +3234,14 @@ z. :=  join3(q.,w.)
             throw new ExtraArgException(TRANSPOSE + " takes at most two arguments.", polyad.getArgAt(2));
         }
 
-        Object arg0 = polyad.evalArg(0, state);
+        QDLValue arg0 = polyad.evalArg(0, state);
         checkNull(arg0, polyad.getArgAt(0), state);
         AxisExpression ae = null;
         boolean hasAxisExpression = false;
         QDLStem stem;
         Long axis = null;
-        if (arg0 instanceof AxisExpression) {
-            ae = (AxisExpression) arg0;
+        if (arg0.isAxisRestriction()) {
+            ae = arg0.asAxisExpression();
             stem = ae.getStem();
             if (ae.isStar()) {
                 hasAxisExpression = false;
@@ -3355,20 +3250,19 @@ z. :=  join3(q.,w.)
                 hasAxisExpression = true;
             }
         } else {
-            if (!isStem(arg0)) {
+            if (!arg0.isStem()) {
                 throw new BadArgException(TRANSPOSE + " requires a stem as its first argument", polyad.getArgAt(0));
             }
-            stem = (QDLStem) arg0;
+            stem = arg0.asStem();
         }
 
         QDLStem oldIndices = stem.indicesByRank(-1L);
         // kludge, assume that the rank of all at the last axis is the same.
-        int rank = ((QDLStem) oldIndices.get(0L)).size();
+        int rank = oldIndices.get(0L).asStem().size();
 
         if (rank == 1) {
             // nothing to do. This is just a list
             polyad.setResult(stem);
-            polyad.setResultType(STEM_TYPE);
             polyad.setEvaluated(Boolean.TRUE);
             return;
         }
@@ -3376,17 +3270,17 @@ z. :=  join3(q.,w.)
         QDLStem pStem0;
         // Start QDL. sliceNode is [;rank]
         OpenSliceNode sliceNode = new OpenSliceNode(polyad.getTokenPosition());
-        sliceNode.getArguments().add(new ConstantNode(0L, LONG_TYPE));
-        sliceNode.getArguments().add(new ConstantNode(Integer.toUnsignedLong(rank), LONG_TYPE));
-        Object arg2 = null;
+        sliceNode.getArguments().add(new ConstantNode(new LongValue(0L)));
+        sliceNode.getArguments().add(new ConstantNode(new LongValue(Integer.toUnsignedLong(rank))));
+        QDLValue arg2 = null;
         boolean arg2ok = false;
         QDLStem stem1 = null;
         boolean hasArg2 = polyad.getArgCount() == 2;
         if (!hasAxisExpression && hasArg2) {
             arg2 = polyad.evalArg(1, state);
             checkNull(arg2, polyad.getArgAt(1), state);
-            if (arg2 instanceof Long) {
-                axis = (Long) arg2;
+            if (arg2.isLong()) {
+                axis = arg2.asLong();
                 hasAxisExpression = true; //either it is set here or comes with axis operator
                 arg2ok = true;
             }
@@ -3396,7 +3290,6 @@ z. :=  join3(q.,w.)
             if (axis == 0L) {
                 // They are requesting essentially the identity permutation, so don't jump through hoops.
                 polyad.setResult(stem);
-                polyad.setResultType(STEM_TYPE);
                 polyad.setEvaluated(Boolean.TRUE);
                 return;
             }
@@ -3406,18 +3299,18 @@ z. :=  join3(q.,w.)
                 if (newArg < 0) {
                     throw new IndexError("the requested axis of " + axis + " is not valid for a stem of rank " + rank, polyad.getArgAt(1));
                 }
-                stem1.listAdd(newArg);
+                stem1.listAdd(asQDLValue(newArg));
             } else {
                 if (rank <= axis) {
                     throw new IndexError("the requested axis of " + axis + " is not valid for a stem of rank " + rank, polyad.getArgAt(1));
                 }
-                stem1.listAdd(axis);
+                stem1.listAdd(asQDLValue(axis));
             }
             arg2ok = true;
             hasArg2 = true;
         } else {
-            if (isStem(arg2)) {
-                stem1 = (QDLStem) arg2;
+            if (arg2.isStem()) {
+                stem1 = arg2.asStem();
                 arg2ok = true;
             }
         }
@@ -3426,63 +3319,25 @@ z. :=  join3(q.,w.)
             if (!arg2ok) {
                 throw new BadArgException(TRANSPOSE + " requires an axis or stem of them as its second argument", polyad.getArgAt(1));
             }
-/*
-             arg2 = polyad.evalArg(1, state);
-            checkNull(arg2, polyad.getArgAt(1), state);
-             arg2ok = false;
-            if (isLong(arg2)) {
-                Long longArg = (Long) arg2;
-
-                if (longArg == 0L) {
-                    // They are requesting essentially the identity permutation, so don't jump through hoops.
-                    polyad.setResult(stem);
-                    polyad.setResultType(STEM_TYPE);
-                    polyad.setEvaluated(Boolean.TRUE);
-                    return;
-                }
-
-                stem1 = new QDLStem();
-                if (longArg < 0) {
-                    long newArg = rank + longArg;
-                    if (newArg < 0) {
-                        throw new IndexError("the requested axis of " + longArg + " is not valid for a stem of rank " + rank, polyad.getArgAt(1));
-                    }
-                    stem1.listAdd(newArg);
-                } else {
-                    if (rank <= longArg) {
-                        throw new IndexError("the requested axis of " + longArg + " is not valid for a stem of rank " + rank, polyad.getArgAt(1));
-                    }
-                    stem1.listAdd(arg2);
-                }
-                arg2ok = true;
-            }
-            if (isStem(arg2)) {
-                stem1 = (QDLStem) arg2;
-                arg2ok = true;
-            }
-            if (!arg2ok) {
-                throw new BadArgException(TRANSPOSE + " requires an axis or stem of them as its second argument", polyad.getArgAt(1));
-            }
-*/
             // If the second argument is p., then the new reshuffing is
             // p. ~ ~ exclude_keys([;rank], p.)
             Polyad excludeKeys = new Polyad(EXCLUDE_KEYS);
             excludeKeys.addArgument(sliceNode);
-            excludeKeys.addArgument(new ConstantNode(stem1, STEM_TYPE));
+            excludeKeys.addArgument(new ConstantNode(new StemValue(stem1)));
             Dyad monadicTilde = new Dyad(OpEvaluator.TILDE_VALUE); // mondic tilde does not exist. It is done as []~arg.
-            monadicTilde.setLeftArgument(new ConstantNode(new QDLStem(), STEM_TYPE));
+            monadicTilde.setLeftArgument(new ConstantNode(new StemValue())); // empty stem
             monadicTilde.setRightArgument(excludeKeys);
             Dyad dyadicTilde = new Dyad(OpEvaluator.TILDE_VALUE);
-            dyadicTilde.setLeftArgument(new ConstantNode(stem1, STEM_TYPE));
+            dyadicTilde.setLeftArgument(new ConstantNode(new StemValue(stem1)));
             dyadicTilde.setRightArgument(monadicTilde);
             dyadicTilde.evaluate(state);
-            pStem0 = (QDLStem) dyadicTilde.getResult();
+            pStem0 = dyadicTilde.getResult().asStem();
         } else {
             // default is to use reverse([;rank]) as the second argument
             Polyad reverse = new Polyad(ListEvaluator.LIST_REVERSE);
             reverse.addArgument(sliceNode);
             reverse.evaluate(state);
-            pStem0 = (QDLStem) reverse.getResult();
+            pStem0 = reverse.getResult().asStem();
         }
 
         // Now we need to create QDL for
@@ -3498,11 +3353,10 @@ z. :=  join3(q.,w.)
 
         // QDL to remap everything.
         Polyad subset = new Polyad(REMAP);
-        subset.addArgument(new ConstantNode(stem, STEM_TYPE));
-        subset.addArgument(new ConstantNode(oldIndices, STEM_TYPE));
-        subset.addArgument(new ConstantNode(newIndices, STEM_TYPE));
+        subset.addArgument(new ConstantNode(asQDLValue(stem)));
+        subset.addArgument(new ConstantNode(asQDLValue(oldIndices)));
+        subset.addArgument(new ConstantNode(asQDLValue(newIndices)));
         polyad.setResult(subset.evaluate(state));
         polyad.setEvaluated(Boolean.TRUE); // set evaluated true or next line bombs.
-        polyad.setResultType(Constant.getType(polyad.getResult()));
     }
 }

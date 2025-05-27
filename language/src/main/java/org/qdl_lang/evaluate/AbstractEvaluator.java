@@ -5,17 +5,20 @@ import org.qdl_lang.expressions.*;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.variables.*;
+import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.QDLValue;
+import org.qdl_lang.variables.values.SetValue;
 import org.qdl_lang.vfs.VFSEntry;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import org.apache.commons.codec.binary.Base32;
 import org.qdl_lang.functions.*;
-import software.amazon.awssdk.services.mq.model.User;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.util.*;
 
 import static org.qdl_lang.variables.Constant.UNKNOWN_TYPE;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * Top level. All evaluators should extend this.
@@ -113,18 +116,30 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     }
 
     public static boolean isSet(Object obj) {
+        if(obj instanceof QDLValue) {
+            return ((QDLValue)obj).isSet();
+        }
         return obj instanceof QDLSet;
     }
 
     public static boolean isStemList(Object obj) {
+        if(obj instanceof QDLValue) {
+            obj = ((QDLValue)obj).getValue();
+        }
         return isStem(obj) && ((QDLStem) obj).containsKey("0");
     }
 
     public static boolean isLong(Object obj) {
+        if(obj instanceof QDLValue) {
+            return ((QDLValue)obj).isLong();
+        }
         return obj instanceof Long;
     }
 
     public static boolean isBoolean(Object obj) {
+        if(obj instanceof QDLValue) {
+            return ((QDLValue)obj).isBoolean();
+        }
         return obj instanceof Boolean;
     }
 
@@ -152,7 +167,11 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         return StemUtility.areNoneStems(objects);
     }
 
-    public static boolean isString(Object obj) {
+    public static boolean isString(Object obj)
+    {
+        if(obj instanceof QDLValue) {
+            return ((QDLValue)obj).isString();
+        }
         return obj instanceof String;
     }
 
@@ -171,10 +190,17 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     }
 
     public static boolean isNumber(Object arg) {
+        if(arg instanceof QDLValue) {
+            QDLValue val = (QDLValue)arg;
+            return val.isLong() || val.isDecimal();
+        }
         return (arg instanceof Long) || (arg instanceof BigDecimal);
     }
 
     public static boolean isBigDecimal(Object obj) {
+        if(obj instanceof QDLValue) {
+            return ((QDLValue)obj).isDecimal();
+        }
         return obj instanceof BigDecimal;
     }
 
@@ -220,9 +246,12 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     }
 
     public static QDLStem toStem(Object object) {
+        if(object instanceof QDLValue && ((QDLValue)object).isStem()) {
+            return ((QDLValue)object).asStem();
+        }
         if (isStem(object)) return (QDLStem) object;
         QDLStem out = new QDLStem();
-        out.setDefaultValue(object);
+        out.setDefaultValue(asQDLValue(object));
         return out;
     }
 
@@ -237,13 +266,11 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     }
 
     public static class fpResult {
-        public Object result;
-        public int resultType;
+        public QDLValue result;
     }
 
     public static void finishExpr(ExpressionImpl node, fpResult r) {
         node.setResult(r.result);
-        node.setResultType(r.resultType);
         node.setEvaluated(true);
     }
 
@@ -265,29 +292,27 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         if (1 < polyad.getArgCount()) {
             throw new ExtraArgException(name + " requires at most 1 argument", polyad.getArgAt(0));
         }
-        Object arg1 = polyad.evalArg(0, state);
+        QDLValue arg1 = polyad.evalArg(0, state);
 
-        checkNull(arg1, polyad.getArgAt(0), state);
+        checkNull(arg1.getValue(), polyad.getArgAt(0), state);
 
-        if (isSet(arg1)) {
-            QDLSet argSet = (QDLSet) arg1;
+        if (arg1.isSet()) {
+            QDLSet argSet = arg1.asSet();
             QDLSet outSet = new QDLSet();
             processSet1(outSet, argSet, pointer);
-            polyad.setResult(outSet);
-            polyad.setResultType(Constant.SET_TYPE);
+            polyad.setResult(asQDLValue(outSet));
             polyad.setEvaluated(true);
             return;
         }
-        if (!isStem(arg1)) {
-            fpResult r = pointer.process(arg1);
+        if (!arg1.isStem()) {
+            fpResult r = pointer.process(arg1.getValue(), state);
             finishExpr(polyad, r);
             return;
         }
-        QDLStem stemVariable = (QDLStem) arg1;
+        QDLStem stemVariable = arg1.asStem();
         QDLStem outStem = new QDLStem();
         processStem1(outStem, stemVariable, pointer);
-        polyad.setResult(outStem);
-        polyad.setResultType(Constant.STEM_TYPE);
+        polyad.setResult(asQDLValue(outStem));
         polyad.setEvaluated(true);
     }
 
@@ -300,16 +325,16 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      */
     public static void processStem1(QDLStem outStem, QDLStem stemVariable, fPointer pointer) {
         for (Object key : stemVariable.keySet()) {
-            Object object = stemVariable.get(key);
+            QDLValue qdlValue = stemVariable.get(key);
             boolean isLongKey = key instanceof Long;
-            if (object instanceof QDLStem) {
+            if (qdlValue.isStem()) {
                 QDLStem newOut = new QDLStem();
-                processStem1(newOut, (QDLStem) object, pointer);
+                processStem1(newOut, qdlValue.asStem(), pointer);
                 if (!newOut.isEmpty()) {
                     if (isLongKey) {
-                        outStem.put((Long) key, newOut);
+                        outStem.put((Long) key, asQDLValue(newOut));
                     } else {
-                        outStem.put((String) key, newOut);
+                        outStem.put((String) key, asQDLValue(newOut));
                     }
                 }
             } else {
@@ -324,11 +349,11 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
 
 
     public static void processSet1(QDLSet outSet, QDLSet arg, fPointer pointer) {
-        for (Object key : arg) {
-            if (key instanceof QDLStem) {
+        for (QDLValue element : arg) {
+            if (element.isStem()) {
                 // Do something here???
             } else {
-                outSet.add(pointer.process(key).result);
+                outSet.add(pointer.process(element).result);
             }
         }
     }
@@ -356,7 +381,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * do all the magic of figuring out sets, stems, subsetting etc. You simply write a
      * function that implements {@link fPointer} that operates on a single pair of numbers.
      * <br/><br/>
-     * <b>Tip</b>: You should check for arguments types in the fPointer, not before. Argument checks before
+     * <b>Tip</b>: You should check for arguments values in the fPointer, not before. Argument checks before
      * invoking this are often a lot more work to unpack. Just let the method do the work. Besides, you can throw
      * {@link BadArgException}s which are extremely exact at the point of failure.
      * <br/><br/>
@@ -380,10 +405,9 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         if (!optionalArgs && polyad.getArgCount() != 2) {
             throw new IllegalArgumentException(name + " requires 2 arguments");
         }
-        Object arg1 = polyad.evalArg(0, state);
+        QDLValue arg1 = polyad.evalArg(0, state);
         checkNull(arg1, polyad.getArgAt(0), state);
-        Object arg2 = null;
-        //UnknownSymbolException usx = null;
+        QDLValue arg2 = null;
         QDLException usx = null;
         try {
             if (!name.equals(OpEvaluator.IS_A)) { // special case is_a operator
@@ -398,22 +422,20 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         // Short circuit dyadic logical && ||
         // We do allow for short circuiting if the second argument does not exist.
         // This is a common construct e.g. if[is_defined(x.) && size(x.) != 0]then[...
-        if (arg1 instanceof Boolean) {
+        if (arg1.isBoolean()) {
             if (polyad.getOperatorType() == OpEvaluator.OR_VALUE) {
-                if (((Boolean) arg1)) { // if arg1 true then...
+                if (arg1.asBoolean()) { // if arg1 true then...
                     if ((usx != null) || !(isSet(arg2) || isStem(arg2))) {
-                        polyad.setResult(Boolean.TRUE);
-                        polyad.setResultType(Constant.BOOLEAN_TYPE);
+                        polyad.setResult(new BooleanValue(Boolean.TRUE));
                         polyad.setEvaluated(true);
                         return;
                     }
                 }
             }
             if (polyad.getOperatorType() == OpEvaluator.AND_VALUE) {
-                if (!((Boolean) arg1)) { // if arg1 false then...
+                if (!arg1.isBoolean()) { // if arg1 false then...
                     if ((usx != null) || !(isSet(arg2) || isStem(arg2))) {
-                        polyad.setResult(Boolean.FALSE);
-                        polyad.setResultType(Constant.BOOLEAN_TYPE);
+                        polyad.setResult(new BooleanValue(Boolean.FALSE));
                         polyad.setEvaluated(true);
                         return;
                     }
@@ -425,11 +447,11 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             throw usx;
         }
         Object[] argList = new Object[polyad.getArgCount()];
-        argList[0] = arg1;
-        argList[1] = arg2;
+        argList[0] = arg1.getValue();
+        argList[1] = arg2.getValue();
         if (optionalArgs) {
             for (int i = 2; i < polyad.getArgCount(); i++) {
-                argList[i] = polyad.getArguments().get(i).evaluate(state);
+                argList[i] = polyad.getArguments().get(i).evaluate(state).getValue();
             }
         }
 
@@ -439,33 +461,33 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         boolean scalarRHS = false;
         QDLSet leftSet = null;
         QDLSet rightSet = null;
-        if ((arg1 instanceof QDLSet) && (arg2 instanceof QDLStem)) {
-            if (((QDLStem) arg2).isEmpty()) {
-                arg2 = new QDLSet();// make the empty set
+        if ((arg1.isSet()) && (arg2.isStem())) {
+            if (arg2.asStem().isEmpty()) {
+                arg2 = new SetValue();// make the empty set
             }
         }
 
-        if ((arg2 instanceof QDLSet) && (arg1 instanceof QDLStem)) {
-            if (((QDLStem) arg1).isEmpty()) {
-                arg1 = new QDLSet();// make the empty set
+        if ((arg2.isSet()) && (arg1.isStem())) {
+            if (arg1.asStem().isEmpty()) {
+                arg1 = new SetValue();// make the empty set
             }
         }
 
-        if (arg1 instanceof QDLSet) {
-            if ((arg2 instanceof QDLSet)) {
-                leftSet = (QDLSet) arg1;
-                rightSet = (QDLSet) arg2;
+        if (arg1.isSet()) {
+            if ((arg2.isSet())) {
+                leftSet = arg1.asSet();
+                rightSet = arg2.asSet();
                 isTwoSets = true;
             } else {
-                if (arg2 instanceof QDLStem) {
+                if (arg2.isStem()) {
                     throw new IllegalArgumentException("can only apply scalar operations on sets.");
                 }
                 isOneSet = true;
                 scalarRHS = true;
             }
         }
-        if ((leftSet == null) && arg2 instanceof QDLSet) {
-            if (arg1 instanceof QDLStem) {
+        if ((leftSet == null) && arg2.isSet()) {
+            if (arg1.isStem()) {
                 throw new IllegalArgumentException("can only apply scalar operations on sets.");
             }
             isOneSet = true;
@@ -473,20 +495,18 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         }
         if (isOneSet) {
             QDLSet outSet = new QDLSet();
-            QDLSet inSet = (QDLSet) (scalarRHS ? arg1 : arg2);
+            QDLSet inSet = (scalarRHS ? arg1 : arg2).asSet();
             Object scalar = scalarRHS ? arg2 : arg1;
             processSet2(outSet, inSet, scalar, scalarRHS, pointer, polyad, optionalArgs);
             polyad.setEvaluated(true);
-            polyad.setResult(outSet);
-            polyad.setResultType(Constant.SET_TYPE);
+            polyad.setResult(asQDLValue(outSet));
             return;
         }
         if (isTwoSets) {
             QDLSet outSet = new QDLSet();
-            Object result = processSet2(leftSet, rightSet, pointer, polyad, optionalArgs);
+            QDLValue result = processSet2(leftSet, rightSet, pointer, polyad, optionalArgs);
             polyad.setEvaluated(true);
             polyad.setResult(result);
-            polyad.setResultType(Constant.getType(result));
             return;
         }
 
@@ -499,8 +519,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         QDLStem stem2 = toStem(arg2);
         QDLStem outStem = new QDLStem();
         processStem2(outStem, stem1, stem2, pointer, polyad, optionalArgs);
-        polyad.setResult(outStem);
-        polyad.setResultType(Constant.STEM_TYPE);
+        polyad.setResult(asQDLValue(outStem));
         polyad.setEvaluated(true);
     }
 
@@ -514,7 +533,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param optionalArgs
      * @return
      */
-    public static Object processSet2(QDLSet leftSet, QDLSet rightSet, fPointer pointer, ExpressionImpl polyad, boolean optionalArgs) {
+    public static QDLValue processSet2(QDLSet leftSet, QDLSet rightSet, fPointer pointer, ExpressionImpl polyad, boolean optionalArgs) {
         fpResult r = null;
         Object[] objects;
         if (optionalArgs) {
@@ -549,7 +568,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param optionalArgs
      */
     public static void processSet2(QDLSet outSet, QDLSet inSet, Object scalar, boolean scalarRHS, fPointer pointer, ExpressionImpl polyad, boolean optionalArgs) {
-        for (Object element : inSet) {
+        for (QDLValue element : inSet) {
             fpResult r = null;
             Object[] objects;
             if (optionalArgs) {
@@ -559,16 +578,16 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
                 objects = new Object[2];
             }
             if (scalarRHS) {
-                objects[0] = element;
+                objects[0] = element.getValue();
                 objects[1] = scalar;
             } else {
                 objects[0] = scalar;
-                objects[1] = element;
+                objects[1] = element.getValue();
 
             }
             if (optionalArgs) {
                 for (int i = 2; i < objects.length; i++) {
-                    objects[i] = polyad.getArguments().get(i).getResult();
+                    objects[i] = polyad.getArguments().get(i).getResult().getValue();
                 }
             }
             if (isStem(objects[0]) || isStem(objects[1])) {
@@ -615,7 +634,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
                 QDLStem newOut = new QDLStem();
                 processStem2(newOut, toStem(objects[0]), toStem(objects[1]), pointer, polyad, optionalArgs);
                 if (!newOut.isEmpty()) {
-                    outStem.putLongOrString(key, newOut);
+                    outStem.putLongOrString(key, asQDLValue(newOut));
                 }
             } else {
                 r = pointer.process(objects);
@@ -643,39 +662,34 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         if (!optionalArguments && polyad.getArgCount() != 3) {
             throw new IllegalArgumentException(name + " requires at least 3  arguments");
         }
-        Object arg1 = polyad.evalArg(0, state);
+        QDLValue arg1 = polyad.evalArg(0, state);
         checkNull(arg1, polyad.getArgAt(0), state);
-        Object arg2 = polyad.evalArg(1, state);
+        QDLValue arg2 = polyad.evalArg(1, state);
         checkNull(arg2, polyad.getArgAt(1), state);
 
-        Object arg3 = polyad.evalArg(2, state);
+        QDLValue arg3 = polyad.evalArg(2, state);
         checkNull(arg3, polyad.getArgAt(3), state);
-/*
-        if (arg1 == null || arg2 == null || arg3 == null) {
-            throw new UnknownSymbolException("unknown symbol");
-        }*/
         Object[] argList = new Object[polyad.getArgCount()];
-        argList[0] = arg1;
-        argList[1] = arg2;
-        argList[2] = arg3;
+        argList[0] = arg1.getValue();
+        argList[1] = arg2.getValue();
+        argList[2] = arg3.getValue();
         if (optionalArguments) {
             for (int i = 2; i < polyad.getArgCount(); i++) {
-                argList[i] = polyad.getArguments().get(i).evaluate(state);
+                argList[i] = polyad.getArguments().get(i).evaluate(state).getValue();
             }
         }
         if (areNoneStems(argList)) {
-
             fpResult result = pointer.process(argList);
             finishExpr(polyad, result);
             return;
         }
+        // Convert to stems as needed
         QDLStem stem1 = toStem(arg1);
         QDLStem stem2 = toStem(arg2);
         QDLStem stem3 = toStem(arg3);
         QDLStem outStem = new QDLStem();
         processStem3(outStem, stem1, stem2, stem3, pointer, polyad, true);
-        polyad.setResult(outStem);
-        polyad.setResultType(Constant.STEM_TYPE);
+        polyad.setResult(asQDLValue(outStem));
         polyad.setEvaluated(true);
     }
 
@@ -691,21 +705,19 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         // so all this is basically to figure out how to loop over what.
         while (iterator.hasNext()) {
             Object key = iterator.next();
-            boolean keyIsLong = key instanceof Long;
             fpResult r = null;
             Object[] objects;
             if (optionalArgs) {
                 objects = new Object[polyad.getArgCount()];
-
             } else {
                 objects = new Object[3];
             }
-            objects[0] = stem1.get(key);
-            objects[1] = stem2.get(key);
-            objects[2] = stem3.get(key);
+            objects[0] = stem1.get(key).getValue();
+            objects[1] = stem2.get(key).getValue();
+            objects[2] = stem3.get(key).getValue();
             if (optionalArgs) {
                 for (int i = 3; i < objects.length; i++) {
-                    objects[i] = polyad.getArguments().get(i).getResult();
+                    objects[i] = polyad.getArguments().get(i).getResult().getValue();
                 }
             }
 
@@ -717,9 +729,8 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
                         toStem(objects[2]),
                         pointer, polyad, optionalArgs);
                 if (!newOut.isEmpty()) {
-                    outStem.putLongOrString(key, newOut);
+                    outStem.putLongOrString(key, asQDLValue(newOut));
                 }
-                //r = pointer.process(objects);
             } else {
                 r = pointer.process(objects);
                 outStem.putLongOrString(key, r.result);
@@ -1179,7 +1190,7 @@ g(1@f, 2)
                 // Future proofing in case something changes in the future internally
                 throw new IllegalArgumentException(" unknown object type");
             }
-            args.add(new ConstantNode(obj, type));
+            args.add(new ConstantNode(QDLValue.asQDLValue(obj)));
         }
         return args;
     }
@@ -1298,7 +1309,7 @@ g(1@f, 2)
                 // single string arguments
                 if (isString(arg)) {
                     argStem = new QDLStem();
-                    argStem.listAdd(arg);
+                    argStem.listAdd(asQDLValue(arg));
                     gotOne = true;
                 }
                 if (isStem(arg)) {
@@ -1318,9 +1329,9 @@ g(1@f, 2)
 
                 argStem = new QDLStem();
                 QDLStem innerStem = new QDLStem();
-                innerStem.listAdd(arg);
-                innerStem.listAdd(arg2);
-                argStem.put(0L, innerStem);
+                innerStem.listAdd(asQDLValue(arg));
+                innerStem.listAdd(asQDLValue(arg2));
+                argStem.put(0L, asQDLValue(innerStem));
                 gotOne = true;
                 break;
             default:

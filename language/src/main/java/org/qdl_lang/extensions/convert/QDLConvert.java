@@ -66,7 +66,7 @@ public class QDLConvert implements QDLMetaModule {
     public static final String INI_OUT = "ini_out";
     public static final String INI_IN = "ini_in";
      /*
-     Node types from the Node class:
+     Node values from the Node class:
     short ELEMENT_NODE = 1;
     short ATTRIBUTE_NODE = 2;
     short TEXT_NODE = 3;

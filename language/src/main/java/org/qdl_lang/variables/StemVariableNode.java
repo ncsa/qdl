@@ -4,9 +4,9 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.statements.HasResultInterface;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
-import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import net.sf.json.JSONObject;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +52,7 @@ public class StemVariableNode implements ExpressionInterface {
     }
 
     String variableReference;
-    QDLStem result = new QDLStem();
+    QDLValue result = new QDLValue(new QDLStem());
 
     public ArrayList<StemEntryNode> getStatements() {
         return statements;
@@ -65,10 +65,14 @@ public class StemVariableNode implements ExpressionInterface {
     ArrayList<StemEntryNode> statements = new ArrayList<>();
 
     @Override
-    public Object getResult() {
+    public QDLValue getResult() {
         return result;
     }
 
+    @Override
+    public void setResult(QDLValue object) {
+        throw new NotImplementedException("Error: Not implements");
+    }
     @Override
     public void setResult(Object object) {
         throw new NotImplementedException("Error: Not implements");
@@ -76,16 +80,9 @@ public class StemVariableNode implements ExpressionInterface {
 
     @Override
     public int getResultType() {
-        return Constant.STEM_TYPE;
+        return getResult().getType();
     }
 
-    @Override
-    public void setResultType(int type) {
-        if (type != Constants.STEM_TYPE && type != Constants.LIST_TYPE) {
-            throw new NFWException("error: Attempt to reset stem to type " + type);
-        }
-        // result type is fixed since these are created to only manage stems
-    }
 
     @Override
     public boolean isEvaluated() {
@@ -98,34 +95,34 @@ public class StemVariableNode implements ExpressionInterface {
     }
 
     @Override
-    public Object evaluate(State state) {
-        result = new QDLStem();
+    public QDLValue evaluate(State state) {
+        QDLStem stemOut = new QDLStem();
         for (StemEntryNode sen : getStatements()) {
             sen.evaluate(state);
             Object value = ((HasResultInterface) sen.getValue()).getResult();
 
             if (sen.isDefaultValue) {
-                result.setDefaultValue(value);
-                return result;
+                stemOut.setDefaultValue(value);
+                return new QDLValue(stemOut);
             }
 
             ExpressionInterface keyRI = sen.getKey();
 
             switch (keyRI.getResultType()) {
                 case Constant.LONG_TYPE:
-                    result.put((Long) keyRI.getResult(), value);
+                    stemOut.put(keyRI.getResult().asLong(), value);
                     break;
                 case Constant.STRING_TYPE:
                 case Constant.DECIMAL_TYPE:
 
-                    result.put(keyRI.getResult().toString(), value);
+                    stemOut.put(keyRI.getResult().toString(), value);
                     break;
 
                 default:
                     throw new IllegalArgumentException("Error: Illegal type for key \"" + keyRI.getResult() + "\"");
             }
         }
-        return result;
+        return new QDLValue(stemOut);
     }
 
     List<String> sourceCode;
@@ -149,8 +146,8 @@ public class StemVariableNode implements ExpressionInterface {
         QDLStem newStem = new QDLStem();
 
         // Kludge, but it works.
-        newStem.fromJSON((JSONObject) ((QDLStem) getResult()).toJSON());
-        newSVN.setResult(newStem);
+        newStem.fromJSON((JSONObject) getResult().asStem().toJSON());
+        newSVN.setResult(new QDLValue(newStem));
         newSVN.setSourceCode(getSourceCode());
         newSVN.setEvaluated(isEvaluated());
         return newSVN;

@@ -26,6 +26,7 @@ import java.util.Map;
 
 import static org.qdl_lang.config.QDLConfigurationConstants.*;
 import static org.qdl_lang.config.QDLConfigurationLoaderUtils.setupMySQLDatabase;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 import static org.qdl_lang.vfs.VFSPaths.PATH_SEPARATOR;
 
 /**
@@ -155,7 +156,7 @@ public class IOEvaluator extends AbstractEvaluator {
 
     protected void doScan(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1});
+            polyad.setAllowedArgCounts(new int[]{0, 1});
             polyad.setEvaluated(true);
             return;
         }
@@ -183,14 +184,13 @@ public class IOEvaluator extends AbstractEvaluator {
             result = "(error)";
         }
         polyad.setResult(result);
-        polyad.setResultType(Constant.STRING_TYPE);
         polyad.setEvaluated(true);
     }
 
 
     protected void doRMDir(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -237,12 +237,11 @@ public class IOEvaluator extends AbstractEvaluator {
         }
         polyad.setEvaluated(true);
         polyad.setResult(rc);
-        polyad.setResultType(Constant.BOOLEAN_TYPE);
     }
 
     protected void doRMFile(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -291,7 +290,6 @@ public class IOEvaluator extends AbstractEvaluator {
                 // Contract is that if it does not exist, return true.
                 polyad.setEvaluated(true);
                 polyad.setResult(rc);
-                polyad.setResultType(Constant.BOOLEAN_TYPE);
                 return;
                 // it exists and is not some sort of file, so an error is warranted.
             }
@@ -299,12 +297,11 @@ public class IOEvaluator extends AbstractEvaluator {
         }
         polyad.setEvaluated(true);
         polyad.setResult(rc);
-        polyad.setResultType(Constant.BOOLEAN_TYPE);
     }
 
     protected void doMkDir(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -356,7 +353,6 @@ public class IOEvaluator extends AbstractEvaluator {
         }
         polyad.setEvaluated(true);
         polyad.setResult(rc);
-        polyad.setResultType(Constant.BOOLEAN_TYPE);
 
     }
 
@@ -373,7 +369,7 @@ public class IOEvaluator extends AbstractEvaluator {
      */
     protected void doDir(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -442,7 +438,6 @@ public class IOEvaluator extends AbstractEvaluator {
             // The result should be null
             polyad.setEvaluated(true);
             polyad.setResult(QDLNull.getInstance());
-            polyad.setResultType(Constant.NULL_TYPE);
             return;
         }
         QDLStem dir = new QDLStem();
@@ -451,13 +446,11 @@ public class IOEvaluator extends AbstractEvaluator {
         }
         polyad.setEvaluated(true);
         polyad.setResult(dir);
-        polyad.setResultType(Constant.STEM_TYPE);
-
     }
 
     protected void vfsUnmount(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -487,13 +480,11 @@ public class IOEvaluator extends AbstractEvaluator {
 
         polyad.setEvaluated(true);
         polyad.setResult(Boolean.TRUE);
-        polyad.setResultType(Constant.BOOLEAN_TYPE);
-
     }
 
     protected void vfsMount(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -516,7 +507,7 @@ public class IOEvaluator extends AbstractEvaluator {
         QDLStem cfg = (QDLStem) arg1;
         if (!cfg.containsKey(VFS_ATTR_TYPE)) {
             // create a memory store
-            cfg.put(VFS_ATTR_TYPE, VFS_TYPE_MEMORY);
+            cfg.put(VFS_ATTR_TYPE, asQDLValue(VFS_TYPE_MEMORY));
         }
         // Now grab defaults
         String mountPoint = null;
@@ -585,7 +576,7 @@ public class IOEvaluator extends AbstractEvaluator {
 
     protected void doWriteFile(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2, 3});
+            polyad.setAllowedArgCounts(new int[]{1, 2, 3});
             polyad.setEvaluated(true);
             return;
         }
@@ -606,7 +597,6 @@ public class IOEvaluator extends AbstractEvaluator {
             }
             polyad.setEvaluated(true);
             polyad.setResult(processWriteFileStem((QDLStem) obj, state, polyad));
-            polyad.setResultType(Constant.getType(polyad.getResult()));
             return;
         }
         Object obj2 = polyad.evalArg(1, state);
@@ -636,7 +626,6 @@ public class IOEvaluator extends AbstractEvaluator {
 
 
         polyad.setResult(Boolean.TRUE);
-        polyad.setResultType(Constant.BOOLEAN_TYPE);
         polyad.setEvaluated(true);
 
     }
@@ -669,12 +658,12 @@ public class IOEvaluator extends AbstractEvaluator {
                         }
                     }
                     writeSingleFile((String) path, content, fileType, state, polyad);
-                    output.putLongOrString(key, Boolean.TRUE);
+                    output.putLongOrString(key, asQDLValue(Boolean.TRUE));
                 } else {
-                    output.putLongOrString(key, value);
+                    output.putLongOrString(key, asQDLValue(value));
                 }
             } else {
-                output.putLongOrString(key, value); // return argument unchanged
+                output.putLongOrString(key, asQDLValue(value)); // return argument unchanged
             }
         }
         return output;
@@ -930,7 +919,7 @@ ini_out(ini.)
 
     protected void doReadFile(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -952,7 +941,7 @@ ini_out(ini.)
         } else {
             if (isString(arg0)) {
                 input = new QDLStem();
-                input.getQDLList().add(arg0);
+                input.getQDLList().add(asQDLValue(arg0));
                 isScalar = true;
             } else {
                 throw new BadArgException(READ_FILE + " requires a string for its first argument.", polyad.getArgAt(0));
@@ -986,99 +975,6 @@ ini_out(ini.)
             polyad.setResult(output);
         }
         polyad.setEvaluated(true); // or reading the result to set the type fails.
-        polyad.setResultType(Constant.getType(polyad.getResult()));
-/*
-        VFSEntry vfsEntry = null;
-        boolean hasVF = false;
-        if (state.isVFSFile(fileName)) {
-            vfsEntry = resolveResourceToFile(fileName, op, state);
-            if (vfsEntry == null) {
-                throw new QDLException("The resource '" + fileName + "' was not found in the virtual file system");
-            }
-            hasVF = true;
-        } else {
-            // https://localhost:9443/oauth2/authorize?scope=org.cilogon.userinfo+openid+profile+email+read%3A+x.y%3A+x.z+write%3A&response_type=code&redirect_uri=https%3A%2F%2Flocalhost%3A9443%2Fclient42%2Fready&state=BvOuWCHp4uiUP9X3LNNUIq06hCNV1T_sXPfapRhCXJw&nonce=sfXKMepNO3OWNyDfBGsiacXQ1euR67fdtqYXJSybjLI&prompt=login&client_id=localhost%3Atest%2Fno_qdl
-            // https://localhost:9443/oauth2/authorize?scope=org.cilogon.userinfo+openid+profile+email+read%3A+x.y%3A+x.z+write%3A&response_type=code&redirect_uri=https%3A%2F%2Flocalhost%3A9443%2Fclient42%2Fready&state=zGI8jV81kmiAGhMnVcr2yUDfcAbhp3y2Xbu3e5J7Dzs&nonce=Pf5ziEOsms3VjIlas9uBf3wrJp2If-ZT1h8STwmRM64&prompt=login&client_id=localhost%3Atest%2Fno_qdlvirtual file reads in server mode.
-            // If the file does not live in a VFS throw an exception.
-            if (state.isServerMode()) {
-                throw new QDLServerModeException("File system operations not permitted in server mode.");
-            }
-        }
-        boolean allowListEntriesInIniFiles = true;
-        try {
-            switch (op) {
-                case FILE_OP_BINARY:
-                    // binary file. Read it and base64 encode it
-                    if (hasVF) {
-                        polyad.setResult(vfsEntry.getText());// if this is binary, the contents are a single base64 encoded string.
-                    } else {
-                        polyad.setResult(QDLFileUtil.readFileAsBinary(fileName));
-                    }
-                    polyad.setResultType(Constant.STRING_TYPE);
-                    polyad.setEvaluated(true);
-                    return;
-                case FILE_OP_TEXT_STEM:
-                    if (hasVF) {
-                        polyad.setResult(vfsEntry.convertToStem());// if this is binary, the contents are a single base64 encoded string.
-                    } else {
-                        polyad.setResult(QDLFileUtil.readTextFileAsStem(state, fileName));
-                    }
-                    // Read as lines, put in a stem
-                    polyad.setResultType(Constant.STEM_TYPE);
-                    polyad.setEvaluated(true);
-                    return;
-                case FILE_OP_TEXT_WITHOUT_LIST_INI:
-                    allowListEntriesInIniFiles = false;
-                case FILE_OP_TEXT_INI:
-                    // read it as a stem and start parsing
-                    String content;
-                    if (hasVF) {
-                        content = vfsEntry.getText();
-                    } else {
-                        content = QDLFileUtil.readTextFile(state, fileName);
-                    }
-                    if (StringUtils.isTrivial(content)) {
-                        polyad.setResult(new QDLStem());
-                        polyad.setResultType(Constant.STEM_TYPE);
-                        polyad.setEvaluated(true);
-                        return;
-                    }
-                    IniParserDriver iniParserDriver = new IniParserDriver();
-                    StringReader stringReader = new StringReader(content);
-                    QDLStem out = iniParserDriver.parse(stringReader, allowListEntriesInIniFiles);
-
-                    polyad.setResult(out);
-                    polyad.setResultType(Constant.STEM_TYPE);
-                    polyad.setEvaluated(true);
-                    return;
-                default:
-                    throw new BadArgException(" unknown file type '" + op + "'", polyad.getArgAt(1));
-                case FILE_OP_TEXT_STRING:
-                case FILE_OP_AUTO:
-                    // read it as a long string.
-                    if (hasVF) {
-                        polyad.setResult(vfsEntry.getText());
-                    } else {
-                        polyad.setResult(QDLFileUtil.readFileAsString(fileName));
-                    }
-                    polyad.setResultType(Constant.STRING_TYPE);
-                    polyad.setEvaluated(true);
-                    return;
-
-            }
-        } catch (Throwable t) {
-            if (t instanceof QDLException) {
-                throw (RuntimeException) t;
-            }
-            if (t instanceof FileNotFoundException) {
-                throw new QDLFileNotFoundException("'" + fileName + "' not found:" + t.getMessage());
-            }
-            if (t instanceof IllegalAccessException) {
-                throw new QDLFileAccessException("access denied to '" + fileName + "':" + t.getMessage());
-            }
-            throw new QDLException("Error reading file '" + fileName + "'" + t.getMessage());
-        }
-*/
 
     }
 
@@ -1106,7 +1002,7 @@ ini_out(ini.)
                     }
                 }
                 QDLStem stem = readFileStem(newInputs, newTypes, defaultType, state, polyad);
-                output.putLongOrString(key, stem);
+                output.putLongOrString(key, asQDLValue(stem));
 
             } else {
                 if (!(value instanceof String)) {
@@ -1121,7 +1017,7 @@ ini_out(ini.)
                         throw new BadArgException(READ_FILE + " requires file type as argument. Got '" + x + "'", polyad.getArgCount() == 2 ? polyad.getArgAt(1) : polyad.getArgAt(0));
                     }
                 }
-                output.putLongOrString(key, readSingleFile((String) value, type, state, polyad));
+                output.putLongOrString(key, asQDLValue(readSingleFile((String) value, type, state, polyad)));
             }
 
         }

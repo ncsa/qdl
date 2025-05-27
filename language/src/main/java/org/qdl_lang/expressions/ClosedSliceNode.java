@@ -4,8 +4,8 @@ import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
-import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -68,8 +68,7 @@ public class ClosedSliceNode extends ExpressionImpl {
         args.add(getArgAt(1).getResult());
         QDLStem out = new QDLStem();
         out.getQDLList().setArrayList(args);
-        setResult(out);
-        setResultType(Constant.STEM_TYPE);
+        setResult(new QDLValue(out));
         setEvaluated(true);
         return out;
     }

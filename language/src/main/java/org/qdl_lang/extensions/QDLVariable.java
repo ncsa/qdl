@@ -34,7 +34,7 @@ public interface QDLVariable extends Serializable {
     String getName();
 
     /**
-     * The value. The basic Java types that QDL knows are {@link Boolean},
+     * The value. The basic Java values that QDL knows are {@link Boolean},
      * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
      * and {@link QDLStem}. Again, this class sets the value and is used to create a
      * single instance of this variable in the workspace, so there should be no state

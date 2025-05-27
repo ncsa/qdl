@@ -215,7 +215,7 @@ public class QDLAggregateUtil {
      * @param processRankRestriction
      * @return
      */
-    public static Object process(QDLStem stem, ProcessStemAxisRestriction processRankRestriction) {
+    public static QDLStem process(QDLStem stem, ProcessStemAxisRestriction processRankRestriction) {
         // start recursion
             return processStem(stem, new LinkedList<>(), processRankRestriction, 0);
     }

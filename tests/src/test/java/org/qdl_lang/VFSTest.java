@@ -28,7 +28,7 @@ import java.util.List;
 
 /**
  * Large and complex text of the VFS (Virtual File System). This repeats the
- * same tests on several different store types, including databases, zip files
+ * same tests on several different store values, including databases, zip files
  * and the underlying file system.
  * <p>Created by Jeff Gaynor<br>
  * on 3/4/20 at  8:57 AM

@@ -81,7 +81,7 @@ public class X509 implements QDLMetaModule {
                     dd.add(getName() + "(file_path, passphrase, type) - load the keystore for this module of the given type.");
                     dd.add("file_path - full path to the keystore");
                     dd.add("passpharse - the passphrase for the store");
-                    dd.add("type - the type. Supported types are jks or pkcs12");
+                    dd.add("type - the type. Supported values are jks or pkcs12");
                     break;
             }
             dd.add("This loads a keystore for this module. You may query stored certs by alias and add them.");

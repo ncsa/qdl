@@ -1,6 +1,7 @@
 package org.qdl_lang.variables;
 
 import org.qdl_lang.exceptions.TypeViolationException;
+import org.qdl_lang.variables.values.QDLValue;
 
 public class QDLVariable {
     public QDLValue getValue() {

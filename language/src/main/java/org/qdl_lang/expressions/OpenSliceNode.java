@@ -6,6 +6,7 @@ import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
 import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,7 +22,7 @@ public class OpenSliceNode extends ExpressionImpl {
     }
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         Object arg0 = evalArg(0, state);
         if (!longOrBD(arg0)) {
             throw new IllegalArgumentException("error: slice requires a number for the first argument ");

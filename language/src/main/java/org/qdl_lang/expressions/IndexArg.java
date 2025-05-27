@@ -1,10 +1,6 @@
 package org.qdl_lang.expressions;
 
-import org.checkerframework.checker.units.qual.C;
-import org.qdl_lang.evaluate.AbstractEvaluator;
 import org.qdl_lang.evaluate.ListEvaluator;
-import org.qdl_lang.functions.DyadicFunctionReferenceNode;
-import org.qdl_lang.functions.FunctionReferenceNode;
 import org.qdl_lang.functions.FunctionReferenceNodeInterface;
 import org.qdl_lang.functions.LambdaDefinitionNode;
 import org.qdl_lang.state.State;
@@ -12,16 +8,12 @@ import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLSet;
 import org.qdl_lang.variables.QDLStem;
-import software.amazon.awssdk.services.medialive.model.EpochLockingSettings;
+import org.qdl_lang.variables.values.QDLValue;
 
-import javax.swing.*;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
-import static org.qdl_lang.evaluate.AbstractEvaluator.*;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -98,12 +90,11 @@ a\*\(2@f)\[1,3]
 */
             pick.addArgument(new ConstantNode(in));
             pick.evaluate(state);
-            Object keys = pick.getResult();
+            QDLValue keys = pick.getResult();
             swri.setResult(keys);
             swri.setEvaluated(true);
-            swri.setResultType(Constant.getType(keys));
-            if (keys instanceof QDLStem) {
-                for (Object key : ((QDLStem) keys).keySet()) {
+            if (keys.isStem()) {
+                for (Object key : keys.asStem().keySet()) {
                     stemKeys.add(key);
                 }
             }

@@ -147,7 +147,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     CommandLineTokenizer CLT = new CommandLineTokenizer('\'');
     protected static final String FUNCS_COMMAND = ")funcs";
-    protected static final String HELP_COMMAND = ")help"; // show various types of help
+    protected static final String HELP_COMMAND = ")help"; // show various values of help
     public static final String OFF_COMMAND = ")off";
     protected static final String BUFFER2_COMMAND = ")buffer";
     protected static final String FONTS_COMMAND = ")fonts";
@@ -4983,7 +4983,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             highly non-obvious, so I'll leave this here now as a later improvement
             if this gets important.
             Another consideration is that there is no way to know if turning on ansi mode
-            will crash the JVM (some terminal types cannot use it), so at best being able
+            will crash the JVM (some terminal values cannot use it), so at best being able
             to toggle this is dicey.
                 if (isOnOrTrue(value)) {
                     try {

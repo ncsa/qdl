@@ -269,7 +269,7 @@ public class ExpressionTest extends AbstractQDLTester {
         assert getBooleanValue("okc", state);
     }
     /**
-     * Tests input_form for basic expressions and types. 
+     * Tests input_form for basic expressions and values.
      * @throws Throwable
      */
     public void testInputForm() throws Throwable {

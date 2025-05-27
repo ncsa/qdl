@@ -2,15 +2,11 @@ package org.qdl_lang.expressions;
 
 import org.qdl_lang.evaluate.StemEvaluator;
 import org.qdl_lang.exceptions.BadArgException;
-import org.qdl_lang.exceptions.QDLExceptionWithTrace;
 import org.qdl_lang.state.State;
-import org.qdl_lang.variables.Constant;
-import org.qdl_lang.variables.QDLList;
-import org.qdl_lang.variables.QDLSet;
-import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.*;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -125,10 +121,10 @@ d  |  [0,      2,       0]
               means the specific index a.2.3
              */
             indexArg.swri.evaluate(state);
-            if (!(indexArg.swri.getResult() instanceof QDLStem)) {
+            if (!(indexArg.swri.getResult().isStem())) {
                 throw new BadArgException("stem index for extraction " + StemExtractionNode.EXTRACT_LIST + " must be a list", indexArg.swri);
             }
-            QDLStem args = (QDLStem) indexArg.swri.getResult();
+            QDLStem args = indexArg.swri.getResult().asStem();
             if (!args.isList()) {
                 throw new BadArgException("stem index for extraction " + StemExtractionNode.EXTRACT_LIST + " must be a list", indexArg.swri);
             }
@@ -139,7 +135,7 @@ d  |  [0,      2,       0]
                     indexArg1.swri = (AllIndices) args.get(key);
 
                 }else{
-                    ConstantNode constantNode = new ConstantNode(args.get(key));
+                    ConstantNode constantNode = new ConstantNode(new QDLValue(args.get(key)));
                     constantNode.setEvaluated(true);
                     indexArg1.swri = constantNode;
                 }

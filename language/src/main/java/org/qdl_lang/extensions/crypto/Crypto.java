@@ -290,7 +290,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
     }
 
     protected void addTypeHelp(List<String> dd) {
-        dd.add("Supported types are");
+        dd.add("Supported values are");
         dd.add("        " + JWKS_TYPE + " - (default) JWKS key or set of keys");
         dd.add("        " + PKCS_1_TYPE + " - PKCS 1, PEM encoded RSA private key");
         dd.add("        " + PKCS_8_TYPE + " - PKCS 8, PEM encoded unencrypted private key");

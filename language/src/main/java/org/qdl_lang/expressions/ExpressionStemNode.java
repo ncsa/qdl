@@ -6,6 +6,8 @@ import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
 import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.QDLValue;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,28 +59,26 @@ public class ExpressionStemNode implements ExpressionInterface {
 
     ArrayList<ExpressionInterface> arguments = new ArrayList<>();
 
-    Object result = null;
+    QDLValue  result = null;
 
     @Override
-    public Object getResult() {
+    public QDLValue getResult() {
         return result;
     }
 
     @Override
-    public void setResult(Object object) {
+    public void setResult(QDLValue object) {
         this.result = object;
     }
 
-    int resultType = UNKNOWN_TYPE;
-
     @Override
-    public int getResultType() {
-        return resultType;
+    public void setResult(Object result) {
+        setResult(QDLValue.asQDLValue(result));
     }
 
     @Override
-    public void setResultType(int type) {
-        resultType = type;
+    public int getResultType() {
+        return getResult().getType();
     }
 
 
@@ -199,15 +199,15 @@ The following are working:
      * @return
      */
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         return getOrSetValue(state, false, null);
     }
 
-    public Object setValue(State state, Object newValue) {
+    public QDLValue setValue(State state, QDLValue newValue) {
         return getOrSetValue(state, true, newValue);
     }
 
-    protected Object getOrSetValue(State state, boolean setValue, Object newValue) {
+    protected QDLValue getOrSetValue(State state, boolean setValue, QDLValue newValue) {
         getLeftArg().evaluate(state);
         getRightArg().evaluate(state);
 
@@ -236,11 +236,11 @@ The following are working:
                     s = (QDLStem)  obj;
                 }
             }else{
-                 s = (QDLStem) getLeftArg().getResult();
+                 s = getLeftArg().getResult().asStem();
             }
             if (setValue) {
-                if (getRightArg().getResult() instanceof Long) {
-                    s.put((Long) getRightArg().getResult(), newValue);
+                if (getRightArg().getResult().isLong()) {
+                    s.put(getRightArg().getResult().asLong(), newValue);
                 } else {
                     String targetKey = null;
                     if (getRightArg().getResult() == null) {
@@ -262,9 +262,8 @@ The following are working:
                 }
                 result = newValue;
             } else {
-                result = doLeftSVCase(getLeftArg(), getRightArg(), state);
+                result = new QDLValue(doLeftSVCase(getLeftArg(), getRightArg(), state));
             }
-            setResultType(Constant.getType(result));
             setEvaluated(true);
             return result;
         }
@@ -339,7 +338,7 @@ The following are working:
      * @return
      */
     protected Object doLeftSVCase(ExpressionInterface leftArg, List<ExpressionInterface> indices, State state) {
-        QDLStem stemLeft = (QDLStem) leftArg.getResult();
+        QDLStem stemLeft = leftArg.getResult().asStem();
         if(stemLeft == null){
             if(indices.get(0) instanceof VariableNode) {
                 return ((VariableNode)indices.get(0)).getVariableReference();
@@ -372,9 +371,9 @@ The following are working:
             if (!gotOne && (rightArg instanceof ConstantNode)) {
                 switch (rightArg.getResultType()) {
                     case LONG_TYPE:
-                        return stemLeft.get((Long) rightArg.getResult());
+                        return stemLeft.get(rightArg.getResult().asLong());
                     case STRING_TYPE:
-                        return stemLeft.get((String) rightArg.getResult());
+                        return stemLeft.get(rightArg.getResult().toString());
                     default:
                         new IllegalArgumentException("unknown stem index type ");
                 }

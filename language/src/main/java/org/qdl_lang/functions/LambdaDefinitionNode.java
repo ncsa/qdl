@@ -4,6 +4,7 @@ import org.qdl_lang.expressions.ExpressionImpl;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
+import org.qdl_lang.variables.values.QDLValue;
 
 /**
  * To treat defined lambda expressions they must be {@link org.qdl_lang.expressions.ExpressionNode}s
@@ -21,7 +22,7 @@ public class LambdaDefinitionNode extends ExpressionImpl implements FunctionNode
         return functionRecord.hasName();
     }
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         if(state.isImportMode()){
             state.getFTStack().localPut(functionRecord);
         } else{

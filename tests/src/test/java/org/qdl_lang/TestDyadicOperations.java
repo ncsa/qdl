@@ -126,7 +126,7 @@ public class TestDyadicOperations extends AbstractQDLTester {
         VThing testValue = (VThing) vStack.get(new XKey("string"));
         VariableNode variableNode = new VariableNode("string");
         variableNode.evaluate(state);
-        assert variableNode.getResult().equals(testValue.getValue());
+        assert variableNode.getResult().equals(testValue.getVariable());
         assert variableNode.getResultType() == Constant.STRING_TYPE;
         // random string test
         variableNode = new VariableNode("random.0");
@@ -267,7 +267,7 @@ public class TestDyadicOperations extends AbstractQDLTester {
     }
 
     /**
-     * Checks that different types return false from equality. Found a bug where things like
+     * Checks that different values return false from equality. Found a bug where things like
      * <pre>
      *     3.21 == 'a'
      *     false == 0

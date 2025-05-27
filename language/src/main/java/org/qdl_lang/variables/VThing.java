@@ -3,16 +3,14 @@ package org.qdl_lang.variables;
 import org.qdl_lang.state.XKey;
 import org.qdl_lang.state.XThing;
 
-import static org.qdl_lang.variables.Constant.UNKNOWN_TYPE;
-
 /**
  * <p>Created by Jeff Gaynor<br>
  * on 2/20/22 at  6:07 AM
  */
 public class VThing implements XThing {
-    public VThing(XKey key, Object value) {
+    public VThing(XKey key, QDLVariable variable) {
         this.key = key;
-        this.value = value;
+        this.variable = variable;
     }
 
     @Override
@@ -27,37 +25,32 @@ public class VThing implements XThing {
         return key;
     }
 
-    public Object getValue() {
-        return value;
+    public QDLVariable getVariable() {
+        return variable;
     }
 
-    public void setValue(Object value) {
-        this.value = value;
-        type = Constant.getType(value);
+    public void setVariable(QDLVariable variable) {
+        this.variable = variable;
     }
 
-    Object value;
-    int type = UNKNOWN_TYPE;
+    QDLVariable variable;
 
     public int getType() {
-        if (type == UNKNOWN_TYPE) {
-            type = Constant.getType(value);
-        }
-        return type;
+    return getVariable().getVariableType();
     }
      public boolean isStem(){
-        if(value == null) return false;
-        return value instanceof QDLStem;
+        if(variable == null) return false;
+        return variable.getValue().isStem();
      }
 
      public QDLStem getStemValue(){
-        return (QDLStem) value;
+        return variable.getValue().asStem();
      }
      public Long getLongValue(){
-        return (Long) value;
+        return variable.getValue().asLong();
      }
      public boolean isNull(){
-        if(value == null) return false;
-        return value instanceof QDLNull;
+        if(variable == null) return false;
+        return variable.getValue().isNull();
      }
 }

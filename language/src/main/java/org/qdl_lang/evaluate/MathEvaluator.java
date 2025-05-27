@@ -6,19 +6,19 @@ import org.qdl_lang.exceptions.MissingArgException;
 import org.qdl_lang.expressions.Polyad;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.Statement;
-import org.qdl_lang.variables.Constant;
-import org.qdl_lang.variables.MetaCodec;
-import org.qdl_lang.variables.QDLSet;
-import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.*;
 import org.qdl_lang.variables.codecs.AbstractCodec;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.LocalTime;
 import java.util.Date;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -183,7 +183,7 @@ public class MathEvaluator extends AbstractEvaluator {
 
     private void doCodec(Polyad polyad, State state, final boolean isEncode) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -212,19 +212,18 @@ public class MathEvaluator extends AbstractEvaluator {
                 }
                 if (objects[0] instanceof String) {
                     String arg = objects[0].toString();
-                    r.result = applyCodec(codec, arg, isEncode);
+                    r.result = asQDLValue(applyCodec(codec, arg, isEncode));
                 }else{
                     if(objects[0] instanceof QDLSet){
-                       r.result = doCodec(polyad, (QDLSet) objects[0], codec, isEncode);
+                       r.result = asQDLValue(doCodec(polyad, (QDLSet) objects[0], codec, isEncode));
                     }else{
                         if(objects[0] instanceof QDLStem){
-                            r.result = doCodec(polyad, (QDLStem) objects[0], codec, isEncode);
+                            r.result = asQDLValue(doCodec(polyad, (QDLStem) objects[0], codec, isEncode));
                         }else{
-                            r.result = objects[0];
+                            r.result = asQDLValue(objects[0]);
                         }
                     }
                 }
-                r.resultType = Constant.getType(r.result);
                 return r;
             }
         };
@@ -255,15 +254,15 @@ public class MathEvaluator extends AbstractEvaluator {
         QDLSet outSet = new QDLSet();
         for (Object object : inSet) {
             if (object instanceof String) {
-                outSet.add(applyCodec(codec, (String) object, isEncode));
+                outSet.add(asQDLValue(applyCodec(codec, (String) object, isEncode)));
             } else {
                 if (object instanceof QDLSet) {
-                    outSet.add(doCodec(polyad, (QDLSet) object, codec, isEncode));
+                    outSet.add(asQDLValue(doCodec(polyad, (QDLSet) object, codec, isEncode)));
                 } else {
                     if (object instanceof QDLSet) {
 
                     } else {
-                        outSet.add(object); // no change
+                        outSet.add(asQDLValue(object)); // no change
                     }
                 }
             }
@@ -276,15 +275,15 @@ public class MathEvaluator extends AbstractEvaluator {
         for (Object key : inStem.keySet()) {
             Object value = inStem.get(key);
             if (value instanceof String) {
-                outStem.putLongOrString(key, applyCodec(codec, (String) value, isEncode));
+                outStem.putLongOrString(key, asQDLValue(applyCodec(codec, (String) value, isEncode)));
             } else {
                 if (value instanceof QDLSet) {
-                    outStem.putLongOrString(key, doCodec(polyad, (QDLSet) value, codec, isEncode));
+                    outStem.putLongOrString(key, asQDLValue(doCodec(polyad, (QDLSet) value, codec, isEncode)));
                 } else {
                     if (value instanceof QDLStem) {
-                        outStem.putLongOrString(key, doCodec(polyad, (QDLStem) value, codec, isEncode));
+                        outStem.putLongOrString(key, asQDLValue(doCodec(polyad, (QDLStem) value, codec, isEncode)));
                     } else {
-                        outStem.putLongOrString(key, value); // no change
+                        outStem.putLongOrString(key, asQDLValue(value)); // no change
                     }
                 }
             }
@@ -300,7 +299,7 @@ public class MathEvaluator extends AbstractEvaluator {
      */
     protected void doIdentityFunction(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -316,14 +315,12 @@ public class MathEvaluator extends AbstractEvaluator {
         checkNull(arg, polyad.getArgAt(0));
 
         polyad.setResult(arg);
-        polyad.setResultType(polyad.getArgAt(0).getResultType());
         polyad.setEvaluated(true);
-
     }
 
     protected void doAbs(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1});
+            polyad.setAllowedArgCounts(new int[]{1});
             polyad.setEvaluated(true);
             return;
         }
@@ -342,17 +339,14 @@ public class MathEvaluator extends AbstractEvaluator {
                 // If a long or decimal, take the absolute value. If anything else (e.g. a string) return argument.
                 switch (Constant.getType(objects[0])) {
                     case Constant.LONG_TYPE:
-                        r.result = Math.abs((Long) objects[0]);
-                        r.resultType = Constant.LONG_TYPE;
+                        r.result = asQDLValue(Math.abs((Long) objects[0]));
                         break;
                     case Constant.DECIMAL_TYPE:
                         BigDecimal bd = (BigDecimal) objects[0];
-                        r.result = bd.abs();
-                        r.resultType = Constant.DECIMAL_TYPE;
+                        r.result = asQDLValue(bd.abs());
                         break;
                     default:
-                        r.result = objects[0];
-                        r.resultType = polyad.getArguments().get(0).getResultType();
+                        r.result = asQDLValue(objects[0]);
                 }
 
                 return r;
@@ -365,7 +359,7 @@ public class MathEvaluator extends AbstractEvaluator {
 
     protected void doRandom(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1});
+            polyad.setAllowedArgCounts(new int[]{0, 1});
             polyad.setEvaluated(true);
             return;
         }
@@ -376,7 +370,6 @@ public class MathEvaluator extends AbstractEvaluator {
 
         if (polyad.getArgCount() == 0) {
             polyad.setResult(secureRandom.nextLong());
-            polyad.setResultType(Constant.LONG_TYPE);
             polyad.setEvaluated(true);
             return;
         }
@@ -390,7 +383,7 @@ public class MathEvaluator extends AbstractEvaluator {
             int size = ((Long) arg).intValue();
             QDLStem stemVariable = new QDLStem();
             for (int i = 0; i < size; i++) {
-                stemVariable.put(Integer.toString(i), secureRandom.nextLong());
+                stemVariable.put(Integer.toString(i), asQDLValue(secureRandom.nextLong()));
             }
             result = stemVariable;
             resultType = Constant.STEM_TYPE;
@@ -398,7 +391,6 @@ public class MathEvaluator extends AbstractEvaluator {
             // unknown type is ignored.
             throw new BadArgException(RANDOM + " requires a integer as its argument if present", polyad.getArgAt(0));
         }
-        polyad.setResultType(resultType);
         polyad.setResult(result);
         polyad.setEvaluated(true);
 
@@ -406,7 +398,7 @@ public class MathEvaluator extends AbstractEvaluator {
 
     protected void doNumericDigits(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1});
+            polyad.setAllowedArgCounts(new int[]{0, 1});
             polyad.setEvaluated(true);
             return;
         }
@@ -415,9 +407,8 @@ public class MathEvaluator extends AbstractEvaluator {
             throw new ExtraArgException(NUMERIC_DIGITS + " requires at most 1 argument", polyad.getArgAt(1));
         }
 
-        Long oldND = new Long((long) state.getOpEvaluator().getNumericDigits());
-        polyad.setResult(oldND);
-        polyad.setResultType(Constant.LONG_TYPE);
+        Long oldND = (long) state.getOpEvaluator().getNumericDigits();
+        polyad.setResult(new QDLValue(oldND));
 
         if (polyad.getArgCount() == 0) {
             polyad.setEvaluated(true);
@@ -437,7 +428,7 @@ public class MathEvaluator extends AbstractEvaluator {
 
     protected void doRandomString(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1, 2});
+            polyad.setAllowedArgCounts(new int[]{0, 1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -485,7 +476,6 @@ public class MathEvaluator extends AbstractEvaluator {
             secureRandom.nextBytes(ba);
             String rc = Base64.encodeBase64URLSafeString(ba);
             polyad.setResult(rc);
-            polyad.setResultType(Constant.STRING_TYPE);
             polyad.setEvaluated(true);
             return;
         }
@@ -495,10 +485,9 @@ public class MathEvaluator extends AbstractEvaluator {
         for (int i = 0; i < returnCount; i++) {
             secureRandom.nextBytes(ba);
             String rc = Base64.encodeBase64URLSafeString(ba);
-            stem.put((long) i, rc);
+            stem.put((long) i, asQDLValue(rc));
         }
         polyad.setResult(stem);
-        polyad.setResultType(Constant.STEM_TYPE);
         polyad.setEvaluated(true);
         return;
     }
@@ -506,7 +495,7 @@ public class MathEvaluator extends AbstractEvaluator {
 
     protected void doHash(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{1, 2});
+            polyad.setAllowedArgCounts(new int[]{1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -533,34 +522,34 @@ public class MathEvaluator extends AbstractEvaluator {
                         }
                     }
                     String token = (String) objects[0];
+                    String tempOut;
                     switch (algorithm) {
                         case HASH_ALGORITHM_MD2:
-                            r.result = DigestUtils.md2Hex(token);
+                             tempOut = DigestUtils.md2Hex(token);
                             break;
                         case HASH_ALGORITHM_MD5:
-                            r.result = DigestUtils.md5Hex(token);
+                             tempOut = DigestUtils.md5Hex(token);
                             break;
                         case HASH_ALGORITHM_SHA1:
-                            r.result = DigestUtils.sha1Hex(token);
+                             tempOut = DigestUtils.sha1Hex(token);
                             break;
                         case HASH_ALGORITHM_SHA2:
                         case HASH_ALGORITHM_SHA_256:
-                            r.result = DigestUtils.sha256Hex(token);
+                             tempOut = DigestUtils.sha256Hex(token);
                             break;
                         case HASH_ALGORITHM_SHA_384:
-                            r.result = DigestUtils.sha384Hex(token);
+                             tempOut = DigestUtils.sha384Hex(token);
                             break;
                         case HASH_ALGORITHM_SHA_512:
-                            r.result = DigestUtils.sha512Hex(token);
+                             tempOut = DigestUtils.sha512Hex(token);
                             break;
                         default:
                             throw new BadArgException("unknown hash algorithm'" + algorithm + "'", polyad.getArgAt(1));
 
                     }
-                    r.resultType = Constant.STRING_TYPE;
+                    r.result = asQDLValue(tempOut);
                 } else {
-                    r.result = objects[0];
-                    r.resultType = polyad.getArguments().get(0).getResultType();
+                    r.result = asQDLValue(objects[0]);
                 }
                 return r;
             }
@@ -608,7 +597,7 @@ public class MathEvaluator extends AbstractEvaluator {
      */
     protected void doModulus(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
@@ -627,8 +616,7 @@ public class MathEvaluator extends AbstractEvaluator {
                 if (!areAllNumbers(objects)) {
                     // Contract is that if there are not numbers, just return the
                     // first argument unaltered.
-                    r.result = objects[0];
-                    r.resultType = polyad.getArguments().get(0).getResultType();
+                    r.result = asQDLValue(objects[0]);
                     return r;
                 }
                 if (areAllLongs(objects)) {
@@ -637,8 +625,7 @@ public class MathEvaluator extends AbstractEvaluator {
                         throw new BadArgException(MOD + " requires non-zero second argument", polyad.getArgAt(1));
 
                     }
-                    r.result = ((Long) objects[0]) % second;
-                    r.resultType = Constant.LONG_TYPE;
+                    r.result = asQDLValue(((Long) objects[0]) % second);
                     return r;
                 }
                 // so one of these is a big decimal at least
@@ -657,14 +644,12 @@ public class MathEvaluator extends AbstractEvaluator {
                     throw new IllegalStateException("There is insufficient numeric precision to compute this. Please adjust " + MathEvaluator.NUMERIC_DIGITS);
                 }
                 try {
-                    r.result = bdr.longValueExact();
-                    r.resultType = Constant.LONG_TYPE;
+                    r.result = asQDLValue(bdr.longValueExact());
                     return r;
                 } catch (ArithmeticException ax) {
                 }
 
-                r.result = bdr; // won't fit in a long, so this is really a BigInteger, which we don't support directly.
-                r.resultType = Constant.DECIMAL_TYPE;
+                r.result = asQDLValue(bdr); // won't fit in a long, so this is really a BigInteger, which we don't support directly.
                 return r;
             }
         };
@@ -673,7 +658,7 @@ public class MathEvaluator extends AbstractEvaluator {
 
     protected void doDates(Polyad polyad, State state, boolean isInMillis) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{0, 1});
+            polyad.setAllowedArgCounts(new int[]{0, 1});
             polyad.setEvaluated(true);
             return;
         }
@@ -687,15 +672,12 @@ public class MathEvaluator extends AbstractEvaluator {
             if (isInMillis) {
                 Long now = new Date().getTime();
                 polyad.setResult(now);
-                polyad.setResultType(Constant.LONG_TYPE);
                 polyad.setEvaluated(true);
             } else {
                 Date d = new Date();
                 String now = Iso8601.date2String(d);
                 polyad.setResult(now);
-                polyad.setResultType(Constant.STRING_TYPE);
                 polyad.setEvaluated(true);
-
             }
             return;
         }
@@ -706,8 +688,7 @@ public class MathEvaluator extends AbstractEvaluator {
                 if (isInMillis) {
                     if (isLong(objects[0])) {
                         // do nothing. hand it back.
-                        r.resultType = Constant.LONG_TYPE;
-                        r.result = objects[0];
+                        r.result = asQDLValue(objects[0]);
                     } else {
                         // assume it's and ISO 8601 date and should le converted to millis
                         try {
@@ -717,24 +698,20 @@ public class MathEvaluator extends AbstractEvaluator {
                                 LocalTime localTime =LocalTime.parse(x);
                             }
                             Long ts = Iso8601.string2Date(objects[0].toString()).getTimeInMillis();
-                            r.resultType = Constant.LONG_TYPE;
-                            r.result = ts;
+                            r.result = asQDLValue(ts);
                         } catch (Throwable t) {
 
-                            r.result = objects[0];
-                            r.resultType = polyad.getArguments().get(0).getResultType();
+                            r.result = asQDLValue(objects[0]);
                         }
                     }
                 } else {
                     // work with ISO 8601 dates
                     if (isLong(objects[0])) {
                         String now = Iso8601.date2String((Long) objects[0]);
-                        r.result = now;
-                        r.resultType = Constant.STRING_TYPE;
+                        r.result = asQDLValue(now);
                         return r;
                     } else {
-                        r.result = objects[0];
-                        r.resultType = polyad.getArguments().get(0).getResultType();
+                        r.result = asQDLValue(objects[0]);
                     }
                 }
                 return r;
@@ -755,7 +732,7 @@ public class MathEvaluator extends AbstractEvaluator {
 
     protected void doMinOrMax(Polyad polyad, State state, boolean isMax) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(new int[]{2});
+            polyad.setAllowedArgCounts(new int[]{2});
             polyad.setEvaluated(true);
             return;
         }
@@ -785,8 +762,7 @@ public class MathEvaluator extends AbstractEvaluator {
                 if (areAllLongs(objects)) {
                     long first = (Long) objects[0];
                     long second = (Long) objects[1];
-                    r.result = isMax ? Math.max(first, second) : Math.min(first, second);
-                    r.resultType = Constant.LONG_TYPE;
+                    r.result = asQDLValue(isMax ? Math.max(first, second) : Math.min(first, second));
                     return r;
                 }
                 // so one of these is a big decimal at least
@@ -806,23 +782,19 @@ public class MathEvaluator extends AbstractEvaluator {
                 }
                 try {
                     if (longValues == 1 && bdr.equals(bd0)) {
-                        r.result = bdr.longValueExact();
-                        r.resultType = Constant.LONG_TYPE;
+                        r.result = asQDLValue(bdr.longValueExact());
                         return r;
                     }
                     if (longValues == 2 && bdr.equals(bd1)) {
-                        r.result = bdr.longValueExact();
-                        r.resultType = Constant.LONG_TYPE;
+                        r.result = asQDLValue(bdr.longValueExact());
                         return r;
                     }
-                    r.result = bdr;
-                    r.resultType = Constant.DECIMAL_TYPE;
+                    r.result = asQDLValue(bdr);
                     return r;
                 } catch (ArithmeticException ax) {
                 }
 
-                r.result = bdr; // won't fit in a long, so this is really a BigInteger, which we don't support directly.
-                r.resultType = Constant.DECIMAL_TYPE;
+                r.result = asQDLValue(bdr); // won't fit in a long, so this is really a BigInteger, which we don't support directly.
                 return r;
             }
         };

@@ -2,12 +2,13 @@ package org.qdl_lang.expressions;
 
 import org.qdl_lang.exceptions.IndexError;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A simple list of indices for a stem. This refers to a single value.
+ * A simple list of indices as {@link QDLValue}s for a stem. This refers to a single value.
  * so if this is [1,2,3,4] then this is interpreted when accessing the stem as <br/></br>
  * a.1.2.3.4 == a.[1,2,3,4]   <br/><br/>
  * It is assumed that all values have been resolved, so these are just constants,
@@ -19,7 +20,7 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 6/12/21 at  6:47 AM
  */
-public class IndexList extends ArrayList {
+public class IndexList extends ArrayList<QDLValue> {
     /**
      * Unlike standard {@link ArrayList}, this fills up the list with nulls.
      * This is because it allows the individual elements to be managed later
@@ -70,7 +71,7 @@ public class IndexList extends ArrayList {
     @Override
     public IndexList clone() {
         IndexList x = new IndexList();
-        for (Object is : this) {
+        for (QDLValue is : this) {
             x.add(is);
         }
         return x;

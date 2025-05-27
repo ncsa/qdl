@@ -9,6 +9,7 @@ import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.Collections;
 import java.util.List;
@@ -75,7 +76,7 @@ public class StemExtractionNode extends ExpressionImpl {
     }
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         IndexArgs args = new IndexArgs();
         args.addAll(linearize(state));
         indexArgs = normalize(args);
@@ -92,7 +93,7 @@ public class StemExtractionNode extends ExpressionImpl {
                         if (vNode.getVariableReference().endsWith(QDLStem.STEM_INDEX_MARKER)) {
                             throw new QDLExceptionWithTrace(vNode.getVariableReference() + " not found", this);
                         }
-                        vNode.setResult(vNode.getVariableReference());
+                        vNode.setResult(new QDLValue(vNode.getVariableReference()));
                     }
                 }
             }
@@ -104,14 +105,12 @@ public class StemExtractionNode extends ExpressionImpl {
         QDLStem inStem = (QDLStem) larg;
         if (indexArgs.isAllWildcards()) {
             // special case of a\* or a\*\* etc.
-            setResultType(Constant.STEM_TYPE);
             setEvaluated(true);
-            setResult(inStem);
+            setResult(new QDLValue(inStem));
             return getResult();
         }
         Object out = recurse(inStem, indexArgs, state);
-        setResult(out);
-        setResultType(Constant.getType(out));
+        setResult(new QDLValue(out));
         setEvaluated(true);
         return getResult();
     }

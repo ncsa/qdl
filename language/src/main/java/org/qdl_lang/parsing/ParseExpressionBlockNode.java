@@ -4,6 +4,7 @@ import org.qdl_lang.expressions.ExpressionNode;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,12 +51,17 @@ public class ParseExpressionBlockNode implements ExpressionInterface {
     List<ExpressionNode> expressionNodes = new ArrayList<>();
 
     @Override
-    public Object getResult() {
+    public QDLValue getResult() {
         return null;
     }
 
     @Override
-    public void setResult(Object object) {
+    public void setResult(QDLValue object) {
+
+    }
+
+    @Override
+    public void setResult(Object result) {
 
     }
 
@@ -64,10 +70,6 @@ public class ParseExpressionBlockNode implements ExpressionInterface {
         return 0;
     }
 
-    @Override
-    public void setResultType(int type) {
-
-    }
 
     @Override
     public boolean isEvaluated() {

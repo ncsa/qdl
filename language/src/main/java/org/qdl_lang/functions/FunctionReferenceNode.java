@@ -3,7 +3,7 @@ package org.qdl_lang.functions;
 import org.qdl_lang.expressions.ExpressionImpl;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
-import org.qdl_lang.variables.Constant;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,8 +71,7 @@ FunctionReferenceNode extends ExpressionImpl implements FunctionReferenceNodeInt
         if(state.isModuleState()) {
             setModuleState(state);
         }
-        setResult(this);
-        setResultType(Constant.getType(this));
+        setResult(new QDLValue(this));
         setEvaluated(true);
         return this;
     }

@@ -2,8 +2,8 @@ package org.qdl_lang.expressions;
 
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.TokenPosition;
-import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.QDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -40,12 +40,11 @@ class VariableNode extends ExpressionImpl {
      }
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         // The contract is that variables resolve to their values when asked and are not mutable.
         // Might change that..
         result = state.getValue(variableReference);
         evaluated = true;
-        resultType = Constant.getType(result);
         return result;
     }
 

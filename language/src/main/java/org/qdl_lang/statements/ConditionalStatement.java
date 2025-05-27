@@ -60,10 +60,10 @@ public class ConditionalStatement implements Statement {
 
         Boolean result = false;
         getConditional().evaluate(newState);
-        if (!(getConditional().getResult() instanceof Boolean)) {
+        if (!(getConditional().getResult().isBoolean())) {
             throw new QDLExceptionWithTrace("Error: You must have a boolean value for your conditional not \"" +getConditional().getResult() + "\".", conditional.getArgAt(0) );
         }
-        if ((Boolean) getConditional().getResult()) {
+        if (getConditional().getResult().asBoolean()) {
             result = true;
             for (Statement arg : ifArguments) {
                 arg.evaluate(newState);

@@ -8,6 +8,9 @@ import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.qdl_lang.variables.values.LongValue;
+import org.qdl_lang.variables.values.QDLValue;
+import org.qdl_lang.variables.values.StringValue;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -18,13 +21,15 @@ import java.util.*;
  * <p>Created by Jeff Gaynor<br>
  * on 2/20/20 at  8:39 AM
  */
-public class QDLList implements List, Serializable {
+public class QDLList implements List<QDLValue>, Serializable {
+
+
     @Override
     public boolean isEmpty() {
         return getArrayList().isEmpty() && getSparseEntries().isEmpty();
     }
 
-    public ArrayList getArrayList() {
+    public ArrayList<QDLValue> getArrayList() {
         return arrayList;
     }
 
@@ -32,7 +37,7 @@ public class QDLList implements List, Serializable {
         this.arrayList = arrayList;
     }
 
-    ArrayList arrayList = new ArrayList();
+    ArrayList<QDLValue> arrayList = new ArrayList();
 
     public boolean hasArrayList() {
         return !arrayList.isEmpty();
@@ -231,7 +236,7 @@ subset(b., 3, 6)
         }
         getArrayList().ensureCapacity((int) size);
         for (long i = 0L; i < size; i++) {
-            arrayList.add(i);
+            arrayList.add(new QDLValue(i));
         }
     }
 
@@ -242,7 +247,7 @@ subset(b., 3, 6)
      * @param size
      * @param fill
      */
-    public QDLList(long size, Object[] fill) {
+    public QDLList(long size, QDLValue[] fill) {
         if (Integer.MAX_VALUE < size) {
             throw new NotImplementedException("need to implement long lists");
         }
@@ -254,9 +259,14 @@ subset(b., 3, 6)
 
         for (long i = 0L; i < size; i++) {
             if (fill == null) {
-                arrayList.add(i);
+                arrayList.add(new LongValue(i));
             } else {
-                arrayList.add(fill[(int) i % fillSize]);
+                QDLValue ooo= fill[(int) i % fillSize];
+//                if(ooo instanceof QDLValue) {
+                    arrayList.add(ooo);
+  //              }else {
+    //                arrayList.add(new QDLValue(ooo));
+      //          }
             }
         }
     }
@@ -268,10 +278,10 @@ subset(b., 3, 6)
      * @return
      */
     public QDLList unique() {
-        HashSet set = new HashSet();
-        for (Object obj : this) {
-            if (obj instanceof QDLStem) {
-                QDLStem ss = ((QDLStem) obj).almostUnique();
+        HashSet<QDLValue> set = new HashSet();
+        for (QDLValue obj : this) {
+            if (obj.isStem()) {
+                QDLStem ss = obj.asStem().almostUnique();
                 set.addAll(ss.getQDLList().unique());
             } else {
                 set.add(obj);
@@ -279,19 +289,19 @@ subset(b., 3, 6)
 
         }
         QDLList qdlList1 = new QDLList();
-        HashSet hashSet1 = new HashSet();
-        for (Object obj : set) {
+        HashSet<QDLValue> hashSet1 = new HashSet();
+        for (QDLValue obj : set) {
             hashSet1.add(obj);
         }
 
-        for (Object object : set) {
+        for (QDLValue object : set) {
             qdlList1.append(object);
         }
         return qdlList1;
     }
 
 
-    public Object get(long index) {
+    public QDLValue get(long index) {
         // Fixes https://github.com/ncsa/qdl/issues/47
         if (index < 0) {
             return getRelativeAddress(index);
@@ -308,7 +318,7 @@ subset(b., 3, 6)
      * @param originalIndex
      * @return
      */
-    protected Object getRelativeAddress(long originalIndex) {
+    protected QDLValue getRelativeAddress(long originalIndex) {
         int s = size();
         long index = originalIndex + s;
         if (index < 0L) {
@@ -347,7 +357,7 @@ subset(b., 3, 6)
       a.(-2)
       a.
      */
-    protected Object getAbsoluteAddress(long index) {
+    protected QDLValue getAbsoluteAddress(long index) {
         if (index < arrayList.size()) { // so it's in the array list
             return arrayList.get((int) index);
         }
@@ -389,41 +399,46 @@ subset(b., 3, 6)
     }
 
     /**
-     * Find the largest element of this list and append the given object to the end of it.
+     * Find the largest element of this list and append the given object to the end of it. This
+     * is also used internally to append sparse entries, so it accepts an Object
      *
      * @param obj
      */
     public void append(Object obj) {
         if (!hasSparseEntries()) {
-            getArrayList().add(obj);
+            if(obj instanceof QDLValue) {
+                getArrayList().add((QDLValue)obj);
+            }else{
+                getArrayList().add(new QDLValue(obj));
+            }
             return;
         }
 
         SparseEntry newEntry;
         if (obj instanceof SparseEntry) {
             // in this case, stem entries are being added directly, so don't wrap them in a stem entry.
-
             newEntry = new SparseEntry(size(), ((SparseEntry) obj).entry); // argh Java requires a cast. If StemEntry is ever extended, this will break.
-
         } else {
+            QDLValue vvv = QDLValue.asQDLValue(obj);
+
             if (isEmpty()) {
-                newEntry = new SparseEntry(0L, obj);
+                newEntry = new SparseEntry(0L, vvv);
             } else {
                 SparseEntry stemEntry = getSparseEntries().last();
-                newEntry = new SparseEntry(stemEntry.index + 1, obj);
+                newEntry = new SparseEntry(stemEntry.index + 1, vvv);
             }
         }
         getSparseEntries().add(newEntry);
     }
 
     /**
-     * Appends all elements in a list. Terrificallty inefficient. Optimize. Someday. Maybe.
+     * Appends all elements in a list. Terrifically inefficient. Optimize. Someday. Maybe.
      *
      * @param objects
      */
     public void appendAll(List<Object> objects) {
         for (Object obj : objects) {
-            add(obj);
+            add(QDLValue.asQDLValue(obj));
         }
     }
 
@@ -434,7 +449,7 @@ subset(b., 3, 6)
             return;
         }
         index = getSparseEntries().last().index;
-        for (Object k : set) {
+        for (QDLValue k : set) {
             add(new SparseEntry(index++, k));
         }
     }
@@ -452,26 +467,25 @@ subset(b., 3, 6)
         boolean isFirst = true;
         for (long i = 0; i < size(); i++) {
 
-            Object obj = get(i);
+            QDLValue obj = get(i);
             if (obj == null) {
                 throw new seGapException();
             }
-            if (obj instanceof QDLStem) {
+            if (obj.isStem()) {
                 if (isFirst) {
                     isFirst = false;
                     output = output + "\n";
                 } else {
                     output = output + ",\n";
                 }
-                output = output + newIndent + ((QDLStem) obj).toString(indentFactor, newIndent);
+                output = output + newIndent + obj.asStem().toString(indentFactor, newIndent);
             } else {
                 needsCRWithClosingBrace = false;
                 if (isFirst) {
                     isFirst = false;
-                    output = output + StemConverter.convert(obj);
+                    output = output + StemConverter.convert(obj.asStem());
                 } else {
-
-                    output = output + "," + StemConverter.convert(obj);
+                    output = output + "," + StemConverter.convert(obj.getValue());
                 }
             }
         }
@@ -493,13 +507,13 @@ subset(b., 3, 6)
             } else {
                 output = output + ",";
             }
-            Object obj = get(i);
+            QDLValue obj = get(i);
             if (obj == null) {
                 throw new seGapException();
             }
             String vv;
-            if (obj instanceof BigDecimal) {
-                vv = InputFormUtil.inputForm((BigDecimal) obj);
+            if (obj.isDecimal()) {
+                vv = InputFormUtil.inputForm(obj.asDecimal());
             } else {
                 vv = obj.toString();
             }
@@ -524,23 +538,23 @@ subset(b., 3, 6)
 
     public JSONArray toJSON(boolean escapeNames, int type) {
         JSONArray array = new JSONArray();
-        for (Object element : getArrayList()) {
-            if (element instanceof QDLStem) {
-                array.add(((QDLStem) element).toJSON(escapeNames, type));
+        for (QDLValue element : getArrayList()) {
+            if (element.isStem()) {
+                array.add(element.asStem().toJSON(escapeNames, type));
             } else {
-                if (element instanceof QDLNull) {
+                if (element.isNull()) {
                     array.add(QDLConstants.JSON_QDL_NULL);
                 } else {
-                    array.add(element);
+                    array.add(element.getValue());
                 }
             }
         }
         for (SparseEntry s : getSparseEntries()) {
-            Object v = s.entry;
-            if (v instanceof QDLStem) {
-                array.add(((QDLStem) v).toJSON(escapeNames, type));
+            QDLValue v = s.entry;
+            if (v.isStem()) {
+                array.add(v.asStem().toJSON(escapeNames, type));
             } else {
-                array.add(v);
+                array.add(v.getValue());
             }
         }
         return array;
@@ -560,11 +574,11 @@ subset(b., 3, 6)
             } else {
                 output = output + ",";
             }
-            Object obj = get(i);
+            QDLValue obj = get(i);
             if (obj == null) {
                 throw new seGapException();
             }
-            output = output + InputFormUtil.inputForm(obj);
+            output = output + obj.getInputForm();
         }
         return output + "]";
     }
@@ -580,11 +594,11 @@ subset(b., 3, 6)
             } else {
                 output = output + ",\n";
             }
-            Object obj = get(i);
+            QDLValue obj = get(i);
             if (obj == null) {
                 throw new seGapException();
             }
-            output = output + newIndent + InputFormUtil.inputForm(obj);
+            output = output + newIndent + obj.getInputForm();
         }
 
         return output + "\n]";
@@ -599,15 +613,16 @@ subset(b., 3, 6)
      * @param allowStems - if true, hitting a stem throws an exception.
      * @return
      */
-    public Object[] toArray(boolean noGaps, boolean allowStems) {
+    public QDLValue[] toArray(boolean noGaps, boolean allowStems) {
         if (!hasSparseEntries()) {
-            return getArrayList().toArray();
+            QDLValue[] array = new QDLValue[getArrayList().size()];
+            return getArrayList().toArray(array);
         }
         if (noGaps) {
-            Object[] r = new Object[getArrayList().size()];
+            QDLValue[] r = new QDLValue[getArrayList().size()];
             int ii = 0;
-            for (Object ooo : getArrayList()) {
-                if (!allowStems && (ooo instanceof QDLStem)) {
+            for (QDLValue ooo : getArrayList()) {
+                if (!allowStems && (ooo.isStem())) {
                     throw new IllegalArgumentException("error: a stem is not allowed in this list");
                 }
                 r[ii++] = ooo;
@@ -615,14 +630,14 @@ subset(b., 3, 6)
             return r;
         }
 
-        Object[] r = new Object[size()];
+        QDLValue[] r = new QDLValue[size()];
         int ii = 0;
-        for (Object ooo : getArrayList()) {
+        for (QDLValue ooo : getArrayList()) {
             r[ii++] = ooo;
         }
         // now handle sparse entries. All that is left is to fill in
         for (SparseEntry sparseEntry : getSparseEntries()) {
-            if (!allowStems && (sparseEntry.entry instanceof QDLStem)) {
+            if (!allowStems && (sparseEntry.entry.isStem())) {
                 throw new IllegalArgumentException("error: a stem is not allowed in this list");
             }
             r[ii++] = sparseEntry.entry;
@@ -632,7 +647,7 @@ subset(b., 3, 6)
 
     /**
      * Get the dimension list for this object. dim(n(3,4,5)) == [3,4,5]<br/>
-     * This id very simple minded and assumes rectangular arrays.
+     * This is very simple minded and assumes rectangular arrays.
      *
      * @return
      */
@@ -642,16 +657,16 @@ subset(b., 3, 6)
             return s;
         }
         long index = 0L;
-        Object obj = get(0);
-        s.add((long) size());
-        Object currentEntry = obj;
+        QDLValue qdlValue = get(0);
+        s.add(new LongValue(size()));
+        QDLValue currentEntry = qdlValue;
         while (currentEntry != null) {
-            if (currentEntry instanceof QDLStem) {
-                QDLStem s1 = (QDLStem) currentEntry;
+            if (currentEntry.isStem()) {
+                QDLStem s1 = currentEntry.asStem();
                 if (s1.getQDLList().size() == 0) {
                     break;
                 }
-                s.add((long) s1.getQDLList().size());
+                s.add(new LongValue(s1.getQDLList().size()));
                 currentEntry = s1.getQDLList().get(0L);
             } else {
                 break;
@@ -669,11 +684,11 @@ subset(b., 3, 6)
      *
      * @return
      */
-    public ArrayList values() {
-        ArrayList list = new ArrayList();
+    public ArrayList<QDLValue> values() {
+        ArrayList<QDLValue> list = new ArrayList();
         Iterator iterator = iterator(true);
         while (iterator.hasNext()) {
-            list.add(iterator.next());
+            list.add((QDLValue)iterator.next());
         }
         return list;
     }
@@ -768,7 +783,13 @@ subset(b., 3, 6)
             }
 
         }
-        getArrayList().addAll(c);
+        for(Object o : c) {
+            if(o instanceof QDLValue) {
+                getArrayList().add((QDLValue) o);
+            }else{
+                getArrayList().add(new QDLValue( o));
+            }
+        }
         return true;
     }
 
@@ -794,7 +815,7 @@ subset(b., 3, 6)
         set(sparseEntry.index, sparseEntry.entry);
     }
 
-    public void set(long index, Object element) {
+    public void set(long index, QDLValue element) {
         if (index == 0 && getArrayList().size() == 0) {
             // edge case
             getArrayList().add(element);
@@ -807,35 +828,6 @@ subset(b., 3, 6)
         // Fixes https://github.com/ncsa/qdl/issues/48
         setRelativeIndex(index, element);
     }
-      /*
-             int s = size();
-        long index = originalIndex + s;
-        if (index < 0L) {
-            // we' tried to wrap around once, but more than that should fail
-            throw new IndexError("index " + originalIndex + " out of bounds for list of length " + s, null);
-        }
-        if (index < arrayList.size()) { // so it's in the array list unless the next condition fails
-            return arrayList.get((int) index);
-        }
-        // It's a sparse entry. A tree set may have entries like {100:3, 200:4} and
-        // get originalIndex = -1 would mean returning the value associated with 200.
-        if (originalIndex == -1) {
-            return getSparseEntries().last().entry;
-        }
-        index = index - arrayList.size(); // restricts to indices in Sparse entries.
-        if (index == 0) {
-            return getSparseEntries().first().entry;
-        }
-        // neither first nor last, now we have to iterate. This is s-l-o-o-o-w.
-        Iterator<SparseEntry> it = getSparseEntries().iterator();
-        int i = 0;
-        SparseEntry current = null;
-        while (it.hasNext() && i <= index) {  // want to jump out at i == index.
-            current = it.next();
-            i++;
-        }
-        return current.entry;
-       */
 
     /**
      * Set a relative value. Note that unlike absolute addresses, relative ones must exist prior to being
@@ -844,7 +836,7 @@ subset(b., 3, 6)
      * @param originalIndex
      * @param element
      */
-    protected void setRelativeIndex(long originalIndex, Object element) {
+    protected void setRelativeIndex(long originalIndex, QDLValue element) {
         int s = size();
         long index = originalIndex + s;
         if (index < 0L) {
@@ -875,7 +867,7 @@ subset(b., 3, 6)
         current.entry = element;
     }
 
-    protected void setAbsoluteIndex(long index, Object element) {
+    protected void setAbsoluteIndex(long index, QDLValue element) {
 
         if (index < getArrayList().size()) {
             if (index < 0) {
@@ -906,7 +898,7 @@ subset(b., 3, 6)
             throw new IllegalArgumentException("the source does not have enough elements for this operation.");
         }
 
-        List sourceList = null;
+        List<QDLValue> sourceList = null;
         if (startIndex < source.getArrayList().size()) {
             sourceList = source.getArrayList().subList((int) startIndex, (int) (startIndex + length));
         }
@@ -947,10 +939,12 @@ subset(b., 3, 6)
                 sparseEntry.index = sparseEntry.index + offset - 1;
             }
             long index = insertIndex;
-            for (Object obj : sourceList) {
-                SparseEntry sparseEntry = new SparseEntry(index++, obj);
-                getSparseEntries().remove(sparseEntry);
-                getSparseEntries().add(sparseEntry);
+            if(sourceList != null) {
+                for (QDLValue obj : sourceList) {
+                    SparseEntry sparseEntry = new SparseEntry(index++, obj);
+                    getSparseEntries().remove(sparseEntry);
+                    getSparseEntries().add(sparseEntry);
+                }
             }
             normalizeIndices();
         }
@@ -997,7 +991,7 @@ subset(b., 3, 6)
             throw new IllegalArgumentException("the source does not have enough elements for this operation.");
         }
 
-        List sourceList = null;
+        List<QDLValue> sourceList = null;
         if (startIndex < source.getArrayList().size()) {
             sourceList = source.getArrayList().subList((int) startIndex, (int) (startIndex + length));
         }
@@ -1018,7 +1012,7 @@ subset(b., 3, 6)
 
         int index = 0;
         // No easy way to replace, just have to do it.
-        for (Object obj : sourceList) {
+        for (QDLValue obj : sourceList) {
             int nextIndex = (int) insertIndex + index++;
             if (hasSparseEntries()) {
                 SparseEntry nextSE = new SparseEntry(nextIndex, obj);
@@ -1065,11 +1059,11 @@ subset(b., 3, 6)
      * (if objectsOnly is false) and have the index too.
      */
     public static class MyIterator implements Iterator {
-        Iterator arrayIterator;
-        Iterator sparseEntryIterator;
+        Iterator<QDLValue> arrayIterator;
+        Iterator<SparseEntry> sparseEntryIterator;
         boolean objectsOnly = false;
 
-        public MyIterator(Iterator arrayIterator, Iterator sparseEntryIterator, boolean objectsOnly) {
+        public MyIterator(Iterator<QDLValue> arrayIterator, Iterator<SparseEntry> sparseEntryIterator, boolean objectsOnly) {
             this.arrayIterator = arrayIterator;
             this.sparseEntryIterator = sparseEntryIterator;
             this.objectsOnly = objectsOnly;
@@ -1085,23 +1079,28 @@ subset(b., 3, 6)
         @Override
         public Object next() {
             if (arrayIterator.hasNext()) {
-                Object obj = arrayIterator.next();
+                return arrayIterator.next();
+/*
                 if (obj instanceof SparseEntry) {
                     return ((SparseEntry) obj).entry;
                 }
+
                 return obj;
+                */
+
             }
             if (objectsOnly) {
-                return ((SparseEntry) sparseEntryIterator.next()).entry;
-
+                return (sparseEntryIterator.next()).entry;
             }
             return sparseEntryIterator.next();
         }
     }
 
     /**
-     * An iterator
-     *
+     * Iterator over values. This is overloaded, so that if objectsOnly is true, just
+     * {@link QDLValue}s are returned, otherwise, this will return a mix of values and sparse
+     * entries.
+     * @param objectsOnly
      * @return
      */
     public Iterator iterator(boolean objectsOnly) {
@@ -1118,6 +1117,11 @@ subset(b., 3, 6)
         return iterator(false);
     }
 
+    /**
+     * Checks if this key (as a string or long) is an index in this list.
+     * @param o
+     * @return
+     */
     public boolean containsKey(Object o) {
         if (o instanceof SparseEntry) {
             if (getSparseEntries().contains(o)) {
@@ -1147,13 +1151,14 @@ subset(b., 3, 6)
             }
             return getArrayList().contains(((SparseEntry) o).entry);
         }
-        if (getArrayList().contains(o)) {
+        QDLValue qdlValue = QDLValue.asQDLValue(o);
+        if (getArrayList().contains(qdlValue)) {
             return true;
         }
         // Now grunt work. Does a random object exist in the sparse entries
         if (hasSparseEntries()) {
             for (SparseEntry sparseEntry : getSparseEntries()) {
-                if (sparseEntry.entry.equals(o)) return true;
+                if (sparseEntry.entry.equals(qdlValue)) return true;
             }
         }
         return false;
@@ -1177,52 +1182,93 @@ subset(b., 3, 6)
         throw new NotImplementedException("toArray(Object[])");
     }
 
-    @Override
-    public boolean add(Object o) {
+    public boolean add(Integer o) {
+        return add(new LongValue(o));
+
+    }
+    public boolean add(SparseEntry sparseEntry) {
+        if (hasSparseEntries()) {
+            SparseEntry lastEntry = getSparseEntries().last();
+            SparseEntry newEntry = new SparseEntry(lastEntry.index + 1, sparseEntry.entry);
+            getSparseEntries().add(newEntry);
+            return true;
+        }
+            return getArrayList().add(sparseEntry.entry);
+
+    }
+    public boolean add(QDLValue qdlValue) {
+/*
         if(o instanceof Integer) {
             // assume they are adding just an number to the list
             o = ((Integer) o).longValue();
         }
+*/
         if (hasSparseEntries()) {
             SparseEntry lastEntry = getSparseEntries().last();
-            SparseEntry newEntry = new SparseEntry(lastEntry.index + 1, o);
+            SparseEntry newEntry = new SparseEntry(lastEntry.index + 1, qdlValue);
             getSparseEntries().add(newEntry);
             return true;
         }
-        if (o instanceof SparseEntry) {
-            return getArrayList().add(((SparseEntry) o).entry);
+        return getArrayList().add(qdlValue);
+    }
+    public boolean remove(QDLValue qdlValue) {
+        boolean rc =  getArrayList().remove(qdlValue);
+        if(rc){
+            return rc; // got first element
         }
-        return getArrayList().add(o);
+        if(hasSparseEntries()){
+            SparseEntry removeIt = null;
+            for (SparseEntry se : getSparseEntries()) {
+                if (se.entry.equals(qdlValue.getValue())) {
+                    removeIt = se;
+                    break; // Contract for List is to remove *first* element by value
+                }
+            }
+            if(removeIt==null){
+                return false;
+            }
+            return getSparseEntries().remove(removeIt);
+        }
+        return false;
+    }
+    public boolean remove(SparseEntry sparseEntry) {
+        boolean rc = getArrayList().remove(sparseEntry.entry);
+        if(rc){
+            return rc; // removed first element of the list
+        }
+        SparseEntry removeIt = null;
+
+        for (SparseEntry se : getSparseEntries()) {
+            if (se.entry.equals(sparseEntry.entry)) {
+                removeIt = se;
+                break; // Contract for List is to remove *first* element by value
+            }
+        }
+        if (removeIt == null) {
+            return false;
+        }
+        return getSparseEntries().remove(removeIt);
     }
 
 
     /**
      * Remove by value  from <b>top level</b> only. This fulfills Java's contract for
      * lists/collections, which removes <i>the first instance of this object <b>only</b></i>.
-     *
+     * To fulfill QDL's contract, use {@link #removeAllByValue(QDLValue, boolean)}
+     *<br/><br/>
+     * This might pass in sparse entries, so those have to be taken into account.
      * @param o
      * @return
      */
     @Override
     public boolean remove(Object o) {
-        boolean rc = true;
-        rc = rc && getArrayList().remove(o);
-        if (o instanceof SparseEntry) {
-            SparseEntry sparseEntry = (SparseEntry) o;
-            rc = rc && getArrayList().remove(sparseEntry.entry);
-            SparseEntry removeIt = null;
-            for (SparseEntry se : getSparseEntries()) {
-                if (se.entry.equals(sparseEntry.entry)) {
-                    removeIt = se;
-                    break;
-                }
-            }
-            if (removeIt == null) {
-                return false;
-            }
-            rc = rc && getSparseEntries().remove(removeIt);
+        if(o instanceof SparseEntry){
+            return remove((SparseEntry) o);
         }
-        return rc;
+        if(o instanceof QDLValue){
+            return remove((QDLValue) o);
+        }
+        return false;
     }
 
     public boolean remove(Collection c) {
@@ -1234,7 +1280,13 @@ subset(b., 3, 6)
     }
 
 
-    public boolean removeAllByValue(Collection c, boolean reorderLists) {
+    /**
+     * Fulfills QDL's contract to remove all elements by value.
+     * @param c
+     * @param reorderLists
+     * @return
+     */
+    public boolean removeAllByValue(Collection<QDLValue> c, boolean reorderLists) {
         ArrayList newList = new ArrayList();
         if (reorderLists) {
             for (Object v : getArrayList()) {
@@ -1251,8 +1303,8 @@ subset(b., 3, 6)
                 }
             }
             for (SparseEntry sparseEntry : getSparseEntries()) {
-                if (sparseEntry.entry instanceof QDLStem) {
-                    QDLStem vv = (QDLStem) sparseEntry.entry;
+                if (sparseEntry.entry.isStem()) {
+                    QDLStem vv = sparseEntry.entry.asStem();
                     vv.removeAllByValues(c, reorderLists);
                     if (!vv.isEmpty()) {
                         newList.add(vv);
@@ -1269,26 +1321,32 @@ subset(b., 3, 6)
         }
         boolean rc = true;
         for (Object obj : c) {
-            rc = rc && removeAllByValue(obj, reorderLists);
+            QDLValue v;
+            if(obj instanceof QDLValue){
+                v = (QDLValue) obj;
+            }else{
+                v = new QDLValue(obj);
+            }
+            rc = rc && removeAllByValue(v, reorderLists);
         }
         return rc;
     }
 
     /**
-     * removes a single object from everywhere in this stem.
+     * removes a single object from everywhere in this List.
      *
-     * @param c
+     * @param qdlValue
      * @return
      */
-    protected boolean removeAllByValue(Object c, boolean reorderLists) {
-        List<Integer> removeList = new ArrayList<>();
+    protected boolean removeAllByValue(QDLValue qdlValue, boolean reorderLists) {
+        List<Integer> removeList = new ArrayList<>(getArrayList().size());
         boolean rc = true;
         for (int i = 0; i < getArrayList().size(); i++) {
-            Object value = getArrayList().get(i);
-            if (value instanceof QDLStem) {
-                rc = rc && ((QDLStem) value).removeAllByValue(c, reorderLists);
+            QDLValue value = getArrayList().get(i);
+            if (value.isStem()) {
+                rc = rc && value.asStem().removeAllByValue(qdlValue, reorderLists);
             } else {
-                if (value.equals(c)) {
+                if (value.equals(qdlValue)) {
                     removeList.add(i);
                 }
             }
@@ -1302,11 +1360,11 @@ subset(b., 3, 6)
         if (!getSparseEntries().isEmpty()) {
             List<SparseEntry> removeSE = new ArrayList<>();
             for (SparseEntry sparseEntry : getSparseEntries()) {
-                Object value = sparseEntry.entry;
-                if (value instanceof QDLStem) {
-                    rc = rc && ((QDLStem) value).removeAllByValue(c, reorderLists);
+                QDLValue value = sparseEntry.entry;
+                if (value.isStem()) {
+                    rc = rc && value.asStem().removeAllByValue(qdlValue, reorderLists);
                 } else {
-                    if (value.equals(c)) {
+                    if (value.equals(qdlValue)) {
                         removeSE.add(sparseEntry);
                     }
                 }
@@ -1327,7 +1385,8 @@ subset(b., 3, 6)
     }
 
     /**
-     * removes every element by value.
+     * removes every element by value. The collection should be a collection of
+     * {@link QDLValue}s, but the signature does not allow for that.
      *
      * @param c
      * @return
@@ -1336,9 +1395,9 @@ subset(b., 3, 6)
     public boolean removeAll(Collection c) {
         List<Integer> rr = new ArrayList<>();
         for (int i = 0; i < getArrayList().size(); i++) {
-            Object obj = getArrayList().get(i);
-            if (obj instanceof QDLStem) {
-                ((QDLStem) obj).removeAllByValues(c, false);
+            QDLValue obj = getArrayList().get(i);
+            if (obj.isStem()) {
+                obj.asStem().removeAllByValues(c, false);
             } else {
                 if (c.contains(obj)) {
                     rr.add(i);
@@ -1377,7 +1436,7 @@ subset(b., 3, 6)
     }
 
     @Override
-    public Object get(int index) {
+    public QDLValue get(int index) {
         return get((long) index);
     }
 
@@ -1391,17 +1450,17 @@ subset(b., 3, 6)
      * @return
      */
     @Override
-    public Object set(int index, Object element) {
+    public QDLValue set(int index, QDLValue element) {
         return getArrayList().set(index, element);
     }
 
     @Override
-    public void add(int index, Object element) {
+    public void add(int index, QDLValue element) {
         throw new NotImplementedException("add(int, Object) -- need logic for sparse entries");
     }
 
     @Override
-    public Object remove(int index) {
+    public QDLValue remove(int index) {
         throw new NotImplementedException("remove(int)");
     }
 
@@ -1492,13 +1551,13 @@ subset(b., 3, 6)
 
     }
 
-    public static void main(String[] args) {
-        QDLList list = new QDLList(10L, new String[]{"a"});
+ /*   public static void main(String[] args) {
+        QDLList list = new QDLList(10L, new QDLValue[]{new StringValue("a")});
         System.out.println(list);
-        list.appendAll(new QDLList(10L, new String[]{"b"}));
+        list.appendAll(new QDLList(10L, new QDLValue[]{new StringValue("b")}));
         System.out.println(list);
         System.out.println(list.size());
-    }
+    }*/
 
     /**
      * Keep this! It is not used by QDL though and won't show up in any searches of methods used.

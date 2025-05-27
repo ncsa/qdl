@@ -4,6 +4,7 @@ import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 
@@ -46,7 +47,7 @@ public class Dyad extends ExpressionImpl{
     boolean unary = false;
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         if(2<getArguments().size()){
             // This happened once when QDl was creating a dyad, so do check again
             throw new BadArgException("internal error, dyad type " + getOperatorType() + " has too many arguments",getArguments().get(2));

@@ -681,7 +681,7 @@ public class StringFunctionTests extends AbstractQDLTester {
     }
 
     /**
-     * Tests that using a regex to tokenize a string with multiple types of delimiters works.
+     * Tests that using a regex to tokenize a string with multiple values of delimiters works.
      *
      * @throws Throwable
      */

@@ -1,5 +1,7 @@
 package org.qdl_lang.variables;
 
+import org.qdl_lang.variables.values.QDLValue;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -20,18 +22,18 @@ public class SparseEntry implements Comparable, Serializable {
         this(index, null);
     }
 
-    public SparseEntry(long index, Object entry) {
+    public SparseEntry(long index, QDLValue entry) {
         this.index = index;
         this.entry = entry;
     }
 
-    public SparseEntry(BigInteger index, Object entry) {
+    public SparseEntry(BigInteger index, QDLValue entry) {
         this.bigIndex = index;
         this.entry = entry;
     }
 
     public long index;
-    public Object entry;
+    public QDLValue entry;
     public BigInteger bigIndex = null;
    /*
      There was an attempt to allow for BigInteger indices, but that ended up being far too
@@ -41,7 +43,11 @@ public class SparseEntry implements Comparable, Serializable {
 
 
     @Override
-    public int compareTo(Object o) {
+    public int compareTo(Object v) {
+        if(!(v instanceof QDLValue)) {
+            throw new ClassCastException("Error: the object \"" + v.getClass().getSimpleName() + "\" is not comparable.");
+        }
+        Object o = ((QDLValue)v).getValue();
         if(o instanceof BigDecimal){
             BigDecimal bd = (BigDecimal) o;
             BigInteger bi ;
@@ -85,6 +91,7 @@ public class SparseEntry implements Comparable, Serializable {
             if (index == s.index) return 0;
             if (index > s.index) return 1;
         }
+        // if we end up here somehow, blow up anyway
         throw new ClassCastException("Error: the object \"" + o.getClass().getSimpleName() + "\" is not comparable.");
     }
 

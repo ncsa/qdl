@@ -393,10 +393,10 @@ public class ModuleUtils implements Serializable {
             if (var.getString(TYPE_TAG).equals(MODULE_TAG)) {
                 String key = var.getString(KEY_KEY);
                 VThing vThing = (VThing) state.getVStack().get(new XKey(key));
-                if (!(vThing.getValue() instanceof Module)) {
-                    throw new NFWException("Incorrect serialization. Expected a module for variable " + key + " but got a " + vThing.getValue().getClass().getSimpleName());
+                if (!(vThing.getVariable() instanceof Module)) {
+                    throw new NFWException("Incorrect serialization. Expected a module for variable " + key + " but got a " + vThing.getVariable().getClass().getSimpleName());
                 }
-                Module module = (Module) vThing.getValue();
+                Module module = (Module) vThing.getVariable();
                 if (module instanceof JavaModule) {
                     JavaModule javaModule = (JavaModule) module;
                     javaModule.deserializeStates(var, serializationState);

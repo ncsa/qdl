@@ -8,8 +8,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * A sample stem that has various types added to it. This shows you how to work with
- * QDL types in Java.
+ * A sample stem that has various values added to it. This shows you how to work with
+ * QDL values in Java.
  * <p>Created by Jeff Gaynor<br>
  * on 1/27/20 at  1:26 PM
  */

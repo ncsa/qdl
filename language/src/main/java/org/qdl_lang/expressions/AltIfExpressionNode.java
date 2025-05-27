@@ -3,8 +3,8 @@ package org.qdl_lang.expressions;
 import org.qdl_lang.exceptions.QDLExceptionWithTrace;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
-import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 
@@ -49,11 +49,11 @@ public class AltIfExpressionNode extends ExpressionImpl {
     }
 
     @Override
-    public Object evaluate(State state) {
-        Object arg0 = getIF().evaluate(state);
-        if(arg0 instanceof QDLStem){
+    public QDLValue evaluate(State state) {
+        QDLValue arg0 = getIF().evaluate(state);
+        if(arg0.isStem()){
             QDLStem out = new QDLStem();
-            QDLStem inStem = (QDLStem) arg0;
+            QDLStem inStem = arg0.asStem();
             for(Object key : inStem.keySet()){
                    Object obj = inStem.get(key);
                    if(!(obj instanceof Boolean)){
@@ -68,26 +68,24 @@ public class AltIfExpressionNode extends ExpressionImpl {
                 }
                 out.putLongOrString(key, arg1);
             }
-            setResult(out);
-            setResultType(Constant.STEM_TYPE);
+            setResult(new QDLValue(out));
             setEvaluated(true);
-            return out;
+            return getResult();
 
         }
-        if (!(arg0 instanceof Boolean)) {
-            throw new QDLExceptionWithTrace("error: expression requires a boolean as its first argument, got '" + arg0 + "'", getIF());
+        if (!(arg0.isBoolean())) {
+            throw new QDLExceptionWithTrace("error: expression requires a boolean as its first argument, got '" + arg0.getValue() + "'", getIF());
         }
-        Boolean flag = (Boolean) arg0;
+        Boolean flag = arg0.asBoolean();
         Object arg1;
         if (flag) {
             arg1 = getTHEN().evaluate(state);
         } else {
             arg1 = getELSE().evaluate(state);
         }
-        setResult(arg1);
-        setResultType(Constant.getType(arg1));
+        setResult(new QDLValue(arg1));
         setEvaluated(true);
-        return arg1;
+        return getResult();
     }
 
     @Override
