@@ -6,8 +6,11 @@ import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.state.State;
 import org.qdl_lang.state.XKey;
 import org.qdl_lang.variables.Constant;
+import org.qdl_lang.variables.QDLVariable;
 import org.qdl_lang.variables.VStack;
 import org.qdl_lang.variables.VThing;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -21,10 +24,10 @@ public class ExpressionTest extends AbstractQDLTester {
         // test !(a+2)<(b-3) for a = 10, b = 4. Should be TRUE
         State state = testUtils.getNewState();
         VStack symbolTable = state.getVStack();
-        symbolTable.put(new VThing(new XKey("a"), 10L));
-        symbolTable.put(new VThing(new XKey("b"), 4L));
-        ConstantNode twoNode = new ConstantNode(2L, Constant.LONG_TYPE);
-        ConstantNode threeNode = new ConstantNode(3L, Constant.LONG_TYPE);
+        symbolTable.put(new VThing(new XKey("a"), new QDLVariable(10L)));
+        symbolTable.put(new VThing(new XKey("b"), new QDLVariable(4L)));
+        ConstantNode twoNode = new ConstantNode(asQDLValue(2L));
+        ConstantNode threeNode = new ConstantNode(asQDLValue(3L));
         VariableNode aNode = new VariableNode("a");
         VariableNode bNode = new VariableNode("b");
         // so to make these, ou start at the bottom and assemble as you rise up.
@@ -34,7 +37,7 @@ public class ExpressionTest extends AbstractQDLTester {
         // top node
         Monad notNode = new Monad(OpEvaluator.NOT_VALUE, lessThanNode);
         notNode.evaluate(state);
-        assert (Boolean) notNode.getResult();
+        assert notNode.getResult().asBoolean();
     }
 
     /**
@@ -72,10 +75,10 @@ public class ExpressionTest extends AbstractQDLTester {
         // Should be TRUE
         State state = testUtils.getNewState();
         VStack vStack = state.getVStack();
-        vStack.put(new VThing(new XKey("a"), 10L));
-        vStack.put(new VThing(new XKey("b"), 4L));
-        ConstantNode twoNode = new ConstantNode(2L, Constant.LONG_TYPE);
-        ConstantNode threeNode = new ConstantNode(3L, Constant.LONG_TYPE);
+        vStack.put(new VThing(new XKey("a"), new QDLVariable(10L)));
+        vStack.put(new VThing(new XKey("b"), new QDLVariable(4L)));
+        ConstantNode twoNode = new ConstantNode(asQDLValue(2L));
+        ConstantNode threeNode = new ConstantNode(asQDLValue(3L));
         VariableNode aNode = new VariableNode("a");
         VariableNode bNode = new VariableNode("b");
         // so to make these, ou start at the bottom and assemble as you rise up.
@@ -85,16 +88,16 @@ public class ExpressionTest extends AbstractQDLTester {
         // top node
         Monad notNode = new Monad(OpEvaluator.NOT_VALUE, lessThanNode);
         notNode.evaluate(state);
-        assert (Boolean) notNode.getResult();
+        assert notNode.getResult().asBoolean();
         // This is the same as the previous test to show that state is kept straight.
         // now redo it. This time a = 0, b = 5 and the value should be false.
         State state2 = testUtils.getNewState();
-        state2.getVStack().put(new VThing(new XKey("a"), 0L));
-        state2.getVStack().put(new VThing(new XKey("b"), 10L));
+        state2.getVStack().put(new VThing(new XKey("a"), new QDLVariable( 0L)));
+        state2.getVStack().put(new VThing(new XKey("b"), new QDLVariable(10L)));
 
         ExpressionNode notNode2 = notNode.makeCopy();
         notNode2.evaluate(state2);
-        assert !(Boolean) notNode2.getResult();
+        assert !(Boolean) notNode2.getResult().asBoolean();
 
     }
 

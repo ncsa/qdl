@@ -25,6 +25,8 @@ import edu.uiuc.ncsa.security.storage.sql.postgres.PostgresConnectionParameters;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
+import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -35,6 +37,8 @@ import java.util.List;
 import static edu.uiuc.ncsa.security.storage.sql.ConnectionPoolProvider.*;
 import static edu.uiuc.ncsa.security.storage.sql.SQLDatabase.rsToMap;
 import static java.sql.Types.*;
+import static org.qdl_lang.variables.values.BooleanValue.*;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -68,11 +72,11 @@ public class QDLDB implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            if (!(objects[0] instanceof QDLStem)) {
-                throw new BadArgException(getName() + " requires a stem as its argument",0);
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
+            if (!(qdlValues[0].isStem())) {
+                throw new BadArgException(getName() + " requires a stem as its argument", 0);
             }
-            QDLStem stemVariable = (QDLStem) objects[0];
+            QDLStem stemVariable = qdlValues[0].asStem();
             if (!stemVariable.containsKey(TYPE_ARG)) {
                 throw new BadArgException("missing " + TYPE_ARG + " argument", 0);
             }
@@ -103,7 +107,7 @@ public class QDLDB implements QDLMetaModule {
                     throw new BadArgException("unknown database type", 0);
             }
             isConnected = true;
-            return Boolean.TRUE;
+            return True;
         }
 
         List<String> doc = new ArrayList<>();
@@ -147,46 +151,46 @@ public class QDLDB implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (!(objects[0] instanceof String)) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            if (!(qdlValues[0].isString())) {
                 throw new BadArgException(getName() + " requires a string as its first argument", 0);
             }
-            if (!(objects[1] instanceof QDLStem)) {
+            if (!(qdlValues[1].isStem())) {
                 throw new BadArgException(getName() + " requires a stem as its second argument", 1);
             }
-            QDLStem inStem = (QDLStem) objects[1];
+            QDLStem inStem = qdlValues[1].asStem();
             QDLStem outStem = new QDLStem();
             boolean flattenList = false;
-            if(objects.length == 3){
-                if(objects[2] instanceof Boolean){
-                    flattenList = (Boolean) objects[2];
-                }else{
+            if (qdlValues.length == 3) {
+                if (qdlValues[2].isBoolean()) {
+                    flattenList = qdlValues[2].asBoolean();
+                } else {
                     throw new BadArgException(getName() + " requires a boolean as its third argument", 2);
                 }
             }
             Read read = new Read();
             for (Object key : inStem.keySet()) {
                 try {
-                    Object rawArg = inStem.get(key);
+                    QDLValue rawArg = inStem.get(key);
                     QDLStem stemArg;
-                    if(rawArg instanceof QDLStem) {
-                        stemArg = (QDLStem) rawArg;
-                    }else{
+                    if (rawArg.isStem()) {
+                        stemArg = rawArg.asStem();
+                    } else {
                         // its a scalar, so convert to a list
                         stemArg = new QDLStem();
-                       stemArg.put(0, rawArg);
+                        stemArg.put(0, asQDLValue(rawArg));
                     }
-                    Object[] oArgs = new Object[]{objects[0], stemArg};
-                    Object output = read.evaluate(oArgs, state);
-                    if(flattenList && (output instanceof QDLStem)){
-                        QDLStem flattenStem = (QDLStem)output;
-                        if(flattenStem.size() == 1){
+                    QDLValue[] oArgs = new QDLValue[]{qdlValues[0], asQDLValue(stemArg)};
+                    QDLValue output = read.evaluate(oArgs, state);
+                    if (flattenList && (output.isStem())) {
+                        QDLStem flattenStem = output.asStem();
+                        if (flattenStem.size() == 1) {
                             outStem.putLongOrString(key, flattenStem.get(0L));
-                        }else{
+                        } else {
                             outStem.putLongOrString(key, output);
                         }
 
-                    }else{
+                    } else {
 
                         outStem.putLongOrString(key, output);
                     }
@@ -197,13 +201,13 @@ public class QDLDB implements QDLMetaModule {
                     outStem.putLongOrString(key, QDLNull.getInstance());
                 }
             }
-            return outStem;
+            return asQDLValue(outStem);
         }
 
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> docs = new ArrayList<>();
-            switch (argCount){
+            switch (argCount) {
                 case 2:
                     docs.add(getName() + "(prepared_statement, batch_values.) - do multiple reads as a batch");
                     break;
@@ -256,18 +260,18 @@ public class QDLDB implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             if (!isConnected) {
                 throw new IllegalStateException("No database connection. Please run " + CONNECT_COMMAND + " first.");
             }
             // This provides
             // #1 a statement. If prepared, then
             // #1 List of values
-            String rawStatement = (String) objects[0];
-            List args = null;
-            if (objects.length == 2) {
-                if (objects[1] instanceof QDLStem) {
-                    QDLStem stemVariable = (QDLStem) objects[1];
+            String rawStatement = qdlValues[0].asString();
+            List<QDLValue> args = null;
+            if (qdlValues.length == 2) {
+                if (qdlValues[1].isStem()) {
+                    QDLStem stemVariable = qdlValues[1].asStem();
                     if (stemVariable.isList()) {
                         //args = stemVariable.getQDLList().toJSON();
                         args = stemVariable.getQDLList();
@@ -276,7 +280,7 @@ public class QDLDB implements QDLMetaModule {
                     }
                 } else { // if a scalar, float it to a list.
                     args = new ArrayList();
-                    args.add(objects[1]);
+                    args.add(qdlValues[1]);
                 }
             }
             /*
@@ -303,8 +307,8 @@ public class QDLDB implements QDLMetaModule {
                 PreparedStatement stmt = c.prepareStatement(rawStatement);
                 if (args != null) {
                     int i = 1;
-                    for (Object entry : args) {
-                        setParam(stmt, i++, entry);
+                    for (QDLValue entry : args) {
+                        setParam(stmt, i++, entry.getValue());
                     }
                 }
                 stmt.executeQuery();
@@ -315,7 +319,7 @@ public class QDLDB implements QDLMetaModule {
                 destroyConnection(connectionRecord);
                 throw e;
             }
-            return outStem;
+            return asQDLValue(outStem);
         }
 
 
@@ -353,6 +357,7 @@ public class QDLDB implements QDLMetaModule {
      * to a QDL stem. Only invoke if you know there is a result set!
      * <br/><br/>
      * <b>Note</b> this closes the result set.
+     *
      * @param stmt
      * @return
      * @throws SQLException
@@ -366,10 +371,10 @@ public class QDLDB implements QDLMetaModule {
             QDLStem currentEntry = new QDLStem();
             for (String key : map.keySet()) {
                 if (map.get(key) != null) {
-                    currentEntry.put(key, sqlConvert(map.get(key)));
+                    currentEntry.put(key, asQDLValue(sqlConvert(map.get(key))));
                 }
             }
-            outStem.getQDLList().add(currentEntry);
+            outStem.getQDLList().add(asQDLValue(currentEntry));
         }
         rs.close();
 
@@ -433,7 +438,7 @@ public class QDLDB implements QDLMetaModule {
             return obj; // nixx to do
         }
         if (obj instanceof Integer) {
-            return new Long((Integer) obj);
+            return Long.valueOf((Integer) obj);
         }
         if (obj instanceof byte[]) {
             return Base64.encodeBase64URLSafeString((byte[]) obj);
@@ -482,15 +487,15 @@ public class QDLDB implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
             if (!isConnected) {
                 throw new IllegalStateException("No database connection. Please run " + CONNECT_COMMAND + " first.");
             }
-            String rawStatement = (String) objects[0];
-            List args = null;
-            if (objects.length == 2) {
-                if (objects[1] instanceof QDLStem) {
-                    QDLStem stemVariable = (QDLStem) objects[1];
+            String rawStatement = qdlValues[0].asString();
+            List<QDLValue> args = null;
+            if (qdlValues.length == 2) {
+                if (qdlValues[1].isStem()) {
+                    QDLStem stemVariable = qdlValues[1].asStem();
                     if (stemVariable.isList()) {
                         args = stemVariable.getQDLList().toJSON();
                     } else {
@@ -498,7 +503,7 @@ public class QDLDB implements QDLMetaModule {
                     }
                 } else {
                     args = new ArrayList();
-                    args.add(objects[1]);
+                    args.add(qdlValues[1]);
                 }
             }
 
@@ -509,8 +514,8 @@ public class QDLDB implements QDLMetaModule {
                 PreparedStatement stmt = c.prepareStatement(rawStatement);
                 if (args != null) {
                     int i = 1;
-                    for (Object entry : args) {
-                        setParam(stmt, i++, entry);
+                    for (QDLValue entry : args) {
+                        setParam(stmt, i++, entry.getValue());
                     }
                 }
                 updateCount = (long) stmt.executeUpdate();
@@ -520,7 +525,7 @@ public class QDLDB implements QDLMetaModule {
                 destroyConnection(connectionRecord);
                 throw new GeneralException("Error executing SQL: " + e.getMessage(), e);
             }
-            return updateCount;
+            return asQDLValue(updateCount);
         }
 
 
@@ -556,8 +561,8 @@ public class QDLDB implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            return doSQLExecute(objects, getName());
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
+            return doSQLExecute(qdlValues, getName());
         }
 
 
@@ -594,30 +599,32 @@ public class QDLDB implements QDLMetaModule {
         @Override
         public Object getValue() {
             if (types == null) {
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("VARCHAR", (long) VARCHAR);
+                map.put("CHAR", (long) CHAR);
+                map.put("LONGVARCHAR", (long) LONGVARCHAR);
+                map.put("BIT", (long) BIT);
+                map.put("NUMERIC", (long) NUMERIC);
+                map.put("TINYINT", (long) TINYINT);
+                map.put("SMALLINT", (long) SMALLINT);
+                map.put("INTEGER", (long) INTEGER);
+                map.put("BIGINT", (long) BIGINT);
+                map.put("REAL", (long) REAL);
+                map.put("FLOAT", (long) FLOAT);
+                map.put("DOUBLE", (long) DOUBLE);
+                map.put("VARBINARY", (long) VARBINARY);
+                map.put("BINARY", (long) BINARY);
+                map.put("DATE", (long) DATE);
+                map.put("TIME", (long) TIME);
+                map.put("TIMESTAMP", (long) TIMESTAMP);
+                map.put("CLOB", (long) CLOB);
+                map.put("BLOB", (long) BLOB);
+                map.put("ARRAY", (long) ARRAY);
+                map.put("REF", (long) REF);
+                map.put("STRUCT", (long) STRUCT);
+                map.put("SQLXML", (long) SQLXML);
                 types = new QDLStem();
-                types.put("VARCHAR", (long) VARCHAR);
-                types.put("CHAR", (long) CHAR);
-                types.put("LONGVARCHAR", (long) LONGVARCHAR);
-                types.put("BIT", (long) BIT);
-                types.put("NUMERIC", (long) NUMERIC);
-                types.put("TINYINT", (long) TINYINT);
-                types.put("SMALLINT", (long) SMALLINT);
-                types.put("INTEGER", (long) INTEGER);
-                types.put("BIGINT", (long) BIGINT);
-                types.put("REAL", (long) REAL);
-                types.put("FLOAT", (long) FLOAT);
-                types.put("DOUBLE", (long) DOUBLE);
-                types.put("VARBINARY", (long) VARBINARY);
-                types.put("BINARY", (long) BINARY);
-                types.put("DATE", (long) DATE);
-                types.put("TIME", (long) TIME);
-                types.put("TIMESTAMP", (long) TIMESTAMP);
-                types.put("CLOB", (long) CLOB);
-                types.put("BLOB", (long) BLOB);
-                types.put("ARRAY", (long) ARRAY);
-                types.put("REF", (long) REF);
-                types.put("STRUCT", (long) STRUCT);
-                types.put("SQLXML", (long) SQLXML);
+                StemUtility.setStemValue(types, map);
             }
             return types;
         }
@@ -628,19 +635,22 @@ public class QDLDB implements QDLMetaModule {
     /**
      * Used for both create and delete.
      *
-     * @param objects
+     * @param qdlValues
      * @param name
      * @return
      */
-    public Object doSQLExecute(Object[] objects, String name) {
+    public QDLValue doSQLExecute(QDLValue[] qdlValues, String name) {
         if (!isConnected) {
             throw new IllegalStateException("No database connection. Please run " + CONNECT_COMMAND + " first.");
         }
-        String rawStatement = (String) objects[0];
-        List args = null;
-        if (objects.length == 2) {
-            if (objects[1] instanceof QDLStem) {
-                QDLStem stemVariable = (QDLStem) objects[1];
+        if(!qdlValues[0].isString()){
+            throw new IllegalArgumentException("First argument must be a string.");
+        }
+        String rawStatement = qdlValues[0].asString();
+        List<QDLValue> args = null;
+        if (qdlValues.length == 2) {
+            if (qdlValues[1].isStem()) {
+                QDLStem stemVariable = qdlValues[1].asStem();
                 if (stemVariable.isList()) {
                     args = stemVariable.getQDLList().toJSON(); // converts to a list of more or less standard Java values.
                 } else {
@@ -648,7 +658,7 @@ public class QDLDB implements QDLMetaModule {
                 }
             } else {
                 args = new ArrayList();
-                args.add(objects[1]);
+                args.add(qdlValues[1]);
             }
         }
 
@@ -661,15 +671,15 @@ public class QDLDB implements QDLMetaModule {
             PreparedStatement stmt = c.prepareStatement(rawStatement);
             if (args != null) {
                 int i = 1;
-                for (Object entry : args) {
-                    setParam(stmt, i++, entry);
+                for (QDLValue entry : args) {
+                    setParam(stmt, i++, entry.getValue());
                 }
             }
-           gotResult = stmt.execute();
-            if(gotResult){
+            gotResult = stmt.execute();
+            if (gotResult) {
                 // Fix https://github.com/ncsa/qdl/issues/80
                 outStem = processResultSet(stmt);
-            }else{
+            } else {
                 updateCount = stmt.getLargeUpdateCount();
             }
             stmt.close();
@@ -678,10 +688,10 @@ public class QDLDB implements QDLMetaModule {
             destroyConnection(connectionRecord);
             throw new GeneralException("Error executing SQL: " + e.getMessage(), e);
         }
-        if(gotResult){
-            return outStem;
+        if (gotResult) {
+            return asQDLValue(outStem);
         }
-        return updateCount;
+        return asQDLValue(updateCount);
     }
 
     List<String> argStatement = new ArrayList<>();
@@ -729,36 +739,36 @@ public class QDLDB implements QDLMetaModule {
 
         // Fixes https://github.com/ncsa/qdl/issues/69
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (!(objects[0] instanceof String)) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            if (!(qdlValues[0].isString())) {
                 throw new BadArgException("the first argument to " + getName() + " must be a string", 0);
             }
-            if (!Constant.isStem(objects[1])) {
+            if (!qdlValues[1].isStem()) {
                 throw new BadArgException("the second argument to " + getName() + " must be a stem", 1);
             }
-            QDLStem stemVariable = (QDLStem) objects[1];
+            QDLStem stemVariable = qdlValues[1].asStem();
             ConnectionRecord connectionRecord = connectionPool.pop();
             Connection c = connectionRecord.connection;
             HashMap returnCodes = new HashMap();
             int counter = 0;
             try {
-                PreparedStatement stmt = c.prepareStatement((String) objects[0]);
+                PreparedStatement stmt = c.prepareStatement(qdlValues[0].asString());
                 for (Object key : stemVariable.keySet()) {
-                    Object value = stemVariable.get(key);
+                    QDLValue value = stemVariable.get(key);
                     QDLList list;
-                    if (value instanceof QDLStem) {
-                        QDLStem arg = (QDLStem) value;
+                    if (value.isStem()) {
+                        QDLStem arg = value.asStem();
                         if (!arg.isList()) {
                             throw new IllegalArgumentException("the element with index '" + key + " must be a list");
                         }
-                         list = arg.getQDLList();
-                    }else{
+                        list = arg.getQDLList();
+                    } else {
                         list = new QDLList();
-                        list.add(value);
+                        list.add(asQDLValue(value));
                     }
 
                     int i = 1;
-                    for (Object entry : list) {
+                    for (QDLValue entry : list) {
                         setParam(stmt, i++, entry);
                     }
                     stmt.addBatch();
@@ -771,7 +781,7 @@ public class QDLDB implements QDLMetaModule {
                 }
                 stmt.close();
                 releaseConnection(connectionRecord);
-                return outStem;
+                return asQDLValue(outStem);
             } catch (SQLException e) {
                 destroyConnection(connectionRecord);
                 throw new GeneralException("Error executing SQL: " + e.getMessage(), e);
@@ -810,7 +820,7 @@ public class QDLDB implements QDLMetaModule {
             documentation.add("the function accepts a list of scalars if there is a single parameter.");
             documentation.add("   stmt = 'DELETE from my_table WHERE id = ?");
             documentation.add("   ids.:=['ADC745B','B6434F','C984E875',...];");
-            documentation.add("   "+getName() + "(stmt, ids.);");
+            documentation.add("   " + getName() + "(stmt, ids.);");
             documentation.add("[1," + Statement.SUCCESS_NO_INFO + ",1,...]");
 
             return documentation;

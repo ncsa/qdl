@@ -2,6 +2,7 @@ package org.qdl_lang.extensions.examples.basic;
 
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.state.State;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,7 @@ public class ExtrinsicFunction implements QDLFunction {
     }
 
     @Override
-    public Object evaluate(Object[] objects, State state) throws Throwable {
+    public QDLValue evaluate(QDLValue[] objects, State state) throws Throwable {
         return objects[0];
     }
 

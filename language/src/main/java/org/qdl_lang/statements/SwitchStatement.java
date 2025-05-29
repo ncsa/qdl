@@ -1,6 +1,8 @@
 package org.qdl_lang.statements;
 
 import org.qdl_lang.state.State;
+import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,15 +32,15 @@ public class SwitchStatement implements Statement {
 
     List<ConditionalStatement> arguments = new ArrayList<>();
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
 
         for(ConditionalStatement c : getArguments()){
-            if((Boolean)c.conditional.evaluate(state)){
+            if(c.conditional.evaluate(state).asBoolean()){
                 c.evaluate(state);
-                return Boolean.TRUE;
+                return BooleanValue.True;
             }
         }
-        return Boolean.FALSE;
+        return BooleanValue.False;
     }
     List<String> sourceCode;
 

@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+
 /**
  * <p>Created by Jeff Gaynor<br>
  * on 7/1/22 at  4:51 PM
@@ -84,11 +86,8 @@ a\*\(2@f)\[1,3]
             }else{
                 pick.addArgument((ExpressionImpl) getFunction()); // trick. This is either a dyadic FR or a FR. Both extend this
             }
-/*
-            QDLStem ndx = new QDLStem();
-            ndx.getQDLList().appendAll(Arrays.asList(in.keySet().toArray()));
-*/
-            pick.addArgument(new ConstantNode(in));
+
+            pick.addArgument(new ConstantNode(asQDLValue(in)));
             pick.evaluate(state);
             QDLValue keys = pick.getResult();
             swri.setResult(keys);

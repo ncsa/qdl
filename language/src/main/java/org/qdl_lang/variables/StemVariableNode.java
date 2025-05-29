@@ -11,6 +11,8 @@ import org.qdl_lang.variables.values.QDLValue;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+
 /**
  * This is used in parsing. It holds the result of a direct creation of a stem or list
  *
@@ -110,12 +112,12 @@ public class StemVariableNode implements ExpressionInterface {
 
             switch (keyRI.getResultType()) {
                 case Constant.LONG_TYPE:
-                    stemOut.put(keyRI.getResult().asLong(), value);
+                    stemOut.put(keyRI.getResult().asLong(), asQDLValue(value));
                     break;
                 case Constant.STRING_TYPE:
                 case Constant.DECIMAL_TYPE:
 
-                    stemOut.put(keyRI.getResult().toString(), value);
+                    stemOut.put(keyRI.getResult().toString(), asQDLValue(value));
                     break;
 
                 default:

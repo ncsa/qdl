@@ -6,12 +6,15 @@ import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /*
    Planned module for giving QDL an interface to keystores. No time to finish before
@@ -34,31 +37,31 @@ public class X509 implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             String type = "jks"; // default
-            if (objects.length == 3) {
-                if (objects[2] instanceof String) {
-                    type = objects[2].toString().toLowerCase();
+            if (qdlValues.length == 3) {
+                if (qdlValues[2].isString()) {
+                    type = qdlValues[2].asString().toLowerCase();
                 } else {
                     throw new BadArgException("the type argument must be a string", 2);
                 }
             }
             KeyStore keyStore = KeyStore.getInstance(type);
-            keyStore.load(new FileInputStream(objects[0].toString()), objects[1].toString().toCharArray());
+            keyStore.load(new FileInputStream(qdlValues[0].toString()), qdlValues[1].toString().toCharArray());
             QDLStem stem = new QDLStem();
             stem.put("type", keyStore.getType());
             stem.put("size", (long) keyStore.size());
             Enumeration<String> aliases = keyStore.aliases();
-            ArrayList<String> aliasesList = new ArrayList<>(100);
+            ArrayList<QDLValue> aliasesList = new ArrayList<>(100);
             while (aliases.hasMoreElements()) {
                 String alias = aliases.nextElement();
-                aliasesList.add(alias);
+                aliasesList.add(asQDLValue(alias));
             }
             QDLStem aliasStem = new QDLStem();
             aliasStem.getQDLList().setArrayList(aliasesList);
             stem.put("aliases", aliasStem);
             stem.put("provider", keyStore.getProvider().toString());
-            return stem;
+            return asQDLValue(stem);
         }
 
         /*

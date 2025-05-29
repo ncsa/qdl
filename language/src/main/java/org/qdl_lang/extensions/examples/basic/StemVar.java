@@ -3,9 +3,12 @@ package org.qdl_lang.extensions.examples.basic;
 import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.variables.QDLSet;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
 import java.util.Date;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * A sample stem that has various values added to it. This shows you how to work with
@@ -28,9 +31,9 @@ public class StemVar implements QDLVariable {
         stemVariable.put("decimal", new BigDecimal("3455476.987654567654567"));
         stemVariable.put("boolean", Boolean.TRUE);
         QDLSet set = new QDLSet();
-        set.add("one");
-        set.add("two");
-        set.add(3L); // Remember all "integers" in QDL are 64 bit, i.e. longs in Java!
+        set.add(asQDLValue("one"));
+        set.add(asQDLValue("two"));
+        set.add(asQDLValue(3)); // Remember all "integers" in QDL are 64 bit, i.e. longs in Java! This gets converted
         stemVariable.put("set", set);
         QDLStem nestedStem = new QDLStem();
         nestedStem.put("0", 10L);

@@ -57,6 +57,11 @@ public class ParseStatementBlock implements ExpressionInterface {
     }
 
     @Override
+    public void setResult(Object result) {
+
+    }
+
+    @Override
     public int getResultType() {
         return 0;
     }
@@ -83,7 +88,7 @@ public class ParseStatementBlock implements ExpressionInterface {
     }
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
      throw new NotImplementedException("parse statement blocks do not execute.");
     }
 

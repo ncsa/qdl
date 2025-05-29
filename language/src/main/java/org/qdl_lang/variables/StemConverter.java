@@ -24,7 +24,7 @@ public class StemConverter implements Constants {
      */
     public static Object convert(Object obj) {
         if (obj == null) return null;
-        if (obj instanceof Integer) return new Long(obj.toString());
+        if (obj instanceof Integer) return Long.valueOf(obj.toString());
         if (obj instanceof Double) return new BigDecimal(obj.toString(), OpEvaluator.getMathContext());
         if (obj instanceof Boolean) return obj;
         if (obj instanceof Long) return obj;

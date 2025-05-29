@@ -7,12 +7,14 @@ import org.qdl_lang.exceptions.UnknownSymbolException;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.variables.Constant;
-import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.Collections;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * After a parser change to treat the dot as an operator, this was
@@ -23,7 +25,7 @@ import java.util.Collections;
  */
 public class ESN2 extends ExpressionImpl {
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         return get(state);
     }
 
@@ -72,17 +74,17 @@ public class ESN2 extends ExpressionImpl {
         return getArguments().get(1);
     }
 
-    public Object getDefaultValue() {
+    public QDLValue getDefaultValue() {
         return defaultValue;
     }
 
-    public void setDefaultValue(Object defaultValue) {
+    public void setDefaultValue(QDLValue defaultValue) {
         this.defaultValue = defaultValue;
     }
 
-    Object defaultValue;
+    QDLValue defaultValue;
 
-    protected Object get(State state) {
+    protected QDLValue get(State state) {
         if (isDefaultValueNode()) {
             return processDefaultValue(state);
         }
@@ -95,7 +97,7 @@ public class ESN2 extends ExpressionImpl {
         if (indexList.size() == 0) {
             // just wants whole stem, no indices
             ExpressionInterface ei = leftArgs.get(leftArgs.size() - 1);
-            Object r0 = ei.evaluate(state);
+            QDLValue r0 = ei.evaluate(state);
             if (r0 == null) {
                 // try to make an error report
                 if (ei instanceof VariableNode) {
@@ -104,18 +106,17 @@ public class ESN2 extends ExpressionImpl {
                 }
                 throw new UnknownSymbolException("left argument must evaluate to a stem ", this);
             }
-            if (!(r0 instanceof QDLStem)) {
+            if (!r0.isStem()) {
                 if (ei instanceof VariableNode) {
                     VariableNode vn = (VariableNode) ei;
                     throw new UnknownSymbolException("the variable '" + vn.getVariableReference() + "' is not a stem.", this);
                 }
                 throw new UnknownSymbolException("left argument must evaluate to a stem ", this);
             }
-            QDLStem stemVariable = (QDLStem) r0;
+            QDLStem stemVariable = r0.asStem();
             setResult(stemVariable);
-            setResultType(Constant.STEM_TYPE);
             setEvaluated(true);
-            return stemVariable;
+            return getResult();
         }
         // Made it this far. Now we need to do this again, but handing off indices
         // to the stem as needed.
@@ -126,7 +127,7 @@ public class ESN2 extends ExpressionImpl {
             throw indexError;
         }
 
-        Object r0 = leftArgs.get(leftArgs.size() - 1).evaluate(state);
+        QDLValue r0 = leftArgs.get(leftArgs.size() - 1).evaluate(state);
         if (r0 == null) {
             ExpressionInterface lll = leftArgs.get(leftArgs.size() - 1);
             if (lll instanceof VariableNode) {
@@ -134,34 +135,32 @@ public class ESN2 extends ExpressionImpl {
             }
             throw new IndexError("left argument is undefined", lll);
         }
-        if (!(r0 instanceof QDLStem)) {
+        if (!r0.isStem()) {
             throw new IndexError("error: left argument must evaluate to be a stem ", this);
         }
-        QDLStem stemVariable = (QDLStem) r0;
+        QDLStem stemVariable = r0.asStem();
         IndexList r;
         try {
             r = stemVariable.get(indexList, true);
         } catch (IndexError indexError) {
             if (stemVariable.hasDefaultValue()) {
                 setResult(stemVariable.getDefaultValue());
-                setResultType(Constant.getType(result));
                 setEvaluated(true);
                 return result;
             }
             indexError.setStatement(this);
             throw indexError;
         }
-        Object result = r.get(0);
+        QDLValue result = r.get(0);
         setResult(result);
-        setResultType(Constant.getType(result));
         setEvaluated(true);
-        return result;
+        return getResult();
 
     }
 
-    private Object processDefaultValue(State state) {
+    private QDLValue processDefaultValue(State state) {
         getLeftArg().evaluate(state);
-        Object defaultValue = null;
+        QDLValue defaultValue = null;
         ExpressionInterface ei = getLeftArg();
         while (ei instanceof ParenthesizedExpression) {
             ei = ((ParenthesizedExpression) ei).getExpression();
@@ -170,7 +169,7 @@ public class ESN2 extends ExpressionImpl {
             case ExpressionInterface.VARIABLE_NODE:
                 VariableNode vn = (VariableNode) ei;
                 if (vn.getResultType() == Constant.STEM_TYPE) {
-                    QDLStem stem = (QDLStem) vn.getResult();
+                    QDLStem stem = vn.getResult().asStem();
                     if (stem.hasDefaultValue()) {
                         defaultValue = stem.getDefaultValue();
                     } else {
@@ -181,7 +180,7 @@ public class ESN2 extends ExpressionImpl {
                 }
                 break;
             case ExpressionInterface.STEM_NODE:
-                QDLStem stem = (QDLStem) ei.getResult();
+                QDLStem stem = ei.getResult().asStem();
                 if (stem.hasDefaultValue()) {
                     defaultValue = stem.getDefaultValue();
                 } else {
@@ -191,10 +190,10 @@ public class ESN2 extends ExpressionImpl {
             case ExpressionInterface.EXPRESSION_STEM2_NODE:
                 ESN2 esn2 = (ESN2) ei;
                 if(isDefaultValueNode()){
-                    if(esn2.getResult() instanceof QDLStem){
-                        QDLStem stem2 = (QDLStem) esn2.getResult();
+                    if(esn2.getResult().isStem()){
+                        QDLStem stem2 = esn2.getResult().asStem();
                         if(stem2.hasDefaultValue()){
-                            defaultValue = ((QDLStem)esn2.getResult()).getDefaultValue();
+                            defaultValue = esn2.getResult().asStem().getDefaultValue();
                         }else{
                             throw new NoDefaultValue("No default value set for this stem", getLeftArg());
                         }
@@ -211,7 +210,6 @@ public class ESN2 extends ExpressionImpl {
 
         setEvaluated(true);
         setResult(defaultValue);
-        setResultType(Constant.getType(defaultValue));
         return defaultValue;
     }
 
@@ -250,18 +248,18 @@ public class ESN2 extends ExpressionImpl {
         IndexList r;
 
         for (int i = indexList.size() - 1; 0 <= i; i--) {
-            if (indexList.get(i) instanceof QDLStem) {
+            if (indexList.get(i).isStem()) {
                 if (i == indexList.size() - 1) {
                     continue;
                 }
-                r = ((QDLStem) indexList.get(i)).get(indexList.tail(i + 1), false);
+                r = indexList.get(i).asStem().get(indexList.tail(i + 1), false);
                 indexList.truncate(i);
                 indexList.addAll(i, r);
             } else {
                 // Case that left most argument is not a stem, but that the rhs is
                 // which implies the user made a boo-boo
                 if (i < indexList.size() - 1) {
-                    if (indexList.get(i + 1) instanceof QDLStem) {
+                    if (indexList.get(i + 1).isStem()) {
                         throw new IndexError("error: lhs is not a stem.", null);
                     }
                 }
@@ -272,7 +270,7 @@ public class ESN2 extends ExpressionImpl {
     private IndexList getIndexList(State state, ArrayList<ExpressionInterface> rightArgs) {
         IndexList indexList = new IndexList(rightArgs.size());
         boolean isFirst = true;
-        Object obj = null;
+        QDLValue obj = null;
 
         for (int i = rightArgs.size() - 1; 0 <= i; i--) {
             if (isFirst) {
@@ -297,7 +295,6 @@ public class ESN2 extends ExpressionImpl {
 
                 } else {
                     obj = rightArgs.get(i).evaluate(state);
-
                 }
             }
 
@@ -315,9 +312,9 @@ public class ESN2 extends ExpressionImpl {
                 if (rightArgs.get(i) instanceof VariableNode) {
                     vNode = (VariableNode) rightArgs.get(i);
                 }
-                obj = vNode.getVariableReference();
+                obj = asQDLValue(vNode.getVariableReference()); // just get the name of the variable.
             }
-            indexList.set(i, obj);
+            indexList.set(i, asQDLValue(obj));
         }
         return indexList;
     }
@@ -358,9 +355,9 @@ public class ESN2 extends ExpressionImpl {
         QDLStem stemVariable = null;
         boolean gotOne = false;
         ExpressionInterface realLeftArg = leftArgs.get(leftArgs.size() - 1);
-        Object arg0 = realLeftArg.evaluate(state);
-        if (arg0 instanceof QDLStem) {
-            QDLStem arg = (QDLStem) arg0;
+        QDLValue arg0 = realLeftArg.evaluate(state);
+        if (arg0.isStem()) {
+            QDLStem arg = arg0.asStem();
             try {
                 return arg.remove(indexList);
             } catch (IndexError indexError) {
@@ -371,7 +368,7 @@ public class ESN2 extends ExpressionImpl {
         return false;
     }
 
-    public void set(State state, Object newValue) {
+    public void set(State state, QDLValue newValue) {
         ArrayList<ExpressionInterface> leftArgs = new ArrayList<>();
         ArrayList<ExpressionInterface> rightArgs = new ArrayList<>();
         linearizeTree(leftArgs, rightArgs);
@@ -390,17 +387,17 @@ public class ESN2 extends ExpressionImpl {
             realLeftArg = ((ParenthesizedExpression) realLeftArg).getExpression();
         }
         //leftArgs.get(leftArgs.size() - 1).evaluate(state);
-        if (realLeftArg.getResult() instanceof QDLStem) {
-            stemVariable = (QDLStem) realLeftArg.getResult();
+        if (realLeftArg.getResult().isStem()) {
+            stemVariable = realLeftArg.getResult().asStem();
             gotOne = true;
         }
         if (realLeftArg instanceof VariableNode) {
             VariableNode vNode = (VariableNode) realLeftArg;
             // Either it is not set or set to QDLNull
-            if (vNode.getResult() == null || (vNode.getResult() instanceof QDLNull)) {
+            if (vNode.getResult() == null || vNode.getResult().isNull()) {
                 // then this variable does not exist in the symbol table. Add it
                 stemVariable = new QDLStem();
-                state.setValue(vNode.getVariableReference(), stemVariable);
+                state.setValue(vNode.getVariableReference(), asQDLValue(stemVariable));
             }
             gotOne = true;
         }
@@ -420,14 +417,13 @@ public class ESN2 extends ExpressionImpl {
                 stemVariable.setDefaultValue(newValue);
             } else {
 
-                stemVariable.set(indexList, newValue); // let the stem set its value internally
+                stemVariable.set(indexList, asQDLValue(newValue)); // let the stem set its value internally
             }
         } catch (IndexError indexError) {
             indexError.setStatement(this);
             throw indexError;
         }
         setResult(stemVariable);
-        setResultType(Constant.STEM_TYPE);
         setEvaluated(true);
 
     }

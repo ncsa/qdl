@@ -6,8 +6,13 @@ import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.QDLNull;
+import org.qdl_lang.variables.values.QDLNullValue;
+import org.qdl_lang.variables.values.QDLValue;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 public class StatefulExample implements QDLMetaModule {
     protected String s;
@@ -24,16 +29,16 @@ public class StatefulExample implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (!(objects[0] instanceof String)) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            if (!(qdlValues[0].isString())) {
                 throw new IllegalArgumentException(getName() + " requires a string");
             }
             String oldValue = s;
-            s = (String) objects[0];
+            s = qdlValues[0].asString();
             if(oldValue == null){
-                return QDLNull.getInstance();
+                return QDLValue.getNullValue();
             }
-            return oldValue;
+            return asQDLValue(oldValue);
         }
 
         @Override
@@ -62,11 +67,11 @@ public class StatefulExample implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             if (s == null) {
-                return QDLNull.getInstance(); // QDL's equivalent of not being set.
+                return QDLNullValue.getNullValue(); // QDL's equivalent of not being set.
             }
-            return s;
+            return asQDLValue(s);
         }
 
         @Override

@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.qdl_lang.evaluate.SystemEvaluator.SAY_FUNCTION;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * /**
@@ -148,23 +149,23 @@ public class QDLRunner implements Serializable {
                                 if (!isPrint) {
                                     Polyad p = new Polyad(SAY_FUNCTION);
                                     p.addArgument(expression);
-                                    p.addArgument(new ConstantNode(prettyPrint, Constant.BOOLEAN_TYPE));
+                                    p.addArgument(new ConstantNode(asQDLValue(prettyPrint)));
                                     stmt = p;
 
                                 }
                             } else {
                                 Polyad p = new Polyad(SAY_FUNCTION);
                                 p.addArgument(expression);
-                                p.addArgument(new ConstantNode(prettyPrint, Constant.BOOLEAN_TYPE));
+                                p.addArgument(new ConstantNode(asQDLValue(prettyPrint)));
                                 stmt = p;
                             }
                         }
                         if (stmt instanceof QDLSetNode || stmt instanceof StemVariableNode || stmt instanceof StemListNode || stmt instanceof ExpressionStemNode) {
                             stmt.evaluate(state);
-                            ConstantNode cNode = new ConstantNode(((ExpressionInterface) stmt).getResult(), Constant.STEM_TYPE);
+                            ConstantNode cNode = new ConstantNode(((ExpressionInterface) stmt).getResult());
                             Polyad p = new Polyad(SAY_FUNCTION);
                             p.addArgument(cNode);
-                            p.addArgument(new ConstantNode(prettyPrint, Constant.BOOLEAN_TYPE));
+                            p.addArgument(new ConstantNode(asQDLValue(prettyPrint)));
                             stmt = p;
                         }
                     }

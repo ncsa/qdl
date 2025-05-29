@@ -10,6 +10,8 @@ import org.qdl_lang.statements.TokenPosition;
 import org.qdl_lang.variables.*;
 import org.qdl_lang.variables.values.QDLValue;
 
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+
 /**
  * Very much improved way to handle assignments. Use this
  * <p>Created by Jeff Gaynor<br>
@@ -201,13 +203,13 @@ protected void setValueFromSWRI(ExpressionInterface swri, Object value, Object i
     }
     if(swri instanceof ESN2){
         ESN2 esn2 = (ESN2) swri;
-        esn2.set(state, value);
+        esn2.set(state, asQDLValue(value));
     }else{
         if (!(swri instanceof VariableNode)) {
             throw new QDLExceptionWithTrace("unknown left assignment statement ", getLeftArg());
         }
         // https://github.com/ncsa/qdl/issues/20
-        state.getTargetState().setValue(((VariableNode) swri).getVariableReference(), value);
+        state.getTargetState().setValue(((VariableNode) swri).getVariableReference(), asQDLValue(( value)));
     }
 }
 
@@ -215,16 +217,16 @@ protected void setValueFromSWRI(ExpressionInterface swri, Object value, Object i
      * if the RHS is a stem, return it. If a scalar, return a stem with that has that as the default value.
      * @return
      */
-    protected QDLStem resultToStem(){
+    protected QDLStem resultToStem() {
         QDLStem rStem;
-    if (getResult() instanceof QDLStem) {
-        rStem = (QDLStem) getResult();
-    } else {
-        rStem = new QDLStem();
-        rStem.setDefaultValue(getResult());
+        if (getResult().isStem()) {
+            rStem = getResult().asStem();
+        } else {
+            rStem = new QDLStem();
+            rStem.setDefaultValue(getResult());
+        }
+        return rStem;
     }
-    return rStem;
-}
 
 
     @Override

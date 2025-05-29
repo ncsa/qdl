@@ -29,23 +29,23 @@ public class AbstractQDLTester extends TestBase {
     Convenience getters for testing
      */
     protected BigDecimal getBDValue(String variable, State state) {
-        return (BigDecimal) state.getValue(variable);
+        return state.getValue(variable).asDecimal();
     }
 
     protected Long getLongValue(String variable, State state) {
-        return (Long) state.getValue(variable);
+        return state.getValue(variable).asLong();
     }
 
     protected String getStringValue(String variable, State state) {
-        return (String) state.getValue(variable);
+        return state.getValue(variable).asString();
     }
 
     protected Boolean getBooleanValue(String variable, State state) {
-        return (Boolean) state.getValue(variable);
+        return state.getValue(variable).asBoolean();
     }
 
     protected QDLStem getStemValue(String variable, State state) {
-        return (QDLStem) state.getValue(variable);
+        return  state.getValue(variable).asStem();
     }
 
     protected BigDecimal comparisonTolerance = new BigDecimal(".000000000001");

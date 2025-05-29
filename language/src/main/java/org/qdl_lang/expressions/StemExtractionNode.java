@@ -14,6 +14,8 @@ import org.qdl_lang.variables.values.QDLValue;
 import java.util.Collections;
 import java.util.List;
 
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+
 /**
  * This will allow for creating a subset (copy of portion) of a stem. The result is
  * a stem completely indep. of the original.
@@ -172,9 +174,9 @@ a.
                     continue;
                 }
                 if (root.strictOrder || (key instanceof String)) {
-                    out.putLongOrString(key, value);
+                    out.putLongOrString(key, asQDLValue(value));
                 } else {
-                    out.put(autoIndex++, value);
+                    out.put(autoIndex++, asQDLValue(value));
                 }
             } // end for
             return out;
@@ -197,13 +199,13 @@ a.
                 IndexList indexList = new IndexList();
 
                 if (root.isWildcard()) {
-                    indexList.add(key);
+                    indexList.add(asQDLValue(key));
                 } else {
                     if (!Constant.isScalar(root.swri.getResult())) {
                         if (root.strictOrder || Constant.isString(key)) {
-                            indexList.add(key);
+                            indexList.add(asQDLValue(key));
                         } else {
-                            indexList.add(autoIndex++);
+                            indexList.add(asQDLValue(autoIndex++));
                         }
                     }
                 }
@@ -283,7 +285,7 @@ a.
                 // Only set it if there are more indices. otherwise you get a ton of garbage
                 IndexList indexList = targetIndex.clone();
                 if (indexArg.isWildcard()) {
-                    indexList.add(key);
+                    indexList.add(asQDLValue(key));
                 } else {
                     if (Constant.isScalar(indexArg.swri.getResult())) {
                         if (indexList.isEmpty()) {
@@ -294,18 +296,18 @@ a.
                                 return value;
                             }
                         } else {
-                            out.set(indexList, value);
+                            out.set(indexList, asQDLValue(value));
                         }
                         return out;
                     } else {
                         if (indexArg.strictOrder || (key instanceof String)) {
-                            indexList.add(key);
+                            indexList.add(asQDLValue(key));
                         } else {
-                            indexList.add(strictIndex++);
+                            indexList.add(asQDLValue(strictIndex++));
 
                         }
                     }
-                    out.set(indexList, value);
+                    out.set(indexList, asQDLValue(value));
                 }
               //  System.out.println("    recurse: setting value key =" + indexList + ", value = " + value);
             } else {
@@ -317,9 +319,9 @@ a.
 
                     if ((indexArg.swri instanceof AllIndices) || !Constant.isScalar(indexArg.swri.getResult())) {
                         if (indexArg.strictOrder && indexArg.isWildcard()) {
-                            indexList.add(key);
+                            indexList.add(asQDLValue(key));
                         } else {
-                            indexList.add(strictIndex++);
+                            indexList.add(asQDLValue(strictIndex++));
                         }
                     }
                     if (sourceIndices.size() <= indexLocation) {

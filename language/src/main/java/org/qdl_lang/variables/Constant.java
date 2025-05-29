@@ -4,6 +4,7 @@ import org.qdl_lang.expressions.AxisExpression;
 import org.qdl_lang.functions.DyadicFunctionReferenceNode;
 import org.qdl_lang.functions.FunctionReferenceNode;
 import org.qdl_lang.module.Module;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
 
@@ -14,9 +15,11 @@ import java.math.BigDecimal;
  */
 public class Constant implements Constants {
     public static int getType(Object object) {
+        if(object instanceof QDLValue) {return ((QDLValue)object).getType();}
         if (object instanceof QDLNull) return NULL_TYPE;
         if (object instanceof String) return STRING_TYPE;
         if (object instanceof Long) return LONG_TYPE;
+        if (object instanceof Integer) return INTEGER_TYPE; // used only to help create QDLValues
         if (object instanceof Boolean) return BOOLEAN_TYPE;
         if (object instanceof QDLStem) {
             // Next line, while right, breaks stuff (every place there is

@@ -12,6 +12,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 
 import static ch.obermuhlner.math.big.BigDecimalMath.*;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * Class for transcendental functions, like log, exponentiation etc.
@@ -236,14 +237,10 @@ public class TMathEvaluator extends AbstractEvaluator {
                 BigInteger rr = prod.divide(bi0.gcd(bi1));
 
                 try {
-                    Long ll = rr.longValueExact();
-                    r.result = ll;
-                    r.resultType = Constant.LONG_TYPE;
+                    r.result = asQDLValue(rr.longValueExact());
                 } catch (ArithmeticException ax) {
                     // too big
-                    BigDecimal bigDecimal = new BigDecimal(rr);
-                    r.result = bigDecimal;
-                    r.resultType = Constant.DECIMAL_TYPE;
+                    r.result = asQDLValue(new BigDecimal(rr));
                 }
                 return r;
             }
@@ -274,14 +271,10 @@ public class TMathEvaluator extends AbstractEvaluator {
                 BigInteger bi1 = gcdToBigInteger(polyad, objects[1]);
                 BigInteger rr = bi0.gcd(bi1);
                 try {
-                    Long ll = rr.longValueExact();
-                    r.result = ll;
-                    r.resultType = Constant.LONG_TYPE;
+                    r.result = asQDLValue(rr.longValueExact());
                 } catch (ArithmeticException ax) {
                     // too big
-                    BigDecimal bigInteger = new BigDecimal(rr);
-                    r.result = bigInteger;
-                    r.resultType = Constant.DECIMAL_TYPE;
+                    r.result = asQDLValue(new BigDecimal(rr));
                 }
                 return r;
             }
@@ -340,8 +333,7 @@ public class TMathEvaluator extends AbstractEvaluator {
                 BigDecimal bd = null;
                 Object ob = objects[0];
                 if (ob instanceof Long) {
-                    r.result = ob;
-                    r.resultType = Constant.LONG_TYPE;
+                    r.result = asQDLValue(ob);
                     return r;
                 }
 
@@ -357,11 +349,9 @@ public class TMathEvaluator extends AbstractEvaluator {
                     rr = bd.setScale(0, RoundingMode.CEILING);
                 }
                 try {
-                    r.result = rr.longValueExact();
-                    r.resultType = Constant.LONG_TYPE;
+                    r.result = asQDLValue(rr.longValueExact());
                 } catch (ArithmeticException ax) {
-                    r.result = rr;
-                    r.resultType = Constant.DECIMAL_TYPE;
+                    r.result = asQDLValue(rr);
                 }
                 return r;
             }
@@ -423,11 +413,9 @@ public class TMathEvaluator extends AbstractEvaluator {
                 }
 
                 if (areAllLongs(objects)) {
-                    r.result = ((Long) objects[0]) % ((Long) objects[1]);
-                    r.resultType = Constant.LONG_TYPE;
+                    r.result = asQDLValue(((Long) objects[0]) % ((Long) objects[1]));
                 } else {
-                    r.result = objects[0];
-                    r.resultType = polyad.getArgAt(0).getResultType();
+                    r.result = asQDLValue(objects[0]);
                 }
                 if (!isBaseNonNegative && isExponentEven) {
                     throw new BadArgException(N_ROOT + " requires a positive base if the exponent is even.", polyad.getArgAt(0));
@@ -446,8 +434,7 @@ public class TMathEvaluator extends AbstractEvaluator {
                 if (!isBaseNonNegative) {
                     result = result.negate(mathContext);
                 }
-                r.result = result;
-                r.resultType = Constant.DECIMAL_TYPE;
+                r.result = asQDLValue(result);
                 return r;
             }
         };
@@ -472,7 +459,6 @@ public class TMathEvaluator extends AbstractEvaluator {
         if (polyad.getArgCount() == 0) {
             // implicit assumption that the exponent is 1.
             polyad.setResult(getPi(state.getOpEvaluator().getMathContext()));
-            polyad.setResultType(Constant.DECIMAL_TYPE);
             polyad.setEvaluated(true);
             return;
         }
@@ -494,10 +480,7 @@ public class TMathEvaluator extends AbstractEvaluator {
             if (bd == null) {
                 throw new BadArgException( PI + " requires a number", polyad.getArgAt(0));
             }
-
-          //  r.result = evaluateBD(bd, OpEvaluator.getMathContext(), PI);
-            r.result = bd;
-            r.resultType = Constant.DECIMAL_TYPE;
+            r.result = asQDLValue(bd);
             return r;
         }
     };
@@ -648,7 +631,6 @@ public class TMathEvaluator extends AbstractEvaluator {
         if (doPowers && polyad.getArgCount() == 0) {
             // do  exp() as if exp(1)
             polyad.setResult(getNaturalLogBase(OpEvaluator.getMathContext()));
-            polyad.setResultType(Constant.DECIMAL_TYPE);
             polyad.setEvaluated(true);
             return;
         }
@@ -670,8 +652,7 @@ public class TMathEvaluator extends AbstractEvaluator {
                     throw new BadArgException("error, " + op + "() got '" + ob + "', requires a number", polyad.getArgAt(0));
                 }
 
-                r.result = evaluateBD(bd, OpEvaluator.getMathContext(), op);
-                r.resultType = Constant.DECIMAL_TYPE;
+                r.result = asQDLValue(evaluateBD(bd, OpEvaluator.getMathContext(), op));
                 return r;
             }
         };

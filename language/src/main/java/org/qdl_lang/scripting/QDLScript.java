@@ -5,6 +5,7 @@ import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.state.State;
 import org.qdl_lang.state.XKey;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.QDLVariable;
 import org.qdl_lang.variables.VThing;
 import org.qdl_lang.vfs.FileEntry;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
@@ -16,6 +17,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -117,7 +120,7 @@ public class QDLScript extends FileEntry implements ScriptInterface {
         QDLInterpreter parser = new QDLInterpreter((State) state);
         if (isRunScript()) {
             if (getScriptArglist() != null && !getScriptArglist().isEmpty()) {
-                ((State) state).getVStack().put(new VThing(new XKey(getScriptArgName()), getScriptArglist()));
+                ((State) state).getVStack().put(new VThing(new XKey(getScriptArgName()), new QDLVariable(getScriptArglist())));
             }
         }
         try {

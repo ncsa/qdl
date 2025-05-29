@@ -524,7 +524,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
         State localState = state.newLocalState();
         FunctionReferenceNodeInterface frn = getFunctionReferenceNode(localState, polyad.getArgAt(0), true);
         //FunctionReferenceNodeInterface frn = getFunctionReferenceNode(state, polyad.getArgAt(0), true);
-        Object arg1 = polyad.evalArg(1, state);
+        QDLValue arg1 = polyad.evalArg(1, state);
         if(arg1 == null){
             throw new MissingArgException(PICK + " second argument not found ", polyad.getArgAt(1));
         }
@@ -574,22 +574,22 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
             throw ufx;
         }
         // 3 cases
-        if (isSet(arg1)) {
+        if (arg1.isSet()) {
             if (argCount != 1) {
                 throw new BadArgException(PICK + " pick function for sets can only have a single argument", polyad.getArgAt(0));
             }
             QDLSet result = new QDLSet();
-            QDLSet argSet = (QDLSet) arg1;
-            ArrayList<Object> rawArgs = new ArrayList<>();
-            for (Object element : argSet) {
+            QDLSet argSet = arg1.asSet();
+            ArrayList<QDLValue> rawArgs = new ArrayList<>();
+            for (QDLValue element : argSet) {
                 rawArgs.clear();
                 rawArgs.add(element);
                 f.setArguments(toConstants(rawArgs));
                 //Object test = f.evaluate(state);
-                Object test = f.evaluate(localState);
-                if (isBoolean(test)) {
-                    if ((Boolean) test) {
-                        result.add(asQDLValue(element));
+                QDLValue test = f.evaluate(localState);
+                if (test.isBoolean()) {
+                    if (test.asBoolean()) {
+                        result.add(element);
                     }
                 }
             }
@@ -599,26 +599,26 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
             return true;
         }
         // For stems it's quite similar, but not enough to have a single piece of code.
-        if (isStem(arg1)) {
+        if (arg1.isStem()) {
             QDLStem outStem = new QDLStem();
-            QDLStem stemArg = (QDLStem) arg1;
-            ArrayList<Object> rawArgs = new ArrayList<>();
+            QDLStem stemArg = arg1.asStem();
+            ArrayList<QDLValue> rawArgs = new ArrayList<>();
             for (Object key : stemArg.keySet()) {
                 rawArgs.clear();
-                Object value = stemArg.get(key);
+                QDLValue value = stemArg.get(key);
                 // Contract for pick!
                 // monad = value only
                 // dyad (key, value)
                 if (argCount == 2) {
-                    rawArgs.add(key);
+                    rawArgs.add(asQDLValue(key));
                 }
                 rawArgs.add(stemArg.get(key));
                 f.setArguments(toConstants(rawArgs));
                 //Object test = f.evaluate(state);
-                Object test = f.evaluate(localState);
-                if (isBoolean(test)) {
-                    if ((Boolean) test) {
-                        outStem.putLongOrString(key, asQDLValue(value));
+                QDLValue test = f.evaluate(localState);
+                if (test.isBoolean()) {
+                    if (test.asBoolean()) {
+                        outStem.putLongOrString(key, value);
                     }
                 }
             }
@@ -628,7 +628,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
             return true;
         }
         // final case is that it is a scalar.
-        ArrayList<Object> rawArgs = new ArrayList<>();
+        ArrayList<QDLValue> rawArgs = new ArrayList<>();
         rawArgs.add(arg1);
         f.setArguments(toConstants(rawArgs));
         //Object test = f.evaluate(state);

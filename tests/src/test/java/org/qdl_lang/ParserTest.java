@@ -8,7 +8,6 @@ import org.qdl_lang.functions.FKey;
 import org.qdl_lang.functions.FunctionRecord;
 import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.state.State;
-import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.QDLStem;
 import net.sf.json.JSONObject;
 
@@ -36,14 +35,14 @@ public class ParserTest extends AbstractQDLTester {
      */
 
     public void testRational1() throws Throwable {
-        testRational1(ROUNDTRIP_NONE);
-        testRational1(ROUNDTRIP_XML);
-        testRational1(ROUNDTRIP_QDL);
-        testRational1(ROUNDTRIP_JAVA);
-        testRational1(ROUNDTRIP_JSON);
+        rationalTest1(ROUNDTRIP_NONE);
+        rationalTest1(ROUNDTRIP_XML);
+        rationalTest1(ROUNDTRIP_QDL);
+        rationalTest1(ROUNDTRIP_JAVA);
+        rationalTest1(ROUNDTRIP_JSON);
     }
 
-    public void testRational1(int testCase) throws Throwable {
+    public void rationalTest1(int testCase) throws Throwable {
         BigDecimal[] results = {new BigDecimal("1.37037037037037"),
                 new BigDecimal("1.87793427230047"),
                 new BigDecimal("1.69230769230769"),
@@ -69,7 +68,7 @@ public class ParserTest extends AbstractQDLTester {
             interpreter.execute(script.toString());
 
             BigDecimal bd = results[i - 1];
-            BigDecimal c = (BigDecimal) state.getValue("c");
+            BigDecimal c = state.getValue("c").asDecimal();
             assert areEqual(c, bd);
         }
 
@@ -116,7 +115,7 @@ public class ParserTest extends AbstractQDLTester {
             addLine(script, "d := f(a,b,c);");
             interpreter.execute(script.toString());
             BigDecimal bd = results[i - 1];
-            BigDecimal d = (BigDecimal) state.getValue("d");
+            BigDecimal d = state.getValue("d").asDecimal();
             assert areEqual(d, bd);
         }
     }
@@ -153,7 +152,7 @@ public class ParserTest extends AbstractQDLTester {
             addLine(script, "d := f(a,b,c);");
             interpreter.execute(script.toString());
             BigDecimal bd = results[i - 1];
-            BigDecimal d = (BigDecimal) state.getValue("d");
+            BigDecimal d = state.getValue("d").asDecimal();
             assert areEqual(d, bd);
         }
     }
@@ -188,7 +187,7 @@ public class ParserTest extends AbstractQDLTester {
             addLine(script, "d := f(a,b,c);");
             interpreter.execute(script.toString());
             BigDecimal bd = results[i - 1];
-            BigDecimal d = (BigDecimal) state.getValue("d");
+            BigDecimal d = state.getValue("d").asDecimal();
             assert areEqual(d, bd);
         }
     }
@@ -224,14 +223,14 @@ public class ParserTest extends AbstractQDLTester {
      */
 
     public void testContinuedFraction1() throws Throwable {
-        testContinuedFraction1(ROUNDTRIP_NONE);
-        testContinuedFraction1(ROUNDTRIP_XML);
-        testContinuedFraction1(ROUNDTRIP_QDL);
-        testContinuedFraction1(ROUNDTRIP_JAVA);
-        testContinuedFraction1(ROUNDTRIP_JSON);
+        ContinuedFractionTest1(ROUNDTRIP_NONE);
+        ContinuedFractionTest1(ROUNDTRIP_XML);
+        ContinuedFractionTest1(ROUNDTRIP_QDL);
+        ContinuedFractionTest1(ROUNDTRIP_JAVA);
+        ContinuedFractionTest1(ROUNDTRIP_JSON);
     }
 
-    public void testContinuedFraction1(int testCase) throws Throwable {
+    public void ContinuedFractionTest1(int testCase) throws Throwable {
         String cf = "1/(2*x+3*y/(4*x+5*y/(6*x+7*y/(8*x+9*y/(x^2+y^2+1)))))";
         String cf2 = "  (192*x^3 + 192*x^5 + 68*x*y + 216*x^2*y + 68*x^3*y + 45*y^2 + " +
                 "     192*x^3*y^2 + 68*x*y^3)/" +
@@ -255,7 +254,7 @@ public class ParserTest extends AbstractQDLTester {
             addLine(script, "y := 8/(" + i + "+3);");
             addLine(script, "z := f(x,y);");
             interpreter.execute(script.toString());
-            BigDecimal d = (BigDecimal) state.getValue("z");
+            BigDecimal d =  state.getValue("z").asDecimal();
             assert areEqual(d, BigDecimal.ZERO);
         }
     }
@@ -310,14 +309,14 @@ public class ParserTest extends AbstractQDLTester {
      */
 
     public void testCalledFunctions() throws Throwable {
-        testCalledFunctions(ROUNDTRIP_NONE);
-        testCalledFunctions(ROUNDTRIP_XML);
-        testCalledFunctions(ROUNDTRIP_QDL);
-        testCalledFunctions(ROUNDTRIP_JAVA);
-        testCalledFunctions(ROUNDTRIP_JSON);
+        calledFunctionsTest(ROUNDTRIP_NONE);
+        calledFunctionsTest(ROUNDTRIP_XML);
+        calledFunctionsTest(ROUNDTRIP_QDL);
+        calledFunctionsTest(ROUNDTRIP_JAVA);
+        calledFunctionsTest(ROUNDTRIP_JSON);
     }
 
-    public void testCalledFunctions(int testCase) throws Throwable {
+    public void calledFunctionsTest(int testCase) throws Throwable {
         BigDecimal[] results = {
                 new BigDecimal("0.224684095740375"),
                 new BigDecimal("0.542433484968442"),
@@ -792,7 +791,7 @@ public class ParserTest extends AbstractQDLTester {
         QDLStem c = getStemValue("c.", state);
         assert c.size() == 1;
         assert c.containsKey("z");
-        QDLStem innnerStem = (QDLStem) c.get("z");
+        QDLStem innnerStem = c.get("z").asStem();
         assert innnerStem.size() == 1;
         assert innnerStem.containsKey("t");
         assert innnerStem.getLong("t").equals(42L);
@@ -883,14 +882,14 @@ public class ParserTest extends AbstractQDLTester {
      */
 
     public void testComparisons() throws Throwable {
-        testComparisons(ROUNDTRIP_NONE);
-        testComparisons(ROUNDTRIP_XML);
-        testComparisons(ROUNDTRIP_QDL);
-        testComparisons(ROUNDTRIP_JAVA);
-        testComparisons(ROUNDTRIP_JSON);
+        comparisonsTest(ROUNDTRIP_NONE);
+        comparisonsTest(ROUNDTRIP_XML);
+        comparisonsTest(ROUNDTRIP_QDL);
+        comparisonsTest(ROUNDTRIP_JAVA);
+        comparisonsTest(ROUNDTRIP_JSON);
     }
 
-    public void testComparisons(int testCase) throws Throwable {
+    public void comparisonsTest(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "a := 5;");
@@ -1321,8 +1320,8 @@ public class ParserTest extends AbstractQDLTester {
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
 
-        assert state.getValue("a") instanceof QDLNull;
-        assert state.getValue("a.") instanceof QDLNull;
+        assert state.getValue("a").isNull();
+        assert state.getValue("a.").isNull();
         assert getBooleanValue("a0", state);
         assert getBooleanValue("a1", state);
 
@@ -1521,7 +1520,7 @@ public class ParserTest extends AbstractQDLTester {
         interpreter.execute(script.toString());
 
         assert state.getValue("j2") != null;
-        String j2 = (String) state.getValue("j2");
+        String j2 = state.getValue("j2").asString();
         JSONObject jsonObject = JSONObject.fromObject(rawJSON);
         JSONObject result = JSONObject.fromObject(j2);
         assert jsonObject.size() == result.size();
@@ -1615,7 +1614,7 @@ public class ParserTest extends AbstractQDLTester {
         assert getLongValue("integer", state) == 6L;
         assert getStringValue("string", state).equals("fluffy8");
         assert areEqual(getBDValue("decimal", state), new BigDecimal("8.5679"));
-        assert state.getValue("a") == QDLNull.getInstance(); // QDLNull is a singleton, so we can check with ==
+        assert state.getValue("a").isNull(); // QDLNull is a singleton, so we can check with ==
         assert state.getValue("A") == null;// This is what is returned for actual variables that are undefined.
     }
 

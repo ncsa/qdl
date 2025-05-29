@@ -5,6 +5,7 @@ import org.qdl_lang.parsing.QDLRunner;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
 import org.qdl_lang.statements.Statement;
 import org.qdl_lang.variables.Constant;
+import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.workspace.SIInterrupts;
 
 import javax.xml.stream.XMLStreamException;
@@ -56,30 +57,30 @@ public class SIEntry implements Serializable {
         xsw.writeEndElement(); // end si entry tag
     }
 
-    public Object getLabel() {
+    public QDLValue getLabel() {
         return label;
     }
 
-    public void setLabel(Object label) {
+    public void setLabel(QDLValue label) {
         this.label = label;
     }
 
-    public Object label;
+    public QDLValue label;
 
     public boolean hasLabel() {
         return label != null;
     }
 
     public Long getIntLabel() {
-        return (Long) label;
+        return label.asLong();
     }
 
     public String getStringLabel() {
-        return (String) label;
+        return label.asString();
     }
 
     public int getLabelType() {
-        return Constant.getType(label);
+        return label.getType();
     }
 
     public SIInterrupts getInterrupts() {

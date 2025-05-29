@@ -29,6 +29,7 @@ import java.util.*;
 import static org.qdl_lang.config.QDLConfigurationConstants.*;
 import static org.qdl_lang.evaluate.SystemEvaluator.resolveScript;
 import static edu.uiuc.ncsa.security.storage.sql.ConnectionPoolProvider.*;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * Takes  node from a QDL configuration and sets a bunch of information for a configuration.
@@ -337,7 +338,7 @@ public class QDLConfigurationLoaderUtils {
                         if(varName == null){
                             throw new IllegalArgumentException("no alias or variable name for import was set for the module " + template.getNamespace());
                         }
-                        state.setValue(varName, instance);
+                        state.setValue(varName, asQDLValue(instance));
 
                     }
                 }

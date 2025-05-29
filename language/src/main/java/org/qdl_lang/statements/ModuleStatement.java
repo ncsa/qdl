@@ -3,6 +3,7 @@ package org.qdl_lang.statements;
 import org.qdl_lang.module.Module;
 import org.qdl_lang.module.QDLModule;
 import org.qdl_lang.state.State;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -58,7 +59,7 @@ public class ModuleStatement implements Statement {
  module['q:/q','w']body[module_import('a:/a');zz:=a#q+2;];
      */
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
 
         QDLModule module = new QDLModule();
         module.setNamespace(getNamespace());
@@ -95,7 +96,7 @@ public class ModuleStatement implements Statement {
             state.getMTemplates().put(module);
         }
 
-        return null;
+        return QDLValue.asQDLValue(module);
     }
 
     public Module getmInstance() {

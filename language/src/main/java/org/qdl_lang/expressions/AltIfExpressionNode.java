@@ -8,6 +8,8 @@ import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+
 /**
  * <p>Created by Jeff Gaynor<br>
  * on 5/27/21 at  5:13 PM
@@ -66,7 +68,7 @@ public class AltIfExpressionNode extends ExpressionImpl {
                 } else {
                     arg1 = getELSE().evaluate(state);
                 }
-                out.putLongOrString(key, arg1);
+                out.putLongOrString(key, asQDLValue(arg1));
             }
             setResult(new QDLValue(out));
             setEvaluated(true);

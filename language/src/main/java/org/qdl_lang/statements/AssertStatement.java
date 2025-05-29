@@ -3,6 +3,8 @@ package org.qdl_lang.statements;
 import org.qdl_lang.exceptions.AssertionException;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.List;
 
@@ -54,26 +56,26 @@ public class AssertStatement implements Statement {
     ExpressionInterface messsge;
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         if (!state.isAssertionsOn()) {
             return null;
         }
 
-        Object obj = getConditional().evaluate(state);
-        if (obj instanceof Boolean) {
-            Boolean b = (Boolean) obj;
+        QDLValue obj = getConditional().evaluate(state);
+        if (obj.isBoolean()) {
+            Boolean b = obj.asBoolean();
             if (!b) {
                 AssertionException assertionException = null;
                 if (getMesssge() == null) {
                     assertionException = new AssertionException("", getConditional()); // no message implies empty message
                 } else {
-                    Object m = getMesssge().evaluate(state);
-                    if (m instanceof String) {
-                        assertionException = new AssertionException((String) m, getConditional());
+                    QDLValue m = getMesssge().evaluate(state);
+                    if (m.isString()) {
+                        assertionException = new AssertionException(m.asString(), getConditional());
                     } else {
-                        if(m instanceof QDLStem) {
+                        if(m.isStem()) {
                             assertionException = new AssertionException("assertion failed", getConditional());
-                            assertionException.setAssertionState((QDLStem) m);
+                            assertionException.setAssertionState(m.asStem());
                         }else{
                             assertionException = new AssertionException(m.toString(), getConditional());
                         }
@@ -81,7 +83,7 @@ public class AssertStatement implements Statement {
                 }
                 throw assertionException;
             } else {
-                return Boolean.TRUE;
+                return BooleanValue.True;
             }
         }
         throw new IllegalArgumentException("error: the conditional must be boolean valued, got '" + obj + "'");

@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 import static org.qdl_lang.evaluate.ModuleEvaluator.*;
 import static org.qdl_lang.state.VariableState.var_regex;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 import static org.qdl_lang.xml.SerializationConstants.MODULE_JAVA_STATE_TAG;
 import static org.qdl_lang.xml.SerializationConstants.MODULE_STATE_TAG;
 
@@ -117,7 +118,7 @@ public abstract class JavaModule extends Module {
                 if (!pattern.matcher(v.getName()).matches()) {
                     throw new IllegalArgumentException("Error: The variable name \"" + v.getName() + "\" is not a legal variable name.");
                 }
-                state.setValue(v.getName(), v.getValue());
+                state.setValue(v.getName(), asQDLValue(v.getValue()));
             }
         }
         for (QDLFunction f : funcs) {

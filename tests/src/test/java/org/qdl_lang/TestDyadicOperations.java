@@ -11,6 +11,8 @@ import org.qdl_lang.variables.*;
 
 import java.math.BigDecimal;
 
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+
 /**
  * <p>Created by Jeff Gaynor<br>
  * on 1/13/20 at  4:07 PM
@@ -20,96 +22,96 @@ public class TestDyadicOperations extends AbstractQDLTester {
 
 
     public void testDyadicBDPlus() throws Exception {
-        ConstantNode left = new ConstantNode(new BigDecimal("123.456"), Constant.DECIMAL_TYPE);
-        ConstantNode right = new ConstantNode(new BigDecimal("-123.4560000"), Constant.DECIMAL_TYPE);
+        ConstantNode left = new ConstantNode(asQDLValue(new BigDecimal("123.456")));
+        ConstantNode right = new ConstantNode(asQDLValue(new BigDecimal("-123.4560000")));
         Dyad dyad = new Dyad(OpEvaluator.PLUS_VALUE, left, right);
         dyad.evaluate(testUtils.getNewState());
         assert dyad.getResultType() == Constant.DECIMAL_TYPE;
-        assert ((BigDecimal) dyad.getResult()).compareTo(BigDecimal.ZERO) == 0;
+        assert dyad.getResult().asDecimal().compareTo(BigDecimal.ZERO) == 0;
     }
 
 
     public void testDyadicBDMinus() throws Exception {
-        ConstantNode left = new ConstantNode(new BigDecimal("123.456"), Constant.DECIMAL_TYPE);
-        ConstantNode right = new ConstantNode(new BigDecimal("123.056"), Constant.DECIMAL_TYPE);
+        ConstantNode left = new ConstantNode(asQDLValue(new BigDecimal("123.456")));
+        ConstantNode right = new ConstantNode(asQDLValue(new BigDecimal("123.056")));
         BigDecimal expectedResult = new BigDecimal((".4"));
         Dyad dyad = new Dyad(OpEvaluator.MINUS_VALUE, left, right);
         dyad.evaluate(testUtils.getNewState());
         assert dyad.getResultType() == Constant.DECIMAL_TYPE;
-        BigDecimal returnedResult = (BigDecimal) dyad.getResult();
+        BigDecimal returnedResult = dyad.getResult().asDecimal();
         assert (returnedResult.subtract(expectedResult)).compareTo(BigDecimal.ZERO) == 0;
     }
 
 
     public void testDyadicMixedMinus() throws Exception {
-        ConstantNode left = new ConstantNode(new BigDecimal("123.456"), Constant.DECIMAL_TYPE);
-        ConstantNode right = new ConstantNode(new Long(23L), Constant.LONG_TYPE);
+        ConstantNode left = new ConstantNode(asQDLValue(new BigDecimal("123.456")));
+        ConstantNode right = new ConstantNode(asQDLValue(23L));
         BigDecimal expectedResult = new BigDecimal(("100.456"));
         Dyad dyad = new Dyad(OpEvaluator.MINUS_VALUE, left, right);
         dyad.evaluate(testUtils.getNewState());
         assert dyad.getResultType() == Constant.DECIMAL_TYPE;
-        BigDecimal returnedResult = (BigDecimal) dyad.getResult();
+        BigDecimal returnedResult = dyad.getResult().asDecimal();
         assert (returnedResult.subtract(expectedResult)).compareTo(BigDecimal.ZERO) == 0;
     }
 
 
     public void testDyadicMixedPlus() throws Exception {
-        ConstantNode left = new ConstantNode(new BigDecimal("123.456"), Constant.DECIMAL_TYPE);
-        ConstantNode right = new ConstantNode(new Long(23L), Constant.LONG_TYPE);
+        ConstantNode left = new ConstantNode(asQDLValue(new BigDecimal("123.456")));
+        ConstantNode right = new ConstantNode(asQDLValue(23L));
         BigDecimal expectedResult = new BigDecimal(("146.456"));
         Dyad dyad = new Dyad(OpEvaluator.PLUS_VALUE, left, right);
         dyad.evaluate(testUtils.getNewState());
         assert dyad.getResultType() == Constant.DECIMAL_TYPE;
-        BigDecimal returnedResult = (BigDecimal) dyad.getResult();
+        BigDecimal returnedResult = dyad.getResult().asDecimal();
         assert (returnedResult.subtract(expectedResult)).compareTo(BigDecimal.ZERO) == 0;
     }
 
 
 
     public void testDyadicLongPlus() throws Exception {
-        ConstantNode left = new ConstantNode(1L, Constant.LONG_TYPE);
-        ConstantNode right = new ConstantNode(2L, Constant.LONG_TYPE);
+        ConstantNode left = new ConstantNode(asQDLValue(1L));
+        ConstantNode right = new ConstantNode(asQDLValue(2L));
         Dyad dyad = new Dyad(OpEvaluator.PLUS_VALUE, left, right);
         dyad.evaluate(testUtils.getNewState());
-        assert dyad.getResult().equals(3L);
+        assert dyad.getResult().asLong().equals(3L);
     }
 
 
     public void testDyadicLongMinus() throws Exception {
-        ConstantNode left = new ConstantNode(1L, Constant.LONG_TYPE);
-        ConstantNode right = new ConstantNode(2L, Constant.LONG_TYPE);
+        ConstantNode left = new ConstantNode(asQDLValue(1L));
+        ConstantNode right = new ConstantNode(asQDLValue(2L));
         Dyad dyad = new Dyad(OpEvaluator.MINUS_VALUE, left, right);
         dyad.evaluate(testUtils.getNewState());
-        assert dyad.getResult().equals(-1L);
+        assert dyad.getResult().asLong().equals(-1L);
     }
 
 
     public void testDyadicStringPlus() throws Exception {
-        ConstantNode left = new ConstantNode("abc", Constant.STRING_TYPE);
-        ConstantNode right = new ConstantNode("def", Constant.STRING_TYPE);
+        ConstantNode left = new ConstantNode(asQDLValue("abc"));
+        ConstantNode right = new ConstantNode(asQDLValue("def"));
         Dyad dyad = new Dyad(OpEvaluator.PLUS_VALUE, left, right);
         dyad.evaluate(testUtils.getNewState());
-        assert dyad.getResult().equals("abcdef");
+        assert dyad.getResult().asString().equals("abcdef");
     }
 
 
     public void testDyadicStringMinus() throws Exception {
-        ConstantNode left = new ConstantNode("abcdef", Constant.STRING_TYPE);
-        ConstantNode right = new ConstantNode("def", Constant.STRING_TYPE);
+        ConstantNode left = new ConstantNode(asQDLValue("abcdef"));
+        ConstantNode right = new ConstantNode(asQDLValue("def"));
         Dyad dyad = new Dyad(OpEvaluator.MINUS_VALUE, left, right);
         dyad.evaluate(testUtils.getNewState());
-        assert dyad.getResult().equals("abc");
+        assert dyad.getResult().asString().equals("abc");
     }
 
 
     public void testDyadicStringMinus2() throws Exception {
         // A - B for strings. removes *every* occurrence of B found in A
         /// here abcabdeabf - ab = cdef
-        ConstantNode left = new ConstantNode("abcabdeabf", Constant.STRING_TYPE);
-        ConstantNode right = new ConstantNode("ab", Constant.STRING_TYPE);
+        ConstantNode left = new ConstantNode(asQDLValue("abcabdeabf"));
+        ConstantNode right = new ConstantNode(asQDLValue("ab"));
         Dyad dyad = new Dyad(OpEvaluator.MINUS_VALUE, left, right);
         dyad.evaluate(testUtils.getNewState());
-        assert dyad.getResult().equals("cdef");
+        assert dyad.getResult().asString().equals("cdef");
     }
 
     /**
@@ -138,21 +140,21 @@ public class TestDyadicOperations extends AbstractQDLTester {
         variableNode = new VariableNode("long");
         testValue = (VThing) vStack.get(new XKey("long"));
         variableNode.evaluate(state);
-        assert variableNode.getResult().equals(testValue.getLongValue());
+        assert variableNode.getResult().asLong().equals(testValue.getLongValue());
         assert variableNode.getResultType() == Constant.LONG_TYPE;
     }
 
 
     public void testLongEquality() throws Exception {
-        ConstantNode left = new ConstantNode(new Long(4), Constant.LONG_TYPE);
-        ConstantNode right = new ConstantNode(new Long(5), Constant.LONG_TYPE);
+        ConstantNode left = new ConstantNode(asQDLValue(4));
+        ConstantNode right = new ConstantNode(asQDLValue(5));
         State state = testUtils.getNewState();
         Dyad dyad = new Dyad(OpEvaluator.EQUALS_VALUE, left, right);
         dyad.evaluate(state);
-        assert !(Boolean) dyad.getResult();
+        assert !dyad.getResult().asBoolean();
         dyad = new Dyad(OpEvaluator.NOT_EQUAL_VALUE, left, right);
         dyad.evaluate(state);
-        assert (Boolean) dyad.getResult();
+        assert  dyad.getResult().asBoolean();
     }
 
     public void testLongEquality2() throws Throwable {
@@ -167,15 +169,15 @@ public class TestDyadicOperations extends AbstractQDLTester {
     }
 
     public void testBDEquality() throws Exception {
-        ConstantNode left = new ConstantNode(new BigDecimal("4.43000000"), Constant.DECIMAL_TYPE);
-        ConstantNode right = new ConstantNode(new BigDecimal("4.43"), Constant.DECIMAL_TYPE);
+        ConstantNode left = new ConstantNode(asQDLValue(new BigDecimal("4.43000000")));
+        ConstantNode right = new ConstantNode(asQDLValue(new BigDecimal("4.43")));
         State state = testUtils.getNewState();
         Dyad dyad = new Dyad(OpEvaluator.EQUALS_VALUE, left, right);
         dyad.evaluate(state);
-        assert (Boolean) dyad.getResult();
+        assert dyad.getResult().asBoolean();
         dyad = new Dyad(OpEvaluator.NOT_EQUAL_VALUE, left, right);
         dyad.evaluate(state);
-        assert !(Boolean) dyad.getResult();
+        assert !dyad.getResult().asBoolean();
     }
 
     public void testBDEquality2() throws Throwable {
@@ -190,15 +192,15 @@ public class TestDyadicOperations extends AbstractQDLTester {
     }
 
     public void testMixedEquality() throws Exception {
-        ConstantNode left = new ConstantNode(new BigDecimal("4.000000"), Constant.DECIMAL_TYPE);
-        ConstantNode right = new ConstantNode(new Long(4L), Constant.DECIMAL_TYPE);
+        ConstantNode left = new ConstantNode(asQDLValue(new BigDecimal("4.000000")));
+        ConstantNode right = new ConstantNode(asQDLValue(4L));
         State state = testUtils.getNewState();
         Dyad dyad = new Dyad(OpEvaluator.EQUALS_VALUE, left, right);
         dyad.evaluate(state);
-        assert (Boolean) dyad.getResult();
+        assert dyad.getResult().asBoolean();
         dyad = new Dyad(OpEvaluator.NOT_EQUAL_VALUE, left, right);
         dyad.evaluate(state);
-        assert !(Boolean) dyad.getResult();
+        assert !dyad.getResult().asBoolean();
     }
 
     public void testMixedEquality2() throws Throwable {
@@ -213,42 +215,42 @@ public class TestDyadicOperations extends AbstractQDLTester {
     }
 
     public void testStringEquality() throws Exception {
-        ConstantNode left = new ConstantNode("little bunny foo foo", Constant.STRING_TYPE);
-        ConstantNode right = new ConstantNode("It was a dark and stormy night", Constant.STRING_TYPE);
+        ConstantNode left = new ConstantNode(asQDLValue("little bunny foo foo"));
+        ConstantNode right = new ConstantNode(asQDLValue("It was a dark and stormy night"));
         State state = testUtils.getNewState();
         Dyad dyad = new Dyad(OpEvaluator.EQUALS_VALUE, left, right);
         dyad.evaluate(state);
-        assert !(Boolean) dyad.getResult();
+        assert !dyad.getResult().asBoolean();
         dyad = new Dyad(OpEvaluator.NOT_EQUAL_VALUE, left, right);
         dyad.evaluate(state);
-        assert (Boolean) dyad.getResult();
+        assert dyad.getResult().asBoolean();
         // And check that a string is equal to itself. 
         dyad = new Dyad(OpEvaluator.EQUALS_VALUE, left, left);
         dyad.evaluate(state);
-        assert (Boolean) dyad.getResult();
+        assert dyad.getResult().asBoolean();
     }
 
 
     public void testLongComparison() throws Exception {
-        ConstantNode left = new ConstantNode(new Long(4), Constant.LONG_TYPE);
-        ConstantNode right = new ConstantNode(new Long(5), Constant.LONG_TYPE);
+        ConstantNode left = new ConstantNode(asQDLValue(4));
+        ConstantNode right = new ConstantNode(asQDLValue(5));
         State state = testUtils.getNewState();
         // test 4 < 5
         Dyad dyad = new Dyad(OpEvaluator.LESS_THAN_VALUE, left, right);
         dyad.evaluate(state);
-        assert (Boolean) dyad.getResult();
+        assert dyad.getResult().asBoolean();
         // test 4 > 5
         dyad = new Dyad(OpEvaluator.MORE_THAN_VALUE, left, right);
         dyad.evaluate(state);
-        assert !(Boolean) dyad.getResult();
+        assert ! dyad.getResult().asBoolean();
         // test 4 <= 4
         dyad = new Dyad(OpEvaluator.LESS_THAN_EQUAL_VALUE, left, left);
         dyad.evaluate(state);
-        assert (Boolean) dyad.getResult();
+        assert dyad.getResult().asBoolean();
         // test 4 >= 4
         dyad = new Dyad(OpEvaluator.MORE_THAN_EQUAL_VALUE, left, left);
         dyad.evaluate(state);
-        assert (Boolean) dyad.getResult();
+        assert dyad.getResult().asBoolean();
     }
 
     public void testLongComparison2() throws Throwable {

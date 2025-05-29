@@ -8,6 +8,7 @@ import org.qdl_lang.module.QDLModule;
 import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.statements.ModuleStatement;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.QDLVariable;
 import org.qdl_lang.variables.VStack;
 import org.qdl_lang.variables.VThing;
 import org.qdl_lang.xml.SerializationState;
@@ -599,16 +600,16 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
         // print out the exact same stack.
         VStack vStack = new VStack();
         vStack.pushNewTable();
-        vStack.put(new VThing(new XKey("a"), Boolean.TRUE));
-        vStack.put(new VThing(new XKey("b"), "foo"));
-        vStack.put(new VThing(new XKey("x"), new BigDecimal("123.456789")));
+        vStack.put(new VThing(new XKey("a"), new QDLVariable( Boolean.TRUE)));
+        vStack.put(new VThing(new XKey("b"), new QDLVariable("foo")));
+        vStack.put(new VThing(new XKey("x"), new QDLVariable(new BigDecimal("123.456789"))));
         QDLStem s = new QDLStem();
         s.put("a", 5L);
         s.put("foo", "bar");
-        vStack.put(new VThing(new XKey("s."), s));
+        vStack.put(new VThing(new XKey("s."), new QDLVariable(s)));
         vStack.pushNewTable();
-        vStack.localPut(new VThing(new XKey("a"), Boolean.FALSE));
-        vStack.localPut(new VThing(new XKey("x"), new BigDecimal("9.87654321")));
+        vStack.localPut(new VThing(new XKey("a"), new QDLVariable( Boolean.FALSE)));
+        vStack.localPut(new VThing(new XKey("x"), new QDLVariable(new BigDecimal("9.87654321"))));
         QDLModule qdlModule = new QDLModule();
         State state = new State();
         qdlModule.setState(state);
@@ -620,8 +621,8 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
         source.add("module['a:x'][f(x)->x^2;zzz:=foo;];");
         moduleStatement.setSourceCode(source);
         qdlModule.setModuleStatement(moduleStatement);
-        qdlModule.getState().getVStack().put(new VThing(new XKey("m_x"), "module string"));
-        vStack.localPut(new VThing(new XKey("zzz"), qdlModule));
+        qdlModule.getState().getVStack().put(new VThing(new XKey("m_x"), new QDLVariable("module string")));
+        vStack.localPut(new VThing(new XKey("zzz"), new QDLVariable(qdlModule)));
 
         vStack.pushNewTable();
 

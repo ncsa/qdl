@@ -20,6 +20,7 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.XMLEvent;
 import java.util.*;
 
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 import static org.qdl_lang.xml.SerializationConstants.FUNCTIONS_TAG;
 import static org.qdl_lang.xml.SerializationConstants.FUNCTION_TAG;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -111,8 +112,8 @@ public class FTable<K extends FKey, V extends FunctionRecord> extends XTable<K, 
             dyadicFunctionReferenceNode.setFunctionName(fr.getName());
             // Module stuff here?
             ArrayList<ExpressionInterface> args = new ArrayList<>();
-            args.add(new ConstantNode(Long.valueOf(fr.getArgCount())));
-            args.add(new ConstantNode(fr.getName()));
+            args.add(new ConstantNode(asQDLValue((fr.getArgCount()))));
+            args.add(new ConstantNode(asQDLValue(fr.getName())));
             dyadicFunctionReferenceNode.setArguments(args);
             dyadicFunctionReferenceNode.setFunctionRecord(fr);
             dyadicFunctionReferenceNode.setEvaluated(true);

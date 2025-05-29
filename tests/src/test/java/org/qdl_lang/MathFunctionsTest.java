@@ -1,7 +1,6 @@
 package org.qdl_lang;
 
 import org.qdl_lang.evaluate.MathEvaluator;
-import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.exceptions.ParsingException;
 import org.qdl_lang.expressions.ConstantNode;
 import org.qdl_lang.expressions.Polyad;
@@ -9,12 +8,11 @@ import org.qdl_lang.expressions.VariableNode;
 import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.state.State;
 import org.qdl_lang.state.XKey;
-import org.qdl_lang.variables.Constant;
-import org.qdl_lang.variables.QDLStem;
-import org.qdl_lang.variables.VStack;
-import org.qdl_lang.variables.VThing;
+import org.qdl_lang.variables.*;
 
 import java.math.BigDecimal;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -28,10 +26,10 @@ public class MathFunctionsTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
 
         Polyad polyad = new Polyad(MathEvaluator.ABS_VALUE);
-        ConstantNode left = new ConstantNode((long) -5, Constant.LONG_TYPE);
+        ConstantNode left = new ConstantNode(asQDLValue( -5L));
         polyad.addArgument(left);
         polyad.evaluate(state);
-        assert (Long) polyad.getResult() == 5L;
+        assert polyad.getResult().asLong() == 5L;
     }
 
     /**
@@ -50,12 +48,12 @@ public class MathFunctionsTest extends AbstractQDLTester {
         arg.put("2", -1000000L);
         arg.put("3", 987654321L);
 
-        symbolTable.put(new VThing(new XKey("arg."), arg));
+        symbolTable.put(new VThing(new XKey("arg."), new QDLVariable(arg)));
         VariableNode argNode = new VariableNode("arg.");
         Polyad polyad = new Polyad(MathEvaluator.ABS_VALUE);
         polyad.addArgument(argNode);
         polyad.evaluate(state);
-        QDLStem r = (QDLStem) polyad.getResult();
+        QDLStem r = polyad.getResult().asStem();
         assert r.size() == 4;
         assert r.getLong(0L).equals(12345L);
         assert r.getLong(1L).equals(2468L);
@@ -69,7 +67,7 @@ public class MathFunctionsTest extends AbstractQDLTester {
 
         Polyad polyad = new Polyad(MathEvaluator.RANDOM);
         polyad.evaluate(state);
-        assert polyad.getResult() instanceof Long;
+        assert polyad.getResult().isLong();
     }
 
 
@@ -78,10 +76,10 @@ public class MathFunctionsTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
 
         Polyad polyad = new Polyad(MathEvaluator.RANDOM);
-        ConstantNode left = new ConstantNode(new Long(count), Constant.LONG_TYPE);
+        ConstantNode left = new ConstantNode(asQDLValue(count));
         polyad.addArgument(left);
         polyad.evaluate(state);
-        QDLStem r = (QDLStem) polyad.getResult();
+        QDLStem r = polyad.getResult().asStem();
         assert r.size() == count;
     }
 
@@ -91,7 +89,7 @@ public class MathFunctionsTest extends AbstractQDLTester {
 
         Polyad polyad = new Polyad(MathEvaluator.RANDOM_STRING);
         polyad.evaluate(state);
-        assert polyad.getResult() instanceof String;
+        assert polyad.getResult().isString();
     }
 
 
@@ -100,10 +98,10 @@ public class MathFunctionsTest extends AbstractQDLTester {
 
         Long size = 32L;
         Polyad polyad = new Polyad(MathEvaluator.RANDOM_STRING);
-        ConstantNode arg = new ConstantNode(new Long(size), Constant.LONG_TYPE);
+        ConstantNode arg = new ConstantNode(asQDLValue(size));
         polyad.addArgument(arg);
         polyad.evaluate(state);
-        assert polyad.getResult() instanceof String;
+        assert polyad.getResult().isString();
         assert polyad.getResult().toString().length() == 43;
     }
 
@@ -151,12 +149,12 @@ public class MathFunctionsTest extends AbstractQDLTester {
         expected.put("1", "15ac553ccb88f34f3c2a4f9ac0460d0fde29c8a8");
         expected.put("2", "5fd8b1f8f66de0848eca4dfc468fc15e147e4670");
         expected.put("3", "830b0c398047d0d3ac4834508eb1bb87ea7f9ba9");
-        vStack.put(new VThing(new XKey("sourceStem."), sourceStem));
+        vStack.put(new VThing(new XKey("sourceStem."), new QDLVariable(sourceStem)));
         VariableNode arg = new VariableNode("sourceStem.");
         Polyad polyad = new Polyad(MathEvaluator.HASH);
         polyad.addArgument(arg);
         polyad.evaluate(state);
-        QDLStem result = (QDLStem) polyad.getResult();
+        QDLStem result = polyad.getResult().asStem();
         assert result.size() == 4;
         for (Object key : result.keySet()) {
             assert result.get(key).equals(expected.get(key));
@@ -225,12 +223,12 @@ public class MathFunctionsTest extends AbstractQDLTester {
         String original = "The quick brown fox jumps over the lazy dog";
         String expectedResult = "54686520717569636b2062726f776e20666f78206a756d7073206f76657220746865206c617a7920646f67";
         Polyad polyad = new Polyad(MathEvaluator.ENCODE);
-        ConstantNode arg = new ConstantNode(original, Constant.STRING_TYPE);
-        ConstantNode arg1 = new ConstantNode(new Long(16), Constant.LONG_TYPE);
+        ConstantNode arg = new ConstantNode(asQDLValue(original));
+        ConstantNode arg1 = new ConstantNode(asQDLValue(16));
         polyad.addArgument(arg);
         polyad.addArgument(arg1);
         polyad.evaluate(state);
-        assert polyad.getResult().equals(expectedResult);
+        assert polyad.getResult().getValue().equals(expectedResult);
     }
 
 
@@ -240,12 +238,12 @@ public class MathFunctionsTest extends AbstractQDLTester {
         String expectedResult = "The quick brown fox jumps over the lazy dog";
         String original = "54686520717569636b2062726f776e20666f78206a756d7073206f76657220746865206c617a7920646f67";
         Polyad polyad = new Polyad(MathEvaluator.DECODE);
-        ConstantNode arg = new ConstantNode(original, Constant.STRING_TYPE);
-        ConstantNode arg1 = new ConstantNode(new Long(16), Constant.LONG_TYPE);
+        ConstantNode arg = new ConstantNode(asQDLValue(original));
+        ConstantNode arg1 = new ConstantNode(asQDLValue(16));
         polyad.addArgument(arg);
         polyad.addArgument(arg1);
         polyad.evaluate(state);
-        assert polyad.getResult().equals(expectedResult);
+        assert polyad.getResult().asString().equals(expectedResult);
     }
 
     /**
@@ -323,12 +321,12 @@ public class MathFunctionsTest extends AbstractQDLTester {
         assert areEqual(getStemValue("f.", state), arrayToStem(new int[]{9, 6, 3, 0, -3, -6}));
         QDLStem gStem = new QDLStem();
         // Caveat: Bigdecimal from double always induces rounding, so use string constructor for exact tests.
-        gStem.listAdd(new BigDecimal(".9"));
-        gStem.listAdd(new BigDecimal(".6"));
-        gStem.listAdd(new BigDecimal(".3"));
-        gStem.listAdd(new Long(0L));
-        gStem.listAdd(new BigDecimal("-0.3"));
-        gStem.listAdd(new BigDecimal("-0.6"));
+        gStem.listAdd(asQDLValue(new BigDecimal(".9")));
+        gStem.listAdd(asQDLValue(new BigDecimal(".6")));
+        gStem.listAdd(asQDLValue(new BigDecimal(".3")));
+        gStem.listAdd(asQDLValue(0L));
+        gStem.listAdd(asQDLValue(new BigDecimal("-0.3")));
+        gStem.listAdd(asQDLValue(new BigDecimal("-0.6")));
         assert areEqual(getStemValue("g.", state), gStem);
         //assert areEqual(getStemValue("g.",state), arrayToStem(new double[] {.9, .6, .3, 0, -.3, -.6}));
         assert areEqual(getStemValue("h.", state), arrayToStem(new double[]{-3.3, -2.3, -1.3, -0.3, .7, 1.7}));
@@ -411,11 +409,11 @@ public class MathFunctionsTest extends AbstractQDLTester {
      */
 
     public void testRecursion() throws Throwable {
-        testRecursion(false);
-        testRecursion(true);
+        recursionTest(false);
+        recursionTest(true);
     }
 
-    public void testRecursion(boolean testXML) throws Throwable {
+    public void recursionTest(boolean testXML) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "define[");
@@ -506,14 +504,14 @@ public class MathFunctionsTest extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testBigMod() throws Throwable {
-        testBigMod(ROUNDTRIP_NONE);
-        testBigMod(ROUNDTRIP_XML);
-        testBigMod(ROUNDTRIP_JAVA);
-        testBigMod(ROUNDTRIP_QDL);
-        testBigMod(ROUNDTRIP_JSON);
+        BigModTest(ROUNDTRIP_NONE);
+        BigModTest(ROUNDTRIP_XML);
+        BigModTest(ROUNDTRIP_JAVA);
+        BigModTest(ROUNDTRIP_QDL);
+        BigModTest(ROUNDTRIP_JSON);
     }
 
-    public void testBigMod(int testCase) throws Throwable {
+    public void BigModTest(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "ok := mod(494590348974597684,394874589745) == 53454241559;");

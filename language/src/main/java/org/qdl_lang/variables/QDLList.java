@@ -33,7 +33,7 @@ public class QDLList implements List<QDLValue>, Serializable {
         return arrayList;
     }
 
-    public void setArrayList(ArrayList arrayList) {
+    public void setArrayList(ArrayList<QDLValue> arrayList) {
         this.arrayList = arrayList;
     }
 
@@ -436,7 +436,7 @@ subset(b., 3, 6)
      *
      * @param objects
      */
-    public void appendAll(List<Object> objects) {
+    public void appendAll(List<QDLValue> objects) {
         for (Object obj : objects) {
             add(QDLValue.asQDLValue(obj));
         }
@@ -1184,8 +1184,8 @@ subset(b., 3, 6)
 
     public boolean add(Integer o) {
         return add(new LongValue(o));
-
     }
+
     public boolean add(SparseEntry sparseEntry) {
         if (hasSparseEntries()) {
             SparseEntry lastEntry = getSparseEntries().last();
@@ -1499,12 +1499,12 @@ subset(b., 3, 6)
             throw new NoSuchElementException();
         }
         int index = getArrayList().size() - 1;
-        return new SparseEntry(new Long(index), getArrayList().get(index));
+        return new SparseEntry( index, getArrayList().get(index));
     }
 
     public SparseEntry first() {
         if (hasArrayList()) {
-            return new SparseEntry(new Long(0L), getArrayList().get(0));
+            return new SparseEntry(0L, getArrayList().get(0));
         }
         if (hasSparseEntries()) {
             return getSparseEntries().first();
@@ -1603,19 +1603,18 @@ subset(b., 3, 6)
      * @param permutation
      * @return
      */
-    public QDLStem permuteEntries(List<Long> permutation) {
+    public QDLStem permuteEntries(List<QDLValue> permutation) {
         /*
         This uses the internal structure of the stem and lists, so this is seriously hot-rodding it.
          */
         QDLList out = new QDLList();
         int size = permutation.size();
-        for (Object ooo : getArrayList()) {
-            QDLList qdlList = ((QDLStem) ooo).getQDLList(); // each stem has a list of n entries.
+        for (QDLValue ooo : getArrayList()) {
+            QDLList qdlList = ooo.asStem().getQDLList(); // each stem has a list of n entries.
             QDLList outList = new QDLList(size);
 
             for (int index = 0; index < size; index++) {
-                //outList.set(permutation.get(index), qdlList.get(index));
-                outList.set(index, qdlList.get(permutation.get(index)));
+                outList.set(index, qdlList.get(permutation.get(index).asLong()));
             }
             QDLStem outStem = new QDLStem(outList);
             out.append(outStem);

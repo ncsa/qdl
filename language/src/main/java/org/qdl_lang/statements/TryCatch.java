@@ -4,6 +4,7 @@ import org.qdl_lang.exceptions.*;
 import org.qdl_lang.state.State;
 import org.qdl_lang.state.XKey;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.QDLVariable;
 import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.variables.VThing;
 import edu.uiuc.ncsa.security.core.util.DebugConstants;
@@ -89,9 +90,9 @@ public class TryCatch implements Statement {
                     //localState.getVStack().localPut(new VThing(new XKey(ERROR_CODE_NAME), RESERVED_USER_ERROR_CODE));
                     break;
             }
-            localState.getVStack().localPut(new VThing(new XKey(ERROR_MESSAGE_NAME), message));
-            localState.getVStack().localPut(new VThing(new XKey(ERROR_CODE_NAME),  errorCode));
-            localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), errorState));
+            localState.getVStack().localPut(new VThing(new XKey(ERROR_MESSAGE_NAME), new QDLVariable(message)));
+            localState.getVStack().localPut(new VThing(new XKey(ERROR_CODE_NAME),  new QDLVariable(errorCode)));
+            localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), new QDLVariable(errorState)));
 
             for (Statement c : catchStatements) {
                 c.evaluate(localState);
@@ -106,21 +107,21 @@ public class TryCatch implements Statement {
                 if(DebugUtil.getDebugLevel() == DebugConstants.DEBUG_LEVEL_TRACE){
                     otherT.printStackTrace();
                 }
-                localState.getVStack().localPut(new VThing(new XKey(ERROR_MESSAGE_NAME), "(no message)"));
+                localState.getVStack().localPut(new VThing(new XKey(ERROR_MESSAGE_NAME), new QDLVariable( "(no message)")));
             }else {
-                localState.getVStack().localPut(new VThing(new XKey(ERROR_MESSAGE_NAME), otherT.getMessage()));
+                localState.getVStack().localPut(new VThing(new XKey(ERROR_MESSAGE_NAME), new QDLVariable(otherT.getMessage())));
             }
             if (otherT instanceof AssertionException) {
                 AssertionException assertionException = (AssertionException)otherT;
                 if(assertionException.hasPayload()){
-                    localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), assertionException.getAssertionState()));
+                    localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), new QDLVariable(assertionException.getAssertionState())));
                 }else{
-                    localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), new QDLStem()));
+                    localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), new QDLVariable(new QDLStem())));
                 }
-                localState.getVStack().localPut(new VThing(new XKey(ERROR_CODE_NAME), RESERVED_ASSERTION_CODE));
+                localState.getVStack().localPut(new VThing(new XKey(ERROR_CODE_NAME), new QDLVariable(RESERVED_ASSERTION_CODE)));
             } else {
-                localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), new QDLStem()));
-                localState.getVStack().localPut(new VThing(new XKey(ERROR_CODE_NAME), RESERVED_SYSTEM_ERROR_CODE));
+                localState.getVStack().localPut(new VThing(new XKey(ERROR_STATE_NAME), new QDLVariable(new QDLStem())));
+                localState.getVStack().localPut(new VThing(new XKey(ERROR_CODE_NAME), new QDLVariable(RESERVED_SYSTEM_ERROR_CODE)));
             }
 
             for (Statement c : catchStatements) {

@@ -18,6 +18,7 @@ import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.QDLSet;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -35,6 +36,10 @@ import java.text.DecimalFormat;
  */
 public class InputFormUtil {
     public static String JAVA_CLASS_MARKER = "java:";
+
+    public static String inputForm(QDLValue qdlValue) {
+        return inputForm(qdlValue.getValue());
+    }
 
     public static String inputForm(Object obj) {
         if (obj instanceof Boolean) return inputForm((Boolean) obj);

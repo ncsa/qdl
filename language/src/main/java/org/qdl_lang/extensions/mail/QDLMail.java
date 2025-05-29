@@ -12,6 +12,8 @@ import edu.uiuc.ncsa.security.util.configuration.TemplateUtil;
 import edu.uiuc.ncsa.security.util.mail.MailEnvironment;
 import edu.uiuc.ncsa.security.util.mail.MailUtil;
 import net.sf.json.JSONObject;
+import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +21,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import static edu.uiuc.ncsa.security.core.util.StringUtils.RJustify;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -39,18 +42,18 @@ public class QDLMail implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             QDLStem message;
-            if (objects[0] instanceof String) {
-                StringTokenizer st = new StringTokenizer((String) objects[0], "\n");
+            if (qdlValues[0].isString()) {
+                StringTokenizer st = new StringTokenizer(qdlValues[0].asString(), "\n");
                 long index = 0L;
                 message = new QDLStem();
                 while (st.hasMoreTokens()) {
                     message.put(index++, st.nextToken());
                 }
             } else {
-                if (objects[0] instanceof QDLStem) {
-                    message = (QDLStem) objects[0];
+                if (qdlValues[0].isStem()) {
+                    message = qdlValues[0].asStem();
                     if (!message.isList()) {
                         throw new BadArgException(getName() + " requires a list as its first argument.",0);
                     }
@@ -59,9 +62,9 @@ public class QDLMail implements QDLMetaModule {
                 }
             }
             QDLStem templates = null;
-            if (objects.length == 2) {
-                if (objects[1] instanceof QDLStem) {
-                    templates = (QDLStem) objects[1];
+            if (qdlValues.length == 2) {
+                if (qdlValues[1].isStem()) {
+                    templates = qdlValues[1].asStem();
                 } else {
                     throw new BadArgException(getName() + " requires a stem as its second argument, if present.",1);
                 }
@@ -107,7 +110,7 @@ public class QDLMail implements QDLMetaModule {
                 }
             }
             mailUtil.sendMessage(subject, body.toString(), null);
-            return Boolean.TRUE;
+            return BooleanValue.True;
         }
 
         @Override
@@ -199,14 +202,14 @@ public class QDLMail implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (objects.length == 0) {
-                return getCfg();
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            if (qdlValues.length == 0) {
+                return asQDLValue(getCfg());
             }
-            if (objects[0] instanceof QDLStem) {
+            if (qdlValues[0].isStem()) {
                 QDLStem old = getCfg();
-                setCfg((QDLStem) objects[0]);
-                return old;
+                setCfg(qdlValues[0].asStem());
+                return asQDLValue(old);
             }
             throw new BadArgException("The argument must be a stem", 0);
         }

@@ -82,7 +82,7 @@ public class ParseExpressionBlockNode implements ExpressionInterface {
     }
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         return null;
     }
 

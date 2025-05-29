@@ -9,6 +9,8 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.variables.Constant;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
 
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+
 /**
  * <p>Created by Jeff Gaynor<br>
  * on 1/16/20 at  10:26 AM
@@ -27,7 +29,7 @@ public class IOFunctionTest extends AbstractQDLTester {
         // as a unit test, because jUnit will hang since it does not process input
         // right during testing.
         Polyad polyad = new Polyad(IOEvaluator.SCAN_FUNCTION);
-        ConstantNode prompt = new ConstantNode("sayit>", Constant.STRING_TYPE);
+        ConstantNode prompt = new ConstantNode(asQDLValue("sayit>"));
         polyad.getArguments().add(prompt);
         polyad.evaluate(state);
         System.out.println("you entered:\"" + polyad.getResult() + "\"");
@@ -39,7 +41,7 @@ public class IOFunctionTest extends AbstractQDLTester {
         Polyad polyad = new Polyad(SystemEvaluator.SAY_FUNCTION);
         String testString = "These are not the droids you are looking for";
         System.out.println("Check that the phrase \"" + testString + "\" is printed:");
-        ConstantNode prompt = new ConstantNode(testString, Constant.STRING_TYPE);
+        ConstantNode prompt = new ConstantNode(asQDLValue(testString));
         polyad.getArguments().add(prompt);
         polyad.evaluate(state);
     }

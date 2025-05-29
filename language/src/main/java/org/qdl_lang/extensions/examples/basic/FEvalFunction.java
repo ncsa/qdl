@@ -5,6 +5,7 @@ import org.qdl_lang.expressions.ExpressionImpl;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.functions.FunctionReferenceNode;
 import org.qdl_lang.state.State;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,10 +37,10 @@ public class FEvalFunction implements QDLFunction {
     }
 
     @Override
-    public Object evaluate(Object[] objects, State state) {
+    public QDLValue evaluate(QDLValue[] qdlValues, State state) {
         // no real argument checking done since this is sample code.
-        ExpressionImpl expression = getOperator(state, (FunctionReferenceNode) objects[0], 1);
-        expression.getArguments().add( new ConstantNode(objects[1]));
+        ExpressionImpl expression = getOperator(state, qdlValues[0].asFunction(), 1);
+        expression.getArguments().add( new ConstantNode(qdlValues[1]));
         return expression.evaluate(state);
     }
 

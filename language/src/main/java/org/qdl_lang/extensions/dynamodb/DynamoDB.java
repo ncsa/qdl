@@ -10,6 +10,9 @@ import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.QDLStem;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
+import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.QDLNullValue;
+import org.qdl_lang.variables.values.QDLValue;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -26,6 +29,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -57,23 +62,23 @@ public class DynamoDB implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             if (dynamoDbClient != null) {
                 throw new IllegalStateException("A connection is already open");
             }
             String accessKeyId;
             String secretAccessKey;
-            if (objects[0] instanceof String) {
-                accessKeyId = (String) objects[0];
-                if (!(objects[1] instanceof String)) {
+            if (qdlValues[0].isString()) {
+                accessKeyId = qdlValues[0].asString();
+                if (!(qdlValues[1].isString())) {
                     throw new BadArgException("The arguments to " + getName() + " must be a stem or pair of strings.",1);
                 }
-                secretAccessKey = (String) objects[1];
+                secretAccessKey = qdlValues[1].asString();
             } else {
-                if (!(objects[0] instanceof QDLStem)) {
+                if (!(qdlValues[0].isStem())) {
                     throw new BadArgException("argument to " + getName() + " must be a stem", 0);
                 }
-                QDLStem cfg = (QDLStem) objects[0];
+                QDLStem cfg = qdlValues[0].asStem();
                 if (!cfg.containsKey(ACCESS_KEY_ID)) {
                     throw new BadArgException("missing " + ACCESS_KEY_ID, 0);
                 }
@@ -102,7 +107,7 @@ public class DynamoDB implements QDLMetaModule {
                     .credentialsProvider(StaticCredentialsProvider.create(credentials))
                     .httpClientBuilder(ApacheHttpClient.builder())
                     .build();
-            return Boolean.TRUE;
+            return BooleanValue.True;
         }
 
         @Override
@@ -147,11 +152,11 @@ public class DynamoDB implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
+        public QDLValue evaluate(QDLValue[] objects, State state) throws Throwable {
             QDLStem out;
             String keyVal;
             checkInit();
-            if (!(objects[0] instanceof String)) {
+            if (!(objects[0].isString())) {
                 throw new BadArgException("first argument for " + getName() + " must be a string, and is the key value", 0);
             }
             if (tableName == null) {
@@ -161,7 +166,7 @@ public class DynamoDB implements QDLMetaModule {
                 throw new IllegalStateException("You must set the " + PARTITION_KEY + " before calling " + getName());
             }
 
-            keyVal = (String) objects[0];
+            keyVal = objects[0].asString();
             Map<String, AttributeValue> item = null;
 
             // Use the key and key value to build a request for the item
@@ -177,7 +182,7 @@ public class DynamoDB implements QDLMetaModule {
             item = dynamoDbClient.getItem(request).item();
             out = mapToStem(item);
 
-            return out;
+            return asQDLValue(out);
         }
 
         @Override
@@ -304,7 +309,7 @@ public class DynamoDB implements QDLMetaModule {
                 List<SdkBytes> bytesList = attributeValue.bs();
                 list = new QDLList();
                 for (SdkBytes bbb : bytesList) {
-                    list.add(convertToB64(bbb));
+                    list.add(asQDLValue(convertToB64(bbb)));
                 }
                 stem = new QDLStem();
                 stem.setQDLList(list);
@@ -319,7 +324,7 @@ public class DynamoDB implements QDLMetaModule {
                 List<String> numbers = attributeValue.ns();
                 list = new QDLList();
                 for (String n : numbers) {
-                    list.add(convertToNumber(n));
+                    list.add(asQDLValue(convertToNumber(n)));
                 }
                 stem = new QDLStem();
                 stem.setQDLList(list);
@@ -328,7 +333,7 @@ public class DynamoDB implements QDLMetaModule {
                 List<AttributeValue> listValues = attributeValue.l();
                 list = new QDLList();
                 for (AttributeValue n : listValues) {
-                    list.add(convertToQDL(n));
+                    list.add(asQDLValue(convertToQDL(n)));
                 }
                 stem = new QDLStem();
                 stem.setQDLList(list);
@@ -388,12 +393,12 @@ public class DynamoDB implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             if (dynamoDbClient != null) {
                 dynamoDbClient.close();
                 dynamoDbClient = null;
             }
-            return Boolean.TRUE;
+            return BooleanValue.True;
         }
 
         @Override
@@ -425,7 +430,7 @@ public class DynamoDB implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             List<Region> regions = Region.regions();
             QDLStem stem = new QDLStem();
             for (Region region : regions) {
@@ -436,9 +441,9 @@ public class DynamoDB implements QDLMetaModule {
                 if (regionMetadata != null) {
                     r.put("description", regionMetadata.description());
                 }
-                stem.getQDLList().add(r);
+                stem.getQDLList().add(asQDLValue(r));
             }
-            return stem;
+            return asQDLValue(stem);
         }
 
         @Override
@@ -464,18 +469,18 @@ public class DynamoDB implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (objects.length == 0) {
-                if (region == null) return QDLNull.getInstance();
-                return region.id();
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            if (qdlValues.length == 0) {
+                if (region == null) return QDLNullValue.getNullValue();
+                return asQDLValue(region.id());
             }
-            if (!(objects[0] instanceof String)) {
+            if (!(qdlValues[0].isString())) {
                 throw new BadArgException("The argument to " + getName() + " must be a string", 0);
             }
-            String name = (String) objects[0];
+            String name = qdlValues[0].asString();
             Region oldRegion = region;
             region = Region.of(name);
-            return oldRegion.id();
+            return asQDLValue(oldRegion.id());
         }
 
         @Override
@@ -505,21 +510,21 @@ public class DynamoDB implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (objects.length == 0) {
-                if (tableName == null) return QDLNull.getInstance();
-                return tableName;
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            if (qdlValues.length == 0) {
+                if (tableName == null) return QDLNullValue.getNullValue();
+                return asQDLValue(tableName);
             }
-            if (!(objects[0] instanceof String)) {
+            if (!(qdlValues[0].isString())) {
                 throw new BadArgException("The argument to " + getName() + " must be a string", 0);
             }
-            String name = (String) objects[0];
+            String name = qdlValues[0].asString();
             String oldName = tableName;
             tableName = name;
             if (oldName == null) {
-                return QDLNull.getInstance();
+                return QDLNullValue.getNullValue();
             }
-            return oldName;
+            return asQDLValue(oldName);
         }
 
         @Override
@@ -551,21 +556,21 @@ public class DynamoDB implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (objects.length == 0) {
-                if (partitionKey == null) return QDLNull.getInstance();
-                return partitionKey;
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            if (qdlValues.length == 0) {
+                if (partitionKey == null) return QDLNullValue.getNullValue();
+                return asQDLValue(partitionKey);
             }
-            if (!(objects[0] instanceof String)) {
+            if (!(qdlValues[0].isString())) {
                 throw new IllegalArgumentException("The argument to " + getName() + " must be a string");
             }
-            String name = (String) objects[0];
+            String name = qdlValues[0].asString();
             String oldName = partitionKey;
             partitionKey = name;
             if (oldName == null) {
-                return QDLNull.getInstance();
+                return QDLNullValue.getNullValue();
             }
-            return oldName;
+            return asQDLValue(oldName);
         }
 
         @Override

@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+
 /**
  * The QDL utility for processing aggregates (stems and sets). This allows for processing each <i>scalar</i> in
  * an aggregate and handles
@@ -204,7 +206,7 @@ public class QDLAggregateUtil {
     public static QDLSet processSet(QDLSet inSet, ProcessScalar processScalar) {
         QDLSet outSet = new QDLSet();
         for (Object value : inSet) {
-            outSet.add(processSetValue(new LinkedList(), processScalar, value));
+            outSet.add(asQDLValue(processSetValue(new LinkedList(), processScalar, value)));
         }
         return outSet;
     }

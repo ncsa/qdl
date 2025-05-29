@@ -10,6 +10,8 @@ import org.qdl_lang.variables.values.QDLValue;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+
 /**
  * A post or prefix operator, such a logical not or ++. The default is that this is postfix.
  * <p>Created by Jeff Gaynor<br>
@@ -102,7 +104,7 @@ public class Monad extends ExpressionImpl{
         if(resultType != Constant.LONG_TYPE){
             throw new IllegalArgumentException("error: not a long");
         }
-        return (isSigned()?-1L:1L)* (Long)getResult();
+        return (isSigned()?-1L:1L)* getResult().asLong();
     }
     public BigDecimal getSignedDecimalValue(){
         if(!evaluated){
@@ -111,7 +113,7 @@ public class Monad extends ExpressionImpl{
         if(resultType != Constant.DECIMAL_TYPE){
             throw new IllegalArgumentException("error: not a long");
         }
-        return isSigned()?((BigDecimal)getResult()).negate():(BigDecimal)getResult();
+        return isSigned()?getResult().asDecimal().negate():getResult().asDecimal();
     }
     @Override
         public int getNodeType() {

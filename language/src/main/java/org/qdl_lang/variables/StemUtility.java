@@ -7,6 +7,7 @@ import org.qdl_lang.expressions.ExpressionStemNode;
 import org.qdl_lang.expressions.VariableNode;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -15,13 +16,14 @@ import java.util.List;
 import java.util.Map;
 
 import static org.qdl_lang.variables.QDLStem.STEM_INDEX_MARKER;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
  * on 3/24/21 at  12:38 PM
  */
 public class StemUtility {
-    public static final Long LAST_AXIS_ARGUMENT_VALUE = new Long(-0xcafed00d);
+    public static final Long LAST_AXIS_ARGUMENT_VALUE = (long) -0xcafed00d;
 
     /**
      * Action to be applied at a given axis.
@@ -39,6 +41,9 @@ public class StemUtility {
     }
 
     public static boolean isStem(Object o) {
+        if(o instanceof QDLValue) {
+            o = ((QDLValue)o).getValue();
+        }
         return (o instanceof QDLStem) || (o instanceof AxisExpression);
     }
 
@@ -74,44 +79,44 @@ public class StemUtility {
                                           DyadAxisAction axisAction) {
         QDLStem commonKeys = left0.commonKeys(right0);
         for (Object key0 : commonKeys.keySet()) {
-            boolean isKey0Long = key0 instanceof Long;
-            Object leftObj = left0.get(key0);
-            Object rightObj = right0.get(key0);
+            //boolean isKey0Long = key0 instanceof Long;
+            QDLValue leftQV = left0.get(key0);
+            QDLValue rightQV = right0.get(key0);
 
             QDLStem left1 = null;
-            if (isStem(leftObj)) {
-                left1 = (QDLStem) leftObj;
+            if (leftQV.isStem()) {
+                left1 =  leftQV.asStem();
             } else {
-                if (rightObj == null) {
+                if (rightQV == null) {
                     throw new RankException("There are no more elements in the left argument.");
                 }
 
                 left1 = new QDLStem();
-                left1.put(0L, leftObj);
+                left1.put(0L, leftQV);
             }
             QDLStem right1 = null;
-            if (isStem(rightObj)) {
-                right1 = (QDLStem) right0.get(key0);
+            if (rightQV.isStem()) {
+                right1 = right0.get(key0).asStem();
             } else {
-                if (rightObj == null) {
+                if (rightQV == null) {
                     throw new RankException("There are no more elements in the right argument.");
                 }
                 right1 = new QDLStem();
-                right1.put(0L, rightObj);
+                right1.put(0L, rightQV);
             }
-            boolean bottomedOut = areNoneStems(leftObj, rightObj) && maxDepth && 0 < depth;
+            boolean bottomedOut = areNoneStems(leftQV, rightQV) && maxDepth && 0 < depth;
             if (bottomedOut) {
                 axisAction.action(out0, key0, left1, right1);
             } else {
                 if (0 < depth) {
-                    if (areNoneStems(leftObj, rightObj)) {
+                    if (areNoneStems(leftQV, rightQV)) {
                         throw new RankException("rank error");
                     }
                     QDLStem out1 = new QDLStem();
-                    out0.putLongOrString(key0, out1);
+                    out0.putLongOrString(key0, asQDLValue(out1));
                     axisDayadRecursion(out1, left1, right1, depth - 1, maxDepth, axisAction);
                 } else {
-                    out0.putLongOrString(key0, left1.union(right1));
+                    out0.putLongOrString(key0, asQDLValue(left1.union(right1)));
                 }
             }
         }
@@ -142,11 +147,11 @@ public class StemUtility {
         }
         QDLStem outStem = new QDLStem();
         for (Object key1 : inStem.keySet()) {
-            Object obj = inStem.get(key1);
-            if (!isStem(obj)) {
+            QDLValue obj = inStem.get(key1);
+            if (!obj.isStem()) {
                 continue;
             }
-            outStem.putLongOrString(key1, axisWalker((QDLStem) obj, depth - 1, walker));
+            outStem.putLongOrString(key1, axisWalker(obj.asStem(), depth - 1, walker));
         }
         return outStem;
     }
@@ -355,7 +360,11 @@ public class StemUtility {
         QDLList out  = outStem.getQDLList();
         int i = 0;
       for(Object value : list){
-          out.add(convert(value));
+          if(value instanceof QDLValue){
+              out.add((QDLValue)value);
+          }else{
+              out.add(asQDLValue(convert(value)));
+          }
       }
       return outStem;
     }
@@ -379,6 +388,11 @@ public class StemUtility {
         return out;
     }
 
+    /**
+     * Converts Java objects to one of the Java objects that QDL uses.
+     * @param value
+     * @return
+     */
     protected static Object convert(Object value) {
         QDLStem out2;
         switch (getType(value)) {
@@ -421,5 +435,21 @@ public class StemUtility {
         if (obj instanceof Map) return MAP_TYPE;
         if (obj instanceof Float) return FLOAT_TYPE;
         return UNKOWN_TYPE;
+    }
+
+    /**
+     * Floats a map of values to {@link QDLValue}s in the stem. This way you don't have to mess with conversions
+     * @param stem
+     * @param values
+     */
+    public static void setStemValue(QDLStem stem, Map<String, Object> values) {
+        for (String key : values.keySet()) {
+            Object value = values.get(key);
+            if (value instanceof QDLValue) {
+                stem.put(key, (QDLValue) value);
+            } else {
+                stem.put(key, asQDLValue(value));
+            }
+        }
     }
 }

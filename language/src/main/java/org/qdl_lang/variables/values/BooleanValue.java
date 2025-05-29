@@ -5,4 +5,6 @@ public class BooleanValue extends QDLValue {
         super(value);
         type = BOOLEAN_TYPE;
     }
+    public static final BooleanValue True = new BooleanValue(true);
+    public static final BooleanValue False = new BooleanValue(false);
 }

@@ -23,6 +23,8 @@ import java.io.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+
 /**
  * <p>Created by Jeff Gaynor<br>
  * on 2/6/20 at  1:33 PM
@@ -228,7 +230,7 @@ public abstract class StateUtils {
         try {
             // Just a quick test for this
             State state = StateUtils.newInstance();
-            state.setValue("foo", 42L);
+            state.setValue("foo", asQDLValue(42L));
             String b = saveb64(state);
             System.out.println("b = " + b);
             System.out.println("size = " + b.length());

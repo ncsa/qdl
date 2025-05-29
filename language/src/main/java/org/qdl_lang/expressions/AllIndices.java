@@ -1,6 +1,7 @@
 package org.qdl_lang.expressions;
 
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.StemValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
  */
 public class AllIndices extends ConstantNode {
     public AllIndices() {
-        super(new QDLStem());
+        super(new StemValue());
     }
 
     @Override

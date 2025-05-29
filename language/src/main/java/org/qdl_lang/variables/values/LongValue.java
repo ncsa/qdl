@@ -14,4 +14,7 @@ public class LongValue extends QDLValue {
         this(value.longValue());
     }
 
+    public static final LongValue Zero = new LongValue(0L);
+    public static final LongValue One = new LongValue(1L);
+    public static final LongValue MinusOne = new LongValue(-1L);
 }

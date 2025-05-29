@@ -5,9 +5,13 @@ import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.parsing.QDLParserDriver;
 import org.qdl_lang.state.State;
 import org.qdl_lang.state.XKey;
+import org.qdl_lang.variables.QDLVariable;
 import org.qdl_lang.variables.VTable;
 import org.qdl_lang.variables.VThing;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
+import org.qdl_lang.variables.values.BooleanValue;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * Test that directly test the functioning of variables and state. These typically create and manipulate stacks
@@ -29,15 +33,15 @@ public class QDLVariableTest extends AbstractQDLTester {
 
         VTable vTable = new VTable();
 
-        vTable.put(new VThing(new XKey("a"), 12345L));
-        assert ((VThing) vTable.get(new XKey("a"))).getVariable().equals(12345L);
-        vTable.put(new VThing(new XKey("b"), Boolean.TRUE));
-        assert ((VThing) vTable.get(new XKey("b"))).getVariable() == Boolean.TRUE;
-        vTable.put(new VThing(new XKey("c"), Boolean.FALSE));
-        assert ((VThing) vTable.get(new XKey("c"))).getVariable() == Boolean.FALSE;
+        vTable.put(new VThing(new XKey("a"), new QDLVariable(12345L)));
+        assert ((VThing) vTable.get(new XKey("a"))).getVariable().getValue().asLong().equals(12345L);
+        vTable.put(new VThing(new XKey("b"), new QDLVariable(BooleanValue.True)));
+        assert ((VThing) vTable.get(new XKey("b"))).getVariable().getValue().asBoolean();
+        vTable.put(new VThing(new XKey("c"), new QDLVariable(Boolean.FALSE)));
+        assert !((VThing) vTable.get(new XKey("c"))).getVariable().getValue().asBoolean();
         String value = "mairzy((%^998e98nfg98u";
-        vTable.put(new VThing(new XKey("e"), value));
-        assert ((VThing) vTable.get(new XKey("e"))).getVariable().equals(value);
+        vTable.put(new VThing(new XKey("e"), new QDLVariable(value)));
+        assert ((VThing) vTable.get(new XKey("e"))).getVariable().getValue().equals(value);
     }
 
     /**
@@ -48,11 +52,11 @@ public class QDLVariableTest extends AbstractQDLTester {
 
     public void testStemVariables() throws Exception {
         State state = testUtils.getNewState();
-        state.setValue("i", 0L);
+        state.setValue("i", asQDLValue(0L));
         // first test, i = 0, so foo.i should resolve to foo.0
         String stem = "foo.i";
         String value = "abc";
-        state.setValue(stem, value);
+        state.setValue(stem, asQDLValue(value));
         assert state.isDefined("foo.i");
         assert state.isDefined("foo.0");
         assert !state.isDefined("foo.1"); // just in case
@@ -69,20 +73,20 @@ public class QDLVariableTest extends AbstractQDLTester {
     public void testRemove() throws Exception {
         State state = testUtils.getNewState();
 
-        state.setValue("i", 0L);
-        state.setValue("j", 1L);
-        state.setValue("k", -1L); // relative index
+        state.setValue("i", asQDLValue(0L));
+        state.setValue("j", asQDLValue(1L));
+        state.setValue("k", asQDLValue(-1L)); // relative index
         // first test, i = 0, so foo.i should resolve to foo.0
         String stem = "foo.i";
         String value = "abc";
-        state.setValue("foo.i", value);
-        state.setValue("foo.j", value);
+        state.setValue("foo.i", asQDLValue(value));
+        state.setValue("foo.j", asQDLValue(value));
 
 
         assert state.isDefined(stem);
         state.remove(stem);
         assert !state.isDefined(stem);
-        state.setValue("foo.i", value);
+        state.setValue("foo.i", asQDLValue(value));
         state.remove("foo.k"); // removes last one
         assert !state.isDefined("foo.j");
 
@@ -102,11 +106,11 @@ public class QDLVariableTest extends AbstractQDLTester {
 
     public void testDeepResolution() throws Exception {
         State state = testUtils.getNewState();
-        state.setValue("z", 1L);
-        state.setValue("y.1", 2L);
-        state.setValue("x.2", 3L);
-        state.setValue("w.3", 4L);
-        state.setValue("A.4", 5L);
+        state.setValue("z",   asQDLValue(1L));
+        state.setValue("y.1", asQDLValue(2L));
+        state.setValue("x.2", asQDLValue(3L));
+        state.setValue("w.3", asQDLValue(4L));
+        state.setValue("A.4", asQDLValue(5L));
         // first test, i = 0, so foo.i should resolve to foo.0
         String stem = "A.w.x.y.z";
         Object output = state.getValue(stem);
@@ -118,15 +122,15 @@ public class QDLVariableTest extends AbstractQDLTester {
 
     public void testDeepResolutionSet() throws Exception {
         State state = testUtils.getNewState();
-        state.setValue("z", "1");
-        state.setValue("y.1", "2");
-        state.setValue("x.2", "3");
-        state.setValue("w.3", "4");
-        state.setValue("A.4", "5");
+        state.setValue("z",   asQDLValue("1"));
+        state.setValue("y.1", asQDLValue("2"));
+        state.setValue("x.2", asQDLValue("3"));
+        state.setValue("w.3", asQDLValue("4"));
+        state.setValue("A.4", asQDLValue("5"));
         // first test, i = 0, so foo.i should resolve to foo.0
         String stem = "A.w.x.y.z";
         // so now we set the value.
-        state.setValue(stem, 6L);
+        state.setValue(stem, asQDLValue(6L));
         Object output = state.getValue(stem);
         // FYI Every integer in QDL is a long!!! so testing against an int fails.
         assert output.equals(6L) : "expected 6 and got " + state.getValue(stem);
@@ -149,14 +153,14 @@ public class QDLVariableTest extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testIsDefined() throws Throwable {
-        testIsDefined(ROUNDTRIP_NONE);
-        testIsDefined(ROUNDTRIP_XML);
-        testIsDefined(ROUNDTRIP_QDL);
-        testIsDefined(ROUNDTRIP_JAVA);
-        testIsDefined(ROUNDTRIP_JSON);
+        isDefinedTest(ROUNDTRIP_NONE);
+        isDefinedTest(ROUNDTRIP_XML);
+        isDefinedTest(ROUNDTRIP_QDL);
+        isDefinedTest(ROUNDTRIP_JAVA);
+        isDefinedTest(ROUNDTRIP_JSON);
     }
 
-    public void testIsDefined(int testCase) throws Throwable {
+    public void isDefinedTest(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "a.epe. := {'a':'b','b':'c'};");
@@ -177,7 +181,7 @@ public class QDLVariableTest extends AbstractQDLTester {
         assert getBooleanValue("ok5", state) : "is_defined failed to check general stem elements.";
     }
 
-    public void testIsDefinedMissingStem(int testCase) throws Throwable {
+    public void isDefinedMissingStemTest(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "ok3 := ∄aaa.ZZZ;"); // check that no stem is caught right
@@ -193,13 +197,13 @@ public class QDLVariableTest extends AbstractQDLTester {
     }
 
     public void testIsFunction() throws Throwable {
-        testIsFunction(ROUNDTRIP_NONE);
-        testIsFunction(ROUNDTRIP_XML);
-        testIsFunction(ROUNDTRIP_QDL);
-        testIsFunction(ROUNDTRIP_JAVA);
-        testIsFunction(ROUNDTRIP_JSON);
+        isFunctionTest(ROUNDTRIP_NONE);
+        isFunctionTest(ROUNDTRIP_XML);
+        isFunctionTest(ROUNDTRIP_QDL);
+        isFunctionTest(ROUNDTRIP_JAVA);
+        isFunctionTest(ROUNDTRIP_JSON);
     }
-    public void testIsFunction(int testCase) throws Throwable {
+    public void isFunctionTest(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "f(x)->x^2;");

@@ -6,6 +6,7 @@ import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.statements.TokenPosition;
 import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.VStack;
+import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.vfs.VFSPaths;
 import edu.uiuc.ncsa.security.core.Logable;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
@@ -14,6 +15,8 @@ import edu.uiuc.ncsa.security.util.cli.IOInterface;
 import edu.uiuc.ncsa.security.util.scripting.StateInterface;
 
 import java.util.*;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * This helps us organize the functionality of the state object. There are
@@ -257,7 +260,7 @@ public static class QDLStackTraceElement{
             scriptArgStem = new QDLStem();
             if (scriptArgs != null) {
                 for (Object object : getScriptArgs()) {
-                    scriptArgStem.listAdd(object);
+                    scriptArgStem.listAdd(asQDLValue(object));
                 }
             }
         }
@@ -270,7 +273,7 @@ public static class QDLStackTraceElement{
      */
     public void setScriptArgStem(QDLStem scriptArgStem) {
         this.scriptArgStem = scriptArgStem;
-        scriptArgs = new Object[scriptArgStem.size()];
+        scriptArgs = new QDLValue[scriptArgStem.size()];
         int i = 0;
         for (Object key : scriptArgStem.keySet()) {
             scriptArgs[i++] = scriptArgStem.get(key);

@@ -20,6 +20,7 @@ import org.qdl_lang.util.ModuleUtils;
 import org.qdl_lang.util.QDLFileUtil;
 import org.qdl_lang.util.QDLVersion;
 import org.qdl_lang.variables.*;
+import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.vfs.VFSEntry;
 import org.qdl_lang.vfs.VFSFileProvider;
 import org.qdl_lang.vfs.VFSPaths;
@@ -62,6 +63,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import static org.qdl_lang.evaluate.ModuleEvaluator.*;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 import static org.qdl_lang.xml.SerializationConstants.*;
 
 /**
@@ -237,37 +239,42 @@ public class State extends FunctionState implements QDLConstants {
         systemInfo = new QDLStem();
         // Add some from Java, if not in server mode.
         if (!isServerMode()) {
+            HashMap<String, Object> ccc = new HashMap<>();
+            ccc.put(SYS_INFO_OS_VERSION, System.getProperty("os.version"));
+            ccc.put(SYS_INFO_OS_NAME, System.getProperty("os.name"));
+            ccc.put(SYS_INFO_OS_ARCHITECTURE, System.getProperty("os.arch"));
             QDLStem os = new QDLStem();
-            os.put(SYS_INFO_OS_VERSION, System.getProperty("os.version"));
-            os.put(SYS_INFO_OS_NAME, System.getProperty("os.name"));
-            os.put(SYS_INFO_OS_ARCHITECTURE, System.getProperty("os.arch"));
+            setStemValue(os, ccc);
             // Take a stab at the class path. This usually works, but not as reliably as it once did
-
-            systemInfo.put(SYS_INFO_OS, os);
+            systemInfo.put(SYS_INFO_OS, asQDLValue(os));
+            ccc.clear();
+            ccc.put(SYS_INFO_JVM_VERSION, System.getProperty("java.version"));
+            ccc.put(SYS_INFO_INIT_MEMORY, (Runtime.getRuntime().totalMemory() / (1024 * 1024)) + " MB");
+            ccc.put(SYS_INFO_SYSTEM_PROCESSORS, Runtime.getRuntime().availableProcessors());
             QDLStem system = new QDLStem();
-            system.put(SYS_INFO_JVM_VERSION, System.getProperty("java.version"));
-            system.put(SYS_INFO_INIT_MEMORY, (Runtime.getRuntime().totalMemory() / (1024 * 1024)) + " MB");
-            system.put(SYS_INFO_SYSTEM_PROCESSORS, Runtime.getRuntime().availableProcessors());
+            setStemValue(system, ccc);
             QDLList classPath = new QDLList();
             String ccp = System.getProperty("java.class.path");
             if (StringUtils.isTrivial(ccp)) {
                 StringTokenizer st = new StringTokenizer(ccp, File.pathSeparator);
                 while (st.hasMoreTokens()) {
-                    classPath.add(st.nextToken());
+                    classPath.add(asQDLValue(st.nextToken()));
                 }
             }
             // Only show the class path if there is something there.
             // it can be hit or miss any more if this actually works.
             if (!classPath.isEmpty()) {
                 QDLStem cp = new QDLStem(classPath);
-                system.put(SYS_INFO_CLASS_PATH, cp);
+                system.put(SYS_INFO_CLASS_PATH, asQDLValue(cp));
             }
-            systemInfo.put(SYS_INFO_SYSTEM, system);
+            systemInfo.put(SYS_INFO_SYSTEM, asQDLValue(system));
+            ccc.clear();
+            ccc.put(SYS_INFO_USER_INVOCATION_DIR, System.getProperty("user.dir"));
+            ccc.put(SYS_INFO_USER_HOME_DIR, System.getProperty("user.home"));
+            ccc.put(SYS_INFO_QDL_HOME_DIR, System.getenv("QDL_HOME") == null ? "(not set)" : System.getenv("QDL_HOME"));
             QDLStem user = new QDLStem();
-            user.put(SYS_INFO_USER_INVOCATION_DIR, System.getProperty("user.dir"));
-            user.put(SYS_INFO_USER_HOME_DIR, System.getProperty("user.home"));
-            user.put(SYS_INFO_QDL_HOME_DIR, System.getenv("QDL_HOME") == null ? "(not set)" : System.getenv("QDL_HOME"));
-            systemInfo.put(SYS_INFO_USER, user);
+            setStemValue(user, ccc);
+            systemInfo.put(SYS_INFO_USER, asQDLValue(user));
         }
 
 
@@ -275,24 +282,26 @@ public class State extends FunctionState implements QDLConstants {
         QDLStem buildInfo;
         // get modules to list in the "lib" entry
         QDLStem libStem = new QDLStem();
-        libStem.put("tools", getLibMap());
-        systemInfo.put("lib", libStem);
+        libStem.put("tools", asQDLValue(getLibMap()));
+        systemInfo.put("lib", asQDLValue(libStem));
         if (qe != null && qe.isEnabled()) {
+            HashMap<String, Object> ccc = new HashMap<>();
             // means this was started from a config file, not the command line
-            qdl_props.put(SYS_BOOT_QDL_HOME, qe.getWSHomeDir());
+            ccc.put(SYS_BOOT_QDL_HOME, qe.getWSHomeDir());
             if (!qe.getBootScript().isEmpty()) {
-                qdl_props.put(SYS_BOOT_BOOT_SCRIPT, qe.getBootScript());
+                ccc.put(SYS_BOOT_BOOT_SCRIPT, qe.getBootScript());
             }
-            qdl_props.put(SYS_BOOT_CONFIG_NAME, qe.getName());
-            qdl_props.put(SYS_BOOT_CONFIG_FILE, qe.getCfgFile());
+            ccc.put(SYS_BOOT_CONFIG_NAME, qe.getName());
+            ccc.put(SYS_BOOT_CONFIG_FILE, qe.getCfgFile());
             if (qe.getMyLogger().getFileName() != null) {
-                qdl_props.put(SYS_BOOT_LOG_FILE, qe.getMyLogger().getFileName());
-                qdl_props.put(SYS_BOOT_LOG_NAME, qe.getMyLogger().getClassName());
+                ccc.put(SYS_BOOT_LOG_FILE, qe.getMyLogger().getFileName());
+                ccc.put(SYS_BOOT_LOG_NAME, qe.getMyLogger().getClassName());
             }
-            qdl_props.put(SYS_BOOT_SERVER_MODE, isServerMode());
-            qdl_props.put(SYS_BOOT_RESTRICTED_IO_MODE, isRestrictedIO());
-            qdl_props.put(SYS_SCRIPTS_PATH, qe.getScriptPath());
-            systemInfo.put(SYS_BOOT, qdl_props);
+            ccc.put(SYS_BOOT_SERVER_MODE, isServerMode());
+            ccc.put(SYS_BOOT_RESTRICTED_IO_MODE, isRestrictedIO());
+            ccc.put(SYS_SCRIPTS_PATH, qe.getScriptPath());
+            setStemValue(qdl_props, ccc);
+            systemInfo.put(SYS_BOOT, asQDLValue(qdl_props));
             // Fix https://github.com/ncsa/qdl/issues/115
             String buildInfoPath = System.getenv("QDL_HOME");
             if (buildInfoPath == null) {
@@ -303,7 +312,7 @@ public class State extends FunctionState implements QDLConstants {
             }
             buildInfo = addManifestConstants(buildInfoPath);
             if (buildInfo != null) {
-                systemInfo.put(SYS_QDL_BUILD, buildInfo);
+                systemInfo.put(SYS_QDL_BUILD, asQDLValue(buildInfo));
             }
             if (qe.hasLibLoader()) {
                 qe.getLibLoader().add(this);
@@ -312,15 +321,17 @@ public class State extends FunctionState implements QDLConstants {
         } else {
             // started from the command line.
             if (getLogger() != null) {
-                qdl_props.put(SYS_BOOT_LOG_FILE, getLogger().getFileName());
-                qdl_props.put(SYS_BOOT_LOG_NAME, getLogger().getClassName());
+                if(getLogger().getFileName()!= null) {
+                    qdl_props.put(SYS_BOOT_LOG_FILE, asQDLValue(getLogger().getFileName()));
+                }
+                qdl_props.put(SYS_BOOT_LOG_NAME, asQDLValue(getLogger().getClassName()));
             }
-            qdl_props.put(SYS_BOOT_SERVER_MODE, isServerMode());
-            qdl_props.put(SYS_BOOT_RESTRICTED_IO_MODE, isRestrictedIO());
+            qdl_props.put(SYS_BOOT_SERVER_MODE, asQDLValue(isServerMode()));
+            qdl_props.put(SYS_BOOT_RESTRICTED_IO_MODE, asQDLValue(isRestrictedIO()));
             QDLStem scriptPath = new QDLStem();
             scriptPath.addList(getScriptPaths());
-            qdl_props.put(SYS_SCRIPTS_PATH, scriptPath);
-            systemInfo.put(SYS_BOOT, qdl_props);
+            qdl_props.put(SYS_SCRIPTS_PATH, asQDLValue(scriptPath));
+            systemInfo.put(SYS_BOOT, asQDLValue(qdl_props));
             String buildInfoPath = System.getenv("QDL_HOME");
             if (buildInfoPath == null) {
                 buildInfoPath = System.getProperty("user.dir");
@@ -330,7 +341,7 @@ public class State extends FunctionState implements QDLConstants {
             }
             buildInfo = addManifestConstants(buildInfoPath);
             if (buildInfo != null) {
-                systemInfo.put(SYS_QDL_BUILD, buildInfo);
+                systemInfo.put(SYS_QDL_BUILD, asQDLValue(buildInfo));
             }
         }
 
@@ -362,7 +373,7 @@ public class State extends FunctionState implements QDLConstants {
             entry = new QDLStem();
         }
         entry = entry.union(classPaths); // new stem with everything in it
-        lib.put(libraryKey, entry);
+        lib.put(libraryKey, asQDLValue(entry));
     }
 
     /**
@@ -382,29 +393,33 @@ public class State extends FunctionState implements QDLConstants {
             entry = lib.getStem(libraryKey);
         } else {
             entry = new QDLStem();
-            lib.put(libraryKey, entry);
+            lib.put(libraryKey, asQDLValue(entry));
         }
-        entry.put(moduleKey, className);
+        entry.put(moduleKey, asQDLValue(className));
 
     }
 
 
     public QDLStem getLibMap() {
-        QDLStem map = new QDLStem();
-        map.put("description", "System tools for http, conversions and other very useful things.");
-        map.put("http", QDLHTTPLoader.class.getCanonicalName());
-        map.put("db", QDLDBLoader.class.getCanonicalName());
-        map.put("dynamo", QDLDynamoDBLoader.class.getCanonicalName());
-        map.put("crypto", CryptoLoader.class.getCanonicalName());
+        HashMap<String, Object> ccc = new HashMap<>();
+        ccc.put("description", "System tools for http, conversions and other very useful things.");
+        ccc.put("http", QDLHTTPLoader.class.getCanonicalName());
+        ccc.put("db", QDLDBLoader.class.getCanonicalName());
+        ccc.put("dynamo", QDLDynamoDBLoader.class.getCanonicalName());
+        ccc.put("crypto", CryptoLoader.class.getCanonicalName());
         //map.put("x509", X509Loader.class.getCanonicalName());
-        map.put("convert", QDLConvertLoader.class.getCanonicalName());
-        map.put("cli", QDLCLIToolsLoader.class.getCanonicalName());
-        map.put("mail", QDLMailLoader.class.getCanonicalName());
-        QDLStem egMap = new QDLStem();
+        ccc.put("convert", QDLConvertLoader.class.getCanonicalName());
+        ccc.put("cli", QDLCLIToolsLoader.class.getCanonicalName());
+        ccc.put("mail", QDLMailLoader.class.getCanonicalName());
 
-        egMap.put("basic", EGLoader.class.getCanonicalName());
-        egMap.put("stateful", StatefulLoader.class.getCanonicalName());
-        map.put("eg", egMap);
+        QDLStem map = new QDLStem();
+        setStemValue(map, ccc);
+        ccc.clear();
+        ccc.put("basic", EGLoader.class.getCanonicalName());
+        ccc.put("stateful", StatefulLoader.class.getCanonicalName());
+        QDLStem egMap = new QDLStem();
+        setStemValue(egMap, ccc);
+        map.put("eg", asQDLValue(egMap));
         return map;
     }
 
@@ -415,166 +430,196 @@ public class State extends FunctionState implements QDLConstants {
         // Start off with the actual constants that the system must have
         systemConstants = new QDLStem();
 
+        HashMap<String, Object> ccc = new HashMap<>();
+        ccc.put("00ac", OpEvaluator.NOT2);
+        ccc.put("00af", OpEvaluator.MINUS2);
+        ccc.put("00b7", QDLConstants.STEM_PATH_MARKER2);
+        ccc.put("00bf", "¿");
+        ccc.put("00d7", OpEvaluator.TIMES2);
+        ccc.put("00f7", OpEvaluator.DIVIDE2);
+        ccc.put("207a", OpEvaluator.PLUS2);
+        ccc.put("2192", "→");
+        ccc.put("2205", "∅");
+        ccc.put("221a", "√");
+        ccc.put("2227", OpEvaluator.AND2);
+        ccc.put("2228", OpEvaluator.OR2);
+        ccc.put("2248", "≈");
+        ccc.put("2254", "≔");
+        ccc.put("2255", "≕");
+        ccc.put("2260", OpEvaluator.NOT_EQUAL2);
+        ccc.put("2261", OpEvaluator.EQUALS2);
+        ccc.put("2264", OpEvaluator.LESS_THAN_EQUAL3);
+        ccc.put("2265", OpEvaluator.MORE_THAN_EQUAL3);
+        ccc.put("22a8", "⊨");
+        ccc.put("2241", "≁");
+        ccc.put("2297", "⊗");
+        ccc.put("2308", "⌈");
+        ccc.put("230a", "⌊");
+        ccc.put("27e6", "⟦");
+        ccc.put("27e7", "⟧");
+        ccc.put("22a2", OpEvaluator.TO_SET);
+        ccc.put("2299", OpEvaluator.REDUCE_OP_KEY);
+        ccc.put("2295", OpEvaluator.EXPAND_OP_KEY);
+        ccc.put("2306", OpEvaluator.MASK_OP_KEY);
+        ccc.put("00B5", OpEvaluator.TRANSPOSE_OP_KEY);
+        ccc.put("03c0", TMathEvaluator.PI2);
+        ccc.put("221A", "√");
+        ccc.put("2229", "∩");
+        ccc.put("222a", "∪");
+        ccc.put("2208", "∈");
+        ccc.put("2209", "∉");
+        ccc.put("2203", "∃");
+        ccc.put("2204", "∄");
+        ccc.put("220b", "∋");
+        ccc.put("220c", "∌");
+        ccc.put("2200", "∀");
+        ccc.put("21d2", "⇒");
+        ccc.put("2202", OpEvaluator.APPLY_OP_KEY);
         QDLStem characterMap = new QDLStem();
-        characterMap.put("00ac", OpEvaluator.NOT2);
-        characterMap.put("00af", OpEvaluator.MINUS2);
-        characterMap.put("00b7", QDLConstants.STEM_PATH_MARKER2);
-        characterMap.put("00bf", "¿");
-        characterMap.put("00d7", OpEvaluator.TIMES2);
-        characterMap.put("00f7", OpEvaluator.DIVIDE2);
-        characterMap.put("207a", OpEvaluator.PLUS2);
-        characterMap.put("2192", "→");
-        characterMap.put("2205", "∅");
-        characterMap.put("221a", "√");
-        characterMap.put("2227", OpEvaluator.AND2);
-        characterMap.put("2228", OpEvaluator.OR2);
-        characterMap.put("2248", "≈");
-        characterMap.put("2254", "≔");
-        characterMap.put("2255", "≕");
-        characterMap.put("2260", OpEvaluator.NOT_EQUAL2);
-        characterMap.put("2261", OpEvaluator.EQUALS2);
-        characterMap.put("2264", OpEvaluator.LESS_THAN_EQUAL3);
-        characterMap.put("2265", OpEvaluator.MORE_THAN_EQUAL3);
-        characterMap.put("22a8", "⊨");
-        characterMap.put("2241", "≁");
-        characterMap.put("2297", "⊗");
-        characterMap.put("2308", "⌈");
-        characterMap.put("230a", "⌊");
-        characterMap.put("27e6", "⟦");
-        characterMap.put("27e7", "⟧");
-        characterMap.put("22a2", OpEvaluator.TO_SET);
-        characterMap.put("2299", OpEvaluator.REDUCE_OP_KEY);
-        characterMap.put("2295", OpEvaluator.EXPAND_OP_KEY);
-        characterMap.put("2306", OpEvaluator.MASK_OP_KEY);
-        characterMap.put("00B5", OpEvaluator.TRANSPOSE_OP_KEY);
-        characterMap.put("03c0", TMathEvaluator.PI2);
-        characterMap.put("221A", "√");
-        characterMap.put("2229", "∩");
-        characterMap.put("222a", "∪");
-        characterMap.put("2208", "∈");
-        characterMap.put("2209", "∉");
-        characterMap.put("2203", "∃");
-        characterMap.put("2204", "∄");
-        characterMap.put("220b", "∋");
-        characterMap.put("220c", "∌");
-        characterMap.put("2200", "∀");
-        characterMap.put("21d2", "⇒");
-        characterMap.put("2202", OpEvaluator.APPLY_OP_KEY);
+        setStemValue(characterMap, ccc);
 
-
-        systemConstants.put(SYS_VAR_TYPE_CHARACTER_MAP, characterMap);
+        systemConstants.put(SYS_VAR_TYPE_CHARACTER_MAP, asQDLValue(characterMap));
+        ccc.clear();
+        ccc.put("alphanumeric", ALPHA_CHARS);
+        ccc.put("all", ALL_CHARS);
+        ccc.put("ascii", ASCII_CHARS);
+        ccc.put("unicode", UNICODE_CHARS);
+        ccc.put("greek", GREEK_CHARS);
         QDLStem characters = new QDLStem();
-        characters.put("alphanumeric", ALPHA_CHARS);
-        characters.put("all", ALL_CHARS);
-        characters.put("ascii", ASCII_CHARS);
-        characters.put("unicode", UNICODE_CHARS);
-        characters.put("greek", GREEK_CHARS);
-        systemConstants.put(SYS_VAR_TYPE_CHARACTERS, characters);
-        systemConstants.put(SYS_VAR_TYPE_RESERVED, getQDLReservedNames());
+        setStemValue(characters, ccc);
+
+        systemConstants.put(SYS_VAR_TYPE_CHARACTERS, asQDLValue(characters));
+        systemConstants.put(SYS_VAR_TYPE_RESERVED, asQDLValue(getQDLReservedNames()));
+        ccc.clear();
+        ccc.put(SYS_VAR_TYPE_STRING, (long) Constant.STRING_TYPE);
+        ccc.put(SYS_VAR_TYPE_STEM, (long) Constant.STEM_TYPE);
+        ccc.put(SYS_VAR_TYPE_BOOLEAN, (long) Constant.BOOLEAN_TYPE);
+        ccc.put(SYS_VAR_TYPE_NULL, (long) Constant.NULL_TYPE);
+        ccc.put(SYS_VAR_TYPE_INTEGER, (long) Constant.LONG_TYPE);
+        ccc.put(SYS_VAR_TYPE_DECIMAL, (long) Constant.DECIMAL_TYPE);
+        ccc.put(SYS_VAR_TYPE_UNDEFINED, (long) Constant.UNKNOWN_TYPE);
+        ccc.put(SYS_VAR_TYPE_SET, (long) Constant.SET_TYPE);
         QDLStem varTypes = new QDLStem();
-        varTypes.put(SYS_VAR_TYPE_STRING, (long) Constant.STRING_TYPE);
-        varTypes.put(SYS_VAR_TYPE_STEM, (long) Constant.STEM_TYPE);
-        varTypes.put(SYS_VAR_TYPE_BOOLEAN, (long) Constant.BOOLEAN_TYPE);
-        varTypes.put(SYS_VAR_TYPE_NULL, (long) Constant.NULL_TYPE);
-        varTypes.put(SYS_VAR_TYPE_INTEGER, (long) Constant.LONG_TYPE);
-        varTypes.put(SYS_VAR_TYPE_DECIMAL, (long) Constant.DECIMAL_TYPE);
-        varTypes.put(SYS_VAR_TYPE_UNDEFINED, (long) Constant.UNKNOWN_TYPE);
-        varTypes.put(SYS_VAR_TYPE_SET, (long) Constant.SET_TYPE);
-        systemConstants.put(SYS_VAR_TYPES, varTypes);
+        setStemValue(varTypes, ccc);
+        systemConstants.put(SYS_VAR_TYPES, asQDLValue(varTypes));
 
+        ccc.clear();
+        ccc.put(SYS_DETOKENIZE_PREPEND, StringEvaluator.DETOKENIZE_PREPEND_VALUE);
+        ccc.put(SYS_DETOKENIZE_OMIT_DANGLING_DELIMITER, StringEvaluator.DETOKENIZE_OMIT_DANGLING_DELIMITER_VALUE);
         QDLStem detokenizeTypes = new QDLStem();
-        detokenizeTypes.put(SYS_DETOKENIZE_PREPEND, StringEvaluator.DETOKENIZE_PREPEND_VALUE);
-        detokenizeTypes.put(SYS_DETOKENIZE_OMIT_DANGLING_DELIMITER, StringEvaluator.DETOKENIZE_OMIT_DANGLING_DELIMITER_VALUE);
-        systemConstants.put(SYS_DETOKENIZE_TYPE, detokenizeTypes);
+        setStemValue(detokenizeTypes, ccc);
+        systemConstants.put(SYS_DETOKENIZE_TYPE, asQDLValue(detokenizeTypes));
 
+        ccc.clear();
+        ccc.put(MathEvaluator.HASH_ALGORITHM_MD2, MathEvaluator.HASH_ALGORITHM_MD2);
+        ccc.put(MathEvaluator.HASH_ALGORITHM_MD5, MathEvaluator.HASH_ALGORITHM_MD5);
+        ccc.put(MathEvaluator.HASH_ALGORITHM_SHA1, MathEvaluator.HASH_ALGORITHM_SHA1);
+        ccc.put(MathEvaluator.HASH_ALGORITHM_SHA2, MathEvaluator.HASH_ALGORITHM_SHA2);
+        ccc.put(MathEvaluator.HASH_ALGORITHM_SHA_256, MathEvaluator.HASH_ALGORITHM_SHA_256);
+        ccc.put(MathEvaluator.HASH_ALGORITHM_SHA_384, MathEvaluator.HASH_ALGORITHM_SHA_384);
+        ccc.put(MathEvaluator.HASH_ALGORITHM_SHA_512, MathEvaluator.HASH_ALGORITHM_SHA_512);
+        ccc.put(MathEvaluator.HASH_ALGORITHM_SHA_512, MathEvaluator.HASH_ALGORITHM_SHA_512);
         QDLStem hashAlgorithms = new QDLStem();
-        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_MD2, MathEvaluator.HASH_ALGORITHM_MD2);
-        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_MD5, MathEvaluator.HASH_ALGORITHM_MD5);
-        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA1, MathEvaluator.HASH_ALGORITHM_SHA1);
-        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA2, MathEvaluator.HASH_ALGORITHM_SHA2);
-        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA_256, MathEvaluator.HASH_ALGORITHM_SHA_256);
-        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA_384, MathEvaluator.HASH_ALGORITHM_SHA_384);
-        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA_512, MathEvaluator.HASH_ALGORITHM_SHA_512);
-        hashAlgorithms.put(MathEvaluator.HASH_ALGORITHM_SHA_512, MathEvaluator.HASH_ALGORITHM_SHA_512);
-        systemConstants.put(SYS_HASH_ALGORITHMS, hashAlgorithms);
+        setStemValue(hashAlgorithms, ccc);
+        systemConstants.put(SYS_HASH_ALGORITHMS, asQDLValue(hashAlgorithms));
 
+        ccc.clear();
+        ccc.put(SYS_CODEC_VENCODE, (long) MetaCodec.ALGORITHM_VENCODE);
+        ccc.put(SYS_CODEC_URLCODE, (long) MetaCodec.ALGORITHM_URLCODE);
+        ccc.put(SYS_CODEC_B16CODE, (long) MetaCodec.ALGORITHM_BASE16);
+        ccc.put(SYS_CODEC_B32CODE, (long) MetaCodec.ALGORITHM_BASE32);
+        ccc.put(SYS_CODEC_B64CODE, (long) MetaCodec.ALGORITHM_BASE64);
+        ccc.put(SYS_CODEC_HTML3, (long) MetaCodec.ALGORITHM_HTML3);
+        ccc.put(SYS_CODEC_HTML4, (long) MetaCodec.ALGORITHM_HTML4);
+        ccc.put(SYS_CODEC_XML_1_0, (long) MetaCodec.ALGORITHM_XML_1_0);
+        ccc.put(SYS_CODEC_XML_1_1, (long) MetaCodec.ALGORITHM_XML_1_1);
+        ccc.put(SYS_CODEC_JAVA, (long) MetaCodec.ALGORITHM_JAVA);
+        ccc.put(SYS_CODEC_JSON, (long) MetaCodec.ALGORITHM_JSON);
+        ccc.put(SYS_CODEC_CSV, (long) MetaCodec.ALGORITHM_CSV);
+        ccc.put(SYS_CODEC_ECMA, (long) MetaCodec.ALGORITHM_ECMA);
+        ccc.put(SYS_CODEC_XSI, (long) MetaCodec.ALGORITHM_XSI);
         QDLStem intCodecs = new QDLStem();
-        intCodecs.put(SYS_CODEC_VENCODE, (long) MetaCodec.ALGORITHM_VENCODE);
-        intCodecs.put(SYS_CODEC_URLCODE, (long) MetaCodec.ALGORITHM_URLCODE);
-        intCodecs.put(SYS_CODEC_B16CODE, (long) MetaCodec.ALGORITHM_BASE16);
-        intCodecs.put(SYS_CODEC_B32CODE, (long) MetaCodec.ALGORITHM_BASE32);
-        intCodecs.put(SYS_CODEC_B64CODE, (long) MetaCodec.ALGORITHM_BASE64);
-        intCodecs.put(SYS_CODEC_HTML3, (long) MetaCodec.ALGORITHM_HTML3);
-        intCodecs.put(SYS_CODEC_HTML4, (long) MetaCodec.ALGORITHM_HTML4);
-        intCodecs.put(SYS_CODEC_XML_1_0, (long) MetaCodec.ALGORITHM_XML_1_0);
-        intCodecs.put(SYS_CODEC_XML_1_1, (long) MetaCodec.ALGORITHM_XML_1_1);
-        intCodecs.put(SYS_CODEC_JAVA, (long) MetaCodec.ALGORITHM_JAVA);
-        intCodecs.put(SYS_CODEC_JSON, (long) MetaCodec.ALGORITHM_JSON);
-        intCodecs.put(SYS_CODEC_CSV, (long) MetaCodec.ALGORITHM_CSV);
-        intCodecs.put(SYS_CODEC_ECMA, (long) MetaCodec.ALGORITHM_ECMA);
-        intCodecs.put(SYS_CODEC_XSI, (long) MetaCodec.ALGORITHM_XSI);
+        setStemValue(intCodecs, ccc);
+
+        ccc.clear();
+        ccc.put(SYS_CODEC_VENCODE, MetaCodec.ALGORITHM_VENCODE_NAME);
+        ccc.put(SYS_CODEC_URLCODE, MetaCodec.ALGORITHM_URLCODE_NAME);
+        ccc.put(SYS_CODEC_B16CODE, MetaCodec.ALGORITHM_BASE16_NAME);
+        ccc.put(SYS_CODEC_B32CODE, MetaCodec.ALGORITHM_BASE32_NAME);
+        ccc.put(SYS_CODEC_B64CODE, MetaCodec.ALGORITHM_BASE64_NAME);
+        ccc.put(SYS_CODEC_HTML3, MetaCodec.ALGORITHM_HTML3_NAME);
+        ccc.put(SYS_CODEC_HTML4, MetaCodec.ALGORITHM_HTML4_NAME);
+        ccc.put(SYS_CODEC_XML_1_0, MetaCodec.ALGORITHM_XML_1_0_NAME);
+        ccc.put(SYS_CODEC_XML_1_1, MetaCodec.ALGORITHM_XML_1_1_NAME);
+        ccc.put(SYS_CODEC_JAVA, MetaCodec.ALGORITHM_JAVA_NAME);
+        ccc.put(SYS_CODEC_JSON, MetaCodec.ALGORITHM_JSON_NAME);
+        ccc.put(SYS_CODEC_CSV, MetaCodec.ALGORITHM_CSV_NAME);
+        ccc.put(SYS_CODEC_ECMA, MetaCodec.ALGORITHM_ECMA_NAME);
+        ccc.put(SYS_CODEC_XSI, MetaCodec.ALGORITHM_XSI_NAME);
         QDLStem stringCodecs = new QDLStem();
-        stringCodecs.put(SYS_CODEC_VENCODE, MetaCodec.ALGORITHM_VENCODE_NAME);
-        stringCodecs.put(SYS_CODEC_URLCODE, MetaCodec.ALGORITHM_URLCODE_NAME);
-        stringCodecs.put(SYS_CODEC_B16CODE, MetaCodec.ALGORITHM_BASE16_NAME);
-        stringCodecs.put(SYS_CODEC_B32CODE, MetaCodec.ALGORITHM_BASE32_NAME);
-        stringCodecs.put(SYS_CODEC_B64CODE, MetaCodec.ALGORITHM_BASE64_NAME);
-        stringCodecs.put(SYS_CODEC_HTML3, MetaCodec.ALGORITHM_HTML3_NAME);
-        stringCodecs.put(SYS_CODEC_HTML4, MetaCodec.ALGORITHM_HTML4_NAME);
-        stringCodecs.put(SYS_CODEC_XML_1_0, MetaCodec.ALGORITHM_XML_1_0_NAME);
-        stringCodecs.put(SYS_CODEC_XML_1_1, MetaCodec.ALGORITHM_XML_1_1_NAME);
-        stringCodecs.put(SYS_CODEC_JAVA, MetaCodec.ALGORITHM_JAVA_NAME);
-        stringCodecs.put(SYS_CODEC_JSON, MetaCodec.ALGORITHM_JSON_NAME);
-        stringCodecs.put(SYS_CODEC_CSV, MetaCodec.ALGORITHM_CSV_NAME);
-        stringCodecs.put(SYS_CODEC_ECMA, MetaCodec.ALGORITHM_ECMA_NAME);
-        stringCodecs.put(SYS_CODEC_XSI, MetaCodec.ALGORITHM_XSI_NAME);
+        setStemValue(stringCodecs, ccc);
         QDLStem codecs = new QDLStem();
-        codecs.put("int.", intCodecs);
-        codecs.put("string.", stringCodecs);
-        systemConstants.put(SYS_CODEC_ALGORITHMS, codecs);
+        codecs.put("int.", asQDLValue(intCodecs));
+        codecs.put("string.", asQDLValue(stringCodecs));
+        systemConstants.put(SYS_CODEC_ALGORITHMS, asQDLValue(codecs));
 
+        ccc.clear();
+        ccc.put(SYS_ERROR_CODE_SYSTEM_ERROR, TryCatch.RESERVED_SYSTEM_ERROR_CODE);
+        ccc.put(SYS_ASSERT_CODE_SYSTEM_ERROR, TryCatch.RESERVED_ASSERTION_CODE);
+        ccc.put(SYS_ERROR_CODE_DEFAULT_USER_ERROR, TryCatch.RESERVED_USER_ERROR_CODE);
         QDLStem errorCodes = new QDLStem();
-        errorCodes.put(SYS_ERROR_CODE_SYSTEM_ERROR, TryCatch.RESERVED_SYSTEM_ERROR_CODE);
-        errorCodes.put(SYS_ASSERT_CODE_SYSTEM_ERROR, TryCatch.RESERVED_ASSERTION_CODE);
-        errorCodes.put(SYS_ERROR_CODE_DEFAULT_USER_ERROR, TryCatch.RESERVED_USER_ERROR_CODE);
-        systemConstants.put(SYS_ERROR_CODES, errorCodes);
+        setStemValue(errorCodes, ccc);
+        systemConstants.put(SYS_ERROR_CODES, asQDLValue(errorCodes));
 
+        ccc.clear();
+        ccc.put(SYS_FILE_TYPE_BINARY, (long) IOEvaluator.FILE_OP_BINARY);
+        ccc.put(SYS_FILE_TYPE_STEM, (long) IOEvaluator.FILE_OP_TEXT_STEM);
+        ccc.put(SYS_FILE_TYPE_STRING, (long) IOEvaluator.FILE_OP_TEXT_STRING);
+        ccc.put(SYS_FILE_TYPE_INIT, (long) IOEvaluator.FILE_OP_TEXT_INI);
+        ccc.put(SYS_FILE_TYPE_NO_LIST_INIT, (long) IOEvaluator.FILE_OP_TEXT_WITHOUT_LIST_INI);
         QDLStem fileTypes = new QDLStem();
-        fileTypes.put(SYS_FILE_TYPE_BINARY, (long) IOEvaluator.FILE_OP_BINARY);
-        fileTypes.put(SYS_FILE_TYPE_STEM, (long) IOEvaluator.FILE_OP_TEXT_STEM);
-        fileTypes.put(SYS_FILE_TYPE_STRING, (long) IOEvaluator.FILE_OP_TEXT_STRING);
-        fileTypes.put(SYS_FILE_TYPE_INIT, (long) IOEvaluator.FILE_OP_TEXT_INI);
-        fileTypes.put(SYS_FILE_TYPE_NO_LIST_INIT, (long) IOEvaluator.FILE_OP_TEXT_WITHOUT_LIST_INI);
-        systemConstants.put(SYS_FILE_TYPES, fileTypes);
+        setStemValue(fileTypes, ccc);
+        systemConstants.put(SYS_FILE_TYPES, asQDLValue(fileTypes));
 
 
+        ccc.clear();
+        ccc.put(URI_AUTHORITY, URI_AUTHORITY);
+        ccc.put(URI_HOST, URI_HOST);
+        ccc.put(URI_FRAGMENT, URI_FRAGMENT);
+        ccc.put(URI_QUERY, URI_QUERY);
+        ccc.put(URI_PORT, URI_PORT);
+        ccc.put(URI_PATH, URI_PATH);
+        ccc.put(URI_SCHEME, URI_SCHEME);
+        ccc.put(URI_SCHEME_SPECIFIC_PART, URI_SCHEME_SPECIFIC_PART);
+        ccc.put(URI_USER_INFO, URI_USER_INFO);
         QDLStem uriFields = new QDLStem();
-        uriFields.put(URI_AUTHORITY, URI_AUTHORITY);
-        uriFields.put(URI_HOST, URI_HOST);
-        uriFields.put(URI_FRAGMENT, URI_FRAGMENT);
-        uriFields.put(URI_QUERY, URI_QUERY);
-        uriFields.put(URI_PORT, URI_PORT);
-        uriFields.put(URI_PATH, URI_PATH);
-        uriFields.put(URI_SCHEME, URI_SCHEME);
-        uriFields.put(URI_SCHEME_SPECIFIC_PART, URI_SCHEME_SPECIFIC_PART);
-        uriFields.put(URI_USER_INFO, URI_USER_INFO);
-        systemConstants.put(URI_FIELDS, uriFields);
+        setStemValue(uriFields, ccc);
 
+        systemConstants.put(URI_FIELDS, asQDLValue(uriFields));
+
+        ccc.clear();
+        ccc.put(SYS_LOG_NONE, SystemEvaluator.LOG_LEVEL_NONE);
+        ccc.put(SYS_LOG_TRACE, SystemEvaluator.LOG_LEVEL_TRACE);
+        ccc.put(SYS_LOG_INFO, SystemEvaluator.LOG_LEVEL_INFO);
+        ccc.put(SYS_LOG_WARN, SystemEvaluator.LOG_LEVEL_WARN);
+        ccc.put(SYS_LOG_ERROR, SystemEvaluator.LOG_LEVEL_ERROR);
+        ccc.put(SYS_LOG_SEVERE, SystemEvaluator.LOG_LEVEL_SEVERE);
         QDLStem logLevels = new QDLStem();
-        logLevels.put(SYS_LOG_NONE, SystemEvaluator.LOG_LEVEL_NONE);
-        logLevels.put(SYS_LOG_TRACE, SystemEvaluator.LOG_LEVEL_TRACE);
-        logLevels.put(SYS_LOG_INFO, SystemEvaluator.LOG_LEVEL_INFO);
-        logLevels.put(SYS_LOG_WARN, SystemEvaluator.LOG_LEVEL_WARN);
-        logLevels.put(SYS_LOG_ERROR, SystemEvaluator.LOG_LEVEL_ERROR);
-        logLevels.put(SYS_LOG_SEVERE, SystemEvaluator.LOG_LEVEL_SEVERE);
-        systemConstants.put(SYS_LOG_LEVELS, logLevels);
+        setStemValue(logLevels, ccc);
+        systemConstants.put(SYS_LOG_LEVELS, asQDLValue(logLevels));
 
+        ccc.clear();
+        ccc.put(IMPORT_STATE_SNAPSHOT, (long) IMPORT_STATE_SNAPSHOT_VALUE);
+        ccc.put(IMPORT_STATE_SHARE, (long) IMPORT_STATE_SHARE_VALUE);
+        ccc.put(IMPORT_STATE_NONE, (long) IMPORT_STATE_NONE_VALUE);
         QDLStem moduleImportModes = new QDLStem();
-        moduleImportModes.put(IMPORT_STATE_SNAPSHOT, (long) IMPORT_STATE_SNAPSHOT_VALUE);
-        moduleImportModes.put(IMPORT_STATE_SHARE, (long) IMPORT_STATE_SHARE_VALUE);
-        moduleImportModes.put(IMPORT_STATE_NONE, (long) IMPORT_STATE_NONE_VALUE);
-        systemConstants.put(SYS_MODULE_IMPORT_MODES, moduleImportModes);
+        setStemValue(moduleImportModes, ccc);
+        systemConstants.put(SYS_MODULE_IMPORT_MODES, asQDLValue(moduleImportModes));
 
+    }
+
+    protected void setStemValue(QDLStem stem, Map<String, Object> values) {
+        StemUtility.setStemValue(stem, values);
     }
 
     /**
@@ -587,10 +632,10 @@ public class State extends FunctionState implements QDLConstants {
         QDLStem out = new QDLStem();
         QDLStem keywords = new QDLStem();
         keywords.getQDLList().addAll(Arrays.asList(QDLConstants.KEYWORDS));
-        out.put("keywords", keywords);
+        out.put("keywords", asQDLValue(keywords));
         QDLStem funcs = new QDLStem();
         funcs.getQDLList().addAll(getMetaEvaluator().listFunctions(false));
-        out.put("functions", funcs);
+        out.put("functions", asQDLValue(funcs));
         // Note that since the parser intercepts several of these, they cannot be
         // directly accessed
         QDLStem ops = new QDLStem();
@@ -601,7 +646,7 @@ public class State extends FunctionState implements QDLConstants {
         HashSet<String> opsSet = new HashSet<>();
         opsSet.addAll(allOps); // uniquefy them
         ops.getQDLList().addAll(opsSet);
-        out.put("operators", ops);
+        out.put("operators", asQDLValue(ops));
         return out;
     }
 
@@ -636,7 +681,7 @@ public class State extends FunctionState implements QDLConstants {
     protected QDLStem addManifestConstants(String path) {
         QDLStem versionInfo = new QDLStem();
 
-        versionInfo.put(SYS_QDL_VERSION, QDLVersion.VERSION);
+        versionInfo.put(SYS_QDL_VERSION, asQDLValue(QDLVersion.VERSION));
         if (path == null) {
             return versionInfo;
         }
@@ -680,24 +725,24 @@ public class State extends FunctionState implements QDLConstants {
 
             if (linein.startsWith("application-version:")) {
                 // e.g.  application-version: 1.0.1
-                versionInfo.put(SYS_QDL_BUILD_VERSION, truncateLine("application-version:", linein));
+                versionInfo.put(SYS_QDL_BUILD_VERSION, asQDLValue(truncateLine("application-version:", linein)));
             }
             if (linein.startsWith("Build-Jdk:")) {
                 // e.g. Build-Jdk: 1.8.0_231
-                versionInfo.put(SYS_QDL_VERSION_BUILD_JDK, truncateLine("Build-Jdk:", linein));
+                versionInfo.put(SYS_QDL_VERSION_BUILD_JDK, asQDLValue(truncateLine("Build-Jdk:", linein)));
             }
             if (linein.startsWith("build-time:")) {
                 // e.g. build-time: 1586726889841
                 try {
                     Long ts = Long.parseLong(truncateLine("build-time:", linein));
-                    versionInfo.put(SYS_QDL_VERSION_BUILD_TIME, Iso8601.date2String(ts));
+                    versionInfo.put(SYS_QDL_VERSION_BUILD_TIME, asQDLValue(Iso8601.date2String(ts)));
                 } catch (Throwable t) {
-                    versionInfo.put(SYS_QDL_VERSION_BUILD_TIME, "?");
+                    versionInfo.put(SYS_QDL_VERSION_BUILD_TIME, asQDLValue("?"));
                 }
             }
             if (linein.startsWith("Created-By:")) {
                 // e.g. Created-By: Apache Maven 3.6.0
-                versionInfo.put(SYS_QDL_VERSION_CREATED_BY, truncateLine("Created-By:", linein));
+                versionInfo.put(SYS_QDL_VERSION_CREATED_BY, asQDLValue(truncateLine("Created-By:", linein)));
             }
 
             if (linein.startsWith("Class-Path:")) {
@@ -715,7 +760,7 @@ public class State extends FunctionState implements QDLConstants {
                     }
                 }
 
-                versionInfo.put(SYS_QDL_BUILD_CLASS_PATH, stringBuffer.toString());
+                versionInfo.put(SYS_QDL_BUILD_CLASS_PATH, asQDLValue(stringBuffer.toString()));
             }
             // There are some instances where this is munged. Only stick something there
             // if you can make sense of it.
@@ -729,9 +774,9 @@ public class State extends FunctionState implements QDLConstants {
                     if (build.startsWith("#")) {
                         build = build.substring(1);
                     }
-                    versionInfo.put(SYS_QDL_VERSION_BUILD_NUMBER, build);
+                    versionInfo.put(SYS_QDL_VERSION_BUILD_NUMBER, asQDLValue(build));
                 } catch (Throwable t) {
-                    versionInfo.put(SYS_QDL_VERSION_BUILD_NUMBER, "(unknown)");
+                    versionInfo.put(SYS_QDL_VERSION_BUILD_NUMBER, asQDLValue("(unknown)"));
                 }
             }
 
@@ -761,18 +806,18 @@ public class State extends FunctionState implements QDLConstants {
                             break;
                         }
                     }
-                    versionInfo.put(SYS_QDL_BUILD_CLASS_PATH, stringBuffer.toString());
+                    versionInfo.put(SYS_QDL_BUILD_CLASS_PATH, asQDLValue(stringBuffer.toString()));
                     break;
                 case "build-time":
                     try {
                         Long ts = Long.parseLong(truncateLine("build-time:", linein));
-                        versionInfo.put(SYS_QDL_VERSION_BUILD_TIME, Iso8601.date2String(ts));
+                        versionInfo.put(SYS_QDL_VERSION_BUILD_TIME, asQDLValue(Iso8601.date2String(ts)));
                     } catch (Throwable t) {
-                        versionInfo.put(SYS_QDL_VERSION_BUILD_TIME, "?");
+                        versionInfo.put(SYS_QDL_VERSION_BUILD_TIME,asQDLValue( "?"));
                     }
                     break;
                 default:
-                    versionInfo.put(head, truncateLine(head + ":", linein));
+                    versionInfo.put(head, asQDLValue(truncateLine(head + ":", linein)));
 
 
             }

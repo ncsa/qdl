@@ -33,6 +33,7 @@ import edu.uiuc.ncsa.security.util.jwk.JWKUtil2;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
+import org.qdl_lang.variables.values.QDLValue;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -44,6 +45,8 @@ import java.security.interfaces.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.*;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -80,7 +83,7 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             // default is RSA key. 1024 bits, RS256 alg.
             String type = "RSA";
             int keyLength = 1024;
@@ -88,13 +91,13 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
             String curve = "P-256";
             JSONWebKey webKey = null;
 
-            if (objects.length == 0) {
+            if (qdlValues.length == 0) {
                 webKey = getJwkUtil().createRSAKey(keyLength, alg);
             }
-            if (objects.length == 1) {
-                if (objects[0] instanceof QDLStem) {
+            if (qdlValues.length == 1) {
+                if (qdlValues[0].isStem()) {
                     boolean unknownType = true;
-                    QDLStem stem = (QDLStem) objects[0];
+                    QDLStem stem = qdlValues[0].asStem();
                     if (stem.containsKey("type")) {
                         type = stem.getString("type");
                     } else {
@@ -157,17 +160,17 @@ System.out.println("JOSE:"+ jwk.toJSONString());
 
                         QDLStem out = new QDLStem();
                         out.fromJSON(jsonObject);
-                        return out;
+                        return asQDLValue(out);
                     }
                     if (unknownType) {
                         throw new BadArgException("unknown key type '" + stem.get("type") + "'", 0);
                     }
                 } else {
 
-                    if (!(objects[0] instanceof Long)) {
+                    if (!(qdlValues[0].isLong())) {
                         throw new BadArgException("single integer argument must be the integer length of the RSA key", 0);
                     }
-                    keyLength = ((Long) objects[0]).intValue();
+                    keyLength = qdlValues[0].asLong().intValue();
                     if (keyLength % 256 != 0) {
                         throw new BadArgException("the key size of " + keyLength + " must be a multiple of 256", 0);
                     }
@@ -178,7 +181,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
             JSONObject wk2 = JSONWebKeyUtil.toJSON(webKey);
             QDLStem stem = new QDLStem();
             stem.fromJSON(wk2);
-            return stem;
+            return asQDLValue(stem);
 
         }
         protected SecretKey getSecureRandomKey(String cipher, int keySize) {
@@ -254,18 +257,18 @@ System.out.println("JOSE:"+ jwk.toJSONString());
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (objects.length == 1) {
-                return importJWKS(objects, state);
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            if (qdlValues.length == 1) {
+                return asQDLValue(importJWKS(qdlValues, state));
             }
-            if (!(objects[1] instanceof String)) {
+            if (!(qdlValues[1].isString())) {
                 throw new BadArgException(getName() + " the second argument must be a string", 1);
             }
-            String arg2 = (String) objects[1];
+            String arg2 = qdlValues[1].asString();
             if (arg2.equals(JWKS_TYPE)) {
-                return importJWKS(objects, state);
+                return asQDLValue(importJWKS(qdlValues, state));
             }
-            return importPKCS(objects, state);
+            return asQDLValue(importPKCS(qdlValues, state));
         }
 
         @Override
@@ -298,17 +301,17 @@ System.out.println("JOSE:"+ jwk.toJSONString());
         dd.add("        " + X509_TYPE + " - \"X509\", PEM encoded public key. This is really PKCS 8 public, but used in X 509 certificates.");
     }
 
-    public Object importPKCS(Object[] objects, State state) throws Throwable {
-        if (!(objects[0] instanceof String)) {
+    public Object importPKCS(QDLValue[] qdlValues, State state) throws Throwable {
+        if (!(qdlValues[0].isString())) {
             throw new BadArgException("The first argument of " + IMPORT_NAME + " must be a string that is the path to the file", 0);
         }
-        String filePath = (String) objects[0];
+        String filePath = qdlValues[0].asString();
         String type = PKCS_8_TYPE; //default
         String rawFile = QDLFileUtil.readTextFile(state, filePath);
         PrivateKey privateKey = null;
         PublicKey publicKey = null;
-        if (objects.length != 1) {
-            type = (String) objects[1];
+        if (qdlValues.length != 1) {
+            type = qdlValues[1].asString();
             switch (type) {
                 case PKCS_1_TYPE:
                     privateKey = KeyUtil.fromPKCS1PEM(rawFile);
@@ -347,11 +350,11 @@ System.out.println("JOSE:"+ jwk.toJSONString());
         return outStem;
     }
 
-    public Object importJWKS(Object[] objects, State state) throws Throwable {
-        if (!(objects[0] instanceof String)) {
+    public Object importJWKS(QDLValue[] qdlValues, State state) throws Throwable {
+        if (!(qdlValues[0].isString())) {
             throw new BadArgException(IMPORT_NAME + " requires a file name as its first argument", 0);
         }
-        String out = QDLFileUtil.readTextFile(state, (String) objects[0]);
+        String out = QDLFileUtil.readTextFile(state, qdlValues[0].asString());
         JSONWebKeys jsonWebKeys = getJwkUtil().fromJSON(out);
         QDLStem keys = new QDLStem();
         if (jsonWebKeys.size() == 1) {
@@ -383,18 +386,18 @@ System.out.println("JOSE:"+ jwk.toJSONString());
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (objects.length == 2) {
-                return exportJWKS(objects, state);
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            if (qdlValues.length == 2) {
+                return asQDLValue(exportJWKS(qdlValues, state));
             }
-            if (!(objects[2] instanceof String)) {
+            if (!(qdlValues[2].isString())) {
                 throw new BadArgException("The third argument of " + EXPORT_NAME + " must be a string", 2);
             }
-            String type = (String) objects[2];
+            String type = qdlValues[2].asString();
             if (type.equals(JWKS_TYPE)) {
-                return exportJWKS(objects, state);
+                return asQDLValue(exportJWKS(qdlValues, state));
             }
-            return exportPKCS(objects, state);
+            return asQDLValue(exportPKCS(qdlValues, state));
         }
 
         @Override
@@ -424,20 +427,20 @@ System.out.println("JOSE:"+ jwk.toJSONString());
     /**
      * Does the actual work of exporting a JWKS set.
      *
-     * @param objects
+     * @param qdlValues
      * @param state
      * @return
      * @throws Throwable
      */
-    protected Object exportJWKS(Object[] objects, State state) throws Throwable {
-        if (!(objects[0] instanceof QDLStem)) {
+    protected Object exportJWKS(QDLValue[] qdlValues, State state) throws Throwable {
+        if (!(qdlValues[0].isStem())) {
             throw new BadArgException("The first argument of " + EXPORT_NAME + " must be a stem", 0);
         }
-        if (!(objects[1] instanceof String)) {
+        if (!(qdlValues[1].isString())) {
             throw new BadArgException("The second argument of " + EXPORT_NAME + " must be a string", 1);
         }
-        QDLStem inStem = (QDLStem) objects[0];
-        String filePath = (String) objects[1];
+        QDLStem inStem =  qdlValues[0].asStem();
+        String filePath =  qdlValues[1].asString();
         JSONArray array = new JSONArray();
         JSONObject jsonObject = new JSONObject();
         if (isSingleKey(inStem)) {
@@ -459,26 +462,26 @@ System.out.println("JOSE:"+ jwk.toJSONString());
     /**
      * Does the actual work or exporting various PKCS files.
      *
-     * @param objects
+     * @param qdlValues
      * @param state
      * @return
      * @throws Throwable
      */
-    protected Object exportPKCS(Object[] objects, State state) throws Throwable {
-        if (!(objects[0] instanceof QDLStem)) {
+    protected Object exportPKCS(QDLValue[] qdlValues, State state) throws Throwable {
+        if (!(qdlValues[0].isStem())) {
             throw new BadArgException(EXPORT_NAME + " first argument must be a QDL stem that is they key", 0);
         }
-        QDLStem key = (QDLStem) objects[0];
-        if (!(objects[1] instanceof String)) {
+        QDLStem key = qdlValues[0].asStem();
+        if (!(qdlValues[1].isString())) {
             throw new BadArgException(EXPORT_NAME + " - second argument must be a string that is the path to the file", 1);
         }
-        String path = (String) objects[1];
+        String path = qdlValues[1].asString();
         String type = PKCS_8_TYPE;
-        if (objects.length == 3) {
-            if (!(objects[2] instanceof String)) {
+        if (qdlValues.length == 3) {
+            if (!(qdlValues[2].isString())) {
                 throw new BadArgException(EXPORT_NAME + " third argument must be a string that is the type of key", 2);
             }
-            type = (String) objects[2];
+            type = qdlValues[2].asString();
             if(type.equals(PKCS_1_TYPE)) {
                 throw new BadArgException(EXPORT_NAME + " - does not support writing PKCS 1 files. Use PKCS 8", 1);
             }
@@ -588,21 +591,21 @@ System.out.println("JOSE:"+ jwk.toJSONString());
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws NoSuchAlgorithmException, InvalidKeySpecException {
             // allows for single key as a stem or stem of them
-            if (!(objects[0] instanceof QDLStem)) {
+            if (!(qdlValues[0].isStem())) {
                 throw new BadArgException(getName() + " requires a stem as its argument", 0);
             }
-            QDLStem inStem = (QDLStem) objects[0];
+            QDLStem inStem = qdlValues[0].asStem();
             if (isSingleKey(inStem)) {
                 if (isAES(inStem)) {
-                    return inStem;
+                    return asQDLValue(inStem);
                 }
                 JSONWebKey jsonWebKey = getJwkUtil().getJsonWebKey((JSONObject) inStem.toJSON());
                 JSONWebKey pKey = JSONWebKeyUtil.makePublic(jsonWebKey);
                 QDLStem outStem = new QDLStem();
                 outStem.fromJSON(JSONWebKeyUtil.toJSON(pKey));
-                return outStem;
+                return asQDLValue(outStem);
             }
             QDLStem outStem = new QDLStem();
             // try to process each entry as a separate key
@@ -618,7 +621,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
                 tempStem.fromJSON(JSONWebKeyUtil.toJSON(pKey));
                 outStem.putLongOrString(kk, tempStem);
             }
-            return outStem;
+            return asQDLValue(outStem);
         }
 
         /*
@@ -654,24 +657,26 @@ System.out.println("JOSE:"+ jwk.toJSONString());
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if(objects.length ==0){
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            if(qdlValues.length ==0){
                     // Query for supported ciphers.
                     // we used to allow a query for this, but really cannot support them all
                     QDLStem outStem = new QDLStem();
-                    ArrayList<String> ciphers = new ArrayList<>();
-                    ciphers.addAll(DecryptUtils.listCiphers());
+                    ArrayList<QDLValue> ciphers = new ArrayList<>();
+                    for(String x : DecryptUtils.listCiphers()){
+                        ciphers.add(asQDLValue(x));
+                    }
                     outStem.getQDLList().setArrayList(ciphers);
-                    return outStem;
+                    return asQDLValue(outStem);
             }
-            if (!(objects[1] instanceof QDLStem)) {
+            if (!(qdlValues[1].isStem())) {
                 throw new BadArgException("The key for " + getName() + " must be a stem", 1);
             }
             // arg 0 is either stem of the key or a cfg stem (which includes the key as 'key' entry)
             // arg 1 is either string or stem of strings to encrypt.
-            QDLStem keyStem = (QDLStem) objects[1];
+            QDLStem keyStem =  qdlValues[1].asStem();
             if (isAES(keyStem)) {
-                return sDeOrEnCrypt(objects, true, getName());
+                return asQDLValue(sDeOrEnCrypt(qdlValues, true, getName()));
             }
             if (isEC(keyStem)) {
                 throw new BadArgException(getName() + " unsupported key type", 1);
@@ -679,9 +684,9 @@ System.out.println("JOSE:"+ jwk.toJSONString());
             JSONWebKey jsonWebKey;
             String cipher = "RSA"; // There are several available.
             boolean usePrivateKey = true;
-            if(objects.length == 3 ) {
-                if(objects[2] instanceof Boolean) {
-                    usePrivateKey = (Boolean) objects[2];
+            if(qdlValues.length == 3 ) {
+                if(qdlValues[2].isBoolean()) {
+                    usePrivateKey = qdlValues[2].asBoolean();
                 }else{
                     throw new BadArgException(getName() + " final argument must be a boolean if present", 2);
                 }
@@ -704,7 +709,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
                 }
             }
             IdentityEncryptDecrypt processEncryptDecrypt = new IdentityEncryptDecrypt(jsonWebKey, cipher, usePrivateKey, false);
-            return QDLAggregateUtil.process(objects[0], processEncryptDecrypt);
+            return asQDLValue(QDLAggregateUtil.process(qdlValues[0].getValue(), processEncryptDecrypt));
         }
 
 /*
@@ -859,24 +864,24 @@ System.out.println("JOSE:"+ jwk.toJSONString());
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            if (!(objects[1] instanceof QDLStem)) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
+            if (!(qdlValues[1].isStem())) {
                 throw new BadArgException("The second argument of " + getName() + " must be a stem", 1);
             }
-            QDLStem leftArg = (QDLStem) objects[1];
+            QDLStem leftArg = qdlValues[1].asStem();
             if (isAES(leftArg)) {
-                return sDeOrEnCrypt(objects, false, getName());
+                return asQDLValue(sDeOrEnCrypt(qdlValues, false, getName()));
             }
             if (isEC(leftArg)) {
                 throw new BadArgException(getName() + " unsupported key type", 1);
             }
             boolean usePrivateKey = false;
 
-            if (objects.length == 3) {
-                if (!(objects[2] instanceof Boolean)) {
+            if (qdlValues.length == 3) {
+                if (!(qdlValues[2].isBoolean())) {
                     throw new BadArgException("the last argument of " + getName() + " must be a boolean. Default is true", 2);
                 }
-                usePrivateKey = (Boolean) objects[2];
+                usePrivateKey = qdlValues[2].asBoolean();
             }
             JSONWebKey jsonWebKey = getKeys(leftArg);
             if (usePrivateKey) {
@@ -891,7 +896,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
             String cipher = "RSA"; // There are several available.
             IdentityEncryptDecrypt processEncryptDecrypt = new IdentityEncryptDecrypt(jsonWebKey,
                     cipher, usePrivateKey, true);
-            return QDLAggregateUtil.process(objects[0], processEncryptDecrypt);
+            return asQDLValue(QDLAggregateUtil.process(qdlValues[0], processEncryptDecrypt));
         }
 
 
@@ -955,11 +960,11 @@ kazrnybI9mX73qv6NqA
 {woof woof woof}
     crypto#encrypt(aes., {'b',{'a':'woof woof woof'}})
      */
-    public Object sDeOrEnCrypt(Object[] objects, boolean isEncrypt, String name) {
+    public Object sDeOrEnCrypt(QDLValue[] objects, boolean isEncrypt, String name) {
         byte[] key = null;
-        if (objects[1] instanceof QDLStem) {
+        if (objects[1].isStem()) {
             // check that it is a JWK of type octet
-            QDLStem sKey = (QDLStem) objects[1];
+            QDLStem sKey = objects[1].asStem();
             if (sKey.containsKey("kty")) {
                 if (!sKey.getString("kty").equals("oct")) {
                     throw new BadArgException("Incorrect key type. Must be of type 'oct' (octet-encoded)", 1);
@@ -1070,21 +1075,21 @@ kazrnybI9mX73qv6NqA
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            String path = (String) objects[0];
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            String path = qdlValues[0].asString();
             QDLStem out = new QDLStem();
             String rawCert = QDLFileUtil.readTextFile(state, path);
             X509Certificate[] certs = CertUtil.fromX509PEM(rawCert);
             if (certs.length == 1) {
                 QDLStem outStem = certToStem(certs[0]);
                 outStem.put("encoded", rawCert);
-                return outStem;
+                return asQDLValue(outStem);
             }
             for (X509Certificate cert : certs) {
-                out.getQDLList().add(certToStem(cert));
+                out.getQDLList().add(asQDLValue(certToStem(cert)));
             }
             out.getStem(0L).put("encoded", rawCert);
-            return out;
+            return asQDLValue(out);
         }
 
 
@@ -1113,11 +1118,11 @@ kazrnybI9mX73qv6NqA
             }
             QDLStem criticalOIDS = new QDLStem();
             for (String x : x509Certificate.getCriticalExtensionOIDs()) {
-                criticalOIDS.getQDLList().add(x);
+                criticalOIDS.getQDLList().add(asQDLValue(x));
             }
             QDLStem noncriticalOIDS = new QDLStem();
             for (String x : x509Certificate.getNonCriticalExtensionOIDs()) {
-                noncriticalOIDS.getQDLList().add(x);
+                noncriticalOIDS.getQDLList().add(asQDLValue(x));
             }
 
             QDLStem oids = new QDLStem();
@@ -1277,8 +1282,8 @@ kazrnybI9mX73qv6NqA
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            QDLStem certStem = (QDLStem) objects[0];
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            QDLStem certStem = qdlValues[0].asStem();
             if (!certStem.containsKey("encoded")) {
                 throw new BadArgException("certs must contain 'encoded' key", 0);
             }
@@ -1286,7 +1291,7 @@ kazrnybI9mX73qv6NqA
             X509Certificate[] certs = CertUtil.fromX509PEM(cert);
 
             IdentityOIDS processOIDS = new IdentityOIDS(certs[0]);
-            return QDLAggregateUtil.process(objects[1], processOIDS);
+            return asQDLValue(QDLAggregateUtil.process(qdlValues[1], processOIDS));
         }
 
         protected class IdentityOIDS extends IdentityScalarImpl {
@@ -1384,7 +1389,7 @@ kazrnybI9mX73qv6NqA
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
+        public QDLValue evaluate(QDLValue[] objects, State state) throws Throwable {
             JSONObject header = null;
             JSONObject payload = null;
             JSONWebKey webkey = null;
@@ -1393,34 +1398,34 @@ kazrnybI9mX73qv6NqA
                 header = new JSONObject();
                 header.put(JWT_TYPE, JWT_DEFAULT_TYPE);
                 header.put(JWT_ALGORITHM, JWT_ALGORITHM_NONE);
-                if (!(objects[argIndex] instanceof QDLStem)) {
+                if (!(objects[argIndex].isStem())) {
                     throw new BadArgException(getName() + " requires a stem as its first argument", 0);
                 }
-                payload = (JSONObject) ((QDLStem) objects[argIndex++]).toJSON();
+                payload = (JSONObject) objects[argIndex++].asStem().toJSON();
             } else {
 
                 if (objects.length == 3) {
-                    if (!(objects[argIndex] instanceof QDLStem)) {
+                    if (!(objects[argIndex].isStem())) {
                         throw new BadArgException(getName() + " requires a stem as its header", argIndex);
                     }
-                    header = (JSONObject) ((QDLStem) objects[argIndex++]).toJSON();
+                    header = (JSONObject) objects[argIndex++].asStem().toJSON();
                 }
-                if (!(objects[argIndex] instanceof QDLStem)) {
+                if (!(objects[argIndex].isStem())) {
                     throw new BadArgException(getName() + " requires a stem as its payload", argIndex);
                 }
 
-                payload = (JSONObject) ((QDLStem) objects[argIndex++]).toJSON();
-                if (!(objects[argIndex] instanceof QDLStem)) {
+                payload = (JSONObject) objects[argIndex++].asStem().toJSON();
+                if (!(objects[argIndex].isStem())) {
                     throw new BadArgException(getName() + " requires a stem as its key", argIndex);
                 }
-                webkey = getKeys((QDLStem) objects[argIndex++]);
+                webkey = getKeys(objects[argIndex++].asStem());
 
             }
             // If the algorithm is none, then do not sign the JWT, just return the encoded header + "." +  payload + "."
             // (note the trailing period!)
             if (header != null && header.containsKey(JWT_ALGORITHM) && header.get(JWT_ALGORITHM).equals(JWT_ALGORITHM_NONE)) {
-                return Base64.encodeBase64URLSafeString(header.toString().getBytes()) + "." +
-                        Base64.encodeBase64URLSafeString(payload.toString().getBytes()) + ".";
+                return asQDLValue(Base64.encodeBase64URLSafeString(header.toString().getBytes()) + "." +
+                        Base64.encodeBase64URLSafeString(payload.toString().getBytes()) + ".");
 
             }
             if (webkey.isOctetKey()) {
@@ -1457,7 +1462,7 @@ kazrnybI9mX73qv6NqA
                 throw new UnsupportedProtocolException("unsupported key type for signature verification");
             }
             signedJWT.sign(signer);
-            return signedJWT.serialize();
+            return asQDLValue(signedJWT.serialize());
         }
 
         @Override
@@ -1501,10 +1506,10 @@ kazrnybI9mX73qv6NqA
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
+        public QDLValue  evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             //   JSONWebKey webKey = getKeys((QDLStem) objects[1]);
             IdentityJWT processJWT = new IdentityJWT();
-            return QDLAggregateUtil.process(objects[0], processJWT);
+            return asQDLValue(QDLAggregateUtil.process(qdlValues[0].getValue(), processJWT));
         }
 
 
@@ -1547,10 +1552,10 @@ kazrnybI9mX73qv6NqA
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            JSONWebKey webKey = getKeys((QDLStem) objects[1]);
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            JSONWebKey webKey = getKeys(qdlValues[1].asStem());
             DoJWTVerify doJWTVerify = new DoJWTVerify(webKey);
-            return QDLAggregateUtil.process(objects[0], doJWTVerify);
+            return asQDLValue(QDLAggregateUtil.process(qdlValues[0].getValue(), doJWTVerify));
         }
 
 

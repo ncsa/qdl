@@ -4,6 +4,8 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.statements.Statement;
 import org.qdl_lang.statements.TokenPosition;
 import org.qdl_lang.variables.QDLNull;
+import org.qdl_lang.variables.values.QDLNullValue;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.List;
 
@@ -41,20 +43,20 @@ public class FunctionDefinitionStatement implements Statement {
     FunctionRecord functionRecord;
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         // Explicitly intercept an intrinsic function in a module so it does not end
         // up in the local state. Bad form to define extrinsics in a module, but
         // this is the right behavior if a user does.
         if(functionRecord.isExtrinsic()){
             state.getExtrinsicFuncs().put(functionRecord);
-            return QDLNull.getInstance(); // for now
+            return QDLNullValue.getNullValue(); // for now
         }
         if(state.isImportMode()){
             state.getFTStack().localPut(functionRecord);
         } else {
             state.putFunction(functionRecord);
         }
-        return QDLNull.getInstance(); // for now
+        return QDLValue.getNullValue(); // for now
     }
 
     List<String> source;

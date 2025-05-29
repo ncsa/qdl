@@ -6,9 +6,13 @@ import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.QDLStem;
 import net.sf.json.JSONObject;
+import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -41,53 +45,53 @@ public class QDLCLITools implements QDLMetaModule {
             to_stem(['my_key.pem', '--help', '-user', 'bob', '-version', '1.2', '-v', '-format', 'iso8601', '-in', 'input.txt', 'output.txt'],['-v','-use_ssl', '--help'])
          */
         @Override
-        public Object evaluate(Object[] objects, State state) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
             QDLStem out = new QDLStem();
             QDLStem args = null;
             String marker = DEFAULT_SWITCH_MARKER;
             QDLStem flags = null;
-            Object[] aa = null;
+            QDLValue[] scriptArgs = null;
 
-            if (objects.length == 0) {
+            if (qdlValues.length == 0) {
                 if (!state.hasScriptArgs()) {
-                    return out;
+                    return asQDLValue(out);
                 }
-                aa = state.getScriptArgs();
+                scriptArgs = QDLValue.castToQDLValues(state.getScriptArgs());
                 flags = new QDLStem();
             }
-            if (objects.length == 1) {
+            if (qdlValues.length == 1) {
                 // two cases, argument is a stem or argument is a switch marker
-                if (objects[0] instanceof String) {
+                if (qdlValues[0].isString()) {
                     if (!state.hasScriptArgs()) {
-                        return out;
+                        return asQDLValue(out);
                     }
-                    marker = (String) objects[0];
-                    aa = state.getScriptArgs();
+                    marker = qdlValues[0].asString();
+                    scriptArgs = QDLValue.castToQDLValues(state.getScriptArgs());
                 } else {
-                    if (objects[0] instanceof QDLStem) {
-                        args = (QDLStem) objects[0];
+                    if (qdlValues[0].isStem()) {
+                        args = qdlValues[0].asStem();
                     } else {
                         throw new BadArgException(getName() + ": requires a stem or string as its argument", 0);
                     }
-                    aa = getObjects(args);
+                    scriptArgs = QDLValue.castToQDLValues(getObjects(args));
                     flags = new QDLStem();
                 }
             }
-            if (objects.length == 2) {
+            if (qdlValues.length == 2) {
                 // then the arguments are a stem and switch marker
-                if (objects[0] instanceof QDLStem) {
-                    args = (QDLStem) objects[0];
+                if (qdlValues[0].isStem()) {
+                    args = qdlValues[0].asStem();
                     if (!args.isList()) {
                         throw new BadArgException(getName() + " requires a list as its first argument", 0);
                     }
                 } else {
                     throw new BadArgException(getName() + " requires a list as its first argument", 0);
                 }
-                if (objects[1] instanceof String) {
-                    marker = (String) objects[1];
+                if (qdlValues[1].isString()) {
+                    marker = qdlValues[1].asString();
                 } else {
-                    if (objects[1] instanceof QDLStem) {
-                        flags = (QDLStem) objects[1];
+                    if (qdlValues[1].isStem()) {
+                        flags = qdlValues[1].asStem();
                         if (!flags.isList()) {
                             throw new BadArgException(getName() + " requires a list as its second argument",1);
                         }
@@ -95,24 +99,24 @@ public class QDLCLITools implements QDLMetaModule {
                         throw new BadArgException(getName() + " requires a string or list as its second argument",1);
                     }
                 }
-                aa = getObjects(args);
+                scriptArgs = QDLValue.castToQDLValues(getObjects(args));
             }
-            if (objects.length == 3) {
-                if (objects[0] instanceof QDLStem) {
-                    args = (QDLStem) objects[0];
+            if (qdlValues.length == 3) {
+                if (qdlValues[0].isStem()) {
+                    args = qdlValues[0].asStem();
                     if (!args.isList()) {
                         throw new BadArgException(getName() + " requires a list as its first argument",0);
                     }
                 } else {
                     throw new BadArgException(getName() + " requires a list as its first argument",0);
                 }
-                if (objects[1] instanceof String) {
-                    marker = (String) objects[1];
+                if (qdlValues[1].isString()) {
+                    marker = qdlValues[1].asString();
                 } else {
                     throw new BadArgException(getName() + " requires a string as its second argument",1);
                 }
-                if (objects[2] instanceof QDLStem) {
-                    flags = (QDLStem) objects[2];
+                if (qdlValues[2].isStem()) {
+                    flags = qdlValues[2].asStem();
                     if (!flags.isList()) {
                         throw new BadArgException(getName() + " requires a list as its third argument",2);
                     }
@@ -120,20 +124,20 @@ public class QDLCLITools implements QDLMetaModule {
                     throw new BadArgException(getName() + " requires a list as its third argument",2);
                 }
             }
-            List<Object> flagList = flags.getQDLList().values();
-            List<Object> foundFlags = new ArrayList<>();
-            for (int i = 0; i < aa.length; i++) {
-                Object next = aa[i];
-                if (next instanceof String && next.toString().startsWith(marker)) {
-                    String nextArg = (String) next;
-                    if (flagList.contains(nextArg)) {
-                        foundFlags.add(nextArg);
-                        out.put(nextArg, Boolean.TRUE);
+            List<QDLValue> flagList = flags.getQDLList().values();
+            List<QDLValue> foundFlags = new ArrayList<>();
+            for (int i = 0; i < scriptArgs.length; i++) {
+                QDLValue next = scriptArgs[i];
+                if (next.isString() && next.asString().startsWith(marker)) {
+                    //String nextArg = next.asString();
+                    if (flagList.contains(next)) {
+                        foundFlags.add(next);
+                        out.put(next.asString(), BooleanValue.True);
                         continue;
                     }
-                    if (i + 1 < aa.length) {
-                        Object nextNext = aa[i + 1];
-                        out.put(nextArg, nextNext);
+                    if (i + 1 < scriptArgs.length) {
+                        QDLValue nextNext = scriptArgs[i + 1];
+                        out.put(next.asString(), nextNext);
                         //}
                         i = i + 1; // skip to next
                     }
@@ -145,11 +149,11 @@ public class QDLCLITools implements QDLMetaModule {
             // Now for final clean up.
             for (Object ff : flagList) {
                 if (!foundFlags.contains(ff)) {
-                    out.putLongOrString(ff, Boolean.FALSE);
+                    out.putLongOrString(ff, BooleanValue.False);
                 }
             }
 
-            return out;
+            return asQDLValue(out);
         }
 
         private Object[] getObjects(QDLStem inStem) {

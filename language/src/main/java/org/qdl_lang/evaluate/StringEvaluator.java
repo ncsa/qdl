@@ -10,15 +10,15 @@ import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLSet;
 import org.qdl_lang.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
-import org.qdl_lang.variables.values.LongValue;
-import org.qdl_lang.variables.values.QDLValue;
-import org.qdl_lang.variables.values.StringValue;
+import org.qdl_lang.variables.values.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.StringTokenizer;
 
 import static org.qdl_lang.state.QDLConstants.*;
+import static org.qdl_lang.variables.Constants.*;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * This evaluates all string functions.
@@ -284,7 +284,7 @@ public class StringEvaluator extends AbstractEvaluator {
                     String s0 = (String) objects[0];
                     String s1 = (String) objects[1];
                     if (StringUtils.isTrivial(s0) || StringUtils.isTrivial(s1)) {
-                        r.result = new LongValue(0L);
+                        r.result = LongValue.Zero;
                         return r;
                     }
                     char[] b0 = s0.toCharArray();
@@ -297,7 +297,7 @@ public class StringEvaluator extends AbstractEvaluator {
                         }
                     }
                     if (b0.length == stop && b1.length == stop) {
-                        r.result = new LongValue(-1L);
+                        r.result = LongValue.MinusOne;
                         return r;
                     }
                     r.result = new LongValue( stop);
@@ -466,7 +466,7 @@ public class StringEvaluator extends AbstractEvaluator {
         if (StringUtils.isTrivial(value)) {
             return;
         }
-        s.put(key, QDLValue.asQDLValue(value));
+        s.put(key, asQDLValue(value));
     }
 
     public static final Long DETOKENIZE_PREPEND_VALUE = 1L;
@@ -657,9 +657,7 @@ public class StringEvaluator extends AbstractEvaluator {
                     }
                 }
 
-                result.result = r;
-                result.resultType = Constant.STRING_TYPE;
-
+                result.result = asQDLValue(r);
                 return result;
             }
         };
@@ -685,11 +683,9 @@ public class StringEvaluator extends AbstractEvaluator {
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
                 if (objects[0] instanceof String) {
-                    r.result = objects[0].toString().trim();
-                    r.resultType = Constant.STRING_TYPE;
+                    r.result = new StringValue(objects[0].toString().trim());
                 } else {
-                    r.result = objects[0];
-                    r.resultType = polyad.getArgAt(0).getResultType();
+                    r.result = asQDLValue(objects[0]);
                 }
                 return r;
             }
@@ -733,22 +729,20 @@ public class StringEvaluator extends AbstractEvaluator {
                     }
                     int indexOf = haystack.indexOf(needle);
                     int index = 0; // index in resulting list
-                    outStem.put(index++, new Long(indexOf));
+                    outStem.put(index++, new LongValue(indexOf));
                     indexOf = indexOf + needle.length();
                     while (-1 < indexOf) {
                         indexOf = haystack.indexOf(needle, indexOf);
                         if (-1 < indexOf) {
-                            outStem.put(index++, new Long(indexOf));
+                            outStem.put(index++, new LongValue(indexOf));
                             indexOf = indexOf + needle.length();
                         }
                     }
                     //pos = new Long(objects[0].toString().indexOf(objects[1].toString()));
                 } else {
-                    outStem.put(0, -1L); // non-strings are never found. Default is always -1.
+                    outStem.put(0, LongValue.MinusOne); // non-strings are never found. Default is always -1.
                 }
-                r.result = outStem;
-                r.resultType = Constant.STEM_TYPE;
-
+                r.result = new StemValue(outStem);
                 return r;
             }
         };
@@ -786,16 +780,13 @@ public class StringEvaluator extends AbstractEvaluator {
                         caseSensitive = (Boolean) objects[2];
                     }
                     if (caseSensitive) {
-                        r.result = objects[0].toString().contains(objects[1].toString());
+                        r.result = asQDLValue(objects[0].toString().contains(objects[1].toString()));
                     } else {
-                        r.result = objects[0].toString().toLowerCase().contains(objects[1].toString().toLowerCase());
+                        r.result = asQDLValue(objects[0].toString().toLowerCase().contains(objects[1].toString().toLowerCase()));
                     }
-                    r.resultType = Constant.STRING_TYPE;
                 } else {
-                    r.result = Boolean.FALSE;
-                    r.resultType = Constant.BOOLEAN_TYPE;
+                    r.result =  BooleanValue.False;
                 }
-
                 return r;
             }
         };
@@ -824,14 +815,12 @@ public class StringEvaluator extends AbstractEvaluator {
                 fpResult r = new fpResult();
                 if (objects[0] instanceof String) {
                     if (isLower) {
-                        r.result = objects[0].toString().toLowerCase();
+                        r.result = asQDLValue(objects[0].toString().toLowerCase());
                     } else {
-                        r.result = objects[0].toString().toUpperCase();
+                        r.result = asQDLValue(objects[0].toString().toUpperCase());
                     }
-                    r.resultType = Constant.STRING_TYPE;
                 } else {
-                    r.result = objects[0];
-                    r.resultType = polyad.getArgAt(0).getResultType();
+                    r.result = asQDLValue(objects[0]);
                 }
                 return r;
             }
@@ -854,38 +843,35 @@ public class StringEvaluator extends AbstractEvaluator {
     protected QDLStem doReplace(Polyad polyad, QDLStem inStem, QDLStem replacements, QDLStem regexStem, State state) {
         QDLStem outStem = new QDLStem();
         for (Object key : inStem.keySet()) {
-            Object o = inStem.get(key);
-            if (o instanceof String) {
-                outStem.putLongOrString(key, doStringReplace((String) o, replacements, regexStem));
-            } else {
-                if (o instanceof QDLStem) {
-                    outStem.putLongOrString(key, doReplace(polyad, (QDLStem) o, replacements, regexStem, state));
-                } else {
-                    if(o instanceof QDLSet){
-                        outStem.putLongOrString(key, doReplace(polyad, (QDLSet) o, replacements, regexStem, state));
-                    } else {
-                        outStem.putLongOrString(key, o);// pass it back unchanged
-                    }
-                }
+            QDLValue o = inStem.get(key);
+            switch (o.getType()) {
+                case STRING_TYPE:
+                    outStem.putLongOrString(key, asQDLValue(doStringReplace(o.asString(), replacements, regexStem)));
+                    break;
+                case STEM_TYPE:
+                    outStem.putLongOrString(key, asQDLValue(doReplace(polyad,o.asStem(), replacements, regexStem, state)));
+                    break;
+                case SET_TYPE:
+                    outStem.putLongOrString(key, asQDLValue(doReplace(polyad,o.asSet(), replacements, regexStem, state)));
+                    break;
+                default:
+                    outStem.putLongOrString(key, o);// pass it back unchanged
             }
         }
         return outStem;
     }
     protected QDLSet doReplace(Polyad polyad, QDLSet inSet, QDLStem replacements, QDLStem regexStem, State state) {
         QDLSet outSet = new QDLSet();
-        for (Object o : inSet) {
-            if (o instanceof String) {
-                outSet.add(doStringReplace((String) o, replacements, regexStem));
-            } else {
-                if (o instanceof QDLStem) {
-                    outSet.add(doReplace(polyad, (QDLStem) o, replacements, regexStem, state));
-                } else {
-                    if(o instanceof QDLSet){
-                        outSet.add(doReplace(polyad, (QDLSet) o, replacements, regexStem, state));
-                    }else {
-                        outSet.add(o);// pass it back unchanged
-                    }
-                }
+        for (QDLValue o : inSet) {
+            switch (o.getType()) {
+                case STRING_TYPE:
+                    outSet.add(asQDLValue(doStringReplace(o.asString(), replacements, regexStem)));
+                case STEM_TYPE:
+                    outSet.add(asQDLValue(doReplace(polyad, o.asStem(), replacements, regexStem, state)));
+                case SET_TYPE:
+                    outSet.add(asQDLValue(doReplace(polyad, o.asSet(), replacements, regexStem, state)));
+                default:
+                    outSet.add(o);// pass it back unchanged
             }
         }
         return outSet;
@@ -898,9 +884,9 @@ public class StringEvaluator extends AbstractEvaluator {
             }
             boolean isRegex = false; // default
             if (regexStem.containsKey(key)) {
-                Object r = regexStem.get(key);
-                if (r instanceof Boolean) {
-                    isRegex = (Boolean) r;
+                QDLValue r = regexStem.get(key);
+                if (r.isBoolean()) {
+                    isRegex = r.asBoolean();
                 }
             }
             if (isRegex) {
@@ -927,14 +913,12 @@ public class StringEvaluator extends AbstractEvaluator {
                 }
                 if (areAllStrings(objects[0], objects[1], objects[2])) {
                     if (doregex) {
-                        r.result = objects[0].toString().replaceAll(objects[1].toString(), objects[2].toString());
+                        r.result = asQDLValue(objects[0].toString().replaceAll(objects[1].toString(), objects[2].toString()));
                     } else {
-                        r.result = objects[0].toString().replace(objects[1].toString(), objects[2].toString());
+                        r.result = asQDLValue(objects[0].toString().replace(objects[1].toString(), objects[2].toString()));
                     }
-                    r.resultType = Constant.STRING_TYPE;
                 } else {
-                    r.result = objects[0];
-                    r.resultType = polyad.getArgAt(0).getResultType();
+                    r.result = asQDLValue(objects[0]);
                 }
                 return r;
             }
@@ -949,11 +933,11 @@ public class StringEvaluator extends AbstractEvaluator {
             polyad.setEvaluated(true);
             return;
         }
-        Object r1 = polyad.evalArg(1, state);
+        QDLValue r1 = polyad.evalArg(1, state);
         // Old version, replace(a., b., c.) had b. and c. as lists.
         // new version allows for b. to be a general stem. If c. is present, then
         // it is assumed to be a stem of booleans with true meaning to do regexes
-        if (r1 instanceof String || polyad.getArgCount() == 4) {
+        if (r1.isString() || polyad.getArgCount() == 4) {
             doOldReplace(polyad, state);
             return;
         }
@@ -971,13 +955,13 @@ public class StringEvaluator extends AbstractEvaluator {
             regexStem.setDefaultValue(Boolean.FALSE);
         } else {
             // arg count can only be 3 if not 2
-            Object r2 = polyad.evalArg(2, state);
-            if (r2 instanceof Boolean) {
+            QDLValue r2 = polyad.evalArg(2, state);
+            if (r2.isBoolean()) {
                 regexStem = new QDLStem();
                 regexStem.setDefaultValue(r2);
             } else {
-                if (r2 instanceof QDLStem) {
-                    regexStem = (QDLStem) r2;
+                if (r2.isStem()) {
+                    regexStem = r2.asStem();
                 } else {
                     throw new BadArgException(REPLACE + " requires a boolean or stem of them as the final argument", polyad.getArgAt(2));
                 }
@@ -985,26 +969,24 @@ public class StringEvaluator extends AbstractEvaluator {
         }
         QDLStem inStem;
         boolean isScalar = false;
-        Object r = polyad.evalArg(0, state);
-        if (r instanceof String) {
+        QDLValue r = polyad.evalArg(0, state);
+        if (r.isString()) {
             inStem = new QDLStem();
             inStem.put(0L, r);
             isScalar = true;
         } else {
-            if (r instanceof QDLStem) {
+            if (r.isStem()) {
                 isScalar = false;
-                inStem = (QDLStem) r;
+                inStem = r.asStem();
             } else {
-                if(r instanceof QDLSet){
-                    polyad.setResult(doReplace(polyad, (QDLSet) r, arg1, regexStem, state));
-                    polyad.setResultType(Constant.SET_TYPE);
+                if(r.isSet()){
+                    polyad.setResult(doReplace(polyad,r.asSet(), arg1, regexStem, state));
                     polyad.setEvaluated(true);
                     return;
                 }
                 // Not a string or a stem, so just return it.
                 polyad.setEvaluated(true);
                 polyad.setResult(r);
-                polyad.setResultType(Constant.getType(r));
                 return;
             }
         }
@@ -1013,10 +995,8 @@ public class StringEvaluator extends AbstractEvaluator {
         polyad.setEvaluated(true);
         if (isScalar) {
             polyad.setResult(outStem.get(0L));
-            polyad.setResultType(Constant.getType(polyad.getResult()));
         } else {
             polyad.setResult(outStem);
-            polyad.setResultType(Constant.STEM_TYPE);
         }
         return;
     }
@@ -1029,23 +1009,23 @@ public class StringEvaluator extends AbstractEvaluator {
      * @param r1
      * @return
      */
-    private  QDLStem getReplaceArg1(Polyad polyad, State state, Object r1) {
+    private  QDLStem getReplaceArg1(Polyad polyad, State state, QDLValue r1) {
         QDLStem arg1 = null;
-        if (r1 instanceof QDLStem) {
-            if (((QDLStem) r1).isList()) {
-                QDLStem a = (QDLStem) r1;
+        if (r1.isStem()) {
+            if ((r1.asStem()).isList()) {
+                QDLStem a = r1.asStem();
                 if (polyad.getArgCount() == 2) {
                     throw new BadArgException("Missing argument. If you supply a list of replacements, you need a list of new values", polyad.getArgAt(1));
                 }
                 // case is that r1 is a list.
-                Object r2 = polyad.evalArg(2, state);
+                QDLValue r2 = polyad.evalArg(2, state);
                 QDLStem b;
-                if (r2 instanceof String) {
+                if (r2.isString()) {
                     b = new QDLStem();
                     b.setDefaultValue(r2);
                 } else {
-                    if (r2 instanceof QDLStem) {
-                        b = (QDLStem) r2;
+                    if (r2.isStem()) {
+                        b = r2.asStem();
                         if (!b.isList()) {
                             throw new BadArgException("The third argument must be a list", polyad.getArgAt(2));
                         }
@@ -1054,11 +1034,11 @@ public class StringEvaluator extends AbstractEvaluator {
                     }
                     arg1 = new QDLStem();
                     for (Object key : a.keySet()) {
-                        Object newKey = a.get(key);
-                        if (newKey instanceof String) {
+                        QDLValue newKey = a.get(key);
+                        if (newKey.isString()) {
                             if (b.hasDefaultValue() || b.containsKey(key)) {
-                                Object newValue = b.get(key);
-                                arg1.put((String) newKey, newValue);
+                                QDLValue newValue = b.get(key);
+                                arg1.put(newKey.asString(), newValue);
                             }
                         }
                     }
@@ -1066,7 +1046,7 @@ public class StringEvaluator extends AbstractEvaluator {
 
 
             } else {
-                arg1 = (QDLStem) r1;
+                arg1 = r1.asStem();
             }
         }
         return arg1;
@@ -1104,11 +1084,9 @@ public class StringEvaluator extends AbstractEvaluator {
                     int index = ((Long) objects[2]).intValue();
                     String src = (String) objects[0];
                     String snippet = (String) objects[1];
-                    r.result = src.substring(0, index) + snippet + src.substring(index);
-                    r.resultType = Constant.STRING_TYPE;
+                    r.result = asQDLValue(src.substring(0, index) + snippet + src.substring(index));
                 } else {
-                    r.result = objects[0];
-                    r.resultType = polyad.getArgAt(0).getResultType();
+                    r.result = asQDLValue(objects[0]);
                 }
                 return r;
             }
@@ -1146,22 +1124,20 @@ public class StringEvaluator extends AbstractEvaluator {
                     QDLStem outStem = new QDLStem();
                     if (doRegex) {
                         String[] tokens = objects[0].toString().split(objects[1].toString());
-                        for (int i = 0; i < tokens.length; i++) {
-                            outStem.put(Integer.toString(i), tokens[i]);
+                        for (long i = 0; i < tokens.length; i++) {
+                            outStem.put(i, asQDLValue(tokens[Math.toIntExact(i)]));
                         }
                     } else {
                         StringTokenizer st = new StringTokenizer(objects[0].toString(), objects[1].toString());
-                        int i = 0;
+                        long i = 0;
                         while (st.hasMoreTokens()) {
-                            outStem.put(Integer.toString(i++), st.nextToken());
+                            outStem.put(i++, asQDLValue(st.nextToken()));
                         }
 
                     }
-                    r.result = outStem;
-                    r.resultType = Constant.STEM_TYPE;
+                    r.result = asQDLValue(outStem);
                 } else {
-                    r.result = objects[0];
-                    r.resultType = polyad.getArgAt(0).getResultType();
+                    r.result = asQDLValue(objects[0]);
                 }
                 return r;
             }

@@ -3,6 +3,7 @@ package org.qdl_lang.variables;
 import org.qdl_lang.expressions.ConstantNode;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.values.QDLNullValue;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,11 +24,17 @@ public class QDLNull extends ConstantNode {
         return qdlNull;
     }
 
+    QDLValue NullValue = null;
+    @Override
+    public QDLValue getResult() {
+        if(NullValue == null) {
+            NullValue = new QDLNullValue();
+        }
+        return NullValue;
+    }
+
     private QDLNull() {
         super(null);  // Have to set since the result is QDLNode which does not exist yet.
-        QDLNullValue nullValue = new QDLNullValue();
-        nullValue.setValue(this);
-        setResult(nullValue);
         List<String> source = new ArrayList<>();
         if (State.isPrintUnicode()) {
             source.add("∅");

@@ -19,6 +19,8 @@ import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+
 /**
  * Models a single module expression of the form <b>A</b>#<i>expression</i> where <b>A</b>
  * is the alias giving the instance of the current module
@@ -389,13 +391,13 @@ http#host(qqq('https://foo'))
             XKey xKey = new XKey(getAlias());
             if (state.getVStack().containsKey(xKey)) {
                 VThing vThing = (VThing) state.getVStack().get(xKey);
-                if (vThing.getVariable() instanceof Module) {
-                    Module m = (Module) vThing.getVariable();
+                if (vThing.getVariable().getValue().isModule()) {
+                    Module m = vThing.getVariable().getValue().asModule();
                     setModule(m);
                     moduleState = m.getState();
 
                 } else {
-                    throw new NFWException("expected module for key " + xKey + ", but got a " + vThing.getVariable().getClass().getSimpleName());
+                    throw new NFWException("expected module for key " + xKey + ", but got a " + vThing.getVariable().getValue().getClass().getSimpleName());
                 }
             } else {
                 if (!(alias.equals("this") || state.getMInstances().containsKey(xKey))) {
@@ -432,7 +434,7 @@ http#host(qqq('https://foo'))
                 setNewModuleVersion(true);
                 VariableNode vNode = (VariableNode) getExpression();
                 String variableName = vNode.getVariableReference();
-                ((Module) mm).getState().setValue(variableName, newValue);
+                ((Module) mm).getState().setValue(variableName, asQDLValue(newValue));
                 return;
             }
             VariableNode vNode = (VariableNode) getExpression();
@@ -442,7 +444,7 @@ http#host(qqq('https://foo'))
                 throw new IntrinsicViolation("cannot set an intrinsic variable", getExpression());
             }
             if (getModuleState(state).isDefined(variableName)) {
-                getModuleState(state).setValue(variableName, newValue);
+                getModuleState(state).setValue(variableName, asQDLValue(newValue));
             } else {
                 throw new IllegalArgumentException("Cannot define new variables in a module.");
             }
@@ -458,8 +460,8 @@ http#host(qqq('https://foo'))
             setNewModuleVersion(getModuleState() != null);
             if (isNewModuleVersion() && getModuleState().getVStack().containsKey(xKey)) {
                 VThing vThing = (VThing) getModuleState().getVStack().get(xKey);
-                if (vThing.getVariable() instanceof Module) {
-                    Module m = (Module) vThing.getVariable();
+                if (vThing.getVariable().getValue().isModule()) {
+                    Module m = vThing.getVariable().getValue().asModule();
                     nextME.setModule(m);
                     nextME.setModuleState(m.getState()); //sets the next one in the chain.
                 } else {

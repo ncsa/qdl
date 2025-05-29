@@ -6,6 +6,7 @@ import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
 import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.QDLVariable;
 import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.variables.values.QDLValue;
 
@@ -15,6 +16,7 @@ import java.util.StringTokenizer;
 
 import static org.qdl_lang.variables.Constant.*;
 import static org.qdl_lang.variables.QDLStem.STEM_INDEX_MARKER;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * Models a stem.
@@ -231,7 +233,7 @@ The following are working:
                 if(obj == null && setValue){
                     s = new QDLStem();
                     // add it to the symbol table
-                    state.setValue(vNode.getVariableReference(), s);
+                    state.setValue(vNode.getVariableReference(), asQDLValue(s));
                 }else{
                     s = (QDLStem)  obj;
                 }
@@ -293,30 +295,24 @@ The following are working:
                 r = esn.getRightArg().getResult();
             }
             esn.setResult(r);
-            esn.setResultType(Constant.getType(r));
             esn.setEvaluated(true);
             lastSWRI = esn;
             swri = esn.getLeftArg();
         }
 
-        QDLStem stemVariable = (QDLStem) esn.getLeftArg().getResult();
+        QDLStem stemVariable = esn.getLeftArg().getResult().asStem();
         Object r1 = null;
         if (setValue) {
             r1 = stemVariable.put(r.toString(), newValue);
         } else {
-    /*        if (r.toString().contains(STEM_INDEX_MARKER)
-            ) {*/
-            //           StemMultiIndex stemMultiIndex = new StemMultiIndex("$" + STEM_INDEX_MARKER + r);
-            //         r1 = stemVariable.get(stemMultiIndex);
-            /*      } else { */
+
             r1 = stemVariable.get(r);
         }
 
 
         setResult(r1);
         setEvaluated(true);
-        setResultType(Constant.getType(r1));
-        return r1;
+        return getResult();
 
     }
 
@@ -385,7 +381,7 @@ The following are working:
             } else {
                 // do what?
                 if (rightArg.getResultType() == STEM_TYPE) {
-                    result = getLeftArg();
+                    result = asQDLValue(getLeftArg());
                     return result;
                 }
             }

@@ -3,6 +3,7 @@ package org.qdl_lang.statements;
 import org.qdl_lang.state.State;
 import org.qdl_lang.state.XThing;
 import org.qdl_lang.variables.VThing;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ import java.util.List;
  */
 public class LocalBlockStatement extends BlockStatement{
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         State state1 = state.newCleanState();
         if(hasFunctionParameters()){
             for(XThing xThing: getFunctionParameters()){

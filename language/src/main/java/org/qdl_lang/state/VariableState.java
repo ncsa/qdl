@@ -7,6 +7,7 @@ import org.qdl_lang.exceptions.IndexError;
 import org.qdl_lang.exceptions.NamespaceException;
 import org.qdl_lang.exceptions.QDLException;
 import org.qdl_lang.exceptions.UnknownSymbolException;
+import org.qdl_lang.extensions.examples.basic.StemVar;
 import org.qdl_lang.module.MIStack;
 import org.qdl_lang.module.MTStack;
 import org.qdl_lang.module.Module;
@@ -14,6 +15,7 @@ import org.qdl_lang.variables.*;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
 import org.qdl_lang.variables.values.QDLValue;
+import org.qdl_lang.variables.values.StemValue;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -56,7 +58,7 @@ public abstract class VariableState extends NamespaceAwareState {
             return getValue(symbol) != null;
         } catch (IndexError | UnknownSymbolException u) {
             // Can happen if the request is for a stem that eventually does not resolve.
-            return false;                                                      
+            return false;
         }
     }
 
@@ -68,7 +70,7 @@ public abstract class VariableState extends NamespaceAwareState {
      * @return
      */
     public QDLValue getValue(String variableName) {
-        if(variableName == null){
+        if (variableName == null) {
             throw new NFWException("null variable name encountered.");
         }
         return getValue(variableName, null); // kick off the search
@@ -84,18 +86,56 @@ public abstract class VariableState extends NamespaceAwareState {
             StemMultiIndex w = new StemMultiIndex(variableName);
             return gsrNSStemOp(w, OP_GET, null, checkedAliases);
         }
-        return gsrNSScalarOp(variableName, OP_GET, null, checkedAliases);
+         QDLVariable variable = gsrNSScalarOp(variableName, OP_GET, null, checkedAliases);
+        return variable != null ? variable.getValue() : null;
     }
 
 
-    public void setValue(String variableName, Object value) {
+    public void setValue(String variableName, QDLValue value) {
         setValue(variableName, value, null);
-if(hasCompletionProvider()){
-    getCompletionProvider().addCompletion(new BasicCompletion(getCompletionProvider(), variableName));
-}
+        if (hasCompletionProvider()) {
+            getCompletionProvider().addCompletion(new BasicCompletion(getCompletionProvider(), variableName));
+        }
+    }
+    public void setValue(String variableName, QDLValue value, Set<XKey> checkedAliases) {
+        if (checkedAliases == null) {
+            checkedAliases = new HashSet<>();
+        }
+        if (isStem(variableName)) {
+            StemMultiIndex w = new StemMultiIndex(variableName);
+            // Don't allow assignments of wrong type, but do let them set a stem to null.
+            if (w.isStem()) {
+                if (value.isSet()) {
+                    if (value.asSet().isEmpty()) {
+                        // Fix for https://github.com/ncsa/qdl/issues/5
+                        // Issue is that input_form would wrongly serialize an empty stem as {},
+                        // then deserialization would bomb since that is the empty set.
+                        // If the value is the empty set, allow trivial case of setting empty set to empty stem
+                        // or saved workspaces will not deserialize.
+                        value = new StemValue(); // empty stem
+                    }
+                }
+                if (!(value.isStem()) && !(value.isNull())) {
+                    throw new IndexError("Error: You cannot set the " + ((value.isSet()) ? "set '" : "scalar value '") + value + "' to the stem variable '" + variableName + "'", null);
+                }
+            } else {
+                if (value.isStem()) {
+                    throw new IndexError("Error: You cannot set the scalar variable '" + variableName + "' to the stem value '" + value + "'", null);
+                }
+            }
+            gsrNSStemOp(w, OP_SET, value, new HashSet<>());
+            return;
+        }
+        if (value.isStem()) {
+            throw new IndexError("Error: You cannot set the scalar variable '" + variableName + "' to the stem value '" + value + "'", null);
+        }
+
+        gsrNSScalarOp(variableName, OP_SET, value, checkedAliases);
+        return;
     }
 
-    public void setValue(String variableName, Object value, Set<XKey> checkedAliases) {
+/*
+    public void OLDsetValue(String variableName, Object value, Set<XKey> checkedAliases) {
         if (checkedAliases == null) {
             checkedAliases = new HashSet<>();
         }
@@ -114,7 +154,7 @@ if(hasCompletionProvider()){
                     }
                 }
                 if (!(value instanceof QDLStem) && !(value instanceof QDLNull)) {
-                    throw new IndexError("Error: You cannot set the " + ((value instanceof QDLSet)?"set '": "scalar value '") + value + "' to the stem variable '" + variableName + "'", null);
+                    throw new IndexError("Error: You cannot set the " + ((value instanceof QDLSet) ? "set '" : "scalar value '") + value + "' to the stem variable '" + variableName + "'", null);
                 }
             } else {
                 if (value instanceof QDLStem) {
@@ -131,9 +171,10 @@ if(hasCompletionProvider()){
         gsrNSScalarOp(variableName, OP_SET, value, checkedAliases);
         return;
     }
+*/
 
     public void remove(String variableName) {
-        if(hasCompletionProvider()){
+        if (hasCompletionProvider()) {
             getCompletionProvider().removeCompletion(new BasicCompletion(getCompletionProvider(), variableName));
         }
         if (isStem(variableName)) {
@@ -195,7 +236,7 @@ if(hasCompletionProvider()){
 
 
     /**
-     * gsr = get, set or remove. This resolves the name of the
+     * gsr = get, set or remove. This resolves the name of the stem
      *
      * @param w
      * @param op
@@ -203,7 +244,7 @@ if(hasCompletionProvider()){
      * @return
      */
     protected QDLValue gsrNSStemOp(StemMultiIndex w, int op,
-                                 Object value, Set<XKey> checkInstances) {
+                                   QDLValue value, Set<XKey> checkInstances) {
         w = resolveStemIndices(w);
         String variableName;
         QDLStem stem = null;
@@ -213,11 +254,13 @@ if(hasCompletionProvider()){
         XKey vKey = new XKey(w.name);
         Object object;
         boolean didIt = false;
+        QDLVariable curretVariable = null;
         if (isExtrinsic(variableName)) {
             VThing vThing = (VThing) getExtrinsicVars().get(vKey);
             if (vThing == null) {
                 stem = null;
             } else {
+                curretVariable = vThing.getVariable();
                 isQDLNull = vThing.isNull(); // Fix https://github.com/ncsa/qdl/issues/42
                 if (vThing.isStem()) {
                     stem = vThing.getStemValue();
@@ -228,13 +271,10 @@ if(hasCompletionProvider()){
         if (isIntrinsic(variableName)) {
             vStack = getIntrinsicVariables();
             VThing vThing = (VThing) vStack.get(vKey);
-/*
-            vStack = getVStack();
-            VThing vThing = (VThing) vStack.nonlocalGet(vKey);
-*/
             if (vThing == null) {
                 stem = null;
             } else {
+                curretVariable = vThing.getVariable();
                 isQDLNull = vThing.isNull(); // Fix https://github.com/ncsa/qdl/issues/42
                 if (vThing.isStem()) {
                     stem = vThing.getStemValue();
@@ -266,7 +306,8 @@ if(hasCompletionProvider()){
             boolean gotOne = false;
             VThing v;
             // most likely place for it was in the main symbol table. But since there is
-            // no name clash, look for it in the modules.
+            // no name clash, look for it in the OLD modules. As long as there is nothing
+            // here this (very expensive) search is skipped
             if (stem == null && !isQDLNull) {
                 if (!getMInstances().isEmpty()) {
                     for (Object key : getMInstances().keySet()) {
@@ -288,24 +329,13 @@ if(hasCompletionProvider()){
                                     }
                                 }
                             }
-                           /* checkInstances.add(xKey);
-                           // The orgin
-                            Object obj = m.getState().getValue(variableName, checkInstances);
-                            //Object obj = m.getState().getValue(variableName, new HashSet<>());
-                            checkInstances.add(xKey);
-                            if (obj != null && (obj instanceof QDLStem)) {
-                                stem = (QDLStem) obj;
-                                break;
-                            }
-*/
+
                         }
                     }
                 }
             }
         }
 
-        // }
-        // Then this is of the form #foo and they are accessing local state explicitly
         switch (op) {
             case OP_GET:
                 if (stem == null && !isQDLNull) {
@@ -318,18 +348,24 @@ if(hasCompletionProvider()){
                 if (w.isEmpty()) {
                     return new QDLValue(stem);
                 }
-                return new QDLValue(stem.get(w));
+                Object oo = stem.get(w);
+                if(oo == null) {return null;}
+                return new QDLValue(oo);
             case OP_SET:
-                VThing vValue = new VThing(new XKey(variableName), value);
+                //VThing vValue = new VThing(new XKey(variableName), value);
                 if (w.isEmpty()) {
                     setValueImportAware(variableName, value);
                 } else {
+                    StemValue stemValue;
                     if (stem == null || isQDLNull) {
                         stem = new QDLStem();
-                        setValueImportAware(variableName, stem);
+                        stemValue =  new StemValue(stem);
+                        setValueImportAware(variableName, stemValue);
+                    }else{
+                        stemValue =  new StemValue(stem);
                     }
                     stem.set(w, value);
-                    setValueImportAware(variableName, stem);
+                    setValueImportAware(variableName, stemValue);
                 }
                 return null;
             case OP_REMOVE:
@@ -350,20 +386,59 @@ if(hasCompletionProvider()){
         throw new NFWException("Internal error; unknown operation type on stem variables.");
     }
 
+    /**
+     * the contract here is that if the {@link VThing} is null, then it can be created. If
+     * it does exist, then cvarious contracts for type safety are followed. These are in the
+     * {@link QDLVariable#setValue(QDLValue)} method.
+     *
+     * <p>This returns the vThing to save or throws an exception for a type violation.</p>
+     * @param vThing
+     * @param key
+     * @param newValue
+     * @return
+     */
+    protected VThing handleVariableType(VThing vThing, XKey key, QDLValue newValue) {
+        if(vThing == null){
+            return new VThing(key, new QDLVariable(newValue));
+        }
+        vThing.getVariable().setValue(newValue);
+        return vThing;
+    }
 
-    private void setValueImportAware(String variableName, Object value) {
-        VThing vThing = new VThing(new XKey(variableName), value);
+    public int getTypeSafetyMode() {
+        return typeSafetyMode;
+    }
+
+    public void setTypeSafetyMode(int typeSafetyMode) {
+        this.typeSafetyMode = typeSafetyMode;
+    }
+
+    protected int typeSafetyMode = QDLVariable.TYPE_DYNAMIC;
+    /**
+     * This sets variables allowing for {@link #isImportMode()} to be true, so the module
+     * statements are evaluated, but discarded
+     * @param variableName
+     * @param value
+     */
+    private void setValueImportAware(String variableName, QDLValue value) {
+        XKey xKey = new XKey(variableName);
+
+        VThing vThing;
         if (isExtrinsic(variableName)) {
+            vThing = handleVariableType((VThing)getExtrinsicVars().get(xKey), xKey, value);
             getExtrinsicVars().put(vThing);
             return;
         }
-        if(isIntrinsic(variableName)){
+        if (isIntrinsic(variableName)) {
+            vThing = handleVariableType((VThing)getIntrinsicVariables().get(xKey), xKey, value);
             getIntrinsicVariables().put(vThing);
             return;
         }
         if (isImportMode()) {
+            vThing = handleVariableType((VThing)getVStack().localGet(xKey), xKey, value);
             getVStack().localPut(vThing);
         } else {
+            vThing = handleVariableType((VThing)getVStack().get(xKey), xKey, value);
             getVStack().put(vThing);
         }
     }
@@ -376,10 +451,10 @@ if(hasCompletionProvider()){
    X#__a
       X#get_a()
      */
-    protected Object gsrNSScalarOp(String variableName,
-                                   int op,
-                                   Object value,
-                                   Set<XKey> checkedAliases) {
+    protected QDLVariable gsrNSScalarOp(String variableName,
+                                        int op,
+                                        QDLValue value,
+                                        Set<XKey> checkedAliases) {
         // if(!pattern.matcher(v.getName()).matches()){
         if (variableName.equals("0") || intPattern.matcher(variableName).matches()) {
             // so its an actual index, like 0, 1, ...
@@ -396,14 +471,12 @@ if(hasCompletionProvider()){
             didIt = true;
         }
         if (isIntrinsic(variableName)) {
-            //v = (VThing) getVStack().get(xKey);
             v = (VThing) getIntrinsicVariables().get(xKey);
             didIt = true;
         }
         if (!didIt) {
             v = (VThing) getVStack().get(xKey);
-            if (v == null && !(value instanceof Module)) { // only check old imports for clashes. Re-assingin
-                VThing vThing;
+            if (v == null && value != null && !(value.isModule())) { // only check old imports for clashes. Re-assingin
                 boolean gotOne = false;
                 if (!(isImportMode() || getMInstances().isEmpty())) {
                     for (Object key : getMInstances().keySet()) {
@@ -434,22 +507,6 @@ if(hasCompletionProvider()){
                                     }
                                 }
                             }
-
-
-                         /*   checkedAliases.add(xkey);
-                            Object obj = m.getState().getValue(variableName, checkedAliases);
-                          //  Object obj = m.getState().getValue(variableName, new HashSet<>());
-                            if (obj != null) {
-                                if (v != null) {
-                                    // uniqueness. Only get an unqualified name if it is unique within
-                                    // all modules. If there is a duplicated, throw an exception.
-                                    throw new NamespaceException("multiple modules found for '" + variableName + "', Please qualify the name.");
-                                }
-                                //v = obj;
-                                v = new VThing(xKey, obj);
-                            }
-*/
-
                         }
                     }
                 }
@@ -470,7 +527,11 @@ if(hasCompletionProvider()){
                 if (isExtrinsic(variableName)) {
                     getExtrinsicVars().remove(xKey);
                 } else {
-                    getVStack().remove(xKey);
+                    if(isIntrinsic(variableName)) {
+                        getIntrinsicVariables().remove(xKey);
+                    }else {
+                        getVStack().remove(xKey);
+                    }
                 }
         }
 
@@ -527,7 +588,7 @@ if(hasCompletionProvider()){
         if (showExtrinsic) {
             out.addAll(getExtrinsicVars().listVariables());
         }
-        if(showIntrinsic){
+        if (showIntrinsic) {
             out.addAll(getIntrinsicVariables().listVariables());
         }
         if (!includeModules) {
@@ -580,8 +641,9 @@ if(hasCompletionProvider()){
     }
 
     VStack instrinsicVariables;
-    public VStack getIntrinsicVariables(){
-        if(instrinsicVariables == null){
+
+    public VStack getIntrinsicVariables() {
+        if (instrinsicVariables == null) {
             instrinsicVariables = new VStack();
         }
         return instrinsicVariables;

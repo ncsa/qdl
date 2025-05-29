@@ -3,9 +3,12 @@ package org.qdl_lang.statements;
 import org.qdl_lang.exceptions.QDLExceptionWithTrace;
 import org.qdl_lang.expressions.ExpressionNode;
 import org.qdl_lang.state.State;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -55,7 +58,7 @@ public class ConditionalStatement implements Statement {
     List<Statement> elseArguments = new ArrayList<>();
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         State newState = state.newLocalState();
 
         Boolean result = false;
@@ -76,7 +79,8 @@ public class ConditionalStatement implements Statement {
             }
 
         }
-        return result;
+
+        return asQDLValue(result);
     }
 
     @Override

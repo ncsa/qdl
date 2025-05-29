@@ -213,7 +213,7 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
             return qdlValue.asDecimal();
         }
         // try to convert it.
-        return new BigDecimal(qdlValue.toString());
+        return new BigDecimal(qdlValue.getValue().toString());
     }
 
     /*
@@ -224,9 +224,22 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
         if (qdlValue == null) {
             return null;
         }
-        return qdlValue.toString();
+        return qdlValue.asString();
     }
 
+    public QDLValue put(String index, Object value) {
+        if(value instanceof QDLValue) {
+            return put(index, (QDLValue) value);
+        }
+        return put(index, asQDLValue(value));
+    }
+
+    public QDLValue put(Long index, Object value) {
+        if(value instanceof QDLValue) {
+            return put(index, (QDLValue) value);
+        }
+        return put(index, asQDLValue(value));
+    }
     public QDLValue put(Long index, QDLValue value) {
         getQDLList().set(index, value);
         return null;
@@ -323,6 +336,12 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
         return getQDLMap().isEmpty();
     }
 
+    public QDLValue put(int index, Object value) {
+        if(value instanceof QDLValue) {
+            return put(index, (QDLValue) value);
+        }
+        return put(index, asQDLValue(value));
+    }
     public QDLValue put(int index, QDLValue value) {
         return put(Long.valueOf(index), value);
     }
@@ -411,7 +430,7 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
         }
 
         @Override
-        public QDLValue getDefaultValue(List<Object> index, Object key, Object value) {
+        public Object getDefaultValue(List<Object> index, Object key, Object value) {
             size++;
             return super.getDefaultValue(index, key, value);
         }
@@ -472,6 +491,18 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
         return output;
     }
 
+    /**
+     * Convenience setter to put an object. If it is not a {@link QDLValue} it will be converted to one.
+     * @param key
+     * @param value
+     */
+    public void putLongOrString(Object key, Object value) {
+        if(value instanceof QDLValue) {
+            putLongOrString(key, (QDLValue) value);
+            return;
+        }
+        putLongOrString(key, asQDLValue(value));
+    }
     public void putLongOrString(Object key, QDLValue value) {
         if(key instanceof QDLValue){
             QDLValue qdlValueKey = (QDLValue) key;
@@ -1308,7 +1339,7 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
         @Override
         public QDLValue getDefaultValue(List<Object> index, Object key, Object value) {
             QDLStem stem = new QDLStem();
-            stem.getQDLList().appendAll(index);
+            stem.getQDLList().appendAll(QDLValue.castToQDLValues(index));
             stem.getQDLList().append(asQDLValue(key));
             accumulator.append(stem);
             return new StemValue(stem);

@@ -85,6 +85,7 @@ import static org.qdl_lang.evaluate.SystemEvaluator.SHEBANG;
 import static org.qdl_lang.gui.FontUtil.findQDLFonts;
 import static org.qdl_lang.util.InputFormUtil.*;
 import static org.qdl_lang.util.QDLFileUtil.*;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 import static org.qdl_lang.vfs.VFSPaths.SCHEME_DELIMITER;
 import static org.qdl_lang.workspace.Banners.*;
 import static edu.uiuc.ncsa.security.core.util.StringUtils.*;
@@ -727,7 +728,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                     say("        with the default pid of 0");
                     return RC_NO_OP;
                 }
-                SIEntry sie = siEntries.get(new Integer(0));
+                SIEntry sie = siEntries.get(0);
                 siEntries = new SIEntries();
                 siEntries.put(0, sie);
                 currentPID = 0;
@@ -2282,7 +2283,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
         Polyad request = new Polyad(IOEvaluator.DIR);
         try {
-            request.addArgument(new ConstantNode(inputLine.getArg(FIRST_ARG_INDEX), Constant.STRING_TYPE));
+            request.addArgument(new ConstantNode(asQDLValue(inputLine.getArg(FIRST_ARG_INDEX))));
         } catch (Throwable t) {
             say("sorry. I didn't understand that.");
             return RC_CONTINUE;
@@ -3504,7 +3505,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             if (isText) {
                 if (isStem) {
                     // convert stem to list
-                    QDLStem v = (QDLStem) getState().getValue(varName);
+                    QDLStem v = getState().getValue(varName).asStem();
                     if (!v.isList()) {
                         say("sorry, but only a list of strings can be edited as text");
                         return RC_NO_OP;
@@ -3561,10 +3562,10 @@ public class WorkspaceCommands implements Logable, Serializable {
             if (isStem) {
                 QDLStem newStem = new QDLStem();
                 newStem.addList(content);
-                getState().setValue(varName, newStem);
+                getState().setValue(varName, asQDLValue(newStem));
             } else {
                 String newValue = StringUtils.listToString(content);
-                getState().setValue(varName, newValue);
+                getState().setValue(varName, asQDLValue(newValue));
             }
         } else {
             String newValue = StringUtils.listToString(content);
@@ -4426,7 +4427,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             }
         }
         if (inputLine.hasArg(DISPLAY_WIDTH_SWITCH)) {
-            displayWidth = inputLine.getNextIntArg(DISPLAY_WIDTH_SWITCH);
+            displayWidth = inputLine.getIntNextArg(DISPLAY_WIDTH_SWITCH);
         }
         // remove any switch so we can figure out what the arguments are.
         inputLine.removeSwitch(CLA_VERBOSE_ON);
@@ -6900,7 +6901,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 targetModule = st.nextToken();
                 try {
                     Class klasse = state.getClass().forName(targetModule);
-                    QDLLoader loader = (QDLLoader) klasse.newInstance();
+                    QDLLoader loader = (QDLLoader) klasse.getDeclaredConstructor().newInstance();
                     // Do not import everything on start as default so user can set up aliases.
                     setupJavaModule(state, loader, false);
 
@@ -6981,7 +6982,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
             inputLine.removeSwitchAndValue(CLA_MACRO);
             Polyad polyad = new Polyad(SystemEvaluator.WS_MACRO);
-            polyad.addArgument(new ConstantNode(macro));
+            polyad.addArgument(new ConstantNode(asQDLValue(macro)));
             try {
                 //getInterpreter().execute(SystemEvaluator.WS_MACRO + "(" + macro + ");");
                 polyad.evaluate(getState());

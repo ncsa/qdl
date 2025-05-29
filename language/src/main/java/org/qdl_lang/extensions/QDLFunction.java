@@ -1,6 +1,7 @@
 package org.qdl_lang.extensions;
 
 import org.qdl_lang.state.State;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.io.Serializable;
 import java.util.List;
@@ -39,11 +40,11 @@ public interface QDLFunction extends Serializable {
      * The method that is invoked by QDL that is the function. It will have the arguments
      * already evaluated and put in to the
      * array of objects. It is up to you to do any checking you see fit. State is supplied if needed.
-     * @param objects
+     * @param qdlValues
      * @param state 
      * @return
      */
-     Object evaluate(Object[] objects, State state) throws Throwable;
+     QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable;
 
 
     /**

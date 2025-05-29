@@ -11,7 +11,9 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.state.XKey;
 import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.QDLSet;
+import org.qdl_lang.variables.QDLVariable;
 import org.qdl_lang.variables.VThing;
+import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.vfs.VFSEntry;
 
 import java.io.BufferedReader;
@@ -23,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static org.qdl_lang.evaluate.SystemEvaluator.*;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -67,16 +70,16 @@ public class WhileLoop implements Statement {
     List<Statement> statements = new ArrayList<>();
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         State localState = state.newLocalState();
         //State localState = state.new;
         if (conditional instanceof Dyad) {
             Dyad d = (Dyad) conditional;
             if (d.getOperatorType() == OpEvaluator.EPSILON_VALUE) {
-                return forKeysOrValuesLoop(localState, false);
+                return asQDLValue(forKeysOrValuesLoop(localState, false));
             }
             if (d.getOperatorType() == OpEvaluator.CONTAINS_KEY_VALUE) {
-                return forKeysOrValuesLoop(localState, true);
+                return asQDLValue(forKeysOrValuesLoop(localState, true));
             }
         }
         if (conditional instanceof Polyad) {
@@ -85,15 +88,15 @@ public class WhileLoop implements Statement {
                 switch (p.getName()) {
                     case StemEvaluator.HAS_KEYS:
                     case FOR_KEYS:
-                        return forKeysOrValuesLoop(localState, true);
+                        return asQDLValue(forKeysOrValuesLoop(localState, true));
                     case StemEvaluator.HAS_VALUE:
-                        return forKeysOrValuesLoop(localState, false);
+                        return asQDLValue(forKeysOrValuesLoop(localState, false));
                     case FOR_NEXT:
-                        return doForLoop(localState);
+                        return asQDLValue(doForLoop(localState));
                     case CHECK_AFTER:
-                        return doPostLoop(localState);
+                        return asQDLValue(doPostLoop(localState));
                     case FOR_LINES:
-                        return doForLines(localState);
+                        return asQDLValue(doForLines(localState));
                 }
             }
         }
@@ -101,7 +104,7 @@ public class WhileLoop implements Statement {
         // No built in looping function, so it is just some ordinary conditional,
         // like i < 5, or a user-defined function.
         // Just evaluate it.
-        return doBasicWhile(localState);
+        return asQDLValue(doBasicWhile(localState));
 
     }
 
@@ -148,7 +151,7 @@ public class WhileLoop implements Statement {
              scale up, this functionality needs to be added.
             */
             for (String lineIn : vfsEntry.getLines()) {
-                localState.setValue(loopArg, lineIn);
+                localState.setValue(loopArg, asQDLValue(lineIn));
                 for (Statement statement : getStatements()) {
                     try {
                         statement.evaluate(localState);
@@ -168,7 +171,7 @@ public class WhileLoop implements Statement {
                 BufferedReader bufferedReader = new BufferedReader(fileReader);
                 String lineIn = bufferedReader.readLine();
                 while (lineIn != null) {
-                    localState.setValue(loopArg, lineIn);
+                    localState.setValue(loopArg, asQDLValue(lineIn));
                     for (Statement statement : getStatements()) {
                         try {
                             statement.evaluate(localState);
@@ -208,7 +211,7 @@ public class WhileLoop implements Statement {
                     return Boolean.TRUE;
                 }
             }
-        } while ((Boolean) conditional.evaluate(localState));
+        } while (conditional.evaluate(localState).asBoolean());
         return Boolean.TRUE;
     }
 
@@ -290,7 +293,7 @@ public class WhileLoop implements Statement {
             return Boolean.TRUE;
         }
         for (int i = start; i != endValue; i = i + increment) {
-            localState.setValue(loopArg, (long) i);
+            localState.setValue(loopArg, asQDLValue( i));
             for (Statement statement : getStatements()) {
                 try {
                     statement.evaluate(localState);
@@ -310,7 +313,7 @@ public class WhileLoop implements Statement {
 
     protected Object doBasicWhile(State localState) {
         try {
-            while ((Boolean) conditional.evaluate(localState)) {
+            while (conditional.evaluate(localState).asBoolean()) {
                 for (Statement statement : getStatements()) {
                     try {
                         statement.evaluate(localState);
@@ -325,7 +328,7 @@ public class WhileLoop implements Statement {
                 }
             }
             return Boolean.TRUE;
-        } catch (ClassCastException cce) {
+        } catch (ClassCastException | WrongValueException cce) {
             throw new QDLExceptionWithTrace("Error: You must have a boolean value for your conditional", conditional);
         }
     }
@@ -382,7 +385,7 @@ public class WhileLoop implements Statement {
        */
         if (isSet) {
             for (Object element : qdlSet) {
-                localState.getVStack().localPut(new VThing(new XKey(loopVar), element));
+                localState.getVStack().localPut(new VThing(new XKey(loopVar), new QDLVariable( element)));
                 for (Statement statement : getStatements()) {
                     try {
                         statement.evaluate(localState);
@@ -406,7 +409,7 @@ public class WhileLoop implements Statement {
             }
 
             while (iterator.hasNext()) {
-                localState.getVStack().localPut(new VThing(new XKey(loopVar), iterator.next()));
+                localState.getVStack().localPut(new VThing(new XKey(loopVar), new QDLVariable(iterator.next())));
                 for (Statement statement : getStatements()) {
                     try {
                         statement.evaluate(localState);

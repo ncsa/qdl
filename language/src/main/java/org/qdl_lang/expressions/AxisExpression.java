@@ -7,6 +7,9 @@ import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
 import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.QDLValue;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 public class AxisExpression extends ExpressionImpl {
     public AxisExpression() {
@@ -35,8 +38,8 @@ public class AxisExpression extends ExpressionImpl {
     }
 
     @Override
-    public Object evaluate(State state) {
-        Object arg0 = null;
+    public QDLValue evaluate(State state) {
+        QDLValue arg0 = null;
         if(getArgAt(0) instanceof VariableNode) {
             VariableNode vNode = (VariableNode)getArgAt(0);
             String varName = vNode.getVariableReference();
@@ -48,11 +51,11 @@ public class AxisExpression extends ExpressionImpl {
         }else {
              arg0 = evalArg(0, state);
         }
-        if (arg0 instanceof QDLStem) {
-            setStem((QDLStem) arg0);
+        if (arg0.isStem()) {
+            setStem( arg0.asStem() );
         } else {
-            if (arg0 instanceof AxisExpression) {
-                setAxisExpression((AxisExpression) arg0);
+            if (arg0.isAxisRestriction()) {
+                setAxisExpression(arg0.asAxisExpression());
             } else {
                 throw new BadArgException("only stems have axes", getArgAt(0));
             }
@@ -71,9 +74,8 @@ public class AxisExpression extends ExpressionImpl {
             }
         }
         setEvaluated(true);
-        setResult(this);
-        setResultType(Constant.AXIS_RESTRICTION_TYPE);
-        return this;
+        setResult(asQDLValue(this));
+        return getResult();
     }
 
     public boolean hasAxis() {

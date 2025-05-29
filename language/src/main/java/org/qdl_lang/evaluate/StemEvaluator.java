@@ -595,7 +595,9 @@ public class StemEvaluator extends AbstractEvaluator {
                                     if (!zzz.isList()) {
                                         throw new BadArgException(DISPLAY_ATTRIBUTES + " in second argument to " + DISPLAY + " must be a list", polyad.getArgAt(1));
                                     }
-                                    keySubset = zzz.getQDLList().values();
+                                    for(QDLValue vvv : zzz.getQDLList().values()){
+                                        keySubset.add(vvv.asString()); // format utility eats strings
+                                    }
                                     break;
                                 case DISPLAY_SHORT_FORM:
                                     multilineMode = !c.getBoolean(DISPLAY_SHORT_FORM);
@@ -1037,7 +1039,7 @@ public class StemEvaluator extends AbstractEvaluator {
      */
     protected void doForEach(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(getBigArgList());
+            polyad.setAllowedArgCounts(getBigArgList());
             polyad.setEvaluated(true);
             return;
         }
@@ -1515,9 +1517,9 @@ f(x.)→x.0+x.1;
                                     boolean tempB = bdEquals(ooo.asDecimal(), element.asDecimal());
                                     if (tempB) {
                                         if (keyIsLong) {
-                                            result.put((Long) key, new BooleanValue(Boolean.TRUE));
+                                            result.put((Long) key, BooleanValue.True);
                                         } else {
-                                            result.put((String) key, new BooleanValue(Boolean.TRUE));
+                                            result.put((String) key, BooleanValue.True);
                                         }
                                         break;
                                     }
@@ -1731,7 +1733,7 @@ f(x.)→x.0+x.1;
      */
     private void doUnion(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(getBigArgList());
+            polyad.setAllowedArgCounts(getBigArgList());
             polyad.setEvaluated(true);
             return;
         }
@@ -1848,7 +1850,7 @@ f(x.)→x.0+x.1;
 
     private void doBox(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(getBigArgList());
+            polyad.setAllowedArgCounts(getBigArgList());
             polyad.setEvaluated(true);
             return;
         }
@@ -1920,7 +1922,7 @@ f(x.)→x.0+x.1;
         }
 
         @Override
-        public QDLValue getDefaultValue(List<Object> index, Object key, Object value) {
+        public Object getDefaultValue(List<Object> index, Object key, Object value) {
             return super.getDefaultValue(index, key, value);
         }
 
@@ -2233,7 +2235,7 @@ f(x.)→x.0+x.1;
 
     protected void doMakeIndex(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setResult(getBigArgList());
+            polyad.setAllowedArgCounts(getBigArgList());
             polyad.setEvaluated(true);
             return;
         }
@@ -3149,7 +3151,6 @@ z. :=  join3(q.,w.)
         if (leftStem.isEmpty() && rightStem.isEmpty()) {
             // edge case -- they sent  empty arguments, so don't blow up, just return nothing
             polyad.setResult(new QDLStem());
-            polyad.setResultType(STEM_TYPE);
             polyad.setEvaluated(true);
             return;
         }
@@ -3162,7 +3163,6 @@ z. :=  join3(q.,w.)
             // Cases are axis 0 join or monadic -1 axis join
             QDLStem outStem = leftStem.union(rightStem);
             polyad.setEvaluated(true);
-            polyad.setResultType(STEM_TYPE);
             polyad.setResult(outStem);
             return;
         }
@@ -3170,7 +3170,6 @@ z. :=  join3(q.,w.)
             if (axis == -1) {
                 QDLStem outStem = leftStem.union(rightStem);
                 polyad.setEvaluated(true);
-                polyad.setResultType(STEM_TYPE);
                 polyad.setResult(outStem);
                 return;
             }
@@ -3184,7 +3183,7 @@ z. :=  join3(q.,w.)
                 if (key instanceof Long) {
                     out.put((Long) key, leftStem.union(rightStem));
                 } else {
-                    out.put((String) key, leftStem.union(rightStem));
+                    out.put((String) key, asQDLValue(leftStem.union(rightStem)));
                 }
             }
         };
@@ -3193,7 +3192,6 @@ z. :=  join3(q.,w.)
         }
         StemUtility.axisDayadRecursion(outStem, leftStem, rightStem, doJoinOnLastAxis ? 1000000 : (axis - 1), doJoinOnLastAxis, joinAction);
         polyad.setResult(outStem);
-        polyad.setResultType(STEM_TYPE);
         polyad.setEvaluated(true);
     }
 
@@ -3270,7 +3268,7 @@ z. :=  join3(q.,w.)
         QDLStem pStem0;
         // Start QDL. sliceNode is [;rank]
         OpenSliceNode sliceNode = new OpenSliceNode(polyad.getTokenPosition());
-        sliceNode.getArguments().add(new ConstantNode(new LongValue(0L)));
+        sliceNode.getArguments().add(new ConstantNode(LongValue.Zero));
         sliceNode.getArguments().add(new ConstantNode(new LongValue(Integer.toUnsignedLong(rank))));
         QDLValue arg2 = null;
         boolean arg2ok = false;
@@ -3344,11 +3342,7 @@ z. :=  join3(q.,w.)
         // newIndices. := shuffle(oldIndices., pStem0.)
         //  QDLStem pStem = new QDLStem();
         // pStem.put(0L, pStem0); // makes [pstem.]
-/*        ArrayList arrayList = oldIndices.getQDLList().getArrayList();
-        for(Object ooo : oldIndices.getQDLList().orderedKeys()){
-            QDLStem sss = (QDLStem) oldIndices.getQDLList().get((Long)ooo);
-            sss.getQDLList().getArrayList().
-        }*/
+
         QDLStem newIndices = oldIndices.getQDLList().permuteEntries(pStem0.getQDLList().getArrayList());
 
         // QDL to remap everything.

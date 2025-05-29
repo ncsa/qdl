@@ -339,9 +339,9 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
                 }
             } else {
                 if (isLongKey) {
-                    outStem.put((Long) key, pointer.process(stemVariable.get(key)).result);
+                    outStem.put((Long) key, pointer.process(stemVariable.get(key).getValue()).result);
                 } else {
-                    outStem.put((String) key, pointer.process(stemVariable.get(key)).result);
+                    outStem.put((String) key, pointer.process(stemVariable.get(key).getValue()).result);
                 }
             }
         }
@@ -426,7 +426,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             if (polyad.getOperatorType() == OpEvaluator.OR_VALUE) {
                 if (arg1.asBoolean()) { // if arg1 true then...
                     if ((usx != null) || !(isSet(arg2) || isStem(arg2))) {
-                        polyad.setResult(new BooleanValue(Boolean.TRUE));
+                        polyad.setResult(BooleanValue.True);
                         polyad.setEvaluated(true);
                         return;
                     }
@@ -435,7 +435,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             if (polyad.getOperatorType() == OpEvaluator.AND_VALUE) {
                 if (!arg1.isBoolean()) { // if arg1 false then...
                     if ((usx != null) || !(isSet(arg2) || isStem(arg2))) {
-                        polyad.setResult(new BooleanValue(Boolean.FALSE));
+                        polyad.setResult(BooleanValue.False);
                         polyad.setEvaluated(true);
                         return;
                     }
@@ -873,7 +873,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
                     throw new IllegalArgumentException(informativeMessage);
                 }
                 stem1 = new QDLStem();
-                state.setValue(varName, stem1);
+                state.setValue(varName, asQDLValue(stem1));
             } else {
                 Object arg1 = node.evaluate(state);
                 if (!isStem(arg1)) {
@@ -1182,15 +1182,15 @@ g(1@f, 2)
      * @param objects
      * @return
      */
-    public static ArrayList<ExpressionInterface> toConstants(ArrayList<Object> objects) {
+    public static ArrayList<ExpressionInterface> toConstants(ArrayList<QDLValue> objects) {
         ArrayList<ExpressionInterface> args = new ArrayList<>();
-        for (Object obj : objects) {
+        for (QDLValue obj : objects) {
             int type = Constant.getType(obj);
             if (type == UNKNOWN_TYPE) {
-                // Future proofing in case something changes in the future internally
+                // Future proofing in case something changes internally
                 throw new IllegalArgumentException(" unknown object type");
             }
-            args.add(new ConstantNode(QDLValue.asQDLValue(obj)));
+            args.add(new ConstantNode(obj));
         }
         return args;
     }

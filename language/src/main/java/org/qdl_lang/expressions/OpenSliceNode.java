@@ -6,11 +6,14 @@ import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
 import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.QDLVariable;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -23,19 +26,19 @@ public class OpenSliceNode extends ExpressionImpl {
 
     @Override
     public QDLValue evaluate(State state) {
-        Object arg0 = evalArg(0, state);
+        QDLValue arg0 = evalArg(0, state);
         if (!longOrBD(arg0)) {
             throw new IllegalArgumentException("error: slice requires a number for the first argument ");
         }
-        Object arg1 = evalArg(1, state);
+        QDLValue arg1 = evalArg(1, state);
         if (!longOrBD(arg1)) {
             throw new IllegalArgumentException("error: slice requires a number for the second argument ");
         }
-        Object arg2;
+        QDLValue arg2;
         if (getArgCount() == 3) {
             arg2 = evalArg(2, state);
         } else {
-            arg2 = 1L;
+            arg2 = asQDLValue(1L);
         }
         QDLStem out;
         if (areAnyBD(arg0, arg1, arg2)) {
@@ -45,39 +48,38 @@ public class OpenSliceNode extends ExpressionImpl {
         }
 
         setResult(out);
-        setResultType(Constant.STEM_TYPE);
         setEvaluated(true);
-        return result;
+        return getResult();
     }
 
-    protected boolean areAnyBD(Object... args) {
+    protected boolean areAnyBD(QDLValue... args) {
         boolean areAnyDB = false;
         for (int i = 0; i < args.length; i++) {
-            areAnyDB = areAnyDB || (args[i] instanceof BigDecimal);
+            areAnyDB = areAnyDB || (args[i].isDecimal());
         }
         return areAnyDB;
     }
 
-    protected boolean longOrBD(Object args) {
-        return (args instanceof BigDecimal) || (args instanceof Long);
+    protected boolean longOrBD(QDLValue args) {
+        return args.isDecimal() || args.isLong();
     }
 
-    public QDLStem doDecimalCase(Object... args) {
+    public QDLStem doDecimalCase(QDLValue... args) {
         BigDecimal start = null;
-        if (args[0] instanceof BigDecimal) {
-            start = (BigDecimal) args[0];
+        if (args[0].isDecimal()) {
+            start = args[0].asDecimal();
         } else {
             start = new BigDecimal(args[0].toString());
         }
         BigDecimal stop = null;
-        if (args[1] instanceof BigDecimal) {
-            stop = (BigDecimal) args[1];
+        if (args[1].isDecimal()) {
+            stop = args[1].asDecimal();
         } else {
             stop = new BigDecimal(args[1].toString());
         }
         BigDecimal step = null;
-        if (args[2] instanceof BigDecimal) {
-            step = (BigDecimal) args[2];
+        if (args[2].isDecimal()) {
+            step = args[2].asDecimal();
         } else {
             step = new BigDecimal(args[2].toString());
         }
@@ -91,24 +93,24 @@ public class OpenSliceNode extends ExpressionImpl {
         BigDecimal x = stop.subtract(start);
         x = x.divide(step,0, RoundingMode.CEILING);
         int count = x.intValueExact();
-   ArrayList<Object> aList = new ArrayList<>(count);
-        aList.add( start);
+        ArrayList<QDLValue> aList = new ArrayList<>(count);
+        aList.add( asQDLValue(start));
         BigDecimal result = start.add(step, OpEvaluator.getMathContext());
         long i = 1L;
         while (result.compareTo(stop) < 0) {
-            aList.add( result);
+            aList.add(asQDLValue(result));
             result = result.add(step, OpEvaluator.getMathContext());
         }
         if (stop.compareTo(start) < 0) {
             // decrement case
             while (result.compareTo(stop) > 0) {
-                aList.add( result);
+                aList.add(asQDLValue(result));
                 result = result.add(step, OpEvaluator.getMathContext());
             }
         } else {
             //increment case
             while (result.compareTo(stop) < 0) {
-                aList.add( result);
+                aList.add(asQDLValue(result));
                 result = result.add(step, OpEvaluator.getMathContext());
             }
         }
@@ -118,10 +120,10 @@ public class OpenSliceNode extends ExpressionImpl {
         return out;
     }
 
-    protected QDLStem doLongCase(Object... args) {
-        long start = (Long) args[0];
-        long stop = (Long) args[1];
-        long step = (Long) args[2];
+    protected QDLStem doLongCase(QDLValue... args) {
+        long start = args[0].asLong();
+        long stop =  args[1].asLong();
+        long step =  args[2].asLong();
         // step == 0 ∨ (step < 0 ∧ start < stop) ∨ (0 < step ∧ stop < start)
         // means an infinite loop would happen
         if ((step == 0) || ((step < 0) && (start < stop)) || ((0 < step) && (stop < start))) {
@@ -133,20 +135,20 @@ public class OpenSliceNode extends ExpressionImpl {
         Double dd = Math.ceil((stop - stop) / (step * 1.00D));
         int lCount = dd.intValue();
 
-        ArrayList<Object> aList = new ArrayList<>(lCount);
+        ArrayList<QDLValue> aList = new ArrayList<>(lCount);
         QDLStem out = new QDLStem();
         if (stop < start) {
             // decrement case, so step <0
             while (result > stop) {
                 //out.put(i++, result);
-                aList.add(result);
+                aList.add(asQDLValue(result));
                 result = result + step;
             }
         } else {
             //increment case
             while (result < stop) {
                 //out.put(i++, result);
-                aList.add(result);
+                aList.add(asQDLValue(result));
                 result = result + step;
             }
         }

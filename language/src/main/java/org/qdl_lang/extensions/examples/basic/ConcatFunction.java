@@ -2,9 +2,12 @@ package org.qdl_lang.extensions.examples.basic;
 
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.state.State;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * Example of a basic QDL function implemented in Java.
@@ -23,8 +26,8 @@ public class ConcatFunction implements QDLFunction {
     }
 
     @Override
-    public Object evaluate(Object[] objects, State state) {
-      return objects[0].toString() + objects[1]; // call toString so it compiles. Can't add objects
+    public QDLValue evaluate(QDLValue[] qdlValues, State state) {
+      return asQDLValue(qdlValues[0].toString() + qdlValues[1]); // call toString so it compiles. Can't add objects
     }
 
     @Override

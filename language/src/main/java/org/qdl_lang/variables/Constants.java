@@ -15,6 +15,10 @@ public interface Constants {
     int STRING_TYPE = 3;
     int UNKNOWN_TYPE = -1;
     /**
+     * This next value is used internally only if an integer is passed in
+     */
+    int INTEGER_TYPE = -100;
+    /**
      * Every system function can be interrogated for its arg count. Since we are using QDLValues,
      * we have a special internal type for it. This is only used by the system in a very specific context.
      */

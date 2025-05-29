@@ -4,11 +4,16 @@ import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.exceptions.QDLException;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
+import org.qdl_lang.extensions.examples.basic.StemVar;
 import org.qdl_lang.state.State;
 import org.qdl_lang.util.QDLFileUtil;
 import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.LongValue;
+import org.qdl_lang.variables.values.QDLValue;
+import org.qdl_lang.variables.values.StemValue;
 import org.qdl_lang.vfs.VFSFileProvider;
 import org.qdl_lang.vfs.VFSPassThruFileProvider;
 import edu.uiuc.ncsa.security.core.exceptions.IllegalAccessException;
@@ -51,6 +56,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipEntry;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * Class that is the workhorse for {@link QDLHTTPModule}. See the blurb <br/>
@@ -147,24 +154,24 @@ public class HTTPClient implements QDLMetaModule {
      * 1 arg - stem, parameters
      * 2 args - uri path + stem of parameters
      *
-     * @param objects
+     * @param qdlValues
      * @return a valid get/delete string of host+uri_path+?key0=value0&amp;key1=value1...
      */
-    protected String paramsToRequest(Object[] objects) throws UnsupportedEncodingException {
+    protected String paramsToRequest(QDLValue[] qdlValues) throws UnsupportedEncodingException {
         String actualHost = host;
         QDLStem parameters = null;
-        if (objects.length == 2) {
-            if (!(objects[0] instanceof String)) {
+        if (qdlValues.length == 2) {
+            if (!(qdlValues[0].isString())) {
                 throw new BadArgException("uri_path must be a string", 0);
             }
-            actualHost = getActualHost((String) objects[0]);
-            parameters = (QDLStem) objects[1];
+            actualHost = getActualHost(qdlValues[0].asString());
+            parameters = qdlValues[1].asStem();
         }
-        if (objects.length == 0) {
+        if (qdlValues.length == 0) {
             parameters = new QDLStem(); // empty
         }
-        if (objects.length == 1) {
-            parameters = (QDLStem) objects[0];
+        if (qdlValues.length == 1) {
+            parameters = qdlValues[0].asStem();
         }
         // make the parameters.
         if (parameters == null) {
@@ -197,16 +204,16 @@ public class HTTPClient implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
             String oldHost = host;
-            if (objects.length == 1) {
-                if (objects[0] instanceof String) {
-                    host = (String) objects[0];
+            if (qdlValues.length == 1) {
+                if (qdlValues[0].isString()) {
+                    host = qdlValues[0].asString();
                 } else {
-                    throw new BadArgException("the argument to " + getName() + " must be a string, not a " + (objects[0] == null ? "null" : objects[0].getClass().getSimpleName()), 0);
+                    throw new BadArgException("the argument to " + getName() + " must be a string, not a " + (qdlValues[0] == null ? "null" : qdlValues[0].getClass().getSimpleName()), 0);
                 }
             }
-            return oldHost == null ? "" : oldHost;
+            return asQDLValue(oldHost == null ? "" : oldHost);
         }
 
         @Override
@@ -227,16 +234,16 @@ public class HTTPClient implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             checkInit();
             String r = null;
             // Fix https://github.com/ncsa/qdl/issues/88
-            Object[] obj2 = objects;
-            if(objects.length == 1){
-                if(objects[0] instanceof String){
-                    obj2 = new Object[]{objects[0], new QDLStem()};
+            QDLValue[] obj2 = qdlValues;
+            if(qdlValues.length == 1){
+                if(qdlValues[0].isString()){
+                    obj2 = new QDLValue[]{qdlValues[0], new StemValue()};
                 }else{
-                    if(!(objects[0] instanceof QDLStem)){
+                    if(!(qdlValues[0].isStem())){
                         throw new BadArgException(getName() + " requires a stem if there is a single argument.", 0);
                     }
                 }
@@ -249,7 +256,7 @@ public class HTTPClient implements QDLMetaModule {
                 }
             }
             CloseableHttpResponse response = httpClient.execute(request);
-            return getResponseStem(response);
+            return asQDLValue(getResponseStem(response));
         }
 
 
@@ -345,11 +352,11 @@ public class HTTPClient implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
             JSONObject oldHeaders = headers;
-            if (objects.length == 1) {
-                if (objects[0] instanceof QDLStem) {
-                    headers = (JSONObject) ((QDLStem) objects[0]).toJSON();
+            if (qdlValues.length == 1) {
+                if (qdlValues[0].isStem()) {
+                    headers = (JSONObject) qdlValues[0].asStem().toJSON();
                 } else {
                     throw new BadArgException(getName() + " requires a stem as its argument if present", 0);
                 }
@@ -358,7 +365,7 @@ public class HTTPClient implements QDLMetaModule {
             if (oldHeaders != null) {
                 stemVariable.fromJSON(oldHeaders);
             }
-            return stemVariable;
+            return asQDLValue(stemVariable);
         }
 
         @Override
@@ -415,7 +422,7 @@ public class HTTPClient implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
             try {
                 if (httpClient != null) {
                     httpClient.close();
@@ -424,8 +431,7 @@ public class HTTPClient implements QDLMetaModule {
                 throw new IllegalStateException("could not close connection: '" + e.getMessage() + "'");
             }
             httpClient = null;
-            return true;
-
+            return BooleanValue.True;
         }
 
         @Override
@@ -448,13 +454,13 @@ public class HTTPClient implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
             boolean doInsecure = false;
-            if (objects.length == 1) {
-                if (!(objects[0] instanceof Boolean)) {
+            if (qdlValues.length == 1) {
+                if (!(qdlValues[0].isBoolean())) {
                     throw new BadArgException(getName() + " requires a boolean argument if present", 0);
                 }
-                doInsecure = (Boolean) objects[0];
+                doInsecure = qdlValues[0].asBoolean();
             }
             if (httpClient != null) {
                 throw new IllegalStateException("You must close the current connection before opening a new one.");
@@ -471,7 +477,7 @@ public class HTTPClient implements QDLMetaModule {
                 clientbuilder.setDefaultRequestConfig(requestBuilder.build());
                 httpClient = clientbuilder.build();
             }
-            return true;
+            return BooleanValue.True;
         }
 
         @Override
@@ -541,8 +547,8 @@ public class HTTPClient implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            return httpClient != null;
+        public QDLValue evaluate(QDLValue[] objects, State state) {
+            return new BooleanValue(httpClient != null);
         }
 
         @Override
@@ -565,8 +571,8 @@ public class HTTPClient implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            return doPostOrPut(objects, state, true);
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
+            return asQDLValue(doPostOrPut(qdlValues, state, true));
         }
 
         @Override
@@ -617,8 +623,8 @@ public class HTTPClient implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            return doPostOrPut(objects, state, false);
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
+            return doPostOrPut(qdlValues, state, false);
         }
 
         @Override
@@ -640,20 +646,20 @@ public class HTTPClient implements QDLMetaModule {
         }
     }
 
-    public Object doPostOrPut(Object[] objects, State state, boolean isPost) {
+    public QDLValue doPostOrPut(QDLValue[] qdlValues, State state, boolean isPost) {
         // if the type is form encoded, escape each element in the payload.
         // If JSON, send the payload as a JSON blob.
         String uriPath = "";
         QDLStem payload = null;
         String stringPayload = null;
         checkInit();
-        switch (objects.length) {
+        switch (qdlValues.length) {
             case 1:
-                if (objects[0] instanceof QDLStem) {
-                    payload = (QDLStem) objects[0];
+                if (qdlValues[0].isStem()) {
+                    payload = qdlValues[0].asStem();
                 } else {
-                    if (objects[0] instanceof String) {
-                        stringPayload = (String) objects[0];
+                    if (qdlValues[0].isString()) {
+                        stringPayload = qdlValues[0].asString();
                     } else {
                         throw new BadArgException("monadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a stem or string as its argument", 0);
                     }
@@ -661,16 +667,16 @@ public class HTTPClient implements QDLMetaModule {
 
                 break;
             case 2:
-                if (objects[0] instanceof String) {
-                    uriPath = (String) objects[0];
+                if (qdlValues[0].isString()) {
+                    uriPath = qdlValues[0].asString();
                 } else {
                     throw new BadArgException("dyadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a string as it first argument",0);
                 }
-                if (objects[1] instanceof QDLStem) {
-                    payload = (QDLStem) objects[1];
+                if (qdlValues[1].isStem()) {
+                    payload = qdlValues[1].asStem();
                 } else {
-                    if (objects[1] instanceof String) {
-                        stringPayload = (String) objects[1];
+                    if (qdlValues[1].isString()) {
+                        stringPayload = qdlValues[1].asString();
                     } else {
                         throw new BadArgException("dyadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a stem or string as its second argument",1);
                     }
@@ -771,7 +777,7 @@ public class HTTPClient implements QDLMetaModule {
         }
         try {
             CloseableHttpResponse response = httpClient.execute((HttpUriRequest) request);
-            return getResponseStem(response);
+            return asQDLValue(getResponseStem(response));
         } catch (
                 ClientProtocolException e) {
             throw new IllegalStateException((isPost ? POST_METHOD : PUT_METHOD) + " protocol error:'" + e.getMessage() + "'");
@@ -793,9 +799,9 @@ public class HTTPClient implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             checkInit();
-            String r = paramsToRequest(objects);
+            String r = paramsToRequest(qdlValues);
             HttpDelete request = new HttpDelete(r);
             if ((headers != null) && !headers.isEmpty()) {
                 for (Object key : headers.keySet()) {
@@ -803,7 +809,7 @@ public class HTTPClient implements QDLMetaModule {
                 }
             }
             CloseableHttpResponse response = httpClient.execute(request);
-            return getResponseStem(response);
+            return asQDLValue(getResponseStem(response));
         }
 
         @Override
@@ -840,11 +846,11 @@ public class HTTPClient implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            String username = URLEncoder.encode(objects[0].toString(), "UTF-8");
-            String password = URLEncoder.encode(objects[1].toString(), "UTF-8");
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            String username = URLEncoder.encode(qdlValues[0].asString(), "UTF-8");
+            String password = URLEncoder.encode(qdlValues[1].asString(), "UTF-8");
             String raw = username + ":" + password;
-            return Base64.getEncoder().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
+            return asQDLValue(Base64.getEncoder().encodeToString(raw.getBytes(StandardCharsets.UTF_8)));
         }
 
         @Override
@@ -870,17 +876,17 @@ public class HTTPClient implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (!(objects[0] instanceof QDLStem)) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            if (!(qdlValues[0].isStem())) {
                 throw new BadArgException("argument must be a stem", 0);
             }
-            QDLStem stem = (QDLStem) objects[0];
+            QDLStem stem = qdlValues[0].asStem();
 
             if (stem.containsKey(HEADERS_KEY)) {
                 stem = stem.getStem(HEADERS_KEY);
             }
             if (stem.containsKey("Content-Type")) {
-                return stem.getString("Content-Type").contains("application/json");
+                return asQDLValue(stem.getString("Content-Type").contains("application/json"));
             }
             throw new BadArgException("could not find content type", 0);
         }
@@ -908,25 +914,25 @@ public class HTTPClient implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (!(objects[0] instanceof QDLStem)) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            if (!(qdlValues[0].isStem())) {
                 throw new BadArgException("argument must be a stem", 0);
             }
-            QDLStem stem = (QDLStem) objects[0];
+            QDLStem stem = qdlValues[0].asStem();
 
             if (stem.containsKey(HEADERS_KEY)) {
                 stem = stem.getStem(HEADERS_KEY);
             }
             if (stem.containsKey("Content-Type")) {
                 String type = stem.getString("Content-Type");
-                return type.contains("text") ||
+                return new BooleanValue(type.contains("text") ||
                         type.contains("/xml") ||
                         type.contains("/java") ||
                         type.contains("/xhtml") ||
                         type.contains("/x-sh") ||
                         type.contains("/x-shellscript") ||
                         type.contains("/xhtml+xml") ||
-                        type.contains("/javascript");
+                        type.contains("/javascript"));
             }
             throw new BadArgException("could not find content type",0);
         }
@@ -953,19 +959,19 @@ public class HTTPClient implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (!Constant.isString(objects[0])) throw new BadArgException("zeroth argument must be a string", 0);
-            if (!Constant.isString(objects[1])) throw new BadArgException("first argument must be a string",1);
+        public QDLValue evaluate(QDLValue[] objects, State state) throws Throwable {
+            if (!objects[0].isString()) throw new BadArgException("zeroth argument must be a string", 0);
+            if (!objects[1].isString()) throw new BadArgException("first argument must be a string",1);
             boolean isZip = false;
             if (objects.length == 3) {
-                if (!(objects[2] instanceof Boolean)) {
+                if (!(objects[2].isBoolean())) {
                     throw new BadArgException(getName() + " must have a boolean as its third argument if present",2);
                 }
-                isZip = (Boolean) objects[2];
+                isZip = objects[2].asBoolean();
             }
-            String targetPath = (String) objects[1];
+            String targetPath =  objects[1].asString();
             if (QDLFileUtil.isVFSPath(targetPath)) {
-                VFSFileProvider vfs = state.getVFS((String) objects[1]);
+                VFSFileProvider vfs = state.getVFS(objects[1].asString());
                 if (!vfs.canWrite()) throw new IllegalAccessException("VFS is read only");
                 if (vfs instanceof VFSPassThruFileProvider) {
                     VFSPassThruFileProvider vfsPassThruFileProvider = (VFSPassThruFileProvider) vfs;
@@ -976,7 +982,7 @@ public class HTTPClient implements QDLMetaModule {
             } else {
                 if (state.isServerMode()) throw new IllegalAccessException("cannot download in server mode");
             }
-            URL url = new URL((String) objects[0]);
+            URL url = new URL(objects[0].asString());
             File targetFile = new File(targetPath);
             Long totalBytes = -1L;
             try {
@@ -989,9 +995,9 @@ public class HTTPClient implements QDLMetaModule {
                 if (state.isDebugOn()) {
                     iox.printStackTrace();
                 }
-                return -1L;
+                return LongValue.MinusOne;
             }
-            return totalBytes;
+            return new LongValue(totalBytes);
         }
 
         protected Long download(URL url, File targetFile) throws IOException {

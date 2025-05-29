@@ -44,6 +44,7 @@ import static org.qdl_lang.evaluate.SystemEvaluator.*;
 import static org.qdl_lang.variables.Constant.isString;
 import static org.qdl_lang.variables.VTable.KEY_KEY;
 import static org.qdl_lang.variables.VTable.VALUE_KEY;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 import static org.qdl_lang.xml.SerializationConstants.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -82,7 +83,7 @@ public class ModuleUtils implements Serializable {
                 // single string arguments
                 if (isString(arg)) {
                     argStem = new QDLStem();
-                    argStem.listAdd(arg);
+                    argStem.listAdd(asQDLValue(arg));
                     gotOne = true;
                 }
                 if (Constant.isStem(arg)) {
@@ -102,8 +103,8 @@ public class ModuleUtils implements Serializable {
 
                 argStem = new QDLStem();
                 QDLStem innerStem = new QDLStem();
-                innerStem.listAdd(arg);
-                innerStem.listAdd(arg2);
+                innerStem.listAdd(asQDLValue(arg));
+                innerStem.listAdd(asQDLValue(arg2));
                 argStem.put(0L, innerStem);
                 gotOne = true;
                 break;
@@ -125,7 +126,8 @@ public class ModuleUtils implements Serializable {
     public List<String> doJavaModuleLoad(State state, String resourceName, JavaModuleConfig javaModuleConfig) {
         try {
             Class klasse = state.getClass().forName(resourceName);
-            Object newThingy = klasse.newInstance();
+            //Object newThingy = klasse.newInstance();
+            Object newThingy = klasse.getDeclaredConstructor().newInstance();
             QDLLoader qdlLoader;
             if (newThingy instanceof JavaModule) {
                 // For a single instance, just create a barebones loader on the fly.
@@ -258,8 +260,8 @@ public class ModuleUtils implements Serializable {
         Polyad polyad;
         polyad = new Polyad(ModuleEvaluator.LOAD);
         if (json.getString(MODULE_TYPE_TAG2).equals(MODULE_TYPE_JAVA)) {
-            polyad.addArgument(new ConstantNode(json.getString(MODULE_CLASS_NAME_TAG)));
-            polyad.addArgument(new ConstantNode("java"));
+            polyad.addArgument(new ConstantNode(asQDLValue(json.getString(MODULE_CLASS_NAME_TAG))));
+            polyad.addArgument(new ConstantNode(asQDLValue("java")));
             polyad.evaluate(state);
         }
         boolean isTemplate = json.getBoolean(MODULE_IS_TEMPLATE_TAG);
@@ -320,7 +322,7 @@ public class ModuleUtils implements Serializable {
             m = qi.getState().getMInstances().getModule(new XKey(json.getString(MODULE_ALIAS_ATTR)));
         } else {
 
-            m = (Module) qi.getState().getValue(varName);
+            m = qi.getState().getValue(varName).asModule();
         }
         m.setId(UUID.fromString(json.getString(UUID_TAG)));
         updateSerializedState(json, m.getState(), serializationState);
@@ -393,10 +395,10 @@ public class ModuleUtils implements Serializable {
             if (var.getString(TYPE_TAG).equals(MODULE_TAG)) {
                 String key = var.getString(KEY_KEY);
                 VThing vThing = (VThing) state.getVStack().get(new XKey(key));
-                if (!(vThing.getVariable() instanceof Module)) {
+                if (!(vThing.getVariable().getValue().isModule())) {
                     throw new NFWException("Incorrect serialization. Expected a module for variable " + key + " but got a " + vThing.getVariable().getClass().getSimpleName());
                 }
-                Module module = (Module) vThing.getVariable();
+                Module module = vThing.getVariable().getValue().asModule();
                 if (module instanceof JavaModule) {
                     JavaModule javaModule = (JavaModule) module;
                     javaModule.deserializeStates(var, serializationState);

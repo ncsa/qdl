@@ -1149,7 +1149,7 @@ a.⌆b.
         Polyad joinPolyad = new Polyad(StemEvaluator.JOIN);
         joinPolyad.getArguments().add(dyad.getLeftArgument());
         joinPolyad.getArguments().add(dyad.getRightArgument());
-        joinPolyad.getArguments().add(new ConstantNode(new LongValue(-1L)));
+        joinPolyad.getArguments().add(new ConstantNode(LongValue.MinusOne));
         state.getMetaEvaluator().evaluate(joinPolyad, state);
         dyad.setResult(joinPolyad.getResult());
         dyad.setEvaluated(true);
@@ -2030,7 +2030,7 @@ Object  tempValue = null;
             monad.setResult(resultValue); // so the returned result is the increment for prefixes
         }
         monad.setEvaluated(true);
-        state.setValue(var.getVariableReference(), resultValue);
+        state.setValue(var.getVariableReference(), asQDLValue(resultValue));
     }
 
 

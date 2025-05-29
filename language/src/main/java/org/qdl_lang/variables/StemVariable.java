@@ -1,5 +1,7 @@
 package org.qdl_lang.variables;
 
+import org.qdl_lang.variables.values.QDLValue;
+
 /**
  * <p>Created by Jeff Gaynor<br>
  * on 1/16/20 at  12:09 PM
@@ -11,7 +13,7 @@ public class StemVariable extends QDLStem {
         super();
     }
 
-    public StemVariable(Long count, Object[] fillList) {
+    public StemVariable(Long count, QDLValue[] fillList) {
         super(count, fillList);
     }
 
@@ -21,7 +23,7 @@ public class StemVariable extends QDLStem {
     }
 
     @Override
-    public QDLStem newInstance(Long count, Object[] fillList) {
+    public QDLStem newInstance(Long count, QDLValue[] fillList) {
         return new StemVariable(count, fillList);
     }
 

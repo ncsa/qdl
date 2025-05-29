@@ -22,6 +22,8 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.qdl_lang.functions.*;
 import org.qdl_lang.statements.*;
 import org.qdl_lang.variables.values.QDLValue;
+import org.qdl_lang.variables.values.StemValue;
+import org.qdl_lang.variables.values.StringValue;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -33,6 +35,7 @@ import java.util.StringTokenizer;
 import static org.qdl_lang.exceptions.ParsingException.*;
 import static org.qdl_lang.statements.ExpressionInterface.*;
 import static org.qdl_lang.variables.QDLStem.STEM_INDEX_MARKER;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -88,7 +91,7 @@ public class QDLListener implements QDLParserListener {
                 ctx.getText().equals(QDLConstants.RESERVED_FALSE)) {
             // SPECIAL CASE. The parse recognizes true and false, but does not know what to do with them.
             // We are here because it lumps them together with the variable values.
-            ConstantNode cnode = new ConstantNode(new Boolean(ctx.getText().equals(QDLConstants.RESERVED_TRUE)), Constant.BOOLEAN_TYPE);
+            ConstantNode cnode = new ConstantNode(asQDLValue(ctx.getText().equals(QDLConstants.RESERVED_TRUE)));
             p.statement = cnode;
             cnode.setSourceCode(getSource(ctx));
             return;
@@ -301,7 +304,7 @@ public class QDLListener implements QDLParserListener {
             rawNumber = rawNumber.replace("¯", "-").replace("⁺", "+");
             decimal = new BigDecimal(rawNumber); // if it fails here, it fails.
         }
-        constantNode = new ConstantNode(decimal, Constant.DECIMAL_TYPE);
+        constantNode = new ConstantNode(asQDLValue(decimal));
         stash(ctx, constantNode);
     }
 
@@ -526,7 +529,7 @@ public class QDLListener implements QDLParserListener {
         polyad.setTokenPosition(tp(ctx));
         polyad.setSourceCode(getSource(ctx));
         polyad.addArgument((ExpressionInterface) resolveChild(ctx.getChild(1)));
-        polyad.addArgument(new ConstantNode(2L));
+        polyad.addArgument(new ConstantNode(asQDLValue(2L))) ;
         stash(ctx, polyad);
     }
 
@@ -549,7 +552,7 @@ public class QDLListener implements QDLParserListener {
 
     @Override
     public void exitNull(QDLParserParser.NullContext ctx) {
-        ConstantNode constantNode = new ConstantNode(QDLNull.getInstance(), Constant.NULL_TYPE);
+        ConstantNode constantNode = new ConstantNode(QDLValue.getNullValue());
         constantNode.setTokenPosition(tp(ctx));
         stash(ctx, constantNode);
     }
@@ -580,7 +583,7 @@ public class QDLListener implements QDLParserListener {
         value = value.replace("\\b", "\b");
         value = value.replace("\\\\", "\\");
 */
-        ConstantNode node = new ConstantNode(value, Constant.STRING_TYPE);
+        ConstantNode node = new ConstantNode(asQDLValue(value));
         List<String> source = new ArrayList<>();
         source.add(ctx.getText());
         node.setTokenPosition(tp(ctx));
@@ -1512,7 +1515,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
             // it is possible the user is entering a simply huge number, try plan B
             value = new BigDecimal(ctx.getChild(0).getText());
         }
-        constantNode = new ConstantNode(value);
+        constantNode = new ConstantNode(asQDLValue(value));
         constantNode.setTokenPosition(tp(ctx));
         constantNode.setSourceCode(getSource(ctx));
         stash(ctx, constantNode);
@@ -1700,7 +1703,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
         // Missing zero-th argument
         if (ctx.getChild(1) instanceof TerminalNodeImpl) {
             // Missing first argument, supply it
-            sliceNode.getArguments().add(new ConstantNode(0L, Constant.LONG_TYPE));
+            sliceNode.getArguments().add(new ConstantNode(asQDLValue(0L)));
         }
         for (int i = 0; i < ctx.getChildCount(); i++) {
             if (ctx.getChild(i) instanceof TerminalNodeImpl) {
@@ -1722,7 +1725,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
         ClosedSliceNode realIntervalNode = (ClosedSliceNode) parsingMap.getStatementFromContext(ctx);
         if (ctx.getChild(1) instanceof TerminalNodeImpl) {
             // Missing first argument, supply it
-            realIntervalNode.getArguments().add(new ConstantNode(0L, Constant.LONG_TYPE));
+            realIntervalNode.getArguments().add(new ConstantNode(asQDLValue(0L)));
         }
         for (int i = 0; i < ctx.getChildCount(); i++) {
             if (ctx.getChild(i) instanceof TerminalNodeImpl) {
@@ -1745,7 +1748,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
 
     @Override
     public void enterKeyword(QDLParserParser.KeywordContext ctx) {
-        ConstantNode constantNode = new ConstantNode(null, Constant.STRING_TYPE);
+        ConstantNode constantNode = new ConstantNode(new StringValue(null));
         constantNode.setTokenPosition(tp(ctx));
         stash(ctx, constantNode);
 
@@ -1758,19 +1761,15 @@ illegal argument:no module named "b" was  imported at (1, 67)
         switch (ctx.getText()) {
             case QDLConstants.RESERVED_FALSE:
                 constantNode.setResult(Boolean.FALSE);
-                constantNode.setResultType(Constant.BOOLEAN_TYPE);
                 break;
             case QDLConstants.RESERVED_TRUE:
                 constantNode.setResult(Boolean.TRUE);
-                constantNode.setResultType(Constant.BOOLEAN_TYPE);
                 break;
             case QDLConstants.RESERVED_NULL:
                 constantNode.setResult(QDLNull.getInstance());
-                constantNode.setResultType(Constant.NULL_TYPE);
                 break;
             case QDLConstants.RESERVED_NULL_SET:
                 constantNode.setResult(new QDLSet());
-                constantNode.setResultType(Constant.SET_TYPE);
                 break;
 /*            case QDLConstants.RESERVED_COMPLEX_I:
                 throw new IllegalArgumentException("Complex numbers not supported.");*/
@@ -2210,7 +2209,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
         dyad.setUnary(true);
         dyad.setTokenPosition(tp(ctx));
         stash(ctx, dyad);
-        dyad.setLeftArgument(new ConstantNode(new QDLStem(), Constant.STEM_TYPE));
+        dyad.setLeftArgument(new ConstantNode(new StemValue()));
         dyad.setRightArgument((ExpressionInterface) resolveChild(ctx.expression()));
         List<String> source = new ArrayList<>();
         source.add(ctx.getText());
@@ -2893,7 +2892,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
         dyad = new Dyad(OpEvaluator.TILDE_VALUE);
         dyad.setUnary(true);
         dyad.setTokenPosition(tp(ctx));
-        dyad.setLeftArgument(new ConstantNode(new QDLStem(), Constant.STEM_TYPE));
+        dyad.setLeftArgument(new ConstantNode(new StemValue()));
         dyad.setRightArgument((ExpressionInterface) resolveChild(ctx.expression()));
 
         // create the wrapping logical not.
@@ -2933,7 +2932,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
         String text = ctx.my_integer().getText();
 
         BigDecimal bd = new BigDecimal("." + text);
-        ConstantNode constantNode = new ConstantNode(bd, Constant.DECIMAL_TYPE);
+        ConstantNode constantNode = new ConstantNode(asQDLValue(bd));
         stash(ctx, constantNode);
     }
 

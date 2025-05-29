@@ -37,6 +37,7 @@ import java.util.UUID;
 import java.util.zip.GZIPInputStream;
 
 import static edu.uiuc.ncsa.security.core.util.StringUtils.isTrivial;
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * A class for all those XML related snippets that are re-used everywhere.
@@ -114,7 +115,7 @@ public class XMLUtils implements SerializationConstants {
             QDLStem s = new QDLStem();
             for (Object obj : list) {
                 if (obj != null) {
-                    s.listAdd(obj.toString());
+                    s.listAdd(asQDLValue(obj.toString()));
                 }
             }
             write(xsw, s);

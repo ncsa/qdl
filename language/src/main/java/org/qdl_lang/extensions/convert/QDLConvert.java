@@ -17,6 +17,8 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.util.InputFormUtil;
 import org.qdl_lang.util.QDLFileUtil;
 import org.qdl_lang.variables.*;
+import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.xml.XMLUtils;
 import edu.uiuc.ncsa.security.core.exceptions.GeneralException;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
@@ -37,6 +39,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.*;
 import java.util.regex.Pattern;
+
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -100,8 +104,8 @@ public class QDLConvert implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            return newEvaluate(objects, state);
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            return asQDLValue(newEvaluate(qdlValues, state));
             // return oldEvaluate(object, state);
         }
 
@@ -127,7 +131,7 @@ public class QDLConvert implements QDLMetaModule {
             return stem;
         }
 
-        protected Object newEvaluate(Object[] objects, State state) throws XMLStreamException {
+        protected Object newEvaluate(QDLValue[] qdlValues, State state) throws XMLStreamException {
             XMLEventReader xer = null;
             boolean ignoreWhitespace = true;
             boolean validate = true;
@@ -135,26 +139,29 @@ public class QDLConvert implements QDLMetaModule {
             boolean ignoreComments = XML_IMPORT_LEVEL_COMMENTS <= level;
             String raw = null;
             QDLStem inStem = null;
-            Object configObject = null;
-            if (objects.length == 1) {
-                if (objects[0] instanceof QDLStem) {
-                    configObject = objects[0];
+            QDLStem configStem = null;
+            if (qdlValues.length == 1) {
+                if (qdlValues[0].isStem()) {
+                    configStem = qdlValues[0].asStem();
                 }
-                if (objects[0] instanceof String) {
-                    configObject = new QDLStem(); // make it empty.
+                if (qdlValues[0].isString()) {
+                    configStem = new QDLStem(); // make it empty.
                 }
             } else {
-                if (!(objects[0] instanceof String)) {
+                if (!(qdlValues[0].isString())) {
                     throw new BadArgException(getName() + " requires the first argument is a string", 0);
                 }
-                raw = objects[0].toString();
-                configObject = objects[1];
+                raw = qdlValues[0].asString();
+                configStem = new QDLStem();
+                configStem = qdlValues[1].asStem();
             }
-            if (!(configObject instanceof QDLStem)) {
+/*
+            if (!(configStem instanceof QDLStem)) {
                 throw new BadArgException(getName() + " requires that that the configuration argument is  a stem", 1);
             }
-            inStem = (QDLStem) configObject;
-            String inString = getFileArg(objects[0], state, getName());
+*/
+            inStem = (QDLStem) configStem;
+            String inString = getFileArg(qdlValues[0].getValue(), state, getName());
             if (inStem.containsKey(ARG_VALIDATE)) {
                 validate = inStem.getBoolean(ARG_VALIDATE);
             }
@@ -209,7 +216,7 @@ public class QDLConvert implements QDLMetaModule {
                         }
                         if (ignoreWhitespace && characters.isIgnorableWhiteSpace()) {
                         } else {
-                            cursorStack.peek().listAdd(event.asCharacters().toString());
+                            cursorStack.peek().listAdd(asQDLValue(event.asCharacters().toString()));
                         }
                         break;
                     case XMLEvent.ATTRIBUTE: // Never seems to get called. See start element
@@ -238,11 +245,11 @@ public class QDLConvert implements QDLMetaModule {
                         previous = cursorStack.peek();
                         QDLStem targetStem = new QDLStem();
                         if (previous.containsKey(currentTag)) {
-                            previous.getStem(currentTag).listAdd(targetStem);
+                            previous.getStem(currentTag).listAdd(asQDLValue(targetStem));
                         } else {
                             QDLStem x = new QDLStem();
                             previous.put(currentTag, x);
-                            x.listAdd(targetStem);
+                            x.listAdd(asQDLValue(targetStem));
 
                         }
                         cursorStack.push(targetStem);
@@ -368,19 +375,19 @@ public class QDLConvert implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            if (!(objects[0] instanceof QDLStem)) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
+            if (!(qdlValues[0].isStem())) {
                 throw new BadArgException(getName() + " requires a stem as its argument", 0);
             }
-            QDLStem arg = (QDLStem) objects[0];
+            QDLStem arg = qdlValues[0].asStem();
 
-            boolean exportToFile = objects.length == 2;
+            boolean exportToFile = qdlValues.length == 2;
             String fileName = null;
             if (exportToFile) {
-                if (!(objects[1] instanceof String)) {
+                if (!(qdlValues[1].isString())) {
                     throw new BadArgException(getName() + " requires a string as its second argument if present.", 1);
                 }
-                fileName = (String) objects[1];
+                fileName = qdlValues[1].asString();
             }
             Writer w = new StringWriter();
 
@@ -423,9 +430,9 @@ public class QDLConvert implements QDLMetaModule {
                     }
                     throw new IllegalStateException(getName() + " could not write file '" + fileName + "':" + e.getMessage());
                 }
-                return Boolean.TRUE;
+                return BooleanValue.True;
             }
-            return w.toString();
+            return asQDLValue(w.toString());
         }
 
 
@@ -438,7 +445,7 @@ public class QDLConvert implements QDLMetaModule {
                 // Write the text
                 QDLList qdlList = ((QDLStem) object).getQDLList();
                 QDLMap qdlMap = ((QDLStem) object).getQDLMap();
-                boolean isCDATA = qdlMap.containsKey(CDATA_KEY) && (Boolean) qdlMap.get(CDATA_KEY);
+                boolean isCDATA = qdlMap.containsKey(CDATA_KEY) && qdlMap.get(CDATA_KEY).asBoolean();
                 // Write attributes immediately after tag or you get an exception.
                 for (String key : qdlMap.keySet()) {
                     if (isProperty(key)) {
@@ -530,10 +537,10 @@ public class QDLConvert implements QDLMetaModule {
         State state = new State();
         state.setServerMode(false);
         //cfg.put("file", DebugUtil.getDevPath()+"/qdl/language/src/main/resources/xml/planes.xml");
-        cfg.put("file", DebugUtil.getDevPath() + "/qdl/language/src/main/resources/xml/simple0.xml");
-        QDLStem stem = (QDLStem) xmlImport.evaluate(new Object[]{cfg}, state);
+        cfg.put("file", asQDLValue(DebugUtil.getDevPath() + "/qdl/language/src/main/resources/xml/simple0.xml"));
+        QDLStem stem =  xmlImport.evaluate(new QDLValue[]{asQDLValue(cfg)}, state).asStem();
         XMLExport xmlExport = QDLConvert.new XMLExport();
-        Object x = xmlExport.evaluate(new Object[]{stem}, state);
+        Object x = xmlExport.evaluate(new QDLValue[]{asQDLValue(stem)}, state);
         System.out.println(x);
         HOCONExport hoconExport = QDLConvert.new HOCONExport();
 //        System.out.println(hoconExport.evaluate(new Object[]{stem}, null));
@@ -545,7 +552,7 @@ public class QDLConvert implements QDLMetaModule {
 
     public static class MyStemStack<V extends QDLStem> extends Stack<V> {
         public QDLStem peekLast(String currentTag) {
-            QDLStem qqq = (QDLStem) peek().getQDLList().last().entry;
+            QDLStem qqq = peek().getQDLList().last().entry.asStem();
             return qqq;
             //return (QDLStem) peek().getStem(currentTag).getQDLList().last().entry;
         }
@@ -565,33 +572,33 @@ public class QDLConvert implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            if (!(objects[0] instanceof QDLStem)) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
+            if (!(qdlValues[0].isStem())) {
                 throw new BadArgException(getName() + " requires a stem as its first argument", 0);
             }
-            QDLStem stem = (QDLStem) objects[0];
+            QDLStem stem = qdlValues[0].asStem();
             long axis = 0L;
-            boolean hasAxis = objects.length == 2;
+            boolean hasAxis = qdlValues.length == 2;
             if (hasAxis) {
-                if (!(objects[1] instanceof Long)) {
+                if (!(qdlValues[1].isLong())) {
                     throw new BadArgException(getName() + " require a long for its second argument", 1);
                 }
-                axis = (Long) objects[1];
+                axis = qdlValues[1].asLong();
             }
             Polyad polyad = new Polyad(StemEvaluator.ALL_KEYS);
-            polyad.addArgument(new ConstantNode(stem));
+            polyad.addArgument(new ConstantNode(asQDLValue(stem)));
             if (hasAxis) {
-                polyad.addArgument(new ConstantNode(axis));
+                polyad.addArgument(new ConstantNode(asQDLValue(axis)));
             }
             polyad.evaluate(state);
-            QDLStem z = (QDLStem) polyad.getResult();
-            List values = z.getQDLList().values();
+            QDLStem z = polyad.getResult().asStem();
+            List<QDLValue> values = z.getQDLList().values();
             List<String> out = new ArrayList<>();
             QDLStem result = new QDLStem();
-            for (Object obj : values) {
-                if (obj instanceof QDLStem) {
-                    QDLStem zz = (QDLStem) obj;
-                    ArrayList valueList = ((QDLStem) obj).getQDLList().values();
+            for (QDLValue qdlValue : values) {
+                if (qdlValue.isStem()) {
+                    QDLStem zz = qdlValue.asStem();
+                    ArrayList valueList = qdlValue.asStem().getQDLList().values();
                     boolean gotOne = false;
                     for (Object ooo : valueList) {
                         if (isProperty(ooo)) {
@@ -602,11 +609,11 @@ public class QDLConvert implements QDLMetaModule {
                     if (gotOne) {
                         QDLStem aaa = new QDLStem();
                         aaa.addList(valueList);
-                        result.listAdd(aaa);
+                        result.listAdd(asQDLValue(aaa));
                     }
                 }
             }
-            return result;
+            return asQDLValue(result);
         }
 
         /*
@@ -645,14 +652,14 @@ public class QDLConvert implements QDLMetaModule {
          */
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            QDLStem inStem = (QDLStem) objects[0];
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
+            QDLStem inStem = qdlValues[0].asStem();
             for (Object key : inStem.keySet()) {
                 if (rejectKey(key)) {
                     inStem.remove(key.toString());
                 }
             }
-            return doSnarf(inStem);
+            return asQDLValue(doSnarf(inStem));
         }
 
 
@@ -724,7 +731,7 @@ public class QDLConvert implements QDLMetaModule {
             if (isSingleton) {
                 return snarfNode(current, glomStringsTogether); // return the list of strings
             }
-            out.listAdd(snarfNode(current, glomStringsTogether));
+            out.listAdd(asQDLValue(snarfNode(current, glomStringsTogether)));
         }
         return out;
     }
@@ -803,8 +810,8 @@ public class QDLConvert implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            String inString = getFileArg(objects[0], state, getName());
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
+            String inString = getFileArg(qdlValues[0].getValue(), state, getName());
             // deprecated SafeConstructor, but prevents a very scary injection attack:
             // https://devhub.checkmarx.com/cve-details/CVE-2022-1471/?utm_source=jetbrains&utm_medium=referral&utm_campaign=idea&utm_term=maven
             Yaml yaml = new Yaml(new SafeConstructor());
@@ -816,7 +823,7 @@ public class QDLConvert implements QDLMetaModule {
             if (map instanceof List) {
                 stem = StemUtility.listToStem((List) map);
             }
-            return stem;
+            return asQDLValue(stem);
         }
 
         List<String> doxx = new ArrayList<>();
@@ -844,25 +851,25 @@ public class QDLConvert implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            if (!(objects[0] instanceof QDLStem)) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
+            if (!(qdlValues[0].isStem())) {
                 throw new BadArgException(getName() + " requires a stem as its first argument", 0);
             }
-            QDLStem stem = (QDLStem) objects[0];
+            QDLStem stem = qdlValues[0].asStem();
             boolean exportToFile = false;
             String fileName = null;
-            if (objects.length == 2) {
-                if (!(objects[1] instanceof String)) {
+            if (qdlValues.length == 2) {
+                if (!(qdlValues[1].isString())) {
                     throw new BadArgException(getName() + " requires a string as its second argument if present", 1);
                 }
                 exportToFile = true;
-                fileName = (String) objects[1];
+                fileName = qdlValues[1].asString();
             }
             Yaml yaml = new Yaml();
             JSON json = stem.toJSON();
             String out = yaml.dump(json);
             if (!exportToFile) {
-                return out;
+                return asQDLValue(out);
             }
             try {
                 QDLFileUtil.writeTextFile(state, fileName, out);
@@ -872,7 +879,7 @@ public class QDLConvert implements QDLMetaModule {
                 }
                 throw new IllegalStateException(getName() + " could not write file '" + fileName + "':" + e.getMessage());
             }
-            return Boolean.TRUE;
+            return BooleanValue.True;
         }
 
         List<String> doxx = new ArrayList<>();
@@ -901,15 +908,15 @@ public class QDLConvert implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            String inString = getFileArg(objects[0], state, getName());
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
+            String inString = getFileArg(qdlValues[0].getValue(), state, getName());
             StringReader stringReader = new StringReader(inString);
             Config conf = ConfigFactory.parseReader(stringReader);
             String rawJSON = conf.root().render(ConfigRenderOptions.concise());
             // String rawJSON = conf.root().render(ConfigRenderOptions.defaults().setJson(false).setComments(true).setOriginComments(true));
             QDLStem out = new QDLStem();
             out.fromJSON(JSONObject.fromObject(rawJSON));
-            return out;
+            return asQDLValue(out);
         }
 
         List<String> doxx = new ArrayList<>();
@@ -937,19 +944,19 @@ public class QDLConvert implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            if (!(objects[0] instanceof QDLStem)) {
+        public QDLValue evaluate(QDLValue[] objects, State state) {
+            if (!(objects[0].isStem())) {
                 throw new BadArgException(getName() + " requires a stem as its first argument", 0);
             }
-            QDLStem stem = (QDLStem) objects[0];
+            QDLStem stem = objects[0].asStem();
             boolean exportToFile = false;
             String fileName = null;
             if (objects.length == 2) {
-                if (!(objects[1] instanceof String)) {
+                if (!(objects[1].isString())) {
                     throw new BadArgException(getName() + " requires a string as its second argument if present", 1);
                 }
                 exportToFile = true;
-                fileName = (String) objects[1];
+                fileName = objects[1].asString();
             }
             if(stem.isList()){
                 QDLStem wrapper = new QDLStem();
@@ -961,7 +968,7 @@ public class QDLConvert implements QDLMetaModule {
             //String rawJSON = conf.root().render(ConfigRenderOptions.concise());
             String rawJSON = conf.root().render(ConfigRenderOptions.defaults().setJson(false).setOriginComments(false).setFormatted(true));
             if (!exportToFile) {
-                return rawJSON;
+                return asQDLValue(rawJSON);
             }
             try {
                 QDLFileUtil.writeTextFile(state, fileName, rawJSON);
@@ -971,7 +978,7 @@ public class QDLConvert implements QDLMetaModule {
                 }
                 throw new IllegalStateException(getName() + " could not write file '" + fileName + "':" + e.getMessage());
             }
-            return Boolean.TRUE;
+            return BooleanValue.True;
         }
 
         List<String> doxx = new ArrayList<>();
@@ -1070,10 +1077,10 @@ public class QDLConvert implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            String inString = getFileArg(objects[0], state, getName());
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
+            String inString = getFileArg(qdlValues[0].getValue(), state, getName());
             Polyad polyad = new Polyad(SystemEvaluator.INTERPRET);
-            polyad.addArgument(new ConstantNode(inString));
+            polyad.addArgument(new ConstantNode(asQDLValue(inString)));
             try {
                 polyad.evaluate(state);
                 return polyad.getResult();
@@ -1111,19 +1118,19 @@ public class QDLConvert implements QDLMetaModule {
 
          */
         @Override
-        public Object evaluate(Object[] objects, State state) {
-            if (!(objects[0] instanceof QDLStem)) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
+            if (!(qdlValues[0].isStem())) {
                 throw new BadArgException(getName() + " requires a stem as its first argument", 0);
             }
-            QDLStem stem = (QDLStem) objects[0];
+            QDLStem stem = qdlValues[0].asStem();
             boolean exportToFile = false;
             String fileName = null;
-            if (objects.length == 2) {
-                if (!(objects[1] instanceof String)) {
+            if (qdlValues.length == 2) {
+                if (!(qdlValues[1].isString())) {
                     throw new BadArgException(getName() + " requires a string as its second argument if present", 1);
                 }
                 exportToFile = true;
-                fileName = (String) objects[1];
+                fileName = qdlValues[1].asString();
             }
             String out = InputFormUtil.inputForm(stem);
             if (exportToFile) {
@@ -1135,9 +1142,9 @@ public class QDLConvert implements QDLMetaModule {
                     }
                     throw new BadArgException("unable to save file '" + fileName + "':" + e.getMessage(), 1);
                 }
-                return Boolean.TRUE;
+                return BooleanValue.True;
             }
-            return out;
+            return asQDLValue(out);
         }
 
         @Override
@@ -1168,21 +1175,21 @@ public class QDLConvert implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if (!(objects[0] instanceof String)) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            if (!(qdlValues[0].isString())) {
                 throw new BadArgException(INI_IN + " requires a string as its argument", 0);
             }
             boolean allowListEntries = true;
 
-            if(objects.length == 2 && objects[1] instanceof Boolean){
-                allowListEntries = (Boolean)objects[1];
+            if(qdlValues.length == 2 && qdlValues[1].isBoolean()){
+                allowListEntries = qdlValues[1].asBoolean();
 
             }
-            String content = (String) objects[0];
+            String content = qdlValues[0].asString();
             IniParserDriver iniParserDriver = new IniParserDriver();
             StringReader stringReader = new StringReader(content);
             QDLStem out = iniParserDriver.parse(stringReader, allowListEntries);
-            return out;
+            return asQDLValue(out);
         }
 
         @Override
@@ -1212,40 +1219,40 @@ public class QDLConvert implements QDLMetaModule {
         }
 
         @Override
-        public Object evaluate(Object[] objects, State state) throws Throwable {
-            if(!(objects[0] instanceof QDLStem)){
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            if(!(qdlValues[0].isStem())){
                 throw new BadArgException(INI_OUT + " takes a stem as its first argument", 0);
             }
             int indentfactor = 1; // default here
             boolean allowListEntries = true;
-            boolean gotOne = objects.length == 1; // default case is allow for single argument
-            if(objects.length == 2) {
-                if (objects[1] instanceof Boolean) {
-                    allowListEntries = (Boolean) objects[1];
+            boolean gotOne = qdlValues.length == 1; // default case is allow for single argument
+            if(qdlValues.length == 2) {
+                if (qdlValues[1].isBoolean()) {
+                    allowListEntries = qdlValues[1].asBoolean();
                     gotOne = true;
                 }
-                if (objects[1] instanceof Long) {
-                    indentfactor = ((Long) objects[1]).intValue();
+                if (qdlValues[1].isLong()) {
+                    indentfactor = qdlValues[1].asLong().intValue();
                     gotOne = true;
                 }
             }
-            if(objects.length == 3){
-                if (objects[2] instanceof Boolean) {
-                    allowListEntries = (Boolean) objects[1];
+            if(qdlValues.length == 3){
+                if (qdlValues[2].isBoolean()) {
+                    allowListEntries = qdlValues[1].asBoolean();
                     gotOne = true;
                 }
-                if (objects[1] instanceof Long) {
-                    indentfactor = ((Long) objects[1]).intValue();
+                if (qdlValues[1].isLong()) {
+                    indentfactor = qdlValues[1].asLong().intValue();
                     gotOne = true;
                 }
 
             }
             if(!gotOne){
-                throw new BadArgException(INI_OUT + " requires an integer or boolean as its additional arguments if present", objects.length-1);
+                throw new BadArgException(INI_OUT + " requires an integer or boolean as its additional arguments if present", qdlValues.length-1);
             }
 
-            String out =  IOEvaluator.convertToIni((QDLStem) objects[0], indentfactor, allowListEntries);
-            return out;
+            String out =  IOEvaluator.convertToIni(qdlValues[0].asStem(), indentfactor, allowListEntries);
+            return asQDLValue(out);
         }
 
         @Override

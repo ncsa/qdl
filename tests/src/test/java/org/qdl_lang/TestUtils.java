@@ -10,6 +10,7 @@ import org.qdl_lang.module.MTStack;
 import org.qdl_lang.state.State;
 import org.qdl_lang.state.XKey;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.QDLVariable;
 import org.qdl_lang.variables.VStack;
 import org.qdl_lang.variables.VThing;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
@@ -104,14 +105,14 @@ public class TestUtils {
      */
     public VStack getTestSymbolStack() {
         VStack vStack = new VStack();
-        vStack.put(new VThing(new XKey("string"), "a string"));
-        vStack.put(new VThing(new XKey("long"), 2468L));
-        vStack.put(new VThing(new XKey("boolean"), Boolean.TRUE));
+        vStack.put(new VThing(new XKey("string"), new QDLVariable("a string")));
+        vStack.put(new VThing(new XKey("long"), new QDLVariable(2468L)));
+        vStack.put(new VThing(new XKey("boolean"), new QDLVariable(Boolean.TRUE)));
         QDLStem stemVariable =new QDLStem();
         stemVariable.put(0, AbstractQDLTester.getRandomString());
         stemVariable.put(1, AbstractQDLTester.getRandomString());
         stemVariable.put(2, AbstractQDLTester.getRandomString());
-        vStack.put(new VThing(new XKey("random."), stemVariable));
+        vStack.put(new VThing(new XKey("random."), new QDLVariable(stemVariable)));
         return vStack;
     }
 }

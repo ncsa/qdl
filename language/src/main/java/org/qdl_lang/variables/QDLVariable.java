@@ -4,6 +4,13 @@ import org.qdl_lang.exceptions.TypeViolationException;
 import org.qdl_lang.variables.values.QDLValue;
 
 public class QDLVariable {
+    public QDLVariable(QDLValue value) {
+        this.value = value;
+    }
+
+    public QDLVariable(Object value) {
+        this(value instanceof QDLValue ? (QDLValue) value : QDLValue.asQDLValue(value));
+    }
     public QDLValue getValue() {
         return value;
     }
@@ -44,9 +51,23 @@ public class QDLVariable {
 
     int variableType = TYPE_DYNAMIC;
 
-    public static int TYPE_DYNAMIC = 0;
-    public static int TYPE_MANIFEST = 1;
-    public static int SCOPE_DEFAULT = 0;
-    public static int SCOPE_INTRINSIC = 1;
-    public static int SCOPE_EXTRINSIC = 2;
+    /**
+     * Dynamic typing is the default for QDL. It means that any variable can be re-assigned
+     * to any value at any time
+     */
+    public static final int TYPE_DYNAMIC = 0;
+    /**
+     * Manifest typing means that when a variable is first defined, it must have that
+     * type from that point forward
+     */
+    public static final int TYPE_MANIFEST = 1;
+    /**
+     * Strict typing means that ever variable must be explicitly typed either at or before
+     * it is defined. Attempting to define a variable before it is given a type will raise
+     * an error.
+     */
+    public static final int TYPE_STRICT = 2;
+    public static final int SCOPE_DEFAULT = 0;
+    public static final int SCOPE_INTRINSIC = 1;
+    public static final int SCOPE_EXTRINSIC = 2;
 }

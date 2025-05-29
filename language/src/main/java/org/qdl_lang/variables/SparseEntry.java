@@ -42,12 +42,50 @@ public class SparseEntry implements Comparable, Serializable {
     */
 
 
+    /**
+     * This method checks the index of a sparse entry.
+     * @param v
+     * @return
+     */
     @Override
     public int compareTo(Object v) {
+/*
         if(!(v instanceof QDLValue)) {
             throw new ClassCastException("Error: the object \"" + v.getClass().getSimpleName() + "\" is not comparable.");
         }
-        Object o = ((QDLValue)v).getValue();
+*/
+        if(!(v instanceof SparseEntry)) {
+            throw new ClassCastException("Error: the object \"" + v.getClass().getSimpleName() + "\" is not comparable.");
+        }
+
+        if (v instanceof SparseEntry) {
+            SparseEntry s = (SparseEntry) v;
+            if(s.bigIndex!=null || bigIndex!=null){
+                BigInteger thisBI;
+                BigInteger thatBI;
+                if(bigIndex==null){
+                    thisBI = new BigInteger(Long.toString(index));
+                }else{
+                    thisBI = bigIndex;
+                }
+                if(s.bigIndex==null){
+                    thatBI = new BigInteger(Long.toString(s.index));
+                }else{
+                    thatBI = s.bigIndex;
+                }
+                return thisBI.compareTo(thatBI);
+            }
+            if (index < s.index) return -1;
+            if (index == s.index) return 0;
+            if (index > s.index) return 1;
+        }
+
+        SparseEntry other = (SparseEntry) v;
+        //Object o = ((QDLValue)v).getValue();
+        Object o = other.entry.getValue();
+        if(o instanceof Comparable) {
+            return ((Comparable) o).compareTo(index);
+        }
         if(o instanceof BigDecimal){
             BigDecimal bd = (BigDecimal) o;
             BigInteger bi ;

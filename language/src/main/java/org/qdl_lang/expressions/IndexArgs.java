@@ -131,8 +131,8 @@ d  |  [0,      2,       0]
             for (Object key : args.keySet()) {
                 IndexArg indexArg1 = new IndexArg();
                 indexArg1.strictOrder = indexArg.strictOrder;
-                if(args.get(key) instanceof AllIndices){
-                    indexArg1.swri = (AllIndices) args.get(key);
+                if(args.get(key).getValue() instanceof AllIndices){
+                    indexArg1.swri = (AllIndices) args.get(key).getValue();
 
                 }else{
                     ConstantNode constantNode = new ConstantNode(new QDLValue(args.get(key)));

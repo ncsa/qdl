@@ -9,7 +9,6 @@ import org.qdl_lang.variables.QDLNull;
  */
 public class QDLNullValue extends QDLValue{
     public QDLNullValue() {
-
         super(QDLNull.getInstance());
         type = NULL_TYPE;
     }

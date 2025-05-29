@@ -16,6 +16,7 @@ import java.io.FileReader;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 import static org.qdl_lang.xml.XMLUtils.*;
 
 /**
@@ -115,9 +116,9 @@ public class XMLTest {
         write(xsw, Boolean.TRUE);
         QDLStem stem = new QDLStem();
         QDLStem stem1 = new QDLStem();
-        stem.listAdd("a");
-        stem.listAdd("b");
-        stem1.listAdd("p");
+        stem.listAdd(asQDLValue("a"));
+        stem.listAdd(asQDLValue("b"));
+        stem1.listAdd(asQDLValue("p"));
         stem.put(2L, stem1);
         stem.put(42L, "c");
         stem.put("foo", "bar");

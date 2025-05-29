@@ -305,17 +305,17 @@ public class FunctionEvaluator extends AbstractEvaluator {
         Long argCount = -1L;
         QDLStem argCounts = null;
         if (polyad.getArgCount() == 2) {
-            Object object2 = polyad.evalArg(1, state);
-            switch (Constant.getType(object2)) {
+            QDLValue object2 = polyad.evalArg(1, state);
+            switch (object2.getType()) {
                 case Constant.LONG_TYPE:
                     isScalarArgCount = true;
-                    argCount = (Long) object2;
+                    argCount = object2.asLong();
                     argCounts = new QDLStem();
                     argCounts.put(0L, asQDLValue(object2));
                     break;
                 case LIST_TYPE:
                 case STEM_TYPE:
-                    argCounts = (QDLStem) object2;
+                    argCounts = object2.asStem();
                     isScalarArgCount = false;
                     // ok
                     break;
@@ -358,19 +358,20 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 } else {
                     QDLStem x = new QDLStem();
                     for (Object k : argCounts.keySet()) {
-                        Object v = argCounts.get(k);
-                        boolean gotOne = false;
-                        if ((v instanceof Long)) {
-                            gotOne = true;
-                            x.putLongOrString(k, asQDLValue(checkIsFunction(vNode.getVariableReference(), ((Long) v).intValue(), state)));
+                        QDLValue v = argCounts.get(k);
+//                        boolean gotOne = false;
+                        switch (v.getType()){
+                            case Constant.LONG_TYPE:
+                                x.putLongOrString(k, asQDLValue(checkIsFunction(vNode.getVariableReference(), v.asLong().intValue(), state)));
+                                break;
+                                case Constant.NULL_TYPE:
+                                    x.putLongOrString(k, asQDLValue(checkIsFunction(vNode.getVariableReference(), -1, state)));
+                                    break;
+                            default:
+                                throw new BadArgException("arg count element at " + k + " is not a valid", polyad.getArgAt(1));
+
                         }
-                        if (v instanceof QDLNull) {
-                            gotOne = true;
-                            x.putLongOrString(k, asQDLValue(checkIsFunction(vNode.getVariableReference(), -1, state)));
-                        }
-                        if (!gotOne) {
-                            throw new BadArgException("arg count element at " + k + " is not a valid", polyad.getArgAt(1));
-                        }
+
                     }
                     polyad.setResult(x);
                 }
@@ -389,9 +390,9 @@ public class FunctionEvaluator extends AbstractEvaluator {
                             Long longKey = (long) i;
                             // process as list
                             if (argCounts.containsKey(longKey)) {
-                                Object v = argCounts.get(longKey);
-                                if (v instanceof Long) {
-                                    out.add(asQDLValue(checkIsFunction(vNode2.getVariableReference(), ((Long) v).intValue(), state)));
+                                QDLValue v = argCounts.get(longKey);
+                                if (v.isLong()) {
+                                    out.add(asQDLValue(checkIsFunction(vNode2.getVariableReference(), v.asLong().intValue(), state)));
                                 } else {
                                     throw new BadArgException("arg count element at " + i + " is not a valid", polyad.getArgAt(1));
                                 }
@@ -408,17 +409,17 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 StemVariableNode stemVariableNode = (StemVariableNode) polyad.getArgAt(0);
                 QDLStem out2 = new QDLStem();
                 for (StemEntryNode stemEntryNode : stemVariableNode.getStatements()) {
-                    Object key = stemEntryNode.getKey().evaluate(state);
+                    QDLValue key = stemEntryNode.getKey().evaluate(state);
                     if (stemEntryNode.getValue() instanceof VariableNode) {
                         VariableNode vNode2 = (VariableNode) stemEntryNode.getValue();
                         if (isScalarArgCount) {
                             out2.putLongOrString(key, asQDLValue(checkIsFunction(vNode2.getVariableReference(), argCount.intValue(), state)));
                         } else {
                             // do subsetting directly
-                            if (argCounts.containsKey(key)) {
-                                Object v = argCounts.get(key);
-                                if (v instanceof Long) {
-                                    out2.putLongOrString(key, asQDLValue(checkIsFunction(vNode2.getVariableReference(), ((Long) v).intValue(), state)));
+                            if (argCounts.containsKey(key.getValue())) {
+                                QDLValue v = argCounts.get(key);
+                                if (v.isLong()) {
+                                    out2.putLongOrString(key.getValue(), asQDLValue(checkIsFunction(vNode2.getVariableReference(), v.asLong().intValue(), state)));
                                 } else {
                                     throw new BadArgException("arg count element at " + key + " is not a valid", polyad.getArgAt(1));
                                 }
@@ -480,12 +481,12 @@ public class FunctionEvaluator extends AbstractEvaluator {
     protected void doJavaFunction(Polyad polyad, State state, FR_WithState frs) throws Throwable {
         // Contains a java function that is wrapped in a QDLFunction. The polyad here contains the
         // arguments that are needed to unpack this.
-        Object[] argList = new Object[polyad.getArgCount()];
+        QDLValue[] argList = new QDLValue[polyad.getArgCount()];
         for (int i = 0; i < polyad.getArgCount(); i++) {
             if (isFDef(polyad.getArguments().get(i))) {
                 // Can't do getOperator since we do not know how many other arguments
                 // are functions or constants.
-                argList[i] = getFunctionReferenceNode(state, polyad.getArguments().get(i));
+                argList[i] = new QDLValue(getFunctionReferenceNode(state, polyad.getArguments().get(i))); // should resolve to one fo 2 node types for QDL value
             } else {
                 if (polyad.hasEvaluatedArgs()) {
                     argList[i] = polyad.getEvaluatedArgs().get(i);
@@ -911,9 +912,9 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 if (polyad.hasEvaluatedArgs()) {
                     // in the case that the arguments were evaluated in some local context that cannot be
                     // available to us.
-                    vThing = new VThing(new XKey(functionRecord.getArgNames().get(i)), polyad.getEvaluatedArgs().get(i));
+                    vThing = new VThing(new XKey(functionRecord.getArgNames().get(i)),new QDLVariable( polyad.getEvaluatedArgs().get(i)));
                 } else {
-                    vThing = new VThing(new XKey(functionRecord.getArgNames().get(i)), polyad.getArguments().get(i).evaluate(state));
+                    vThing = new VThing(new XKey(functionRecord.getArgNames().get(i)), new QDLVariable( polyad.getArguments().get(i).evaluate(state)));
                 }
                 //}
                 paramList.add(vThing);

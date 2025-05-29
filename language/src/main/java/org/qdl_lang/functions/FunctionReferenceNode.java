@@ -8,6 +8,8 @@ import org.qdl_lang.variables.values.QDLValue;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+
 /**
  * Just a pointer to the collection of functions for a given name. Just has the name.
  * <p>Created by Jeff Gaynor<br>
@@ -64,7 +66,7 @@ FunctionReferenceNode extends ExpressionImpl implements FunctionReferenceNodeInt
     }
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         setFunctionRecords(state.getFTStack().getByAllName(getFunctionName()));
         // if this was e.g. in a module, it might have an arbitraily complex path to get here.
         // set the state that was finally constructed elsewhere for this specific call.
@@ -73,7 +75,7 @@ FunctionReferenceNode extends ExpressionImpl implements FunctionReferenceNodeInt
         }
         setResult(new QDLValue(this));
         setEvaluated(true);
-        return this;
+        return asQDLValue(this);
     }
 
     public State getModuleState() {

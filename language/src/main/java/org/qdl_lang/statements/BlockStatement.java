@@ -1,6 +1,8 @@
 package org.qdl_lang.statements;
 
 import org.qdl_lang.state.State;
+import org.qdl_lang.variables.values.QDLNullValue;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,12 +33,12 @@ public class BlockStatement implements Statement{
 
 
     @Override
-    public Object evaluate(State state) {
+    public QDLValue evaluate(State state) {
         State state1 = state.newLocalState();
         for(Statement statement : statements){
             statement.evaluate(state1);
         }
-        return null;
+        return QDLNullValue.getNullValue();
     }
 
     @Override
