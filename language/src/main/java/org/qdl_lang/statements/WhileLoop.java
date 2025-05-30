@@ -222,35 +222,35 @@ public class WhileLoop implements Statement {
         int endValue = 0;
         boolean hasEndvalue = false;
         String loopArg = null;
-        Object arg = null;
+        QDLValue arg = null;
         boolean doList = false;
         QDLStem list = null;
         switch (conditional.getArgCount()) {
             case 4:
                 arg = conditional.getArguments().get(3).evaluate(localState);
-                if (!(arg instanceof Long)) {
+                if (!arg.isLong()) {
                     throw new QDLExceptionWithTrace("Error: the loop increment must be a number", conditional.getArgAt(3));
                 }
-                Long zzz = (Long) arg;
+                Long zzz = arg.asLong();
                 increment = zzz.intValue();
             case 3:
                 arg = conditional.getArguments().get(2).evaluate(localState);
-                if (!(arg instanceof Long)) {
+                if (!arg.isLong()) {
                     throw new QDLExceptionWithTrace("Error: the loop starting value must be a number", conditional.getArgAt(2));
                 }
-                Long yyy = (Long) arg;
+                Long yyy = arg.asLong();
                 start = yyy.intValue();
             case 2:
                 arg = conditional.getArguments().get(1).evaluate(localState);
                 boolean gotArg2 = false;
-                if ((arg instanceof Long)) {
+                if (arg.isLong()) {
                     hasEndvalue = true;
-                    Long xxx = (Long) arg;
+                    Long xxx = arg.asLong();
                     endValue = xxx.intValue();
                     gotArg2 = true;
                 }
-                if (arg instanceof QDLStem) {
-                    list = (QDLStem) arg;
+                if (arg.isStem()) {
+                    list = arg.asStem();
                     doList = true;
                     gotArg2 = true;
                     hasEndvalue = true;
@@ -352,13 +352,13 @@ public class WhileLoop implements Statement {
         String loopVar = null;
         QDLStem stemVariable = null;
         QDLSet qdlSet = null;
-        Object arg = conditional.getArguments().get(1).evaluate(localState);
+        QDLValue arg = conditional.getArguments().get(1).evaluate(localState);
         boolean isSet = false;
-        if (arg instanceof QDLStem) {
-            stemVariable = (QDLStem) arg;
+        if (arg.isStem()) {
+            stemVariable =  arg.asStem();
         } else {
-            if (arg instanceof QDLSet) {
-                qdlSet = (QDLSet) arg;
+            if (arg.isSet()) {
+                qdlSet = arg.asSet() ;
                 isSet = true;
             } else {
                 throw new IllegalArgumentException("Error: The target of the command must be a stem or set");
@@ -366,12 +366,11 @@ public class WhileLoop implements Statement {
         }
 
         // Don't evaluate -- we just want the name of the variable.
-        arg = conditional.getArguments().get(0); // reuse arg for variable
-        if (arg instanceof VariableNode) {
-            loopVar = ((VariableNode) arg).getVariableReference();
+        Object arg0 = conditional.getArguments().get(0); // reuse arg for variable
+        if (arg0 instanceof VariableNode) {
+            loopVar = ((VariableNode) arg0).getVariableReference();
         } else {
             throw new IllegalArgumentException("Error: The command requires a variable ");
-
         }
       /* Test -- oops should never print.
       key_set := {'a','b','c','d'};

@@ -1,5 +1,6 @@
 package org.qdl_lang.variables;
 
+import org.qdl_lang.expressions.AllIndices;
 import org.qdl_lang.expressions.AxisExpression;
 import org.qdl_lang.functions.DyadicFunctionReferenceNode;
 import org.qdl_lang.functions.FunctionReferenceNode;
@@ -33,6 +34,7 @@ public class Constant implements Constants {
         if (object instanceof FunctionReferenceNode) return FUNCTION_TYPE;
         if (object instanceof DyadicFunctionReferenceNode) return DYADIC_FUNCTION_TYPE;
         if (object instanceof AxisExpression) return AXIS_RESTRICTION_TYPE;
+        if (object instanceof AllIndices) return ALL_INDICES_TYPE;
         return UNKNOWN_TYPE;
     }
 
@@ -65,6 +67,8 @@ public class Constant implements Constants {
                 return AXIS_RESTRICTION_NAME;
             case NULL_TYPE:
                 return NULL_NAME;
+            case ALL_INDICES_TYPE:
+                return ALL_INDICES_NAME;
             default:
                 return UNKNOWN_NAME;
         }

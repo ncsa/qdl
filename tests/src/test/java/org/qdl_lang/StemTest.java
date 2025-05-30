@@ -101,7 +101,7 @@ public class StemTest extends AbstractQDLTester {
         assert result.size() == sourceStem.size();
         for (Object key : sourceStem.keySet()) {
             assert result.containsKey(result.get(key));
-            assert result.get(key).equals(key);
+            assert result.get(key).getValue().equals(key);
         }
     }
 
@@ -951,7 +951,7 @@ public class StemTest extends AbstractQDLTester {
         long count1 = 10L;
         long count2 = 5L;
         for (long i = 0L; i < count1; i++) {
-            qdlList1.add(asQDLValue(i / 10.0));
+            qdlList1.add(asQDLValue(new BigDecimal(Double.toString(i / 10.0))));
         }
         for (long i = 0L; i < count2; i++) {
             qdlList2.add(asQDLValue(i * i));
@@ -965,7 +965,7 @@ public class StemTest extends AbstractQDLTester {
         // should return sorted set
         Object expectedValues[] = new Object[]{0L, 1L, .3, .4, .5, .6, .7};
         for (int i = 0; i < expectedValues.length; i++) {
-            assert result.get(i).equals(expectedValues[i]);
+            assert result.get(i).getValue().equals(expectedValues[i]);
         }
     }
 
@@ -3206,19 +3206,27 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok4", state) : "x\\['woof'] << Stem failed";
     }
 
+    /*
+zeta.'Communities:LSCVirgoLIGOGroupMembers' := ['read:/DQSegDB' ,'read:/frames', 'read:/GraceDB'];
+zeta.'Communities:LVC:SegDB:SegDBWriter' := 'write:/DQSegDB';
+zeta.'gw-astronomy:KAGRA-LIGO:members' := ['read:/GraceDB', 'read:/frames'];
+g. := [{'name': 'Services:MailingLists:Testing:eligible_factor'},{'name': 'Communities:LSCVirgoLIGOGroupMembers'},{'name':'Communities:LVC:SegDB:SegDBWriter'}];
+i. := g\*\name;
+zeta\i.
+     */
     public void testExtractionStemKey() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "           zeta.'Communities:LSCVirgoLIGOGroupMembers' := ['read:/DQSegDB' ,'read:/frames', 'read:/GraceDB'];\n" +
+        addLine(script,
+                "           zeta.'Communities:LSCVirgoLIGOGroupMembers' := ['read:/DQSegDB' ,'read:/frames', 'read:/GraceDB'];\n" +
                 "      zeta.'Communities:LVC:SegDB:SegDBWriter' := 'write:/DQSegDB';\n" +
                 "        zeta.'gw-astronomy:KAGRA-LIGO:members' := ['read:/GraceDB', 'read:/frames'];\n" +
                 "  g. := [{'name': 'Services:MailingLists:Testing:eligible_factor'},{'name': 'Communities:LSCVirgoLIGOGroupMembers'},{'name':'Communities:LVC:SegDB:SegDBWriter'}];");
-        addLine(script, "i. := g\\*\\name;");
+        addLine(script, "i. := g\\*\\name;"); // should be a simple 3 element list of names only. 2 of these are keys in g.
         addLine(script, "w.0 := zeta.;"); // have one a level down too
         addLine(script, "okz0 := 2== size(zeta\\i.);");
+        // WANT:  zeta\i, == {Communities:LSCVirgoLIGOGroupMembers:[read:/DQSegDB,read:/frames,read:/GraceDB], Communities:LVC:SegDB:SegDBWriter:write:/DQSegDB}
         addLine(script, "okw0 := 2== size(w\\0\\i.);"); // have one a level down too
-        // GOT: {0:[read:/DQSegDB,read:/frames,read:/GraceDB], Communities:LVC:SegDB:SegDBWriter:write:/DQSegDB}
-        // WANT:  {Communities:LSCVirgoLIGOGroupMembers:[read:/DQSegDB,read:/frames,read:/GraceDB], Communities:LVC:SegDB:SegDBWriter:write:/DQSegDB}
         addLine(script, "okz1 := (zeta\\i.).'Communities:LVC:SegDB:SegDBWriter' == 'write:/DQSegDB';");
         addLine(script, "okz2 := (zeta\\i.).'Communities:LSCVirgoLIGOGroupMembers'.0 == 'read:/DQSegDB';");
         addLine(script, "okw1 := (w\\0\\i.).'Communities:LVC:SegDB:SegDBWriter' == 'write:/DQSegDB';");
@@ -3292,7 +3300,7 @@ public class StemTest extends AbstractQDLTester {
                 "a.1.'b' ≔ 'b';\n" +
                 "a.0.'c' ≔ 'c';\n" +
                 "a.2.'a' ≔ 'd';\n" +
-                "a.3.'a' ≔ 'e';"); // big stem that has mixed stypes
+                "a.3.'a' ≔ 'e';"); // big stem that has mixed types
         /*
         Note that in the next expression it is of the form (X)\*\@f the reason is that X is an extraction
         of non-lists, so the shape of X is very different from a. This is computed first then the rest of

@@ -40,17 +40,17 @@ public class VThing implements XThing {
     }
      public boolean isStem(){
         if(variable == null) return false;
-        return variable.getValue().isStem();
+        return variable.getQDLValue().isStem();
      }
 
      public QDLStem getStemValue(){
-        return variable.getValue().asStem();
+        return variable.getQDLValue().asStem();
      }
      public Long getLongValue(){
-        return variable.getValue().asLong();
+        return variable.getQDLValue().asLong();
      }
      public boolean isNull(){
         if(variable == null) return false;
-        return variable.getValue().isNull();
+        return variable.getQDLValue().isNull();
      }
 }

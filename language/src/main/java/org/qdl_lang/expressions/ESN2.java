@@ -387,10 +387,7 @@ public class ESN2 extends ExpressionImpl {
             realLeftArg = ((ParenthesizedExpression) realLeftArg).getExpression();
         }
         //leftArgs.get(leftArgs.size() - 1).evaluate(state);
-        if (realLeftArg.getResult().isStem()) {
-            stemVariable = realLeftArg.getResult().asStem();
-            gotOne = true;
-        }
+
         if (realLeftArg instanceof VariableNode) {
             VariableNode vNode = (VariableNode) realLeftArg;
             // Either it is not set or set to QDLNull
@@ -399,6 +396,10 @@ public class ESN2 extends ExpressionImpl {
                 stemVariable = new QDLStem();
                 state.setValue(vNode.getVariableReference(), asQDLValue(stemVariable));
             }
+            gotOne = true;
+        }
+        if (realLeftArg.getResult() != null && realLeftArg.getResult().isStem()) {
+            stemVariable = realLeftArg.getResult().asStem();
             gotOne = true;
         }
         if (!gotOne) {

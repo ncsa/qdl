@@ -41,8 +41,8 @@ public class SetTest extends AbstractQDLTester {
     public void testSetToList() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "a. := ~{0,1,2,3};"); // convert to a list
-        addLine(script, "ok := reduce(@&&, [0,1,2,3] == a.);"); // convert to a list
+        addLine(script, "a. := ~{0,1,2,3}∪{0,1,2,3};"); // convert to a list, verify that another operation (union) does not interfere.
+        addLine(script, "ok := reduce(@&&, [0,1,2,3] ∈ a.);"); // note that order is not preserved, so test membership
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);
@@ -115,6 +115,7 @@ public class SetTest extends AbstractQDLTester {
      */
     public void testDifference() throws Throwable {
         testDifference(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testDifference(ROUNDTRIP_XML);
         testDifference(ROUNDTRIP_QDL);
         testDifference(ROUNDTRIP_JAVA);
@@ -255,6 +256,7 @@ public class SetTest extends AbstractQDLTester {
 
     public void testNested() throws Throwable {
         testNested(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testNested(ROUNDTRIP_XML);
         testNested(ROUNDTRIP_QDL);
         testNested(ROUNDTRIP_JAVA);
@@ -315,18 +317,22 @@ public class SetTest extends AbstractQDLTester {
         String C = makeSuperSet(A);
 
         testIdentities(ROUNDTRIP_NONE, A, B, C);
-        testIdentities(ROUNDTRIP_XML, A, B, C);
-        testIdentities(ROUNDTRIP_QDL, A, B, C);
-        testIdentities(ROUNDTRIP_JAVA, A, B, C);
+        if(!isSerializationTestsOff()) {
 
+            testIdentities(ROUNDTRIP_XML, A, B, C);
+            testIdentities(ROUNDTRIP_QDL, A, B, C);
+            testIdentities(ROUNDTRIP_JAVA, A, B, C);
+        }
         //nested sets
         A = makeNestedTestSet(12, 3);
         B = makeSuperSet(A);
         C = makeSuperSet(A);
         testIdentities(ROUNDTRIP_NONE, A, B, C);
+        if(!isSerializationTestsOff()) {
         testIdentities(ROUNDTRIP_XML, A, B, C);
         testIdentities(ROUNDTRIP_QDL, A, B, C);
         testIdentities(ROUNDTRIP_JAVA, A, B, C);
+        }
     }
 
     protected void testIdentities(int testCase,

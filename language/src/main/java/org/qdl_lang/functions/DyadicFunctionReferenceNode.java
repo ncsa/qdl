@@ -53,10 +53,10 @@ public class DyadicFunctionReferenceNode extends ExpressionImpl implements Funct
     @Override
     public QDLValue evaluate(State state) {
         getArguments().get(0).evaluate(state);
-        Object lArg = getArgAt(0).getResult();
+        QDLValue lArg = getArgAt(0).getResult();
         getArguments().get(1).setEvaluated(true); // so things don't bomb elsewhere
-        if ((lArg instanceof Long)) {
-            int argCount = ((Long) lArg).intValue();
+        if ((lArg.isLong())) {
+            int argCount = lArg.asLong().intValue();
             setFunctionRecord(getFRByArgCount(state,argCount,getFunctionName()));
         }
         Map<Integer, FunctionRecord> foundFRs = new HashMap<>();

@@ -252,7 +252,7 @@ public class StringFunctionTests extends AbstractQDLTester {
     private boolean testOldIndexOf(QDLStem result, String key, Long index) {
         // Really awkward not to do it in QDL
         QDLStem stemVariable = result.get(key).asStem();
-        Object obj1 = stemVariable.get(0L);
+        Object obj1 = stemVariable.get(0L).getValue();
         return index.equals(obj1);
     }
 

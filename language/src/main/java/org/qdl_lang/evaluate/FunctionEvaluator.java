@@ -24,6 +24,7 @@ import static org.qdl_lang.state.QDLConstants.FUNCTION_REFERENCE_MARKER2;
 import static org.qdl_lang.variables.Constant.STEM_TYPE;
 import static org.qdl_lang.variables.Constants.LIST_TYPE;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+import static org.qdl_lang.variables.values.QDLValue.castToJavaValues;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -157,6 +158,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 if (!(objects[0] instanceof FunctionReferenceNode)) {
                     throw new QDLExceptionWithTrace(NAMES + " requires an function reference as its first argument.", polyad.getArgAt(0));
                 }
@@ -186,6 +188,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 if (!(objects[0] instanceof FunctionReferenceNodeInterface)) {
                     throw new QDLExceptionWithTrace(NAMES + " requires an function reference as its argument.", polyad.getArgAt(0));
                 }

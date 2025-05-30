@@ -27,6 +27,7 @@ public class QDLSetNode implements ExpressionInterface {
         if (!(qdlValue.isSet())) {
             throw new IllegalStateException("error: cannot set a " + getClass().getSimpleName() + " to type " + qdlValue.getClass().getSimpleName());
         }
+        this.result = qdlValue;
     }
     @Override
     public void setResult(Object result) {

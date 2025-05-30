@@ -888,7 +888,7 @@ public class StemEvaluator extends AbstractEvaluator {
         if (polyad.getArgCount() != 0) {
             throw new MissingArgException(STAR + " takes no arguments", polyad.getArgCount() == 1 ? polyad.getArgAt(0) : polyad);
         }
-        polyad.setResult(new AllIndices());
+        polyad.setResult(AllIndicesValue.getAllIndicesValue());
         polyad.setEvaluated(true);
     }
 
@@ -1113,9 +1113,9 @@ public class StemEvaluator extends AbstractEvaluator {
     protected void forEachRecursion(QDLStem output,
                                     ExpressionImpl f,
                                     State state,
-                                    Object[] args,
+                                    QDLValue[] args,
                                     IndexList indexList,
-                                    ArrayList values,
+                                    ArrayList<QDLValue> values,
                                     int currentIndex) {
 
         while (!isStem(args[currentIndex])) {
@@ -1127,15 +1127,15 @@ public class StemEvaluator extends AbstractEvaluator {
                 return;
             }
         }
-        QDLStem currentStem = (QDLStem) args[currentIndex++];
+        QDLStem currentStem = args[currentIndex++].asStem();
         // Next, get *every* index
-        ArrayList allIndices = currentStem.indicesByRank().getQDLList().getArrayList();
-        for (Object index : allIndices) {
-            IndexList currentIndexList = new IndexList((QDLStem) index); // index looks like [0,0,1]
+        ArrayList<QDLValue> allIndices = currentStem.indicesByRank().getQDLList().getArrayList();
+        for (QDLValue index : allIndices) {
+            IndexList currentIndexList = new IndexList(index.asStem()); // index looks like [0,0,1]
             IndexList nextIndexList = new IndexList(); // index looks like [0,0,1]
             nextIndexList.addAll(indexList);
             nextIndexList.addAll(currentIndexList);
-            ArrayList valuesList1 = new ArrayList();
+            ArrayList<QDLValue> valuesList1 = new ArrayList();
             valuesList1.addAll(values);
             //     valuesList1.add(currentStem.get(currentIndexList, true).get(0));
             valuesList1.add(currentStem.get(index));
@@ -1151,9 +1151,9 @@ public class StemEvaluator extends AbstractEvaluator {
     protected void forEachRecursion2(QDLStem output,
                                      ExpressionImpl f,
                                      State state,
-                                     Object[] args,
+                                     QDLValue[] args,
                                      IndexList indexList,
-                                     ArrayList values,
+                                     ArrayList<QDLValue> values,
                                      int currentIndex) {
 
         while (!isStem(args[currentIndex])) {
@@ -1167,11 +1167,11 @@ public class StemEvaluator extends AbstractEvaluator {
         }
         QDLStem currentStem;
         Long axis = 0L;
-        ArrayList allIndices;
-        boolean isAxisExpression = args[currentIndex] instanceof AxisExpression;
+        ArrayList<QDLValue> allIndices;
+        boolean isAxisExpression = args[currentIndex].isAxisRestriction();
         AxisExpression ae = null;
         if (isAxisExpression) {
-            ae = (AxisExpression) args[currentIndex];
+            ae = args[currentIndex].asAxisExpression();
         }
 
         if (isAxisExpression && !ae.isStar()) {
@@ -1181,18 +1181,18 @@ public class StemEvaluator extends AbstractEvaluator {
             //allIndices = currentStem.indicesByRank(axis+1).getQDLList().getArrayList();
             allIndices = currentStem.keysByAxis(axis).getQDLList().getArrayList();
         } else {
-            currentStem = (QDLStem) args[currentIndex];
+            currentStem = args[currentIndex].asStem();
             allIndices = currentStem.indicesByRank().getQDLList().getArrayList();
         }
         currentIndex++;
 
 
-        for (Object index : allIndices) {
-            IndexList currentIndexList = new IndexList((QDLStem) index); // index looks like [0,0,1]
+        for (QDLValue index : allIndices) {
+            IndexList currentIndexList = new IndexList(index.asStem()); // index looks like [0,0,1]
             IndexList nextIndexList = new IndexList(); // index looks like [0,0,1]
             nextIndexList.addAll(indexList);
             nextIndexList.addAll(currentIndexList);
-            ArrayList valuesList1 = new ArrayList();
+            ArrayList<QDLValue> valuesList1 = new ArrayList();
             valuesList1.addAll(values);
             //     valuesList1.add(currentStem.get(currentIndexList, true).get(0));
             valuesList1.add(currentStem.get(index));
@@ -1229,7 +1229,7 @@ f(x.)→x.0+x.1;
 @f∀[n(3,4,4,[;3*4*4])|0]
  */
 
-    protected QDLValue forEachEval(ExpressionImpl f, State state, List args) {
+    protected QDLValue forEachEval(ExpressionImpl f, State state, List<QDLValue> args) {
         if (f instanceof Monad) {
             if (args.size() != 1) {
                 throw new BadArgException("cannot apply monad to multiple arguments", f);
@@ -1268,7 +1268,7 @@ f(x.)→x.0+x.1;
 
         }
         ArgList argList1 = new ArgList();
-        for (Object arg : args) {
+        for (QDLValue arg : args) {
             argList1.add(new ConstantNode(asQDLValue(arg)));
         }
         f.setArguments(argList1);
@@ -1288,13 +1288,13 @@ f(x.)→x.0+x.1;
         if (3 < polyad.getArgCount()) {
             throw new ExtraArgException(JSON_PATH_QUERY + " accepts at most 3 arguments", polyad.getArgAt(3));
         }
-        Object arg0 = polyad.evalArg(0, state);
+        QDLValue arg0 = polyad.evalArg(0, state);
         checkNull(arg0, polyad.getArgAt(0));
 
-        if (!isStem(arg0)) {
+        if (!arg0.isStem()) {
             throw new BadArgException(JSON_PATH_QUERY + " requires a stem as its first argument", polyad.getArgAt(0));
         }
-        QDLStem stemVariable = (QDLStem) arg0;
+        QDLStem stemVariable = arg0.asStem();
         QDLValue arg1 = polyad.evalArg(1, state);
         checkNull(arg1, polyad.getArgAt(1));
 
@@ -2126,6 +2126,10 @@ f(x.)→x.0+x.1;
             Long k = (Long) key;
             out.put(k, asQDLValue(k));
         } else {
+            if(key instanceof QDLValue) {
+                putLongOrStringKey(out, ((QDLValue) key).getValue());
+                return;
+            }
             String k = (String) key;
             out.put(k, asQDLValue(k));
         }
@@ -3124,7 +3128,7 @@ z. :=  join3(q.,w.)
             throw new ExtraArgException(JOIN + " takes at most 3 arguments", polyad.getArgAt(3));
         }
 
-        Object[] args = new Object[polyad.getArgCount()];
+        QDLValue[] args = new QDLValue[polyad.getArgCount()];
         int argCount = polyad.getArgCount();
         for (int i = 0; i < argCount; i++) {
             args[i] = polyad.evalArg(i, state);
@@ -3132,18 +3136,18 @@ z. :=  join3(q.,w.)
         }
         int axis = 0;
         if (args.length == 3) {
-            axis = ((Long) args[2]).intValue();
+            axis = args[2].asLong().intValue();
         }
         QDLStem leftStem;
-        if (isStem(args[0])) {
-            leftStem = (QDLStem) args[0];
+        if (args[0].isStem()) {
+            leftStem = args[0].asStem();
         } else {
             leftStem = new QDLStem();
             leftStem.put(0L, args[0]);
         }
         QDLStem rightStem;
-        if (isStem(args[1])) {
-            rightStem = (QDLStem) args[1];
+        if (args[1].isStem()) {
+            rightStem = args[1].asStem();
         } else {
             rightStem = new QDLStem();
             rightStem.put(0L, args[1]);
@@ -3307,12 +3311,13 @@ z. :=  join3(q.,w.)
             arg2ok = true;
             hasArg2 = true;
         } else {
-            if (arg2.isStem()) {
+
+        }
+        if (hasArg2) {
+            if (arg2 != null && arg2.isStem()) {
                 stem1 = arg2.asStem();
                 arg2ok = true;
             }
-        }
-        if (hasArg2) {
             // Can finally decide whether or not second argument is a dud.
             if (!arg2ok) {
                 throw new BadArgException(TRANSPOSE + " requires an axis or stem of them as its second argument", polyad.getArgAt(1));

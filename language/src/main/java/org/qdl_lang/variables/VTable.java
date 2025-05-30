@@ -58,8 +58,8 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
         xsw.writeStartElement("e");
         xsw.writeAttribute("k", vThing.getKey().getKey());
         Module m = null;
-        if (vThing.getVariable().getValue().isModule()) {
-            m = vThing.getVariable().getValue().asModule();
+        if (vThing.getVariable().getQDLValue().isModule()) {
+            m = vThing.getVariable().getQDLValue().asModule();
         }
         if (m == null) {
             xsw.writeAttribute("type", "qdl");
@@ -98,11 +98,11 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
         jsonObject.put(KEY_KEY, xThing.getKey().getKey());
         String raw;
         Module m = null;
-        if (xThing.getVariable().getValue().isModule()) {
-            m =  xThing.getVariable().getValue().asModule();
+        if (xThing.getVariable().getQDLValue().isModule()) {
+            m =  xThing.getVariable().getQDLValue().asModule();
         }
         if (m == null) {
-            raw = xThing.getKey().getKey() + ":=" + InputFormUtil.inputForm(xThing.getVariable().getValue()) + ";";
+            raw = xThing.getKey().getKey() + ":=" + InputFormUtil.inputForm(xThing.getVariable().getQDLValue()) + ";";
             jsonObject.put(TYPE_TAG, QDL_TYPE_TAG);
             // Base 64 encode the raw QDL since it is possible to get escaping issues.
             // Just side-step the whole issue.
@@ -175,10 +175,10 @@ public class VTable<K extends XKey, V extends VThing> extends XTable<K, V> {
     @Override
     public String toJSONEntry(V xThing, SerializationState serializationState) {
         String raw;
-        if (xThing.getVariable().getValue().isModule()) {
-            raw = InputFormUtil.inputForm(xThing.getVariable().getValue()) + ";";
+        if (xThing.getVariable().getQDLValue().isModule()) {
+            raw = InputFormUtil.inputForm(xThing.getVariable().getQDLValue()) + ";";
         } else {
-            raw = xThing.getKey().getKey() + ":=" + InputFormUtil.inputForm(xThing.getVariable().getValue()) + ";";
+            raw = xThing.getKey().getKey() + ":=" + InputFormUtil.inputForm(xThing.getVariable().getQDLValue()) + ";";
         }
         return Base64.encodeBase64URLSafeString(raw.getBytes(StandardCharsets.UTF_8));
     }

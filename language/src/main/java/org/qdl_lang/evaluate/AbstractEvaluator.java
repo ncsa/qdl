@@ -18,6 +18,7 @@ import java.security.SecureRandom;
 import java.util.*;
 
 import static org.qdl_lang.variables.Constant.UNKNOWN_TYPE;
+import static org.qdl_lang.variables.values.QDLValue.asJavaValue;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
@@ -238,6 +239,9 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     }
 
     public static BigDecimal toBD(Object obj) {
+        if(obj instanceof QDLValue) {
+            return toBD(((QDLValue)obj).getValue());
+        }
         if (!isNumber(obj)) throw new IllegalArgumentException("'" + obj + "' is not a number");
         if (obj instanceof BigDecimal) return (BigDecimal) obj;
         if (obj instanceof Long) return new BigDecimal((Long) obj, OpEvaluator.getMathContext());
@@ -305,7 +309,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             return;
         }
         if (!arg1.isStem()) {
-            fpResult r = pointer.process(arg1.getValue(), state);
+            fpResult r = pointer.process(arg1.getValue());
             finishExpr(polyad, r);
             return;
         }
@@ -433,7 +437,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
                 }
             }
             if (polyad.getOperatorType() == OpEvaluator.AND_VALUE) {
-                if (!arg1.isBoolean()) { // if arg1 false then...
+                if (!arg1.asBoolean()) { // if arg1 false then...
                     if ((usx != null) || !(isSet(arg2) || isStem(arg2))) {
                         polyad.setResult(BooleanValue.False);
                         polyad.setEvaluated(true);
@@ -614,7 +618,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         // now we loop -- note that we must still preserve which is the first and second argument
         // so all this is basically to figure out how to loop over what.
         while (iterator.hasNext()) {
-            Object key = iterator.next();
+            Object key = asJavaValue(iterator.next());
             fpResult r = null;
             Object[] objects;
             if (optionalArgs) {
@@ -623,11 +627,13 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             } else {
                 objects = new Object[2];
             }
-            objects[0] = stem1.get(key);
-            objects[1] = stem2.get(key);
+            QDLValue v1 = stem1.get(key);
+            QDLValue v2 = stem2.get(key);
+            objects[0] = v1 == null? null : v1.getValue();
+            objects[1] = v2 == null? null : v2.getValue();
             if (optionalArgs) {
                 for (int i = 2; i < objects.length; i++) {
-                    objects[i] = polyad.getArguments().get(i).getResult();
+                    objects[i] = polyad.getArguments().get(i).getResult().getValue();
                 }
             }
             if (isStem(objects[0]) || isStem(objects[1])) {
@@ -875,11 +881,11 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
                 stem1 = new QDLStem();
                 state.setValue(varName, asQDLValue(stem1));
             } else {
-                Object arg1 = node.evaluate(state);
-                if (!isStem(arg1)) {
+                QDLValue arg1 = node.evaluate(state);
+                if (!arg1.isStem()) {
                     throw new IllegalArgumentException(informativeMessage);
                 }
-                stem1 = (QDLStem) arg1;
+                stem1 = arg1.asStem();
             }
         }
         if (stem1 == null) {
@@ -1127,15 +1133,23 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
                 break;
             case ExpressionInterface.MODULE_NODE:
                 ModuleExpression moduleExpression = (ModuleExpression) arg0;
-                Object r = moduleExpression.evaluate(state);
-                while (!(r instanceof FunctionReferenceNode)) {
+                QDLValue r = moduleExpression.evaluate(state);
+                while (!(r.isFunction())) {
+                    if (r.isModule()) {
+                        r = (QDLValue) ((ModuleExpression) r.getValue()).getExpression();
+                    }
+                }
+                if (r.isFunction() || r.isDyadicFunction()) {
+                    frn = (FunctionReferenceNodeInterface) r.getValue();
+                }
+/*                while (!(r instanceof FunctionReferenceNode)) {
                     if (r instanceof ModuleExpression) {
                         r = ((ModuleExpression) r).getExpression();
                     }
                 }
                 if (r instanceof FunctionReferenceNodeInterface) {
                     frn = (FunctionReferenceNodeInterface) r;
-                }
+                }*/
                 break;
         }
 

@@ -78,7 +78,7 @@ a\*\(2@f)\[1,3]
         if ((in != null) && isWildcard()) {
             return in.keySet();
         }
-        List stemKeys = new ArrayList();
+        List<QDLValue> stemKeys = new ArrayList<>();
         if (isFunction() || isFunctionDefinition()) {
             Polyad pick = new Polyad(ListEvaluator.PICK);
             if(isFunctionDefinition()) {
@@ -94,27 +94,27 @@ a\*\(2@f)\[1,3]
             swri.setEvaluated(true);
             if (keys.isStem()) {
                 for (Object key : keys.asStem().keySet()) {
-                    stemKeys.add(key);
+                    stemKeys.add(asQDLValue(key));
                 }
             }
             return stemKeys;
         }
-        Object obj = swri.getResult();
+        QDLValue obj = swri.getResult();
 
-        if (Constant.isScalar(obj)) {
+        if (obj.isScalar()) {
             stemKeys.add(obj);
         }
-        if (Constant.isStem(obj)) {
+        if (obj.isStem()) {
             // NOTE that the stem is contractually a list of indices. Take the values
-            QDLStem stem = (QDLStem) obj;
+            QDLStem stem = obj.asStem();
             for (Object key : stem.keySet()) {
                 stemKeys.add(stem.get(key));
             }
             return stemKeys;
         }
 
-        if (Constant.isSet(obj)) {
-            stemKeys.addAll(((QDLSet) obj));
+        if (obj.isSet()) {
+            stemKeys.addAll(obj.asSet());
         }
 
         return stemKeys;

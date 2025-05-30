@@ -1,6 +1,5 @@
 package org.qdl_lang.util.aggregate;
 
-import com.mysql.cj.x.protobuf.MysqlxDatatypes;
 import org.qdl_lang.functions.DyadicFunctionReferenceNode;
 import org.qdl_lang.functions.FunctionReferenceNode;
 import org.qdl_lang.module.Module;

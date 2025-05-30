@@ -42,6 +42,9 @@ public class InputFormUtil {
     }
 
     public static String inputForm(Object obj) {
+        if(obj instanceof QDLValue) {
+            return inputForm(((QDLValue)obj).getValue());
+        }
         if (obj instanceof Boolean) return inputForm((Boolean) obj);
         if (obj instanceof Long) return inputForm((Long) obj);
         if (obj instanceof BigDecimal) return inputForm((BigDecimal) obj);

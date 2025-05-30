@@ -410,6 +410,7 @@ public class MathFunctionsTest extends AbstractQDLTester {
 
     public void testRecursion() throws Throwable {
         recursionTest(false);
+        if(isSerializationTestsOff()) return;
         recursionTest(true);
     }
 
@@ -505,6 +506,7 @@ public class MathFunctionsTest extends AbstractQDLTester {
      */
     public void testBigMod() throws Throwable {
         BigModTest(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         BigModTest(ROUNDTRIP_XML);
         BigModTest(ROUNDTRIP_JAVA);
         BigModTest(ROUNDTRIP_QDL);

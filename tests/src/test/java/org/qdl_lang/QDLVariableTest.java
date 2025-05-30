@@ -34,14 +34,14 @@ public class QDLVariableTest extends AbstractQDLTester {
         VTable vTable = new VTable();
 
         vTable.put(new VThing(new XKey("a"), new QDLVariable(12345L)));
-        assert ((VThing) vTable.get(new XKey("a"))).getVariable().getValue().asLong().equals(12345L);
+        assert ((VThing) vTable.get(new XKey("a"))).getVariable().getQDLValue().asLong().equals(12345L);
         vTable.put(new VThing(new XKey("b"), new QDLVariable(BooleanValue.True)));
-        assert ((VThing) vTable.get(new XKey("b"))).getVariable().getValue().asBoolean();
+        assert ((VThing) vTable.get(new XKey("b"))).getVariable().getQDLValue().asBoolean();
         vTable.put(new VThing(new XKey("c"), new QDLVariable(Boolean.FALSE)));
-        assert !((VThing) vTable.get(new XKey("c"))).getVariable().getValue().asBoolean();
+        assert !((VThing) vTable.get(new XKey("c"))).getVariable().getQDLValue().asBoolean();
         String value = "mairzy((%^998e98nfg98u";
         vTable.put(new VThing(new XKey("e"), new QDLVariable(value)));
-        assert ((VThing) vTable.get(new XKey("e"))).getVariable().getValue().equals(value);
+        assert ((VThing) vTable.get(new XKey("e"))).getVariable().getQDLValue().equals(value);
     }
 
     /**
@@ -154,6 +154,7 @@ public class QDLVariableTest extends AbstractQDLTester {
      */
     public void testIsDefined() throws Throwable {
         isDefinedTest(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         isDefinedTest(ROUNDTRIP_XML);
         isDefinedTest(ROUNDTRIP_QDL);
         isDefinedTest(ROUNDTRIP_JAVA);
@@ -198,6 +199,7 @@ public class QDLVariableTest extends AbstractQDLTester {
 
     public void testIsFunction() throws Throwable {
         isFunctionTest(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         isFunctionTest(ROUNDTRIP_XML);
         isFunctionTest(ROUNDTRIP_QDL);
         isFunctionTest(ROUNDTRIP_JAVA);

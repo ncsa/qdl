@@ -329,13 +329,13 @@ public class StemUtility {
             throw new IllegalArgumentException("Error: The given stem is not a list.");
         }
         for (int i = 0; i < contents.size(); i++) {
-            Object object = contents.get(Integer.toString(i));
+            QDLValue object = contents.get(Integer.toString(i));
             if (forceToString) {
                 stringBuilder.append(contents.get(Integer.toString(i)) + "\n");
 
             } else {
-                if (object instanceof String) {
-                    stringBuilder.append((String) object + "\n");
+                if (object.isString()) {
+                    stringBuilder.append(object.asString() + "\n");
                 } else {
                     throw new IllegalArgumentException("object '" + object + "' is not a string");
                 }

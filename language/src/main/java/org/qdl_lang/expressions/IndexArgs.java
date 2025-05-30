@@ -53,18 +53,18 @@ public class IndexArgs extends ArrayList<IndexArg> {
     }
 
     public int argSize(IndexArg indexArg) {
-        Object obj = indexArg.swri.getResult();
+        QDLValue obj = indexArg.swri.getResult();
         if (Constant.isScalar(obj)) {
             return 1;
         }
-        if (obj instanceof AllIndices) {
+        if (obj.isAllIndices()) {
             throw new IllegalStateException("cannot compute size for wildcards");
         }
-        if (obj instanceof QDLStem) {
-            return ((QDLStem) obj).size();
+        if (obj.isStem()) {
+            return obj.asStem().size();
         }
-        if (obj instanceof QDLSet) {
-            return ((QDLSet) obj).size();
+        if (obj.isSet()) {
+            return obj.asSet().size();
         }
         throw new IllegalStateException("cannot compute size for unknown type");
 

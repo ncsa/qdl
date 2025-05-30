@@ -18,6 +18,7 @@ public interface Constants {
      * This next value is used internally only if an integer is passed in
      */
     int INTEGER_TYPE = -100;
+    int ALL_INDICES_TYPE = -101;
     /**
      * Every system function can be interrogated for its arg count. Since we are using QDLValues,
      * we have a special internal type for it. This is only used by the system in a very specific context.
@@ -38,5 +39,6 @@ public interface Constants {
     String AXIS_RESTRICTION_NAME = "axis restriction";
     String SET_NAME = "set";
     String MODULE_NAME = "module";
+    String ALL_INDICES_NAME = "*";
 
 }

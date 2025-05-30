@@ -19,6 +19,7 @@ import java.time.LocalTime;
 import java.util.Date;
 
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+import static org.qdl_lang.variables.values.QDLValue.castToJavaValues;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -200,6 +201,7 @@ public class MathEvaluator extends AbstractEvaluator {
             @Override
             public AbstractEvaluator.fpResult process(Object... objects) {
                 AbstractEvaluator.fpResult r = new AbstractEvaluator.fpResult();
+                objects = castToJavaValues(objects);
                 AbstractCodec codec;
                 if (objects.length == 2) {
                     try {
@@ -252,18 +254,14 @@ public class MathEvaluator extends AbstractEvaluator {
 
     protected QDLSet doCodec(Polyad polyad, QDLSet inSet, AbstractCodec codec, boolean isEncode) {
         QDLSet outSet = new QDLSet();
-        for (Object object : inSet) {
-            if (object instanceof String) {
-                outSet.add(asQDLValue(applyCodec(codec, (String) object, isEncode)));
+        for (QDLValue object : inSet) {
+            if (object.isString()) {
+                outSet.add(asQDLValue(applyCodec(codec, object.asString(), isEncode)));
             } else {
-                if (object instanceof QDLSet) {
-                    outSet.add(asQDLValue(doCodec(polyad, (QDLSet) object, codec, isEncode)));
+                if (object.isSet()) {
+                    outSet.add(asQDLValue(doCodec(polyad, object.asSet(), codec, isEncode)));
                 } else {
-                    if (object instanceof QDLSet) {
-
-                    } else {
-                        outSet.add(asQDLValue(object)); // no change
-                    }
+                        outSet.add(object); // no change
                 }
             }
         }
@@ -273,17 +271,17 @@ public class MathEvaluator extends AbstractEvaluator {
     protected QDLStem doCodec(Polyad polyad, QDLStem inStem, AbstractCodec codec, boolean isEncode) {
         QDLStem outStem = new QDLStem();
         for (Object key : inStem.keySet()) {
-            Object value = inStem.get(key);
-            if (value instanceof String) {
-                outStem.putLongOrString(key, asQDLValue(applyCodec(codec, (String) value, isEncode)));
+            QDLValue value = inStem.get(key);
+            if (value.isString()) {
+                outStem.putLongOrString(key, asQDLValue(applyCodec(codec, value.asString(), isEncode)));
             } else {
-                if (value instanceof QDLSet) {
-                    outStem.putLongOrString(key, asQDLValue(doCodec(polyad, (QDLSet) value, codec, isEncode)));
+                if (value.isSet()) {
+                    outStem.putLongOrString(key, asQDLValue(doCodec(polyad, value.asSet(), codec, isEncode)));
                 } else {
-                    if (value instanceof QDLStem) {
-                        outStem.putLongOrString(key, asQDLValue(doCodec(polyad, (QDLStem) value, codec, isEncode)));
+                    if (value.isStem()) {
+                        outStem.putLongOrString(key, asQDLValue(doCodec(polyad, value.asStem(), codec, isEncode)));
                     } else {
-                        outStem.putLongOrString(key, asQDLValue(value)); // no change
+                        outStem.putLongOrString(key, value); // no change
                     }
                 }
             }
@@ -337,6 +335,7 @@ public class MathEvaluator extends AbstractEvaluator {
             public AbstractEvaluator.fpResult process(Object... objects) {
                 AbstractEvaluator.fpResult r = new AbstractEvaluator.fpResult();
                 // If a long or decimal, take the absolute value. If anything else (e.g. a string) return argument.
+                objects = castToJavaValues(objects);
                 switch (Constant.getType(objects[0])) {
                     case Constant.LONG_TYPE:
                         r.result = asQDLValue(Math.abs((Long) objects[0]));
@@ -377,10 +376,10 @@ public class MathEvaluator extends AbstractEvaluator {
         int resultType = 0;
 
         // if the argument is a number return that many random numbers in a stem variable.
-        Object arg = polyad.evalArg(0, state);
+        QDLValue arg = polyad.evalArg(0, state);
         checkNull(arg, polyad.getArgAt(0));
-        if (arg instanceof Long) {
-            int size = ((Long) arg).intValue();
+        if (arg.isLong()) {
+            int size = arg.asLong().intValue();
             QDLStem stemVariable = new QDLStem();
             for (int i = 0; i < size; i++) {
                 stemVariable.put(Integer.toString(i), asQDLValue(secureRandom.nextLong()));
@@ -413,13 +412,13 @@ public class MathEvaluator extends AbstractEvaluator {
         if (polyad.getArgCount() == 0) {
             polyad.setEvaluated(true);
         } else {
-            Object arg1 = polyad.evalArg(0, state);
+            QDLValue arg1 = polyad.evalArg(0, state);
             checkNull(arg1, polyad.getArgAt(0));
 
-            if (!isLong(arg1)) {
+            if (!arg1.isLong()) {
                 throw new BadArgException(NUMERIC_DIGITS + " requires an integer argument", polyad.getArgAt(0));
             }
-            Long newND = (Long) arg1;
+            Long newND = arg1.asLong();
             state.getOpEvaluator().setNumericDigits(newND.intValue());
             polyad.setEvaluated(true);
         }
@@ -441,11 +440,11 @@ public class MathEvaluator extends AbstractEvaluator {
 
         if (0 < polyad.getArgCount()) {
             polyad.evalArg(0, state);
-            Object obj = polyad.getArguments().get(0).getResult();
+            QDLValue obj = polyad.getArguments().get(0).getResult();
             checkNull(obj, polyad.getArgAt(0));
 
-            if (obj instanceof Long) {
-                length = ((Long) obj).intValue();
+            if (obj.isLong()) {
+                length = obj.asLong().intValue();
             } else {
                 throw new BadArgException(RANDOM_STRING + " takes an integer as its first argument", polyad.getArgAt(0));
 
@@ -455,19 +454,17 @@ public class MathEvaluator extends AbstractEvaluator {
         int returnCount = 1;
         if (polyad.getArgCount() == 2) {
             polyad.evalArg(1, state);
-            Object obj = polyad.getArguments().get(1).getResult();
+            QDLValue obj = polyad.getArguments().get(1).getResult();
             checkNull(obj, polyad.getArgAt(1));// re-used varaible obj for arg #1
 
-            if (!isLong(obj)) {
+            if (!obj.isLong()) {
                 throw new BadArgException(RANDOM_STRING + " takes an integer as its second argument.", polyad.getArgAt(1));
             }
 
-            if (obj instanceof Long) {
-                returnCount = ((Long) obj).intValue();
+                returnCount = obj.asLong().intValue();
                 if (returnCount <= 0) {
                     returnCount = 1;
                 }
-            }
         }
 
 
@@ -512,6 +509,7 @@ public class MathEvaluator extends AbstractEvaluator {
             @Override
             public AbstractEvaluator.fpResult process(Object... objects) {
                 AbstractEvaluator.fpResult r = new AbstractEvaluator.fpResult();
+                objects = castToJavaValues(objects);
                 if (objects[0] instanceof String) {
                     String algorithm = "sha-1";
                     if (objects.length == 2) {
@@ -613,6 +611,7 @@ public class MathEvaluator extends AbstractEvaluator {
             @Override
             public AbstractEvaluator.fpResult process(Object... objects) {
                 AbstractEvaluator.fpResult r = new AbstractEvaluator.fpResult();
+                objects = castToJavaValues(objects);
                 if (!areAllNumbers(objects)) {
                     // Contract is that if there are not numbers, just return the
                     // first argument unaltered.
@@ -685,6 +684,7 @@ public class MathEvaluator extends AbstractEvaluator {
             @Override
             public AbstractEvaluator.fpResult process(Object... objects) {
                 AbstractEvaluator.fpResult r = new AbstractEvaluator.fpResult();
+                objects = castToJavaValues(objects);
                 if (isInMillis) {
                     if (isLong(objects[0])) {
                         // do nothing. hand it back.
@@ -748,6 +748,7 @@ public class MathEvaluator extends AbstractEvaluator {
             @Override
             public AbstractEvaluator.fpResult process(Object... objects) {
                 AbstractEvaluator.fpResult r = new AbstractEvaluator.fpResult();
+                objects = castToJavaValues(objects);
                 if (!areAllNumbers(objects)) {
                     Statement s = null;
                     if (!isNumber(objects[0])) {

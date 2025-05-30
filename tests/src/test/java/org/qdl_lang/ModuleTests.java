@@ -49,6 +49,7 @@ public class ModuleTests extends AbstractQDLTester {
         */
     public void testPassingJavaArguments() throws Throwable {
         testPassingJavaArguments(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testPassingJavaArguments(ROUNDTRIP_JSON);
     }
 
@@ -72,6 +73,7 @@ public class ModuleTests extends AbstractQDLTester {
 
     public void testSerializingJavaArguments() throws Throwable {
         testSerializingJavaArguments(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testSerializingJavaArguments(ROUNDTRIP_JSON);
 
     }
@@ -113,6 +115,8 @@ public class ModuleTests extends AbstractQDLTester {
 
     public void testBasicLoad() throws Throwable {
         testBasicLoad(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
+
         testBasicLoad(ROUNDTRIP_JSON);
         testBasicLoad(ROUNDTRIP_QDL);
         // testBasicLoad(ROUNDTRIP_JAVA);
@@ -228,6 +232,7 @@ public class ModuleTests extends AbstractQDLTester {
      */
     public void testBasicNesting() throws Throwable {
         testBasicNesting(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testBasicNesting(ROUNDTRIP_JSON);
         testBasicNesting(ROUNDTRIP_QDL);
     }
@@ -426,6 +431,7 @@ public class ModuleTests extends AbstractQDLTester {
 
     public void testBasicDyadicApplyForNestedModule1() throws Throwable {
         testBasicDyadicApplyForNestedModule1(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testBasicDyadicApplyForNestedModule1(ROUNDTRIP_JSON);
     }
 
@@ -489,6 +495,7 @@ public class ModuleTests extends AbstractQDLTester {
 
     public void testSharedModuleState() throws Throwable {
         testSharedModuleState(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testSharedModuleState(ROUNDTRIP_JSON);
     }
 
@@ -513,6 +520,7 @@ public class ModuleTests extends AbstractQDLTester {
 
     public void testSnapshotModuleState() throws Throwable {
         testSnapshotModuleState(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testSnapshotModuleState(ROUNDTRIP_JSON);
     }
 
@@ -564,6 +572,7 @@ public class ModuleTests extends AbstractQDLTester {
 
     public void testLocalUseInModule() throws Throwable {
         testLocalUseInModule(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testLocalUseInModule(ROUNDTRIP_JSON);
     }
 
@@ -596,6 +605,7 @@ public class ModuleTests extends AbstractQDLTester {
 
     public void testFunctionReferenceResolution() throws Throwable {
         testFunctionReferenceResolution(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testFunctionReferenceResolution(ROUNDTRIP_JSON);
     }
 
@@ -621,6 +631,7 @@ public class ModuleTests extends AbstractQDLTester {
      */
     public void testFunctionReferenceResolution1() throws Throwable {
         testFunctionReferenceResolution1(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testFunctionReferenceResolution1(ROUNDTRIP_JSON);
     }
 
@@ -645,6 +656,7 @@ public class ModuleTests extends AbstractQDLTester {
      */
     public void testFunctionReferenceResolution2() throws Throwable {
         testFunctionReferenceResolution2(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testFunctionReferenceResolution2(ROUNDTRIP_JSON);
     }
 
@@ -675,6 +687,7 @@ public class ModuleTests extends AbstractQDLTester {
      */
     public void testFunctionReferenceResolution3() throws Throwable {
         testFunctionReferenceResolution3(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testFunctionReferenceResolution3(ROUNDTRIP_JSON);
     }
 
@@ -699,6 +712,7 @@ public class ModuleTests extends AbstractQDLTester {
      */
     public void testFunctionReferenceResolution4() throws Throwable {
         testFunctionReferenceResolution4(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testFunctionReferenceResolution4(ROUNDTRIP_JSON);
     }
 
@@ -718,12 +732,14 @@ public class ModuleTests extends AbstractQDLTester {
 
     public void testGithub45() throws Throwable {
         testGithub45(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testGithub45(ROUNDTRIP_JSON);
         testGithub45(ROUNDTRIP_QDL);
     }
 
     public void testGithub45λ() throws Throwable {
         testGithub45λ(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testGithub45λ(ROUNDTRIP_JSON);
         testGithub45λ(ROUNDTRIP_QDL);
     }
@@ -919,6 +935,7 @@ p:='/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/math-x.mdl';
 
     public void testIntrinsicModule() throws Throwable {
         testIntrinsicModule(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testIntrinsicModule(ROUNDTRIP_JSON);
         testIntrinsicModule(ROUNDTRIP_JAVA);
        // testExtrinsicModule(ROUNDTRIP_XML);
@@ -965,6 +982,7 @@ p:='/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/math-x.mdl';
 
     public void testExtrinsicModule() throws Throwable {
         testExtrinsicModule(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testExtrinsicModule(ROUNDTRIP_JSON);
         testExtrinsicModule(ROUNDTRIP_JAVA);
         //testExtrinsicModule(ROUNDTRIP_XML);

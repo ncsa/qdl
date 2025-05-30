@@ -3,6 +3,7 @@ package org.qdl_lang.variables;
 import org.qdl_lang.exceptions.UnknownSymbolException;
 import org.qdl_lang.expressions.VariableNode;
 import org.qdl_lang.state.State;
+import org.qdl_lang.statements.HasResultInterface;
 import org.qdl_lang.statements.Statement;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
@@ -101,6 +102,10 @@ public class StemEntryNode implements ExpressionInterface {
             }
         }
         setEvaluated(true);
+        if(getValue() instanceof HasResultInterface){
+            setResult(((HasResultInterface)getValue()).getResult());
+            return getResult();
+        }
         return null;
     }
 
@@ -126,20 +131,20 @@ public class StemEntryNode implements ExpressionInterface {
     public QDLValue getResult() {
         return null;
     }
-
+QDLValue result;
     @Override
     public void setResult(QDLValue object) {
-
+this.result = object;
     }
 
     @Override
     public void setResult(Object result) {
-
+        this.result = QDLValue.asQDLValue( result);
     }
 
     @Override
     public int getResultType() {
-        return 0;
+        return getResult().getType();
     }
 
     @Override

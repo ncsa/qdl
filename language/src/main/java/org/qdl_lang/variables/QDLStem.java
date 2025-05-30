@@ -27,8 +27,7 @@ import java.util.regex.PatternSyntaxException;
 
 import static org.qdl_lang.state.VariableState.var_regex;
 import static org.qdl_lang.variables.StemConverter.convert;
-import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
-import static org.qdl_lang.variables.values.QDLValue.getNullValue;
+import static org.qdl_lang.variables.values.QDLValue.*;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -447,6 +446,7 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
 
     @Override
     public boolean containsKey(Object key) {
+        key = QDLValue.asJavaValue(key); // no telling where it came from. Normalize it
         if (key instanceof Long) {
             return containsKey((Long) key);
         }
@@ -524,28 +524,32 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
     }
 
     public QDLValue get(QDLValue key) {
-        switch (key.getType()) {
+        return get(key.getValue());
+      /*  switch (key.getType()) {
             case Constants.LONG_TYPE:
                 return get(key.asLong());
             case Constants.STRING_TYPE:
                 return get(key.toString());
             default:
                 throw new IllegalArgumentException("Invalid key type: " + Constant.getName(key.getType()));
-        }
+        }*/
     }
 
     public QDLValue get(Object key) {
+        key = asJavaValue(key); // just in case
+        QDLValue value = null;
+
         if (key instanceof QDLStem) {
             // try to make a stem list
             IndexList r = get(new IndexList((QDLStem) key), true);
-            return get(r.get(0));
+            value = r.get(0);
         }
         if (key instanceof Integer) {
             key = Long.valueOf((Integer) key);
         }
-        QDLValue value = null;
         if (key instanceof Long) {
             value = get((Long) key);
+
         }
         if (key instanceof String) {
             String sKey = (String) key;
@@ -934,7 +938,8 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
       */
     public void renameKeys(QDLStem newKeys, boolean overWriteKeys) {
         for (Object oldKey : newKeys.keySet()) {
-            QDLValue newKey = newKeys.get(oldKey);
+            oldKey = QDLValue.asJavaValue(oldKey);
+            Object newKey = newKeys.get(oldKey).getValue(); // these have to be compared as POJOs
             if (newKey.equals(oldKey)) continue;
             if (containsKey(oldKey)) {
                 if (containsKey(newKey)) {
@@ -1177,6 +1182,7 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
     protected void myPut(Object index, QDLValue value) {
       if(index instanceof QDLValue) {
           putLongOrString(((QDLValue) index).getValue(), value);
+          return;
       }
         if (index instanceof Long) {
             put((Long) index, value);
@@ -1495,10 +1501,10 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
         // Special case of a JSON array of objects that has been turned in to a stem list.
         // We want to recover this since it is a very common construct.
         for (String key : getQDLMap().keySet()) {
-            Object object = get(key);
+            QDLValue qdlValue = get(key);
 
-            if (object instanceof QDLStem) {
-                QDLStem x = (QDLStem) object;
+            if (qdlValue.isStem()) {
+                QDLStem x = qdlValue.asStem();
 
                 // compound object
 
@@ -1520,9 +1526,9 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
                 }
 
             } else {
-                if (!(object instanceof QDLNull)) {
+                if (!(qdlValue.isNull())) {
                     // don't add it if it is null.
-                    json.put(escapeNames ? codec.decode(key) : key, object);
+                    json.put(escapeNames ? codec.decode(key) : key, qdlValue.getValue());
                 }
             }
         }

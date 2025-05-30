@@ -7,7 +7,6 @@ import org.qdl_lang.exceptions.IndexError;
 import org.qdl_lang.exceptions.NamespaceException;
 import org.qdl_lang.exceptions.QDLException;
 import org.qdl_lang.exceptions.UnknownSymbolException;
-import org.qdl_lang.extensions.examples.basic.StemVar;
 import org.qdl_lang.module.MIStack;
 import org.qdl_lang.module.MTStack;
 import org.qdl_lang.module.Module;
@@ -87,7 +86,7 @@ public abstract class VariableState extends NamespaceAwareState {
             return gsrNSStemOp(w, OP_GET, null, checkedAliases);
         }
          QDLVariable variable = gsrNSScalarOp(variableName, OP_GET, null, checkedAliases);
-        return variable != null ? variable.getValue() : null;
+        return variable != null ? variable.getQDLValue() : null;
     }
 
 
@@ -389,7 +388,7 @@ public abstract class VariableState extends NamespaceAwareState {
     /**
      * the contract here is that if the {@link VThing} is null, then it can be created. If
      * it does exist, then cvarious contracts for type safety are followed. These are in the
-     * {@link QDLVariable#setValue(QDLValue)} method.
+     * {@link QDLVariable#setQDLValue(QDLValue)} method.
      *
      * <p>This returns the vThing to save or throws an exception for a type violation.</p>
      * @param vThing
@@ -401,7 +400,7 @@ public abstract class VariableState extends NamespaceAwareState {
         if(vThing == null){
             return new VThing(key, new QDLVariable(newValue));
         }
-        vThing.getVariable().setValue(newValue);
+        vThing.getVariable().setQDLValue(newValue);
         return vThing;
     }
 

@@ -433,10 +433,10 @@ System.out.println("JOSE:"+ jwk.toJSONString());
      * @throws Throwable
      */
     protected Object exportJWKS(QDLValue[] qdlValues, State state) throws Throwable {
-        if (!(qdlValues[0].isStem())) {
+        if (!qdlValues[0].isStem()) {
             throw new BadArgException("The first argument of " + EXPORT_NAME + " must be a stem", 0);
         }
-        if (!(qdlValues[1].isString())) {
+        if (!qdlValues[1].isString()) {
             throw new BadArgException("The second argument of " + EXPORT_NAME + " must be a string", 1);
         }
         QDLStem inStem =  qdlValues[0].asStem();
@@ -468,11 +468,11 @@ System.out.println("JOSE:"+ jwk.toJSONString());
      * @throws Throwable
      */
     protected Object exportPKCS(QDLValue[] qdlValues, State state) throws Throwable {
-        if (!(qdlValues[0].isStem())) {
+        if (!qdlValues[0].isStem()) {
             throw new BadArgException(EXPORT_NAME + " first argument must be a QDL stem that is they key", 0);
         }
         QDLStem key = qdlValues[0].asStem();
-        if (!(qdlValues[1].isString())) {
+        if (!qdlValues[1].isString()) {
             throw new BadArgException(EXPORT_NAME + " - second argument must be a string that is the path to the file", 1);
         }
         String path = qdlValues[1].asString();
@@ -593,7 +593,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
         @Override
         public QDLValue evaluate(QDLValue[] qdlValues, State state) throws NoSuchAlgorithmException, InvalidKeySpecException {
             // allows for single key as a stem or stem of them
-            if (!(qdlValues[0].isStem())) {
+            if (!qdlValues[0].isStem()) {
                 throw new BadArgException(getName() + " requires a stem as its argument", 0);
             }
             QDLStem inStem = qdlValues[0].asStem();
@@ -669,7 +669,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
                     outStem.getQDLList().setArrayList(ciphers);
                     return asQDLValue(outStem);
             }
-            if (!(qdlValues[1].isStem())) {
+            if (!qdlValues[1].isStem()) {
                 throw new BadArgException("The key for " + getName() + " must be a stem", 1);
             }
             // arg 0 is either stem of the key or a cfg stem (which includes the key as 'key' entry)
@@ -865,7 +865,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
 
         @Override
         public QDLValue evaluate(QDLValue[] qdlValues, State state) {
-            if (!(qdlValues[1].isStem())) {
+            if (!qdlValues[1].isStem()) {
                 throw new BadArgException("The second argument of " + getName() + " must be a stem", 1);
             }
             QDLStem leftArg = qdlValues[1].asStem();

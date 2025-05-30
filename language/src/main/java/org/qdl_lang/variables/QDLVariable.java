@@ -3,33 +3,35 @@ package org.qdl_lang.variables;
 import org.qdl_lang.exceptions.TypeViolationException;
 import org.qdl_lang.variables.values.QDLValue;
 
-public class QDLVariable {
-    public QDLVariable(QDLValue value) {
-        this.value = value;
+import java.io.Serializable;
+
+public class QDLVariable implements Serializable {
+    public QDLVariable(QDLValue qdlValue) {
+        this.qdlValue = qdlValue;
     }
 
-    public QDLVariable(Object value) {
-        this(value instanceof QDLValue ? (QDLValue) value : QDLValue.asQDLValue(value));
+    public QDLVariable(Object qdlValue) {
+        this(qdlValue instanceof QDLValue ? (QDLValue) qdlValue : QDLValue.asQDLValue(qdlValue));
     }
-    public QDLValue getValue() {
-        return value;
+    public QDLValue getQDLValue() {
+        return qdlValue;
     }
 
-    public void setValue(QDLValue value) {
+    public void setQDLValue(QDLValue qdlValue) {
         if(hasValue()) {
             if(getVariableType() != TYPE_DYNAMIC){
-                if(getValue().getType() != value.getType()){
-                    throw new TypeViolationException("attempt to set a " + Constant.getType(getValue().getType()) + " to a " + Constant.getType(value.getType()), null);
+                if(getQDLValue().getType() != qdlValue.getType()){
+                    throw new TypeViolationException("attempt to set a " + Constant.getType(getQDLValue().getType()) + " to a " + Constant.getType(qdlValue.getType()), null);
                 }
             }
         }
-        this.value = value;
+        this.qdlValue = qdlValue;
     }
 
-    QDLValue value = null;
+    QDLValue qdlValue = null;
 
     public boolean hasValue(){
-        return value != null;
+        return qdlValue != null;
     }
     public int getScope() {
         return scope;

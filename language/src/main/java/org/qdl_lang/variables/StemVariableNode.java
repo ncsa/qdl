@@ -73,12 +73,12 @@ public class StemVariableNode implements ExpressionInterface {
 
     @Override
     public void setResult(QDLValue object) {
-        throw new NotImplementedException("Error: Not implements");
+        this.result = object;
     }
     @Override
     public void setResult(Object object) {
-        throw new NotImplementedException("Error: Not implements");
-    }
+
+     this.result = asQDLValue(object);   }
 
     @Override
     public int getResultType() {
@@ -101,30 +101,32 @@ public class StemVariableNode implements ExpressionInterface {
         QDLStem stemOut = new QDLStem();
         for (StemEntryNode sen : getStatements()) {
             sen.evaluate(state);
-            Object value = ((HasResultInterface) sen.getValue()).getResult();
+            QDLValue value = ((HasResultInterface) sen.getValue()).getResult();
 
             if (sen.isDefaultValue) {
                 stemOut.setDefaultValue(value);
-                return new QDLValue(stemOut);
+                setResult(stemOut);
+                return getResult();
             }
 
             ExpressionInterface keyRI = sen.getKey();
 
             switch (keyRI.getResultType()) {
                 case Constant.LONG_TYPE:
-                    stemOut.put(keyRI.getResult().asLong(), asQDLValue(value));
+                    stemOut.put(keyRI.getResult().asLong(), value);
                     break;
                 case Constant.STRING_TYPE:
                 case Constant.DECIMAL_TYPE:
 
-                    stemOut.put(keyRI.getResult().toString(), asQDLValue(value));
+                    stemOut.put(keyRI.getResult().toString(), value);
                     break;
 
                 default:
                     throw new IllegalArgumentException("Error: Illegal type for key \"" + keyRI.getResult() + "\"");
             }
         }
-        return new QDLValue(stemOut);
+        setResult( new QDLValue(stemOut));
+        return getResult();
     }
 
     List<String> sourceCode;

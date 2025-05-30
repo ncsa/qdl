@@ -154,15 +154,15 @@ public class ListEvaluator extends AbstractEvaluator {
             throw new ExtraArgException(LIST_SORT + " requires at most 2 arguments", polyad.getArgAt(2));
         }
         // Contract is to take everything in a list sort it and return it.
-        Object arg0 = polyad.evalArg(0, state);
+        QDLValue arg0 = polyad.evalArg(0, state);
         ArrayList<QDLValue> list = null;
-        switch (Constant.getType(arg0)) {
+        switch (arg0.getType()) {
             case Constant.SET_TYPE:
                 list = new ArrayList();
-                list.addAll((QDLSet) arg0);
+                list.addAll(arg0.asSet());
                 break;
             case Constant.STEM_TYPE:
-                QDLStem inStem = (QDLStem) arg0;
+                QDLStem inStem = arg0.asStem();
                 if (inStem.isList()) {
                     list = inStem.getQDLList().values(); // fast
                 } else {
@@ -179,9 +179,9 @@ public class ListEvaluator extends AbstractEvaluator {
         }
         boolean sortUp = true;
         if (polyad.getArgCount() == 2) {
-            Object arg1 = polyad.evalArg(1, state);
-            if (arg1 instanceof Boolean) {
-                sortUp = (Boolean) arg1;
+            QDLValue arg1 = polyad.evalArg(1, state);
+            if (arg1.isBoolean()) {
+                sortUp = arg1.asBoolean();
             } else {
                 throw new BadArgException(LIST_SORT + " requires a boolean as it second argument if present", polyad.getArgAt(1));
             }
@@ -274,13 +274,13 @@ public class ListEvaluator extends AbstractEvaluator {
         if (5 < polyad.getArgCount()) {
             throw new ExtraArgException((doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires at most 5 arguments", polyad.getArgAt(5));
         }
-        Object arg1 = polyad.evalArg(0, state);
+        QDLValue arg1 = polyad.evalArg(0, state);
         checkNull(arg1, polyad.getArgAt(0));
 
-        if (!isStem(arg1)) {
+        if (!arg1.isStem()) {
             throw new BadArgException((doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires a stem as its first argument", polyad.getArgAt(0));
         }
-        QDLStem sourceStem = (QDLStem) arg1;
+        QDLStem sourceStem = arg1.asStem();
         QDLStem targetStem = null;
         Long targetIndex = 0L;
         int targetArgIndex = 5;
@@ -311,22 +311,22 @@ public class ListEvaluator extends AbstractEvaluator {
         Long startIndex = 0L;
         long length = sourceStem.size();
         if (1 < targetArgIndex) {
-            Object arg2 = polyad.evalArg(1, state);
+            QDLValue arg2 = polyad.evalArg(1, state);
             checkNull(arg2, polyad.getArgAt(1));
-            if (!isLong(arg2)) {
+            if (!arg2.isLong()) {
                 throw new BadArgException((doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires an integer as its second argument", polyad.getArgAt(1));
             }
-            startIndex = (Long) arg2;
+            startIndex = arg2.asLong();
             length = length - startIndex; // just take the rest of the stem.
         }
         if (2 < targetArgIndex) {
-            Object arg3 = polyad.evalArg(2, state);
+            QDLValue arg3 = polyad.evalArg(2, state);
             checkNull(arg3, polyad.getArgAt(2));
 
-            if (!isLong(arg3)) {
+            if (!arg3.isLong()) {
                 throw new BadArgException((doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires an integer as its third argument", polyad.getArgAt(2));
             }
-            length = (Long) arg3;
+            length = arg3.asLong();
             if(length <0){
                 length = length + sourceStem.size();
             }
@@ -348,7 +348,7 @@ public class ListEvaluator extends AbstractEvaluator {
                     state, (doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires a stem as its target argument"
             );
         }
-            return expr.evaluate(state); // May be a stem or Long
+            return expr.evaluate(state).getValue(); // May be a stem or Long
     }
 
     /*
@@ -375,7 +375,7 @@ public class ListEvaluator extends AbstractEvaluator {
         }
 
 
-        Object arg1 = polyad.evalArg(0, state);
+        QDLValue arg1 = polyad.evalArg(0, state);
         checkNull(arg1, polyad.getArgAt(0));
         if (isScalar(arg1)) {
             QDLList qdlList = new QDLList();
@@ -386,17 +386,17 @@ public class ListEvaluator extends AbstractEvaluator {
             polyad.setEvaluated(true);
             return true;
         }
-        Object arg2 = polyad.evalArg(1, state);
+        QDLValue arg2 = polyad.evalArg(1, state);
         checkNull(arg2, polyad.getArgAt(1));
-        if (!isLong(arg2)) {
+        if (!arg2.isLong()) {
             throw new BadArgException(LIST_SUBSET + " requires an integer as its second argument", polyad.getArgAt(1));
         }
-        Object arg3 = null;
+        QDLValue arg3 = null;
         if (polyad.getArgCount() == 3) {
             arg3 = polyad.evalArg(2, state);
             checkNull(arg3, polyad.getArgAt(2));
 
-            if (!isLong(arg3)) {
+            if (!arg3.isLong()) {
                 throw new BadArgException(LIST_SUBSET + " requires an integer as its third argument", polyad.getArgAt(2));
             }
         }
@@ -408,27 +408,19 @@ public class ListEvaluator extends AbstractEvaluator {
 
         switch (Constant.getType(arg1)) {
             case Constant.STEM_TYPE:
-                stem = (QDLStem) arg1;
+                stem = arg1.asStem();
                 if (!stem.isList()) {
                     throw new BadArgException(LIST_SUBSET + " requires a list", polyad.getArgAt(0));
                 }
-                startIndex = (Long) arg2;
+                startIndex = arg2.asLong();
 
 
-              /*  if (polyad.getArgCount() == 2) {
-                    count = (long) stem.size() - startIndex;
-                } else {*/
                 if (polyad.getArgCount() == 3) {
                     // must be 3
-                    count = (Long) arg3;
+                    count = arg3.asLong();
                     if (count < 0) {
                         throw new BadArgException(LIST_SUBSET + " requires that the number of elements be positive", polyad.getArgAt(2));
                     }
-/*
-                    if(stem.size() < startIndex + count){
-                        count = stem.size() - startIndex; // run to end of list
-                    }
-*/
                 }
 
                 break;
@@ -436,8 +428,8 @@ public class ListEvaluator extends AbstractEvaluator {
                 if (polyad.getArgCount() == 3) {
                     throw new ExtraArgException(LIST_SUBSET + " takes a single argument for a set", polyad.getArgAt(1));
                 }
-                set = (QDLSet) arg1;
-                count = (Long) arg2;
+                set = arg1.asSet();
+                count = arg2.asLong();
                 if (count < 0) {
                     count = -count; // no wrap around possible for sets
                 }
@@ -534,9 +526,9 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
             // addresses https://github.com/ncsa/qdl/issues/107
             if(frn instanceof DyadicFunctionReferenceNode){
                 ((DyadicFunctionReferenceNode) frn).evaluate(localState);
-                Object ooo = ((DyadicFunctionReferenceNode) frn).getArgAt(0).getResult();
-                if(ooo instanceof Long){
-                    argCount = ((Long) ooo).intValue();
+                QDLValue ooo = ((DyadicFunctionReferenceNode) frn).getArgAt(0).getResult();
+                if(ooo.isLong()){
+                    argCount = ooo.asLong().intValue();
                     if(argCount !=1 && argCount !=2){
                         throw new ExtraArgException(PICK + " function reference has illegal valence, must be 1 or 2.", polyad.getArgAt(0));
                     }
@@ -551,14 +543,12 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
                 }
                 int totalCount = 0;
                 for (FunctionRecordInterface fr : functionRecordList) {
-
                     if (2 == fr.getArgCount()) {
                         totalCount = totalCount +2;
                     }
                     if (1 == fr.getArgCount()) {
                         totalCount = totalCount +1;
                     }
-
                     argCount = Math.max(argCount, fr.getArgCount());
                 }
                 if(totalCount == 0 || totalCount == 3){
@@ -667,33 +657,33 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
             throw new ExtraArgException(LIST_STARTS_WITH + " requires 2 arguments", polyad.getArgAt(2));
         }
 
-        Object leftArg = polyad.evalArg(0, state);
+        QDLValue leftArg = polyad.evalArg(0, state);
         checkNull(leftArg, polyad.getArgAt(0));
 
         QDLStem leftStem = null;
-        if (isString(leftArg)) {
+        if (leftArg.isString()) {
             leftStem = new QDLStem();
-            leftStem.put(0L, asQDLValue(leftArg));
+            leftStem.put(0L, leftArg);
         }
         if (leftStem == null) {
-            if (isStem(leftArg)) {
-                leftStem = (QDLStem) leftArg;
+            if (leftArg.isStem()) {
+                leftStem = leftArg.asStem();
             } else {
                 throw new BadArgException(LIST_STARTS_WITH + " requires a stem for the left argument.", polyad.getArgAt(0));
             }
         }
 
-        Object rightArg = polyad.evalArg(1, state);
+        QDLValue rightArg = polyad.evalArg(1, state);
         checkNull(rightArg, polyad.getArgAt(1));
 
         QDLStem rightStem = null;
-        if (isString(rightArg)) {
+        if (rightArg.isString()) {
             rightStem = new QDLStem();
-            rightStem.put(0L, asQDLValue(rightArg));
+            rightStem.put(0L, rightArg);
         }
         if (rightStem == null) {
-            if (isStem(rightArg)) {
-                rightStem = (QDLStem) rightArg;
+            if (rightArg.isStem()) {
+                rightStem = rightArg.asStem();
 
             } else {
                 throw new BadArgException(LIST_STARTS_WITH + " requires a stem for the right argument.", polyad.getArgAt(1));
@@ -742,24 +732,24 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
             throw new ExtraArgException(LIST_REVERSE + " requires at most 2 arguments", polyad.getArgAt(2));
         }
 
-        Object arg1 = polyad.evalArg(0, state);
+        QDLValue arg1 = polyad.evalArg(0, state);
         checkNull(arg1, polyad.getArgAt(0));
 
-        if (!isStem(arg1)) {
+        if (!arg1.isStem()) {
             throw new BadArgException(LIST_REVERSE + " requires a stem as its argument.", polyad.getArgAt(0));
         }
         int axis = 0;
         if (polyad.getArgCount() == 2) {
-            Object arg2 = polyad.evalArg(1, state);
+            QDLValue arg2 = polyad.evalArg(1, state);
             checkNull(arg2, polyad.getArgAt(1));
 
-            if (!isLong(arg2)) {
+            if (!arg2.isLong()) {
                 throw new BadArgException(LIST_REVERSE + " an integer as its axis.", polyad.getArgAt(1));
             }
-            axis = ((Long) arg2).intValue();
+            axis = arg2.asLong().intValue();
         }
 
-        QDLStem input = (QDLStem) arg1;
+        QDLStem input = arg1.asStem();
 
         DoReverse reverse = this.new DoReverse();
 

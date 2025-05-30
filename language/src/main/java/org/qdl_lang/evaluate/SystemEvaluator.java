@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import static org.qdl_lang.config.QDLConfigurationConstants.MODULE_ATTR_VERSION_1_0;
 import static org.qdl_lang.variables.StemUtility.axisWalker;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+import static org.qdl_lang.variables.values.QDLValue.castToJavaValues;
 import static org.qdl_lang.vfs.VFSPaths.SCHEME_DELIMITER;
 import static edu.uiuc.ncsa.security.core.util.DebugConstants.*;
 
@@ -461,11 +462,11 @@ public class SystemEvaluator extends AbstractEvaluator {
                     // niladic break -- just break
                 }
                 if (1 == polyad.getArgCount()) {
-                    Object output = polyad.evalArg(0, state);
-                    if (!(output instanceof Boolean)) {
+                    QDLValue output = polyad.evalArg(0, state);
+                    if (!(output.isBoolean())) {
                         throw new BadArgException(BREAK + " requires a boolean as its argument", polyad.getArgAt(0));
                     }
-                    doBreak = (Boolean) output;
+                    doBreak = output.asBoolean();
                 }
                 if (1 < polyad.getArgCount()) {
                     throw new ExtraArgException(BREAK + " takes at most an argument", polyad.getArgAt(1));
@@ -1239,9 +1240,9 @@ public class SystemEvaluator extends AbstractEvaluator {
         if (polyad.getArguments().get(0) instanceof ModuleExpression) {
             ModuleExpression moduleExpression = (ModuleExpression) polyad.getArguments().get(0);
             Module module;
-            Object object = state.getValue(moduleExpression.getAlias());
-            if (object instanceof Module) {
-                module = (Module) object;
+            QDLValue object = state.getValue(moduleExpression.getAlias());
+            if (object != null && object.isModule()) {
+                module = object.asModule();
             } else {
                 module = state.getMInstances().getModule(new XKey(moduleExpression.getAlias()));
             }
@@ -1647,26 +1648,26 @@ public class SystemEvaluator extends AbstractEvaluator {
                     }
                 }
                 if (cfg.containsKey(DEBUGGER_PROPERTY_NAME_LEVEL)) {
-                    Object newLevel = cfg.get(DEBUGGER_PROPERTY_NAME_LEVEL);
-                    if (newLevel instanceof Long) {
+                    QDLValue newLevel = cfg.get(DEBUGGER_PROPERTY_NAME_LEVEL);
+                    if (newLevel.isLong()) {
                         if (isDebug) {
                             oldCfg.put(DEBUGGER_PROPERTY_NAME_LEVEL, asQDLValue(state.getDebugUtil().getDebugLevel()));
-                            state.getDebugUtil().setDebugLevel(((Long) newLevel).intValue());
+                            state.getDebugUtil().setDebugLevel(newLevel.asLong().intValue());
                         } else {
                             Level ll = state.getLogger().getLogLevel();
                             oldCfg.put(DEBUGGER_PROPERTY_NAME_LEVEL, asQDLValue(getMyLogLevel(ll)));
-                            state.getLogger().setLogLevel(getLogLevel(((Long) newLevel).intValue()));
+                            state.getLogger().setLogLevel(getLogLevel(newLevel.asLong().intValue()));
                         }
                     } else {
 
-                        if (newLevel instanceof String) {
+                        if (newLevel.isString()) {
                             if (isDebug) {
                                 oldCfg.put(DEBUGGER_PROPERTY_NAME_LEVEL, asQDLValue(MetaDebugUtil.toLabel(state.getDebugUtil().getDebugLevel())));
-                                state.getDebugUtil().setDebugLevel((String) newLevel);
+                                state.getDebugUtil().setDebugLevel(newLevel.asString());
                             } else {
                                 Level ll = state.getLogger().getLogLevel();
                                 oldCfg.put(DEBUGGER_PROPERTY_NAME_LEVEL, asQDLValue(MetaDebugUtil.toLabel(getMyLogLevel(ll))));
-                                Level lll = getLogLevel(MetaDebugUtil.toLevel((String) newLevel));
+                                Level lll = getLogLevel(MetaDebugUtil.toLevel(newLevel.asString()));
                                 state.getLogger().setLogLevel(lll);
                             }
                         } else {
@@ -1859,9 +1860,9 @@ public class SystemEvaluator extends AbstractEvaluator {
             QDLList qdlList = stemVariable.getQDLList();
             List<String> sp = new ArrayList<>();
             for (int i = 0; i < qdlList.size(); i++) {
-                Object entry = qdlList.get(i);
-                if (entry != null && !(entry instanceof QDLNull)) {
-                    String newPath = entry.toString();
+                QDLValue entry = qdlList.get(i);
+                if (entry != null && !(entry.isNull())) {
+                    String newPath = entry.asString();
                     newPath = newPath + (newPath.endsWith(VFSPaths.PATH_SEPARATOR) ? "" : VFSPaths.PATH_SEPARATOR);
                     sp.add(newPath);
                 }
@@ -1923,9 +1924,9 @@ public class SystemEvaluator extends AbstractEvaluator {
             QDLList qdlList = stemVariable.getQDLList();
             List<String> sp = new ArrayList<>();
             for (int i = 0; i < qdlList.size(); i++) {
-                Object entry = qdlList.get(i);
-                if (entry != null && !(entry instanceof QDLNull)) {
-                    String newPath = entry.toString();
+                QDLValue  entry = qdlList.get(i);
+                if (entry != null && !(entry.isNull())) {
+                    String newPath = entry.asString();
                     newPath = newPath + (newPath.endsWith(VFSPaths.PATH_SEPARATOR) ? "" : VFSPaths.PATH_SEPARATOR);
                     sp.add(newPath);
                 }
@@ -2952,6 +2953,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             @Override
             public AbstractEvaluator.fpResult process(Object... objects) {
                 AbstractEvaluator.fpResult r = new AbstractEvaluator.fpResult();
+                objects = castToJavaValues(objects);
                 switch (Constant.getType(objects[0])) {
                     case Constant.BOOLEAN_TYPE:
                         r.result = asQDLValue(objects[0]);
@@ -3002,6 +3004,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             @Override
             public AbstractEvaluator.fpResult process(Object... objects) {
                 AbstractEvaluator.fpResult r = new AbstractEvaluator.fpResult();
+                objects = castToJavaValues(objects);
                 switch (Constant.getType(objects[0])) {
                     case Constant.BOOLEAN_TYPE:
                         r.result = asQDLValue(((Boolean) objects[0]) ? 1L : 0L);

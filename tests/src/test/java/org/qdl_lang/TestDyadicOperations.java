@@ -128,13 +128,14 @@ public class TestDyadicOperations extends AbstractQDLTester {
         VThing testValue = (VThing) vStack.get(new XKey("string"));
         VariableNode variableNode = new VariableNode("string");
         variableNode.evaluate(state);
-        assert variableNode.getResult().equals(testValue.getVariable());
+
+        assert variableNode.getResult().getValue().equals(testValue.getVariable().getQDLValue().getValue());
         assert variableNode.getResultType() == Constant.STRING_TYPE;
         // random string test
         variableNode = new VariableNode("random.0");
         testValue = (VThing) vStack.get(new XKey("random."));
         variableNode.evaluate(state);
-        assert variableNode.getResult().equals(testValue.getStemValue().get(0L));
+        assert variableNode.getResult().getValue().equals(testValue.getStemValue().get(0L).getValue());
         assert variableNode.getResultType() == Constant.STRING_TYPE;
         // Long-valued test
         variableNode = new VariableNode("long");

@@ -13,6 +13,7 @@ import java.math.RoundingMode;
 
 import static ch.obermuhlner.math.big.BigDecimalMath.*;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+import static org.qdl_lang.variables.values.QDLValue.castToJavaValues;
 
 /**
  * Class for transcendental functions, like log, exponentiation etc.
@@ -230,6 +231,7 @@ public class TMathEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 BigInteger bi0 = gcdToBigInteger(polyad, objects[0]);
                 BigInteger bi1 = gcdToBigInteger(polyad, objects[1]);
                 // The LCM of two integers x,y is x*y/gcd(x,y)
@@ -267,6 +269,7 @@ public class TMathEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 BigInteger bi0 = gcdToBigInteger(polyad, objects[0]);
                 BigInteger bi1 = gcdToBigInteger(polyad, objects[1]);
                 BigInteger rr = bi0.gcd(bi1);
@@ -330,6 +333,7 @@ public class TMathEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 BigDecimal bd = null;
                 Object ob = objects[0];
                 if (ob instanceof Long) {
@@ -378,6 +382,7 @@ public class TMathEvaluator extends AbstractEvaluator {
             @Override
             public AbstractEvaluator.fpResult process(Object... objects) {
                 AbstractEvaluator.fpResult r = new AbstractEvaluator.fpResult();
+                objects = castToJavaValues(objects);
                 Object arg1 = objects[0];
                 Object arg2 = objects[1];
                 if (isBoolean(arg1) || isString(arg1) || arg1 == QDLNull.getInstance()) {
@@ -468,6 +473,7 @@ public class TMathEvaluator extends AbstractEvaluator {
         @Override
         public fpResult process(Object... objects) {
             fpResult r = new fpResult();
+            objects = castToJavaValues(objects);
             BigDecimal bd = null;
             Object ob = objects[0];
             if (ob instanceof Long) {
@@ -639,6 +645,7 @@ public class TMathEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 BigDecimal bd = null;
                 Object ob = objects[0];
                 if (ob instanceof Long) {

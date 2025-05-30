@@ -57,20 +57,20 @@ public class AltIfExpressionNode extends ExpressionImpl {
             QDLStem out = new QDLStem();
             QDLStem inStem = arg0.asStem();
             for(Object key : inStem.keySet()){
-                   Object obj = inStem.get(key);
-                   if(!(obj instanceof Boolean)){
+                   QDLValue obj = inStem.get(key);
+                   if(!(obj.isBoolean())){
                        throw new QDLExceptionWithTrace("expression requires a boolean at index '" + key + "', got '" + obj + "'", getIF());
                    }
-                Boolean flag = (Boolean) obj;
-                Object arg1;
+                Boolean flag = obj.asBoolean();
+                QDLValue arg1;
                 if (flag) {
                     arg1 = getTHEN().evaluate(state);
                 } else {
                     arg1 = getELSE().evaluate(state);
                 }
-                out.putLongOrString(key, asQDLValue(arg1));
+                out.putLongOrString(key, arg1);
             }
-            setResult(new QDLValue(out));
+            setResult(out);
             setEvaluated(true);
             return getResult();
 
@@ -85,7 +85,7 @@ public class AltIfExpressionNode extends ExpressionImpl {
         } else {
             arg1 = getELSE().evaluate(state);
         }
-        setResult(new QDLValue(arg1));
+        setResult(arg1);
         setEvaluated(true);
         return getResult();
     }

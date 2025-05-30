@@ -24,6 +24,7 @@ import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.VTable;
 import org.qdl_lang.variables.VThing;
+import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.xml.SerializationState;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
@@ -71,7 +72,7 @@ public class ModuleUtils implements Serializable {
      * @param component
      * @return
      */
-    public QDLStem convertArgsToStem(Polyad polyad, Object arg, State state, String component) {
+    public QDLStem convertArgsToStem(Polyad polyad, QDLValue arg, State state, String component) {
         QDLStem argStem = null;
 
         boolean gotOne = false;
@@ -81,30 +82,30 @@ public class ModuleUtils implements Serializable {
                 throw new MissingArgException(component + " requires an argument", polyad);
             case 1:
                 // single string arguments
-                if (isString(arg)) {
+                if (arg.isString()) {
                     argStem = new QDLStem();
-                    argStem.listAdd(asQDLValue(arg));
+                    argStem.listAdd(arg);
                     gotOne = true;
                 }
-                if (Constant.isStem(arg)) {
-                    argStem = (QDLStem) arg;
+                if (arg.isStem()) {
+                    argStem = arg.asStem();
                     gotOne = true;
                 }
                 break;
             case 2:
-                if (!isString(arg)) {
+                if (!arg.isString()) {
                     throw new BadArgException("Dyadic " + component + " requires string arguments only", polyad.getArgAt(0));
                 }
-                Object arg2 = polyad.evalArg(1, state);
+                QDLValue arg2 = polyad.evalArg(1, state);
                 checkNull(arg2, polyad.getArgAt(1), state);
-                if (!isString(arg2)) {
+                if (!arg2.isString()) {
                     throw new BadArgException("Dyadic " + component + " requires string arguments only", polyad.getArgAt(1));
                 }
 
                 argStem = new QDLStem();
                 QDLStem innerStem = new QDLStem();
-                innerStem.listAdd(asQDLValue(arg));
-                innerStem.listAdd(asQDLValue(arg2));
+                innerStem.listAdd(arg);
+                innerStem.listAdd(arg2);
                 argStem.put(0L, innerStem);
                 gotOne = true;
                 break;
@@ -395,10 +396,10 @@ public class ModuleUtils implements Serializable {
             if (var.getString(TYPE_TAG).equals(MODULE_TAG)) {
                 String key = var.getString(KEY_KEY);
                 VThing vThing = (VThing) state.getVStack().get(new XKey(key));
-                if (!(vThing.getVariable().getValue().isModule())) {
+                if (!(vThing.getVariable().getQDLValue().isModule())) {
                     throw new NFWException("Incorrect serialization. Expected a module for variable " + key + " but got a " + vThing.getVariable().getClass().getSimpleName());
                 }
-                Module module = vThing.getVariable().getValue().asModule();
+                Module module = vThing.getVariable().getQDLValue().asModule();
                 if (module instanceof JavaModule) {
                     JavaModule javaModule = (JavaModule) module;
                     javaModule.deserializeStates(var, serializationState);

@@ -172,8 +172,8 @@ public class ExpressionTest extends AbstractQDLTester {
         addLine(script, "wx2_ok := w.x == (w.).'h.i.j';"); // test that keys with .'s can be used
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
-        assert !getBooleanValue("wx_not_ok", state);
-        assert getBooleanValue("wx_ok", state);
+        assert !getBooleanValue("wx_not_ok", state) : "Test failed that ";
+        assert getBooleanValue("wx_ok", state) :  "Test failed that keys to stems with embedded .'s are allowed";
         assert getBooleanValue("wx1_ok", state);
         assert getBooleanValue("w2_ok", state);
         assert getBooleanValue("wx2_ok", state);

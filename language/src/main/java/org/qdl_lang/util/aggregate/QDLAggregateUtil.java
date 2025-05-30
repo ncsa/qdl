@@ -9,6 +9,7 @@ import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.QDLSet;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
 import java.util.LinkedList;
@@ -47,6 +48,7 @@ public class QDLAggregateUtil {
      * @return
      */
     public static Object process(Object object, ProcessScalar processScalar) {
+        object = QDLValue.asJavaValue(object); // too many places to track this down using a QDLVa lue, so cast it
         if (object instanceof QDLStem) {
             return processStem((QDLStem) object, new LinkedList<>(), processScalar);
         }
@@ -59,7 +61,7 @@ public class QDLAggregateUtil {
     public static QDLStem processStem(QDLStem inStem, List<Object> index, ProcessScalar processScalar) {
         QDLStem outStem = new QDLStem();
         for (Object key : inStem.keySet()) {
-            Object value = inStem.get(key);
+            QDLValue value = inStem.get(key);
             try {
                 outStem.putLongOrString(key, processStemValue(processScalar, index, key, value));
             }catch(BadStemValueException badStemValueException){
@@ -106,38 +108,38 @@ public class QDLAggregateUtil {
         return newValue;
     }
 
-    private static Object processStemValue(ProcessScalar processScalar, List index, Object key, Object value) {
+    private static Object processStemValue(ProcessScalar processScalar, List index, Object key, QDLValue value) {
         Object newValue = null;
-        switch (Constant.getType(value)) {
+        switch (value.getType()) {
             case Constant.BOOLEAN_TYPE:
-                newValue = processScalar.process(index, key, (Boolean) value);
+                newValue = processScalar.process(index, key, value.asBoolean());
                 break;
             case Constant.DECIMAL_TYPE:
-                newValue = processScalar.process(index, key, (BigDecimal) value);
+                newValue = processScalar.process(index, key, value.asDecimal());
                 break;
             case Constant.FUNCTION_TYPE:
-                newValue = processScalar.process(index, key, (FunctionReferenceNode) value);
+                newValue = processScalar.process(index, key, value.asFunction());
                 break;
             case Constant.LONG_TYPE:
-                newValue = processScalar.process(index, key, (Long) value);
+                newValue = processScalar.process(index, key, value.asLong());
                 break;
             case Constant.MODULE_TYPE:
-                newValue = processScalar.process(index, key, (Module) value);
+                newValue = processScalar.process(index, key, value.asModule());
                 break;
             case Constant.NULL_TYPE:
-                newValue = processScalar.process(index, key, (QDLNull) value);
+                newValue = processScalar.process(index, key, value.asNull());
                 break;
             case Constant.SET_TYPE:
-                newValue = processSet((QDLSet) value, processScalar);
+                newValue = processSet(value.asSet(), processScalar);
                 break;
             case Constant.STEM_TYPE:
                 List newIndex = new LinkedList<>();
                 newIndex.addAll(index);
                 newIndex.add(key);
-                newValue = processStem((QDLStem) value, newIndex, processScalar);
+                newValue = processStem(value.asStem(), newIndex, processScalar);
                 break;
             case Constant.STRING_TYPE:
-                newValue = processScalar.process(index, key, (String) value);
+                newValue = processScalar.process(index, key, value.asString());
                 break;
             case Constant.UNKNOWN_TYPE:
                 // then it's a set
@@ -158,36 +160,36 @@ public class QDLAggregateUtil {
     private static Object processStemValue(ProcessStemAxisRestriction processStemValues,
                                            List index,
                                            Object key,
-                                           Object value,
+                                           QDLValue value,
                                            int currentDepth) {
         Object newValue = null;
-        switch (Constant.getType(value)) {
+        switch (value.getType()) {
             case Constant.BOOLEAN_TYPE:
-                newValue = processStemValues.process(index, key, (Boolean) value);
+                newValue = processStemValues.process(index, key, value.asBoolean());
                 break;
             case Constant.DECIMAL_TYPE:
-                newValue = processStemValues.process(index, key, (BigDecimal) value);
+                newValue = processStemValues.process(index, key, value.asDecimal());
                 break;
             case Constant.FUNCTION_TYPE:
-                newValue = processStemValues.process(index, key, (FunctionReferenceNode) value);
+                newValue = processStemValues.process(index, key, value.asFunction());
                 break;
             case Constant.LONG_TYPE:
-                newValue = processStemValues.process(index, key, (Long) value);
+                newValue = processStemValues.process(index, key, value.asLong());
                 break;
             case Constant.MODULE_TYPE:
-                newValue = processStemValues.process(index, key, (Module) value);
+                newValue = processStemValues.process(index, key, value.asModule());
                 break;
             case Constant.NULL_TYPE:
-                newValue = processStemValues.process(index, key, (QDLNull) value);
+                newValue = processStemValues.process(index, key, value.asNull());
                 break;
             case Constant.SET_TYPE:
-                newValue = processStemValues.process(index, key, (QDLSet) value);
+                newValue = processStemValues.process(index, key, value.asSet());
                 break;
             case Constant.STEM_TYPE:
-                newValue = processStemValues.process(index, key, (QDLStem) value);
+                newValue = processStemValues.process(index, key, value.asStem());
                 break;
             case Constant.STRING_TYPE:
-                newValue = processStemValues.process(index, key, (String) value);
+                newValue = processStemValues.process(index, key, value.asString());
                 break;
             case Constant.UNKNOWN_TYPE:
                 // then it's a set
@@ -225,17 +227,17 @@ public class QDLAggregateUtil {
     public static QDLStem processStem(QDLStem inStem, List index, ProcessStemAxisRestriction processRankRestriction, int currentDepth) {
         QDLStem outStem = new QDLStem();
         for (Object key : inStem.keySet()) {
-            Object value = inStem.get(key);
+            QDLValue value = inStem.get(key);
             try {
                 if(currentDepth == processRankRestriction.getAxis()
-                || processRankRestriction.getAxis() == ProcessStemAxisRestriction.ALL_AXES && !((value instanceof QDLStem))) {
+                || processRankRestriction.getAxis() == ProcessStemAxisRestriction.ALL_AXES && !((value.isStem()))) {
                     outStem.putLongOrString(key, processStemValue(processRankRestriction, index, key, value, currentDepth + 1));
                 }else{
-                    if(value instanceof QDLStem){
+                    if(value.isStem()){
                         List newIndex = new LinkedList<>();
                         newIndex.addAll(index);
                         newIndex.add(key);
-                        outStem.putLongOrString(key,processStem((QDLStem) value, newIndex, processRankRestriction, currentDepth + 1));
+                        outStem.putLongOrString(key,processStem(value.asStem(), newIndex, processRankRestriction, currentDepth + 1));
                     }
                 }
             }catch(BadStemValueException badStemValueException){

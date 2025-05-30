@@ -21,7 +21,7 @@ import java.util.*;
 
 import static org.qdl_lang.types.Types.NULL;
 import static org.qdl_lang.variables.Constant.*;
-import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+import static org.qdl_lang.variables.values.QDLValue.*;
 
 /**
  * Class charged with evaluating algebraic expressions.
@@ -518,11 +518,12 @@ public class OpEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 if (objects[1] instanceof FunctionReferenceNode) {
                     FunctionReferenceNode fNode = (FunctionReferenceNode) objects[1];
                     State actualState = fNode.hasModuleState() ? fNode.getModuleState() : state; // determined per fNode
 
-                    r.result = doSingleApply(objects[0], (FunctionReferenceNode) objects[1], actualState);
+                    r.result = doSingleApply(asQDLValue(objects[0]), (FunctionReferenceNode) objects[1], actualState);
                     return r;
                 }
                 if (areAllSets(objects)) {
@@ -549,11 +550,11 @@ public class OpEvaluator extends AbstractEvaluator {
   {'a':[1,2],'b':1}∂{'a':@f, 'b':@g}
      */
     private void doDyadicApply(Dyad dyad, State state) {
-        Object lArg = dyad.getLeftArgument().evaluate(state); // evaluated in ambient state
-        Object rArg = dyad.getRightArgument().evaluate(state); // evaluated in ambient state
+        QDLValue lArg = dyad.getLeftArgument().evaluate(state); // evaluated in ambient state
+        QDLValue rArg = dyad.getRightArgument().evaluate(state); // evaluated in ambient state
         QDLStem wrapper;
-        if (isStem(lArg)) {
-            wrapper = (QDLStem) lArg;
+        if (lArg.isStem()) {
+            wrapper = lArg.asStem();
 /*            if(!wrapper.isList()){
                 // If it's not a list, wrap it so it can be used by lists.
                 // Assumption is that the stem is passing in the values by name
@@ -572,27 +573,29 @@ public class OpEvaluator extends AbstractEvaluator {
             wrapper.setDefaultValue(s);
         }
         Object result;
-        result = evaluateNextArgForApplies(wrapper, rArg, wrapper.getDefaultValue(), state, dyad);
+        result = evaluateNextArgForApplies(asQDLValue(wrapper), rArg.getValue(), wrapper.getDefaultValue(), state, dyad);
         dyad.setEvaluated(true);
         dyad.setResult(result);
     }
 
-    protected QDLSet applyToSet(QDLStem lArg, QDLSet rArg, Object defaultValue, State state, Dyad dyad) {
+    protected QDLSet applyToSet(QDLStem lArg, QDLSet rArg, QDLValue defaultValue, State state, Dyad dyad) {
         QDLSet output = new QDLSet();
         Iterator rIterator = rArg.iterator();
         while (rIterator.hasNext()) {
             Object nextRArg = rIterator.next();
-            Object result = evaluateNextArgForApplies(lArg, nextRArg, defaultValue, state, dyad);
-            output.add(asQDLValue(result));        }
+            Object result = evaluateNextArgForApplies(asQDLValue(lArg), nextRArg, defaultValue, state, dyad);
+            output.add(asQDLValue(result));
+        }
         return output;
     }
 
-    protected Object evaluateNextArgForApplies(Object lArg,
+    protected Object evaluateNextArgForApplies(QDLValue lArg,
                                                Object rArg,
-                                               Object defaultValue,
+                                               QDLValue defaultValue,
                                                State state,
                                                Dyad dyad) {
         Object result;
+        rArg = asJavaValue(rArg);
         if (rArg instanceof ExpressionInterface) {
             switch (((ExpressionInterface) rArg).getNodeType()) {
                 case ExpressionInterface.FUNCTION_REFERENCE_NODE:
@@ -608,10 +611,10 @@ public class OpEvaluator extends AbstractEvaluator {
         } else {
             // stems and sets are not nodes. The are created from nodes which have been consumed by this point.
             if (rArg instanceof QDLStem) {
-                if (!(lArg instanceof QDLStem) && defaultValue == null) {
+                if (!(lArg.isStem()) && defaultValue == null) {
                     throw new BadArgException("non-conformable left argument (should be a stem)", dyad.getLeftArgument());
                 }
-                result = applyToStem((QDLStem) lArg, (QDLStem) rArg, defaultValue, state, dyad);
+                result = applyToStem(lArg.asStem(), (QDLStem) rArg, defaultValue, state, dyad);
             } else {
                 if (rArg instanceof FunctionReferenceNode) {
                     result = doSingleApply(lArg, (FunctionReferenceNode) rArg, defaultValue, state, dyad);
@@ -626,12 +629,12 @@ public class OpEvaluator extends AbstractEvaluator {
 
     protected QDLStem applyToStem(QDLStem lArg,
                                   QDLStem rArg,
-                                  Object defaultValue,
+                                  QDLValue defaultValue,
                                   State state,
                                   Dyad dyad) {
         QDLStem output = new QDLStem();
         for (Object key : rArg.keySet()) {
-            Object nextLArg = null;
+            QDLValue nextLArg = null;
             if (lArg == null) {
                 if (defaultValue == null) {
                     throw new MissingArgException("missing argument for index " + key, dyad.getLeftArgument());
@@ -645,8 +648,9 @@ public class OpEvaluator extends AbstractEvaluator {
                 }
             }
 
-            Object nextRArg = rArg.get(key);
-            Object result = evaluateNextArgForApplies(nextLArg, nextRArg, defaultValue, state, dyad);
+            QDLValue nextRArg = rArg.get(key);
+            Object result = evaluateNextArgForApplies(nextLArg==null?null:nextLArg,
+                    nextRArg==null?null: nextRArg.getValue(), defaultValue, state, dyad);
             output.putLongOrString(key, asQDLValue(result));
         }
         return output;
@@ -690,16 +694,19 @@ apply([@f,@g],[2])
       [2,3]∂2@*; // built in
 
      */
-    protected Object doSingleApply(Object lArg, DyadicFunctionReferenceNode fNode, Object defaultValue, State state, Dyad dyad) {
+    protected Object doSingleApply(QDLValue lArg, DyadicFunctionReferenceNode fNode, QDLValue defaultValue, State state, Dyad dyad) {
 
         State actualState = fNode.hasModuleState() ? fNode.getModuleState() : state; // determined per fNode
         FunctionRecordInterface fRecord = fNode.getFunctionRecord();
+/*        if(fRecord == null) {
+            fRecord = state.resolveFunction(polyad, checkForDuplicates); // Do the heavy work of getting it
+        }*/
         boolean isBuiltin = fRecord == null;
         if (lArg == null) {
             lArg = defaultValue;
         }
-        if (lArg instanceof QDLStem) {
-            QDLStem lStem = (QDLStem) lArg;
+        if (lArg.isStem()) {
+            QDLStem lStem = lArg.asStem();
             if (lStem.isEmpty()) {
                 if (lStem.hasDefaultValue()) {
                     if (!lStem.getDefaultValue().isStem()) {
@@ -788,7 +795,7 @@ apply([@f,@g],[2])
         // so this is a scalar
         Polyad polyad = new Polyad(fRecord.getName());
         polyad.setBuiltIn(false);
-        polyad.addArgument(new ConstantNode(asQDLValue(lArg)));
+        polyad.addArgument(new ConstantNode(lArg));
         return polyad.evaluate(actualState);
 
     }
@@ -801,13 +808,13 @@ apply([@f,@g],[2])
      * @param dyad
      * @return
      */
-    protected Object doSingleApply(Object lArg, FunctionReferenceNode fNode, Object defaultValue, State state, Dyad dyad) {
+    protected Object doSingleApply(QDLValue lArg, FunctionReferenceNode fNode, QDLValue defaultValue, State state, Dyad dyad) {
         State actualState = fNode.hasModuleState() ? fNode.getModuleState() : state; // determined per fNode
         if (lArg == null) {
             lArg = defaultValue;
         }
-        if (lArg instanceof QDLStem) {
-            QDLStem lStem = (QDLStem) lArg;
+        if (lArg.isStem()) {
+            QDLStem lStem = lArg.asStem();
             if (lStem.isEmpty()) {
                 if (lStem.hasDefaultValue()) {
                     if (!lStem.getDefaultValue().isStem()) {
@@ -893,14 +900,14 @@ apply([@f,@g],[2])
         // so this is a scalar
         Polyad polyad = new Polyad(fNode.getFunctionName());
         polyad.setBuiltIn(false);
-        polyad.addArgument(new ConstantNode(asQDLValue(lArg)));
+        polyad.addArgument(new ConstantNode(lArg));
         return polyad.evaluate(actualState);
     }
 
-    protected QDLValue doSingleApply(Object lArg, FunctionReferenceNode fNode, State actualState) {
+    protected QDLValue doSingleApply(QDLValue lArg, FunctionReferenceNode fNode, State actualState) {
 
-        if (lArg instanceof QDLStem) {
-            QDLStem lStem = (QDLStem) lArg;
+        if (lArg.isStem()) {
+            QDLStem lStem = lArg.asStem();
             Polyad polyad = new Polyad(fNode.getFunctionName());
             polyad.setBuiltIn(false);
             if (lStem.isList()) {
@@ -969,11 +976,11 @@ a.⌆b.
             ei = ((ParenthesizedExpression) ei).getArgAt(0);
         }
         polyad.addArgument(ei); // should be a function reference
-        Object obj = dyad.getRightArgument().evaluate(state);
-        if (!(obj instanceof QDLStem)) {
+        QDLValue obj = dyad.getRightArgument().evaluate(state);
+        if (!(obj.isStem())) {
             throw new QDLExceptionWithTrace("right argument of " + FOR_ALL_KEY + " must be a list", dyad.getRightArgument());
         }
-        QDLStem stem = (QDLStem) obj;
+        QDLStem stem =  obj.asStem();
         if (!stem.isList()) {
             throw new QDLExceptionWithTrace("right argument of " + FOR_ALL_KEY + " must be a list", dyad.getRightArgument());
         }
@@ -1036,11 +1043,14 @@ a.⌆b.
     }
 
     private void doIsA1(Dyad dyad, State state) {
-        Object lhs = dyad.evalArg(0, state);
-        if (lhs instanceof AxisExpression) {
+        QDLValue lhQDLValue = dyad.evalArg(0, state);
+        Object lhs;
+        if (lhQDLValue.isAxisRestriction()) {
             // If it's a stem with an axis, it is still a stem, get that
             // and let the machinery do its work here.
-            lhs = ((AxisExpression) lhs).getStem();
+            lhs = lhQDLValue.asAxisExpression().getStem();
+        }else{
+            lhs = lhQDLValue.getValue();
         }
         if (!(dyad.getRightArgument() instanceof VariableNode)) {
             List<String> source = dyad.getRightArgument().getSourceCode();
@@ -1052,44 +1062,44 @@ a.⌆b.
             }
             throw new BadArgException("unknown type '" + text + "'", dyad.getRightArgument());
         }
-        Object obj2 = dyad.evalArg(1, state); // If the variable resolves to something, blow up
+        QDLValue obj2 = dyad.evalArg(1, state); // If the variable resolves to something, blow up
         if (obj2 != null) {
             throw new BadArgException("you must supply a type, not a value ", dyad.getRightArgument());
         }
         String typeName = ((VariableNode) dyad.getRightArgument()).getVariableReference();
-        boolean x = false;
+        boolean x;
         switch (typeName) {
             case NULL:
-                x = lhs instanceof QDLNull;
+                x = lhQDLValue.isNull();
                 break;
             case Types.BOOLEAN:
-                x = lhs instanceof Boolean;
+                x = lhQDLValue.isBoolean();
                 break;
             case Types.STRING:
-                x = lhs instanceof String;
+                x = lhQDLValue .isString();
                 break;
             case Types.NUMBER:
-                x = (lhs instanceof Long) || (lhs instanceof BigDecimal);
+                x = (lhQDLValue.isLong()) || (lhQDLValue.isDecimal());
                 break;
             case Types.INTEGER:
-                x = lhs instanceof Long;
+                x = lhQDLValue.isLong();
                 break;
             case Types.DECIMAL:
-                x = lhs instanceof BigDecimal;
+                x = lhQDLValue.isDecimal();
                 break;
             case Types.STEM:
-                x = lhs instanceof QDLStem;
+                x = lhQDLValue.isStem();
                 break;
             case Types.LIST:
-                x = (lhs instanceof QDLStem) && ((QDLStem) lhs).isList();
+                x = (lhQDLValue.isStem()) && lhQDLValue.asStem().isList();
                 break;
             case Types.SET:
-                x = lhs instanceof QDLSet;
+                x = lhQDLValue.isSet();
                 break;
             default:
                 throw new BadArgException("unkown type", dyad.getRightArgument());
         }
-        dyad.setResult(x ? Boolean.TRUE : Boolean.FALSE);
+        dyad.setResult(x ? BooleanValue.True : BooleanValue.False);
         dyad.setEvaluated(true);
 
     }
@@ -1129,6 +1139,7 @@ a.⌆b.
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 if (areAllSets(objects)) {
                     throw new QDLExceptionWithTrace(REGEX_MATCH + " not defined on sets.", dyad.getLeftArgument());
                 }
@@ -1156,9 +1167,9 @@ a.⌆b.
     }
 
     protected void doTilde(Dyad dyad, State state) {
-        Object obj1 = dyad.evalArg(1, state);
-        if (isSet(obj1)) {
-            QDLSet set = (QDLSet) obj1;
+        QDLValue obj1 = dyad.evalArg(1, state);
+        if (obj1.isSet()) {
+            QDLSet set = obj1.asSet();
             QDLStem outStem = new QDLStem();
             // special case. If this is a unary ~, then the first argument is
             // ignored.
@@ -1170,17 +1181,16 @@ a.⌆b.
             }
             // so they are trying to append the list to an existing stem.
             // In that case it becomes another entry
-            Object obj0 = dyad.evalArg(0, state);
-            if ((obj0 instanceof QDLNull)) {
+            QDLValue obj0 = dyad.evalArg(0, state);
+            if ((obj0.isNull())) {
                 throw new QDLExceptionWithTrace("cannot do a union a null", dyad.getLeftArgument());
-
             }
-            if ((obj1 instanceof QDLNull)) {
+            if ((obj1.isNull())) {
                 throw new QDLExceptionWithTrace("cannot do a union a null", dyad.getRightArgument());
             }
             QDLStem stem0;
-            if (obj0 instanceof QDLStem) {
-                stem0 = (QDLStem) obj0;
+            if (obj0.isStem()) {
+                stem0 = obj0.asStem();
             } else {
                 stem0 = new QDLStem();
                 stem0.put(0L, asQDLValue(obj0));
@@ -1199,16 +1209,16 @@ a.⌆b.
             dyad.setEvaluated(true);
             return;
         }
-        Object obj0 = dyad.evalArg(0, state);
+        QDLValue obj0 = dyad.evalArg(0, state);
 
         QDLStem stem0 = null;
         QDLStem stem1 = null;
-        if ((obj0 instanceof QDLNull)) {
+        if ((obj0.isNull())) {
             stem0 = new QDLStem();
             stem0.put(0L, QDLValue.getNullValue());
         } else {
-            if (obj0 instanceof QDLStem) {
-                stem0 = (QDLStem) obj0;
+            if (obj0.isStem()) {
+                stem0 = obj0.asStem();
             } else {
                 stem0 = new QDLStem();
                 stem0.put(0L, asQDLValue(obj0));
@@ -1216,8 +1226,8 @@ a.⌆b.
         }
 
 
-        if (obj1 instanceof QDLStem) {
-            stem1 = (QDLStem) obj1;
+        if (obj1.isStem()) {
+            stem1 = obj1.asStem();
         } else {
             stem1 = new QDLStem();
             stem1.put(0L, asQDLValue(obj1));
@@ -1235,6 +1245,7 @@ a.⌆b.
         fPointer pointer = new fPointer() {
             @Override
             public fpResult process(Object... objects) {
+                objects = castToJavaValues(objects);
                 fpResult r = new fpResult();
                 if (areAllSets(objects)) {
                     QDLSet leftSet = (QDLSet) objects[0];
@@ -1274,6 +1285,7 @@ a.⌆b.
         fPointer pointer = new fPointer() {
             @Override
             public fpResult process(Object... objects) {
+                objects = castToJavaValues(objects);
                 fpResult r = new fpResult();
                 if (areAllSets(objects)) {
                     throw new QDLExceptionWithTrace(POWER + " not defined for sets.", dyad);
@@ -1311,13 +1323,14 @@ a.⌆b.
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 if (areAllSets(objects)) {
                     QDLSet leftSet = (QDLSet) objects[0];
                     QDLSet rightSet = (QDLSet) objects[1];
                     Object tempValue = null;
                     switch (dyad.getOperatorType()) {
                         case LESS_THAN_VALUE:
-                            tempValue=  leftSet.isSubsetOf(rightSet) && (leftSet.size() != rightSet.size());
+                            tempValue = leftSet.isSubsetOf(rightSet) && (leftSet.size() != rightSet.size());
                             break;
                         case LESS_THAN_EQUAL_VALUE:
                             tempValue = leftSet.isSubsetOf(rightSet);
@@ -1335,7 +1348,7 @@ a.⌆b.
                 if (areAllStrings(objects)) {
                     String left = (String) objects[0];
                     String right = (String) objects[1];
-Object  tempValue = null;
+                    Object tempValue = null;
                     switch (dyad.getOperatorType()) {
                         case LESS_THAN_VALUE:
                             tempValue = -1 < right.indexOf(left) && left.length() < right.length();
@@ -1402,6 +1415,7 @@ Object  tempValue = null;
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
 
                 if (areAllSets(objects)) {
                     QDLSet leftSet = (QDLSet) objects[0];
@@ -1498,6 +1512,7 @@ Object  tempValue = null;
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 if (!areAllSets(objects)) {
                     throw new QDLExceptionWithTrace("Set operations require only sets", dyad.getLeftArgument());
                 }
@@ -1537,6 +1552,7 @@ Object  tempValue = null;
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 if (areAllSets(objects)) {
                     QDLSet leftSet = (QDLSet) objects[0];
                     QDLSet rightSet = (QDLSet) objects[1];
@@ -1599,6 +1615,7 @@ Object  tempValue = null;
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 if (areAllSets(objects)) {
                     throw new QDLExceptionWithTrace(MINUS + " not defined on sets. Did you mean difference (" + DIVIDE + ")?", dyad);
                 }
@@ -1639,6 +1656,7 @@ Object  tempValue = null;
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 if (areAllSets(objects)) {
                     if (doTimes) {
                         throw new QDLExceptionWithTrace(TIMES + " not defined on sets.", dyad.getLeftArgument());
@@ -1752,6 +1770,7 @@ Object  tempValue = null;
             public fpResult process(Object... objects) {
                 // At this point, only scalars should ever get passed here as arguments.
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 if (areAllSets(objects)) {
                     throw new QDLExceptionWithTrace(PLUS + " not defined on sets. Did you mean union (" + UNION + ")?", dyad);
                 }
@@ -1853,6 +1872,7 @@ Object  tempValue = null;
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 if (objects[0] instanceof FunctionReferenceNode) {
                     FunctionReferenceNode fNode = (FunctionReferenceNode) objects[0];
 
@@ -2038,6 +2058,7 @@ Object  tempValue = null;
         fPointer pointer = new fPointer() {
             @Override
             public fpResult process(Object... objects) {
+                objects = castToJavaValues(objects);
                 fpResult r = new fpResult();
                 if (!isBoolean(objects[0])) {
                     throw new QDLExceptionWithTrace("negation requires a strictly boolean argument not '" + objects[0] + "'", monad.getArgument());
@@ -2064,6 +2085,7 @@ Object  tempValue = null;
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
 
                 switch (Constant.getType(objects[0])) {
                     case LONG_TYPE:
@@ -2115,18 +2137,6 @@ Object  tempValue = null;
         return false;
     }
 
-/*
-    public int[] getArgCount(Monad monad) {
-        evaluate(monad, null);
-        return (int[]) monad.getResult();
-    }
-*/
 
-/*
-    public int[] getArgCount(Dyad dyad) {
-        evaluate(dyad, null);
-        return (int[]) dyad.getResult();
-    }
-*/
 
 }

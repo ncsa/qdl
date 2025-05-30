@@ -29,6 +29,7 @@ import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLSet;
 import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.VStack;
+import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.vfs.AbstractVFSFileProvider;
 import org.qdl_lang.vfs.VFSEntry;
 import org.qdl_lang.vfs.VFSFileProvider;
@@ -3326,9 +3327,9 @@ public class WorkspaceCommands implements Logable, Serializable {
             Module module = null;
             while (stringTokenizer.hasMoreTokens()) {
                 String nextToken = stringTokenizer.nextToken();
-                Object obj = currentState.getValue(nextToken);
-                if (obj instanceof Module) {
-                    module = (Module) obj;
+                QDLValue obj = currentState.getValue(nextToken);
+                if (obj.isModule()) {
+                    module = obj.asModule();
                 } else {
                     funcs = new TreeSet<>();
                 }
@@ -3639,9 +3640,9 @@ public class WorkspaceCommands implements Logable, Serializable {
             Module module = null;
             while (stringTokenizer.hasMoreTokens()) {
                 String nextToken = stringTokenizer.nextToken();
-                Object obj = currentState.getValue(nextToken);
-                if (obj instanceof Module) {
-                    module = (Module) obj;
+                QDLValue obj = currentState.getValue(nextToken);
+                if (obj.isModule()) {
+                    module = obj.asModule();
                 } else {
                     vars = new TreeSet<>();
                 }
@@ -3844,10 +3845,10 @@ public class WorkspaceCommands implements Logable, Serializable {
             StringTokenizer st = new StringTokenizer(name, State.NS_DELIMITER);
             while (st.hasMoreTokens()) {
                 String currentToken = st.nextToken();
-                Object obj = currentState.getValue(currentToken);
-                if (obj instanceof Module) {
+                QDLValue  obj = currentState.getValue(currentToken);
+                if (obj.isModule()) {
                     previousState = currentState;
-                    currentState = ((Module) obj).getState();
+                    currentState = obj.asModule().getState();
                 } else {
                     doxx = currentState.listFunctionDoc(currentToken, argCount);
                 }
@@ -3865,9 +3866,9 @@ public class WorkspaceCommands implements Logable, Serializable {
         Module currentModule = null;
         while (st.hasMoreTokens()) {
             currentName = st.nextToken();
-            Object object = currentState.getValue(currentName);
-            if (object instanceof Module) {
-                currentModule = (Module) object;
+            QDLValue object = currentState.getValue(currentName);
+            if (object.isModule()) {
+                currentModule = object.asModule();
                 currentState = currentModule.getState();
             } else {
                 return null;
@@ -4140,6 +4141,11 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     String NOT_SET = "(not set)";
 
+    /**
+     * Get a workspace variable. These may be strings or booleans.
+     * @param key
+     * @return
+     */
     protected Object getWSVariable(String key) {
         switch (key) {
             case PRETTY_PRINT:

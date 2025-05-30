@@ -46,7 +46,9 @@ public class ComparisonDyad extends Dyad {
             // handles simple case and stops descent
             QDLValue obj = super.evaluate(state);
             leftmostNode = getLeftArgument();
-            return obj;
+            setResult(obj);
+            setEvaluated(true);
+            return getResult();
         }
         // At this point we do 3 passes -- I'm sure that can be improved
         // 1. re-order the nodes since the parser has them in opposite from execution order

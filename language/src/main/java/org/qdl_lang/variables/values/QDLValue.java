@@ -17,7 +17,7 @@ import java.util.Objects;
 /**
  * The top-level wrapper class for every value QDL knows about.
  */
-public class QDLValue implements Constants, Serializable {
+public class QDLValue implements Constants, Serializable, Comparable<QDLValue> {
     protected Long longValue = null;
     protected Boolean booleanValue = null;
     protected BigDecimal decimalValue = null;
@@ -88,7 +88,12 @@ public class QDLValue implements Constants, Serializable {
     Integer type = null;
 
     public QDLValue(Object value) {
-        this.value = value;
+        if(value instanceof QDLValue) {
+            // just in case someone tries to nest these, unpack it for them
+            this.value = ((QDLValue) value).getValue();
+        }else {
+            this.value = value;
+        }
     }
 
     /*
@@ -144,6 +149,9 @@ public class QDLValue implements Constants, Serializable {
 
     public boolean isString() {
         return getType() == STRING_TYPE;
+    }
+    public boolean isAllIndices() {
+        return getType() == ALL_INDICES_TYPE;
     }
 
     /*
@@ -337,6 +345,8 @@ public class QDLValue implements Constants, Serializable {
                 return new LongValue((Integer)value);
             case MODULE_TYPE:
                 return new ModuleValue((Module) value);
+            case ALL_INDICES_TYPE:
+               return AllIndicesValue.getAllIndicesValue();
             case Constants.UNKNOWN_TYPE:
                 throw new IllegalArgumentException(" unknown object type for '" + value + "'");
             default:
@@ -371,6 +381,14 @@ public class QDLValue implements Constants, Serializable {
         }
         return list;
     }
+    public static Object[] castToJavaValues(Object[] values) {
+        Object[] array = new Object[values.length];
+        int i = 0;
+        for (Object value : values) {
+            array[i++] = (asJavaValue(value));
+        }
+        return array;
+    }
 
     /**
      * Inverse cast of {@link #castToJavaValues(List)}. This takes a collection of java values
@@ -394,5 +412,26 @@ public class QDLValue implements Constants, Serializable {
             list[i++] = (asQDLValue(value));
         }
         return list;
+    }
+
+    @Override
+    public int compareTo(QDLValue qdlValue) {
+        Comparable A = null, B = null;
+        if(getValue() instanceof Comparable) {
+            A = (Comparable) getValue();
+        }else{
+            throw new ClassCastException("value is not comparable");
+        }
+        if(qdlValue.getValue() instanceof Comparable) {
+            B = (Comparable) qdlValue.getValue();
+        }else{
+            throw new ClassCastException("value is not comparable");
+
+        }
+        return A.compareTo(B);
+    }
+
+    public boolean isScalar(){
+        return !(isStem() || isSet() || isModule() || isFunction() || isDyadicFunction());
     }
 }

@@ -483,7 +483,7 @@ subset(b., 3, 6)
                 needsCRWithClosingBrace = false;
                 if (isFirst) {
                     isFirst = false;
-                    output = output + StemConverter.convert(obj.asStem());
+                    output = output + StemConverter.convert(obj.getValue());
                 } else {
                     output = output + "," + StemConverter.convert(obj.getValue());
                 }
@@ -1287,14 +1287,14 @@ subset(b., 3, 6)
      * @return
      */
     public boolean removeAllByValue(Collection<QDLValue> c, boolean reorderLists) {
-        ArrayList newList = new ArrayList();
+        ArrayList<QDLValue> newList = new ArrayList<>();
         if (reorderLists) {
-            for (Object v : getArrayList()) {
-                if (v instanceof QDLStem) {
-                    QDLStem vv = (QDLStem) v;
+            for (QDLValue v : getArrayList()) {
+                if (v.isStem()) {
+                    QDLStem vv = v.asStem();
                     vv.removeAllByValues(c, reorderLists);
                     if (!vv.isEmpty()) {
-                        newList.add(vv);
+                        newList.add(QDLValue.asQDLValue(vv));
                     }
                 } else {
                     if (!c.contains(v)) {
@@ -1307,7 +1307,7 @@ subset(b., 3, 6)
                     QDLStem vv = sparseEntry.entry.asStem();
                     vv.removeAllByValues(c, reorderLists);
                     if (!vv.isEmpty()) {
-                        newList.add(vv);
+                        newList.add(QDLValue.asQDLValue(vv));
                     }
                 } else {
                     if (!c.contains(sparseEntry.entry)) {

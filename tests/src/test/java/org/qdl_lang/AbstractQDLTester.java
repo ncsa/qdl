@@ -23,6 +23,16 @@ import java.util.Random;
  */
 public class AbstractQDLTester extends TestBase {
 
+    public static boolean isSerializationTestsOff() {
+        return serializationTestsOff;
+    }
+
+    public static void setSerializationTestsOff(boolean serializationTestsOff) {
+        AbstractQDLTester.serializationTestsOff = serializationTestsOff;
+    }
+
+    public static boolean serializationTestsOff = true;
+
     protected TestUtils testUtils = TestUtils.newInstance();
 
     /*
@@ -239,7 +249,7 @@ public class AbstractQDLTester extends TestBase {
      * @return
      */
     protected boolean checkVThing(String variableName, Object newValue, State state) {
-        return ((VThing) state.getVStack().get(new XKey(variableName))).getVariable().equals(newValue);
+        return ((VThing) state.getVStack().get(new XKey(variableName))).getVariable().getQDLValue().equals(newValue);
     }
 
     /**
@@ -375,7 +385,7 @@ public class AbstractQDLTester extends TestBase {
     public static final int ROUNDTRIP_JSON = 4;
 
     /**
-     * deletages rountripping to various serializers. This will also zero out the
+     * delegates rountripping to various serializers. This will also zero out the
      * script so that the pending calls are not repeated (which would just stick
      * them back in the state if they were missing, giving a false positive.)
      * @param state

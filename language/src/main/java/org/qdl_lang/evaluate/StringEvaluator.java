@@ -19,6 +19,7 @@ import java.util.StringTokenizer;
 import static org.qdl_lang.state.QDLConstants.*;
 import static org.qdl_lang.variables.Constants.*;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
+import static org.qdl_lang.variables.values.QDLValue.castToJavaValues;
 
 /**
  * This evaluates all string functions.
@@ -223,6 +224,7 @@ public class StringEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 int pos = -1;
                 boolean isRegEx = false;
                 if (objects.length == 3) {
@@ -279,6 +281,7 @@ public class StringEvaluator extends AbstractEvaluator {
                 fpResult r = new fpResult();
                 int pos = -1;
                 boolean caseSensitive = true;
+                objects = castToJavaValues(objects);
 
                 if (areAllStrings(objects[0], objects[1])) {
                     String s0 = (String) objects[0];
@@ -328,6 +331,7 @@ public class StringEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 int pos = -1;
                 boolean isRegEx = false;
                 if (objects.length == 3) {
@@ -380,12 +384,12 @@ public class StringEvaluator extends AbstractEvaluator {
             throw new ExtraArgException(FROM_URI + " requires at most 1 argument", polyad.getArgAt(1));
         }
 
-        Object object = polyad.evalArg(0, state);
-        if (!isStem(object)) {
+        QDLValue object = polyad.evalArg(0, state);
+        if (!object.isStem()) {
             throw new BadArgException(FROM_URI + " requires a stem as its argument", polyad.getArgAt(0));
         }
 
-        QDLStem s = (QDLStem) object;
+        QDLStem s = object.asStem();
         try {
             Long port = s.getLong(URI_PORT);
             String path;
@@ -620,6 +624,7 @@ public class StringEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult result = new fpResult();
+                objects = castToJavaValues(objects);
                 if (!isString(objects[0])) {
                     throw new BadArgException("The first argument to " + SUBSTRING + " must be a string.", polyad.getArgAt(0));
                 }
@@ -682,6 +687,7 @@ public class StringEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 if (objects[0] instanceof String) {
                     r.result = new StringValue(objects[0].toString().trim());
                 } else {
@@ -711,6 +717,7 @@ public class StringEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
 
                 boolean caseSensitive = true;
                 if (objects.length == 3) {
@@ -771,6 +778,7 @@ public class StringEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 if (areAllStrings(objects[0], objects[1])) {
                     boolean caseSensitive = true;
                     if (objects.length == 3) {
@@ -813,6 +821,7 @@ public class StringEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 if (objects[0] instanceof String) {
                     if (isLower) {
                         r.result = asQDLValue(objects[0].toString().toLowerCase());
@@ -866,10 +875,13 @@ public class StringEvaluator extends AbstractEvaluator {
             switch (o.getType()) {
                 case STRING_TYPE:
                     outSet.add(asQDLValue(doStringReplace(o.asString(), replacements, regexStem)));
+                    break;
                 case STEM_TYPE:
                     outSet.add(asQDLValue(doReplace(polyad, o.asStem(), replacements, regexStem, state)));
+                    break;
                 case SET_TYPE:
                     outSet.add(asQDLValue(doReplace(polyad, o.asSet(), replacements, regexStem, state)));
+                    break;
                 default:
                     outSet.add(o);// pass it back unchanged
             }
@@ -904,6 +916,7 @@ public class StringEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 boolean doregex = false;
                 if (objects.length == 4) {
                     if (!isBoolean(objects[3])) {
@@ -1080,6 +1093,7 @@ public class StringEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 if (areAllStrings(objects[0], objects[1]) && areAllLongs(objects[2])) {
                     int index = ((Long) objects[2]).intValue();
                     String src = (String) objects[0];
@@ -1114,6 +1128,7 @@ public class StringEvaluator extends AbstractEvaluator {
             @Override
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
+                objects = castToJavaValues(objects);
                 if (areAllStrings(objects[0], objects[1])) {
                     boolean doRegex = false;
                     if (objects.length == 3) {

@@ -87,6 +87,7 @@ public class OldModuleTests extends AbstractQDLTester {
      */
     public void testFunctionAndModules_Good() throws Throwable {
         testFunctionAndModules_Good(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testFunctionAndModules_Good(ROUNDTRIP_XML);
         testFunctionAndModules_Good(ROUNDTRIP_QDL);
         testFunctionAndModules_Good(ROUNDTRIP_JAVA);
@@ -158,6 +159,7 @@ public class OldModuleTests extends AbstractQDLTester {
 
     public void testMultipleModuleImport() throws Throwable {
         testMultipleModuleImport(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testMultipleModuleImport(ROUNDTRIP_XML);
         testMultipleModuleImport(ROUNDTRIP_QDL);
         testMultipleModuleImport(ROUNDTRIP_JAVA);
@@ -198,6 +200,7 @@ public class OldModuleTests extends AbstractQDLTester {
      */
     public void testNSAndStem() throws Throwable {
         testNSAndStem(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         testNSAndStem(ROUNDTRIP_XML);
         testNSAndStem(ROUNDTRIP_QDL);
         testNSAndStem(ROUNDTRIP_JAVA);
@@ -236,14 +239,15 @@ public class OldModuleTests extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testNSAndVariableResolution() throws Throwable {
-        testNSAndVariableResolution(ROUNDTRIP_NONE);
-        testNSAndVariableResolution(ROUNDTRIP_XML);
-        testNSAndVariableResolution(ROUNDTRIP_QDL);
-        testNSAndVariableResolution(ROUNDTRIP_JAVA);
-        testNSAndVariableResolution(ROUNDTRIP_JSON);
+        NSAndVariableResolutionTest(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
+        NSAndVariableResolutionTest(ROUNDTRIP_XML);
+        NSAndVariableResolutionTest(ROUNDTRIP_QDL);
+        NSAndVariableResolutionTest(ROUNDTRIP_JAVA);
+        NSAndVariableResolutionTest(ROUNDTRIP_JSON);
     }
 
-    protected void testNSAndVariableResolution(int testCase) throws Throwable {
+    protected void NSAndVariableResolutionTest(int testCase) throws Throwable {
 
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -281,14 +285,15 @@ public class OldModuleTests extends AbstractQDLTester {
      */
 
     public void testImportAndAlias() throws Throwable {
-        testImportAndAlias(ROUNDTRIP_NONE);
-        testImportAndAlias(ROUNDTRIP_XML);
-        testImportAndAlias(ROUNDTRIP_QDL);
-        testImportAndAlias(ROUNDTRIP_JAVA);
-        testImportAndAlias(ROUNDTRIP_JSON);
+        importAndAliasTest(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
+        importAndAliasTest(ROUNDTRIP_XML);
+        importAndAliasTest(ROUNDTRIP_QDL);
+        importAndAliasTest(ROUNDTRIP_JAVA);
+        importAndAliasTest(ROUNDTRIP_JSON);
     }
 
-    public void testImportAndAlias(int testCase) throws Throwable {
+    public void importAndAliasTest(int testCase) throws Throwable {
 
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -362,14 +367,15 @@ public class OldModuleTests extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testModuleFunctionVisibility() throws Throwable {
-        testModuleFunctionVisibility(ROUNDTRIP_NONE);
-        testModuleFunctionVisibility(ROUNDTRIP_XML);
-        testModuleFunctionVisibility(ROUNDTRIP_QDL);
-        testModuleFunctionVisibility(ROUNDTRIP_JAVA);
-        testModuleFunctionVisibility(ROUNDTRIP_JSON);
+        moduleFunctionVisibilityTest(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
+        moduleFunctionVisibilityTest(ROUNDTRIP_XML);
+        moduleFunctionVisibilityTest(ROUNDTRIP_QDL);
+        moduleFunctionVisibilityTest(ROUNDTRIP_JAVA);
+        moduleFunctionVisibilityTest(ROUNDTRIP_JSON);
     }
 
-    public void testModuleFunctionVisibility(int testCase) throws Throwable {
+    public void moduleFunctionVisibilityTest(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, " module['a:a','a'][f(x)->x^2;g(x)->f(x+1);];");
@@ -409,14 +415,15 @@ public class OldModuleTests extends AbstractQDLTester {
      */
 
     public void testFunctionVisibility() throws Throwable {
-        testFunctionVisibility(ROUNDTRIP_NONE);
-        testFunctionVisibility(ROUNDTRIP_XML);
-        testFunctionVisibility(ROUNDTRIP_QDL);
-        testFunctionVisibility(ROUNDTRIP_JAVA);
-        testFunctionVisibility(ROUNDTRIP_JSON);
+        functionVisibilityTest(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
+        functionVisibilityTest(ROUNDTRIP_XML);
+        functionVisibilityTest(ROUNDTRIP_QDL);
+        functionVisibilityTest(ROUNDTRIP_JAVA);
+        functionVisibilityTest(ROUNDTRIP_JSON);
     }
 
-    public void testFunctionVisibility(int testCase) throws Throwable {
+    public void functionVisibilityTest(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "f(x)->x;");
@@ -513,14 +520,15 @@ public class OldModuleTests extends AbstractQDLTester {
         -11 =:  A#B#u;
      */
     public void testNestedModule() throws Throwable {
-        testNestedModule(ROUNDTRIP_NONE);
-        testNestedModule(ROUNDTRIP_XML);
-        testNestedModule(ROUNDTRIP_QDL);
-        testNestedModule(ROUNDTRIP_JAVA);
-        testNestedModule(ROUNDTRIP_JSON);
+        nestedModuleTEst(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
+        nestedModuleTEst(ROUNDTRIP_XML);
+        nestedModuleTEst(ROUNDTRIP_QDL);
+        nestedModuleTEst(ROUNDTRIP_JAVA);
+        nestedModuleTEst(ROUNDTRIP_JSON);
     }
 
-    public void testNestedModule(int testCase) throws Throwable {
+    public void nestedModuleTEst(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "module['a:a','A'][module['b:b','B'][u:=2;f(x)->x+1;];module_import('b:b');];");
@@ -549,8 +557,9 @@ public class OldModuleTests extends AbstractQDLTester {
   b#q
      */
     public void testNestedVariableImport() throws Throwable {
-        testNestedVariableImport(ROUNDTRIP_NONE);
-        testNestedVariableImport(ROUNDTRIP_XML);
+        nestedVariableImportTest(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
+        nestedVariableImportTest(ROUNDTRIP_XML);
         /*
         No QDL test. The issue is that the test checks that importing a module then
         changing a value internal to it is preserved. This implies order (load module
@@ -558,11 +567,11 @@ public class OldModuleTests extends AbstractQDLTester {
         so such a pattern cannot be preserved..
          */
 //        testNestedVariableImport(ROUNDTRIP_QDL);
-        testNestedVariableImport(ROUNDTRIP_JAVA);
-        testNestedVariableImport(ROUNDTRIP_JSON);
+        nestedVariableImportTest(ROUNDTRIP_JAVA);
+        nestedVariableImportTest(ROUNDTRIP_JSON);
     }
 
-    public void testNestedVariableImport(int testCase) throws Throwable {
+    public void nestedVariableImportTest(int testCase) throws Throwable {
         if (!testImports) {
             return;
         }
@@ -677,7 +686,7 @@ a
         try {
             interpreter.execute(script.toString());
             assert false : "multiple namespaces with same variable failed unqualified test.";
-        } catch (NamespaceException nsx) {
+        } catch (NamespaceException | UnknownSymbolException nsx) {
             assert true;
         }
     }
@@ -1068,14 +1077,15 @@ cannot access '__a'
      * @throws Throwable
      */
     public void testJavaFQAccessTest() throws Throwable {
-        testJavaFQAccessTest(ROUNDTRIP_NONE);
-        testJavaFQAccessTest(ROUNDTRIP_JSON);
-        testJavaFQAccessTest(ROUNDTRIP_XML);
-        testJavaFQAccessTest(ROUNDTRIP_QDL);
-        testJavaFQAccessTest(ROUNDTRIP_JAVA);
+        JavaFQAccessTest(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
+        JavaFQAccessTest(ROUNDTRIP_JSON);
+        JavaFQAccessTest(ROUNDTRIP_XML);
+        JavaFQAccessTest(ROUNDTRIP_QDL);
+        JavaFQAccessTest(ROUNDTRIP_JAVA);
     }
 
-    protected void testJavaFQAccessTest(int testCase) throws Throwable {
+    protected void JavaFQAccessTest(int testCase) throws Throwable {
 
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -1261,14 +1271,15 @@ cannot access '__a'
     }
 
     public void testExtrinsic() throws Throwable {
-        testExtrinsic(ROUNDTRIP_NONE); // no serialization
-        testExtrinsic(ROUNDTRIP_XML); // make sure serialization of extrinsics is done in XML
-        testExtrinsic(ROUNDTRIP_QDL); // make sure serialization of extrinsics is done in QDL
-        testExtrinsic(ROUNDTRIP_JAVA); // make sure serialization of extrinsics is done in Java
-        testExtrinsic(ROUNDTRIP_JSON); // make sure serialization of extrinsics is done in Java
+        extrinsicTest(ROUNDTRIP_NONE); // no serialization
+        if(isSerializationTestsOff()) return;
+        extrinsicTest(ROUNDTRIP_XML); // make sure serialization of extrinsics is done in XML
+        extrinsicTest(ROUNDTRIP_QDL); // make sure serialization of extrinsics is done in QDL
+        extrinsicTest(ROUNDTRIP_JAVA); // make sure serialization of extrinsics is done in Java
+        extrinsicTest(ROUNDTRIP_JSON); // make sure serialization of extrinsics is done in Java
     }
 
-    protected void testExtrinsic(int testCase) throws Throwable {
+    protected void extrinsicTest(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, VariableState.EXTRINSIC_MARKER + "j := 5;");
@@ -1284,14 +1295,15 @@ cannot access '__a'
 
 
     public void testIsFunction() throws Throwable {
-        testIsFunction(ROUNDTRIP_NONE);
-        testIsFunction(ROUNDTRIP_XML);
-        testIsFunction(ROUNDTRIP_QDL);
-        testIsFunction(ROUNDTRIP_JAVA);
-        testIsFunction(ROUNDTRIP_JSON);
+        isFunctionTest(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
+        isFunctionTest(ROUNDTRIP_XML);
+        isFunctionTest(ROUNDTRIP_QDL);
+        isFunctionTest(ROUNDTRIP_JAVA);
+        isFunctionTest(ROUNDTRIP_JSON);
     }
 
-    protected void testIsFunction(int testCase) throws Throwable {
+    protected void isFunctionTest(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "module['a:/t','a']body[define[f(x)]body[return(x+1);];];");

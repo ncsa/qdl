@@ -11,7 +11,6 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.state.StateUtils;
 import org.qdl_lang.state.XKey;
 import org.qdl_lang.statements.ExpressionInterface;
-import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.variables.VThing;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
@@ -134,9 +133,9 @@ public class ModuleExpression extends ExpressionImpl {
             setEvaluated(true);
             return getResult();
         }
-        Object mm = ambientState.getValue(getAlias());
-        if (mm != null && mm instanceof Module) {
-            setModule((Module) mm);
+        QDLValue mm = ambientState.getValue(getAlias());
+        if (mm != null && mm.isModule()) {
+            setModule(mm.asModule());
             setNewModuleVersion(true);
             /* The ambient state refers to the state in which the root module was called.
              It is set with each module expression call, so if it is null, then this is the
@@ -234,10 +233,10 @@ public class ModuleExpression extends ExpressionImpl {
                 // Next line is for https://github.com/ncsa/qdl/issues/84
                 newState.setScriptArgs(ambientState.getScriptArgs());
                 if (mm != null) {
-                    if (mm instanceof JavaModule) {
+                    if (mm.asModule() instanceof JavaModule) {
                         // the point is that these are added to the module state because the functions for the module
                         // live in the state for that module.
-                        State state = ((JavaModule) mm).getState();
+                        State state = mm.asModule().getState();
                         if (state != null) {
                             newState.getVStack().appendTables(state.getVStack());
                             newState.getFTStack().appendTables(state.getFTStack());
@@ -391,13 +390,13 @@ http#host(qqq('https://foo'))
             XKey xKey = new XKey(getAlias());
             if (state.getVStack().containsKey(xKey)) {
                 VThing vThing = (VThing) state.getVStack().get(xKey);
-                if (vThing.getVariable().getValue().isModule()) {
-                    Module m = vThing.getVariable().getValue().asModule();
+                if (vThing.getVariable().getQDLValue().isModule()) {
+                    Module m = vThing.getVariable().getQDLValue().asModule();
                     setModule(m);
                     moduleState = m.getState();
 
                 } else {
-                    throw new NFWException("expected module for key " + xKey + ", but got a " + vThing.getVariable().getValue().getClass().getSimpleName());
+                    throw new NFWException("expected module for key " + xKey + ", but got a " + vThing.getVariable().getQDLValue().getClass().getSimpleName());
                 }
             } else {
                 if (!(alias.equals("this") || state.getMInstances().containsKey(xKey))) {
@@ -460,8 +459,8 @@ http#host(qqq('https://foo'))
             setNewModuleVersion(getModuleState() != null);
             if (isNewModuleVersion() && getModuleState().getVStack().containsKey(xKey)) {
                 VThing vThing = (VThing) getModuleState().getVStack().get(xKey);
-                if (vThing.getVariable().getValue().isModule()) {
-                    Module m = vThing.getVariable().getValue().asModule();
+                if (vThing.getVariable().getQDLValue().isModule()) {
+                    Module m = vThing.getVariable().getQDLValue().asModule();
                     nextME.setModule(m);
                     nextME.setModuleState(m.getState()); //sets the next one in the chain.
                 } else {

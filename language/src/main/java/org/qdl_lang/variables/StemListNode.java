@@ -54,6 +54,7 @@ public class StemListNode implements ExpressionInterface {
         if (!(qdlValue.isStem())) {
             throw new IllegalStateException("error: cannot set a " + getClass().getSimpleName() + " to type " + qdlValue.getClass().getSimpleName());
         }
+        this.result = qdlValue;
     }
     @Override
     public void setResult(Object result) {
@@ -109,6 +110,7 @@ public class StemListNode implements ExpressionInterface {
             //stmt.setResultType(Constant.getType(stmt.getResult()));
             stemOut.put(i++, stmt.getResult());
         }
+        setResult(stemOut);
         setEvaluated(true);
         return new QDLValue(stemOut);
     }

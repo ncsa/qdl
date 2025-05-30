@@ -159,7 +159,7 @@ public class StatementTest extends AbstractQDLTester {
     public void testMondicBreak() throws Throwable {
         StringBuffer script = new StringBuffer();
         addLine(script,
-                "b. ≔ null;\n" +
+                     "b. ≔ null;\n" +
                         "while[j∈[;5]]\n" +
                         " do[\n" +
                         "    while[k∈[;6]]\n" +

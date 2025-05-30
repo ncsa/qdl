@@ -13,6 +13,8 @@ import org.qdl_lang.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
+import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.vfs.*;
 
 import java.io.File;
@@ -499,12 +501,12 @@ public class IOEvaluator extends AbstractEvaluator {
             throw new ExtraArgException(VFS_MOUNT + " requires at most 1 argument", polyad.getArgAt(1));
         }
 
-        Object arg1 = polyad.evalArg(0, state);
+        QDLValue arg1 = polyad.evalArg(0, state);
         checkNull(arg1, polyad.getArgAt(0));
-        if (!isStem(arg1)) {
+        if (!arg1.isStem()) {
             throw new BadArgException("The argument must be a stem", polyad.getArgAt(0));
         }
-        QDLStem cfg = (QDLStem) arg1;
+        QDLStem cfg = arg1.asStem();
         if (!cfg.containsKey(VFS_ATTR_TYPE)) {
             // create a memory store
             cfg.put(VFS_ATTR_TYPE, asQDLValue(VFS_TYPE_MEMORY));
@@ -589,37 +591,37 @@ public class IOEvaluator extends AbstractEvaluator {
             throw new ExtraArgException(WRITE_FILE + " requires at most 3 arguments", polyad.getArgAt(3));
         }
 
-        Object obj = polyad.evalArg(0, state);
+        QDLValue obj = polyad.evalArg(0, state);
         checkNull(obj, polyad.getArgAt(0));
         if (polyad.getArgCount() == 1) {
-            if (!isStem(obj)) {
+            if (!obj.isStem()) {
                 throw new BadArgException(WRITE_FILE + " must have a stem as its only argument.", polyad.getArgAt(0));
             }
             polyad.setEvaluated(true);
-            polyad.setResult(processWriteFileStem((QDLStem) obj, state, polyad));
+            polyad.setResult(processWriteFileStem(obj.asStem(), state, polyad));
             return;
         }
-        Object obj2 = polyad.evalArg(1, state);
+        QDLValue obj2 = polyad.evalArg(1, state);
         checkNull(obj2, polyad.getArgAt(1));
-        if (!isString(obj)) {
+        if (!obj.isString()) {
             throw new BadArgException("The first argument to '" + WRITE_FILE + "' must be a string that is the file name.", polyad.getArgAt(1));
         }
-        String fileName = obj.toString();
+        String fileName = obj.asString();
         //boolean isBase64 = false;
         int fileType = FILE_OP_TEXT_STRING;// default
         if (polyad.getArgCount() == 3) {
-            Object obj3 = polyad.evalArg(2, state);
+            QDLValue obj3 = polyad.evalArg(2, state);
             checkNull(obj3, polyad.getArgAt(2));
-            if (isBoolean(obj3)) {
+            if (obj3.isBoolean()) {
                 // Allow to send true = base64 or false (default
-                if ((Boolean) obj3) {
+                if (obj3.asBoolean()) {
                     fileType = FILE_OP_BINARY;
                 }
             } else {
-                if (!isLong(obj3)) {
+                if (!obj3.isLong()) {
                     throw new BadArgException("The third argument to '" + WRITE_FILE + "' must be an integer.", polyad.getArgAt(2));
                 }
-                fileType = ((Long) obj3).intValue();
+                fileType = obj3.asLong().intValue();
             }
         }
         writeSingleFile(fileName, obj2, fileType, state, polyad);
@@ -637,28 +639,28 @@ public class IOEvaluator extends AbstractEvaluator {
     protected QDLStem processWriteFileStem(QDLStem input, State state, Polyad polyad) {
         QDLStem output = new QDLStem();
         for (Object key : input.keySet()) {
-            Object value = input.get(key);
-            if (value instanceof QDLStem) {
-                QDLStem p = (QDLStem) value;
+            QDLValue value = input.get(key);
+            if (value.isStem()) {
+                QDLStem p = value.asStem();
                 if (p.containsKey(FILE_WRITE_PATH_KEY) && p.containsKey(FILE_WRITE_CONTENT_KEY)) {
-                    Object path = p.get(FILE_WRITE_PATH_KEY);
-                    if (!isString(path)) {
+                    QDLValue path = p.get(FILE_WRITE_PATH_KEY);
+                    if (!path.isString()) {
                         throw new BadArgException("The path '" + path + "' for " + WRITE_FILE + " must be a string", polyad.getArgAt(0));
                     }
-                    Object content = p.get(FILE_WRITE_CONTENT_KEY);
+                    QDLValue content = p.get(FILE_WRITE_CONTENT_KEY);
                     int fileType = FILE_OP_TEXT_STRING;// default
                     if (p.containsKey(FILE_WRITE_TYPE_KEY)) {
-                        Object obj = p.get(FILE_WRITE_TYPE_KEY);
-                        if (obj instanceof Long) {
-                            fileType = ((Long) obj).intValue();
+                        QDLValue obj = p.get(FILE_WRITE_TYPE_KEY);
+                        if (obj.isLong()) {
+                            fileType = obj.asLong().intValue();
                         } else {
-                            if (obj instanceof Boolean) {
-                                fileType = ((Boolean) obj) ? FILE_OP_BINARY : fileType;
+                            if (obj.isBoolean()) {
+                                fileType = obj.asBoolean() ? FILE_OP_BINARY : fileType;
                             }
                         }
                     }
-                    writeSingleFile((String) path, content, fileType, state, polyad);
-                    output.putLongOrString(key, asQDLValue(Boolean.TRUE));
+                    writeSingleFile(path.asString(), content, fileType, state, polyad);
+                    output.putLongOrString(key, BooleanValue.True);
                 } else {
                     output.putLongOrString(key, asQDLValue(value));
                 }
@@ -669,7 +671,7 @@ public class IOEvaluator extends AbstractEvaluator {
         return output;
     }
 
-    protected void writeSingleFile(String fileName, Object content, int fileType, State state, Polyad polyad) {
+    protected void writeSingleFile(String fileName, QDLValue content, int fileType, State state, Polyad polyad) {
         boolean allowListEntriesInIniFiles = true;
         if (state.isVFSFile(fileName)) {
             try {
@@ -685,16 +687,16 @@ public class IOEvaluator extends AbstractEvaluator {
                             throw new BadArgException(WRITE_FILE + " requires a stem for ini output", polyad.getArgAt(1));
                         }
                         xProperties.put(FileEntry.CONTENT_TYPE, FileEntry.TEXT_TYPE);
-                        lines.add(convertToIni((QDLStem) content, allowListEntriesInIniFiles));
+                        lines.add(convertToIni(content.asStem(), allowListEntriesInIniFiles));
                         break;
                     case FILE_OP_BINARY:
                         xProperties.put(FileEntry.CONTENT_TYPE, FileEntry.BINARY_TYPE);
-                        lines.add(content.toString());  // in VFS stores we store a binary string
+                        lines.add(content.asString());  // in VFS stores we store a binary string
                         break;
                     case FILE_OP_TEXT_STRING:
                     case FILE_OP_TEXT_STEM:
-                        if (isStem(content)) {
-                            QDLStem contents = (QDLStem) content;
+                        if (content.isStem()) {
+                            QDLStem contents = content.asStem();
 
                             xProperties.put(FileEntry.CONTENT_TYPE, FileEntry.TEXT_TYPE);
                             // allow for writing empty files. Edge case but happens.
@@ -705,9 +707,9 @@ public class IOEvaluator extends AbstractEvaluator {
                                 lines.add(contents.getString(Integer.toString(i)));
                             }
                         }
-                        if (isString(content)) {
+                        if (content.isString()) {
                             xProperties.put(FileEntry.CONTENT_TYPE, FileEntry.TEXT_TYPE);
-                            lines.add(content.toString());
+                            lines.add(content.asString());
                         }
                         break;
                     default:
@@ -727,7 +729,7 @@ public class IOEvaluator extends AbstractEvaluator {
             try {
                 switch (fileType) {
                     case FILE_OP_BINARY:
-                        QDLFileUtil.writeFileAsBinary(fileName, (String) content);
+                        QDLFileUtil.writeFileAsBinary(fileName, content.asString());
                         break;
                     case FILE_OP_TEXT_WITHOUT_LIST_INI:
                         allowListEntriesInIniFiles = false;
@@ -735,15 +737,15 @@ public class IOEvaluator extends AbstractEvaluator {
                         if (!isStem(content)) {
                             throw new BadArgException(WRITE_FILE + " requires a stem for ini output", polyad.getArgAt(1));
                         }
-                        QDLFileUtil.writeStringToFile(fileName, convertToIni((QDLStem) content, allowListEntriesInIniFiles));
+                        QDLFileUtil.writeStringToFile(fileName, convertToIni(content.asStem(), allowListEntriesInIniFiles));
                         break;
                     case FILE_OP_TEXT_STEM:
                     case FILE_OP_TEXT_STRING:
                         if (isStem(content)) {
-                            QDLFileUtil.writeStemToFile(fileName, (QDLStem) content);
+                            QDLFileUtil.writeStemToFile(fileName, content.asStem() );
                         }
                         if (isString(content)) {
-                            QDLFileUtil.writeStringToFile(fileName, (String) content);
+                            QDLFileUtil.writeStringToFile(fileName, content.asString());
                         }
                         break;
                     default:
@@ -777,17 +779,18 @@ public class IOEvaluator extends AbstractEvaluator {
             } else {
                 sectionNames.add((String) key0);
             }
-            Object value = obj2.get(key0);
-            if (!Constant.isStem(value)) {
+            QDLValue value = obj2.get(key0);
+            if (!value.isStem()) {
                 throw new IllegalArgumentException("sections of an ini file must be stems");
             }
-            QDLStem stem = (QDLStem) value;
+            QDLStem stem = value.asStem();
             convertToIni(sectionNames, stem, stringBuilder, indent, indentFactor, allowListEntries);
             stringBuilder.append("\n");
         }
         return stringBuilder.toString();
     }
 
+/*
     public static String convertToIniOLD(QDLStem obj2) {
         StringBuilder stringBuilder = new StringBuilder();
         for (Object key0 : obj2.keySet()) {
@@ -821,6 +824,7 @@ public class IOEvaluator extends AbstractEvaluator {
         }
         return stringBuilder.toString();
     }
+*/
 
     public static final String INI_LIST_ENTRY_START = "_";
 
@@ -834,9 +838,9 @@ public class IOEvaluator extends AbstractEvaluator {
         sb.append(indent + "[" + toSectionHeader(names) + "]\n");
         Map<String, QDLStem> postProcessStems = new HashMap();
         for (Object key : stem.keySet()) {
-            Object value = stem.get(key);
-            if (Constant.isStem(value)) {
-                QDLStem s = (QDLStem) value;
+            QDLValue value = stem.get(key);
+            if (value.isStem()) {
+                QDLStem s = value.asStem();
                 if (s.isList()) {
                     sb.append(indent + key + " := " + toIniList(s.getQDLList()) + "\n");
                 } else {
@@ -931,15 +935,15 @@ ini_out(ini.)
             throw new ExtraArgException(READ_FILE + " requires at most 2 arguments", polyad.getArgAt(2));
         }
 
-        Object arg0 = polyad.evalArg(0, state);
+        QDLValue arg0 = polyad.evalArg(0, state);
         checkNull(arg0, polyad.getArgAt(0));
         QDLStem input;
         boolean isScalar = false;
-        if (arg0 instanceof QDLStem) {
-            input = (QDLStem) arg0;
+        if (arg0.isStem()) {
+            input = arg0.asStem();
             isScalar = false;
         } else {
-            if (isString(arg0)) {
+            if (arg0.isString()) {
                 input = new QDLStem();
                 input.getQDLList().add(asQDLValue(arg0));
                 isScalar = true;
@@ -950,15 +954,15 @@ ini_out(ini.)
         QDLStem types;
         Long defaultOp = (long) FILE_OP_AUTO;
         if (polyad.getArgCount() == 2) {
-            Object arg1 = polyad.evalArg(1, state);
+            QDLValue arg1 = polyad.evalArg(1, state);
             checkNull(arg1, polyad.getArgAt(1));
-            if (arg1 instanceof QDLStem) {
-                types = (QDLStem) arg1;
+            if (arg1.isStem()) {
+                types =  arg1.asStem();
             } else {
-                if (isLong(arg1)) {
+                if (arg1.isLong()) {
                     types = new QDLStem();
                     types.setDefaultValue(arg1);
-                    defaultOp = (Long) arg1;
+                    defaultOp = arg1.asLong();
                 } else {
                     throw new BadArgException(READ_FILE + " requires its second argument be an integer.", polyad.getArgAt(1));
                 }
@@ -986,17 +990,17 @@ ini_out(ini.)
             Polyad polyad) {  // polyad for messages only
         QDLStem output = new QDLStem();
         for (Object key : input.keySet()) {
-            Object value = input.get(key);
+            QDLValue value = input.get(key);
             QDLStem newTypes = null;
             QDLStem newInputs = null;
-            if (value instanceof QDLStem) {
-                newInputs = (QDLStem) value;
+            if (value.isStem()) {
+                newInputs =  value.asStem();
                 if (types == null) {
 
                 } else {
-                    Object type = types.get(key);
-                    if (type instanceof QDLStem) {
-                        newTypes = (QDLStem) type;
+                    QDLValue type = types.get(key);
+                    if (type.isStem()) {
+                        newTypes = type.asStem();
                     } else {
                         throw new BadArgException("unknown file type '" + type + "'", polyad.getArgCount() == 2 ? polyad.getArgAt(1) : polyad.getArgAt(0));
                     }
@@ -1005,19 +1009,19 @@ ini_out(ini.)
                 output.putLongOrString(key, asQDLValue(stem));
 
             } else {
-                if (!(value instanceof String)) {
+                if (!(value.isString())) {
                     throw new BadArgException(READ_FILE + " requires only strings as argument. Got '" + value + "'", polyad.getArgAt(0));
                 }
                 Long type = defaultType;
                 if (types != null) {
-                    Object x = types.get(key);
-                    if (x instanceof Long) {
-                        type = (Long) x;
+                    QDLValue x = types.get(key);
+                    if (x.isLong()) {
+                        type =  x.asLong();
                     } else {
                         throw new BadArgException(READ_FILE + " requires file type as argument. Got '" + x + "'", polyad.getArgCount() == 2 ? polyad.getArgAt(1) : polyad.getArgAt(0));
                     }
                 }
-                output.putLongOrString(key, asQDLValue(readSingleFile((String) value, type, state, polyad)));
+                output.putLongOrString(key, asQDLValue(readSingleFile(value.asString(), type, state, polyad)));
             }
 
         }

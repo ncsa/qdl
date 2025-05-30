@@ -60,14 +60,14 @@ public class AxisExpression extends ExpressionImpl {
                 throw new BadArgException("only stems have axes", getArgAt(0));
             }
         }
-        Object arg1;
+        QDLValue arg1;
         if (getArguments().size() > 1) {
             arg1 = evalArg(1, state);
-            if (arg1 instanceof AllIndices) {
+            if (arg1.getValue() instanceof AllIndices) {
                 setStar(true);
             } else {
-                if (arg1 instanceof Long) {
-                    setAxis((Long) arg1);
+                if (arg1.isLong()) {
+                    setAxis(arg1.asLong());
                 } else {
                     throw new BadArgException("axis must be an integer", getArgAt(1));
                 }

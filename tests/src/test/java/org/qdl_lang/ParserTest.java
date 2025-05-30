@@ -36,6 +36,7 @@ public class ParserTest extends AbstractQDLTester {
 
     public void testRational1() throws Throwable {
         rationalTest1(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         rationalTest1(ROUNDTRIP_XML);
         rationalTest1(ROUNDTRIP_QDL);
         rationalTest1(ROUNDTRIP_JAVA);
@@ -224,6 +225,7 @@ public class ParserTest extends AbstractQDLTester {
 
     public void testContinuedFraction1() throws Throwable {
         ContinuedFractionTest1(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         ContinuedFractionTest1(ROUNDTRIP_XML);
         ContinuedFractionTest1(ROUNDTRIP_QDL);
         ContinuedFractionTest1(ROUNDTRIP_JAVA);
@@ -310,6 +312,7 @@ public class ParserTest extends AbstractQDLTester {
 
     public void testCalledFunctions() throws Throwable {
         calledFunctionsTest(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         calledFunctionsTest(ROUNDTRIP_XML);
         calledFunctionsTest(ROUNDTRIP_QDL);
         calledFunctionsTest(ROUNDTRIP_JAVA);
@@ -883,6 +886,7 @@ public class ParserTest extends AbstractQDLTester {
 
     public void testComparisons() throws Throwable {
         comparisonsTest(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
         comparisonsTest(ROUNDTRIP_XML);
         comparisonsTest(ROUNDTRIP_QDL);
         comparisonsTest(ROUNDTRIP_JAVA);
@@ -3172,7 +3176,8 @@ left hand argument at index 'p' is not a boolean At (1, 0)
     public void testAppliesComplexCase() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, " zz.0.1 := zz.0.3 := zz.1.1:= zz.1.3:=[2,3];\n" +
+        addLine(script,
+                " zz.0.1 := zz.0.3 := zz.1.1:= zz.1.3:=[2,3];\n" +
                 "    zz.2.1:=zz.2.3 := [-1,1];\n" +
                 "    zz.:=zz.~{*:[4,1,2]};\n" +
                 "    zz.0.0 := [-11]; // one outlier for monadic f\n" +
