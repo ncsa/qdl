@@ -963,7 +963,12 @@ public class StemTest extends AbstractQDLTester {
         stem1.listCopy(3, 5, stem2, 2);
         QDLList result = stem2.getQDLList();
         // should return sorted set
-        Object expectedValues[] = new Object[]{0L, 1L, .3, .4, .5, .6, .7};
+        Object expectedValues[] = new Object[]{0L, 1L,
+                new BigDecimal(".3"),
+                new BigDecimal(".4"),
+                new BigDecimal(".5"),
+                new BigDecimal(".6"),
+                new BigDecimal(".7")};
         for (int i = 0; i < expectedValues.length; i++) {
             assert result.get(i).getValue().equals(expectedValues[i]);
         }

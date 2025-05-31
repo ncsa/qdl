@@ -1111,7 +1111,7 @@ public class SystemEvaluator extends AbstractEvaluator {
     private static void doReduceAll(Polyad polyad, ExpressionImpl f, State state, QDLStem stemVariable) {
         Object rrr;
         ReduceAll reduceAll = new ReduceAll(f, state);
-        QDLAggregateUtil.process(stemVariable, reduceAll);
+        QDLAggregateUtil.process(QDLValue.asQDLValue( stemVariable), reduceAll);
         rrr = reduceAll.out;
         polyad.setResult(rrr);
         polyad.setEvaluated(true);

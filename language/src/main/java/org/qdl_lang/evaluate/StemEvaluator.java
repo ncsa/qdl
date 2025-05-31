@@ -2819,7 +2819,7 @@ f(x.)→x.0+x.1;
         for (Object key : keys) {
             if (newKeys.contains(key)) {
                 QDLValue kk = newKeyStem.get(key);
-                usedKeys.remove(kk);
+                usedKeys.remove(kk.getValue());
                 QDLValue vv = target.get(kk);
                 output.putLongOrString( key, vv);
             } else {

@@ -709,7 +709,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
                 }
             }
             IdentityEncryptDecrypt processEncryptDecrypt = new IdentityEncryptDecrypt(jsonWebKey, cipher, usePrivateKey, false);
-            return asQDLValue(QDLAggregateUtil.process(qdlValues[0].getValue(), processEncryptDecrypt));
+            return asQDLValue(QDLAggregateUtil.process(qdlValues[0], processEncryptDecrypt));
         }
 
 /*
@@ -1509,7 +1509,7 @@ kazrnybI9mX73qv6NqA
         public QDLValue  evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             //   JSONWebKey webKey = getKeys((QDLStem) objects[1]);
             IdentityJWT processJWT = new IdentityJWT();
-            return asQDLValue(QDLAggregateUtil.process(qdlValues[0].getValue(), processJWT));
+            return asQDLValue(QDLAggregateUtil.process(qdlValues[0], processJWT));
         }
 
 
@@ -1555,7 +1555,7 @@ kazrnybI9mX73qv6NqA
         public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             JSONWebKey webKey = getKeys(qdlValues[1].asStem());
             DoJWTVerify doJWTVerify = new DoJWTVerify(webKey);
-            return asQDLValue(QDLAggregateUtil.process(qdlValues[0].getValue(), doJWTVerify));
+            return asQDLValue(QDLAggregateUtil.process(qdlValues[0], doJWTVerify));
         }
 
 

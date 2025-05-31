@@ -68,15 +68,15 @@ public class SelectExpressionNode extends ExpressionImpl {
     @Override
     public QDLValue evaluate(State state) {
 
-        Object obj = getSWITCH().evaluate(state);
+        QDLValue obj = getSWITCH().evaluate(state);
         QDLStem stem = null;
 
-        if ((obj instanceof QDLStem)) {
-            stem = (QDLStem) obj;
+        if ((obj.isStem())) {
+            stem = obj.asStem();
         } else {
-            if (obj instanceof Boolean) {
+            if (obj.isBoolean()) {
                 Object result;
-                if ((Boolean) obj) {
+                if (obj.asBoolean()  ) {
                     result = getCASE().evaluate(state);
                 } else {
                     result = getDEFAULT().evaluate(state);
@@ -90,11 +90,11 @@ public class SelectExpressionNode extends ExpressionImpl {
 
         Object foundIndex = null;
         for (Object k : stem.keySet()) {
-            Object value = stem.get(k);
-            if (!(value instanceof Boolean)) {
+            QDLValue value = stem.get(k);
+            if (!(value.isBoolean())) {
                 throw new BadArgException("left hand argument at index '" + k + "' is not a boolean", getSWITCH());
             }
-            Boolean b = (Boolean) value;
+            Boolean b = value.asBoolean();
             if (b) {
                 if (foundIndex != null) {
                     throw new BadArgException("redundant value at index " + k + " (" + foundIndex + " already found) ", getSWITCH());
@@ -109,16 +109,16 @@ public class SelectExpressionNode extends ExpressionImpl {
             return getResult();
         }
         ExpressionInterface caseObj = getCASE();
-        Object result;
+        QDLValue result;
         // The next cases are to try and pick apart switch statements so we don't run the
         // risk of evaluating things that are undefined. Fallthrough case is we just
         // can't figure it out, so try it directly.
          switch (caseObj.getNodeType()){
              case ExpressionInterface.VARIABLE_NODE:
                  result = caseObj.evaluate(state);
-                 if(result instanceof QDLStem){
-                       QDLStem qdlStem = (QDLStem) result;
-                       Object rr = ((QDLStem) result).get(foundIndex);
+                 if(result.isStem()){
+                       QDLStem qdlStem = result.asStem();
+                       QDLValue rr = qdlStem.get(foundIndex);
                        if(rr == null){
                            throw new BadArgException("no such index " + foundIndex + " exists in this list.", getCASE());
                        }
@@ -134,7 +134,7 @@ public class SelectExpressionNode extends ExpressionImpl {
                  if (!(foundIndex instanceof Long)) {
                      throw new BadArgException("no such index " + foundIndex + " exists in this list.", getCASE());
                  }
-                 Object r = stemListNode.getStatements().get(((Long) foundIndex).intValue()).evaluate(state);
+                 QDLValue r = stemListNode.getStatements().get(((Long) foundIndex).intValue()).evaluate(state);
                  setResult(r);
                  setEvaluated(true);
                  return getResult();
@@ -142,7 +142,7 @@ public class SelectExpressionNode extends ExpressionImpl {
              case ExpressionInterface.STEM_NODE:
                  StemVariableNode stemVariableNode = (StemVariableNode) caseObj;
                  for (StemEntryNode stemEntryNode : stemVariableNode.getStatements()) {
-                     Object key = stemEntryNode.getKey().evaluate(state);
+                     QDLValue key = stemEntryNode.getKey().evaluate(state);
                      if (key.equals(foundIndex)) {
                           result = stemEntryNode.getValue().evaluate(state);
                          setResult(result);
@@ -184,11 +184,11 @@ public class SelectExpressionNode extends ExpressionImpl {
              default:
                  // Might be the case they sent along a polyad whose result is a stem.
                  // try that
-                 Object ooo = getCASE().evaluate(state);
-                 if(!(ooo instanceof QDLStem)) {
+                 QDLValue ooo = getCASE().evaluate(state);
+                 if(!(ooo.isStem())) {
                      throw new BadArgException("scalars are not  supported as case values", getCASE());
                  }
-                 QDLStem qdlStem = (QDLStem) ooo;
+                 QDLStem qdlStem = ooo.asStem();
                  result = qdlStem.get(foundIndex);
                  if(result == null){
                      throw new BadArgException("index '" + foundIndex + "' not found", getCASE());

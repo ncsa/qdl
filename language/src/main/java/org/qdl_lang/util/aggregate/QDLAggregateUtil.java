@@ -43,19 +43,18 @@ public class QDLAggregateUtil {
      * Top-level call for this set of utilities. Create the right scalar processor, then call this
      * on a generic object. A scalar is processed and returned as such, aggregates are processed
      * as aggregates.
-     * @param object
+     * @param qdlValue
      * @param processScalar implementation of {@link ProcessScalar}
      * @return
      */
-    public static Object process(Object object, ProcessScalar processScalar) {
-        object = QDLValue.asJavaValue(object); // too many places to track this down using a QDLVa lue, so cast it
-        if (object instanceof QDLStem) {
-            return processStem((QDLStem) object, new LinkedList<>(), processScalar);
+    public static Object process(QDLValue qdlValue, ProcessScalar processScalar) {
+        if (qdlValue.isStem()) {
+            return processStem(qdlValue.asStem(), new LinkedList<>(), processScalar);
         }
-        if (object instanceof QDLSet) {
-            return processSet((QDLSet) object, processScalar);
+        if (qdlValue.isSet()) {
+            return processSet(qdlValue.asSet(), processScalar);
         }
-        return processSetValue( new LinkedList<>(),processScalar, object);
+        return processSetValue( new LinkedList<>(),processScalar, qdlValue);
     }
 
     public static QDLStem processStem(QDLStem inStem, List<Object> index, ProcessScalar processScalar) {
@@ -72,35 +71,35 @@ public class QDLAggregateUtil {
         return outStem;
     }
 
-    private static Object processSetValue(List index, ProcessScalar processScalar, Object value) {
+    private static Object processSetValue(List index, ProcessScalar processScalar, QDLValue value) {
         Object newValue = null;
-        switch (Constant.getType(value)) {
+        switch (value.getType()) {
             case Constant.BOOLEAN_TYPE:
-                newValue = processScalar.process((Boolean) value);
+                newValue = processScalar.process(value.asBoolean());
                 break;
             case Constant.DECIMAL_TYPE:
-                newValue = processScalar.process((BigDecimal) value);
+                newValue = processScalar.process(value.asDecimal());
                 break;
             case Constant.FUNCTION_TYPE:
-                newValue = processScalar.process((FunctionReferenceNode) value);
+                newValue = processScalar.process(value.asFunction());
                 break;
             case Constant.LONG_TYPE:
-                newValue = processScalar.process((Long) value);
+                newValue = processScalar.process(value.asLong());
                 break;
             case Constant.MODULE_TYPE:
-                newValue = processScalar.process((Module) value);
+                newValue = processScalar.process(value.asModule());
                 break;
             case Constant.NULL_TYPE:
-                newValue = processScalar.process((QDLNull) value);
+                newValue = processScalar.process(value.asNull());
                 break;
             case Constant.SET_TYPE:
-                newValue = processSet((QDLSet) value, processScalar);
+                newValue = processSet(value.asSet(), processScalar);
                 break;
             case Constant.STEM_TYPE:
-                newValue = processStem((QDLStem) value, index, processScalar);
+                newValue = processStem(value.asStem(), index, processScalar);
                 break;
             case Constant.STRING_TYPE:
-                newValue = processScalar.process((String) value);
+                newValue = processScalar.process(value.asString());
                 break;
             case Constant.UNKNOWN_TYPE:
                 throw new UnknownTypeException("error processing value '" + value + "', unknown type", null);
@@ -207,7 +206,7 @@ public class QDLAggregateUtil {
      */
     public static QDLSet processSet(QDLSet inSet, ProcessScalar processScalar) {
         QDLSet outSet = new QDLSet();
-        for (Object value : inSet) {
+        for (QDLValue value : inSet) {
             outSet.add(asQDLValue(processSetValue(new LinkedList(), processScalar, value)));
         }
         return outSet;

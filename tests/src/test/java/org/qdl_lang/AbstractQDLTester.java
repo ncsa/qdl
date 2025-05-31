@@ -31,7 +31,7 @@ public class AbstractQDLTester extends TestBase {
         AbstractQDLTester.serializationTestsOff = serializationTestsOff;
     }
 
-    public static boolean serializationTestsOff = true;
+    public static boolean serializationTestsOff = false;
 
     protected TestUtils testUtils = TestUtils.newInstance();
 
@@ -319,11 +319,10 @@ public class AbstractQDLTester extends TestBase {
         WorkspaceCommands workspaceCommands = WorkspaceCommands.getInstance().newInstance();
         workspaceCommands.setState(state);
         workspaceCommands._xmlWSQDLSave(osw);
-       //System.out.println(new String(baos.toByteArray()));
+       //System.out.println(new String(baos.toByteArray())); // Debugging aid. Dumps the whole thing to the console.
 
         // Deserialize the workspace
-        // Need pretty print. This takes the place or writing it to a file, then reading it.
-        //  System.out.println("XML:\n" + pp);
+        // This takes the place or writing it to a file, then reading it.
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         InputStreamReader inputStreamReader = new InputStreamReader(bais);
         QDLInterpreter qdlInterpreter = new QDLInterpreter(null, state.newCleanState());

@@ -114,16 +114,16 @@ public class ModuleTests extends AbstractQDLTester {
     }
 
     public void testBasicLoad() throws Throwable {
-        testBasicLoad(ROUNDTRIP_NONE);
+        BasicLoadTest(ROUNDTRIP_NONE);
         if(isSerializationTestsOff()) return;
 
-        testBasicLoad(ROUNDTRIP_JSON);
-        testBasicLoad(ROUNDTRIP_QDL);
+        BasicLoadTest(ROUNDTRIP_JSON);
+        BasicLoadTest(ROUNDTRIP_QDL);
         // testBasicLoad(ROUNDTRIP_JAVA);
         // testBasicLoad(ROUNDTRIP_XML);
     }
 
-    public void testBasicLoad(int testCase) throws Throwable {
+    public void BasicLoadTest(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script,
@@ -231,13 +231,13 @@ public class ModuleTests extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testBasicNesting() throws Throwable {
-        testBasicNesting(ROUNDTRIP_NONE);
+        basicNestingTest(ROUNDTRIP_NONE);
         if(isSerializationTestsOff()) return;
-        testBasicNesting(ROUNDTRIP_JSON);
-        testBasicNesting(ROUNDTRIP_QDL);
+        basicNestingTest(ROUNDTRIP_JSON);
+        basicNestingTest(ROUNDTRIP_QDL);
     }
 
-    public void testBasicNesting(int testCase) throws Throwable {
+    public void basicNestingTest(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "module['A:Y'][module['A:X'][y(y)->y;y:='foo';];z:=import('A:X');];");
@@ -430,12 +430,12 @@ public class ModuleTests extends AbstractQDLTester {
     }
 
     public void testBasicDyadicApplyForNestedModule1() throws Throwable {
-        testBasicDyadicApplyForNestedModule1(ROUNDTRIP_NONE);
+        basicDyadicApplyForNestedModule1Test(ROUNDTRIP_NONE);
         if(isSerializationTestsOff()) return;
-        testBasicDyadicApplyForNestedModule1(ROUNDTRIP_JSON);
+        basicDyadicApplyForNestedModule1Test(ROUNDTRIP_JSON);
     }
 
-    public void testBasicDyadicApplyForNestedModule1(int testCase) throws Throwable {
+    public void basicDyadicApplyForNestedModule1Test(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "module['a:x'][module['a:y'][f(x)->x^2+1;f(x,y)->x*y;];y:=import('a:y');];");
@@ -494,12 +494,12 @@ public class ModuleTests extends AbstractQDLTester {
     }
 
     public void testSharedModuleState() throws Throwable {
-        testSharedModuleState(ROUNDTRIP_NONE);
+        sharedModuleStateTest(ROUNDTRIP_NONE);
         if(isSerializationTestsOff()) return;
-        testSharedModuleState(ROUNDTRIP_JSON);
+        sharedModuleStateTest(ROUNDTRIP_JSON);
     }
 
-    public void testSharedModuleState(int testCase) throws Throwable {
+    public void sharedModuleStateTest(int testCase) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "f(x)->x^2;");

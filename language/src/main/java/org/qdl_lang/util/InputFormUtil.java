@@ -279,18 +279,18 @@ public class InputFormUtil {
      * @return
      */
     public static String inputFormVar(String varName, int indentFactor, State state) {
-        Object object = state.getValue(varName);
-        if (object == null) return null;
-        if (object instanceof QDLStem && 0 <= indentFactor) {
-            return inputForm((QDLStem) object, indentFactor);
+        QDLValue qdlValue = state.getValue(varName);
+        if (qdlValue == null) return null;
+        if (qdlValue.isStem() && 0 <= indentFactor) {
+            return inputForm(qdlValue.asStem(), indentFactor);
         }
-        if(object instanceof Module){
-            Module m = (Module) object;
+        if(qdlValue.isModule()){
+            Module m = qdlValue.asModule();
             if(m instanceof QDLModule){
                 return ModuleEvaluator.IMPORT + "('" + m.getNamespace() + "')";
             }
         }
-        return inputForm(object);
+        return inputForm(qdlValue);
 
     }
 

@@ -1180,7 +1180,8 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
 
 
     protected void myPut(Object index, QDLValue value) {
-      if(index instanceof QDLValue) {
+      index = QDLValue.asJavaValue(index);
+        if(index instanceof QDLValue) {
           putLongOrString(((QDLValue) index).getValue(), value);
           return;
       }
