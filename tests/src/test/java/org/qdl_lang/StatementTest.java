@@ -554,6 +554,19 @@ public class StatementTest extends AbstractQDLTester {
         assert getBooleanValue("ok", state);
     }
 
+    /**
+     * in the case that the ternary arrow is missing the else clause, make sure a null is returned.
+     * @throws Throwable
+     */
+    public void testTernaryArrowDefault() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok := null ==  (3<2⇒-1);");// use the arrow, not the ?
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state);
+    }
+
     // Fix for https://github.com/ncsa/qdl/issues/86 are next two tests
     /*
        Test that a non-boolean left argument fails in a timely fashion

@@ -1,17 +1,12 @@
 package org.qdl_lang.util.aggregate;
 
-import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.exceptions.BadStemValueException;
 import org.qdl_lang.exceptions.UnknownTypeException;
-import org.qdl_lang.functions.FunctionReferenceNode;
-import org.qdl_lang.module.Module;
 import org.qdl_lang.variables.Constant;
-import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.QDLSet;
 import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.values.QDLValue;
 
-import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 

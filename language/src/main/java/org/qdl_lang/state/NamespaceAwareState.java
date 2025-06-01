@@ -1,7 +1,7 @@
 package org.qdl_lang.state;
 
-import org.qdl_lang.module.MIStack;
-import org.qdl_lang.module.MTStack;
+import org.qdl_lang.expressions.module.MIStack;
+import org.qdl_lang.expressions.module.MTStack;
 import org.qdl_lang.variables.VStack;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
 import org.qdl_lang.evaluate.*;

@@ -13,6 +13,7 @@ import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.variables.values.StringValue;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -244,6 +245,7 @@ subset(b., 3, 6)
      * Fill this list with size elements from the fill array. If size<length(fill)
      * then only size elements are taken. If size > length(fill), the elements of fill
      * are cyclically resused.
+     *
      * @param size
      * @param fill
      */
@@ -261,12 +263,12 @@ subset(b., 3, 6)
             if (fill == null) {
                 arrayList.add(new LongValue(i));
             } else {
-                QDLValue ooo= fill[(int) i % fillSize];
+                QDLValue ooo = fill[(int) i % fillSize];
 //                if(ooo instanceof QDLValue) {
-                    arrayList.add(ooo);
-  //              }else {
-    //                arrayList.add(new QDLValue(ooo));
-      //          }
+                arrayList.add(ooo);
+                //              }else {
+                //                arrayList.add(new QDLValue(ooo));
+                //          }
             }
         }
     }
@@ -406,9 +408,9 @@ subset(b., 3, 6)
      */
     public void append(Object obj) {
         if (!hasSparseEntries()) {
-            if(obj instanceof QDLValue) {
-                getArrayList().add((QDLValue)obj);
-            }else{
+            if (obj instanceof QDLValue) {
+                getArrayList().add((QDLValue) obj);
+            } else {
                 getArrayList().add(new QDLValue(obj));
             }
             return;
@@ -536,11 +538,17 @@ subset(b., 3, 6)
         return toJSON(false, -1);
     }
 
-    public JSONArray toJSON(boolean escapeNames, int type) {
+    /**
+     * Converts to JSON elements.
+     * @param escapeNames
+     * @param conversionAlgorithm
+     * @return
+     */
+    public JSONArray toJSON(boolean escapeNames, int conversionAlgorithm) {
         JSONArray array = new JSONArray();
         for (QDLValue element : getArrayList()) {
             if (element.isStem()) {
-                array.add(element.asStem().toJSON(escapeNames, type));
+                array.add(element.asStem().toJSON(escapeNames, conversionAlgorithm));
             } else {
                 if (element.isNull()) {
                     array.add(QDLConstants.JSON_QDL_NULL);
@@ -552,13 +560,14 @@ subset(b., 3, 6)
         for (SparseEntry s : getSparseEntries()) {
             QDLValue v = s.entry;
             if (v.isStem()) {
-                array.add(v.asStem().toJSON(escapeNames, type));
+                array.add(v.asStem().toJSON(escapeNames, conversionAlgorithm));
             } else {
                 array.add(v.getValue());
             }
         }
         return array;
     }
+
 
     public String inputForm(int indent) {
         return inputForm(indent, "");
@@ -688,7 +697,7 @@ subset(b., 3, 6)
         ArrayList<QDLValue> list = new ArrayList();
         Iterator iterator = iterator(true);
         while (iterator.hasNext()) {
-            list.add((QDLValue)iterator.next());
+            list.add((QDLValue) iterator.next());
         }
         return list;
     }
@@ -783,11 +792,11 @@ subset(b., 3, 6)
             }
 
         }
-        for(Object o : c) {
-            if(o instanceof QDLValue) {
+        for (Object o : c) {
+            if (o instanceof QDLValue) {
                 getArrayList().add((QDLValue) o);
-            }else{
-                getArrayList().add(new QDLValue( o));
+            } else {
+                getArrayList().add(new QDLValue(o));
             }
         }
         return true;
@@ -939,7 +948,7 @@ subset(b., 3, 6)
                 sparseEntry.index = sparseEntry.index + offset - 1;
             }
             long index = insertIndex;
-            if(sourceList != null) {
+            if (sourceList != null) {
                 for (QDLValue obj : sourceList) {
                     SparseEntry sparseEntry = new SparseEntry(index++, obj);
                     getSparseEntries().remove(sparseEntry);
@@ -1100,6 +1109,7 @@ subset(b., 3, 6)
      * Iterator over values. This is overloaded, so that if objectsOnly is true, just
      * {@link QDLValue}s are returned, otherwise, this will return a mix of values and sparse
      * entries.
+     *
      * @param objectsOnly
      * @return
      */
@@ -1119,6 +1129,7 @@ subset(b., 3, 6)
 
     /**
      * Checks if this key (as a string or long) is an index in this list.
+     *
      * @param o
      * @return
      */
@@ -1177,9 +1188,64 @@ subset(b., 3, 6)
         return out.toArray();
     }
 
+    public List<String> toStringList() {
+        return Arrays.asList(toStringArray());
+    }
+
+    /**
+     * Convenience method. This takes the elements of this {@link QDLList}
+     * and either returns their value as a string or invokes the standard {@link Object#toString()}
+     * method. It is intended to allow for passing values to non_-QDL code. Since Java has no
+     * concept of sparse entries, these are just appended in order to the end of the array.
+     * @return
+     */
+    public String[] toStringArray() {
+        String[] out = new String[size()];
+        for (int i = 0; i < getArrayList().size(); i++) {
+            if(getArrayList().get(i).isString()){
+                out[i] = getArrayList().get(i).asString();
+            }else{
+                out[i] = getArrayList().get(i).toString();
+            }
+        }
+        if(hasSparseEntries()){
+            int i = getArrayList().size();
+            for (SparseEntry sparseEntry : getSparseEntries()) {
+                if(sparseEntry.entry.isString()){
+                    out[i] = sparseEntry.entry.asString();
+                }else{
+                    out[i] = sparseEntry.entry.toString();
+                }
+            }
+        }
+     return out;
+    }
+
+
     @Override
     public Object[] toArray(Object[] a) {
-        throw new NotImplementedException("toArray(Object[])");
+        throw new NotImplementedException();
+/*
+        if (a.length < this.size()) {
+
+            Object[] outA = Arrays.copyOf(getArrayList().toArray(), getArrayList().size(), a.getClass());
+            if(hasSparseEntries()) {
+                int i = arrayList.size();
+                for(SparseEntry sparseEntry : getSparseEntries()) {
+                    outA[i] = QDLValue.asJavaValue(sparseEntry.entry);
+                }
+                return outA;
+            }
+        } else {
+            // rest of contract is if a has too many elements, null out the rest.
+            System.arraycopy(this.elementData, 0, a, 0, this.size);
+            if (a.length > this.size) {
+                a[this.size] = null;
+            }
+
+            return a;
+        }
+*/
     }
 
     public boolean add(Integer o) {
@@ -1192,10 +1258,12 @@ subset(b., 3, 6)
             SparseEntry newEntry = new SparseEntry(lastEntry.index + 1, sparseEntry.entry);
             getSparseEntries().add(newEntry);
             return true;
+        }else{
+            getSparseEntries().add(sparseEntry);
+            return true;
         }
-            return getArrayList().add(sparseEntry.entry);
-
     }
+
     public boolean add(QDLValue qdlValue) {
 /*
         if(o instanceof Integer) {
@@ -1211,12 +1279,13 @@ subset(b., 3, 6)
         }
         return getArrayList().add(qdlValue);
     }
+
     public boolean remove(QDLValue qdlValue) {
-        boolean rc =  getArrayList().remove(qdlValue);
-        if(rc){
+        boolean rc = getArrayList().remove(qdlValue);
+        if (rc) {
             return rc; // got first element
         }
-        if(hasSparseEntries()){
+        if (hasSparseEntries()) {
             SparseEntry removeIt = null;
             for (SparseEntry se : getSparseEntries()) {
                 if (se.entry.equals(qdlValue.getValue())) {
@@ -1224,16 +1293,17 @@ subset(b., 3, 6)
                     break; // Contract for List is to remove *first* element by value
                 }
             }
-            if(removeIt==null){
+            if (removeIt == null) {
                 return false;
             }
             return getSparseEntries().remove(removeIt);
         }
         return false;
     }
+
     public boolean remove(SparseEntry sparseEntry) {
         boolean rc = getArrayList().remove(sparseEntry.entry);
-        if(rc){
+        if (rc) {
             return rc; // removed first element of the list
         }
         SparseEntry removeIt = null;
@@ -1255,17 +1325,18 @@ subset(b., 3, 6)
      * Remove by value  from <b>top level</b> only. This fulfills Java's contract for
      * lists/collections, which removes <i>the first instance of this object <b>only</b></i>.
      * To fulfill QDL's contract, use {@link #removeAllByValue(QDLValue, boolean)}
-     *<br/><br/>
+     * <br/><br/>
      * This might pass in sparse entries, so those have to be taken into account.
+     *
      * @param o
      * @return
      */
     @Override
     public boolean remove(Object o) {
-        if(o instanceof SparseEntry){
+        if (o instanceof SparseEntry) {
             return remove((SparseEntry) o);
         }
-        if(o instanceof QDLValue){
+        if (o instanceof QDLValue) {
             return remove((QDLValue) o);
         }
         return false;
@@ -1282,6 +1353,7 @@ subset(b., 3, 6)
 
     /**
      * Fulfills QDL's contract to remove all elements by value.
+     *
      * @param c
      * @param reorderLists
      * @return
@@ -1322,9 +1394,9 @@ subset(b., 3, 6)
         boolean rc = true;
         for (Object obj : c) {
             QDLValue v;
-            if(obj instanceof QDLValue){
+            if (obj instanceof QDLValue) {
                 v = (QDLValue) obj;
-            }else{
+            } else {
                 v = new QDLValue(obj);
             }
             rc = rc && removeAllByValue(v, reorderLists);
@@ -1499,7 +1571,7 @@ subset(b., 3, 6)
             throw new NoSuchElementException();
         }
         int index = getArrayList().size() - 1;
-        return new SparseEntry( index, getArrayList().get(index));
+        return new SparseEntry(index, getArrayList().get(index));
     }
 
     public SparseEntry first() {

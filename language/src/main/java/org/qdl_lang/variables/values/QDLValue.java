@@ -4,13 +4,14 @@ import org.qdl_lang.exceptions.WrongValueException;
 import org.qdl_lang.expressions.AxisExpression;
 import org.qdl_lang.functions.DyadicFunctionReferenceNode;
 import org.qdl_lang.functions.FunctionReferenceNode;
-import org.qdl_lang.module.Module;
+import org.qdl_lang.expressions.module.Module;
 import org.qdl_lang.util.InputFormUtil;
 import org.qdl_lang.variables.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,7 +23,7 @@ public class QDLValue implements Constants, Serializable, Comparable<QDLValue> {
     protected Boolean booleanValue = null;
     protected BigDecimal decimalValue = null;
     protected String stringValue = null;
-    protected org.qdl_lang.module.Module moduleValue = null;
+    protected Module moduleValue = null;
     protected FunctionReferenceNode functionValue = null;
     protected DyadicFunctionReferenceNode dyadicFunctionValue = null;
     protected AxisExpression axisValue = null;
@@ -218,12 +219,12 @@ public class QDLValue implements Constants, Serializable, Comparable<QDLValue> {
         return setValue;
     }
 
-    public org.qdl_lang.module.Module asModule() {
+    public Module asModule() {
         if (getType() != MODULE_TYPE) {
             throw new WrongValueException("expected a module, but got a " + Constant.getName(getType()), null);
         }
         if (moduleValue == null) {
-            moduleValue = (org.qdl_lang.module.Module) getValue();
+            moduleValue = (Module) getValue();
         }
         return moduleValue;
     }
@@ -405,6 +406,10 @@ public class QDLValue implements Constants, Serializable, Comparable<QDLValue> {
         return list;
     }
 
+    public static List<QDLValue> castToQDLValueList(Object[] values) {
+        QDLValue[] array = castToQDLValues(values);
+        return Arrays.asList(array);
+    }
     public static QDLValue[] castToQDLValues(Object[] values) {
         QDLValue list[] = new QDLValue[values.length];
         int i = 0;

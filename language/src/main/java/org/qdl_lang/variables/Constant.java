@@ -4,7 +4,7 @@ import org.qdl_lang.expressions.AllIndices;
 import org.qdl_lang.expressions.AxisExpression;
 import org.qdl_lang.functions.DyadicFunctionReferenceNode;
 import org.qdl_lang.functions.FunctionReferenceNode;
-import org.qdl_lang.module.Module;
+import org.qdl_lang.expressions.module.Module;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;

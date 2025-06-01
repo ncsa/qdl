@@ -2,7 +2,7 @@ package org.qdl_lang.functions;
 
 import org.qdl_lang.exceptions.UndefinedFunctionException;
 import org.qdl_lang.expressions.ExpressionImpl;
-import org.qdl_lang.module.Module;
+import org.qdl_lang.expressions.module.Module;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.variables.values.QDLValue;

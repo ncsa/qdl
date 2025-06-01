@@ -6,7 +6,7 @@ import org.qdl_lang.exceptions.UnknownSymbolException;
 import org.qdl_lang.extensions.JavaModule;
 import org.qdl_lang.functions.DyadicFunctionReferenceNode;
 import org.qdl_lang.functions.FKey;
-import org.qdl_lang.module.Module;
+import org.qdl_lang.expressions.module.Module;
 import org.qdl_lang.state.State;
 import org.qdl_lang.state.StateUtils;
 import org.qdl_lang.state.XKey;

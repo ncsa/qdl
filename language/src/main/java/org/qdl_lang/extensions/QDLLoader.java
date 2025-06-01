@@ -1,6 +1,6 @@
 package org.qdl_lang.extensions;
 
-import org.qdl_lang.module.Module;
+import org.qdl_lang.expressions.module.Module;
 
 import java.io.Serializable;
 import java.util.List;

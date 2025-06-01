@@ -1,4 +1,4 @@
-package org.qdl_lang.module;
+package org.qdl_lang.expressions.module;
 
 import org.qdl_lang.state.XKey;
 

@@ -1,5 +1,6 @@
 package org.qdl_lang.variables;
 
+import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import org.qdl_lang.exceptions.IndexError;
 import org.qdl_lang.exceptions.NoDefaultValue;
 import org.qdl_lang.expressions.AllIndices;
@@ -481,10 +482,15 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
         }
         for (Object key : keySet()) {
             QDLValue obj = get(key);
-            if (obj.isStem()) {
-                output.putLongOrString(key, asQDLValue(obj.asStem().clone()));
-            } else {
-                output.putLongOrString(key, obj);
+            if(obj == null) {
+
+                throw new NFWException("Cannot clone null value");
+            }else{
+                if (obj.isStem()) {
+                    output.putLongOrString(key, asQDLValue(obj.asStem().clone()));
+                }  else{
+                    output.putLongOrString(key, obj);
+                }
             }
         }
 

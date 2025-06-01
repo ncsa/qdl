@@ -7,7 +7,7 @@ import org.qdl_lang.exceptions.ParsingException;
 import org.qdl_lang.expressions.*;
 import org.qdl_lang.generated.QDLParserListener;
 import org.qdl_lang.generated.QDLParserParser;
-import org.qdl_lang.module.QDLModule;
+import org.qdl_lang.expressions.module.QDLModule;
 import org.qdl_lang.state.QDLConstants;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.*;
@@ -21,6 +21,7 @@ import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.qdl_lang.functions.*;
 import org.qdl_lang.statements.*;
+import org.qdl_lang.variables.values.QDLNullValue;
 import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.variables.values.StemValue;
 import org.qdl_lang.variables.values.StringValue;
@@ -97,7 +98,7 @@ public class QDLListener implements QDLParserListener {
             return;
         }
         if (ctx.getText().equals(QDLConstants.RESERVED_NULL) || ctx.getText().equals(QDLConstants.RESERVED_NULL_SET)) {
-            p.statement = QDLNull.getInstance();
+            p.statement = new ConstantNode(QDLNullValue.getNullValue());
             return;
         }
         ((VariableNode) parsingMap.getStatementFromContext(ctx)).setVariableReference(ctx.getText());
@@ -1590,7 +1591,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
                 throw new IllegalArgumentException("alternate of if argument must be an expression, not a " + object);
             }
         } else {
-            altIfExpressionNode.setELSE(QDLNull.getInstance());
+            altIfExpressionNode.setELSE(new ConstantNode(QDLNullValue.getNullValue()));
         }
         altIfExpressionNode.setTokenPosition(tp(ctx));
         altIfExpressionNode.setSourceCode(getSource(ctx));
@@ -2620,7 +2621,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
         if (3 < ctx.getChildCount()) {
             selectExpressionNode.setDEFAULT((ExpressionInterface) resolveChild(ctx.getChild(4)));
         } else {
-            selectExpressionNode.setDEFAULT(QDLNull.getInstance());
+            selectExpressionNode.setDEFAULT(new ConstantNode(QDLNullValue.getNullValue()));
         }
         selectExpressionNode.setTokenPosition(tp(ctx));
         selectExpressionNode.setSourceCode(getSource(ctx));

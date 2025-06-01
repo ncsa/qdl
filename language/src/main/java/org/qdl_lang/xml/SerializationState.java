@@ -1,8 +1,8 @@
 package org.qdl_lang.xml;
 
-import org.qdl_lang.module.MIWrapper;
-import org.qdl_lang.module.MTStack;
-import org.qdl_lang.module.Module;
+import org.qdl_lang.expressions.module.MIWrapper;
+import org.qdl_lang.expressions.module.MTStack;
+import org.qdl_lang.expressions.module.Module;
 import org.qdl_lang.state.State;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 

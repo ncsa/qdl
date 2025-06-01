@@ -1,8 +1,8 @@
 package org.qdl_lang.workspace;
 
 import org.qdl_lang.functions.FStack;
-import org.qdl_lang.module.Module;
-import org.qdl_lang.module.QDLModule;
+import org.qdl_lang.expressions.module.Module;
+import org.qdl_lang.expressions.module.QDLModule;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.VStack;
 import org.qdl_lang.xml.SerializationConstants;

@@ -1482,11 +1482,11 @@ a.⌆b.
                                 temp = objects[1] == objects[0];
                             } else {
                                 // edge case == null
-                                if (objects[1] instanceof QDLNull) {
-                                    temp = objects[0] instanceof QDLNull;
-                                } else {
+                            //    if (objects[1] instanceof QDLNull) {
+                              //      temp = objects[0] instanceof QDLNull;
+                               // } else {
                                     temp = objects[0].equals(objects[1]);
-                                }
+                               // }
                             }
                             break;
                         case NOT_EQUAL_VALUE:

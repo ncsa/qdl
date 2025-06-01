@@ -1,7 +1,7 @@
 package org.qdl_lang.variables;
 
 import org.qdl_lang.evaluate.ModuleEvaluator;
-import org.qdl_lang.module.Module;
+import org.qdl_lang.expressions.module.Module;
 import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.state.XKey;
 import org.qdl_lang.state.XTable;

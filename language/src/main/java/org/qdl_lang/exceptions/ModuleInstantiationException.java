@@ -1,7 +1,7 @@
 package org.qdl_lang.exceptions;
 
 import org.qdl_lang.state.State;
-import org.qdl_lang.module.Module;
+import org.qdl_lang.expressions.module.Module;
 
 /**
  * Thrown when {@link Module#newInstance(State)} fails.

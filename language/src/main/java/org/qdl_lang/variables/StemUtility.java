@@ -5,6 +5,7 @@ import org.qdl_lang.expressions.AxisExpression;
 import org.qdl_lang.expressions.ConstantNode;
 import org.qdl_lang.expressions.ExpressionStemNode;
 import org.qdl_lang.expressions.VariableNode;
+import org.qdl_lang.state.QDLConstants;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.variables.values.QDLValue;
@@ -410,12 +411,15 @@ public class StemUtility {
             case MAP_TYPE:
                 return mapToStem( new QDLStem(), (Map) value);
             default:
-            case UNKOWN_TYPE:
+            case UNKNON_TYPE:
                 throw new IllegalArgumentException("unknown map entry type " + value.getClass().getCanonicalName());
         }
     }
 
-    protected static final int UNKOWN_TYPE = -1;
+    /*
+    These values are for use by this utility only.
+     */
+    protected static final int UNKNON_TYPE = -1;
     protected static final int INT_TYPE = 0;
     protected static final int FLOAT_TYPE = 1;
     protected static final int DOUBLE_TYPE = 2;
@@ -434,7 +438,7 @@ public class StemUtility {
         if (obj instanceof List) return LIST_TYPE;
         if (obj instanceof Map) return MAP_TYPE;
         if (obj instanceof Float) return FLOAT_TYPE;
-        return UNKOWN_TYPE;
+        return UNKNON_TYPE;
     }
 
     /**
@@ -452,4 +456,44 @@ public class StemUtility {
             }
         }
     }
+
+    /**
+     * For use in filtering {@link QDLValue}s to POJOs (plain old java object) that can be put into JSON.
+     * @param element
+     * @param escapeNames
+     * @param type
+     * @return
+     */
+    public static Object convertToPOJO(QDLValue element, boolean escapeNames, int type) {
+        switch (type) {
+            case Constants.BOOLEAN_TYPE:
+                return element.asBoolean();
+            case Constants.LONG_TYPE:
+                return element.asLong();
+            case Constants.DECIMAL_TYPE:
+                return element.asDecimal().doubleValue();
+            case Constants.STRING_TYPE:
+                return element.asString();
+            case Constants.STEM_TYPE:
+                return element.asStem().toJSON(escapeNames, type);
+            case Constants.NULL_TYPE:
+                return QDLConstants.JSON_QDL_NULL;
+            case Constants.UNKNOWN_TYPE:
+                if(element.isDecimal()) return element.asDecimal().doubleValue();
+                if(element.isStem()) return element.asStem().toJSON(escapeNames, type);
+                if(element.isNull()) return QDLConstants.JSON_QDL_NULL;
+                return element.getValue();
+            case Constants.AXIS_RESTRICTION_TYPE:
+            case Constants.DYADIC_FUNCTION_TYPE:
+            case Constants.FUNCTION_TYPE:
+            case Constants.SET_TYPE:
+            case Constants.ALL_INDICES_TYPE:
+            case Constants.MODULE_TYPE:
+                return null;
+
+            default:
+                return null; // omit
+        }
+    }
+
 }

@@ -2,7 +2,7 @@ package org.qdl_lang.workspace;
 
 import org.qdl_lang.exceptions.DeserializationException;
 import org.qdl_lang.exceptions.QDLRuntimeException;
-import org.qdl_lang.module.Module;
+import org.qdl_lang.expressions.module.Module;
 import org.qdl_lang.state.State;
 import org.qdl_lang.state.StateUtils;
 import org.qdl_lang.variables.QDLStem;

@@ -11,9 +11,9 @@ import org.qdl_lang.extensions.QDLLoader;
 import org.qdl_lang.functions.FR_WithState;
 import org.qdl_lang.functions.FunctionRecordInterface;
 import org.qdl_lang.functions.FunctionReferenceNodeInterface;
-import org.qdl_lang.module.MIWrapper;
-import org.qdl_lang.module.MTKey;
-import org.qdl_lang.module.Module;
+import org.qdl_lang.expressions.module.MIWrapper;
+import org.qdl_lang.expressions.module.MTKey;
+import org.qdl_lang.expressions.module.Module;
 import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.parsing.QDLParserDriver;
 import org.qdl_lang.parsing.QDLRunner;
@@ -1768,7 +1768,15 @@ public class SystemEvaluator extends AbstractEvaluator {
             }
             QDLValue arg1 = polyad.evalArg(1, state);
             checkNull(arg1, polyad.getArgAt(1), state);
-            message = arg1.asString();
+            if(arg1.isString()) {
+                message = arg1.asString();
+            }else{
+                if(arg1.isStem()){
+                    message = arg1.asStem().toString(1);
+                }else{
+                    message = arg1.toString();
+                }
+            }
         }
 
         Boolean ok = Boolean.TRUE;

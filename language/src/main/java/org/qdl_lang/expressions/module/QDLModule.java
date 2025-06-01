@@ -1,9 +1,7 @@
-package org.qdl_lang.module;
+package org.qdl_lang.expressions.module;
 
 import org.qdl_lang.evaluate.ModuleEvaluator;
 import org.qdl_lang.exceptions.ModuleInstantiationException;
-import org.qdl_lang.extensions.QDLFunction;
-import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ModuleStatement;

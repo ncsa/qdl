@@ -1,8 +1,9 @@
 package org.qdl_lang.state;
 
 import org.qdl_lang.config.QDLEnvironment;
+import org.qdl_lang.expressions.module.*;
+import org.qdl_lang.expressions.module.Module;
 import org.qdl_lang.extensions.JavaModule;
-import org.qdl_lang.extensions.X509.X509Loader;
 import org.qdl_lang.extensions.convert.QDLConvertLoader;
 import org.qdl_lang.extensions.crypto.CryptoLoader;
 import org.qdl_lang.extensions.database.QDLDBLoader;
@@ -12,7 +13,6 @@ import org.qdl_lang.extensions.http.QDLHTTPLoader;
 import org.qdl_lang.extensions.inputLine.QDLCLIToolsLoader;
 import org.qdl_lang.extensions.mail.QDLMailLoader;
 import org.qdl_lang.extensions.examples.stateful.StatefulLoader;
-import org.qdl_lang.module.*;
 import org.qdl_lang.scripting.QDLScript;
 import org.qdl_lang.scripting.Scripts;
 import org.qdl_lang.statements.TryCatch;
@@ -20,7 +20,6 @@ import org.qdl_lang.util.ModuleUtils;
 import org.qdl_lang.util.QDLFileUtil;
 import org.qdl_lang.util.QDLVersion;
 import org.qdl_lang.variables.*;
-import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.vfs.VFSEntry;
 import org.qdl_lang.vfs.VFSFileProvider;
 import org.qdl_lang.vfs.VFSPaths;
@@ -46,7 +45,6 @@ import org.qdl_lang.functions.FKey;
 import org.qdl_lang.functions.FStack;
 import org.qdl_lang.functions.FTable;
 import org.qdl_lang.functions.FunctionRecordInterface;
-import org.qdl_lang.module.Module;
 import org.qdl_lang.statements.ExpressionInterface;
 
 import javax.xml.namespace.QName;

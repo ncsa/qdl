@@ -1,7 +1,6 @@
 package org.qdl_lang.extensions;
 
-import org.qdl_lang.evaluate.ModuleEvaluator;
-import org.qdl_lang.module.Module;
+import org.qdl_lang.expressions.module.Module;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.Constant;
 import org.qdl_lang.xml.SerializationConstants;

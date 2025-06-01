@@ -2,7 +2,7 @@ package org.qdl_lang.util.aggregate;
 
 import org.qdl_lang.functions.DyadicFunctionReferenceNode;
 import org.qdl_lang.functions.FunctionReferenceNode;
-import org.qdl_lang.module.Module;
+import org.qdl_lang.expressions.module.Module;
 import org.qdl_lang.variables.QDLNull;
 
 import java.math.BigDecimal;

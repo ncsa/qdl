@@ -4,7 +4,7 @@ import org.qdl_lang.exceptions.QDLException;
 import org.qdl_lang.functions.FKey;
 import org.qdl_lang.functions.FStack;
 import org.qdl_lang.functions.FunctionRecord;
-import org.qdl_lang.module.QDLModule;
+import org.qdl_lang.expressions.module.QDLModule;
 import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.statements.ModuleStatement;
 import org.qdl_lang.variables.QDLStem;

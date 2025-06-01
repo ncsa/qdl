@@ -3007,6 +3007,21 @@ left hand argument at index 'p' is not a boolean At (1, 0)
         assert getBooleanValue("ok9", state) : "switch fails for parenthesized expressions";
     }
 
+    /**
+     * tests that no applicable value returns the default of null
+     * @throws Throwable
+     */
+    public void testSwitchExpressionDefault() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok0 := null == (false¿3);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "switch failed to return null value for default";
+
+    }
+
+
     public void testBasicApply() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();

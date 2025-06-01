@@ -125,10 +125,10 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
 <li><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Object.html?is-external=true" title="class or interface in java.lang" class="externalLink">java.lang.Object</a></li>
 <li>
 <ul class="inheritance">
-<li><a href="Module.html" title="class in org.qdl_lang.module">org.qdl_lang.module.Module</a></li>
+<li><a href="Module.html" title="class in org.qdl_lang.module">org.qdl_lang.expressions.module.Module</a></li>
 <li>
 <ul class="inheritance">
-<li>org.qdl_lang.module.QDLModule</li>
+<li>org.qdl_lang.expressions.module.QDLModule</li>
 </ul>
 </li>
 </ul>
@@ -148,7 +148,7 @@ extends <a href="Module.html" title="class in org.qdl_lang.module">Module</a></p
  on 4/1/20 at  11:30 AM</div>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../serialized-form.html#org.qdl_lang.module.QDLModule">Serialized Form</a></dd>
+<dd><a href="../../../serialized-form.html#org.qdl_lang.expressions.module.QDLModule">Serialized Form</a></dd>
 </dl>
 </li>
 </ul>
@@ -164,7 +164,7 @@ extends <a href="Module.html" title="class in org.qdl_lang.module">Module</a></p
 </a>
 <h3>Field Summary</h3>
 <ul class="blockList">
-<li class="blockList"><a id="fields.inherited.from.class.org.qdl_lang.module.Module">
+<li class="blockList"><a id="fields.inherited.from.class.org.qdl_lang.expressions.module.Module">
 <!--   -->
 </a>
 <h3>Fields inherited from class&nbsp;org.qdl_lang.module.<a href="Module.html" title="class in org.qdl_lang.module">Module</a></h3>
@@ -294,11 +294,11 @@ extends <a href="Module.html" title="class in org.qdl_lang.module">Module</a></p
 </tr>
 </table>
 <ul class="blockList">
-<li class="blockList"><a id="methods.inherited.from.class.org.qdl_lang.module.Module">
+<li class="blockList"><a id="methods.inherited.from.class.org.qdl_lang.expressions.module.Module">
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;org.qdl_lang.module.<a href="Module.html" title="class in org.qdl_lang.module">Module</a></h3>
-<code><a href="Module.html#fromJSON(net.sf.json.JSONArray)">fromJSON</a>, <a href="Module.html#fromXML(javax.xml.stream.XMLEventReader,edu.uiuc.ncsa.security.core.configuration.XProperties,org.qdl_lang.parsing.QDLInterpreter)">fromXML</a>, <a href="Module.html#fromXML(javax.xml.stream.XMLEventReader,org.qdl_lang.xml.SerializationState,boolean)">fromXML</a>, <a href="Module.html#getAlias()">getAlias</a>, <a href="Module.html#getDescription()">getDescription</a>, <a href="Module.html#getId()">getId</a>, <a href="Module.html#getInheritMode()">getInheritMode</a>, <a href="Module.html#getKey()">getKey</a>, <a href="Module.html#getListByTag(javax.xml.stream.XMLEventReader,java.lang.String)">getListByTag</a>, <a href="Module.html#getMTKey()">getMTKey</a>, <a href="Module.html#getName()">getName</a>, <a href="Module.html#getNamespace()">getNamespace</a>, <a href="Module.html#getParentInstanceAlias()">getParentInstanceAlias</a>, <a href="Module.html#getParentInstanceID()">getParentInstanceID</a>, <a href="Module.html#getParentTemplateID()">getParentTemplateID</a>, <a href="Module.html#getState()">getState</a>, <a href="Module.html#isExternal()">isExternal</a>, <a href="Module.html#isTemplate()">isTemplate</a>, <a href="Module.html#isUsed()">isUsed</a>, <a href="Module.html#readExtraXMLAttributes(javax.xml.stream.events.XMLEvent)">readExtraXMLAttributes</a>, <a href="Module.html#setAlias(java.lang.String)">setAlias</a>, <a href="Module.html#setDescription(java.util.List)">setDescription</a>, <a href="Module.html#setId(java.util.UUID)">setId</a>, <a href="Module.html#setInheritanceMode(int)">setInheritanceMode</a>, <a href="Module.html#setNamespace(java.net.URI)">setNamespace</a>, <a href="Module.html#setParentInstanceAlias(java.lang.String)">setParentInstanceAlias</a>, <a href="Module.html#setParentInstanceID(java.util.UUID)">setParentInstanceID</a>, <a href="Module.html#setParentTemplateID(java.util.UUID)">setParentTemplateID</a>, <a href="Module.html#setState(org.qdl_lang.state.State)">setState</a>, <a href="Module.html#setTemplate(boolean)">setTemplate</a>, <a href="Module.html#setupModule(org.qdl_lang.module.Module)">setupModule</a>, <a href="Module.html#setUsed(boolean)">setUsed</a>, <a href="Module.html#toJSON()">toJSON</a>, <a href="Module.html#toString()">toString</a>, <a href="Module.html#toXML(javax.xml.stream.XMLStreamWriter,java.lang.String)">toXML</a>, <a href="Module.html#toXML(javax.xml.stream.XMLStreamWriter,java.lang.String,boolean,org.qdl_lang.xml.SerializationState)">toXML</a>, <a href="Module.html#toXML2(javax.xml.stream.XMLStreamWriter,java.lang.String,boolean,org.qdl_lang.xml.SerializationState)">toXML2</a>, <a href="Module.html#writeExtraXMLAttributes(javax.xml.stream.XMLStreamWriter)">writeExtraXMLAttributes</a></code></li>
+<code><a href="Module.html#fromJSON(net.sf.json.JSONArray)">fromJSON</a>, <a href="Module.html#fromXML(javax.xml.stream.XMLEventReader,edu.uiuc.ncsa.security.core.configuration.XProperties,org.qdl_lang.parsing.QDLInterpreter)">fromXML</a>, <a href="Module.html#fromXML(javax.xml.stream.XMLEventReader,org.qdl_lang.xml.SerializationState,boolean)">fromXML</a>, <a href="Module.html#getAlias()">getAlias</a>, <a href="Module.html#getDescription()">getDescription</a>, <a href="Module.html#getId()">getId</a>, <a href="Module.html#getInheritMode()">getInheritMode</a>, <a href="Module.html#getKey()">getKey</a>, <a href="Module.html#getListByTag(javax.xml.stream.XMLEventReader,java.lang.String)">getListByTag</a>, <a href="Module.html#getMTKey()">getMTKey</a>, <a href="Module.html#getName()">getName</a>, <a href="Module.html#getNamespace()">getNamespace</a>, <a href="Module.html#getParentInstanceAlias()">getParentInstanceAlias</a>, <a href="Module.html#getParentInstanceID()">getParentInstanceID</a>, <a href="Module.html#getParentTemplateID()">getParentTemplateID</a>, <a href="Module.html#getState()">getState</a>, <a href="Module.html#isExternal()">isExternal</a>, <a href="Module.html#isTemplate()">isTemplate</a>, <a href="Module.html#isUsed()">isUsed</a>, <a href="Module.html#readExtraXMLAttributes(javax.xml.stream.events.XMLEvent)">readExtraXMLAttributes</a>, <a href="Module.html#setAlias(java.lang.String)">setAlias</a>, <a href="Module.html#setDescription(java.util.List)">setDescription</a>, <a href="Module.html#setId(java.util.UUID)">setId</a>, <a href="Module.html#setInheritanceMode(int)">setInheritanceMode</a>, <a href="Module.html#setNamespace(java.net.URI)">setNamespace</a>, <a href="Module.html#setParentInstanceAlias(java.lang.String)">setParentInstanceAlias</a>, <a href="Module.html#setParentInstanceID(java.util.UUID)">setParentInstanceID</a>, <a href="Module.html#setParentTemplateID(java.util.UUID)">setParentTemplateID</a>, <a href="Module.html#setState(org.qdl_lang.state.State)">setState</a>, <a href="Module.html#setTemplate(boolean)">setTemplate</a>, <a href="Module.html#setupModule(org.qdl_lang.expressions.module.Module)">setupModule</a>, <a href="Module.html#setUsed(boolean)">setUsed</a>, <a href="Module.html#toJSON()">toJSON</a>, <a href="Module.html#toString()">toString</a>, <a href="Module.html#toXML(javax.xml.stream.XMLStreamWriter,java.lang.String)">toXML</a>, <a href="Module.html#toXML(javax.xml.stream.XMLStreamWriter,java.lang.String,boolean,org.qdl_lang.xml.SerializationState)">toXML</a>, <a href="Module.html#toXML2(javax.xml.stream.XMLStreamWriter,java.lang.String,boolean,org.qdl_lang.xml.SerializationState)">toXML2</a>, <a href="Module.html#writeExtraXMLAttributes(javax.xml.stream.XMLStreamWriter)">writeExtraXMLAttributes</a></code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">

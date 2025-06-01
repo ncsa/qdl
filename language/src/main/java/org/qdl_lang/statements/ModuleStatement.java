@@ -1,7 +1,7 @@
 package org.qdl_lang.statements;
 
-import org.qdl_lang.module.Module;
-import org.qdl_lang.module.QDLModule;
+import org.qdl_lang.expressions.module.Module;
+import org.qdl_lang.expressions.module.QDLModule;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.values.QDLValue;
 
