@@ -2118,15 +2118,15 @@ public class SystemEvaluator extends AbstractEvaluator {
             polyad.setResult(values);
             return;
         }
-        QDLValue obj = polyad.evalArg(0, state);
-        checkNull(obj, polyad.getArgAt(0), state);
-        if (!obj.isString()) {
+        QDLValue qdlValue = polyad.evalArg(0, state);
+        checkNull(qdlValue, polyad.getArgAt(0), state);
+        if (!qdlValue.isString()) {
             throw new BadArgException("This requires a string as its argument.", polyad.getArgAt(0));
         }
         // A little trickery here. The multi-index is assumed to be of the form
         // stem.index0.index1....  so it will parse the first component as the name of the
         // variable. Since the variable here is un-named, we put in a dummy value of sys. for it which is ignored.
-        StemMultiIndex multiIndex = new StemMultiIndex("sys." + obj.toString());
+        StemMultiIndex multiIndex = new StemMultiIndex("sys." + qdlValue.asString());
         Object rc = null;
         try {
             rc = values.get(multiIndex);

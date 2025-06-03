@@ -1,6 +1,6 @@
 package org.qdl_lang.variables.values;
 
-public class LongValue extends QDLValue {
+public class LongValue extends QDLKey {
     public LongValue(Long value) {
         super(value);
         type = LONG_TYPE;

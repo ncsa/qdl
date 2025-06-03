@@ -1,6 +1,7 @@
 package org.qdl_lang.variables;
 
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
+import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.exceptions.IndexError;
 import org.qdl_lang.exceptions.NoDefaultValue;
 import org.qdl_lang.expressions.AllIndices;
@@ -93,23 +94,38 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
         if (isLongIndex(key)) {
             return getLong(Long.parseLong(key));
         }
-        return getQDLMap().get(key).asLong();
+        QDLValue v =  getQDLMap().get(key);
+        if(v == null) {
+            return null;
+        }
+        return v.asLong();
     }
 
     public QDLStem getStem(String key) {
         if (isLongIndex(key)) {
             return getStem(Long.parseLong(key));
         }
-        return getQDLMap().get(key).asStem();
-
+        QDLValue v =  getQDLMap().get(key);
+        if(v == null) {
+            return null;
+        }
+        return v.asStem();
     }
 
     public QDLStem getStem(Long key) {
-        return getQDLList().get(key).asStem();
+        QDLValue v =  getQDLMap().get(key);
+        if(v == null) {
+            return null;
+        }
+        return v.asStem();
     }
 
     public Long getLong(Long key) {
-        return getQDLList().get(key).asLong();
+        QDLValue v =  getQDLList().get(key);
+        if(v == null) {
+            return null;
+        }
+        return v.asLong();
     }
 
     public QDLValue remove(String key) {
@@ -139,7 +155,11 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
     }
 
     public Boolean getBoolean(String key) {
-        return get(key).asBoolean();
+        QDLValue v =  getQDLMap().get(key);
+        if(v == null) {
+            return null;
+        }
+        return v.asBoolean();
     }
 
     public QDLValue get(String key) {
@@ -228,18 +248,19 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
     }
 
     public QDLValue put(String index, Object value) {
-        if(value instanceof QDLValue) {
+        if (value instanceof QDLValue) {
             return put(index, (QDLValue) value);
         }
         return put(index, asQDLValue(value));
     }
 
     public QDLValue put(Long index, Object value) {
-        if(value instanceof QDLValue) {
+        if (value instanceof QDLValue) {
             return put(index, (QDLValue) value);
         }
         return put(index, asQDLValue(value));
     }
+
     public QDLValue put(Long index, QDLValue value) {
         getQDLList().set(index, value);
         return null;
@@ -337,11 +358,12 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
     }
 
     public QDLValue put(int index, Object value) {
-        if(value instanceof QDLValue) {
+        if (value instanceof QDLValue) {
             return put(index, (QDLValue) value);
         }
         return put(index, asQDLValue(value));
     }
+
     public QDLValue put(int index, QDLValue value) {
         return put(Long.valueOf(index), value);
     }
@@ -375,6 +397,7 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
 
     /**
      * Do conversion to {@link QDLValue}.
+     *
      * @param defaultValue
      */
     public void setDefaultValue(Object defaultValue) {
@@ -454,9 +477,9 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
         if (key instanceof String) {
             return containsKey((String) key);
         }
-        if (key instanceof IndexList) {
+/*        if (key instanceof IndexList) {
             return get((IndexList) key, false) != null;
-        }
+        }*/
         return false;
     }
 
@@ -482,13 +505,13 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
         }
         for (Object key : keySet()) {
             QDLValue obj = get(key);
-            if(obj == null) {
+            if (obj == null) {
 
                 throw new NFWException("Cannot clone null value");
-            }else{
+            } else {
                 if (obj.isStem()) {
                     output.putLongOrString(key, asQDLValue(obj.asStem().clone()));
-                }  else{
+                } else {
                     output.putLongOrString(key, obj);
                 }
             }
@@ -499,28 +522,30 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
 
     /**
      * Convenience setter to put an object. If it is not a {@link QDLValue} it will be converted to one.
+     *
      * @param key
      * @param value
      */
     public void putLongOrString(Object key, Object value) {
-        if(value instanceof QDLValue) {
+        if (value instanceof QDLValue) {
             putLongOrString(key, (QDLValue) value);
             return;
         }
         putLongOrString(key, asQDLValue(value));
     }
+
     public void putLongOrString(Object key, QDLValue value) {
-        if(key instanceof QDLValue){
+        if (key instanceof QDLValue) {
             QDLValue qdlValueKey = (QDLValue) key;
-            if(qdlValueKey.isLong()){
+            if (qdlValueKey.isLong()) {
                 put(qdlValueKey.asLong(), value);
                 return;
             }
-            if(qdlValueKey.isString()){
+            if (qdlValueKey.isString()) {
                 put(qdlValueKey.asString(), value);
                 return;
             }
-            throw new IllegalArgumentException("unknown key type: "+ key);
+            throw new IllegalArgumentException("unknown key type: " + key);
         }
         if (key instanceof Long) {
             put((Long) key, value);
@@ -587,7 +612,7 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
             throw new IllegalArgumentException("cannot have a trivial stem key");
         }
 
-        if (isIntVar(key)) {
+        if (isLongIndex(key)) {
             return put(Long.parseLong(key), value);
         }
 
@@ -625,7 +650,6 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
         throw new IllegalArgumentException("Unknown map type");
 
     }
-
 
 
     @Override
@@ -672,27 +696,28 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
      * still is needed since a user can set a.'2' := 3 and this should turn
      * it into a list entry otherwise we get both string and list entries with
      * "the same" key.
+     * <p>
+     * The logic of doing this with a regex vs. one of Java's parse methods
+     * (e.g. {@link Long#parseLong(String)} is that the latter would throw
+     * an exception and exception handling in Java slows dramatically as the stack
+     * size increases. It is better for performance to use a regex.
      *
      * @param key
      * @return
      */
-    public boolean isLongIndex(String key) {
+    public static boolean isLongIndex(String key) {
         // special case of index being zero!! Otherwise, no such index can start with zero,
         // so a key of "01" is a string, not the number 1. Sorry, best we can do.
         //     try {
-        return key.equals("0") || key.matches(int_regex);
+        return key.equals("0") || int_pattern.matcher(key).matches();
     }
 
-    String int_regex = "[+-]?[1-9][0-9]*";
+    static String int_regex = "[+-]?[1-9][0-9]*";
     Pattern var_pattern = Pattern.compile(var_regex);
-    Pattern int_pattern = Pattern.compile(int_regex);
+    static Pattern int_pattern = Pattern.compile(int_regex);
 
     protected boolean isVar(String var) {
         return var_pattern.matcher(var).matches();
-    }
-
-    protected boolean isIntVar(String var) {
-        return var.equals("0") || int_pattern.matcher(var).matches();
     }
 
     /**
@@ -825,7 +850,7 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
                 return getNullValue();
             }
             if (currentObj.isStem()) {
-                lastStem =  currentObj.asStem();
+                lastStem = currentObj.asStem();
             } else {
                 lastStem = null;
             }
@@ -846,7 +871,7 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
      * @return
      */
     public QDLStem union(QDLStem... stemVariables) {
-        QDLStem newStem =  clone();
+        QDLStem newStem = clone();
         for (QDLStem stemVariable : stemVariables) {
             newStem.putAll(stemVariable); // non-list
             newStem.listAppend(stemVariable); // list elements
@@ -1147,7 +1172,7 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
 
             } else {
                 if (obj.isStem()) {
-                    currentStem =  currentStem.get(currentIndex).asStem();
+                    currentStem = currentStem.get(currentIndex).asStem();
                 } else {
                     QDLStem newStem = newInstance();
                     currentStem.myPut(indexList.get(i), new StemValue(newStem));
@@ -1186,11 +1211,11 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
 
 
     protected void myPut(Object index, QDLValue value) {
-      index = QDLValue.asJavaValue(index);
-        if(index instanceof QDLValue) {
-          putLongOrString(((QDLValue) index).getValue(), value);
-          return;
-      }
+        index = QDLValue.asJavaValue(index);
+        if (index instanceof QDLValue) {
+            putLongOrString(((QDLValue) index).getValue(), value);
+            return;
+        }
         if (index instanceof Long) {
             put((Long) index, value);
             return;
@@ -1208,14 +1233,12 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
         if (index instanceof BigDecimal) {
             BigDecimal bd = (BigDecimal) index;
             try {
-                put(bd.longValueExact(), value);
-
+                BigInteger bi = bd.toBigIntegerExact(); // is it really an integer?
+                put(bi.longValueExact(), value); // is it too big to be an index?
             } catch (ArithmeticException arithmeticException) {
-                // over flow, so it's too big to have as an index.
-                BigInteger bi = bd.toBigIntegerExact();
-                SparseEntry sparseEntry = new SparseEntry(bi, value);
-                getQDLList().getSparseEntries().add(sparseEntry);
-
+                // Either an overflow, so it's too big to have as an index,
+                // or it requires rounding and is not actually an integer.
+                throw new IndexError("invalid index,  '" + bd + "' can only be an integer", null);
             }
             return;
         }
@@ -1288,7 +1311,7 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
          */
         for (int i = 0; i < w.getComponents().size() - 1; i++) {
             String name = w.getComponents().get(i) + STEM_INDEX_MARKER;
-            QDLValue nextQDLValue =  currentStem.get(name);
+            QDLValue nextQDLValue = currentStem.get(name);
             if (nextQDLValue == null) {
                 throw new IndexError("could not find the given index \"" + name + "\" in this stem \"" + w.getName() + STEM_INDEX_MARKER, null);
             }
@@ -1309,7 +1332,7 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
             list.add(key);
             QDLValue v = get(key);
             if (v.isStem()) {
-                indicesByRank( v.asStem(), list, keyRankMap);
+                indicesByRank(v.asStem(), list, keyRankMap);
             } else {
                 keyRankMap.put(list);
             }
@@ -1423,7 +1446,7 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
             list2.addAll(list);
             list2.add(key);
             if (v.get(key).isStem()) {
-                indicesByRank( v.get(key).asStem(), list2, keyRankMap);
+                indicesByRank(v.get(key).asStem(), list2, keyRankMap);
             } else {
                 keyRankMap.put(list2);
             }
@@ -1605,7 +1628,7 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
                     } else {
                         if (v instanceof Integer) {
                             //put(key, ((Integer) v).longValue());
-                            put(key, new LongValue((Integer)v));
+                            put(key, new LongValue((Integer) v));
                         } else if (v instanceof Float) {
                             put(key, new DecimalValue(new BigDecimal(Float.toString((Float) v))));
                         } else if (v instanceof Double) {
@@ -1985,7 +2008,14 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
      * @param index
      * @return
      */
-    public Object getByMultiIndex(String index) {
+    /*
+       ╔════════════════════════════════╗
+       ║ Note: Not used in QDL code base║
+       ║ but used in OA4MP and CILogon  ║
+       ╚════════════════════════════════╝
+
+     */
+    public QDLValue getByMultiIndex(String index) {
         // This adds a dummy first argument that is omitted in the get call. It is set to something that cannot
         // ever resolve to a valid variable name, hence avoids variable resolution.
         StemMultiIndex stemMultiIndex = new StemMultiIndex("^^^" + QDLStem.STEM_INDEX_MARKER + index);

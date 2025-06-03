@@ -3607,6 +3607,29 @@ input_form((a\*\((k,v)→!is_list(v)))); // extracts all non-lists elements
         assert getBooleanValue("ok3", state) : "test for 2 stems with default values failed to return indices";
 
     }
+    /*
+       a. ≔ [;5];
+       a.(15.0 * 27.00) ≔ 100;
+       ⊨ a.405 ≡ 100;
+     */
+
+    /**
+     * Tests that decimals that evaluate to integers can be used as stem indices. This way
+     * if the internal representation is not a Long the user can still use it rather than getting
+     * some strange message.
+     * @throws Throwable
+     */
+    public void testDecimalStemIndex() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script,"a. ≔ [;5];");
+        addLine(script,"a.(15.0 * 27.00) ≔ 100;");
+        addLine(script,"ok ≔ a.405 ≡ 100;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) :  "Could not set stem value using exact decimals";
+
+    }
 }
 /*
    zeta.'Communities:LSCVirgoLIGOGroupMembers' := ['read:/DQSegDB' ,'read:/frames', 'read:/GraceDB'];

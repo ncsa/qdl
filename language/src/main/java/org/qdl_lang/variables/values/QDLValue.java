@@ -69,8 +69,10 @@ public class QDLValue implements Constants, Serializable, Comparable<QDLValue> {
                 stemValue = (QDLStem) value;
                 break;
             default:
-                this.value = value;
+        //        this.value = value;
         }
+        this.value = value;
+
     }
 
     private Object value;

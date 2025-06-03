@@ -456,7 +456,7 @@ public abstract class VariableState extends NamespaceAwareState {
                                         Set<XKey> checkedAliases) {
         // if(!pattern.matcher(v.getName()).matches()){
         if (variableName.equals("0") || intPattern.matcher(variableName).matches()) {
-            // so its an actual index, like 0, 1, ...
+            // so it's an actual index, like 0, 1, ...
             // Short circuit all the machinery because it will never resolve
             // and there is no need to jump through all of this.
             return null;
