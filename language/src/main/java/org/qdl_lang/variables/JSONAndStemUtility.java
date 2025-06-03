@@ -14,7 +14,7 @@ import java.util.Date;
  * <p>Created by Jeff Gaynor<br>
  * on 10/30/20 at  6:13 AM
  */
-public class StemConverter implements Constants {
+public class JSONAndStemUtility implements Constants {
     /**
      * Does the grunt work of taking an entry (generaic objects!) from a JSON object and converting it to something QDL can
      * understand. Used mostly in the toString methods.

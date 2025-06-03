@@ -18,6 +18,9 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.state.StateUtils;
 import org.qdl_lang.util.ModuleUtils;
 import org.qdl_lang.variables.*;
+import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.LongValue;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.xml.SerializationState;
 import net.sf.json.JSONArray;
@@ -273,10 +276,10 @@ public class ModuleEvaluator extends AbstractEvaluator {
             }
         }
         QDLStem outStem = new QDLStem();
-        for (Object kk : renameStem.keySet()) {
+        for (QDLKey kk : renameStem.keySet()) {
             URI uriKey;
             try {
-                uriKey = URI.create((String) kk); // by construction, all the keys are strings.
+                uriKey = URI.create( kk.asString()); // by construction, all the keys are strings.
             } catch (Throwable t) {
                 throw new BadArgException(RENAME + " requires a valid URI for the old module identifier", polyad.getArgAt(0));
             }
@@ -294,12 +297,12 @@ public class ModuleEvaluator extends AbstractEvaluator {
             MTKey oldMTKey = new MTKey(uriKey);
             Module m = state.getMTemplates().getModule(oldMTKey);
             if (m == null) {
-                outStem.putLongOrString(kk, asQDLValue(Boolean.FALSE));
+                outStem.put(kk, asQDLValue(Boolean.FALSE));
             } else {
                 state.getMTemplates().remove(oldMTKey);
                 MTKey newMTKey = new MTKey(newKey);
                 state.getMTemplates().put(newMTKey, m);
-                outStem.putLongOrString(kk, asQDLValue(Boolean.TRUE));
+                outStem.put(kk, asQDLValue(Boolean.TRUE));
             }
         }
         polyad.setEvaluated(true);
@@ -358,7 +361,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
             return;
         }
         QDLStem outStem = new QDLStem();
-        for (Object k : inStem.keySet()) {
+        for (QDLKey k : inStem.keySet()) {
             URI uri;
             QDLValue object = inStem.get(k);
             if (!object.isString()) {
@@ -366,7 +369,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
             }
             try {
                 uri = URI.create(object.asString());
-                outStem.putLongOrString(k, asQDLValue(state.getMTemplates().get(new MTKey(uri)) == null ? Boolean.FALSE : Boolean.TRUE));
+                outStem.put(k, asQDLValue(state.getMTemplates().get(new MTKey(uri)) == null ? Boolean.FALSE : Boolean.TRUE));
             } catch (Throwable t) {
                 throw new BadArgException(LOADED + " arguments must be valid URIs, not '" + object + "'", polyad.getArgAt(0));
             }
@@ -465,20 +468,20 @@ public class ModuleEvaluator extends AbstractEvaluator {
     }
      protected QDLStem getDoc(QDLStem inStem){
         QDLStem out = new QDLStem();
-        for(Object key : inStem.keySet()){
+        for(QDLKey key : inStem.keySet()){
             QDLValue v = inStem.get(key);
              switch (v.getType()){
                  case Constant.STEM_TYPE:
-                     out.putLongOrString(key, asQDLValue(getDoc(v.asStem())));
+                     out.put(key, getDoc(v.asStem()));
                      break;
                      case Constant.MODULE_TYPE:
-                         out.putLongOrString(key, asQDLValue(getDoc(v.asModule())));
+                         out.put(key, getDoc(v.asModule()));
                          break;
                  case Constant.DYADIC_FUNCTION_TYPE:
-                     out.putLongOrString(key, asQDLValue(getDoc(v.asDyadicFunction())));
+                     out.put(key, getDoc(v.asDyadicFunction()));
                      break;
                  default:
-                     out.putLongOrString(key, asQDLValue(v)); // don't touch it
+                     out.put(key, v); // don't touch it
              }
         }
         return out;
@@ -699,7 +702,7 @@ docs(c#2@ini_out) ;
             }
         }
         QDLStem outStem = new QDLStem();
-        for (Object kk : inStem.keySet()) {
+        for (QDLKey kk : inStem.keySet()) {
             QDLValue value = inStem.get(kk);
             if (!value.isString()) {
                 throw new BadArgException(DROP + " requires a string as its argument, not '" + value + "'", polyad.getArgAt(0));
@@ -713,20 +716,20 @@ docs(c#2@ini_out) ;
             MTKey oldMTKey = new MTKey(uriKey);
             Module m = state.getMTemplates().getModule(oldMTKey);
             if (m == null) {
-                outStem.putLongOrString(kk, asQDLValue(Boolean.TRUE));
+                outStem.put(kk, BooleanValue.True);
             } else {
                 try {
                     state.getMTemplates().remove(oldMTKey);
-                    outStem.putLongOrString(kk, asQDLValue(Boolean.TRUE));
+                    outStem.put(kk, BooleanValue.True);
                 } catch (Throwable t) {
-                    outStem.putLongOrString(kk, asQDLValue(Boolean.FALSE));
+                    outStem.put(kk, BooleanValue.False);
                 }
 
             }
         }
         polyad.setEvaluated(true);
         if (isScalarArg) {
-            polyad.setResult(outStem.getString(0L));
+            polyad.setResult(outStem.get(LongValue.Zero));
         } else {
             polyad.setResult(outStem);
         }
@@ -813,7 +816,7 @@ docs(c#2@ini_out) ;
         final int LOAD_FILE = 0;
         final int LOAD_JAVA = 1;
         QDLStem outStem = new QDLStem();
-        for (Object key : argStem.keySet()) {
+        for (QDLKey key : argStem.keySet()) {
             QDLValue value = argStem.get(key);
             int loadTarget = LOAD_UNKNOWN;
             String resourceName = null;
@@ -821,8 +824,8 @@ docs(c#2@ini_out) ;
                 resourceName = value.asString();
             } else {
                 QDLStem q = value.asStem();
-                resourceName = q.get(0L).toString();
-                loadTarget = q.get(1L).toString().equals(MODULE_TYPE_JAVA) ? LOAD_JAVA : LOAD_FILE;
+                resourceName = q.get(LongValue.Zero).toString();
+                loadTarget = q.get(LongValue.One).toString().equals(MODULE_TYPE_JAVA) ? LOAD_JAVA : LOAD_FILE;
 
             }
             if (resourceName.endsWith(".qdl") || resourceName.endsWith(".mdl")) {
@@ -861,7 +864,7 @@ docs(c#2@ini_out) ;
                     newEntry = innerStem;
                 }
             }
-            outStem.putLongOrString(key, asQDLValue(newEntry));
+            outStem.put(key, newEntry);
         }
         polyad.setEvaluated(true);
         if (outStem.size() == 1) {

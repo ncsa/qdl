@@ -10,11 +10,8 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.qdl_lang.variables.values.LongValue;
 import org.qdl_lang.variables.values.QDLValue;
-import org.qdl_lang.variables.values.StringValue;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
-import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -485,9 +482,9 @@ subset(b., 3, 6)
                 needsCRWithClosingBrace = false;
                 if (isFirst) {
                     isFirst = false;
-                    output = output + StemConverter.convert(obj.getValue());
+                    output = output + JSONAndStemUtility.convert(obj.getValue());
                 } else {
-                    output = output + "," + StemConverter.convert(obj.getValue());
+                    output = output + "," + JSONAndStemUtility.convert(obj.getValue());
                 }
             }
         }

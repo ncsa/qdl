@@ -18,6 +18,7 @@ import org.qdl_lang.util.InputFormUtil;
 import org.qdl_lang.util.QDLFileUtil;
 import org.qdl_lang.variables.*;
 import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.xml.XMLUtils;
 import edu.uiuc.ncsa.security.core.exceptions.GeneralException;
@@ -711,9 +712,9 @@ public class QDLConvert implements QDLMetaModule {
         if (stemKeys.size() != 1) {
             throw new IllegalArgumentException("The XML document is malformed, with more than one root element");
         }
-        Object rootKey = stemKeys.iterator().next();
-        QDLList content = inStem.getStem(rootKey.toString()).getQDLList();
-        root.putLongOrString(rootKey, snarfList(content, true));
+        QDLKey rootKey = stemKeys.iterator().next();
+        QDLList content = inStem.get(rootKey).asStem().getQDLList();
+        root.put(rootKey, snarfList(content, true));
         return root;
     }
 

@@ -5,9 +5,7 @@ import org.qdl_lang.expressions.*;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.variables.*;
-import org.qdl_lang.variables.values.BooleanValue;
-import org.qdl_lang.variables.values.QDLValue;
-import org.qdl_lang.variables.values.SetValue;
+import org.qdl_lang.variables.values.*;
 import org.qdl_lang.vfs.VFSEntry;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import org.apache.commons.codec.binary.Base32;
@@ -328,25 +326,29 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param pointer
      */
     public static void processStem1(QDLStem outStem, QDLStem stemVariable, fPointer pointer) {
-        for (Object key : stemVariable.keySet()) {
+        for (QDLKey key : stemVariable.keySet()) {
             QDLValue qdlValue = stemVariable.get(key);
-            boolean isLongKey = key instanceof Long;
+            //boolean isLongKey = key instanceof Long;
             if (qdlValue.isStem()) {
                 QDLStem newOut = new QDLStem();
                 processStem1(newOut, qdlValue.asStem(), pointer);
                 if (!newOut.isEmpty()) {
-                    if (isLongKey) {
+                    outStem.put(key, asQDLValue(newOut));
+              /*      if (isLongKey) {
                         outStem.put((Long) key, asQDLValue(newOut));
                     } else {
                         outStem.put((String) key, asQDLValue(newOut));
-                    }
+                    }*/
                 }
             } else {
+                outStem.put( key, pointer.process(stemVariable.get(key).getValue()).result);
+/*
                 if (isLongKey) {
                     outStem.put((Long) key, pointer.process(stemVariable.get(key).getValue()).result);
                 } else {
                     outStem.put((String) key, pointer.process(stemVariable.get(key).getValue()).result);
                 }
+*/
             }
         }
     }
@@ -752,7 +754,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * iterates over this list and looks for a key.
      */
 
-    public static class CommonKeyIterator implements Iterator {
+    public static class CommonKeyIterator implements Iterator<QDLKey> {
         ArrayList<StemKeys> stemKeys = new ArrayList<>();
 
         public void add(StemKeys keys) {
@@ -766,9 +768,9 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         }
 
         StemKeys smallestKeys = null;
-        Iterator iterator = null;
+        Iterator<QDLKey> iterator = null;
 
-        Object nextValue;
+        QDLKey nextValue;
 
         @Override
         public boolean hasNext() {
@@ -780,15 +782,13 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
             }
 
             while (iterator.hasNext()) {
-                Object v = iterator.next();
+                QDLKey v = iterator.next();
                 if (allHaveValue(v)) {
                     nextValue = v;
                     return true;
                 }
             }
             return false;
-
-
         }
 
         /**
@@ -810,7 +810,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         }
 
         @Override
-        public Object next() {
+        public QDLKey next() {
             return nextValue;
         }
     }
@@ -1345,7 +1345,7 @@ g(1@f, 2)
                 QDLStem innerStem = new QDLStem();
                 innerStem.listAdd(asQDLValue(arg));
                 innerStem.listAdd(asQDLValue(arg2));
-                argStem.put(0L, asQDLValue(innerStem));
+                argStem.put(LongValue.Zero, asQDLValue(innerStem));
                 gotOne = true;
                 break;
             default:

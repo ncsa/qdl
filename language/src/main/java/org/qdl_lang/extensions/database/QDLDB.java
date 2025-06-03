@@ -1,5 +1,6 @@
 package org.qdl_lang.extensions.database;
 
+import com.google.protobuf.NullValue;
 import org.qdl_lang.evaluate.SystemEvaluator;
 import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.extensions.QDLFunction;
@@ -25,8 +26,7 @@ import edu.uiuc.ncsa.security.storage.sql.postgres.PostgresConnectionParameters;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
-import org.qdl_lang.variables.values.BooleanValue;
-import org.qdl_lang.variables.values.QDLValue;
+import org.qdl_lang.variables.values.*;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -169,7 +169,7 @@ public class QDLDB implements QDLMetaModule {
                 }
             }
             Read read = new Read();
-            for (Object key : inStem.keySet()) {
+            for (QDLKey key : inStem.keySet()) {
                 try {
                     QDLValue rawArg = inStem.get(key);
                     QDLStem stemArg;
@@ -185,20 +185,20 @@ public class QDLDB implements QDLMetaModule {
                     if (flattenList && (output.isStem())) {
                         QDLStem flattenStem = output.asStem();
                         if (flattenStem.size() == 1) {
-                            outStem.putLongOrString(key, flattenStem.get(0L));
+                            outStem.put(key, flattenStem.get(LongValue.Zero));
                         } else {
-                            outStem.putLongOrString(key, output);
+                            outStem.put(key, output);
                         }
 
                     } else {
 
-                        outStem.putLongOrString(key, output);
+                        outStem.put(key, output);
                     }
                 } catch (Throwable t) {
                     if (state.isDebugOn()) {
                         t.printStackTrace();
                     }
-                    outStem.putLongOrString(key, QDLNull.getInstance());
+                    outStem.put(key, QDLNullValue.getNullValue());
                 }
             }
             return asQDLValue(outStem);
@@ -753,7 +753,7 @@ public class QDLDB implements QDLMetaModule {
             int counter = 0;
             try {
                 PreparedStatement stmt = c.prepareStatement(qdlValues[0].asString());
-                for (Object key : stemVariable.keySet()) {
+                for (QDLKey key : stemVariable.keySet()) {
                     QDLValue value = stemVariable.get(key);
                     QDLList list;
                     if (value.isStem()) {
@@ -772,12 +772,12 @@ public class QDLDB implements QDLMetaModule {
                         setParam(stmt, i++, entry);
                     }
                     stmt.addBatch();
-                    returnCodes.put(counter++, key);
+                    returnCodes.put(counter++, key.getValue());
                 }
                 long[] rcs = stmt.executeLargeBatch();
                 QDLStem outStem = new QDLStem();
                 for (int i = 0; i < rcs.length; i++) {
-                    outStem.putLongOrString(returnCodes.get(i), rcs[i]);
+                    outStem.put(QDLKey.from(returnCodes.get(i)), rcs[i]);
                 }
                 stmt.close();
                 releaseConnection(connectionRecord);

@@ -576,8 +576,8 @@ public class StemEvaluator extends AbstractEvaluator {
                         }
                     }else {
 
-                        for (Object k : c.keySet()) {
-                            switch (k.toString()) {
+                        for (QDLKey k : c.keySet()) {
+                            switch (k.asString()) {
                                 case BOX_AROUND_RESULT:
                                     boxResult = c.getBoolean(BOX_AROUND_RESULT);
                                     break;
@@ -627,8 +627,8 @@ public class StemEvaluator extends AbstractEvaluator {
             QDLStem stem = arg0.asStem();
 
             Map map = new HashMap<>(); // Java values for formatting util
-            for (Object key : stem.keySet()) {
-                map.put(key, stem.get(key).getValue());
+            for (QDLKey key : stem.keySet()) {
+                map.put(key.getValue(), stem.get(key).getValue());
             }
 
             list = StringUtils.formatMap(map,
@@ -741,12 +741,12 @@ public class StemEvaluator extends AbstractEvaluator {
                                  int indent,
                                  int width) {
         Map map = new HashMap<>();
-        for (Object key : stem.keySet()) {
+        for (QDLKey key : stem.keySet()) {
             QDLValue vvv = stem.get(key);
             if (vvv.isStem()) {
-                map.put(key, rFormatStem(vvv.asStem(), keySubset, sortKeys, multilineMode, indent, width));
+                map.put(key.getValue(), rFormatStem(vvv.asStem(), keySubset, sortKeys, multilineMode, indent, width));
             } else {
-                map.put(key, vvv.getValue());
+                map.put(key.getValue(), vvv.getValue());
             }
         }
 
@@ -835,9 +835,9 @@ public class StemEvaluator extends AbstractEvaluator {
         StemKeys allkeys = stem1.keySet();
         allkeys.addAll(stem0.keySet());
         QDLStem out = new QDLStem();
-        for (Object key : allkeys) {
-            Object lArg = stem0.get(key);
-            Object rArg = stem1.get(key);
+        for (QDLKey key : allkeys) {
+            QDLValue lArg = stem0.get(key);
+            QDLValue rArg = stem1.get(key);
             if (subsettingOn) {
                 // Java null means no such element.
                 if (lArg == null || rArg == null) {
@@ -850,26 +850,26 @@ public class StemEvaluator extends AbstractEvaluator {
             if (lArg == null) {
                 if (!subsettingOn) {
                     QDLStem r = new QDLStem();
-                    r.putLongOrString(0L, QDLValue.getNullValue());
-                    r.putLongOrString(1L, asQDLValue(rArg));
-                    out.putLongOrString(key, asQDLValue(r));
+                    r.put(LongValue.Zero, QDLValue.getNullValue());
+                    r.put(LongValue.One, rArg);
+                    out.put(key, r);
                 }
             } else {
                 if (rArg == null) {
                     if (!subsettingOn) {
                         QDLStem r = new QDLStem();
-                        r.putLongOrString(0L, asQDLValue(lArg));
-                        r.putLongOrString(1L, QDLValue.getNullValue());
-                        out.putLongOrString(key, asQDLValue(r));
+                        r.put(LongValue.Zero, lArg);
+                        r.put(LongValue.One, QDLValue.getNullValue());
+                        out.put(key, r);
                     }
 
                 } else {
                     // neither is a Java null, so NPE possible here
                     if (!lArg.equals(rArg)) {
                         QDLStem r = new QDLStem();
-                        r.putLongOrString(0L, asQDLValue(lArg));
-                        r.putLongOrString(1L, asQDLValue(rArg));
-                        out.putLongOrString(key, asQDLValue(r));
+                        r.put(LongValue.Zero, lArg);
+                        r.put(LongValue.One, rArg);
+                        out.put(key, r);
                     }
                 }
             }
@@ -942,13 +942,13 @@ public class StemEvaluator extends AbstractEvaluator {
 
     protected QDLStem reverseKeysAndValues(QDLStem inStem) {
         QDLStem out = new QDLStem();
-        for (Object kk : inStem.keySet()) {
+        for (QDLKey kk : inStem.keySet()) {
             QDLValue v = inStem.get(kk);
             if (v.isLong() || v.isString()) {
-                out.putLongOrString(v, asQDLValue(kk));
+                out.put(QDLKey.from(v), kk);
             }
             if (isStem(v)) {
-                out.putLongOrString(kk, asQDLValue(reverseKeysAndValues(v.asStem())));
+                out.put(kk, asQDLValue(reverseKeysAndValues(v.asStem())));
             }
         }
         return out;
@@ -1497,47 +1497,53 @@ f(x.)→x.0+x.1;
 
             if (rightArg.isStem()) {
                 QDLStem rStem = rightArg.asStem();
-                for (Object lkey : lStem.keySet()) {
-                    result.putLongOrString(lkey, asQDLValue(rStem.hasValue(lStem.get(lkey))));
+                for (QDLKey lkey : lStem.keySet()) {
+                    result.put(lkey, asQDLValue(rStem.hasValue(lStem.get(lkey))));
                 }
             } else {
                 if (rightArg.isSet()) {
                     QDLSet rSet =  rightArg.asSet();
-                    for (Object key : lStem.keySet()) {
-                        boolean keyIsLong = key instanceof Long;
+                    for (QDLKey key : lStem.keySet()) {
                         QDLValue ooo = lStem.get(key);
                         if (ooo.isDecimal()) {
+                            result.put(key, asQDLValue(Boolean.FALSE));
+/*
                             if (keyIsLong) {
                                 result.put((Long) key, asQDLValue(Boolean.FALSE));
                             } else {
                                 result.put((String) key, asQDLValue(Boolean.FALSE));
                             }
+*/
                             for (QDLValue element : rSet) {
                                 if (element.isDecimal()) {
                                     boolean tempB = bdEquals(ooo.asDecimal(), element.asDecimal());
                                     if (tempB) {
-                                        if (keyIsLong) {
+                                        result.put(key, BooleanValue.True);
+                                        /*if (keyIsLong) {
                                             result.put((Long) key, BooleanValue.True);
                                         } else {
                                             result.put((String) key, BooleanValue.True);
-                                        }
+                                        }*/
                                         break;
                                     }
                                 }
                             }
 
                         } else {
+                            result.put(key, new BooleanValue(rSet.contains(ooo)));
+/*
                             if (keyIsLong) {
                                 result.put((Long) key, new BooleanValue(rSet.contains(ooo)));
                             } else {
                                 result.put((String) key, new BooleanValue(rSet.contains(ooo)));
                             }
+*/
                         }
                     }
                 } else {
                     // check if each element in the left stem matches the value of the right arg.
-                    for (Object lKey : lStem.keySet()) {
-                        result.putLongOrString(lKey, asQDLValue(lStem.get(lKey).equals(rightArg) ? Boolean.TRUE : Boolean.FALSE)); // got to finagle these are right Java objects
+                    for (QDLKey lKey : lStem.keySet()) {
+                        result.put(lKey, asQDLValue(lStem.get(lKey).equals(rightArg) ? Boolean.TRUE : Boolean.FALSE)); // got to finagle these are right Java objects
                     }
                 }
             }
@@ -1607,7 +1613,7 @@ f(x.)→x.0+x.1;
         if (arg0.isStem()) {
             gotOne = true;
             QDLStem stem =  arg0.asStem();
-            for (Object key : stem.keySet()) {
+            for (QDLKey key : stem.keySet()) {
                 QDLValue value = stem.get(key);
                 if (!value.isString()) {
                     continue;
@@ -1616,11 +1622,14 @@ f(x.)→x.0+x.1;
                     QDLStem nextStem = new QDLStem();
                     jsonObject = JSONObject.fromObject(value);
                     nextStem.fromJSON(jsonObject, convertKeys, converterType);
+                    output.put(key, nextStem);
+/*
                     if (key instanceof Long) {
                         output.put((Long) key, asQDLValue(nextStem));
                     } else {
                         output.put((String) key, asQDLValue(nextStem));
                     }
+*/
                 } catch (Throwable tt) {
                     // ok, so this is not valid JSON, rock on
                     //throw new BadArgException(FROM_JSON + " could not parse the argument as valid JSON", polyad.getArgAt(0));
@@ -1808,11 +1817,11 @@ f(x.)→x.0+x.1;
         State localState = state.newCleanState();
         MetaCodec codec = new MetaCodec();
 
-        for (Object k : stem.keySet()) {
+        for (QDLKey k : stem.keySet()) {
             // implicit in contract that all the keys are string, not integers
-            String key = (String) k;
-            QDLValue  ob = stem.get(key);
-            key = key + (ob.isStem() ? STEM_INDEX_MARKER : "");
+            //String key = (String) k;
+            QDLValue  ob = stem.get(k);
+            String key = k.asString() + (ob.isStem() ? STEM_INDEX_MARKER : "");
             if (safeMode) {
                 if (!pattern.matcher(key).matches()) {
                     key = codec.encode(key);
@@ -1996,29 +2005,36 @@ f(x.)→x.0+x.1;
         QDLStem out = new QDLStem();
         if (returnByType) {
             long i = 0L;
-            for (Object key : stemVariable.keySet()) {
+            for (QDLKey key : stemVariable.keySet()) {
                 if (returnType == Constant.getType(stemVariable.get(key))) {
-                    out.put(i++, asQDLValue(key));
+                    out.put(QDLKey.from(i++), asQDLValue(key));
                 }
             }
         } else {
             long i = 0L;
 
-            for (Object key : stemVariable.keySet()) {
+            for (QDLKey key : stemVariable.keySet()) {
+                QDLValue qdlValue= null;
                 switch (returnScope) {
                     case all_keys:
-                        out.put(i++, asQDLValue(key));
+                        //out.put(QDLKey.from(i++), asQDLValue(key));
+                        qdlValue = asQDLValue(key));
                         break;
                     case only_scalars:
                         if (Constant.getType(stemVariable.get(key)) != STEM_TYPE) {
-                            out.put(i++, asQDLValue(key));
+                            //out.put(QDLKey.from(i++), asQDLValue(key));
+                            qdlValue =  asQDLValue(key);
                         }
                         break;
                     case only_stems:
                         if (Constant.getType(stemVariable.get(key)) == STEM_TYPE) {
-                            out.put(i++, asQDLValue(key));
+                            //out.put(i++, asQDLValue(key));
+                            qdlValue  = asQDLValue(key);
                         }
                         break;
+                }
+                if(qdlValue != null) {
+                    out.put(QDLKey.from(i++), qdlValue);
                 }
             }
 
@@ -2085,25 +2101,29 @@ f(x.)→x.0+x.1;
         QDLStem out = new QDLStem();
 
         if (returnByType) {
-            for (Object key : stemVariable.keySet()) {
+            for (QDLKey key : stemVariable.keySet()) {
                 if (returnType == Constant.getType(stemVariable.get(key))) {
-                    putLongOrStringKey(out, key);
+                //    putLongOrStringKey(out, key);
+                    out.put(key, key);
                 }
             }
         } else {
-            for (Object key : stemVariable.keySet()) {
+            for (QDLKey key : stemVariable.keySet()) {
                 switch (returnScope) {
                     case all_keys:
-                        putLongOrStringKey(out, asQDLValue(key));
+//                        putLongOrStringKey(out, key);
+                        out.put(key, key);
                         break;
                     case only_scalars:
-                        if (Constant.getType(stemVariable.get(key)) != STEM_TYPE) {
-                            putLongOrStringKey(out, asQDLValue(key));
+                        if (stemVariable.get(key).getType() != STEM_TYPE) {
+                            out.put(key, key);
+                       //     putLongOrStringKey(out, key);
                         }
                         break;
                     case only_stems:
-                        if (Constant.getType(stemVariable.get(key)) == STEM_TYPE) {
-                            putLongOrStringKey(out, asQDLValue(key));
+                        if (stemVariable.get(key).getType() == STEM_TYPE) {
+                            out.put(key, key);
+                            //putLongOrStringKey(out, key);
                         }
                         break;
                 }
@@ -2121,7 +2141,7 @@ f(x.)→x.0+x.1;
      * @param out
      * @param key
      */
-    protected void putLongOrStringKey(QDLStem out, Object key) {
+/*    protected void putLongOrStringKey(QDLStem out, Object key) {
         if (key instanceof Long) {
             Long k = (Long) key;
             out.put(k, asQDLValue(k));
@@ -2133,7 +2153,7 @@ f(x.)→x.0+x.1;
             String k = (String) key;
             out.put(k, asQDLValue(k));
         }
-    }
+    }*/
 
     /**
      * This is not left conformable and any uses should be removed in favor of {@link #doHasKey(Polyad, State)}
@@ -2451,7 +2471,7 @@ f(x.)→x.0+x.1;
     private void twoArgRemap(Polyad polyad, QDLStem arg0, QDLStem arg1) {
         QDLStem indices1 = arg1;
         QDLStem output = new QDLStem();
-        for (Object key : indices1.keySet()) {
+        for (QDLKey key : indices1.keySet()) {
             QDLValue v = indices1.get(key);
             Object gotValue = null;
             if (v.isStem()) {
@@ -2470,7 +2490,7 @@ f(x.)→x.0+x.1;
                 gotValue = arg0.get(v);
             }
             if (gotValue != null) {
-                output.putLongOrString(key, asQDLValue(gotValue));
+                output.put(key, asQDLValue(gotValue));
             }
         }
 
@@ -2720,12 +2740,15 @@ f(x.)→x.0+x.1;
         if (!arg2.isStem()) {
             QDLStem result = new QDLStem();
             String excluded = arg2.toString();
-            for (Object ndx : target.keySet()) {
+            for (QDLKey ndx : target.keySet()) {
+                result.put(ndx, target.get(ndx));
+/*
                 if (ndx instanceof Long) {
                     result.put((Long) ndx, target.get(ndx));
                 } else {
                     result.put((String) ndx, target.get(ndx));
                 }
+*/
             }
             result.remove(excluded);
             polyad.setResult(result);
@@ -2816,14 +2839,14 @@ f(x.)→x.0+x.1;
             throw new BadArgException(" the supplied set of keys must match every key in the source stem.", polyad.getArgAt(0));
         }
 
-        for (Object key : keys) {
+        for (QDLKey key : keys) {
             if (newKeys.contains(key)) {
                 QDLValue kk = newKeyStem.get(key);
                 usedKeys.remove(kk.getValue());
                 QDLValue vv = target.get(kk);
-                output.putLongOrString( key, vv);
+                output.put( key, vv);
             } else {
-                throw new BadArgException("'" + key + "' is not a key in the second argument.", polyad.getArgAt(1));
+                throw new BadArgException("'" + key.getValue() + "' is not a key in the second argument.", polyad.getArgAt(1));
             }
         }
         if (!usedKeys.isEmpty()) {

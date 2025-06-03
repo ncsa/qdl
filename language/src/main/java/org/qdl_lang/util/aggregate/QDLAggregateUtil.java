@@ -5,6 +5,7 @@ import org.qdl_lang.exceptions.UnknownTypeException;
 import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLSet;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.LinkedList;
@@ -54,12 +55,12 @@ public class QDLAggregateUtil {
 
     public static QDLStem processStem(QDLStem inStem, List<Object> index, ProcessScalar processScalar) {
         QDLStem outStem = new QDLStem();
-        for (Object key : inStem.keySet()) {
+        for (QDLKey key : inStem.keySet()) {
             QDLValue value = inStem.get(key);
             try {
-                outStem.putLongOrString(key, processStemValue(processScalar, index, key, value));
+                outStem.put(key, processStemValue(processScalar, index, key, value));
             }catch(BadStemValueException badStemValueException){
-                badStemValueException.getIndices().add(key);
+                badStemValueException.getIndices().add(key.getValue());
                 throw badStemValueException;
             }
         }
@@ -220,22 +221,22 @@ public class QDLAggregateUtil {
 
     public static QDLStem processStem(QDLStem inStem, List index, ProcessStemAxisRestriction processRankRestriction, int currentDepth) {
         QDLStem outStem = new QDLStem();
-        for (Object key : inStem.keySet()) {
+        for (QDLKey key : inStem.keySet()) {
             QDLValue value = inStem.get(key);
             try {
                 if(currentDepth == processRankRestriction.getAxis()
                 || processRankRestriction.getAxis() == ProcessStemAxisRestriction.ALL_AXES && !((value.isStem()))) {
-                    outStem.putLongOrString(key, processStemValue(processRankRestriction, index, key, value, currentDepth + 1));
+                    outStem.put(key, processStemValue(processRankRestriction, index, key, value, currentDepth + 1));
                 }else{
                     if(value.isStem()){
                         List newIndex = new LinkedList<>();
                         newIndex.addAll(index);
                         newIndex.add(key);
-                        outStem.putLongOrString(key,processStem(value.asStem(), newIndex, processRankRestriction, currentDepth + 1));
+                        outStem.put(key,processStem(value.asStem(), newIndex, processRankRestriction, currentDepth + 1));
                     }
                 }
             }catch(BadStemValueException badStemValueException){
-                badStemValueException.getIndices().add(key);
+                badStemValueException.getIndices().add(key.getValue());
                 throw badStemValueException;
             }
         }

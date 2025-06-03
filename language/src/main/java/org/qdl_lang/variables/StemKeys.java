@@ -1,6 +1,9 @@
 package org.qdl_lang.variables;
 
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
+import org.qdl_lang.variables.values.LongValue;
+import org.qdl_lang.variables.values.QDLKey;
+import org.qdl_lang.variables.values.StringValue;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -14,26 +17,46 @@ import java.util.TreeSet;
  * <p>Created by Jeff Gaynor<br>
  * on 5/12/22 at  6:44 AM
  */
-public class StemKeys implements Set {
+public class StemKeys implements Set<QDLKey> {
+    @Override
+    public boolean add(QDLKey qdlKey) {
+        switch (qdlKey.getType()) {
+            case Constant.LONG_TYPE:
+            case Constant.STRING_TYPE:
 
-    public TreeSet<Long> getListkeys() {
+        }
+        return false;
+    }
+
+    /*
+        public boolean add(Object o) {
+        if (o instanceof Long) {
+            return listkeys.add((Long) o);
+        }
+        if(o instanceof String) {
+            return stemKeys.add((String) o);
+        }
+        throw new IllegalArgumentException("Cannot add key '" + o + "'. Must be a Long or String object");
+    }
+     */
+    public TreeSet<LongValue> getListkeys() {
         return listkeys;
     }
 
-    public void setListkeys(TreeSet<Long> listkeys) {
+    public void setListkeys(TreeSet<LongValue> listkeys) {
         this.listkeys = listkeys;
     }
 
-    public TreeSet<String> getStemKeys() {
+    public TreeSet<StringValue> getStemKeys() {
         return stemKeys;
     }
 
-    public void setStemKeys(TreeSet<String> stemKeys) {
+    public void setStemKeys(TreeSet<StringValue> stemKeys) {
         this.stemKeys = stemKeys;
     }
 
-    TreeSet<Long> listkeys = new TreeSet<>();
-    TreeSet<String> stemKeys = new TreeSet<>();
+    TreeSet<LongValue> listkeys = new TreeSet<>();
+    TreeSet<StringValue> stemKeys = new TreeSet<>();
 
     @Override
     public int size() {
@@ -47,17 +70,22 @@ public class StemKeys implements Set {
 
     @Override
     public boolean contains(Object o) {
-        if (o instanceof Long) {
-            return listkeys.contains(o);
+        if (o instanceof QDLKey) {
+            switch (((QDLKey) o).getType()) {
+                case Constant.LONG_TYPE:
+                    return listkeys.contains(o);
+                case Constant.STRING_TYPE:
+                    return stemKeys.contains(o);
+            }
         }
-        return stemKeys.contains(o);
+        return false;
     }
 
-    public class MyStemKeyIterator implements Iterator {
-        Iterator listKeysIterator;
-        Iterator stemKeysIterator;
+    public class MyStemKeyIterator implements Iterator<QDLKey> {
+        Iterator<LongValue> listKeysIterator;
+        Iterator<StringValue> stemKeysIterator;
 
-        public MyStemKeyIterator(Iterator listKeysIterator, Iterator stemKeysIterator) {
+        public MyStemKeyIterator(Iterator<LongValue> listKeysIterator, Iterator<StringValue> stemKeysIterator) {
             this.listKeysIterator = listKeysIterator;
             this.stemKeysIterator = stemKeysIterator;
         }
@@ -68,7 +96,7 @@ public class StemKeys implements Set {
         }
 
         @Override
-        public Object next() {
+        public QDLKey next() {
             if (listKeysIterator.hasNext()) {
                 return listKeysIterator.next();
             }
@@ -77,30 +105,30 @@ public class StemKeys implements Set {
     }
 
     @Override
-    public Iterator iterator() {
+    public Iterator<QDLKey> iterator() {
         return new MyStemKeyIterator(listkeys.iterator(), stemKeys.iterator());
     }
 
     @Override
     public Object[] toArray() {
-      return toArray(new Object[listkeys.size()]);
+        return toArray(new Object[listkeys.size()]);
     }
 
     @Override
     public Object[] toArray(Object[] a) {
         Object[] ooo;
 
-        if(a.length == size()) {
+        if (a.length == size()) {
             ooo = a;
-        }else{
+        } else {
             ooo = new Object[size()];
         }
         int i = 0;
-        for(Object kkk : listkeys) {
+        for (Object kkk : listkeys) {
             ooo[i++] = kkk;
         }
-        for(Object kkk : stemKeys) {
-                ooo[i++] = kkk;
+        for (Object kkk : stemKeys) {
+            ooo[i++] = kkk;
         }
         return ooo;
     }
@@ -108,7 +136,7 @@ public class StemKeys implements Set {
 status.:=[{'client_id':42, 'status':'active'},{'client_id':11, 'status':'inactive'},{'client_id':99, 'status':'suspended'},{'client_id':17, 'status':'active'}];
 status\*\((k,v.)→v.'status'≡'active')
  */
-    @Override
+/*    @Override
     public boolean add(Object o) {
         if (o instanceof Long) {
             return listkeys.add((Long) o);
@@ -117,14 +145,20 @@ status\*\((k,v.)→v.'status'≡'active')
             return stemKeys.add((String) o);
         }
         throw new IllegalArgumentException("Cannot add key '" + o + "'. Must be a Long or String object");
-    }
+    }*/
 
     @Override
     public boolean remove(Object o) {
-        if (o instanceof Long) {
-            return listkeys.remove(o);
+        if (o instanceof QDLKey) {
+            switch (((QDLKey) o).getType()) {
+                case Constant.LONG_TYPE:
+                    return listkeys.remove(o);
+                case Constant.STRING_TYPE:
+                    return stemKeys.remove(o);
+
+            }
         }
-        return stemKeys.remove(o);
+        return false;
     }
 
     @Override
@@ -132,25 +166,46 @@ status\*\((k,v.)→v.'status'≡'active')
         return false;
     }
 
+    /**
+     * This will let you add collection so POJOs though it is more expensive
+     *
+     * @param c
+     * @return
+     */
     @Override
     public boolean addAll(Collection c) {
+
         if (c instanceof StemKeys) {
             StemKeys arg = (StemKeys) c;
             return listkeys.addAll(arg.getListkeys()) || stemKeys.addAll(arg.getStemKeys());
         }
-        for(Object obj : c){
+        for (Object obj : c) {
+            QDLKey key = QDLKey.from(obj);
+            switch (key.getType()) {
+                case Constant.LONG_TYPE:
+                    listkeys.add((LongValue) key);
+                    break;
+                case Constant.STRING_TYPE:
+                    stemKeys.add((StringValue) key);
+                    break;
+                default:
+                    throw new NotImplementedException("addAll(Collection) unknown element type " + obj.getClass().getSimpleName() + " for general collection");
+            }
+
+/*
             boolean gotOne = false;
-            if(obj instanceof Long){
-                listkeys.add((Long)obj);
+            if(key instanceof LongValue){
+                listkeys.add((LongValue) key);
                 gotOne = true;
             }
-            if(obj instanceof String){
-                stemKeys.add((String)obj);
+            if(key instanceof StringValue){
+                stemKeys.add((StringValue) key);
                 gotOne = true;
             }
             if(!gotOne) {
                 throw new NotImplementedException("addAll(Collection) unknown element type " + getClass().getSimpleName() + " for general collection");
             }
+*/
         }
 
         return true;
@@ -180,6 +235,7 @@ status\*\((k,v.)→v.'status'≡'active')
         stemKeys.clear();
     }
 
+/*
     public Iterator<String> getStringKeyIterator() {
         return stemKeys.iterator();
     }
@@ -187,6 +243,7 @@ status\*\((k,v.)→v.'status'≡'active')
     public Iterator<Long> getListKeyIterator() {
         return listkeys.iterator();
     }
+*/
 
     /**
      * Note that this takes the intersection of this set with the given set and returns a new
@@ -194,9 +251,9 @@ status\*\((k,v.)→v.'status'≡'active')
      *
      * @param stemKeys
      */
-    public StemKeys intersection(StemKeys stemKeys) {
+/*    public StemKeys intersection(StemKeys stemKeys) {
         StemKeys outKeys = new StemKeys();
 
         return outKeys;
-    }
+    }*/
 }

@@ -14,6 +14,7 @@ import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.vfs.*;
 
@@ -546,9 +547,9 @@ public class IOEvaluator extends AbstractEvaluator {
                 break;
             case VFS_TYPE_MYSQL:
                 Map<String, String> myCfg = new HashMap<>();
-                for (Object key : cfg.keySet()) {
-                    Object v = cfg.get(key);
-                    myCfg.put(String.valueOf(key), v == null ? null : v.toString());
+                for (QDLKey key : cfg.keySet()) {
+                    QDLValue v = cfg.get(key);
+                    myCfg.put(key.asString(), v == null ? null : v.asString());
                 }
                 VFSDatabase db = setupMySQLDatabase(null, myCfg);
                 vfs = new VFSMySQLProvider(db,
@@ -638,7 +639,7 @@ public class IOEvaluator extends AbstractEvaluator {
 
     protected QDLStem processWriteFileStem(QDLStem input, State state, Polyad polyad) {
         QDLStem output = new QDLStem();
-        for (Object key : input.keySet()) {
+        for (QDLKey key : input.keySet()) {
             QDLValue value = input.get(key);
             if (value.isStem()) {
                 QDLStem p = value.asStem();
@@ -660,12 +661,12 @@ public class IOEvaluator extends AbstractEvaluator {
                         }
                     }
                     writeSingleFile(path.asString(), content, fileType, state, polyad);
-                    output.putLongOrString(key, BooleanValue.True);
+                    output.put(key, BooleanValue.True);
                 } else {
-                    output.putLongOrString(key, asQDLValue(value));
+                    output.put(key, asQDLValue(value));
                 }
             } else {
-                output.putLongOrString(key, asQDLValue(value)); // return argument unchanged
+                output.put(key, asQDLValue(value)); // return argument unchanged
             }
         }
         return output;
@@ -767,17 +768,17 @@ public class IOEvaluator extends AbstractEvaluator {
     public static String convertToIni(QDLStem obj2, int indentFactor, boolean allowListEntries) {
         StringBuilder stringBuilder = new StringBuilder();
         String indent = ""; // top level
-        for (Object key0 : obj2.keySet()) {
+        for (QDLKey key0 : obj2.keySet()) {
             List<String> sectionNames = new ArrayList<>();
-            if (key0 instanceof Long) {
+            if (key0.isLong()) {
                 if (allowListEntries) {
-                    sectionNames.add(INI_LIST_ENTRY_START + key0);
+                    sectionNames.add(INI_LIST_ENTRY_START + key0.asLong());
                 } else {
                     throw new IllegalArgumentException("list entries not allowed for sections");
 
                 }
             } else {
-                sectionNames.add((String) key0);
+                sectionNames.add(key0.asString());
             }
             QDLValue value = obj2.get(key0);
             if (!value.isStem()) {
@@ -837,32 +838,32 @@ public class IOEvaluator extends AbstractEvaluator {
         String indent = initialIndent;
         sb.append(indent + "[" + toSectionHeader(names) + "]\n");
         Map<String, QDLStem> postProcessStems = new HashMap();
-        for (Object key : stem.keySet()) {
+        for (QDLKey key : stem.keySet()) {
             QDLValue value = stem.get(key);
             if (value.isStem()) {
                 QDLStem s = value.asStem();
                 if (s.isList()) {
                     sb.append(indent + key + " := " + toIniList(s.getQDLList()) + "\n");
                 } else {
-                    if (key instanceof Long) {
+                    if (key.isLong()) {
                         if (allowListEntries) {
-                            postProcessStems.put(INI_LIST_ENTRY_START + key, s);
+                            postProcessStems.put(INI_LIST_ENTRY_START + key.asLong(), s);
                         } else {
                             throw new IllegalArgumentException("list entries not allowed for sections");
                         }
                     } else {
-                        postProcessStems.put((String) key, s);
+                        postProcessStems.put(key.asString(), s);
                     }
                 }
             } else {
-                if (key instanceof Long) {
+                if (key.isLong()) {
                     if (allowListEntries) {
-                        sb.append(indent + INI_LIST_ENTRY_START + key + " := " + InputFormUtil.inputForm(value) + "\n");
+                        sb.append(indent + INI_LIST_ENTRY_START + key.asLong() + " := " + InputFormUtil.inputForm(value) + "\n");
                     } else {
                         throw new IllegalArgumentException("list entries not allowed for sections");
                     }
                 } else {
-                    sb.append(indent + key + " := " + InputFormUtil.inputForm(value) + "\n");
+                    sb.append(indent + key.asLong() + " := " + InputFormUtil.inputForm(value) + "\n");
                 }
             }
         }
@@ -989,7 +990,7 @@ ini_out(ini.)
             State state,
             Polyad polyad) {  // polyad for messages only
         QDLStem output = new QDLStem();
-        for (Object key : input.keySet()) {
+        for (QDLKey key : input.keySet()) {
             QDLValue value = input.get(key);
             QDLStem newTypes = null;
             QDLStem newInputs = null;
@@ -1006,7 +1007,7 @@ ini_out(ini.)
                     }
                 }
                 QDLStem stem = readFileStem(newInputs, newTypes, defaultType, state, polyad);
-                output.putLongOrString(key, asQDLValue(stem));
+                output.put(key, asQDLValue(stem));
 
             } else {
                 if (!(value.isString())) {
@@ -1021,7 +1022,7 @@ ini_out(ini.)
                         throw new BadArgException(READ_FILE + " requires file type as argument. Got '" + x + "'", polyad.getArgCount() == 2 ? polyad.getArgAt(1) : polyad.getArgAt(0));
                     }
                 }
-                output.putLongOrString(key, asQDLValue(readSingleFile(value.asString(), type, state, polyad)));
+                output.put(key, asQDLValue(readSingleFile(value.asString(), type, state, polyad)));
             }
 
         }

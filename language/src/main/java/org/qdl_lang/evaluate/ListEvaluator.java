@@ -10,6 +10,8 @@ import org.qdl_lang.functions.FunctionReferenceNodeInterface;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.variables.*;
+import org.qdl_lang.variables.values.LongValue;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
@@ -593,14 +595,14 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
             QDLStem outStem = new QDLStem();
             QDLStem stemArg = arg1.asStem();
             ArrayList<QDLValue> rawArgs = new ArrayList<>();
-            for (Object key : stemArg.keySet()) {
+            for (QDLKey key : stemArg.keySet()) {
                 rawArgs.clear();
                 QDLValue value = stemArg.get(key);
                 // Contract for pick!
                 // monad = value only
                 // dyad (key, value)
                 if (argCount == 2) {
-                    rawArgs.add(asQDLValue(key));
+                    rawArgs.add(key);
                 }
                 rawArgs.add(stemArg.get(key));
                 f.setArguments(toConstants(rawArgs));
@@ -608,7 +610,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
                 QDLValue test = f.evaluate(localState);
                 if (test.isBoolean()) {
                     if (test.asBoolean()) {
-                        outStem.putLongOrString(key, value);
+                        outStem.put(key, value);
                     }
                 }
             }
@@ -692,25 +694,25 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
         QDLStem output = new QDLStem();
 
         // Fix https://github.com/ncsa/qdl/issues/1, with regression test StringFunctionTests#testIndexOfGaps
-        for (Object leftKey : leftStem.keySet()) {
+        for (QDLKey leftKey : leftStem.keySet()) {
             boolean gotOne = false;
-            if (!(leftKey instanceof Long)) {
-                throw new IndexError(leftKey + " is not an integer index", polyad.getArgAt(0));
+            if (!(leftKey.isLong())) {
+                throw new IndexError(leftKey.asLong() + " is not an integer index", polyad.getArgAt(0));
             }
-            Long leftIndex = (Long) leftKey;
-            for (Object rightKey : rightStem.keySet()) {
-                if (!(rightKey instanceof Long)) {
+           // Long leftIndex = leftKey;
+            for (QDLKey rightKey : rightStem.keySet()) {
+                if (!(rightKey.isLong())) {
                     throw new IndexError(rightKey + " is not an integer index", polyad.getArgAt(1));
                 }
-                Long rightIndex = (Long) rightKey;
-                if (leftStem.getString(leftIndex).startsWith(rightStem.getString(rightIndex))) {
-                    output.put(leftIndex, asQDLValue(rightIndex));
+                //Long rightIndex = (Long) rightKey;
+                if (leftStem.get(leftKey).asString().startsWith(rightStem.get(rightKey).asString())) {
+                    output.put(leftKey, rightKey);
                     gotOne = true;
                     break;
                 }
             }
             if (!gotOne) {
-                output.put(leftIndex, asQDLValue(-1L));
+                output.put(leftKey, LongValue.MinusOne);
             }
 
         }

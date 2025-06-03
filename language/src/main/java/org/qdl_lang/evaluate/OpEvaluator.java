@@ -633,11 +633,11 @@ public class OpEvaluator extends AbstractEvaluator {
                                   State state,
                                   Dyad dyad) {
         QDLStem output = new QDLStem();
-        for (Object key : rArg.keySet()) {
+        for (QDLKey key : rArg.keySet()) {
             QDLValue nextLArg = null;
             if (lArg == null) {
                 if (defaultValue == null) {
-                    throw new MissingArgException("missing argument for index " + key, dyad.getLeftArgument());
+                    throw new MissingArgException("missing argument for index " + key.getValue(), dyad.getLeftArgument());
                 }
             } else {
                 if (lArg.containsKey(key)) {
@@ -651,7 +651,7 @@ public class OpEvaluator extends AbstractEvaluator {
             QDLValue nextRArg = rArg.get(key);
             Object result = evaluateNextArgForApplies(nextLArg==null?null:nextLArg,
                     nextRArg==null?null: nextRArg.getValue(), defaultValue, state, dyad);
-            output.putLongOrString(key, asQDLValue(result));
+            output.put(key, result);
         }
         return output;
     }
@@ -755,7 +755,7 @@ apply([@f,@g],[2])
                 expression = polyad;
             }
             if (lStem.isList()) {
-                for (Object key : lStem.keySet()) {
+                for (QDLKey key : lStem.keySet()) {
                     expression.getArguments().add(new ConstantNode(lStem.get(key)));
                 }
 
@@ -860,7 +860,7 @@ apply([@f,@g],[2])
                 expression = polyad;
             }
             if (lStem.isList()) {
-                for (Object key : lStem.keySet()) {
+                for (QDLKey key : lStem.keySet()) {
                     expression.getArguments().add(new ConstantNode(lStem.get(key)));
                 }
 
@@ -911,7 +911,7 @@ apply([@f,@g],[2])
             Polyad polyad = new Polyad(fNode.getFunctionName());
             polyad.setBuiltIn(false);
             if (lStem.isList()) {
-                for (Object key : lStem.keySet()) {
+                for (QDLKey key : lStem.keySet()) {
                     polyad.addArgument(new ConstantNode(lStem.get(key)));
                 }
 

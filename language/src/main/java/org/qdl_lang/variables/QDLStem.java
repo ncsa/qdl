@@ -1,7 +1,6 @@
 package org.qdl_lang.variables;
 
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
-import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.exceptions.IndexError;
 import org.qdl_lang.exceptions.NoDefaultValue;
 import org.qdl_lang.expressions.AllIndices;
@@ -28,14 +27,14 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import static org.qdl_lang.state.VariableState.var_regex;
-import static org.qdl_lang.variables.StemConverter.convert;
+import static org.qdl_lang.variables.JSONAndStemUtility.convert;
 import static org.qdl_lang.variables.values.QDLValue.*;
 
 /**
  * <p>Created by Jeff Gaynor<br>
  * on 6/27/22 at  6:33 AM
  */
-public class QDLStem implements Map<String, QDLValue>, Serializable {
+public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     public static final String STEM_INDEX_MARKER = ".";
     public static String STEM_ENTRY_CONNECTOR = ":";
 
@@ -135,13 +134,13 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
         return (QDLValue) getQDLMap().remove(key);
     }
 
-    public boolean containsKey(String key) {
+   /* public boolean containsKey(String key) {
         if (isLongIndex(key)) {
             boolean rc = getQDLList().containsKey(key);
             return rc;
         }
         return getQDLMap().containsKey(key);
-    }
+    }*/
 
     /*
      get call with a conversion to a string or null if the object is null. This invokes to string on the object.
@@ -215,6 +214,11 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
 
     QDLList qdlList;
 
+    /**
+     * Used in unit tests only.
+     * @param key
+     * @return
+     */
     public Boolean getBoolean(Long key) {
         return get(key).asBoolean();
     }
@@ -247,29 +251,14 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
         return qdlValue.asString();
     }
 
-    public QDLValue put(String index, Object value) {
-        if (value instanceof QDLValue) {
-            return put(index, (QDLValue) value);
-        }
-        return put(index, asQDLValue(value));
-    }
 
-    public QDLValue put(Long index, Object value) {
-        if (value instanceof QDLValue) {
-            return put(index, (QDLValue) value);
-        }
-        return put(index, asQDLValue(value));
-    }
 
-    public QDLValue put(Long index, QDLValue value) {
-        getQDLList().set(index, value);
-        return null;
-    }
-
+/*
     public boolean containsKey(Long key) {
         SparseEntry s = new SparseEntry(key);
         return getQDLList().containsKey(s);
     }
+*/
 
     public QDLValue remove(Long key) {
         getQDLList().removeByIndex(key);
@@ -2022,5 +2011,66 @@ public class QDLStem implements Map<String, QDLValue>, Serializable {
         return get(stemMultiIndex);
     }
 
+    /**
+     * Convenience method that converts second argument to a {@link QDLValue} as needed.
+     * @param qdlKey
+     * @param object
+     * @return
+     */
+    public QDLValue put(QDLKey qdlKey, Object object) {
+     return put(qdlKey, QDLValue.asQDLValue(object));
+    }
 
+    @Override
+    public QDLValue put(QDLKey qdlKey, QDLValue qdlValue) {
+        QDLValue  old;
+        switch (qdlKey.getType()) {
+            case Constant.LONG_TYPE:
+            old = getQDLList().get(qdlKey.asLong());
+            if (old == null) {
+                old = QDLNullValue.getNullValue();
+            }
+            getQDLList().set(qdlKey.asLong(), qdlValue);
+            return old;
+          case   Constant.STRING_TYPE:
+            return getQDLMap().put(qdlKey.asString(), qdlValue);
+           case  Constant.STEM_TYPE:
+            IndexList indexList = new IndexList(qdlValue.asStem());
+             IndexList rc = get(indexList, false);
+             if(rc == null) {
+                 old = QDLNullValue.getNullValue();
+             }else{
+                 old = rc.get(0);
+             }
+            set(indexList, qdlValue);
+            return old;
+
+        };
+        throw new IndexError("unknown index type ", null);
+    }
+
+    /*
+        public QDLValue put(String index, Object value) {
+        if (value instanceof QDLValue) {
+            return put(index, (QDLValue) value);
+        }
+        return put(index, asQDLValue(value));
+    }
+
+    public QDLValue put(Long index, Object value) {
+        if (value instanceof QDLValue) {
+            return put(index, (QDLValue) value);
+        }
+        return put(index, asQDLValue(value));
+    }
+
+    public QDLValue put(Long index, QDLValue value) {
+        getQDLList().set(index, value);
+        return null;
+    }
+     */
+    @Override
+    public void putAll(Map<? extends QDLKey, ? extends QDLValue> map) {
+
+    }
 } // end class

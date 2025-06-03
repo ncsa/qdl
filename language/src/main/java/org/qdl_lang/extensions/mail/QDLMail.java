@@ -13,7 +13,9 @@ import edu.uiuc.ncsa.security.util.mail.MailEnvironment;
 import edu.uiuc.ncsa.security.util.mail.MailUtil;
 import net.sf.json.JSONObject;
 import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
+import org.qdl_lang.variables.values.StringValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,10 +74,10 @@ public class QDLMail implements QDLMetaModule {
             QDLStem newMessage = new QDLStem();
             if (templates != null && !templates.isEmpty()) {
                 newMessage = new QDLStem();
-                for (Object key : message.keySet()) {
-                    Object currentLine = message.get(key);
-                    if (!(currentLine instanceof QDLNull)) {
-                        newMessage.putLongOrString(key, TemplateUtil.replaceAll(currentLine.toString(), templates));
+                for (QDLKey key : message.keySet()) {
+                    QDLValue  currentLine = message.get(key);
+                    if (!(currentLine.isNull())) {
+                        newMessage.put(key, TemplateUtil.replaceAll(currentLine.toString(), templates));
                     }
                 }
             }else{

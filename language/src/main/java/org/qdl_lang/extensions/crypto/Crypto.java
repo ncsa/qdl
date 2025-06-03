@@ -33,6 +33,7 @@ import edu.uiuc.ncsa.security.util.jwk.JWKUtil2;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 
 import javax.crypto.SecretKey;
@@ -609,17 +610,18 @@ System.out.println("JOSE:"+ jwk.toJSONString());
             }
             QDLStem outStem = new QDLStem();
             // try to process each entry as a separate key
-            for (Object kk : inStem.keySet()) {
-                QDLStem currentStem = (kk instanceof String) ? inStem.getStem((String) kk) : inStem.getStem((Long) kk);
+            for (QDLKey kk : inStem.keySet()) {
+                //QDLStem currentStem = (kk instanceof String) ? inStem.getStem((String) kk) : inStem.getStem((Long) kk);
+                QDLStem currentStem =  inStem.get(kk).asStem();
                 if (isAES(currentStem)) {
-                    outStem.putLongOrString(kk, currentStem);
+                    outStem.put(kk, currentStem);
                     continue;
                 }
                 JSONWebKey jsonWebKey = getJwkUtil().getJsonWebKey((JSONObject) currentStem.toJSON());
                 JSONWebKey pKey = JSONWebKeyUtil.makePublic(jsonWebKey);
                 QDLStem tempStem = new QDLStem();
                 tempStem.fromJSON(JSONWebKeyUtil.toJSON(pKey));
-                outStem.putLongOrString(kk, tempStem);
+                outStem.put(kk, tempStem);
             }
             return asQDLValue(outStem);
         }

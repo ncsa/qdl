@@ -13,6 +13,8 @@ import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import org.qdl_lang.functions.*;
 import org.qdl_lang.state.*;
 import org.qdl_lang.variables.*;
+import org.qdl_lang.variables.values.LongValue;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.variables.values.StringValue;
 import software.amazon.awssdk.services.medialive.model.EpochLockingSettings;
@@ -314,7 +316,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
                     isScalarArgCount = true;
                     argCount = object2.asLong();
                     argCounts = new QDLStem();
-                    argCounts.put(0L, asQDLValue(object2));
+                    argCounts.put(LongValue.Zero, asQDLValue(object2));
                     break;
                 case LIST_TYPE:
                 case STEM_TYPE:
@@ -360,18 +362,18 @@ public class FunctionEvaluator extends AbstractEvaluator {
                     polyad.setResult(checkIsFunction(vNode.getVariableReference(), argCount.intValue(), state));
                 } else {
                     QDLStem x = new QDLStem();
-                    for (Object k : argCounts.keySet()) {
+                    for (QDLKey k : argCounts.keySet()) {
                         QDLValue v = argCounts.get(k);
 //                        boolean gotOne = false;
                         switch (v.getType()){
                             case Constant.LONG_TYPE:
-                                x.putLongOrString(k, asQDLValue(checkIsFunction(vNode.getVariableReference(), v.asLong().intValue(), state)));
+                                x.put(k, asQDLValue(checkIsFunction(vNode.getVariableReference(), v.asLong().intValue(), state)));
                                 break;
                                 case Constant.NULL_TYPE:
-                                    x.putLongOrString(k, asQDLValue(checkIsFunction(vNode.getVariableReference(), -1, state)));
+                                    x.put(k, asQDLValue(checkIsFunction(vNode.getVariableReference(), -1, state)));
                                     break;
                             default:
-                                throw new BadArgException("arg count element at " + k + " is not a valid", polyad.getArgAt(1));
+                                throw new BadArgException("arg count element at " + k.getValue() + " is not a valid", polyad.getArgAt(1));
 
                         }
 

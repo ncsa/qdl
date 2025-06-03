@@ -8,6 +8,8 @@ import org.qdl_lang.expressions.VariableNode;
 import org.qdl_lang.state.QDLConstants;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
+import org.qdl_lang.variables.values.LongValue;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
@@ -93,7 +95,7 @@ public class StemUtility {
                 }
 
                 left1 = new QDLStem();
-                left1.put(0L, leftQV);
+                left1.put(LongValue.Zero, leftQV);
             }
             QDLStem right1 = null;
             if (rightQV.isStem()) {
@@ -103,7 +105,7 @@ public class StemUtility {
                     throw new RankException("There are no more elements in the right argument.");
                 }
                 right1 = new QDLStem();
-                right1.put(0L, rightQV);
+                right1.put(LongValue.Zero, rightQV);
             }
             boolean bottomedOut = areNoneStems(leftQV, rightQV) && maxDepth && 0 < depth;
             if (bottomedOut) {
@@ -147,12 +149,13 @@ public class StemUtility {
             return walker.action(inStem);
         }
         QDLStem outStem = new QDLStem();
-        for (Object key1 : inStem.keySet()) {
+        for (QDLKey key1 : inStem.keySet()) {
             QDLValue obj = inStem.get(key1);
             if (!obj.isStem()) {
                 continue;
             }
-            outStem.putLongOrString(key1, axisWalker(obj.asStem(), depth - 1, walker));
+            //outStem.putLongOrString(key1, axisWalker(obj.asStem(), depth - 1, walker));
+            outStem.put(key1, axisWalker(obj.asStem(), depth - 1, walker));
         }
         return outStem;
     }
@@ -370,9 +373,10 @@ public class StemUtility {
       return outStem;
     }
     public static QDLStem mapToStem(QDLStem out, Map map) {
-        for (Object key : map.keySet()) {
-            Object realKey = null;
-            switch (getType(key)) {
+        for (Object k : map.keySet()) {
+            QDLKey key = QDLKey.from(k);
+/*
+            switch (key)) {
                 case STRING_TYPE:
                 case LONG_TYPE:
                     realKey = key;
@@ -383,8 +387,9 @@ public class StemUtility {
                 default:
                     realKey = key.toString(); // crappy, but...
             }
-            Object value = map.get(key);
-            out.putLongOrString(realKey, convert(value));
+*/
+            Object value = map.get(k);
+            out.put(key, convert(value));
         }
         return out;
     }

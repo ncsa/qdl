@@ -11,6 +11,7 @@ import org.qdl_lang.variables.codecs.AbstractCodec;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
@@ -270,18 +271,18 @@ public class MathEvaluator extends AbstractEvaluator {
 
     protected QDLStem doCodec(Polyad polyad, QDLStem inStem, AbstractCodec codec, boolean isEncode) {
         QDLStem outStem = new QDLStem();
-        for (Object key : inStem.keySet()) {
+        for (QDLKey key : inStem.keySet()) {
             QDLValue value = inStem.get(key);
             if (value.isString()) {
-                outStem.putLongOrString(key, asQDLValue(applyCodec(codec, value.asString(), isEncode)));
+                outStem.put(key, asQDLValue(applyCodec(codec, value.asString(), isEncode)));
             } else {
                 if (value.isSet()) {
-                    outStem.putLongOrString(key, asQDLValue(doCodec(polyad, value.asSet(), codec, isEncode)));
+                    outStem.put(key, asQDLValue(doCodec(polyad, value.asSet(), codec, isEncode)));
                 } else {
                     if (value.isStem()) {
-                        outStem.putLongOrString(key, asQDLValue(doCodec(polyad, value.asStem(), codec, isEncode)));
+                        outStem.put(key, asQDLValue(doCodec(polyad, value.asStem(), codec, isEncode)));
                     } else {
-                        outStem.putLongOrString(key, value); // no change
+                        outStem.put(key, value); // no change
                     }
                 }
             }
