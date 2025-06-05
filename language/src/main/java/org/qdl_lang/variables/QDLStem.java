@@ -1030,32 +1030,6 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
                 default:
                     throw new IndexError("unsupported key type for " + key, null);
             }
-           /* switch (key.getType()) {
-                case LONG_TYPE:
-                    if (!keyList.containsValue(key.getValue())) {
-                        result.put(key, get(key));
-                    }
-                    break;
-                case STRING_TYPE:
-                    if (!keyList.containsValue(key.asString())) {
-                        result.put(key, get(key));
-
-                    }
-                    break;
-                default:
-                    throw new IndexError("unsupported key type for " + key, null);
-            }*/
-/*
-            if (key.isLong()) {
-                if (!keyList.containsValue((Long) key)) {
-                    result.put((Long) key, get(key));
-                }
-            } else {
-                if (!keyList.containsValue(key)) {
-                    result.put((String) key, get(key));
-                }
-            }
-*/
         }
         return result;
     }
