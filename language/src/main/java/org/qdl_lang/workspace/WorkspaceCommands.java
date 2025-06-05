@@ -6430,6 +6430,8 @@ public class WorkspaceCommands implements Logable, Serializable {
             loadQE(inputLine, cfgname);
         }
 
+        inputLine.removeSwitchAndValue(CONFIG_NAME_FLAG);
+        inputLine.removeSwitchAndValue(CONFIG_FILE_FLAG);
         fromConfigFile(inputLine, qdlEnvironment);
     }
 
@@ -6458,6 +6460,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         return qdlEnvironment != null;
     }
 
+    public static final String HOME_DIR_ARG = "-home_dir";
     public void fromConfigFile(InputLine inputLine, QDLEnvironment qe) throws Throwable {
         // The state probably exists at this point if the user had to set the terminal type.
         // Make sure the logger ends up in the actual state.
@@ -6465,10 +6468,11 @@ public class WorkspaceCommands implements Logable, Serializable {
         if (state != null) {
             state.setLogger(qe.getMyLogger());
         }
-        if (inputLine.hasArg("-home_dir")) {
+        if (inputLine.hasArg(HOME_DIR_ARG)) {
             // The user might set the home directory here.
             // This is overrides configuration file.
-            rootDir = inputLine.getNextArgFor("-home_dir");
+            rootDir = inputLine.getNextArgFor(HOME_DIR_ARG);
+            inputLine.removeSwitchAndValue(HOME_DIR_ARG);
         }
         compressXML = qe.isCompressionOn();
         // Setting this flag at the command line will turn on lower level debugging.
@@ -6478,7 +6482,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             setDebugOn(true);
             DebugUtil.setIsEnabled(true);
             DebugUtil.setDebugLevel(DebugConstants.DEBUG_LEVEL_TRACE);
-
+            inputLine.removeSwitch(TRACE_ARG);
         }
         setFont(qe.getFont());
         figureOutFont(inputLine);

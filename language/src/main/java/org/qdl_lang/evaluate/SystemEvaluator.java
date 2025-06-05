@@ -2285,7 +2285,21 @@ public class SystemEvaluator extends AbstractEvaluator {
         QDLValue[] argList = new QDLValue[0];
         // https://github.com/ncsa/qdl/issues/20
         state.setTargetState(localState);
+
         if (2 <= polyad.getArgCount()) {
+            ArrayList<QDLValue> aa = new ArrayList<>();
+            // zero-th argument is the name of the script, so start with element 1.
+            for (int i = 1; i < polyad.getArgCount(); i++) {
+                Object arg;
+                arg = polyad.evalArg(i, state);
+                checkNull(arg, polyad.getArgAt(i), state);
+                aa.add(QDLValue.asQDLValue(arg));
+            }
+            argList = aa.toArray(new QDLValue[0]);
+        }
+        // Next bit arose from converting to QDLValue but then using QDLKey made it
+        // not useful???
+        /*if (2 <= polyad.getArgCount()) {
             ArrayList<QDLValue> aa = new ArrayList<>();
             // zero-th argument is the name of the script, so start with element 1.
             for (int i = 1; i < polyad.getArgCount(); i++) {
@@ -2296,7 +2310,13 @@ public class SystemEvaluator extends AbstractEvaluator {
                 if(polyad.getArgAt(i) instanceof Polyad){
                     Polyad expr = (Polyad)polyad.getArgAt(i);
                     if(expr.getName().equals(SystemEvaluator.SCRIPT_ARGS2_COMMAND)){
-                        QDLStem args = expr.getResult().asStem();
+                        QDLStem args;
+                        if(expr.getResult().isStem()){
+                            args = expr.getResult().asStem();
+                        }else{
+                            args = new QDLStem();
+                            args.put(LongValue.Zero, expr.getResult());
+                        }
                         for(QDLValue aaa : args.getQDLList()){
                             aa.add(aaa);
                         }
@@ -2308,7 +2328,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 }
             }
             argList = aa.toArray(new QDLValue[0]);
-        }
+        }*/
         state.setTargetState(null);
         String resourceName = null;
         SIInterrupts siInterrupts =null;

@@ -6,6 +6,7 @@ import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.statements.TokenPosition;
 import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.VStack;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.vfs.VFSPaths;
 import edu.uiuc.ncsa.security.core.Logable;
@@ -275,7 +276,7 @@ public static class QDLStackTraceElement{
         this.scriptArgStem = scriptArgStem;
         scriptArgs = new QDLValue[scriptArgStem.size()];
         int i = 0;
-        for (Object key : scriptArgStem.keySet()) {
+        for (QDLKey key : scriptArgStem.keySet()) {
             scriptArgs[i++] = scriptArgStem.get(key);
         }
     }
