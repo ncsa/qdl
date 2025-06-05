@@ -11,6 +11,7 @@ import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.QDLVariable;
 import org.qdl_lang.variables.VStack;
 import org.qdl_lang.variables.VThing;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.xml.SerializationState;
 import org.qdl_lang.xml.XMLUtilsV2;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
@@ -26,6 +27,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.util.*;
 
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.xml.SerializationConstants.STACK_TAG;
 
 /**
@@ -604,8 +606,8 @@ public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>>
         vStack.put(new VThing(new XKey("b"), new QDLVariable("foo")));
         vStack.put(new VThing(new XKey("x"), new QDLVariable(new BigDecimal("123.456789"))));
         QDLStem s = new QDLStem();
-        s.put("a", 5L);
-        s.put("foo", "bar");
+        s.put(from("a"), 5L);
+        s.put(from("foo"), "bar");
         vStack.put(new VThing(new XKey("s."), new QDLVariable(s)));
         vStack.pushNewTable();
         vStack.localPut(new VThing(new XKey("a"), new QDLVariable( Boolean.FALSE)));

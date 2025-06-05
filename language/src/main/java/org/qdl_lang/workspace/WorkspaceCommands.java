@@ -29,6 +29,7 @@ import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLSet;
 import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.VStack;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.vfs.AbstractVFSFileProvider;
 import org.qdl_lang.vfs.VFSEntry;
@@ -2290,13 +2291,13 @@ public class WorkspaceCommands implements Logable, Serializable {
             return RC_CONTINUE;
         }
         getState().getMetaEvaluator().evaluate(request, getState());
-        Object obj = request.getResult();
+        QDLValue result = request.getResult();
         int i = 0;
-        if (obj instanceof QDLStem) {
-            QDLStem stemVariable = (QDLStem) obj;
-            for (Object key : stemVariable.keySet()) {
+        if (result.isStem()) {
+            QDLStem stemVariable = result.asStem();
+            for (QDLKey key : stemVariable.keySet()) {
                 i++;
-                say(String.valueOf(stemVariable.get(key)));
+                say(stemVariable.get(key).toString());
             }
             say(i + " entries");
         } else {

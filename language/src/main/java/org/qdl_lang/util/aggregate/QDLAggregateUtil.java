@@ -200,7 +200,7 @@ public class QDLAggregateUtil {
      * @param processScalar
      * @return
      */
-    public static QDLSet processSet(QDLSet inSet, ProcessScalar processScalar) {
+    public static QDLSet processSet(QDLSet<QDLValue> inSet, ProcessScalar processScalar) {
         QDLSet outSet = new QDLSet();
         for (QDLValue value : inSet) {
             outSet.add(asQDLValue(processSetValue(new LinkedList(), processScalar, value)));

@@ -19,7 +19,7 @@ import java.util.*;
  * <p>Created by Jeff Gaynor<br>
  * on 2/20/20 at  8:39 AM
  */
-public class QDLList implements List<QDLValue>, Serializable {
+public class QDLList<K extends QDLValue> implements List<K>, Serializable {
 
 
     @Override
@@ -300,12 +300,12 @@ subset(b., 3, 6)
     }
 
 
-    public QDLValue get(long index) {
+    public K get(long index) {
         // Fixes https://github.com/ncsa/qdl/issues/47
         if (index < 0) {
             return getRelativeAddress(index);
         }
-        return getAbsoluteAddress(index);
+        return (K) getAbsoluteAddress(index);
     }
 
     /**
@@ -317,7 +317,7 @@ subset(b., 3, 6)
      * @param originalIndex
      * @return
      */
-    protected QDLValue getRelativeAddress(long originalIndex) {
+    protected K getRelativeAddress(long originalIndex) {
         int s = size();
         long index = originalIndex + s;
         if (index < 0L) {
@@ -325,16 +325,16 @@ subset(b., 3, 6)
             throw new IndexError("index " + originalIndex + " out of bounds for list of length " + s, null);
         }
         if (index < arrayList.size()) { // so it's in the array list unless the next condition fails
-            return arrayList.get((int) index);
+            return (K) arrayList.get((int) index);
         }
         // It's a sparse entry. A tree set may have entries like {100:3, 200:4} and
         // get originalIndex = -1 would mean returning the value associated with 200.
         if (originalIndex == -1) {
-            return getSparseEntries().last().entry;
+            return (K) getSparseEntries().last().entry;
         }
         index = index - arrayList.size(); // restricts to indices in Sparse entries.
         if (index == 0) {
-            return getSparseEntries().first().entry;
+            return (K) getSparseEntries().first().entry;
         }
         // neither first nor last, now we have to iterate. This is s-l-o-o-o-w.
         Iterator<SparseEntry> it = getSparseEntries().iterator();
@@ -344,7 +344,7 @@ subset(b., 3, 6)
             current = it.next();
             i++;
         }
-        return current.entry;
+        return (K) current.entry;
     }
 
     /*
@@ -441,7 +441,7 @@ subset(b., 3, 6)
         }
     }
 
-    public void append(QDLSet set) {
+    public void append(QDLSet<QDLValue> set) {
         long index = 0L;
         if (!hasSparseEntries()) {
             getArrayList().addAll(set);
@@ -690,7 +690,7 @@ subset(b., 3, 6)
      *
      * @return
      */
-    public ArrayList<QDLValue> values() {
+    public List<? extends QDLValue> values() {
         ArrayList<QDLValue> list = new ArrayList();
         Iterator iterator = iterator(true);
         while (iterator.hasNext()) {
@@ -717,12 +717,12 @@ subset(b., 3, 6)
      */
     public StemKeys orderedKeys() {
         StemKeys stemKeys = new StemKeys();
-        TreeSet<Long> treeSet = new TreeSet<>();
+        TreeSet<LongValue> treeSet = new TreeSet<>();
         for (long i = 0; i < getArrayList().size(); i++) {
-            treeSet.add(i);
+            treeSet.add(new LongValue(i));
         }
         for (SparseEntry sparseEntry : getSparseEntries()) {
-            treeSet.add(sparseEntry.index);
+            treeSet.add(new LongValue(sparseEntry.index));
         }
         stemKeys.setListkeys(treeSet);
         return stemKeys;
@@ -741,6 +741,7 @@ subset(b., 3, 6)
         // 16 cases
         if (c instanceof QDLList) {
             QDLList arg = (QDLList) c;
+            Iterator<SparseEntry> sparseEntryIterator;
             int whichCase = (0 < arraySize() ? 1 : 0) + (0 < getSparseEntries().size() ? 2 : 0) + (0 < arg.arraySize() ? 4 : 0) + (0 < arg.getSparseEntries().size() ? 8 : 0);
             // Comment is
             // array, sparse, arg array, arg sparse =TFTF
@@ -770,8 +771,9 @@ subset(b., 3, 6)
                 case 8: // FFFT empty, sparse
                 case 9: // TFFT this has an array, arg has sparse entries only
                 case 10: // FTFT both are only sparse
-                    for (SparseEntry sparseEntry : arg.getSparseEntries()) {
-                        arrayList.add(sparseEntry.entry);
+                    sparseEntryIterator = getSparseEntries().iterator();
+                    while (sparseEntryIterator.hasNext()) {
+                        arrayList.add(sparseEntryIterator.next().entry);
                     }
                     return true;
                 case 11: // TTFT array entries, sparse entries, arg is sparse
@@ -780,8 +782,9 @@ subset(b., 3, 6)
                 case 13: // TFTT array not empty. both
                 case 14: // FTTT sparse only, both
                     arrayList.addAll(arg.getArrayList());
-                    for (SparseEntry sparseEntry : arg.getSparseEntries()) {
-                        arrayList.add(sparseEntry.entry);
+                    sparseEntryIterator = getSparseEntries().iterator();
+                    while (sparseEntryIterator.hasNext()) {
+                        arrayList.add(sparseEntryIterator.next().entry);
                     }
                     return true;
                 case 15: //TTTT both, both
@@ -1157,6 +1160,8 @@ subset(b., 3, 6)
             if (getSparseEntries().contains(o)) {
                 return true;
             }
+            // It is possible this is trying to get the sparse entry by index.
+            if(((SparseEntry) o).entry == null) return false;
             return getArrayList().contains(((SparseEntry) o).entry);
         }
         QDLValue qdlValue = QDLValue.asQDLValue(o);
@@ -1505,7 +1510,7 @@ subset(b., 3, 6)
     }
 
     @Override
-    public QDLValue get(int index) {
+    public K get(int index) {
         return get((long) index);
     }
 
@@ -1529,7 +1534,7 @@ subset(b., 3, 6)
     }
 
     @Override
-    public QDLValue remove(int index) {
+    public K remove(int index) {
         throw new NotImplementedException("remove(int)");
     }
 

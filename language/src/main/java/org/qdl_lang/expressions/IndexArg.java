@@ -8,6 +8,7 @@ import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLSet;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.io.Serializable;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
@@ -74,11 +76,11 @@ k(v)→v<2;
 f(k,v)→k+v<5;
 a\*\(2@f)\[1,3]
      */
-    public Collection createKeySet(QDLStem in, State state) {
+    public Collection<? extends QDLKey> createKeySet(QDLStem in, State state) {
         if ((in != null) && isWildcard()) {
             return in.keySet();
         }
-        List<QDLValue> stemKeys = new ArrayList<>();
+        List<QDLKey> stemKeys = new ArrayList<>();
         if (isFunction() || isFunctionDefinition()) {
             Polyad pick = new Polyad(ListEvaluator.PICK);
             if(isFunctionDefinition()) {
@@ -93,28 +95,28 @@ a\*\(2@f)\[1,3]
             swri.setResult(keys);
             swri.setEvaluated(true);
             if (keys.isStem()) {
-                for (Object key : keys.asStem().keySet()) {
-                    stemKeys.add(asQDLValue(key));
+                for (QDLKey key : keys.asStem().keySet()) {
+                    stemKeys.add(key);
                 }
             }
             return stemKeys;
         }
-        QDLValue obj = swri.getResult();
+        QDLValue qdlValue = swri.getResult();
 
-        if (obj.isScalar()) {
-            stemKeys.add(obj);
+        if (qdlValue.isScalar()) {
+            stemKeys.add(from(qdlValue));
         }
-        if (obj.isStem()) {
+        if (qdlValue.isStem()) {
             // NOTE that the stem is contractually a list of indices. Take the values
-            QDLStem stem = obj.asStem();
-            for (Object key : stem.keySet()) {
-                stemKeys.add(stem.get(key));
+            QDLStem stem = qdlValue.asStem();
+            for (QDLKey key : stem.keySet()) {
+                stemKeys.add(from(stem.get(key)));
             }
             return stemKeys;
         }
 
-        if (obj.isSet()) {
-            stemKeys.addAll(obj.asSet());
+        if (qdlValue.isSet()) {
+            stemKeys.addAll(from(qdlValue.asSet()));
         }
 
         return stemKeys;

@@ -7,6 +7,7 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.variables.QDLStem;
 import net.sf.json.JSONObject;
 import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
@@ -124,7 +125,7 @@ public class QDLCLITools implements QDLMetaModule {
                     throw new BadArgException(getName() + " requires a list as its third argument",2);
                 }
             }
-            List<QDLValue> flagList = flags.getQDLList().values();
+            List<QDLValue> flagList = (List<QDLValue>) flags.getQDLList().values();
             List<QDLValue> foundFlags = new ArrayList<>();
             for (int i = 0; i < scriptArgs.length; i++) {
                 QDLValue next = scriptArgs[i];
@@ -149,7 +150,7 @@ public class QDLCLITools implements QDLMetaModule {
             // Now for final clean up.
             for (Object ff : flagList) {
                 if (!foundFlags.contains(ff)) {
-                    out.putLongOrString(ff, BooleanValue.False);
+                    out.put(QDLKey.from(ff), BooleanValue.False);
                 }
             }
 
@@ -161,8 +162,8 @@ public class QDLCLITools implements QDLMetaModule {
             aa = new Object[inStem.size()];
             // fill up aa;
             int index = 0;
-            for (Object ooo : inStem.getQDLList().orderedKeys()) {
-                aa[index++] = inStem.getQDLList().get((Long) ooo);
+            for (QDLKey ooo : inStem.getQDLList().orderedKeys()) {
+                aa[index++] = inStem.getQDLList().get(ooo.asLong()).getValue();
             }
             return aa;
         }

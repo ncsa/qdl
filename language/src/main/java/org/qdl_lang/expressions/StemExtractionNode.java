@@ -9,12 +9,15 @@ import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
+import org.qdl_lang.variables.values.LongValue;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLNullValue;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.Collections;
 import java.util.List;
 
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
@@ -161,8 +164,8 @@ a.
         // Very simple case of list only -- this is just an optimization for a very common case, so we don't
         // start the recursion.
         if (isList) {
-            for (Object key : root.createKeySet(in, state)) {
-                key = QDLValue.asJavaValue(key); // These may be mixed keys and QDLValues, so normalize them
+            for (QDLKey key : root.createKeySet(in, state)) {
+              //  key = QDLValue.asJavaValue(key); // These may be mixed keys and QDLValues, so normalize them
                 QDLValue value = in.get(key);
                 if (root.swri.getResult().isScalar()) {
                     if (value == null) {
@@ -175,18 +178,18 @@ a.
                 if (value == null) {
                     continue;
                 }
-                if (root.strictOrder || (key instanceof String)) {
-                    out.putLongOrString(key, asQDLValue(value));
+                if (root.strictOrder || (key.isString())) {
+                    out.put(key, asQDLValue(value));
                 } else {
-                    out.put(autoIndex++, asQDLValue(value));
+                    out.put(from(autoIndex++), asQDLValue(value));
                 }
             } // end for
             return asQDLValue(out);
         }
 
 
-        for (Object key : root.createKeySet(in, state)) {
-            key = QDLValue.asJavaValue(key); // These may be mixed keys and QDLValues, so normalize them
+        for (QDLKey key : root.createKeySet(in, state)) {
+            //key = QDLValue.asJavaValue(key); // These may be mixed keys and QDLValues, so normalize them
             QDLValue value = in.get(key);
             if (value == null) {
                 if (root.swri.getResult().isScalar() && sourceIndices.size() == 2) {
@@ -204,10 +207,10 @@ a.
                     indexList.add(asQDLValue(key));
                 } else {
                     if (!root.swri.getResult().isScalar()) {
-                        if (root.strictOrder || Constant.isString(key)) {
-                            indexList.add(asQDLValue(key));
+                        if (root.strictOrder || key.isString()) {
+                            indexList.add(key);
                         } else {
-                            indexList.add(asQDLValue(autoIndex++));
+                            indexList.add(from(autoIndex++));
                         }
                     }
                 }
@@ -219,18 +222,18 @@ a.
                     // are no more indices to traverse.
                     if (root.isWildcard()) {
                         //        System.out.println("         set wildcard key=" + key + ", value=" + value);
-                        out.putLongOrString(key, value);
+                        out.put(key, value);
                     } else {
                         if (root.swri.getResult().isScalar()) {
                             //          System.out.println("         return value=" + value);
                             return value;
                         } else {
-                            if (root.strictOrder || (key instanceof String)) {
+                            if (root.strictOrder || key.isString()) {
                                 //             System.out.println("         put key=" + key + ", value=" + value);
-                                out.putLongOrString(key, value);
+                                out.put(key, value);
                             } else {
                                 //          System.out.println("         autoindex put key=" + key + ", value=" + value);
-                                out.put(autoIndex++, value);
+                                out.put(from(autoIndex++), value);
                             }
                         }
 
@@ -270,15 +273,13 @@ a.
                 out.addAll(in);
             } else {
                 //System.out.println("    recurseNEW: strict add inStem");
-                out.putLongOrString(strictIndex, in);
+                out.put(new LongValue(strictIndex), in);
             }
             return out;
         }
         IndexArg indexArg = sourceIndices.get(indexLocation);
         Object otherOut = null;
-        for (Object key : indexArg.createKeySet(in, state)) {
-            key = QDLValue.asJavaValue(key); // These may be mixed keys and QDLValues, so normalize them
-
+        for (QDLKey key : indexArg.createKeySet(in, state)) {
             QDLValue  value = in.get(key);
             //    System.out.println("recurse 2 key =" + key + ", value=" + value);
 
@@ -304,7 +305,7 @@ a.
                         }
                         return out;
                     } else {
-                        if (indexArg.strictOrder || (key instanceof String)) {
+                        if (indexArg.strictOrder || (key.isString())) {
                             indexList.add(asQDLValue(key));
                         } else {
                             indexList.add(asQDLValue(strictIndex++));
@@ -333,7 +334,7 @@ a.
                         if (lastIndex.swri.getResult().isScalar()) {
                             out.addAll(in);
                         } else {
-                            out.putLongOrString(strictIndex++, in);
+                            out.put(from(strictIndex++), in);
                         }
 
                     } else {

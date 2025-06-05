@@ -5,6 +5,7 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.state.StateUtils;
 import org.qdl_lang.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
+import org.qdl_lang.variables.values.QDLKey;
 
 import javax.xml.stream.*;
 import javax.xml.stream.events.Characters;
@@ -16,6 +17,7 @@ import java.io.FileReader;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 import static org.qdl_lang.xml.XMLUtils.*;
 
@@ -119,9 +121,9 @@ public class XMLTest {
         stem.listAdd(asQDLValue("a"));
         stem.listAdd(asQDLValue("b"));
         stem1.listAdd(asQDLValue("p"));
-        stem.put(2L, stem1);
-        stem.put(42L, "c");
-        stem.put("foo", "bar");
+        stem.put(from(2L), stem1);
+        stem.put(from(42L), "c");
+        stem.put(from("foo"), "bar");
         write(xsw, stem);
     }
 

@@ -166,7 +166,8 @@ public class ListEvaluator extends AbstractEvaluator {
             case Constant.STEM_TYPE:
                 QDLStem inStem = arg0.asStem();
                 if (inStem.isList()) {
-                    list = inStem.getQDLList().values(); // fast
+                    list = new ArrayList(inStem.getQDLList().size());
+                    list.addAll(inStem.getQDLList().values());
                 } else {
                     list = new ArrayList();
                     list.addAll(inStem.values());
@@ -203,26 +204,26 @@ public class ListEvaluator extends AbstractEvaluator {
         ArrayList others = new ArrayList();
         ArrayList booleans = new ArrayList();
         ArrayList nulls = new ArrayList();
-        for (Object element : list) {
-            switch (Constant.getType(element)) {
+        for (QDLValue element : list) {
+            switch (element.getType()) {
                 case Constant.STRING_TYPE:
-                    strings.add(element);
+                    strings.add(element.asString());
                     break;
                 case Constant.DECIMAL_TYPE:
-                    numbers.add(element);
+                    numbers.add(element.asDecimal());
                     break;
                 case Constant.LONG_TYPE:
                     // BigDecimals and longs are not comparable. Have to fudge it
-                    numbers.add(BigDecimal.valueOf((long) element));
+                    numbers.add(element.asLong());
                     break;
                 case Constant.BOOLEAN_TYPE:
-                    booleans.add(element);
+                    booleans.add(element.asBoolean());
                     break;
                 case Constant.NULL_TYPE:
-                    nulls.add(element);
+                    nulls.add(element.asNull());
                     break;
                 default:
-                    others.add(element);
+                    others.add(element.getValue());
                     break;
             }
         }
@@ -245,11 +246,21 @@ public class ListEvaluator extends AbstractEvaluator {
             list.addAll(nulls);
 
         }
-        QDLStem output = new QDLStem((long) list.size(), list.toArray(new QDLValue[list.size()]));
+        QDLValue[] sorted = new QDLValue[(list.size())];
+        for (int i = 0; i < list.size(); i++) {
+            sorted[i] = QDLValue.asQDLValue(list.get(i));
+        }
+        //QDLStem output = new QDLStem((long) list.size(), list.toArray(new QDLValue[list.size()]));
+        QDLStem output = new QDLStem((long) list.size(), sorted);
         polyad.setEvaluated(true);
         polyad.setResult(output);
     }
 
+    /**
+     * Sorts POJOs that are comparable.
+     * @param list
+     * @param sortUp
+     */
     private void doSorting(ArrayList list, boolean sortUp) {
         if (sortUp) {
             Collections.sort(list);
@@ -570,8 +581,8 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
             if (argCount != 1) {
                 throw new BadArgException(PICK + " pick function for sets can only have a single argument", polyad.getArgAt(0));
             }
-            QDLSet result = new QDLSet();
-            QDLSet argSet = arg1.asSet();
+            QDLSet<QDLValue> result = new QDLSet();
+            QDLSet<QDLValue> argSet = arg1.asSet();
             ArrayList<QDLValue> rawArgs = new ArrayList<>();
             for (QDLValue element : argSet) {
                 rawArgs.clear();
@@ -665,7 +676,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
         QDLStem leftStem = null;
         if (leftArg.isString()) {
             leftStem = new QDLStem();
-            leftStem.put(0L, leftArg);
+            leftStem.put(LongValue.Zero, leftArg);
         }
         if (leftStem == null) {
             if (leftArg.isStem()) {
@@ -681,7 +692,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
         QDLStem rightStem = null;
         if (rightArg.isString()) {
             rightStem = new QDLStem();
-            rightStem.put(0L, rightArg);
+            rightStem.put(LongValue.Zero, rightArg);
         }
         if (rightStem == null) {
             if (rightArg.isStem()) {

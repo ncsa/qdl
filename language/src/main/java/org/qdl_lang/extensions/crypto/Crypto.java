@@ -33,6 +33,7 @@ import edu.uiuc.ncsa.security.util.jwk.JWKUtil2;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
+import org.qdl_lang.variables.StemUtility;
 import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 
@@ -47,6 +48,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.*;
 
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
@@ -367,7 +369,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
             if (jsonWebKeys.size() == 1) {
                 return jsonWebKeys;
             }
-            keys.put(key, webKeyToStem(jsonWebKey));
+            keys.put(from(key), webKeyToStem(jsonWebKey));
         }
 
         return keys;
@@ -449,8 +451,8 @@ System.out.println("JOSE:"+ jwk.toJSONString());
             array.add(inStem.toJSON());
 
         } else {
-            for (Object k : inStem.keySet()) {
-                QDLStem currentStem = (k instanceof String) ? inStem.getStem((String) k) : inStem.getStem((Long) k);
+            for (QDLKey k : inStem.keySet()) {
+                QDLStem currentStem = inStem.get(k).asStem();
                 // have to get the only entry
                 array.add(currentStem.toJSON());
             }
@@ -518,15 +520,17 @@ System.out.println("JOSE:"+ jwk.toJSONString());
 
     public QDLStem getKeyTypes() {
         if (types == null) {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("jwks", JWKS_TYPE);
+            map.put("pkcs1", PKCS_1_TYPE);
+            map.put("pkcs8", PKCS_8_TYPE);
+            map.put("public", PKCS_8_PUBLIC_TYPE);
+            map.put("x509", X509_TYPE);
+            map.put("rsa", RSA_TYPE);
+            map.put("ec", EC_TYPE);
+            map.put("aes", AES_TYPE);
             types = new QDLStem();
-            types.put("jwks", JWKS_TYPE);
-            types.put("pkcs1", PKCS_1_TYPE);
-            types.put("pkcs8", PKCS_8_TYPE);
-            types.put("public", PKCS_8_PUBLIC_TYPE);
-            types.put("x509", X509_TYPE);
-            types.put("rsa", RSA_TYPE);
-            types.put("ec", EC_TYPE);
-            types.put("aes", AES_TYPE);
+            StemUtility.setStemValue(types, map);
         }
         return types;
     }
@@ -1084,13 +1088,13 @@ kazrnybI9mX73qv6NqA
             X509Certificate[] certs = CertUtil.fromX509PEM(rawCert);
             if (certs.length == 1) {
                 QDLStem outStem = certToStem(certs[0]);
-                outStem.put("encoded", rawCert);
+                outStem.put(from("encoded"), rawCert);
                 return asQDLValue(outStem);
             }
             for (X509Certificate cert : certs) {
                 out.getQDLList().add(asQDLValue(certToStem(cert)));
             }
-            out.getStem(0L).put("encoded", rawCert);
+            out.getStem(0L).put(from("encoded"), rawCert);
             return asQDLValue(out);
         }
 
@@ -1105,14 +1109,14 @@ kazrnybI9mX73qv6NqA
         protected QDLStem certToStem(X509Certificate x509Certificate) {
             QDLStem out = new QDLStem();
             QDLStem subject = new QDLStem();
-            subject.put("x500", x509Certificate.getSubjectX500Principal().getName());
-            subject.put("dn", x509Certificate.getSubjectDN().getName());
+            subject.put(from("x500"), x509Certificate.getSubjectX500Principal().getName());
+            subject.put(from("dn"), x509Certificate.getSubjectDN().getName());
 
             try {
                 if (x509Certificate.getSubjectAlternativeNames() != null) {
                     QDLStem altNames = processAltNames(x509Certificate.getSubjectAlternativeNames());
                     if (altNames != null) {
-                        subject.put("alt_names", altNames);
+                        subject.put(from("alt_names"), altNames);
                     }
                 }
             } catch (CertificateParsingException e) {
@@ -1128,59 +1132,58 @@ kazrnybI9mX73qv6NqA
             }
 
             QDLStem oids = new QDLStem();
-            oids.put("critical", criticalOIDS);
-            oids.put("noncritical", noncriticalOIDS);
-            out.put("oids", oids);
-            out.put("subject", subject);
+            oids.put(from("critical"), criticalOIDS);
+            oids.put(from("noncritical"), noncriticalOIDS);
+            out.put(from("oids"), oids);
+            out.put(from("subject"), subject);
             QDLStem issuer = new QDLStem();
-            issuer.put("x500", x509Certificate.getIssuerX500Principal().getName());
-            issuer.put("dn", x509Certificate.getIssuerDN().getName());
+            issuer.put(from("x500"), x509Certificate.getIssuerX500Principal().getName());
+            issuer.put(from("dn"), x509Certificate.getIssuerDN().getName());
             if (x509Certificate.getIssuerUniqueID() != null) {
 
                 QDLStem issuerUniqueID = new QDLStem();
                 ArrayList list = new ArrayList();
                 list.add(x509Certificate.getIssuerUniqueID());
                 issuerUniqueID.getQDLList().setArrayList(list);
-                issuer.put("unique_id", issuerUniqueID);
+                issuer.put(from("unique_id"), issuerUniqueID);
             }
             try {
                 if (x509Certificate.getSubjectAlternativeNames() != null) {
                     QDLStem altNames = processAltNames(x509Certificate.getSubjectAlternativeNames());
                     if (altNames != null) {
-                        issuer.put("alt_names", altNames);
+                        issuer.put(from("alt_names"), altNames);
                     }
                 }
             } catch (CertificateParsingException e) {
                 // throw new RuntimeException(e);
             }
-            out.put("issuer", issuer);
-            out.put("not_before", x509Certificate.getNotBefore().getTime());
-            out.put("not_after", x509Certificate.getNotAfter().getTime());
+            out.put(from("issuer"), issuer);
+            out.put(from("not_before"), x509Certificate.getNotBefore().getTime());
+            out.put(from("not_after"), x509Certificate.getNotAfter().getTime());
             QDLStem alg = new QDLStem();
-            alg.put("name", x509Certificate.getSigAlgName());
-            alg.put("oid", x509Certificate.getSigAlgOID());
+            alg.put(from("name"), x509Certificate.getSigAlgName());
+            alg.put(from("oid"), x509Certificate.getSigAlgOID());
             if (x509Certificate.getSigAlgParams() != null) {
-                alg.put("parameters", Base64.encodeBase64URLSafe(x509Certificate.getSigAlgParams()));
+                alg.put(from("parameters"), Base64.encodeBase64URLSafe(x509Certificate.getSigAlgParams()));
             }
-            out.put("algorithm", alg);
-            out.put("serial_number", x509Certificate.getSerialNumber().toString());
-
-            out.put("signature", Base64.encodeBase64URLSafeString(x509Certificate.getSignature()));
-            out.put("version", "v" + x509Certificate.getVersion()); // standard way to write it
+            out.put(from("algorithm"), alg);
+            out.put(from("serial_number"), x509Certificate.getSerialNumber().toString());
+            out.put(from("signature"), Base64.encodeBase64URLSafeString(x509Certificate.getSignature()));
+            out.put(from("version"), "v" + x509Certificate.getVersion()); // standard way to write it
             String eppn = CertUtil.getEPPN(x509Certificate);
             if (eppn != null) {
-                out.put("eppn", eppn);
+                out.put(from("eppn"), eppn);
             }
             String email = CertUtil.getEmail(x509Certificate);
             if (email != null) {
-                out.put("email", email);
+                out.put(from("email"), email);
             }
             PublicKey publicKey = x509Certificate.getPublicKey();
             JWK jwk = getJwk(publicKey);
             if (jwk != null) {
                 JSONWebKey jsonWebKey = new JSONWebKey(jwk);
                 QDLStem pKeyStem = webKeyToStem(jsonWebKey);
-                out.put("public_key", pKeyStem);
+                out.put(from("public_key"), pKeyStem);
             }
             return out;
         }
@@ -1198,7 +1201,7 @@ kazrnybI9mX73qv6NqA
             QDLStem altNames = new QDLStem();
             for (List o : lists) {
                 String[] altName = altName(o);
-                altNames.put(altName[0], altName[1]);
+                altNames.put(from(altName[0]), altName[1]);
             }
             return altNames;
         }

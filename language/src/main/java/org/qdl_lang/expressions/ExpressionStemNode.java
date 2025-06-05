@@ -16,6 +16,7 @@ import java.util.StringTokenizer;
 
 import static org.qdl_lang.variables.Constant.*;
 import static org.qdl_lang.variables.QDLStem.STEM_INDEX_MARKER;
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
@@ -242,7 +243,7 @@ The following are working:
             }
             if (setValue) {
                 if (getRightArg().getResult().isLong()) {
-                    s.put(getRightArg().getResult().asLong(), newValue);
+                    s.put(from(getRightArg().getResult()), newValue);
                 } else {
                     String targetKey = null;
                     if (getRightArg().getResult() == null) {

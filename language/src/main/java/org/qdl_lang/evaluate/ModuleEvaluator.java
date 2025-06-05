@@ -346,7 +346,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
                 if (object.isString()) {
                     isScalarArg = true;
                     inStem = new QDLStem();
-                    inStem.put(0L, asQDLValue(object));
+                    inStem.put(LongValue.Zero, asQDLValue(object));
                 }
             }
         }
@@ -692,7 +692,7 @@ docs(c#2@ini_out) ;
         QDLStem inStem;
         if (arg0.isString()) {
             inStem = new QDLStem();
-            inStem.put(0L, asQDLValue(arg0));
+            inStem.put(LongValue.Zero, asQDLValue(arg0));
             isScalarArg = true;
         } else {
             if (arg0.isStem()) {

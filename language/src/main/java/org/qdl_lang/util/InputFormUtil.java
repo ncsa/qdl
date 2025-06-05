@@ -18,7 +18,10 @@ import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.QDLSet;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
+import org.qdl_lang.variables.values.LongValue;
+import org.qdl_lang.variables.values.QDLNullValue;
 import org.qdl_lang.variables.values.QDLValue;
+import org.qdl_lang.variables.values.StringValue;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -300,14 +303,14 @@ public class InputFormUtil {
 
     public static void main(String[] args) {
         QDLStem stemVariable = new QDLStem();
-        stemVariable.put(0L, "foo0");
-        stemVariable.put(1L, "foo1");
-        stemVariable.put(2L, "foo2");
-        stemVariable.put("long", 123L);
-        stemVariable.put("string", "abc'def'786%$%$#");
-        stemVariable.put("boolean", Boolean.TRUE);
-        stemVariable.put("decimal", new BigDecimal("-123.3456"));
-        stemVariable.put("null", QDLNull.getInstance());
+        stemVariable.put(LongValue.Zero, "foo0");
+        stemVariable.put(LongValue.One, "foo1");
+        stemVariable.put(new LongValue(2L), "foo2");
+        stemVariable.put(new StringValue("long"), 123L);
+        stemVariable.put(new StringValue("string"), "abc'def'786%$%$#");
+        stemVariable.put(new StringValue("boolean"), Boolean.TRUE);
+        stemVariable.put(new StringValue("decimal"), new BigDecimal("-123.3456"));
+        stemVariable.put(new StringValue("null"), QDLNullValue.getNullValue());
         System.out.println(stemVariable.inputForm());
     }
 }

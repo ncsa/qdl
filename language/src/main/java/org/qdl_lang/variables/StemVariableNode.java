@@ -6,11 +6,13 @@ import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import net.sf.json.JSONObject;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
@@ -110,10 +112,13 @@ public class StemVariableNode implements ExpressionInterface {
             }
 
             ExpressionInterface keyRI = sen.getKey();
+            QDLKey key = from(keyRI.getResult());
+            stemOut.put(key, value);
 
+/*
             switch (keyRI.getResultType()) {
                 case Constant.LONG_TYPE:
-                    stemOut.put(keyRI.getResult().asLong(), value);
+                    stemOut.put(keyRI.getResult(), value);
                     break;
                 case Constant.STRING_TYPE:
                 case Constant.DECIMAL_TYPE:
@@ -124,6 +129,7 @@ public class StemVariableNode implements ExpressionInterface {
                 default:
                     throw new IllegalArgumentException("Error: Illegal type for key \"" + keyRI.getResult() + "\"");
             }
+*/
         }
         setResult( new QDLValue(stemOut));
         return getResult();

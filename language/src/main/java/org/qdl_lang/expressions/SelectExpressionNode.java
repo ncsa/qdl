@@ -4,6 +4,7 @@ import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.variables.*;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
@@ -88,18 +89,18 @@ public class SelectExpressionNode extends ExpressionImpl {
             throw new BadArgException("left hand argument must be a boolean if its a scalar", getSWITCH());
         }
 
-        Object foundIndex = null;
-        for (Object k : stem.keySet()) {
-            QDLValue value = stem.get(k);
+        QDLKey foundIndex = null;
+        for (QDLKey key : stem.keySet()) {
+            QDLValue value = stem.get(key);
             if (!(value.isBoolean())) {
-                throw new BadArgException("left hand argument at index '" + k + "' is not a boolean", getSWITCH());
+                throw new BadArgException("left hand argument at index '" + key + "' is not a boolean", getSWITCH());
             }
             Boolean b = value.asBoolean();
             if (b) {
                 if (foundIndex != null) {
-                    throw new BadArgException("redundant value at index " + k + " (" + foundIndex + " already found) ", getSWITCH());
+                    throw new BadArgException("redundant value at index " + key + " (" + foundIndex + " already found) ", getSWITCH());
                 }
-                foundIndex = k;
+                foundIndex = key;
             }
         }
         if (foundIndex == null) {
@@ -131,10 +132,10 @@ public class SelectExpressionNode extends ExpressionImpl {
 
              case ExpressionInterface.LIST_NODE:
                  StemListNode stemListNode = (StemListNode) caseObj;
-                 if (!(foundIndex instanceof Long)) {
+                 if (!(foundIndex.isLong())) {
                      throw new BadArgException("no such index " + foundIndex + " exists in this list.", getCASE());
                  }
-                 QDLValue r = stemListNode.getStatements().get(((Long) foundIndex).intValue()).evaluate(state);
+                 QDLValue r = stemListNode.getStatements().get(foundIndex.asLong().intValue()).evaluate(state);
                  setResult(r);
                  setEvaluated(true);
                  return getResult();
@@ -153,7 +154,7 @@ public class SelectExpressionNode extends ExpressionImpl {
 
              case ExpressionInterface.OPEN_SLICE_NODE:
                  OpenSliceNode openSliceNode = (OpenSliceNode) caseObj;
-                 if (!(foundIndex instanceof Long)) {
+                 if (!(foundIndex.isLong())) {
                      throw new BadArgException("index " + foundIndex + " not found", getCASE());
                  }
                  // Arguments of the slice are the parameters for it, not elements!
@@ -168,7 +169,7 @@ public class SelectExpressionNode extends ExpressionImpl {
 
              case ExpressionInterface.CLOSED_SLICE_NODE:
                  ClosedSliceNode closedSliceNode = (ClosedSliceNode) caseObj;
-                 if (!(foundIndex instanceof Long)) {
+                 if (!(foundIndex.isLong())) {
                      throw new BadArgException("index " + foundIndex + " not found", getCASE());
                  }
                  // Arguments of the slice are the parameters for it, not elements!

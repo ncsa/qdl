@@ -10,10 +10,7 @@ import org.qdl_lang.util.QDLFileUtil;
 import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.QDLStem;
-import org.qdl_lang.variables.values.BooleanValue;
-import org.qdl_lang.variables.values.LongValue;
-import org.qdl_lang.variables.values.QDLValue;
-import org.qdl_lang.variables.values.StemValue;
+import org.qdl_lang.variables.values.*;
 import org.qdl_lang.vfs.VFSFileProvider;
 import org.qdl_lang.vfs.VFSPassThruFileProvider;
 import edu.uiuc.ncsa.security.core.exceptions.IllegalAccessException;
@@ -57,6 +54,7 @@ import java.util.*;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipEntry;
 
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
@@ -179,8 +177,8 @@ public class HTTPClient implements QDLMetaModule {
         }
         String p = parameters.size() == 0 ? "" : "?";
         boolean isFirst = true;
-        for (Object key : parameters.keySet()) {
-            String v = URLEncoder.encode(String.valueOf(parameters.get(key)), "UTF-8");
+        for (QDLKey key : parameters.keySet()) {
+            String v = URLEncoder.encode(parameters.get(key).asString(), "UTF-8");
             if (isFirst) {
                 p = p + key + "=" + v;
                 isFirst = false;
@@ -307,11 +305,11 @@ public class HTTPClient implements QDLMetaModule {
     public QDLStem getResponseStem(HttpResponse response) throws IOException {
         QDLStem s = new QDLStem();
         QDLStem responseStem = new QDLStem();
-        responseStem.put("code", (long) response.getStatusLine().getStatusCode());
+        responseStem.put(from("code"), (long) response.getStatusLine().getStatusCode());
         if (!StringUtils.isTrivial(response.getStatusLine().getReasonPhrase())) {
-            responseStem.put("message", response.getStatusLine().getReasonPhrase());
+            responseStem.put(from("message"), response.getStatusLine().getReasonPhrase());
         }
-        s.put(STATUS_KEY, responseStem);
+        s.put(from(STATUS_KEY), responseStem);
         HttpEntity entity = response.getEntity();
         QDLStem stemResponse = null;
         if (entity != null) {
@@ -327,15 +325,15 @@ public class HTTPClient implements QDLMetaModule {
             }
         }
 
-        s.put(CONTENT_KEY, stemResponse == null ? QDLNull.getInstance() : stemResponse);
+        s.put(from(CONTENT_KEY), stemResponse == null ? QDLNull.getInstance() : stemResponse);
         Header[] headers = response.getAllHeaders();
         QDLStem h = new QDLStem();
         for (int i = 0; i < headers.length; i++) {
             Header header = headers[i];
-            h.put(header.getName(), header.getValue());
+            h.put(from(header.getName()), header.getValue());
         }
         if (!h.isEmpty()) {
-            s.put(HEADERS_KEY, h);
+            s.put(from(HEADERS_KEY), h);
         }
         return s;
     }
@@ -724,7 +722,7 @@ public class HTTPClient implements QDLMetaModule {
                         throw new IllegalArgumentException("Cannot have " + contentType + " of " + CONTENT_FORM + " with a string. You must use a stem.");
                     }
                     boolean isFirst = true;
-                    for (Object key : payload.keySet()) {
+                    for (QDLKey key : payload.keySet()) {
                         body = body + (isFirst ? "" : "&") + key + "=" + payload.get(key);
                         if (isFirst) isFirst = false;
                     }

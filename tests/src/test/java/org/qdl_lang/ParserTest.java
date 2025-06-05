@@ -772,7 +772,7 @@ public class ParserTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "a. := [5,3,1];");
-        addLine(script, "b. := {'p':'q', abs(-3.4):size('abcd')};");
+        addLine(script, "b. := {'p':'q', '3.4':size('abcd')};");
         addLine(script, "c. := {'z':{'t':abs(-42)}};");
 
         QDLInterpreter interpreter = new QDLInterpreter(null, state);

@@ -19,7 +19,6 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.qdl_lang.variables.values.*;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -532,7 +531,7 @@ public class StemEvaluator extends AbstractEvaluator {
                     QDLStem c = arg1.asStem();
                     if(c.isList()){
                         // can be a list for the form [flag, flag, ... width] in any order
-                        QDLList list = c.getQDLList();
+                        QDLList<? extends QDLValue> list = c.getQDLList();
                         for(QDLValue o : list){
                             if(o.isLong()){
                                 width = o.asLong().intValue();
@@ -815,9 +814,9 @@ public class StemEvaluator extends AbstractEvaluator {
             QDLStem out = new QDLStem();
             if (!arg0.equals(arg1)) {
                 QDLStem r = new QDLStem();
-                r.put(0L, asQDLValue(arg0));
-                r.put(1L, asQDLValue(arg1));
-                out.put(0L, asQDLValue(r)); // give it the right shape
+                r.put(LongValue.Zero, asQDLValue(arg0));
+                r.put(LongValue.One, asQDLValue(arg1));
+                out.put(LongValue.Zero, asQDLValue(r)); // give it the right shape
             }
             polyad.setResult(out);
             polyad.setEvaluated(true);
@@ -1502,7 +1501,7 @@ f(x.)→x.0+x.1;
                 }
             } else {
                 if (rightArg.isSet()) {
-                    QDLSet rSet =  rightArg.asSet();
+                    QDLSet<? extends QDLValue> rSet =  rightArg.asSet();
                     for (QDLKey key : lStem.keySet()) {
                         QDLValue ooo = lStem.get(key);
                         if (ooo.isDecimal()) {
@@ -1558,7 +1557,7 @@ f(x.)→x.0+x.1;
                 if (rightArg.isSet()) {
                     if (leftArg.isDecimal()) {
                         // much slower, but there is no other way to compare big decimals.
-                        QDLSet qdlSet = rightArg.asSet();
+                        QDLSet<? extends QDLValue> qdlSet = rightArg.asSet();
                         result = false;
                         for (QDLValue element : qdlSet) {
                             if (element.isDecimal()) {
@@ -2018,7 +2017,7 @@ f(x.)→x.0+x.1;
                 switch (returnScope) {
                     case all_keys:
                         //out.put(QDLKey.from(i++), asQDLValue(key));
-                        qdlValue = asQDLValue(key));
+                        qdlValue = asQDLValue(key);
                         break;
                     case only_scalars:
                         if (Constant.getType(stemVariable.get(key)) != STEM_TYPE) {
@@ -2160,7 +2159,7 @@ f(x.)→x.0+x.1;
      *
      * @param polyad
      * @param state
-     * @deprecated
+     * @Deprecated
      */
     protected void doHasKeys(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
@@ -2447,12 +2446,12 @@ f(x.)→x.0+x.1;
 
                     out1 = new QDLStem((long) lengths[lengths.length - 1], cyclicArgList.next(lengths[lengths.length - 1]));
                 }
-                out.put((long) i, asQDLValue(out1));
+                out.put(new LongValue(i), asQDLValue(out1));
 
             } else {
                 QDLStem out1 = new QDLStem();
                 indexRecursion(out1, lengths, index + 1, cyclicArgList);
-                out.put((long) i, asQDLValue(out1));
+                out.put(new LongValue( i), asQDLValue(out1));
             }
         }
 
@@ -2842,7 +2841,7 @@ f(x.)→x.0+x.1;
         for (QDLKey key : keys) {
             if (newKeys.contains(key)) {
                 QDLValue kk = newKeyStem.get(key);
-                usedKeys.remove(kk.getValue());
+                usedKeys.remove(kk);
                 QDLValue vv = target.get(kk);
                 output.put( key, vv);
             } else {
@@ -3166,14 +3165,14 @@ z. :=  join3(q.,w.)
             leftStem = args[0].asStem();
         } else {
             leftStem = new QDLStem();
-            leftStem.put(0L, args[0]);
+            leftStem.put(LongValue.Zero, args[0]);
         }
         QDLStem rightStem;
         if (args[1].isStem()) {
             rightStem = args[1].asStem();
         } else {
             rightStem = new QDLStem();
-            rightStem.put(0L, args[1]);
+            rightStem.put(LongValue.Zero, args[1]);
         }
         if (leftStem.isEmpty() && rightStem.isEmpty()) {
             // edge case -- they sent  empty arguments, so don't blow up, just return nothing
@@ -3206,12 +3205,16 @@ z. :=  join3(q.,w.)
 
         StemUtility.DyadAxisAction joinAction = new StemUtility.DyadAxisAction() {
             @Override
-            public void action(QDLStem out, Object key, QDLStem leftStem, QDLStem rightStem) {
+            public void action(QDLStem out, QDLKey key, QDLStem leftStem, QDLStem rightStem) {
+
+                out.put(key, leftStem.union(rightStem));
+/*
                 if (key instanceof Long) {
                     out.put((Long) key, leftStem.union(rightStem));
                 } else {
                     out.put((String) key, asQDLValue(leftStem.union(rightStem)));
                 }
+*/
             }
         };
         if (Math.max(leftStem.getRank(), rightStem.getRank()) <= axis) {
@@ -3346,7 +3349,7 @@ z. :=  join3(q.,w.)
                 throw new BadArgException(TRANSPOSE + " requires an axis or stem of them as its second argument", polyad.getArgAt(1));
             }
             // If the second argument is p., then the new reshuffing is
-            // p. ~ ~ exclude_keys([;rank], p.)
+            // p. ~ ([]~ exclude_keys([;rank(p)], p.))
             Polyad excludeKeys = new Polyad(EXCLUDE_KEYS);
             excludeKeys.addArgument(sliceNode);
             excludeKeys.addArgument(new ConstantNode(new StemValue(stem1)));

@@ -16,7 +16,7 @@ import java.util.Date;
  */
 public class JSONAndStemUtility implements Constants {
     /**
-     * Does the grunt work of taking an entry (generaic objects!) from a JSON object and converting it to something QDL can
+     * Does the grunt work of taking an entry (generic objects!) from a JSON object and converting it to something QDL can
      * understand. Used mostly in the toString methods.
      *
      * @param obj

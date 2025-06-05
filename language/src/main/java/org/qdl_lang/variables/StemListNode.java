@@ -6,6 +6,7 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
 import net.sf.json.JSONObject;
+import org.qdl_lang.variables.values.LongValue;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
@@ -108,7 +109,7 @@ public class StemListNode implements ExpressionInterface {
             }
             stmt.setEvaluated(true);
             //stmt.setResultType(Constant.getType(stmt.getResult()));
-            stemOut.put(i++, stmt.getResult());
+            stemOut.put(new LongValue(i++), stmt.getResult());
         }
         setResult(stemOut);
         setEvaluated(true);

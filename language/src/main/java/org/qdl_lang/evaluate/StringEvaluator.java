@@ -539,23 +539,23 @@ public class StringEvaluator extends AbstractEvaluator {
 
             if (isStem(rightArg)) {
                 QDLStem rightStem = (QDLStem) rightArg;
-                for (Object key : leftStem.keySet()) {
+                for (QDLKey key : leftStem.keySet()) {
                     if (rightStem.containsKey(key)) {
                         String delim = "";
 
                         if (isPrepend) {
                             if (omitDanglingDelimiter && currentCount == 0) {
-                                result = String.valueOf(leftStem.get(key));
+                                result = leftStem.get(key).asString();
                             } else {
-                                result = result + rightStem.get(key) + leftStem.get(key);
+                                result = result + rightStem.get(key).asString() + leftStem.get(key).asString();
                             }
                         } else {
                             if (omitDanglingDelimiter && currentCount == lsize - 1) {
 
-                                result = result + leftStem.get(key);
+                                result = result + leftStem.get(key).asString();
                             } else {
 
-                                result = result + leftStem.get(key) + rightStem.get(key);
+                                result = result + leftStem.get(key).asString() + rightStem.get(key).asString();
                             }
 
                         }
@@ -565,20 +565,20 @@ public class StringEvaluator extends AbstractEvaluator {
             } else {
                 // propagate the right arg as delimiter everywhere.
 
-                for (Object key : leftStem.keySet()) {
+                for (QDLKey key : leftStem.keySet()) {
                     if (isPrepend) {
                         if (omitDanglingDelimiter && currentCount == 0) {
-                            result = String.valueOf(leftStem.get(key));
+                            result = leftStem.get(key).toString();
                         } else {
-                            result = result + rightQV + leftStem.get(key);
+                            result = result + rightQV + leftStem.get(key).toString();
 
                         }
 
                     } else {
                         if (omitDanglingDelimiter && currentCount == lsize - 1) {
-                            result = result + leftStem.get(key);
+                            result = result + leftStem.get(key).toString();
                         } else {
-                            result = result + leftStem.get(key) + rightQV;
+                            result = result + leftStem.get(key).toString() + rightQV;
                         }
                     }
                     currentCount++;
@@ -851,26 +851,26 @@ public class StringEvaluator extends AbstractEvaluator {
      */
     protected QDLStem doReplace(Polyad polyad, QDLStem inStem, QDLStem replacements, QDLStem regexStem, State state) {
         QDLStem outStem = new QDLStem();
-        for (Object key : inStem.keySet()) {
+        for (QDLKey key : inStem.keySet()) {
             QDLValue o = inStem.get(key);
             switch (o.getType()) {
                 case STRING_TYPE:
-                    outStem.putLongOrString(key, asQDLValue(doStringReplace(o.asString(), replacements, regexStem)));
+                    outStem.put(key, asQDLValue(doStringReplace(o.asString(), replacements, regexStem)));
                     break;
                 case STEM_TYPE:
-                    outStem.putLongOrString(key, asQDLValue(doReplace(polyad,o.asStem(), replacements, regexStem, state)));
+                    outStem.put(key, asQDLValue(doReplace(polyad,o.asStem(), replacements, regexStem, state)));
                     break;
                 case SET_TYPE:
-                    outStem.putLongOrString(key, asQDLValue(doReplace(polyad,o.asSet(), replacements, regexStem, state)));
+                    outStem.put(key, asQDLValue(doReplace(polyad,o.asSet(), replacements, regexStem, state)));
                     break;
                 default:
-                    outStem.putLongOrString(key, o);// pass it back unchanged
+                    outStem.put(key, o);// pass it back unchanged
             }
         }
         return outStem;
     }
-    protected QDLSet doReplace(Polyad polyad, QDLSet inSet, QDLStem replacements, QDLStem regexStem, State state) {
-        QDLSet outSet = new QDLSet();
+    protected QDLSet doReplace(Polyad polyad, QDLSet<QDLValue> inSet, QDLStem replacements, QDLStem regexStem, State state) {
+        QDLSet<QDLValue> outSet = new QDLSet();
         for (QDLValue o : inSet) {
             switch (o.getType()) {
                 case STRING_TYPE:
@@ -890,8 +890,8 @@ public class StringEvaluator extends AbstractEvaluator {
     }
 
     protected String doStringReplace(String s, QDLStem replacements, QDLStem regexStem) {
-        for (Object key : replacements.keySet()) {
-            if (key instanceof Long) {
+        for (QDLKey key : replacements.keySet()) {
+            if (!key.isString()) {
                 continue;
             }
             boolean isRegex = false; // default
@@ -902,9 +902,9 @@ public class StringEvaluator extends AbstractEvaluator {
                 }
             }
             if (isRegex) {
-                s = s.replaceAll((String) key, replacements.getString((String) key));
+                s = s.replaceAll(key.asString(), replacements.get(key).asString());
             } else {
-                s = s.replace((String) key, replacements.getString((String) key));
+                s = s.replace(key.asString(), replacements.get(key).asString());
             }
         }
         return s;
@@ -985,7 +985,7 @@ public class StringEvaluator extends AbstractEvaluator {
         QDLValue r = polyad.evalArg(0, state);
         if (r.isString()) {
             inStem = new QDLStem();
-            inStem.put(0L, r);
+            inStem.put(LongValue.Zero, r);
             isScalar = true;
         } else {
             if (r.isStem()) {
@@ -1046,7 +1046,7 @@ public class StringEvaluator extends AbstractEvaluator {
                         throw new BadArgException("The third argument must be a list", polyad.getArgAt(2));
                     }
                     arg1 = new QDLStem();
-                    for (Object key : a.keySet()) {
+                    for (QDLKey key : a.keySet()) {
                         QDLValue newKey = a.get(key);
                         if (newKey.isString()) {
                             if (b.hasDefaultValue() || b.containsKey(key)) {
@@ -1140,13 +1140,13 @@ public class StringEvaluator extends AbstractEvaluator {
                     if (doRegex) {
                         String[] tokens = objects[0].toString().split(objects[1].toString());
                         for (long i = 0; i < tokens.length; i++) {
-                            outStem.put(i, asQDLValue(tokens[Math.toIntExact(i)]));
+                            outStem.put(new LongValue(i), asQDLValue(tokens[Math.toIntExact(i)]));
                         }
                     } else {
                         StringTokenizer st = new StringTokenizer(objects[0].toString(), objects[1].toString());
                         long i = 0;
                         while (st.hasMoreTokens()) {
-                            outStem.put(i++, asQDLValue(st.nextToken()));
+                            outStem.put(new LongValue(i++), asQDLValue(st.nextToken()));
                         }
 
                     }

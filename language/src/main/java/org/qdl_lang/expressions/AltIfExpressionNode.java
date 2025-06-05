@@ -4,6 +4,7 @@ import org.qdl_lang.exceptions.QDLExceptionWithTrace;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ public class AltIfExpressionNode extends ExpressionImpl {
         if(arg0.isStem()){
             QDLStem out = new QDLStem();
             QDLStem inStem = arg0.asStem();
-            for(Object key : inStem.keySet()){
+            for(QDLKey key : inStem.keySet()){
                    QDLValue obj = inStem.get(key);
                    if(!(obj.isBoolean())){
                        throw new QDLExceptionWithTrace("expression requires a boolean at index '" + key + "', got '" + obj + "'", getIF());
@@ -68,7 +69,7 @@ public class AltIfExpressionNode extends ExpressionImpl {
                 } else {
                     arg1 = getELSE().evaluate(state);
                 }
-                out.putLongOrString(key, arg1);
+                out.put(key, arg1);
             }
             setResult(out);
             setEvaluated(true);

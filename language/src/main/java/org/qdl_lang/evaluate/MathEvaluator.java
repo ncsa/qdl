@@ -19,6 +19,7 @@ import java.security.SecureRandom;
 import java.time.LocalTime;
 import java.util.Date;
 
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 import static org.qdl_lang.variables.values.QDLValue.castToJavaValues;
 
@@ -253,8 +254,8 @@ public class MathEvaluator extends AbstractEvaluator {
         }
     }
 
-    protected QDLSet doCodec(Polyad polyad, QDLSet inSet, AbstractCodec codec, boolean isEncode) {
-        QDLSet outSet = new QDLSet();
+    protected QDLSet doCodec(Polyad polyad, QDLSet<QDLValue> inSet, AbstractCodec codec, boolean isEncode) {
+        QDLSet<QDLValue> outSet = new QDLSet();
         for (QDLValue object : inSet) {
             if (object.isString()) {
                 outSet.add(asQDLValue(applyCodec(codec, object.asString(), isEncode)));
@@ -483,7 +484,7 @@ public class MathEvaluator extends AbstractEvaluator {
         for (int i = 0; i < returnCount; i++) {
             secureRandom.nextBytes(ba);
             String rc = Base64.encodeBase64URLSafeString(ba);
-            stem.put((long) i, asQDLValue(rc));
+            stem.put(from(i), asQDLValue(rc));
         }
         polyad.setResult(stem);
         polyad.setEvaluated(true);

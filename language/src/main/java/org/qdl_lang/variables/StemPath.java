@@ -1,9 +1,12 @@
 package org.qdl_lang.variables;
 
+import org.qdl_lang.variables.values.QDLKey;
+
 import java.util.ArrayList;
 
 import static org.qdl_lang.state.QDLConstants.STEM_PATH_MARKER;
 import static org.qdl_lang.state.QDLConstants.STEM_PATH_MARKER2;
+import static org.qdl_lang.variables.values.QDLKey.from;
 
 /**
  * A path in a stem. Unlike the . (child of operator) these have been resolved
@@ -64,10 +67,10 @@ public class StemPath<V extends StemPathEntry> extends ArrayList<V> {
        System.out.println(stemPath.toPath(true));
        System.out.println(stemPath.toPath(false));
        QDLStem stemVariable = new QDLStem();
-       stemVariable.put("a.b", "blarg");
-       stemVariable.put("foo", "woof");
-       stemVariable.put("mairzy doats", "fnord");
-       stemVariable.put("long#%$path", "blarf");
+       stemVariable.put(from("a.b"), "blarg");
+       stemVariable.put(from("foo"), "woof");
+       stemVariable.put(from("mairzy doats"), "fnord");
+       stemVariable.put(from("long#%$path"), "blarf");
        System.out.println(stemVariable.get(stemPath));
 
    }

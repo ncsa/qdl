@@ -9,7 +9,9 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.state.XKey;
 import org.qdl_lang.variables.*;
 import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.LongValue;
 
+import static org.qdl_lang.variables.StemUtility.put;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
@@ -48,10 +50,10 @@ public class StringFunctionTests extends AbstractQDLTester {
         VStack vStack = state.getVStack();
 
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "One Ring to rule them all");
-        sourceStem.put("find", "One Ring to find them");
-        sourceStem.put("bring", "One Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
+        put(sourceStem,"rule", "One Ring to rule them all");
+        put(sourceStem,"find", "One Ring to find them");
+        put(sourceStem,"bring", "One Ring to bring them all");
+        put(sourceStem,"bind", "and in the darkness bind them");
         String targetString = "One";
 
         vStack.put(new VThing(new XKey("sourceStem."), new QDLVariable(sourceStem)));
@@ -81,10 +83,10 @@ public class StringFunctionTests extends AbstractQDLTester {
         VStack vStack = state.getVStack();
 
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "oNe Ring to rule them all");
-        sourceStem.put("find", "OnE Ring to find them");
-        sourceStem.put("bring", "one Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
+        put(sourceStem,"rule", "oNe Ring to rule them all");
+        put(sourceStem,"find", "OnE Ring to find them");
+        put(sourceStem,"bring", "one Ring to bring them all");
+        put(sourceStem,"bind", "and in the darkness bind them");
         String targetString = "One";
 
         vStack.put(new VThing(new XKey("sourceStem."), new QDLVariable(sourceStem)));
@@ -116,15 +118,15 @@ public class StringFunctionTests extends AbstractQDLTester {
         VStack vStack = state.getVStack();
 
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "One Ring to rule them all");
-        sourceStem.put("find", "One Ring to find them");
-        sourceStem.put("bring", "One Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
+        put(sourceStem,"rule", "One Ring to rule them all");
+        put(sourceStem,"find", "One Ring to find them");
+        put(sourceStem,"bring", "One Ring to bring them all");
+        put(sourceStem,"bind", "and in the darkness bind them");
         QDLStem targetStem = new QDLStem();
-        targetStem.put("all", "all");
-        targetStem.put("One", "One");
-        targetStem.put("bind", "woof");
-        targetStem.put("7", "seven");
+        put(targetStem,"all", "all");
+        put(targetStem,"One", "One");
+        put(targetStem,"bind", "woof");
+        put(targetStem,"7", "seven");
         vStack.put(new VThing(new XKey("snippets."),   new QDLVariable(targetStem)));
         vStack.put(new VThing(new XKey("sourceStem."), new QDLVariable(sourceStem)));
         vStack.put(new VThing(new XKey("targetStem."), new QDLVariable(targetStem)));
@@ -183,10 +185,10 @@ public class StringFunctionTests extends AbstractQDLTester {
         VStack symbolTable = state.getVStack();
 
         QDLStem stem = new QDLStem();
-        stem.put("1", "  foo");
-        stem.put("woof", "      ");
-        stem.put("warp", "foo           ");
-        stem.put("9", "       foo           ");
+        put(stem,"1", "  foo");
+        put(stem,"woof", "      ");
+        put(stem,"warp", "foo           ");
+        put(stem,"9", "       foo           ");
         symbolTable.put(new VThing(new XKey("stem."), new QDLVariable(stem)));
         Polyad polyad = new Polyad(StringEvaluator.TRIM);
         VariableNode left = new VariableNode("stem.");
@@ -224,10 +226,10 @@ public class StringFunctionTests extends AbstractQDLTester {
         VStack vStack = state.getVStack();
 
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "One Ring to rule them all");
-        sourceStem.put("find", "One Ring to find them");
-        sourceStem.put("bring", "One Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
+        put(sourceStem,"rule", "One Ring to rule them all");
+        put(sourceStem,"find", "One Ring to find them");
+        put(sourceStem,"bring", "One Ring to bring them all");
+        put(sourceStem,"bind", "and in the darkness bind them");
         String targetString = "One";
 
         vStack.put(new VThing(new XKey("sourceStem."),  new QDLVariable(sourceStem)));
@@ -294,10 +296,10 @@ public class StringFunctionTests extends AbstractQDLTester {
         VStack vStack = state.getVStack();
 
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "one Ring to rule them all");
-        sourceStem.put("find", "onE Ring to find them");
-        sourceStem.put("bring", "oNE Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
+        put(sourceStem,"rule", "one Ring to rule them all");
+        put(sourceStem,"find", "onE Ring to find them");
+        put(sourceStem,"bring", "oNE Ring to bring them all");
+        put(sourceStem,"bind", "and in the darkness bind them");
         String targetString = "ONE";
 
         vStack.put(new VThing(new XKey("sourceStem."),  new QDLVariable(sourceStem)));
@@ -326,15 +328,15 @@ public class StringFunctionTests extends AbstractQDLTester {
         VStack vStack = state.getVStack();
 
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "One Ring to rule them all");
-        sourceStem.put("find", "One Ring to find them");
-        sourceStem.put("bring", "One Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
+        put(sourceStem,"rule", "One Ring to rule them all");
+        put(sourceStem,"find", "One Ring to find them");
+        put(sourceStem,"bring", "One Ring to bring them all");
+        put(sourceStem,"bind", "and in the darkness bind them");
         QDLStem targetStem = new QDLStem();
-        targetStem.put("all", "all");
-        targetStem.put("One", "One");
-        targetStem.put("bind", "darkness");
-        targetStem.put("7", "seven");
+        put(targetStem,"all", "all");
+        put(targetStem,"One", "One");
+        put(targetStem,"bind", "darkness");
+        put(targetStem,"7", "seven");
         vStack.put(new VThing(new XKey("snippets."),  new QDLVariable( targetStem)));
         vStack.put(new VThing(new XKey("sourceStem."),new QDLVariable( sourceStem)));
         vStack.put(new VThing(new XKey("targetStem."),new QDLVariable( targetStem)));
@@ -406,10 +408,10 @@ public class StringFunctionTests extends AbstractQDLTester {
         String arg2 = "GoeS";
         String arg3 = "THeRe";
         String arg4 = "donCHa know?";
-        stem.put("1", arg1);
-        stem.put("woof", arg2);
-        stem.put("warp", arg3);
-        stem.put("9", arg4);
+        stem.put(LongValue.One, arg1);
+        put(stem, "woof", arg2);
+        put(stem, "warp", arg3);
+        put(stem, "9", arg4);
         vStack.put(new VThing(new XKey("stem."), new QDLVariable(stem)));
         Polyad polyad = new Polyad(StringEvaluator.TO_LOWER);
         VariableNode left = new VariableNode("stem.");
@@ -433,10 +435,10 @@ public class StringFunctionTests extends AbstractQDLTester {
         String arg2 = "GoeS";
         String arg3 = "THeRe";
         String arg4 = "donCHa know?";
-        stem.put("1", arg1);
-        stem.put("woof", arg2);
-        stem.put("warp", arg3);
-        stem.put("9", arg4);
+        put(stem,"1", arg1);
+        put(stem,"woof", arg2);
+        put(stem,"warp", arg3);
+        put(stem,"9", arg4);
         vStack.put(new VThing(new XKey("stem."), new QDLVariable(stem)));
         Polyad polyad = new Polyad(StringEvaluator.TO_UPPER);
         VariableNode left = new VariableNode("stem.");
@@ -573,10 +575,10 @@ public class StringFunctionTests extends AbstractQDLTester {
         VStack vStack = state.getVStack();
 
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "One Ring to rule them all");
-        sourceStem.put("find", "One Ring to find them");
-        sourceStem.put("bring", "One Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
+        put(sourceStem,"rule", "One Ring to rule them all");
+        put(sourceStem,"find", "One Ring to find them");
+        put(sourceStem,"bring", "One Ring to bring them all");
+        put(sourceStem,"bind", "and in the darkness bind them");
         String newS = "GAAH!";
         ConstantNode snippet = new ConstantNode(asQDLValue(newS));
         ConstantNode index = new ConstantNode(asQDLValue(3L));
@@ -610,15 +612,15 @@ public class StringFunctionTests extends AbstractQDLTester {
         VStack vStack = state.getVStack();
 
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "One Ring to rule them all");
-        sourceStem.put("find", "One Ring to find them");
-        sourceStem.put("bring", "One Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
+        put(sourceStem,"rule", "One Ring to rule them all");
+        put(sourceStem,"find", "One Ring to find them");
+        put(sourceStem,"bring", "One Ring to bring them all");
+        put(sourceStem,"bind", "and in the darkness bind them");
         QDLStem snippets = new QDLStem();
-        snippets.put("all", "all");
-        snippets.put("One", "One");
-        snippets.put("bind", "darkness");
-        snippets.put("7", "seven");
+        put(snippets,"all", "all");
+        put(snippets,"One", "One");
+        put(snippets,"bind", "darkness");
+        put(snippets,"7", "seven");
         QDLStem indices = new QDLStem();
         indices.setDefaultValue(asQDLValue(4L));
         // This sticks the work "darkness" in the string associated with the key bind

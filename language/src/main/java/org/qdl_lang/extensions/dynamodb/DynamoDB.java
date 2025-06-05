@@ -11,6 +11,7 @@ import org.qdl_lang.variables.QDLStem;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLNullValue;
 import org.qdl_lang.variables.values.QDLValue;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -30,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
@@ -208,9 +210,6 @@ public class DynamoDB implements QDLMetaModule {
     protected Map<String, AttributeValue> stemToMap(QDLStem stem) {
         Map<String, AttributeValue> outMap = new HashMap<>();
 
-        for (Object key : stem.keySet()) {
-
-        }
         return outMap;
 
     }
@@ -233,17 +232,17 @@ public class DynamoDB implements QDLMetaModule {
     protected AttributeValue convertToAV(QDLNull bValue) {
     return AttributeValue.builder().nul(Boolean.TRUE).build();
 }
-    protected AttributeValue convertToAV(QDLList qdlList) {
-        List list = qdlList.values();
+    protected AttributeValue convertToAV(QDLList<QDLValue> qdlList) {
+        List<? extends QDLValue> list = qdlList.values();
         int type = -1;
         boolean isMixedType = false;
         boolean isFirstPass = true;
-        for (Object obj : list) {
+        for (QDLValue qdlValue : list) {
             if (isFirstPass) {
                 isFirstPass = false;
-                type = Constant.getType(obj);
+                type = qdlValue.getType();
             } else {
-                if (type != Constant.getType(obj)) {
+                if (type != qdlValue.getType()) {
                     isMixedType = true;
                     break;
                 }
@@ -260,14 +259,14 @@ public class DynamoDB implements QDLMetaModule {
             case Constant.STRING_TYPE:
                  sArray = new String[list.size()];
                 for(int i = 0; i < list.size(); i++){
-                     sArray[i] = (String)list.get(i);
+                     sArray[i] = list.get(i).asString();
                 }
                 return AttributeValue.builder().ss(sArray).build();
             case Constant.LONG_TYPE:
             case Constant.DECIMAL_TYPE:
                 sArray = new String[list.size()];
                 for(int i = 0; i < list.size(); i++){
-                     sArray[i] = (String)list.get(i);
+                     sArray[i] = list.get(i).asString();
                 }
                 return AttributeValue.builder().ns(sArray).build();
             case Constant.BOOLEAN_TYPE:
@@ -286,7 +285,7 @@ public class DynamoDB implements QDLMetaModule {
         QDLStem out = new QDLStem();
         for (String key : items.keySet()) {
             AttributeValue attributeValue = items.get(key);
-            out.put(key, convertToQDL(attributeValue));
+            out.put(from(key), convertToQDL(attributeValue));
         }
         return out;
     }
@@ -342,7 +341,7 @@ public class DynamoDB implements QDLMetaModule {
                 stem = new QDLStem();
                 Map<String, AttributeValue> m = attributeValue.m();
                 for (String key : m.keySet()) {
-                    stem.put(key, convertToQDL(m.get(key)));
+                    stem.put(from(key), convertToQDL(m.get(key)));
                 }
                 return stem;
             default:
@@ -435,11 +434,11 @@ public class DynamoDB implements QDLMetaModule {
             QDLStem stem = new QDLStem();
             for (Region region : regions) {
                 QDLStem r = new QDLStem();
-                r.put("id", region.id());
-                r.put("is_global", region.isGlobalRegion());
+                r.put(from("id"), region.id());
+                r.put(from("is_global"), region.isGlobalRegion());
                 RegionMetadata regionMetadata = region.metadata();
                 if (regionMetadata != null) {
-                    r.put("description", regionMetadata.description());
+                    r.put(from("description"), regionMetadata.description());
                 }
                 stem.getQDLList().add(asQDLValue(r));
             }

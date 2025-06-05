@@ -37,6 +37,7 @@ import java.util.UUID;
 import java.util.zip.GZIPInputStream;
 
 import static edu.uiuc.ncsa.security.core.util.StringUtils.isTrivial;
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
@@ -73,7 +74,7 @@ public class XMLUtils implements SerializationConstants {
                     break;
             }
             value = read(xsr);
-            stem.put(keyName, value);
+            stem.put(from(keyName), value);
         }
         return stem;
     }
@@ -290,7 +291,7 @@ public class XMLUtils implements SerializationConstants {
                             xe1 = xer.peek();
                         }
                         Object value = resolveConstant(xer);
-                        stem.put(key, value);
+                        stem.put(from(key), value);
                         //       System.err.println(XMLUtils.class.getSimpleName() + ".resolveStem: key=" + key + ", value='" + value + "'");
                     }
                     break;

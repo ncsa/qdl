@@ -16,6 +16,7 @@ import java.security.SecureRandom;
 import java.util.*;
 
 import static org.qdl_lang.variables.Constant.UNKNOWN_TYPE;
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.asJavaValue;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
@@ -354,7 +355,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
     }
 
 
-    public static void processSet1(QDLSet outSet, QDLSet arg, fPointer pointer) {
+    public static void processSet1(QDLSet outSet, QDLSet<QDLValue> arg, fPointer pointer) {
         for (QDLValue element : arg) {
             if (element.isStem()) {
                 // Do something here???
@@ -573,7 +574,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
      * @param polyad
      * @param optionalArgs
      */
-    public static void processSet2(QDLSet outSet, QDLSet inSet, Object scalar, boolean scalarRHS, fPointer pointer, ExpressionImpl polyad, boolean optionalArgs) {
+    public static void processSet2(QDLSet<QDLValue> outSet, QDLSet<QDLValue> inSet, Object scalar, boolean scalarRHS, fPointer pointer, ExpressionImpl polyad, boolean optionalArgs) {
         for (QDLValue element : inSet) {
             fpResult r = null;
             Object[] objects;
@@ -620,7 +621,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         // now we loop -- note that we must still preserve which is the first and second argument
         // so all this is basically to figure out how to loop over what.
         while (iterator.hasNext()) {
-            Object key = asJavaValue(iterator.next());
+            QDLKey key = from(iterator.next());
             fpResult r = null;
             Object[] objects;
             if (optionalArgs) {
@@ -642,11 +643,12 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
                 QDLStem newOut = new QDLStem();
                 processStem2(newOut, toStem(objects[0]), toStem(objects[1]), pointer, polyad, optionalArgs);
                 if (!newOut.isEmpty()) {
-                    outStem.putLongOrString(key, asQDLValue(newOut));
+                    outStem.put(key, asQDLValue(newOut));
                 }
             } else {
+
                 r = pointer.process(objects);
-                outStem.putLongOrString(key, r.result);
+                outStem.put(key, r.result);
             }
         }
 
@@ -712,7 +714,7 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         // now we loop -- note that we must still preserve which is the first and second argument
         // so all this is basically to figure out how to loop over what.
         while (iterator.hasNext()) {
-            Object key = iterator.next();
+            QDLKey key = from(iterator.next());
             fpResult r = null;
             Object[] objects;
             if (optionalArgs) {
@@ -737,11 +739,11 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
                         toStem(objects[2]),
                         pointer, polyad, optionalArgs);
                 if (!newOut.isEmpty()) {
-                    outStem.putLongOrString(key, asQDLValue(newOut));
+                    outStem.put(key, asQDLValue(newOut));
                 }
             } else {
                 r = pointer.process(objects);
-                outStem.putLongOrString(key, r.result);
+                outStem.put(key, r.result);
             }
         }
 

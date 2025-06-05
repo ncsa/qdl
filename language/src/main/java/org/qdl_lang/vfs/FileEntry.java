@@ -4,6 +4,7 @@ import org.qdl_lang.variables.QDLStem;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import org.apache.commons.codec.binary.Base64;
+import org.qdl_lang.variables.values.LongValue;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -172,7 +173,7 @@ public class FileEntry implements VFSEntry {
         int i = 0;
         //Read from the stream
         for (String content : getLines()) {
-            out.put(Integer.toString(i++), content);
+            out.put(new LongValue(i++), content);
         }
         return out;
     }

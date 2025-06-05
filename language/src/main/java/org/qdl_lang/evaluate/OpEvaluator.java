@@ -984,9 +984,9 @@ a.⌆b.
         if (!stem.isList()) {
             throw new QDLExceptionWithTrace("right argument of " + FOR_ALL_KEY + " must be a list", dyad.getRightArgument());
         }
-        for (Object key : stem.getQDLList().orderedKeys()) {
+        for (QDLKey key : stem.getQDLList().orderedKeys()) {
             // key is a long, convert to int
-            polyad.addArgument(new ConstantNode(stem.getQDLList().get((Long) key)));
+            polyad.addArgument(new ConstantNode(stem.getQDLList().get(key.asLong())));
         }
         //polyad.addArgument(dyad.getRightArgument());
         state.getMetaEvaluator().evaluate(polyad, state);
@@ -1193,7 +1193,7 @@ a.⌆b.
                 stem0 = obj0.asStem();
             } else {
                 stem0 = new QDLStem();
-                stem0.put(0L, asQDLValue(obj0));
+                stem0.put(LongValue.Zero, asQDLValue(obj0));
             }
             outStem = outStem.union(stem0); // copy over elements
             long index = -1L;
@@ -1215,13 +1215,13 @@ a.⌆b.
         QDLStem stem1 = null;
         if ((obj0.isNull())) {
             stem0 = new QDLStem();
-            stem0.put(0L, QDLValue.getNullValue());
+            stem0.put(LongValue.Zero, QDLValue.getNullValue());
         } else {
             if (obj0.isStem()) {
                 stem0 = obj0.asStem();
             } else {
                 stem0 = new QDLStem();
-                stem0.put(0L, asQDLValue(obj0));
+                stem0.put(LongValue.Zero, asQDLValue(obj0));
             }
         }
 
@@ -1230,7 +1230,7 @@ a.⌆b.
             stem1 = obj1.asStem();
         } else {
             stem1 = new QDLStem();
-            stem1.put(0L, asQDLValue(obj1));
+            stem1.put(LongValue.Zero, asQDLValue(obj1));
         }
         // NOTE this is done so we don't end up shlepping around references to things and modifying them
         // without warning.

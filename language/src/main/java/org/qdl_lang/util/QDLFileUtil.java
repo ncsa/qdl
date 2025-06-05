@@ -7,6 +7,7 @@ import org.qdl_lang.exceptions.QDLServerModeException;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.StemUtility;
+import org.qdl_lang.variables.values.LongValue;
 import org.qdl_lang.vfs.FileEntry;
 import org.qdl_lang.vfs.VFSEntry;
 import org.qdl_lang.vfs.VFSFileProvider;
@@ -85,7 +86,7 @@ public class QDLFileUtil extends FileUtil {
         int i = 0;
         //Read from the stream
         for (String content : contents) {
-            out.put(Integer.toString(i++), content);
+            out.put(new LongValue(i++), content);
         }
 
         return out;

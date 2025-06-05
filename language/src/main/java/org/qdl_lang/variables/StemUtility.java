@@ -40,7 +40,7 @@ public class StemUtility {
          * @param leftStem  - The left hand stem's argument at this axis
          * @param rightStem - the right hand stem's argument at this axis.
          */
-        void action(QDLStem out, Object key, QDLStem leftStem, QDLStem rightStem);
+        void action(QDLStem out, QDLKey key, QDLStem leftStem, QDLStem rightStem);
     }
 
     public static boolean isStem(Object o) {
@@ -81,7 +81,7 @@ public class StemUtility {
                                           boolean maxDepth,
                                           DyadAxisAction axisAction) {
         QDLStem commonKeys = left0.commonKeys(right0);
-        for (Object key0 : commonKeys.keySet()) {
+        for (QDLKey key0 : commonKeys.keySet()) {
             //boolean isKey0Long = key0 instanceof Long;
             QDLValue leftQV = left0.get(key0);
             QDLValue rightQV = right0.get(key0);
@@ -116,10 +116,10 @@ public class StemUtility {
                         throw new RankException("rank error");
                     }
                     QDLStem out1 = new QDLStem();
-                    out0.putLongOrString(key0, asQDLValue(out1));
+                    out0.put(key0, asQDLValue(out1));
                     axisDayadRecursion(out1, left1, right1, depth - 1, maxDepth, axisAction);
                 } else {
-                    out0.putLongOrString(key0, asQDLValue(left1.union(right1)));
+                    out0.put(key0, asQDLValue(left1.union(right1)));
                 }
             }
         }
@@ -264,13 +264,13 @@ public class StemUtility {
         if (!stem.isList()) {
             throw new IllegalArgumentException("cannot format general stem");
         }
-        for (Object key : stem.keySet()) {
+        for (QDLKey key : stem.keySet()) {
             Object obj = stem.get(key);
             if (obj instanceof QDLStem) {
                 QDLStem stemVariable = (QDLStem) obj;
                 String row = "";
-                for (Object key2 : stemVariable.keySet()) {
-                    row = row + stemVariable.get(key2) + " ";
+                for (QDLKey key2 : stemVariable.keySet()) {
+                    row = row + stemVariable.get(key2).toString() + " ";
                 }
 
                 System.out.println(row);
@@ -361,14 +361,18 @@ public class StemUtility {
 
     public static QDLStem listToStem(List list) {
         QDLStem outStem = new QDLStem();
-        QDLList out  = outStem.getQDLList();
+        QDLList<? extends QDLValue> out  = outStem.getQDLList();
         int i = 0;
       for(Object value : list){
+          out.add((QDLValue)value);
+
+/*
           if(value instanceof QDLValue){
               out.add((QDLValue)value);
           }else{
               out.add(asQDLValue(convert(value)));
           }
+*/
       }
       return outStem;
     }
@@ -460,6 +464,16 @@ public class StemUtility {
                 stem.put(key, asQDLValue(value));
             }
         }
+    }
+
+    /**
+     * Since Java's use of generics precludes a general {@link QDLStem} put on Objects, this utility does that.
+     * @param stem
+     * @param key
+     * @param value
+     */
+    public static void put(QDLStem stem, Object key, Object value) {
+        stem.put(QDLKey.from(key), QDLValue.asQDLValue(value));
     }
 
     /**

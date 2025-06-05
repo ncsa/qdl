@@ -12,10 +12,7 @@ import edu.uiuc.ncsa.security.util.configuration.TemplateUtil;
 import edu.uiuc.ncsa.security.util.mail.MailEnvironment;
 import edu.uiuc.ncsa.security.util.mail.MailUtil;
 import net.sf.json.JSONObject;
-import org.qdl_lang.variables.values.BooleanValue;
-import org.qdl_lang.variables.values.QDLKey;
-import org.qdl_lang.variables.values.QDLValue;
-import org.qdl_lang.variables.values.StringValue;
+import org.qdl_lang.variables.values.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +20,7 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import static edu.uiuc.ncsa.security.core.util.StringUtils.RJustify;
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
@@ -51,7 +49,7 @@ public class QDLMail implements QDLMetaModule {
                 long index = 0L;
                 message = new QDLStem();
                 while (st.hasMoreTokens()) {
-                    message.put(index++, st.nextToken());
+                    message.put(new LongValue(index++), st.nextToken());
                 }
             } else {
                 if (qdlValues[0].isStem()) {
@@ -106,9 +104,9 @@ public class QDLMail implements QDLMetaModule {
             StringBuilder body = new StringBuilder();
             String subject = newMessage.getString(0L);
             QDLStem bodyStem = newMessage.listSubset(1L);
-            for (Object key : bodyStem.keySet()) {
-                if (key instanceof Long) {
-                    body.append(bodyStem.getString((Long) key) + "\n");
+            for (QDLKey key : bodyStem.keySet()) {
+                if (key.isLong()) {
+                    body.append(bodyStem.get(key) + "\n");
                 }
             }
             mailUtil.sendMessage(subject, body.toString(), null);
@@ -176,10 +174,10 @@ public class QDLMail implements QDLMetaModule {
                     QDLStem rawRR = (QDLStem) rawAddresses;
                     TreeSet<String> addressList = new TreeSet<>(); // re-order, keep unique
 
-                    for (Object key : rawRR.keySet()) {
-                        Object possibleRecipient = rawRR.get(key);
-                        if(possibleRecipient instanceof String){
-                            addressList.add((String)possibleRecipient);
+                    for (QDLKey key : rawRR.keySet()) {
+                        QDLValue possibleRecipient = rawRR.get(key);
+                        if(possibleRecipient.isString()){
+                            addressList.add(possibleRecipient.asString());
                         }
                     }
                     addresses.addAll(addressList);
@@ -314,7 +312,7 @@ public class QDLMail implements QDLMetaModule {
       if(me.carbonCopy!=null){
           QDLStem q = addAll(me.carbonCopy);
           if(q!=null){
-              stem.put(MAIL_CC, q);
+              stemPut(stem, MAIL_CC, q);
           }
       }
 
@@ -322,29 +320,38 @@ public class QDLMail implements QDLMetaModule {
       if(me.blindCarbonCopy!=null){
           QDLStem q = addAll(me.blindCarbonCopy);
           if(q!=null){
-              stem.put(MAIL_BCC, q);
+              stemPut(stem,MAIL_BCC, q);
           }
       }
       if(me.recipients!=null){
           QDLStem q = addAll(me.recipients);
           if(q!=null){
-              stem.put(MAIL_TO, q);
+              stemPut(stem,MAIL_TO, q);
           }
       }
 
-      if(me.replyTo!=null)stem.put(MAIL_REPLY_TO, me.replyTo);
-      if(me.from!=null)stem.put(MAIL_FROM, me.from);
-      if(me.username!=null)stem.put(MAIL_USERNAME, me.username);
-      if(me.server!=null)stem.put(MAIL_SERVER, me.server);
-      if(me.password!=null)stem.put(MAIL_PASSWORD, me.password);
-      if(me.contentType!=null)stem.put(MAIL_CONTENT_TYPE, me.contentType);
-      stem.put(MAIL_USE_SSL, me.useSSL);
-      stem.put(MAIL_START_TLS, me.starttls);
-      stem.put(MAIL_PORT, (long)me.port);
+      if(me.replyTo!=null)stemPut(stem,MAIL_REPLY_TO, me.replyTo);
+      if(me.from!=null)stemPut(stem,MAIL_FROM, me.from);
+      if(me.username!=null)stemPut(stem,MAIL_USERNAME, me.username);
+      if(me.server!=null)stemPut(stem,MAIL_SERVER, me.server);
+      if(me.password!=null)stemPut(stem,MAIL_PASSWORD, me.password);
+      if(me.contentType!=null)stemPut(stem,MAIL_CONTENT_TYPE, me.contentType);
+      stemPut(stem,MAIL_USE_SSL, me.useSSL);
+      stemPut(stem,MAIL_START_TLS, me.starttls);
+      stemPut(stem,MAIL_PORT, (long)me.port);
 
       return stem;
      }
 
+    /**
+     * Centralize adding values to stem
+     * @param stem
+     * @param k
+     * @param v
+     */
+    protected static void stemPut(QDLStem stem, Object k, Object v){
+         stem.put(from(k),QDLValue.asQDLValue(v));
+}
     @Override
     public JSONObject serializeToJSON() {
         return null;

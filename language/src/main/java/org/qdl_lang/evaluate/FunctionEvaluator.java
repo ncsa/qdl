@@ -414,17 +414,17 @@ public class FunctionEvaluator extends AbstractEvaluator {
                 StemVariableNode stemVariableNode = (StemVariableNode) polyad.getArgAt(0);
                 QDLStem out2 = new QDLStem();
                 for (StemEntryNode stemEntryNode : stemVariableNode.getStatements()) {
-                    QDLValue key = stemEntryNode.getKey().evaluate(state);
+                    QDLKey key = QDLKey.from(stemEntryNode.getKey().evaluate(state));
                     if (stemEntryNode.getValue() instanceof VariableNode) {
                         VariableNode vNode2 = (VariableNode) stemEntryNode.getValue();
                         if (isScalarArgCount) {
-                            out2.putLongOrString(key, asQDLValue(checkIsFunction(vNode2.getVariableReference(), argCount.intValue(), state)));
+                            out2.put(key, asQDLValue(checkIsFunction(vNode2.getVariableReference(), argCount.intValue(), state)));
                         } else {
                             // do subsetting directly
-                            if (argCounts.containsKey(key.getValue())) {
+                            if (argCounts.containsKey(key)) {
                                 QDLValue v = argCounts.get(key);
                                 if (v.isLong()) {
-                                    out2.putLongOrString(key.getValue(), asQDLValue(checkIsFunction(vNode2.getVariableReference(), v.asLong().intValue(), state)));
+                                    out2.put(key, asQDLValue(checkIsFunction(vNode2.getVariableReference(), v.asLong().intValue(), state)));
                                 } else {
                                     throw new BadArgException("arg count element at " + key + " is not a valid", polyad.getArgAt(1));
                                 }

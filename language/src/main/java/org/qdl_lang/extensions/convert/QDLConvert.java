@@ -41,6 +41,8 @@ import java.io.Writer;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import static org.qdl_lang.variables.Constants.*;
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
@@ -189,18 +191,18 @@ public class QDLConvert implements QDLMetaModule {
                 StartDocument startDocument = (StartDocument) xe;
                 QDLStem declaration = new QDLStem();
                 if (startDocument.getVersion() == null) {
-                    declaration.put("@version", "1.0");
+                    declaration.put(from("@version"), "1.0");
                 } else {
-                    declaration.put("@version", startDocument.getVersion());
+                    declaration.put(from("@version"), startDocument.getVersion());
                 }
                 if (startDocument.getCharacterEncodingScheme() == null) {
-                    declaration.put("@encoding", "UTF-8");
+                    declaration.put(from("@encoding"), "UTF-8");
                 } else {
-                    declaration.put("@encoding", startDocument.getCharacterEncodingScheme());
+                    declaration.put(from("@encoding"), startDocument.getCharacterEncodingScheme());
                 }
-                declaration.put("@standalone", startDocument.isStandalone());
+                declaration.put(from("@standalone"), startDocument.isStandalone());
 
-                out.put(DECLARATION_KEY, declaration); // No good way to get the text of this...
+                out.put(from(DECLARATION_KEY), declaration); // No good way to get the text of this...
             }
             MyStemStack<QDLStem> cursorStack = new MyStemStack<>();
             cursorStack.push(out);
@@ -223,7 +225,7 @@ public class QDLConvert implements QDLMetaModule {
                     case XMLEvent.ATTRIBUTE: // Never seems to get called. See start element
                         break;
                     case XMLEvent.CDATA:
-                        cursorStack.peek().put(CDATA_KEY, Boolean.TRUE);
+                        cursorStack.peek().put(from(CDATA_KEY), Boolean.TRUE);
                         break;
 
                     case XMLEvent.COMMENT:
@@ -232,10 +234,10 @@ public class QDLConvert implements QDLMetaModule {
                             if (cursorStack.size() == 1) {
                                 // if this is before any elements have been found, add to the
                                 // main stem.
-                                cursorStack.peek().put(COMMENT_KEY, comment.getText());
+                                cursorStack.peek().put(from(COMMENT_KEY), comment.getText());
                             } else {
 
-                                cursorStack.peek().put(COMMENT_KEY, comment.getText());
+                                cursorStack.peek().put(from(COMMENT_KEY), comment.getText());
                             }
                         }
                         break;
@@ -249,7 +251,7 @@ public class QDLConvert implements QDLMetaModule {
                             previous.getStem(currentTag).listAdd(asQDLValue(targetStem));
                         } else {
                             QDLStem x = new QDLStem();
-                            previous.put(currentTag, x);
+                            previous.put(from(currentTag), x);
                             x.listAdd(asQDLValue(targetStem));
 
                         }
@@ -259,7 +261,7 @@ public class QDLConvert implements QDLMetaModule {
                         if (XML_IMPORT_LEVEL_ATTR <= level) {
                             while (attributeIterator.hasNext()) {
                                 Attribute attribute = attributeIterator.next();
-                                cursorStack.peek().put(ATTRIBUTE_CAPUT + attribute.getName().getLocalPart(), attribute.getValue());
+                                cursorStack.peek().put(from(ATTRIBUTE_CAPUT + attribute.getName().getLocalPart()), attribute.getValue());
                             }
                         }
                         break;
@@ -277,7 +279,7 @@ public class QDLConvert implements QDLMetaModule {
                     case XMLEvent.DTD:
                         DTD dtd = (DTD) event;
                         if (level == XML_IMPORT_LEVEL_EXACT) {
-                            out.put(DTD_TYPE_KEY, dtd.getDocumentTypeDeclaration());
+                            out.put(from(DTD_TYPE_KEY), dtd.getDocumentTypeDeclaration());
                         }
                         break;
                     case XMLEvent.ENTITY_DECLARATION:
@@ -293,9 +295,9 @@ public class QDLConvert implements QDLMetaModule {
             if (level == XML_IMPORT_LEVEL_FLATTEN) {
                 // Cannot actually snarf this in one pass since it accumulates structure as it
                 // parses. Doing it in one pass would require a very complex cursor system.
-                for (Object key : out.keySet()) {
+                for (QDLKey key : out.keySet()) {
                     if (rejectKey(key)) {
-                        out.remove(key.toString());
+                        out.remove(key);
                     }
                 }
                 out = doSnarf(out);
@@ -405,7 +407,7 @@ public class QDLConvert implements QDLMetaModule {
                     xsw.writeStartDocument();
                 }
                 String rootTag = null;
-                for (Object key : arg.keySet()) {
+                for (QDLValue key : arg.keySet()) {
                     if (!key.toString().startsWith(DOC_CAPUT)) {
                         rootTag = key.toString();
                     }
@@ -444,7 +446,7 @@ public class QDLConvert implements QDLMetaModule {
                 // @pi are attributes
                 // @ni are nodes to recurse over
                 // Write the text
-                QDLList qdlList = ((QDLStem) object).getQDLList();
+                QDLList<? extends QDLValue> qdlList = ((QDLStem) object).getQDLList();
                 QDLMap qdlMap = ((QDLStem) object).getQDLMap();
                 boolean isCDATA = qdlMap.containsKey(CDATA_KEY) && qdlMap.get(CDATA_KEY).asBoolean();
                 // Write attributes immediately after tag or you get an exception.
@@ -453,31 +455,58 @@ public class QDLConvert implements QDLMetaModule {
                         xsw.writeAttribute(key.substring(ATTRIBUTE_CAPUT.length()), qdlMap.get(key).toString());
                     }
                 }
-                for (Object key : qdlList.orderedKeys()) {
+                for (QDLKey key : qdlList.orderedKeys()) {
                     if (isCDATA) {
-                        xsw.writeCData(qdlList.get((Long) key).toString());
+                        xsw.writeCData(qdlList.get(key.asLong()).toString());
                     } else {
-                        xsw.writeCharacters(xmlEscape(qdlList.get((Long) key).toString()));
+                        xsw.writeCharacters(xmlEscape(qdlList.get(key.asLong()).toString()));
                     }
                 }
                 for (String key : qdlMap.keySet()) {
                     if (!isProperty(key)) {
-                        Object value = qdlMap.get(key);
+                        QDLValue value = qdlMap.get(key);
+
                         if (key.equals(COMMENT_KEY)) {
-                            xsw.writeComment(value.toString());
+                            xsw.writeComment(value.asString());
                             continue;
                         }
-
-                        if (Constant.isStem(value)) {
-                            writeElement(xsw, (QDLStem) value, key);
-                        } else {
-                            if (Constant.isSet(value)) {
+                        switch (value.getType()) {
+                            case STEM_TYPE:
+                                writeElement(xsw, value.asStem(), key);
+                                break;
+                            case SET_TYPE:
                                 xsw.writeStartElement(key);
-                                xsw.writeCData(((QDLList) value).toJSON().toString());
+                                xsw.writeCData(value.asSet().toStem().toJSON().toString());
+                                xsw.writeEndElement();
+                                break;
+                            case DECIMAL_TYPE:
+                                case BOOLEAN_TYPE:
+                                    case STRING_TYPE:
+                                xsw.writeStartElement(key);
+                                if (isCDATA) {
+                                    xsw.writeCData(value.getValue().toString());
+                                } else {
+                                    xsw.writeCharacters(xmlEscape(value.toString()));
+                                }
+                                xsw.writeEndElement();
+                            default:
+                                // unsupported types, such as modules and functions
+                                xsw.writeStartElement(key);
+                                    xsw.writeCharacters("***");
+                                xsw.writeEndElement();
+                        }
+
+/*
+                        if (value.isStem()) {
+                            writeElement(xsw, value.asStem(), key.asString());
+                        } else {
+                            if (value.isSet()) {
+                                xsw.writeStartElement(key.asString());
+                                xsw.writeCData(value.asSet().toStem().toJSON().toString());
                                 xsw.writeEndElement();
                             } else {
 
-                                xsw.writeStartElement(key);
+                                xsw.writeStartElement(key.asString());
                                 if (isCDATA) {
                                     xsw.writeCData(((QDLList) value).toJSON().toString());
                                 } else {
@@ -485,8 +514,7 @@ public class QDLConvert implements QDLMetaModule {
                                 }
                                 xsw.writeEndElement();
                             }
-
-                        }
+                        }*/
                     }
                 }
 
@@ -539,7 +567,7 @@ public class QDLConvert implements QDLMetaModule {
         state.setServerMode(false);
         //cfg.put("file", DebugUtil.getDevPath()+"/qdl/language/src/main/resources/xml/planes.xml");
         cfg.put("file", asQDLValue(DebugUtil.getDevPath() + "/qdl/language/src/main/resources/xml/simple0.xml"));
-        QDLStem stem =  xmlImport.evaluate(new QDLValue[]{asQDLValue(cfg)}, state).asStem();
+        QDLStem stem = xmlImport.evaluate(new QDLValue[]{asQDLValue(cfg)}, state).asStem();
         XMLExport xmlExport = QDLConvert.new XMLExport();
         Object x = xmlExport.evaluate(new QDLValue[]{asQDLValue(stem)}, state);
         System.out.println(x);
@@ -593,13 +621,13 @@ public class QDLConvert implements QDLMetaModule {
             }
             polyad.evaluate(state);
             QDLStem z = polyad.getResult().asStem();
-            List<QDLValue> values = z.getQDLList().values();
+            List<QDLValue> values = (List<QDLValue>) z.getQDLList().values();
             List<String> out = new ArrayList<>();
             QDLStem result = new QDLStem();
             for (QDLValue qdlValue : values) {
                 if (qdlValue.isStem()) {
                     QDLStem zz = qdlValue.asStem();
-                    ArrayList valueList = qdlValue.asStem().getQDLList().values();
+                    ArrayList<QDLValue> valueList = (ArrayList<QDLValue>) qdlValue.asStem().getQDLList().values();
                     boolean gotOne = false;
                     for (Object ooo : valueList) {
                         if (isProperty(ooo)) {
@@ -655,9 +683,9 @@ public class QDLConvert implements QDLMetaModule {
         @Override
         public QDLValue evaluate(QDLValue[] qdlValues, State state) {
             QDLStem inStem = qdlValues[0].asStem();
-            for (Object key : inStem.keySet()) {
+            for (QDLKey key : inStem.keySet()) {
                 if (rejectKey(key)) {
-                    inStem.remove(key.toString());
+                    inStem.remove(key);
                 }
             }
             return asQDLValue(doSnarf(inStem));
@@ -775,11 +803,11 @@ public class QDLConvert implements QDLMetaModule {
                 continue; // catch embedded >comment elements
             }
             // process the rest of the elements
-            Object v = map.get(key);
+            QDLValue v = map.get(key);
             if (isProperty(key)) {
                 out.put(key, v);
             } else {
-                out.put(key, snarfList(((QDLStem) v).getQDLList(), glomText));
+                out.put(from(key), snarfList(v.asStem().getQDLList(), glomText));
             }
         } // end for
         return out;
@@ -959,9 +987,9 @@ public class QDLConvert implements QDLMetaModule {
                 exportToFile = true;
                 fileName = objects[1].asString();
             }
-            if(stem.isList()){
+            if (stem.isList()) {
                 QDLStem wrapper = new QDLStem();
-                wrapper.put("root", stem);
+                wrapper.put(from("root"), stem);
                 stem = wrapper;
             }
             StringReader stringReader = new StringReader(stem.toJSON().toString());
@@ -1172,7 +1200,7 @@ public class QDLConvert implements QDLMetaModule {
 
         @Override
         public int[] getArgCount() {
-            return new int[]{1,2};
+            return new int[]{1, 2};
         }
 
         @Override
@@ -1182,7 +1210,7 @@ public class QDLConvert implements QDLMetaModule {
             }
             boolean allowListEntries = true;
 
-            if(qdlValues.length == 2 && qdlValues[1].isBoolean()){
+            if (qdlValues.length == 2 && qdlValues[1].isBoolean()) {
                 allowListEntries = qdlValues[1].asBoolean();
 
             }
@@ -1208,7 +1236,7 @@ public class QDLConvert implements QDLMetaModule {
         }
     }
 
-    public class IniExport implements QDLFunction{
+    public class IniExport implements QDLFunction {
         @Override
         public String getName() {
             return INI_OUT;
@@ -1216,18 +1244,18 @@ public class QDLConvert implements QDLMetaModule {
 
         @Override
         public int[] getArgCount() {
-            return new int[]{1,2,3};
+            return new int[]{1, 2, 3};
         }
 
         @Override
         public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
-            if(!(qdlValues[0].isStem())){
+            if (!(qdlValues[0].isStem())) {
                 throw new BadArgException(INI_OUT + " takes a stem as its first argument", 0);
             }
             int indentfactor = 1; // default here
             boolean allowListEntries = true;
             boolean gotOne = qdlValues.length == 1; // default case is allow for single argument
-            if(qdlValues.length == 2) {
+            if (qdlValues.length == 2) {
                 if (qdlValues[1].isBoolean()) {
                     allowListEntries = qdlValues[1].asBoolean();
                     gotOne = true;
@@ -1237,7 +1265,7 @@ public class QDLConvert implements QDLMetaModule {
                     gotOne = true;
                 }
             }
-            if(qdlValues.length == 3){
+            if (qdlValues.length == 3) {
                 if (qdlValues[2].isBoolean()) {
                     allowListEntries = qdlValues[1].asBoolean();
                     gotOne = true;
@@ -1248,21 +1276,21 @@ public class QDLConvert implements QDLMetaModule {
                 }
 
             }
-            if(!gotOne){
-                throw new BadArgException(INI_OUT + " requires an integer or boolean as its additional arguments if present", qdlValues.length-1);
+            if (!gotOne) {
+                throw new BadArgException(INI_OUT + " requires an integer or boolean as its additional arguments if present", qdlValues.length - 1);
             }
 
-            String out =  IOEvaluator.convertToIni(qdlValues[0].asStem(), indentfactor, allowListEntries);
+            String out = IOEvaluator.convertToIni(qdlValues[0].asStem(), indentfactor, allowListEntries);
             return asQDLValue(out);
         }
 
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> dd = new ArrayList<>();
-            switch (argCount){
-               case 1:
-                   dd.add(getName() + "(stem.) - convert a stem to ini file format");
-                break;
+            switch (argCount) {
+                case 1:
+                    dd.add(getName() + "(stem.) - convert a stem to ini file format");
+                    break;
                 case 2:
                     dd.add(getName() + "(stem., indent) - convert a stem to ini file format and indent subsections by indent.");
                     break;
@@ -1294,7 +1322,8 @@ public class QDLConvert implements QDLMetaModule {
             return dd;
         }
     }
-    public class Sample implements QDLVariable{
+
+    public class Sample implements QDLVariable {
         @Override
         public String getName() {
             return "sample.";

@@ -9,6 +9,7 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.qdl_lang.variables.StemUtility;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.qdl_lang.exceptions.ParsingException.*;
+import static org.qdl_lang.variables.StemUtility.put;
 
 /**
  * <p>Created by Jeff Gaynor<br>
@@ -93,12 +95,12 @@ public class IniListenerImpl implements iniListener {
                     if (isAllowListEntries()) {
                         if (nextToken.startsWith(IOEvaluator.INI_LIST_ENTRY_START)) {
                             Long index = Long.parseLong(nextToken.substring(1));
-                            currentStem1.put(index, nextStem);
+                            put(currentStem1, index, nextStem);
                         } else {
-                            currentStem1.put(nextToken, nextStem);
+                            put(currentStem1,nextToken, nextStem);
                         }
                     } else {
-                        currentStem1.put(nextToken, nextStem);
+                        put(currentStem1,nextToken, nextStem);
                     }
                     currentStem1 = nextStem;
                 } else {
@@ -115,15 +117,15 @@ public class IniListenerImpl implements iniListener {
                 if (isAllowListEntries()) {
                     try {
                         Long index = Long.parseLong(currentSectionHeader.substring(1));
-                        output.put(index, currentStem);
+                        put(output, index, currentStem);
                     } catch (NumberFormatException nfx) {
-                        output.put(currentSectionHeader, currentStem);
+                        put(output, currentSectionHeader, currentStem);
                     }
                 } else {
-                    output.put(currentSectionHeader, currentStem);
+                    put(output,currentSectionHeader, currentStem);
                 }
             } else {
-                output.put(currentSectionHeader, currentStem);
+                put(output, currentSectionHeader, currentStem);
             }
         }
 
@@ -163,20 +165,20 @@ public class IniListenerImpl implements iniListener {
                 try {
                     if (currentLineID.length() - 1 < 19) {
                         Long index = Long.parseLong(currentLineID.substring(1));
-                        currentStem.put(index, currentLineValue);
+                        put(currentStem,index, currentLineValue);
                     } else {
                         BigInteger index = new BigInteger(currentLineID.substring(1));
-                        currentStem.put(index.toString(), currentLineValue); // can't handle anything but longs as list indices
+                        put(currentStem,index.toString(), currentLineValue); // can't handle anything but longs as list indices
                     }
 
                 } catch (NumberFormatException nfx) {
-                    currentStem.put(currentLineID, currentLineValue);
+                    put(currentStem,currentLineID, currentLineValue);
                 }
             } else {
-                currentStem.put(currentLineID, currentLineValue);
+                put(currentStem,currentLineID, currentLineValue);
             }
         } else {
-            currentStem.put(currentLineID, currentLineValue);
+            put(currentStem,currentLineID, currentLineValue);
         }
     }
 

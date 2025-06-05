@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /*
@@ -49,8 +50,8 @@ public class X509 implements QDLMetaModule {
             KeyStore keyStore = KeyStore.getInstance(type);
             keyStore.load(new FileInputStream(qdlValues[0].toString()), qdlValues[1].toString().toCharArray());
             QDLStem stem = new QDLStem();
-            stem.put("type", keyStore.getType());
-            stem.put("size", (long) keyStore.size());
+            stem.put(from("type"), keyStore.getType());
+            stem.put(from("size"), (long) keyStore.size());
             Enumeration<String> aliases = keyStore.aliases();
             ArrayList<QDLValue> aliasesList = new ArrayList<>(100);
             while (aliases.hasMoreElements()) {
@@ -59,8 +60,8 @@ public class X509 implements QDLMetaModule {
             }
             QDLStem aliasStem = new QDLStem();
             aliasStem.getQDLList().setArrayList(aliasesList);
-            stem.put("aliases", aliasStem);
-            stem.put("provider", keyStore.getProvider().toString());
+            stem.put(from("aliases"), aliasStem);
+            stem.put(from("provider"), keyStore.getProvider().toString());
             return asQDLValue(stem);
         }
 

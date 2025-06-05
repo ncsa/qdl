@@ -3,6 +3,7 @@ package org.qdl_lang.extensions.examples.basic;
 import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.variables.QDLSet;
 import org.qdl_lang.variables.QDLStem;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
@@ -25,22 +26,32 @@ public class StemVar implements QDLVariable {
     @Override
     public Object getValue() {
         QDLStem stemVariable = new QDLStem();
-        stemVariable.put("help", "This is an basic stem variable that shows how to make one and  is shipped with the standard distro.");
-        stemVariable.put("time", "Current time in ms is " + new Date().getTime());
-        stemVariable.put("integer", 456456546L);
-        stemVariable.put("decimal", new BigDecimal("3455476.987654567654567"));
-        stemVariable.put("boolean", Boolean.TRUE);
-        QDLSet set = new QDLSet();
+        setStemValue(stemVariable,"help", "This is an basic stem variable that shows how to make one and  is shipped with the standard distro.");
+        setStemValue(stemVariable,"time", "Current time in ms is " + new Date().getTime());
+        setStemValue(stemVariable,"integer", 456456546L);
+        setStemValue(stemVariable,"decimal", new BigDecimal("3455476.987654567654567"));
+        setStemValue(stemVariable,"boolean", Boolean.TRUE);
+        QDLSet<QDLValue> set = new QDLSet();
         set.add(asQDLValue("one"));
         set.add(asQDLValue("two"));
         set.add(asQDLValue(3)); // Remember all "integers" in QDL are 64 bit, i.e. longs in Java! This gets converted
-        stemVariable.put("set", set);
+        setStemValue(stemVariable,"set", set);
         QDLStem nestedStem = new QDLStem();
-        nestedStem.put("0", 10L);
-        nestedStem.put("1", 11L);
-        nestedStem.put("2", 12L);
-        nestedStem.put("3", "foo");
-        stemVariable.put("list.", nestedStem);
+        setStemValue(nestedStem,0, 10L);
+        setStemValue(nestedStem,1, 11L);
+        setStemValue(nestedStem,2, 12L);
+        setStemValue(nestedStem,3, "foo");
+        setStemValue(stemVariable,"list.", nestedStem);
         return stemVariable;
+    }
+
+    /** Utility call to create the specific keys and values.
+     *
+     * @param stem
+     * @param key
+     * @param value
+     */
+    protected void setStemValue(QDLStem stem, Object key, Object value) {
+        stem.put(QDLKey.from(key), asQDLValue(value));
     }
 }

@@ -12,6 +12,7 @@ import org.qdl_lang.variables.*;
 
 import java.math.BigDecimal;
 
+import static org.qdl_lang.variables.StemUtility.put;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
@@ -43,10 +44,10 @@ public class MathFunctionsTest extends AbstractQDLTester {
 
         VStack symbolTable = state.getVStack();
         QDLStem arg = new QDLStem();
-        arg.put("0", -12345L);
-        arg.put("1", 2468L);
-        arg.put("2", -1000000L);
-        arg.put("3", 987654321L);
+        put(arg, "0", -12345L);
+        put(arg, "1", 2468L);
+        put(arg, "2", -1000000L);
+        put(arg, "3", 987654321L);
 
         symbolTable.put(new VThing(new XKey("arg."), new QDLVariable(arg)));
         VariableNode argNode = new VariableNode("arg.");
@@ -139,16 +140,16 @@ public class MathFunctionsTest extends AbstractQDLTester {
         VStack vStack = state.getVStack();
 
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("0", "One Ring to rule them all");
-        sourceStem.put("1", "One Ring to find them");
-        sourceStem.put("2", "One Ring to bring them all");
-        sourceStem.put("3", "and in the darkness bind them");
+        put(sourceStem,"0", "One Ring to rule them all");
+        put(sourceStem,"1", "One Ring to find them");
+        put(sourceStem,"2", "One Ring to bring them all");
+        put(sourceStem,"3", "and in the darkness bind them");
 
         QDLStem expected = new QDLStem();
-        expected.put("0", "40d006b6b2e8bea7bf3e9aad679e13b5246f87a2");
-        expected.put("1", "15ac553ccb88f34f3c2a4f9ac0460d0fde29c8a8");
-        expected.put("2", "5fd8b1f8f66de0848eca4dfc468fc15e147e4670");
-        expected.put("3", "830b0c398047d0d3ac4834508eb1bb87ea7f9ba9");
+        put(expected,"0", "40d006b6b2e8bea7bf3e9aad679e13b5246f87a2");
+        put(expected,"1", "15ac553ccb88f34f3c2a4f9ac0460d0fde29c8a8");
+        put(expected,"2", "5fd8b1f8f66de0848eca4dfc468fc15e147e4670");
+        put(expected,"3", "830b0c398047d0d3ac4834508eb1bb87ea7f9ba9");
         vStack.put(new VThing(new XKey("sourceStem."), new QDLVariable(sourceStem)));
         VariableNode arg = new VariableNode("sourceStem.");
         Polyad polyad = new Polyad(MathEvaluator.HASH);

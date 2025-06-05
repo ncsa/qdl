@@ -13,6 +13,7 @@ import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.QDLSet;
 import org.qdl_lang.variables.QDLVariable;
 import org.qdl_lang.variables.VThing;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.vfs.VFSEntry;
 
@@ -275,7 +276,7 @@ public class WhileLoop implements Statement {
                 throw new QDLExceptionWithTrace("Error: incorrect number of arguments for " + FOR_NEXT + ".", conditional.getArgAt(0));
         }
         if (doList) {
-            for (Object key : list.keySet()) {
+            for (QDLKey key : list.keySet()) {
                 localState.setValue(loopArg, list.get(key));
                 for (Statement statement : getStatements()) {
                     try {
@@ -351,7 +352,7 @@ public class WhileLoop implements Statement {
         }
         String loopVar = null;
         QDLStem stemVariable = null;
-        QDLSet qdlSet = null;
+        QDLSet<? extends QDLValue> qdlSet = null;
         QDLValue arg = conditional.getArguments().get(1).evaluate(localState);
         boolean isSet = false;
         if (arg.isStem()) {
@@ -383,7 +384,7 @@ public class WhileLoop implements Statement {
       ];
        */
         if (isSet) {
-            for (Object element : qdlSet) {
+            for (QDLValue element : qdlSet) {
                 localState.getVStack().localPut(new VThing(new XKey(loopVar), new QDLVariable( element)));
                 for (Statement statement : getStatements()) {
                     try {

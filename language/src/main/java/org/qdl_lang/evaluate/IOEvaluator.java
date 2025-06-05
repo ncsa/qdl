@@ -14,6 +14,7 @@ import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import org.qdl_lang.variables.values.BooleanValue;
+import org.qdl_lang.variables.values.LongValue;
 import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.vfs.*;
@@ -863,7 +864,7 @@ public class IOEvaluator extends AbstractEvaluator {
                         throw new IllegalArgumentException("list entries not allowed for sections");
                     }
                 } else {
-                    sb.append(indent + key.asLong() + " := " + InputFormUtil.inputForm(value) + "\n");
+                    sb.append(indent + key.asString() + " := " + InputFormUtil.inputForm(value) + "\n");
                 }
             }
         }
@@ -895,13 +896,16 @@ a : {b:{r:s, t:v}, p:q}
 z : {"m": 123}
 ini_out(ini.)
      */
-    protected static String toIniList(QDLList list) {
+    protected static String toIniList(QDLList<? extends QDLValue> list) {
         if (list.isEmpty()) return null;
         String out = "";
         boolean firstPass = true;
-        for (Object key : list.orderedKeys()) {
-            Object value = list.get((Long) key);
-            if (Constant.isStem(value)) {
+        for (QDLKey key : list.orderedKeys()) {
+            QDLValue value = null;
+            if(key.isLong()) {
+                 value = list.get(key.asLong());
+            }
+            if (value == null || value.isStem()) {
                 throw new IllegalArgumentException("nested stems in lists are not allowed in ini files");
             }
             if (firstPass) {

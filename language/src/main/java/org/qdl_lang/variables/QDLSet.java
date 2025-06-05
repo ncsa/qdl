@@ -6,16 +6,13 @@ import net.sf.json.JSONArray;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * <p>Created by Jeff Gaynor<br>
  * on 4/6/22 at  4:02 PM
  */
-public class QDLSet extends HashSet<QDLValue>  {
+public class QDLSet<K extends QDLValue> extends HashSet<K>  {
     public QDLSet() {
     }
 
@@ -40,7 +37,7 @@ public class QDLSet extends HashSet<QDLValue>  {
         QDLStem stemVariable = new QDLStem();
         stemVariable.fromJSON(array);
         clear();
-        addAll(stemVariable.getQDLList().values());
+        addAll((Collection<? extends K>) stemVariable.getQDLList().values());
     }
 
     public JSONArray toJSON() {

@@ -1,6 +1,7 @@
 package org.qdl_lang.variables;
 
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
+import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import org.qdl_lang.exceptions.IndexError;
 import org.qdl_lang.exceptions.NoDefaultValue;
 import org.qdl_lang.expressions.AllIndices;
@@ -28,6 +29,7 @@ import java.util.regex.PatternSyntaxException;
 
 import static org.qdl_lang.state.VariableState.var_regex;
 import static org.qdl_lang.variables.JSONAndStemUtility.convert;
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.*;
 
 /**
@@ -93,8 +95,8 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
         if (isLongIndex(key)) {
             return getLong(Long.parseLong(key));
         }
-        QDLValue v =  getQDLMap().get(key);
-        if(v == null) {
+        QDLValue v = getQDLMap().get(key);
+        if (v == null) {
             return null;
         }
         return v.asLong();
@@ -104,24 +106,24 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
         if (isLongIndex(key)) {
             return getStem(Long.parseLong(key));
         }
-        QDLValue v =  getQDLMap().get(key);
-        if(v == null) {
+        QDLValue v = getQDLMap().get(key);
+        if (v == null) {
             return null;
         }
         return v.asStem();
     }
 
     public QDLStem getStem(Long key) {
-        QDLValue v =  getQDLMap().get(key);
-        if(v == null) {
+        QDLValue v = getQDLMap().get(key);
+        if (v == null) {
             return null;
         }
         return v.asStem();
     }
 
     public Long getLong(Long key) {
-        QDLValue v =  getQDLList().get(key);
-        if(v == null) {
+        QDLValue v = getQDLList().get(key);
+        if (v == null) {
             return null;
         }
         return v.asLong();
@@ -154,8 +156,8 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     }
 
     public Boolean getBoolean(String key) {
-        QDLValue v =  getQDLMap().get(key);
-        if(v == null) {
+        QDLValue v = getQDLMap().get(key);
+        if (v == null) {
             return null;
         }
         return v.asBoolean();
@@ -201,7 +203,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     /* *******
         QDLList specific
        ****** */
-    public QDLList getQDLList() {
+    public QDLList<? extends QDLValue> getQDLList() {
         if (qdlList == null) {
             qdlList = new QDLList();
         }
@@ -216,6 +218,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
 
     /**
      * Used in unit tests only.
+     *
      * @param key
      * @return
      */
@@ -285,7 +288,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
      * @param stem
      */
     public void listAppend(QDLStem stem) {
-        getQDLList().appendAll(stem.getQDLList().values());
+        getQDLList().appendAll((List<QDLValue>) stem.getQDLList().values());
     }
 
     /**
@@ -354,7 +357,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     }
 
     public QDLValue put(int index, QDLValue value) {
-        return put(Long.valueOf(index), value);
+        return put(new LongValue(index), value);
     }
 
     /* *******
@@ -458,17 +461,16 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     }
 
     @Override
-    public boolean containsKey(Object key) {
-        key = QDLValue.asJavaValue(key); // no telling where it came from. Normalize it
-        if (key instanceof Long) {
-            return containsKey((Long) key);
+    public boolean containsKey(Object k) {
+        QDLKey key = from(k); // no telling where it came from. Normalize it
+        switch (key.getType()) {
+            case LONG_TYPE:
+                return getQDLList().containsKey(key.asLong());
+            case STRING_TYPE:
+                return getQDLMap().containsKey(key.asString());
+            case STEM_TYPE:
+                return null != get(new IndexList(key.asStem()));
         }
-        if (key instanceof String) {
-            return containsKey((String) key);
-        }
-/*        if (key instanceof IndexList) {
-            return get((IndexList) key, false) != null;
-        }*/
         return false;
     }
 
@@ -492,16 +494,16 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
         if (hasDefaultValue()) {
             output.setDefaultValue(getDefaultValue());
         }
-        for (Object key : keySet()) {
+        for (QDLKey key : keySet()) {
             QDLValue obj = get(key);
             if (obj == null) {
 
                 throw new NFWException("Cannot clone null value");
             } else {
                 if (obj.isStem()) {
-                    output.putLongOrString(key, asQDLValue(obj.asStem().clone()));
+                    output.put(key, asQDLValue(obj.asStem().clone()));
                 } else {
-                    output.putLongOrString(key, obj);
+                    output.put(key, obj);
                 }
             }
         }
@@ -515,15 +517,15 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
      * @param key
      * @param value
      */
-    public void putLongOrString(Object key, Object value) {
+/*    public void putLongOrString(Object key, Object value) {
         if (value instanceof QDLValue) {
             putLongOrString(key, (QDLValue) value);
             return;
         }
         putLongOrString(key, asQDLValue(value));
-    }
+    }*/
 
-    public void putLongOrString(Object key, QDLValue value) {
+/*    public void putLongOrString(Object key, QDLValue value) {
         if (key instanceof QDLValue) {
             QDLValue qdlValueKey = (QDLValue) key;
             if (qdlValueKey.isLong()) {
@@ -541,22 +543,52 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
         } else {
             put((String) key, value);
         }
-    }
+    }*/
+    public QDLValue get(QDLKey key) {
+        QDLValue value = null;
+        switch (key.getType()) {
+            case LONG_TYPE:
+                value = getQDLList().get(key.asLong());
+                break;
+            case STRING_TYPE:
+                if (StemPath.isPath(key.asString())) {
+                    StemPath stemPath = new StemPath();
+                    stemPath.parsePath(key.asString());
+                    value = get(stemPath);
+                } else {
+                    value = getQDLMap().get(key.asString());
+                    ;
+                }
+                break;
+            case STEM_TYPE:
+                IndexList r = get(new IndexList(key.asStem()), true);
+                value = r.get(0);
+                break;
+        }
 
-    public QDLValue get(QDLValue key) {
-        return get(key.getValue());
-      /*  switch (key.getType()) {
-            case Constants.LONG_TYPE:
-                return get(key.asLong());
-            case Constants.STRING_TYPE:
-                return get(key.toString());
-            default:
-                throw new IllegalArgumentException("Invalid key type: " + Constant.getName(key.getType()));
-        }*/
+        // Fixes https://github.com/ncsa/qdl/issues/122
+        if (value == null) {
+            if (hasDefaultValue()) {
+                value = getDefaultValue();
+            }
+        } else {
+            if(value.isStem()) {
+                if (hasDefaultValue()) {
+                    value.asStem().setDefaultValue(getDefaultValue());
+                }
+            }
+        }
+/*
+        if (value != null && hasDefaultValue()) {
+            value = asQDLValue(getDefaultValue().getValue()); // clone it
+        }
+*/
+        return value;
     }
 
     public QDLValue get(Object key) {
-        key = asJavaValue(key); // just in case
+        return get(from((key))); // just in case
+/*
         QDLValue value = null;
 
         if (key instanceof QDLStem) {
@@ -589,9 +621,9 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
             value.asStem().setDefaultValue(getDefaultValue());
         }
         return value;
+*/
     }
 
-    @Override
     public QDLValue put(String key, QDLValue value) {
 
         if (key.endsWith(STEM_INDEX_MARKER)) {
@@ -600,44 +632,44 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
         if (StringUtils.isTrivial(key)) {
             throw new IllegalArgumentException("cannot have a trivial stem key");
         }
+        QDLKey k = from(key);
 
-        if (isLongIndex(key)) {
-            return put(Long.parseLong(key), value);
+        if (k.isLong()) {
+            QDLValue oldValue = getQDLList().get(k.asLong());
+            getQDLList().set(k.asLong(), value);
+            return oldValue;
         }
 
-        return getQDLMap().put(key, value);
+        return getQDLMap().put(k.asString(), value);
     }
 
     @Override
-    public QDLValue remove(Object key) {
-        if (key instanceof Long) {
-            return (QDLValue) remove((Long) key);
+    public QDLValue remove(Object kk) {
+        if (!(kk instanceof QDLValue)) {
+            return null;
         }
-        return (QDLValue) getQDLMap().remove(key);
+        QDLKey key = from(kk);
+        switch (key.getType()) {
+            case LONG_TYPE:
+                getQDLList().removeByIndex(key.asLong());
+                return QDLNullValue.getNullValue();
+            case STRING_TYPE:
+                return getQDLMap().remove(((QDLValue) kk).asString());
+            case STEM_TYPE:
+                throw new NotImplementedException("Removal list stems not implement here.");
+        }
+        return null;
+/*
+        if (kk instanceof Long) {
+            return (QDLValue) remove((Long) kk);
+        }
+        return (QDLValue) getQDLMap().remove(kk);
+*/
     }
 
     public void addAll(QDLStem qdlStem) {
         getQDLMap().putAll(qdlStem.getQDLMap());
         getQDLList().addAll(qdlStem.getQDLList());
-    }
-
-    /**
-     * This does <b>not</b> add the list elements because that causes issues
-     * with the contract for maps. If you are adding all the values of a stem
-     * to this one, use {@link #addAll(QDLStem)}.
-     *
-     * @param map
-     */
-
-    @Override
-    public void putAll(Map<? extends String, ? extends QDLValue> map) {
-        if (map instanceof QDLStem) {
-            QDLStem qdlStem = (QDLStem) map;
-            getQDLMap().putAll(qdlStem.getQDLMap());
-            return;
-        }
-        throw new IllegalArgumentException("Unknown map type");
-
     }
 
 
@@ -672,7 +704,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     }
 
     @Override
-    public Set<Entry<String, QDLValue>> entrySet() {
+    public Set<Entry<QDLKey, QDLValue>> entrySet() {
         return null;
     }
 
@@ -773,9 +805,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
             return new StemKeys();
         }
         StemKeys stemKeys = getQDLList().orderedKeys();
-        TreeSet<String> stringTreeSet = new TreeSet<>();
-        stringTreeSet.addAll(getQDLMap().keySet());
-        stemKeys.setStemKeys(stringTreeSet);
+        stemKeys.setStemKeys(getQDLMap().stringKeySet().getStemKeys());
         return stemKeys;
     }
 
@@ -924,7 +954,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     public QDLStem mask(QDLStem stem2) {
         QDLStem result = newInstance();
 
-        for (Object key : stem2.keySet()) {
+        for (QDLKey key : stem2.keySet()) {
             if (!containsKey(key)) {
                 throw new IllegalArgumentException("'" + key + "' is not a key in the first stem. " +
                         "Every key in the second argument must be a key in the first.");
@@ -935,7 +965,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
             }
             Boolean b = rawBit.asBoolean();
             if (b) {
-                result.putLongOrString(key, get(key));
+                result.put(key, get(key));
             }
         }
         return result;
@@ -957,23 +987,23 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
      In point of fact, renameKeys does not handle list values, only string keys
       */
     public void renameKeys(QDLStem newKeys, boolean overWriteKeys) {
-        for (Object oldKey : newKeys.keySet()) {
-            oldKey = QDLValue.asJavaValue(oldKey);
+        for (QDLKey oldKey : newKeys.keySet()) {
+            //oldKey = QDLValue.asJavaValue(oldKey);
             Object newKey = newKeys.get(oldKey).getValue(); // these have to be compared as POJOs
-            if (newKey.equals(oldKey)) continue;
+            if (newKey.equals(oldKey.getValue())) continue;
             if (containsKey(oldKey)) {
                 if (containsKey(newKey)) {
                     if (overWriteKeys) {
                         QDLValue oldValue = get(oldKey);
                         remove(oldKey);
-                        putLongOrString(newKey, oldValue);
+                        put(from(newKey), oldValue);
                     } else {
                         throw new IllegalArgumentException("'" + oldKey + "' is already a key. You  must explicitly overwrite it with the flag");
                     }
                 } else {
                     QDLValue oldValue = get(oldKey);
                     remove(oldKey);
-                    putLongOrString(newKey, oldValue);
+                    put(from(newKey), oldValue);
                 }
             }
         }
@@ -989,8 +1019,34 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     public QDLStem excludeKeys(QDLStem keyList) {
 
         QDLStem result = newInstance();
-        for (Object key : keySet()) {
-            if (key instanceof Long) {
+        for (QDLKey key : keySet()) {
+            switch (key.getType()) {
+                case LONG_TYPE:
+                case STRING_TYPE:
+                    if (!keyList.containsValue(key.getValue())) {
+                        result.put(key, get(key));
+                    }
+                    break;
+                default:
+                    throw new IndexError("unsupported key type for " + key, null);
+            }
+           /* switch (key.getType()) {
+                case LONG_TYPE:
+                    if (!keyList.containsValue(key.getValue())) {
+                        result.put(key, get(key));
+                    }
+                    break;
+                case STRING_TYPE:
+                    if (!keyList.containsValue(key.asString())) {
+                        result.put(key, get(key));
+
+                    }
+                    break;
+                default:
+                    throw new IndexError("unsupported key type for " + key, null);
+            }*/
+/*
+            if (key.isLong()) {
                 if (!keyList.containsValue((Long) key)) {
                     result.put((Long) key, get(key));
                 }
@@ -999,6 +1055,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
                     result.put((String) key, get(key));
                 }
             }
+*/
         }
         return result;
     }
@@ -1030,8 +1087,8 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
         if (!keyList.isList()) {
             throw new IllegalArgumentException("has keys requires a list");
         }
-        for (Object ndx : keyList.getQDLList().orderedKeys()) {
-            result.put((Long) ndx, new BooleanValue(containsKey(keyList.get((Long) ndx)))); // since we know it's a list
+        for (QDLKey ndx : keyList.getQDLList().orderedKeys()) {
+            result.put(ndx, new BooleanValue(containsKey(keyList.get(ndx)))); // since we know it's a list
         }
         return result;
     }
@@ -1046,8 +1103,8 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     public QDLStem hasKey(QDLStem keyList) {
         QDLStem result = newInstance();
 
-        for (Object k : keySet()) {
-            result.putLongOrString(k, new BooleanValue(keyList.containsKey(k)));
+        for (QDLKey k : keySet()) {
+            result.put(k, new BooleanValue(keyList.containsKey(k)));
         }
         return result;
     }
@@ -1199,12 +1256,25 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     }
 
 
-    protected void myPut(Object index, QDLValue value) {
-        index = QDLValue.asJavaValue(index);
-        if (index instanceof QDLValue) {
+    protected void myPut(QDLValue index, QDLValue value) {
+        //index = QDLValue.asJavaValue(index);
+        QDLKey key = from(index);
+  /*      if (index instanceof QDLValue) {
             putLongOrString(((QDLValue) index).getValue(), value);
             return;
+        }*/
+        switch (key.getType()) {
+            case LONG_TYPE:
+            case STRING_TYPE:
+                put(key, value);
+                return;
+            case STEM_TYPE:
+                IndexList indexList = new IndexList(key.asStem());
+                set(indexList, value);
+                return;
         }
+
+/*
         if (index instanceof Long) {
             put((Long) index, value);
             return;
@@ -1230,7 +1300,8 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
                 throw new IndexError("invalid index,  '" + bd + "' can only be an integer", null);
             }
             return;
-        }
+
+        }*/
         throw new IndexError("Unknown index type for \"" + index + "\"", null);
     }
 
@@ -1424,7 +1495,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
         for (List obj : list) {
             QDLStem index = newInstance();
             index.addList(obj);
-            stemVariable.put(i++, new StemValue(index));
+            stemVariable.put(new LongValue(i++), new StemValue(index));
         }
         return stemVariable;
     }
@@ -1493,15 +1564,15 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     }
 
 
-    public JSON toJSON(boolean escapeNames, int type) {
-        MetaCodec codec = escapeNames ? (new MetaCodec(type)) : null;
+    public JSON toJSON(boolean escapeNames, int codecType) {
+        MetaCodec codec = escapeNames ? (new MetaCodec(codecType)) : null;
 
         if (getQDLMap().size() == 0 && getQDLList().size() == 0) {
             // Empty stem corresponds to an empty JSON Object
             return new JSONObject();
         }
         if (getQDLList().size() == size()) {
-            return getQDLList().toJSON(escapeNames, type); // handles case of simple list of simple elements
+            return getQDLList().toJSON(escapeNames, codecType); // handles case of simple list of simple elements
         }
         JSONObject json = new JSONObject();
         //edge case. empty stem list should return a JSON object
@@ -1512,9 +1583,9 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
             // super.size counts the number of non-stem entries. This means there are
             // list elements and nothing else.
             // if it is just a list, return it asap.
-            return getQDLList().toJSON(escapeNames, type);
+            return getQDLList().toJSON(escapeNames, codecType);
         }
-        QDLList localSL = new QDLList();
+        QDLList<QDLValue> localSL = new QDLList();
         localSL.addAll(getQDLList());
 
         // Special case of a JSON array of objects that has been turned in to a stem list.
@@ -1531,6 +1602,8 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
                 if (newKey.endsWith(STEM_INDEX_MARKER)) {
                     newKey = key.substring(0, key.length() - 1);
                 }
+                String encodedKey = escapeNames ? codec.decode(newKey) : newKey;
+                // DOES THIS NEXT BLOCK EVER EVALUATE?? QDLMap has only bona fide string keys, not "0"
                 if (isLongIndex(newKey)) {
                     SparseEntry sparseEntry = new SparseEntry(Long.parseLong(newKey));
                     if (!localSL.contains(sparseEntry)) {
@@ -1541,14 +1614,41 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
                                 "and a stem entry '" + key + "'. This is not convertible to a JSON Object", null);
                     }
                 } else {
-                    json.put(escapeNames ? codec.decode(newKey) : newKey, x.toJSON(escapeNames, type));
+                    json.put(encodedKey, x.toJSON(escapeNames, codecType));
                 }
 
             } else {
-                if (!(qdlValue.isNull())) {
-                    // don't add it if it is null.
-                    json.put(escapeNames ? codec.decode(key) : key, qdlValue.getValue());
+                String encodedKey = escapeNames ? codec.decode(key) : key;
+                switch (qdlValue.getType()) {
+                    case STRING_TYPE:
+                    case LONG_TYPE:
+                    case BOOLEAN_TYPE:
+                        json.put(encodedKey, qdlValue.getValue());
+                        break;
+                    case DECIMAL_TYPE:
+                        double dd = qdlValue.asDecimal().doubleValue();
+                        // messing around with BigDecimal contract
+                        if (dd == Double.POSITIVE_INFINITY || dd == Double.NEGATIVE_INFINITY) {
+                            json.put(encodedKey, qdlValue.asDecimal().toString());
+                        } else {
+                            json.put(encodedKey, dd);
+                        }
+                        break;
+                    case NULL_TYPE:
+                        json.put(encodedKey, QDLConstants.JSON_QDL_NULL);
+                        break;
+                        case SET_TYPE:
+                            json.put(encodedKey, defaultValue.asSet().toJSON());
+                            break;
+
+                    default:
+                        // Can't put this in a JSON object. This is the fall through case
+                        // for modules, function references and such.
                 }
+ /*               if (!(qdlValue.isNull())) {
+                    // don't add it if it is null.
+                    json.put(encodedKey, qdlValue.getValue());
+                }*/
             }
         }
         // This is here because what it does is it checks that stem lists have all been added.
@@ -1640,26 +1740,27 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     public QDLStem fromJSON(JSONArray array, boolean convert, int type) {
         for (int i = 0; i < array.size(); i++) {
             Object v = array.get(i);
+            LongValue ii = new LongValue(i);
             if (v instanceof JSONObject) {
                 QDLStem x = newInstance();
-                put((long) i, asQDLValue(x.fromJSON((JSONObject) v, convert, type)));
+                put(ii, asQDLValue(x.fromJSON((JSONObject) v, convert, type)));
             } else {
                 if (v instanceof JSONArray) {
                     QDLStem x = newInstance();
-                    put((long) i, asQDLValue(x.fromJSON((JSONArray) v, convert, type)));
+                    put(ii, asQDLValue(x.fromJSON((JSONArray) v, convert, type)));
                 } else {
                     //   sl.add(new StemEntry(i, v));
                     if (v instanceof Integer) {
-                        put((long) i, new LongValue((Integer) v));
+                        put(ii, new LongValue((Integer) v));
                     } else if (v instanceof Float) {
-                        put((long) i, new DecimalValue(new BigDecimal(Float.toString((Float) v))));
+                        put(ii, new DecimalValue(new BigDecimal(Float.toString((Float) v))));
                     } else if (v instanceof Double) {
-                        put((long) i, new DecimalValue(new BigDecimal(Double.toString((Double) v))));
+                        put(ii, new DecimalValue(new BigDecimal(Double.toString((Double) v))));
                     } else {
                         if ((v instanceof String) && QDLConstants.JSON_QDL_NULL.equals(v)) {
-                            put((long) i, getNullValue());
+                            put(ii, getNullValue());
                         } else {
-                            put((long) i, asQDLValue(v));
+                            put(ii, asQDLValue(v));
                         }
                     }
                 }
@@ -1856,14 +1957,14 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
             output = output + "*:" + InputFormUtil.inputForm(getDefaultValue());
             isFirst = false;
         }
-        Set<String> keys;
+        StemKeys keys;
         if (list == null) {
             keys = keySet(); // process everything here.
         } else {
-            keys = getQDLMap().keySet(); // only process proper stem entries.
+            keys = getQDLMap().stringKeySet(); // only process proper stem entries.
             output = list + "~" + output;
         }
-        for (Object key : keys) {
+        for (QDLKey key : keys) {
             if (isFirst) {
                 isFirst = false;
             } else {
@@ -2013,39 +2114,47 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
 
     /**
      * Convenience method that converts second argument to a {@link QDLValue} as needed.
+     *
      * @param qdlKey
      * @param object
      * @return
      */
     public QDLValue put(QDLKey qdlKey, Object object) {
-     return put(qdlKey, QDLValue.asQDLValue(object));
+        return put(qdlKey, QDLValue.asQDLValue(object));
     }
+
+    /*
+    Can't have a put(Object,Object) because erasure means Java can't figure out which method to call.
+    One of the arguments must not be an Object.
+     */
+
 
     @Override
     public QDLValue put(QDLKey qdlKey, QDLValue qdlValue) {
-        QDLValue  old;
+        QDLValue old;
         switch (qdlKey.getType()) {
             case Constant.LONG_TYPE:
-            old = getQDLList().get(qdlKey.asLong());
-            if (old == null) {
-                old = QDLNullValue.getNullValue();
-            }
-            getQDLList().set(qdlKey.asLong(), qdlValue);
-            return old;
-          case   Constant.STRING_TYPE:
-            return getQDLMap().put(qdlKey.asString(), qdlValue);
-           case  Constant.STEM_TYPE:
-            IndexList indexList = new IndexList(qdlValue.asStem());
-             IndexList rc = get(indexList, false);
-             if(rc == null) {
-                 old = QDLNullValue.getNullValue();
-             }else{
-                 old = rc.get(0);
-             }
-            set(indexList, qdlValue);
-            return old;
+                old = getQDLList().get(qdlKey.asLong());
+                if (old == null) {
+                    old = QDLNullValue.getNullValue();
+                }
+                getQDLList().set(qdlKey.asLong(), qdlValue);
+                return old;
+            case Constant.STRING_TYPE:
+                return getQDLMap().put(qdlKey.asString(), qdlValue);
+            case Constant.STEM_TYPE:
+                IndexList indexList = new IndexList(qdlValue.asStem());
+                IndexList rc = get(indexList, false);
+                if (rc == null) {
+                    old = QDLNullValue.getNullValue();
+                } else {
+                    old = rc.get(0);
+                }
+                set(indexList, qdlValue);
+                return old;
 
-        };
+        }
+        ;
         throw new IndexError("unknown index type ", null);
     }
 
@@ -2069,8 +2178,32 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
         return null;
     }
      */
+
+    /**
+     * This does <b>not</b> add the list elements because that causes issues
+     * with the contract for maps. If you are adding all the values of a stem
+     * to this one, use {@link #addAll(QDLStem)}.
+     *
+     * @param map
+     */
     @Override
     public void putAll(Map<? extends QDLKey, ? extends QDLValue> map) {
-
+        if (map instanceof QDLStem) {
+            QDLStem qdlStem = (QDLStem) map;
+            getQDLMap().putAll(qdlStem.getQDLMap());
+            return;
+        }
+        throw new IllegalArgumentException("Unknown map type");
     }
+
+/*    @Override
+    public void putAll(Map<? extends String, ? extends QDLValue> map) {
+        if (map instanceof QDLStem) {
+            QDLStem qdlStem = (QDLStem) map;
+            getQDLMap().putAll(qdlStem.getQDLMap());
+            return;
+        }
+        throw new IllegalArgumentException("Unknown map type");
+
+    }*/
 } // end class

@@ -274,12 +274,13 @@ public class QDLDB implements QDLMetaModule {
                     QDLStem stemVariable = qdlValues[1].asStem();
                     if (stemVariable.isList()) {
                         //args = stemVariable.getQDLList().toJSON();
-                        args = stemVariable.getQDLList();
+                        args = new ArrayList<>(stemVariable.getQDLList().size());
+                        args.addAll(stemVariable.getQDLList());
                     } else {
                         throw new BadArgException(QUERY_COMMAND + " requires its second argument, if present to be a list", 1);
                     }
                 } else { // if a scalar, float it to a list.
-                    args = new ArrayList();
+                    args = new ArrayList<>();
                     args.add(qdlValues[1]);
                 }
             }
@@ -371,7 +372,7 @@ public class QDLDB implements QDLMetaModule {
             QDLStem currentEntry = new QDLStem();
             for (String key : map.keySet()) {
                 if (map.get(key) != null) {
-                    currentEntry.put(key, asQDLValue(sqlConvert(map.get(key))));
+                    currentEntry.put(QDLKey.from(key), asQDLValue(sqlConvert(map.get(key))));
                 }
             }
             outStem.getQDLList().add(asQDLValue(currentEntry));
@@ -755,7 +756,7 @@ public class QDLDB implements QDLMetaModule {
                 PreparedStatement stmt = c.prepareStatement(qdlValues[0].asString());
                 for (QDLKey key : stemVariable.keySet()) {
                     QDLValue value = stemVariable.get(key);
-                    QDLList list;
+                    QDLList<? extends QDLValue> list;
                     if (value.isStem()) {
                         QDLStem arg = value.asStem();
                         if (!arg.isList()) {

@@ -17,10 +17,14 @@ import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.qdl_lang.parsing.QDLListener;
+import org.qdl_lang.variables.values.LongValue;
+import org.qdl_lang.variables.values.QDLKey;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+import static org.qdl_lang.variables.StemUtility.put;
+import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
 /**
@@ -36,10 +40,10 @@ public class StemTest extends AbstractQDLTester {
         VStack vStack = state.getVStack();
 
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "One Ring to rule them all");
-        sourceStem.put("find", "One Ring to find them");
-        sourceStem.put("bring", "One Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
+        put(sourceStem,"rule", "One Ring to rule them all");
+        put(sourceStem,"find", "One Ring to find them");
+        put(sourceStem,"bring", "One Ring to bring them all");
+        put(sourceStem,"bind", "and in the darkness bind them");
 
         vStack.put(new VThing(new XKey("sourceStem."), new QDLVariable(sourceStem)));
 
@@ -57,10 +61,10 @@ public class StemTest extends AbstractQDLTester {
         VStack vStack = state.getVStack();
 
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "One Ring to rule them all");
-        sourceStem.put("find", "One Ring to find them");
-        sourceStem.put("bring", "One Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
+        put(sourceStem,"rule", "One Ring to rule them all");
+        put(sourceStem,"find", "One Ring to find them");
+        put(sourceStem,"bring", "One Ring to bring them all");
+        put(sourceStem,"bind", "and in the darkness bind them");
 
         vStack.put(new VThing(new XKey("sourceStem."), new QDLVariable(sourceStem)));
 
@@ -83,10 +87,10 @@ public class StemTest extends AbstractQDLTester {
         VStack vStack = state.getVStack();
 
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "One Ring to rule them all");
-        sourceStem.put("find", "One Ring to find them");
-        sourceStem.put("bring", "One Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
+        put(sourceStem,"rule", "One Ring to rule them all");
+        put(sourceStem,"find", "One Ring to find them");
+        put(sourceStem,"bring", "One Ring to bring them all");
+        put(sourceStem,"bind", "and in the darkness bind them");
 
         vStack.put(new VThing(new XKey("sourceStem."), new QDLVariable(sourceStem)));
 
@@ -99,9 +103,9 @@ public class StemTest extends AbstractQDLTester {
 
         QDLStem result = polyad.getResult().asStem();
         assert result.size() == sourceStem.size();
-        for (Object key : sourceStem.keySet()) {
+        for (QDLKey key : sourceStem.keySet()) {
             assert result.containsKey(result.get(key));
-            assert result.get(key).getValue().equals(key);
+            assert result.get(key).getValue().equals(key.getValue());
         }
     }
 
@@ -135,10 +139,10 @@ public class StemTest extends AbstractQDLTester {
         VStack vStack = state.getVStack();
 
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "One Ring to rule them all");
-        sourceStem.put("find", "One Ring to find them");
-        sourceStem.put("bring", "One Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
+        put(sourceStem,"rule", "One Ring to rule them all");
+        put(sourceStem,"find", "One Ring to find them");
+        put(sourceStem,"bring", "One Ring to bring them all");
+        put(sourceStem,"bind", "and in the darkness bind them");
 
         vStack.put(new VThing(new XKey("sourceStem."), new QDLVariable(sourceStem)));
         Polyad polyad = new Polyad(StemEvaluator.LIST_KEYS);
@@ -163,17 +167,17 @@ public class StemTest extends AbstractQDLTester {
 
 
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "One Ring to rule them all");
-        sourceStem.put("find", "One Ring to find them");
-        sourceStem.put("bring", "One Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
+        put(sourceStem,"rule", "One Ring to rule them all");
+        put(sourceStem,"find", "One Ring to find them");
+        put(sourceStem,"bring", "One Ring to bring them all");
+        put(sourceStem,"bind", "and in the darkness bind them");
 
         QDLStem sourceStem2 = new QDLStem();
-        sourceStem2.put("rule", "mairzy doats");
-        sourceStem2.put("find", "and dozey");
-        sourceStem2.put("bring", "doats");
-        sourceStem2.put("3", "and in the darkness bind them");
-        sourceStem2.put("5", "whatever");
+        put(sourceStem2,"rule", "mairzy doats");
+        put(sourceStem2,"find", "and dozey");
+        put(sourceStem2,"bring", "doats");
+        put(sourceStem2,"3", "and in the darkness bind them");
+        put(sourceStem2,"5", "whatever");
 
 
         vStack.put(new VThing(new XKey("sourceStem."), new QDLVariable(sourceStem)));
@@ -207,9 +211,9 @@ public class StemTest extends AbstractQDLTester {
         for (int i = 0; i < 2 * count; i++) {
             String key = geter();
             if (0 == i % 2) {
-                keys.put(Integer.toString(j++), key);
+                keys.put(from(j++), key);
             }
-            sourceStem.put(key, geter());
+            sourceStem.put(from(key), geter());
         }
 
 
@@ -441,9 +445,9 @@ public class StemTest extends AbstractQDLTester {
         for (int i = 0; i < 2 * count; i++) {
             String key = geter();
             if (0 == i % 2) {
-                keys.put(Integer.toString(j++), key);
+                keys.put(from(j++), key);
             }
-            sourceStem.put(key, geter());
+            sourceStem.put(from(key), geter());
         }
 
 
@@ -456,7 +460,7 @@ public class StemTest extends AbstractQDLTester {
         polyad.addArgument(arg2);
         polyad.evaluate(state);
         QDLStem result = polyad.getResult().asStem();
-        assert result.size() == count;
+        assert result.size() == count : "incorrect size. Expected " + count + " got " + result.size();
         for (int i = 0; i < count; i++) {
             assert !result.containsKey(keys.getString(Integer.toString(i)));
         }
@@ -472,11 +476,11 @@ public class StemTest extends AbstractQDLTester {
         QDLStem keys = new QDLStem();
         String targetKey = geter();
 
-        sourceStem.put(targetKey, geter());
+        put(sourceStem, targetKey, geter());
         int count = 5;
         for (int i = 0; i < count; i++) {
             String key = geter();
-            sourceStem.put(key, geter());
+            put(sourceStem, key, geter());
         }
 
 
@@ -513,7 +517,7 @@ public class StemTest extends AbstractQDLTester {
      */
     protected QDLStem randomStem(QDLStem s, int count) {
         for (int i = 0; i < count; i++) {
-            s.put(geter(), geter());
+            put(s,geter(), geter());
         }
         return s;
     }
@@ -528,7 +532,7 @@ public class StemTest extends AbstractQDLTester {
 
         String targetKey = geter();
 
-        sourceStem.put(targetKey, geter());
+        put(sourceStem,targetKey, geter());
         int count = 5;
         randomStem(sourceStem, count);
 
@@ -557,13 +561,13 @@ public class StemTest extends AbstractQDLTester {
         for (int i = 0; i < 2 * count; i++) {
             String key = geter();
             if (0 == i % 2) {
-                keys.put(key, Integer.toString(j++));
+                put(keys,key, Integer.toString(j++));
             }
-            sourceStem.put(key, geter());
+            put(sourceStem,key, geter());
         }
         // add a few that aren't in the target stem.
         for (int i = 0; i < count; i++) {
-            keys.put(Integer.toString(j++), geter());
+            put(keys, j++, geter());
         }
         vStack.put(new VThing(new XKey("sourceStem."), new QDLVariable(sourceStem)));
         vStack.put(new VThing(new XKey("keys."), new QDLVariable(keys)));
@@ -594,18 +598,18 @@ public class StemTest extends AbstractQDLTester {
         QDLStem keys = new QDLStem();
         int count = 5;
         String targetKey = geter();
-        sourceStem.put(targetKey, geter());
+        put(sourceStem, targetKey, geter());
         int j = 0;
         for (int i = 0; i < count; i++) {
             String key = geter();
             if (0 == i % 2) {
-                keys.put(Integer.toString(j++), key);
+                put(keys, j++, key);
             }
-            sourceStem.put(key, geter());
+            put(sourceStem, key, geter());
         }
         // add a few that aren't in the target stem.
         for (int i = 0; i < count; i++) {
-            keys.put(Integer.toString(j++), geter());
+            put(keys, j++, geter());
         }
         vStack.put(new VThing(new XKey("sourceStem."), new QDLVariable(sourceStem)));
         vStack.put(new VThing(new XKey("keys."), new QDLVariable(keys)));
@@ -641,10 +645,10 @@ public class StemTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         VStack vStack = state.getVStack();
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "One Ring to rule them all");
-        sourceStem.put("find", "One Ring to find them");
-        sourceStem.put("bring", "One Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
+        put(sourceStem,"rule", "One Ring to rule them all");
+        put(sourceStem,"find", "One Ring to find them");
+        put(sourceStem,"bring", "One Ring to bring them all");
+        put(sourceStem,"bind", "and in the darkness bind them");
 
         vStack.put(new VThing(new XKey("sourceStem."), new QDLVariable(sourceStem)));
 
@@ -663,10 +667,10 @@ public class StemTest extends AbstractQDLTester {
 
 
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "One Ring to rule them all");
-        sourceStem.put("find", "One Ring to find them");
-        sourceStem.put("bring", "One Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
+        put(sourceStem,"rule", "One Ring to rule them all");
+        put(sourceStem,"find", "One Ring to find them");
+        put(sourceStem,"bring", "One Ring to bring them all");
+        put(sourceStem,"bind", "and in the darkness bind them");
 
 
         vStack.put(new VThing(new XKey("sourceStem."), new QDLVariable((sourceStem))));
@@ -689,10 +693,10 @@ public class StemTest extends AbstractQDLTester {
 
 
         QDLStem sourceStem = new QDLStem();
-        sourceStem.put("rule", "One Ring to rule them all");
-        sourceStem.put("find", "One Ring to find them");
-        sourceStem.put("bring", "One Ring to bring them all");
-        sourceStem.put("bind", "and in the darkness bind them");
+        put(sourceStem,"rule", "One Ring to rule them all");
+        put(sourceStem,"find", "One Ring to find them");
+        put(sourceStem,"bring", "One Ring to bring them all");
+        put(sourceStem,"bind", "and in the darkness bind them");
 
 
         vStack.put(new VThing(new XKey("sourceStem."), new QDLVariable(sourceStem)));
@@ -806,13 +810,13 @@ public class StemTest extends AbstractQDLTester {
         String name = "bob";
         String issuer = "https://localhost:9443/oauth2";
         String tokenID = "https://localhost:9443/oauth2/idToken/7e3318d9e03b19a2a38ba88542abab0a/1591271860588";
-        s.put("sub", name);
-        s.put("iss", issuer);
-        s.put("token_id", tokenID);
-        s.put(0L, 3L);
-        s.put(1L, "foo");
-        s.put(2L, new BigDecimal("23.4"));
-        s.put(3L, Boolean.TRUE);
+        put(s,"sub", name);
+        put(s,"iss", issuer);
+        put(s,"token_id", tokenID);
+        put(s,0L, 3L);
+        put(s,1L, "foo");
+        put(s,2L, new BigDecimal("23.4"));
+        put(s,3L, Boolean.TRUE);
         JSON json = s.toJSON();
         assert json instanceof JSONObject;
         JSONObject jo = (JSONObject) json;

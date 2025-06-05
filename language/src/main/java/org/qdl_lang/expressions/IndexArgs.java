@@ -4,6 +4,7 @@ import org.qdl_lang.evaluate.StemEvaluator;
 import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.*;
+import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.util.ArrayList;
@@ -128,7 +129,7 @@ d  |  [0,      2,       0]
             if (!args.isList()) {
                 throw new BadArgException("stem index for extraction " + StemExtractionNode.EXTRACT_LIST + " must be a list", indexArg.swri);
             }
-            for (Object key : args.keySet()) {
+            for (QDLKey key : args.keySet()) {
                 IndexArg indexArg1 = new IndexArg();
                 indexArg1.strictOrder = indexArg.strictOrder;
                 if(args.get(key).getValue() instanceof AllIndices){

@@ -23,6 +23,7 @@ import org.qdl_lang.state.XKey;
 import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.VTable;
 import org.qdl_lang.variables.VThing;
+import org.qdl_lang.variables.values.LongValue;
 import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.xml.SerializationState;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
@@ -104,7 +105,7 @@ public class ModuleUtils implements Serializable {
                 QDLStem innerStem = new QDLStem();
                 innerStem.listAdd(arg);
                 innerStem.listAdd(arg2);
-                argStem.put(0L, innerStem);
+                argStem.put(LongValue.Zero, innerStem);
                 gotOne = true;
                 break;
             default:

@@ -26,10 +26,7 @@ import org.qdl_lang.util.QDLFileUtil;
 import org.qdl_lang.util.aggregate.IdentityScalarImpl;
 import org.qdl_lang.util.aggregate.QDLAggregateUtil;
 import org.qdl_lang.variables.*;
-import org.qdl_lang.variables.values.LongValue;
-import org.qdl_lang.variables.values.QDLValue;
-import org.qdl_lang.variables.values.StemValue;
-import org.qdl_lang.variables.values.StringValue;
+import org.qdl_lang.variables.values.*;
 import org.qdl_lang.vfs.VFSPaths;
 import org.qdl_lang.workspace.QDLWorkspace;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
@@ -855,7 +852,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             }
             commands = new ArrayList<>();
 
-            for (Object key : stemVariable.keySet()) {
+            for (QDLKey key : stemVariable.keySet()) {
                 QDLValue line = stemVariable.get(key);
                 if (!line.isString()) {
                     throw new BadArgException(WS_MACRO + " the argument '" + line + "' is not a string", polyad.getArgAt(0));
@@ -904,12 +901,12 @@ public class SystemEvaluator extends AbstractEvaluator {
         }
         if (result.isString()) {
             aliases = new QDLStem();
-            aliases.put(0L, result);
+            aliases.put(LongValue.Zero, result);
         }
         if (aliases == null) {
             throw new BadArgException(MODULE_REMOVE + " unknown argument type '" + result + "'", polyad.getArgAt(0));
         }
-        for (Object key : aliases.keySet()) {
+        for (QDLKey key : aliases.keySet()) {
             QDLValue object2 = aliases.get(key);
             if (!object2.isString()) {
                 throw new BadArgException(MODULE_REMOVE + " second argument must be a string.", polyad.getArgAt(1));
@@ -957,7 +954,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             return;
         }
         if (doReduce && arg1.isSet()) {
-            QDLSet argSet = arg1.asSet();
+            QDLSet<QDLValue> argSet = arg1.asSet();
             ExpressionImpl f;
             try {
                 f = getOperator(state, frn, 2);
@@ -1028,7 +1025,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             }
             QDLValue lastResult = null;
             ArrayList<QDLValue> args = new ArrayList<>();
-            for (Object key : stemVariable.keySet()) {
+            for (QDLKey key : stemVariable.keySet()) {
                 QDLValue nextValue = stemVariable.get(key);
                 if (lastResult == null) {
                     // first pass
@@ -1188,20 +1185,20 @@ public class SystemEvaluator extends AbstractEvaluator {
         public Object action(QDLStem inStem) {
             QDLStem output = new QDLStem();
             //Set<String> keySet = inStem.keySet();
-            Iterator iterator = inStem.keySet().iterator();
+            Iterator<QDLKey> iterator = inStem.keySet().iterator();
 
             Object lastValue = inStem.get(iterator.next()); // grab one before loop starts
             output.listAdd(asQDLValue(lastValue));
 
             while (iterator.hasNext()) {
-                Object key = iterator.next();
+                QDLKey key = iterator.next();
                 Object currentValue = inStem.get(key);
                 ArrayList<ExpressionInterface> argList = new ArrayList<>();
                 argList.add(new ConstantNode(asQDLValue(lastValue)));
                 argList.add(new ConstantNode(asQDLValue(currentValue)));
                 operator.setArguments(argList);
                 operator.evaluate(state);
-                output.putLongOrString(key, operator.getResult());
+                output.put(key, operator.getResult());
                 lastValue = operator.getResult();
             }
             return output;
@@ -1986,7 +1983,7 @@ public class SystemEvaluator extends AbstractEvaluator {
         }
 
         polyad.setEvaluated(true);
-        polyad.setResult(state.getScriptArgStem().get((long) index));
+        polyad.setResult(state.getScriptArgStem().get(new LongValue(index)));
         return;
     }
 
@@ -2577,7 +2574,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
         QDLStem argStem = convertArgsToStem(polyad, arg, state, MODULE_LOAD);
         QDLStem outStem = new QDLStem();
-        for (Object key : argStem.keySet()) {
+        for (QDLKey key : argStem.keySet()) {
             QDLValue value = argStem.get(key);
             int loadTarget = LOAD_FILE;
             String resourceName = null;
@@ -2607,7 +2604,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                     newEntry = innerStem;
                 }
             }
-            outStem.putLongOrString(key, asQDLValue(newEntry));
+            outStem.put(key, asQDLValue(newEntry));
         }
         polyad.setEvaluated(true);
         if (outStem.size() == 1) {
@@ -2784,7 +2781,7 @@ public class SystemEvaluator extends AbstractEvaluator {
         // should work
         gotOne = false;
         QDLStem outputStem = new QDLStem();
-        for (Object key : argStem.keySet()) {
+        for (QDLKey key : argStem.keySet()) {
             QDLValue value = argStem.get(key);
             URI moduleNS = null;
             String alias = null;
@@ -2839,11 +2836,14 @@ public class SystemEvaluator extends AbstractEvaluator {
                 alias = m.getAlias();
             }
             state.getMInstances().localPut(new MIWrapper(new XKey(alias), newInstance));
+            outputStem.put(key, asQDLValue(alias));
+/*
             if (isLong(key)) {
                 outputStem.put((Long) key, asQDLValue(alias));
             } else {
                 outputStem.put((String) key, asQDLValue(alias));
             }
+*/
 
         }
         switch (outputStem.size()) {
@@ -3159,10 +3159,10 @@ public class SystemEvaluator extends AbstractEvaluator {
             return;
         }
         QDLStem output = new QDLStem();
-        output.put(0L, asQDLValue(qdlValue.getType()));
+        output.put(LongValue.Zero, asQDLValue(qdlValue.getType()));
         for (long i = 1; i < polyad.getArgCount(); i++) {
             QDLValue r = polyad.evalArg(Math.toIntExact(i), state);
-            output.put(i, new LongValue(r.getType()));
+            output.put(new LongValue(i), new LongValue(r.getType()));
         }
         polyad.setResult(new QDLValue(output));
         polyad.setEvaluated(true);
@@ -3200,7 +3200,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             // check each node.
             QDLStem stem = new QDLStem();
             for (StemEntryNode sem : stemVariableNode.getStatements()) {
-                stem.putLongOrString(sem.getKey().evaluate(state).getValue(), asQDLValue(checkDefined((ExpressionInterface) sem.getValue(), state)));
+                stem.put(QDLKey.from(sem.getKey().evaluate(state).getValue()), asQDLValue(checkDefined((ExpressionInterface) sem.getValue(), state)));
             }
             polyad.setResult(new QDLValue(stem));
             polyad.setEvaluated(true);
