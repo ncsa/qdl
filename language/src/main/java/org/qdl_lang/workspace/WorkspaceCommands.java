@@ -83,6 +83,7 @@ import java.util.zip.GZIPOutputStream;
 
 import static org.qdl_lang.config.QDLConfigurationConstants.*;
 import static org.qdl_lang.config.QDLConfigurationLoaderUtils.*;
+import static org.qdl_lang.evaluate.SystemEvaluator.MODULE_IMPORT;
 import static org.qdl_lang.evaluate.SystemEvaluator.SHEBANG;
 import static org.qdl_lang.gui.FontUtil.findQDLFonts;
 import static org.qdl_lang.util.InputFormUtil.*;
@@ -258,6 +259,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         sayi(RJustify(FUNCS_COMMAND, length) + " - list all of the imported and user defined functions this workspace knows about.");
         sayi(RJustify(RESUME_COMMAND, length) + " - short hand to resume execution for a halted process. Note the argument is the process id (pid), not the buffer number. ");
         sayi(RJustify(HELP_COMMAND, length) + " - this message.");
+        sayi(RJustify(IMPORTS_COMMAND, length) + " - (deprecated) Show modules imported with the " + MODULE_IMPORT + " command.");
         sayi(RJustify(MODULES_COMMAND, length) + " - lists all the loaded modules this workspace knows about.");
         sayi(RJustify(OFF_COMMAND, length) + " - exit the workspace.");
         sayi(RJustify(LOAD_COMMAND, length) + " - Load a file of QDL commands and execute it immediately in the current workspace.");
@@ -330,7 +332,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         try {
             return execute2(inline);
         } catch (Throwable t) {
-            if(t instanceof ReturnException) {
+            if (t instanceof ReturnException) {
                 throw (ReturnException) t;
             }
             say("uh-oh. That did not work:" + t.getMessage());
@@ -386,6 +388,11 @@ public class WorkspaceCommands implements Logable, Serializable {
                 return doSICommand(inputLine);
             case ECHO_COMMAND:
                 // Fix https://github.com/ncsa/qdl/issues/121
+                if (inputLine.hasArg(HELP_SWITCH)) {
+                    say("echo rest of the command line back to the console.");
+                    say("This can be useful with " + SystemEvaluator.WS_MACRO + " to give feedback");
+                    return RC_NO_OP;
+                }
                 say(inline.substring(inputLine.getCommand().length()).trim());
                 return RC_CONTINUE;
             case OFF_COMMAND:
@@ -442,109 +449,148 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     Map<UUID, Integer> currentEditorSessions = new HashMap<>();
-    public static String FONT_CHECK_COMMAND = "check";
-    public static String FONT_LIST_COMMAND = "list";
+    public static final String FONT_CHECK_COMMAND = "check";
+    public static final String FONT_LIST_COMMAND = "list";
 
     protected Object doFontCommand(InputLine inputLine) {
-        if (inputLine.hasArg(HELP_SWITCH)) {
-            say(FONTS_COMMAND + " " + FONT_LIST_COMMAND + " {weight} - list every file on the system that is QDL capable");
-            say("      weight is a percent and if given all fonts that have QDLness creater than or equal to ");
-            say("      the weight will be returned with a listing of how many characters fail and what they are");
-            say("E.g. ");
-            say(FONTS_COMMAND + " " + FONT_LIST_COMMAND + " 90");
-            say("would list all fonts that support 90% or more of QDLs character set.");
-            say("E.g. ");
-            say(FONTS_COMMAND);
-            say("(no argument) Lists all the fonts on your system that are 100% QDL compatible");
-            say("\n" + FONTS_COMMAND + " " + FONT_CHECK_COMMAND + " {name} = check the named  font for QDLness. No name means check the current font.");
-            return RC_CONTINUE;
+        if (!_doHelp(inputLine) && inputLine.getArgCount() == 0) {
+            // no help specified, nothing else on input line
+            // say("Sorry, please supply an argument (e.g. --help)");
+            return _doListFonts(inputLine);
         }
-        if (GraphicsEnvironment.isHeadless()) {
-            say("font operations unsupported in text mode");
-            return RC_NO_OP;
-        }
-        // If they just issue ")fonts 97" assume they mean ")fonts list 97"
-        boolean listFonts = inputLine.hasArg(FONT_LIST_COMMAND) || inputLine.getArgCount() == 0;
+        // They supplied exactly a number.
         if (inputLine.getArgCount() == 1) {
             try {
-                Double.parseDouble(inputLine.getLastArg());
-                listFonts = true;
+                Double.parseDouble(inputLine.getArg(ACTION_INDEX));
+                return _doListFonts(inputLine);
             } catch (NumberFormatException nfx) {
-                // no problem
-            }
-        }
-        if (listFonts) {
-            try {
-                _doFontList(inputLine);
-                return RC_CONTINUE;
 
-            } catch (Throwable throwable) {
-                if (isDebugOn()) {
-                    throwable.printStackTrace();
-                }
-                say("That didn't work: '" + throwable.getMessage() + "'");
-                return RC_NO_OP;
             }
         }
-        if (inputLine.hasArg(FONT_CHECK_COMMAND)) {
-            Font font;
-            boolean defaultFont = !inputLine.hasNextArgFor("check");
-            if (defaultFont) {
-                font = getFont();
-                say("current font: " + fontReport(font));
-            } else {
-                font = new Font(inputLine.getNextArgFor("check"), Font.PLAIN, 12);
-                say("checking font: " + fontReport(font));
-            }
-            String unsupported = FontUtil.findUnsupportedCharacters(font, QDLConstants.ALL_CHARS);
-            if (unsupported.isEmpty()) {
-                say("all characters are supported");
+        switch (inputLine.getArg(ACTION_INDEX)) {
+            case "--help":
+                int length = 8;
+                say("Font commands:");
+                say(RJustify("(no arg)", length) + " - list all the fonts on your system them support all QDL characters.");
+                say(RJustify("(number)", length) + " - list all the fonts on your system with the given QDLness.");
+                say(RJustify(FONT_LIST_COMMAND, length) + " - list every file on the system that is QDL capable");
+                say(getBlanks(length) + "   An optional number for weight, which is a integer percent, ");
+                say(getBlanks(length) + "   and if given all fonts that have QDLness creater than or equal to");
+                say(getBlanks(length) + "   the weight will be returned with a listing of how many characters");
+                say(getBlanks(length) + "   fail and what they are.");
+                say(RJustify(FONT_CHECK_COMMAND, length) + " - Check either the current font (if none specified)");
+                say(getBlanks(length) + "   or give the name of a font.");
+                say("E.g. ");
+                say(FONTS_COMMAND);
+                say("(no argument) Lists all the fonts on your system that are 100% QDL compatible");
+                if (GraphicsEnvironment.isHeadless()) {
+                    say("Note: font operations are unsupported in text mode");
+                }
                 return RC_CONTINUE;
-            }
-            if (defaultFont) {
-                say(unsupported.length() + " characters are not supported"); // can't print unsupported characters
-            } else {
-                say(unsupported.length() + " characters are not supported:" + unsupported); // assume default font can show unsupported characters
+            case FONT_CHECK_COMMAND:
+                return _doFontCheck(inputLine);
+            case FONT_LIST_COMMAND:
+                return _doListFonts(inputLine);
+            default:
+                say("unrecognized font command");
+                return RC_CONTINUE;
+        }
+
+        // If they just issue ")fonts 97" assume they mean ")fonts list 97"
+
+    }
+
+    private int _doFontCheck(InputLine inputLine) {
+        if (_doHelp(inputLine)) {
+            say("\n" + FONTS_COMMAND + " " + FONT_CHECK_COMMAND + " {name} = check the named  font for QDLness. No name means check the current font.");
+            say("\nE.g.");
+            say(FONTS_COMMAND + " " + FONT_CHECK_COMMAND + " 'Monospaced bold'");
+            say("Would check the default monospaced font. ");
+            return RC_CONTINUE;
+        }
+
+        Font font;
+        boolean defaultFont = !inputLine.hasNextArgFor("check");
+        if (defaultFont) {
+            font = getFont();
+            say("current font: " + fontReport(font));
+        } else {
+            font = new Font(inputLine.getNextArgFor("check"), Font.PLAIN, 12);
+            say("checking font: " + fontReport(font));
+        }
+        String unsupported = FontUtil.findUnsupportedCharacters(font, QDLConstants.ALL_CHARS);
+        if (unsupported.isEmpty()) {
+            say("all characters are supported");
+            return RC_CONTINUE;
+        }
+        if (defaultFont) {
+            say(unsupported.length() + " characters are not supported"); // can't print unsupported characters
+        } else {
+            say(unsupported.length() + " characters are not supported:" + unsupported); // assume default font can show unsupported characters
+        }
+        return RC_CONTINUE;
+    }
+
+    private int _doListFonts(InputLine inputLine) {
+        if (_doHelp(inputLine)) {
+            say(FONTS_COMMAND + " " + FONT_LIST_COMMAND + " {weight}");
+            say("No argument means to list information about current fonts that are 100 %");
+            say("QDL compatible.");
+            say("The optional integer weight will list fonts with at least that percent of");
+            say("compatibility plus a list of characters that fail.");
+            say("\nE.g. ");
+            say(FONTS_COMMAND + " " + FONT_LIST_COMMAND + " 90");
+            say("would list all fonts that support 90% or more of QDLs character set.");
+            say("You could also just enter");
+            say(FONTS_COMMAND + " 90");
+
+            if (GraphicsEnvironment.isHeadless()) {
+                say("Note: font operations are unsupported in text mode");
             }
             return RC_CONTINUE;
         }
-        say("unrecognized font command");
-        return RC_CONTINUE;
+        try {
+            inputLine.removeSwitch("list");
+            List<String> fonts;
+            boolean weighted = false;
+            double weight = 100.00;
+            if (inputLine.getArgCount() == 1) {
+                try {
+                    weight = Double.parseDouble(inputLine.getLastArg());
+                    weighted = true;
+                    fonts = findQDLFonts(weight);
+                } catch (NumberFormatException bfx) {
+                    fonts = findQDLFonts();
+                }
+            } else {
+                fonts = findQDLFonts();
+            }
+            if (fonts.isEmpty()) {
+                say("no founts found");
+            } else {
+                if (weighted) {
+                    say("list of fonts that can display " + weight + "% or more of the QDL character set:");
+                } else {
+                    say("list of fonts that can display the entire QDL character set:");
+                }
+                for (String s : fonts) {
+                    say(s);
+                }
+            }
+            say("current font: " + fontReport(getFont()));
+            return RC_CONTINUE;
+
+        } catch (Throwable throwable) {
+            if (isDebugOn()) {
+                throwable.printStackTrace();
+            }
+            say("That didn't work: '" + throwable.getMessage() + "'");
+            return RC_NO_OP;
+        }
     }
 
     protected String fontReport(Font font) {
         return font.getName() + " " + FontUtil.getStyle(font) + " at " + font.getSize() + " pts.";
-    }
-
-    protected void _doFontList(InputLine inputLine) throws Throwable {
-        inputLine.removeSwitch("list");
-        List<String> fonts;
-        boolean weighted = false;
-        double weight = 100.00;
-        if (inputLine.getArgCount() == 1) {
-            try {
-                weight = Double.parseDouble(inputLine.getLastArg());
-                weighted = true;
-                fonts = findQDLFonts(weight);
-            } catch (NumberFormatException bfx) {
-                fonts = findQDLFonts();
-            }
-        } else {
-            fonts = findQDLFonts();
-        }
-        if (fonts.isEmpty()) {
-            say("no founts found");
-        } else {
-            if (weighted) {
-                say("list of fonts that can display " + weight + "% or more of the QDL character set:");
-            } else {
-                say("list of fonts that can display the entire QDL character set:");
-            }
-            for (String s : fonts) {
-                say(s);
-            }
-        }
-        say("current font: " + fontReport(getFont()));
     }
 
     protected void _doGUIEditor(BufferManager.BufferRecord br) {
@@ -1144,9 +1190,9 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     private void endProcess(SIEntry sie) {
-        if(sie.state.getSuperState() == null){
+        if (sie.state.getSuperState() == null) {
             state = defaultState;
-        }else{
+        } else {
             state = sie.state.getSuperState();
         }
         currentPID = 0;
@@ -1225,7 +1271,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     protected Object doFileCommands(InputLine inputLine) throws Throwable {
         if (inputLine.size() <= ACTION_INDEX) {
-            say("Sorry, please supply an argument (e.g. --help)");
+            say("Sorry, no default action, please supply an argument (e.g. --help)");
             return RC_NO_OP;
         }
         switch (inputLine.getArg(ACTION_INDEX)) {
@@ -1339,26 +1385,31 @@ public class WorkspaceCommands implements Logable, Serializable {
         if (inputLine.size() <= ACTION_INDEX) {
             return _doBufferList(inputLine);
         }
+        int width = 25;
         switch (inputLine.getArg(ACTION_INDEX)) {
             case "help":
             case "--help":
                 say("buffer commands:");
-                say("# refers to the buffer number aka index aka handle.");
-                sayi("create alias { path | " + BUFFER_IN_MEMORY_ONLY_SWITCH + "} - create a new buffer.");
-                sayi("check (# | alias)- run the buffer through the parser and check for syntax errors. Does not execute.");
-                sayi("delete or rm (# | alias)- delete the buffer. This does not delete the file.");
-                sayi("clean [-show] - remove all the files in the temp directory. This is best done when there are no open buffers.");
-                sayi("edit (# | alias) - Start the built-in line editor and load the given buffer ");
-                sayi("link alias source target - create a link for given source to the target. The target will be copied to source on save.");
-                sayi("ls | list - display all the active buffers and their numbers");
-                sayi("path {new_path} - (no arg) means to display current default save path, otherwise set it. Default is qdl temp dir.");
-                sayi("reload (# | alias) - reload the buffer from disk.");
-                sayi("reset - deletes all buffers and sets the start number to zero. This clears the buffer state.");
-                sayi("run (# | alias) {&| !} -  Run the buffer. If & is there, do it in its own environment");
-                sayi("show (# | alias) - display contents of buffer in the workspace. ");
-                sayi("(write | save) (# | alias) {path}- save the buffer. If linked, source is copied to target. ");
-                sayi("     path only applies to in memory buffers. The buffer will be written to the path and will be converted");
-                sayi("     to a regular file buffer.");
+                say("    # - refers to the buffer number aka index aka handle.");
+                say("alias - refers to the buffer name.");
+                say("#a - refers to the both the number or  name.");
+
+                sayi(RJustify("create alias { path | " + BUFFER_IN_MEMORY_ONLY_SWITCH + "}", width) + " - create a new buffer.");
+                sayi(RJustify("check (#a)", width) + " - run the buffer through the parser and check for syntax errors. Does not execute.");
+                sayi(RJustify("delete or rm (#a)", width) + " - delete the buffer. This does not delete the file.");
+                sayi(RJustify("clean [-show]", width) + " - remove all the files in the temp directory. This is best done when there are no open buffers.");
+                sayi(RJustify("edit (#a)", width) + " - Start the built-in line editor and load the given buffer ");
+                sayi(RJustify("link alias source target", width) + " - create a link for given source to the target. The target will be copied to source on save.");
+                sayi(RJustify("ls | list", width) + " - display all the active buffers and their numbers");
+                sayi(RJustify("path {new_path}", width) + " - (no arg) means to display current default save path, otherwise set it. Default is qdl temp dir.");
+                sayi(RJustify("reload (#a)", width) + " - reload the buffer from disk.");
+                sayi(RJustify("reset", width) + " - deletes all buffers and sets the start number to zero. This clears the buffer state.");
+                sayi(RJustify("run (#a) {&| !}", width) + " -  Run the buffer. If & is there, do it in its own environment");
+                sayi(RJustify("show (#a)", width) + " - display contents of buffer in the workspace. ");
+                sayi(RJustify("save ", width) + " - Alias for write. See entry for write");
+                sayi(RJustify("write (#a) {path}", width) + " - write the buffer. If linked, source is copied to target. ");
+                sayi(getBlanks(width) + "   path only applies to in memory buffers. The buffer will be written to the path and will be converted");
+                sayi(getBlanks(width) + "   to a regular file buffer.");
                 return RC_NO_OP;
             case "reload":
                 return _doBufferReload(inputLine);
@@ -1803,16 +1854,16 @@ public class WorkspaceCommands implements Logable, Serializable {
                     say("sorry, but there was an error:" + ((t instanceof NullPointerException) ? "(no message)" : t.getMessage()));
                 }
             } else {
-                if(t instanceof InterruptException){
+                if (t instanceof InterruptException) {
                     if (SystemEvaluator.newInterruptHandler) {
 
-                    }else{
+                    } else {
                         InterruptException ie = (InterruptException) t;
                         InterruptUtil.createInterrupt(ie, siInterrupts);
                         InterruptUtil.printSetupMessage(this, ie);
                     }
 
-                }else{
+                } else {
              /*       if (!SystemEvaluator.newInterruptHandler) {
                         say("could not interpret buffer:" + t.getMessage());
                     }*/
@@ -1969,106 +2020,119 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     List<String> editorClipboard = new LinkedList<>();
 
-    public static String EDITOR_ADD = "add";
-    public static String EDITOR_USE = "use";
-    public static String EDITOR_LIST = "list";
-    public static String EDITOR_REMOVE = "rm";
+    public static final String EDITOR_ADD = "add";
+    public static final String EDITOR_USE = "use";
+    public static final String EDITOR_LIST = "list";
+    public static final String EDITOR_REMOVE = "rm";
     public static String EDITOR_CLEAR_SCREEN;
 
     protected Object _doEditor(InputLine inputLine) {
-        if (_doHelp(inputLine)) {
-            sayi("list - list available editors");
-            sayi("add name [-clear_screen] exec  - add a (basic) editor configuration.");
-            sayi("       -clear_screen tells QDL to try and clear the screen before launching the editor. This is");
-            sayi("            usually only needed if the application does not do this (most do).");
-            sayi("        Adding editors can be quite complex, so it might require adding it in the configuration file.");
-            sayi("rm name - remove an editor: note it cannot be the currently active one");
-            sayi("use name - use this as the default. Implicitly enables using external editors if needed.");
-            return RC_NO_OP;
-        }
-        if (inputLine.hasArg(EDITOR_ADD)) {
-
-            if (inputLine.getArgCount() < 3) {
-                say("Sorry, wrong number of arguments for " + EDITOR_ADD);
-                return RC_NO_OP;
-            }
-            boolean isClearScreen = inputLine.hasArg(EDITOR_CLEAR_SCREEN);
-            inputLine.removeSwitch(EDITOR_CLEAR_SCREEN);
-            String name = inputLine.getNextArgFor(EDITOR_ADD);
-            if (isTrivial(name)) {
-                say("no name specified.");
-                return RC_NO_OP;
-            }
-            inputLine.removeSwitchAndValue(EDITOR_ADD);
-
-            if (getQdlEditors().hasEntry(name)) {
-                boolean ok = readline("The editor named \"" + name + "\" already exists. Do you want to over write it (y/n)?").equals("y");
-                if (!ok) {
-                    say("aborted.");
-                    return RC_NO_OP;
-                }
-            }
-            // At this point all that should be left is the executable (and a list of arguments.)
-            String exec = inputLine.getArg(1);
-
-
-            EditorEntry ee = new EditorEntry();
-            ee.name = name;
-            ee.exec = exec;
-            ee.clearScreen = isClearScreen;
-            getQdlEditors().put(ee);
-            say("added '" + name + "' with executable '" + exec + "' ");
-            File file = new File(exec);
-            if (!file.exists()) {
-                say("warn: '" + exec + "' does not exist");
-            }
-            if (file.isDirectory()) {
-                say("warn: '" + exec + "' is a directory");
-            }
-            if (!file.canRead()) {
-                say("warn: you do not have permission to access '" + exec + "'");
-            }
-
-            return RC_CONTINUE;
-        }
-
-        if (inputLine.hasArg(EDITOR_USE)) {
-            String name = inputLine.getNextArgFor(EDITOR_USE);
-            if (isTrivial(name)) {
-                say("no name specified.");
-                return RC_NO_OP;
-            }
-            setExternalEditorName(name);
-            setUseExternalEditor(!name.equals(LINE_EDITOR_NAME));
-            say("editor set to " + name);
-            return RC_CONTINUE;
-        }
-        if (inputLine.hasArg(EDITOR_REMOVE)) {
-            String name = inputLine.getNextArgFor(EDITOR_REMOVE);
-            if (isTrivial(name)) {
-                say("no name specified.");
-                return RC_NO_OP;
-            }
-            if (getQdlEditors().hasEntry(name)) {
-                if (getExternalEditorName().equals(name)) {
-                    say("removing default editor, reverting to line editor");
-                    setExternalEditorName(LINE_EDITOR_NAME);
-                }
-
-                getQdlEditors().remove(name);
-                say(name + " removed.");
-            } else {
-                say(name + " not found.");
-            }
-            return RC_CONTINUE;
-        }
-
-        if (inputLine.hasArg(EDITOR_LIST) || inputLine.getArgCount() == 0) {
+        if (!_doHelp(inputLine) && inputLine.getArgCount() == 0) {
+            // no help specified, nothing else on input line
+            // say("Sorry, please supply an argument (e.g. --help)");
             listEditors();
-            return RC_NO_OP;
+            return RC_CONTINUE;
+        }
+        switch (inputLine.getArg(ACTION_INDEX)) {
+            case "help":
+            case "--help":
+                int width = 20;
+                sayi("list - list available editors");
+                sayi(RJustify(EDITOR_ADD + " name exec", width) + "  - add a (basic) editor configuration.");
+                sayi(RJustify(EDITOR_LIST, width) + " - list all current editors.");
+                sayi(RJustify(EDITOR_REMOVE + " name", width) + " - remove an editor: note it cannot be the currently active one");
+                sayi(RJustify(EDITOR_USE + " name", width) + " - use this as the default. Implicitly enables using external editors if needed.");
+                return RC_NO_OP;
+            case EDITOR_ADD:
+                return _doEditorAdd(inputLine);
+            case EDITOR_USE:
+                return _doEditorUse(inputLine);
+            case EDITOR_REMOVE:
+                return _doEditorRemove(inputLine);
+            case EDITOR_LIST:
+                listEditors();
+                return RC_NO_OP;
+            default:
+                say("unrecognized command");
+                return RC_CONTINUE;
         }
 
-        say("unrecognized command");
+    }
+
+    private int _doEditorRemove(InputLine inputLine) {
+        String name = inputLine.getNextArgFor(EDITOR_REMOVE);
+        if (isTrivial(name)) {
+            say("no name specified.");
+            return RC_NO_OP;
+        }
+        if (getQdlEditors().hasEntry(name)) {
+            if (getExternalEditorName().equals(name)) {
+                say("removing default editor, reverting to line editor");
+                setExternalEditorName(LINE_EDITOR_NAME);
+            }
+
+            getQdlEditors().remove(name);
+            say(name + " removed.");
+        } else {
+            say(name + " not found.");
+        }
+        return RC_CONTINUE;
+    }
+
+    private int _doEditorUse(InputLine inputLine) {
+        String name = inputLine.getNextArgFor(EDITOR_USE);
+        if (isTrivial(name)) {
+            say("no name specified.");
+            return RC_NO_OP;
+        }
+        setExternalEditorName(name);
+        setUseExternalEditor(!name.equals(LINE_EDITOR_NAME));
+        say("editor set to " + name);
+        return RC_CONTINUE;
+    }
+
+    private int _doEditorAdd(InputLine inputLine) {
+        if (inputLine.getArgCount() < 3) {
+            say("Sorry, wrong number of arguments for " + EDITOR_ADD);
+            return RC_NO_OP;
+        }
+        boolean isClearScreen = inputLine.hasArg(EDITOR_CLEAR_SCREEN);
+        inputLine.removeSwitch(EDITOR_CLEAR_SCREEN);
+        String name = inputLine.getNextArgFor(EDITOR_ADD);
+        if (isTrivial(name)) {
+            say("no name specified.");
+            return RC_NO_OP;
+        }
+        inputLine.removeSwitchAndValue(EDITOR_ADD);
+
+        if (getQdlEditors().hasEntry(name)) {
+            boolean ok = readline("The editor named \"" + name + "\" already exists. Do you want to over write it (y/n)?").equals("y");
+            if (!ok) {
+                say("aborted.");
+                return RC_NO_OP;
+            }
+        }
+        // At this point all that should be left is the executable (and a list of arguments.)
+        String exec = inputLine.getArg(1);
+
+
+        EditorEntry ee = new EditorEntry();
+        ee.name = name;
+        ee.exec = exec;
+        ee.clearScreen = isClearScreen;
+        getQdlEditors().put(ee);
+        say("added '" + name + "' with executable '" + exec + "' ");
+        File file = new File(exec);
+        if (!file.exists()) {
+            say("warn: '" + exec + "' does not exist");
+        }
+        if (file.isDirectory()) {
+            say("warn: '" + exec + "' is a directory");
+        }
+        if (!file.canRead()) {
+            say("warn: you do not have permission to access '" + exec + "'");
+        }
+
         return RC_CONTINUE;
     }
 
@@ -2848,9 +2912,15 @@ public class WorkspaceCommands implements Logable, Serializable {
     protected Object doModulesCommand(InputLine inputLine) {
         if (inputLine.hasArg(HELP_SWITCH)) {
             say("Modules commands:");
-            sayi("[list] - list all loaded modules and their aliases. Default is to list modules.");
-            sayi("(uri | alias) [-help] - list all full information for that module, including any documentation.");
-            sayi("      If the module has been loaded, you can use any of the aliases, otherwise you need the uri");
+            sayi("     (no arg) - Same as list.");
+            sayi("         list - list all loaded modules and their aliases. Default is to list modules.");
+            sayi("(uri | alias) - list all full information for that module, including any documentation.");
+            say("");
+            say("Modules may have an optional preferred alias as part of their definition. If so you can  ");
+            say("use that. However, there is no promise such aliases are unique. The uri, on the other hand,");
+            say("is always unique.");
+            sayi("\nIf the module was imported using the deprecated " + MODULE_IMPORT + " command, then");
+            say("you may  use any of the aliases you specified, otherwise you need the uri");
             return RC_NO_OP;
         }
         if (inputLine.hasArg("-help")) {
@@ -2913,9 +2983,10 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     protected Object _moduleImports(InputLine inputLine) {
         if (_doHelp(inputLine)) {
-            say("imports");
+            say("(Old import system -- now you can just set a variable for the module.)");
             sayi("A table of imported modules and their aliases. ");
-            sayi("You must either directly create a module or load it with " + SystemEvaluator.MODULE_LOAD + " to make QDL aware of it before importing it");
+            sayi("You must either directly create a module with QDL, or load from an external source " );
+            say("using "+ SystemEvaluator.MODULE_LOAD + " to make QDL aware of it before importing it");
             return RC_NO_OP;
         }
 
@@ -2977,12 +3048,13 @@ public class WorkspaceCommands implements Logable, Serializable {
      * @return
      */
     protected Object doFuncs(InputLine inputLine) {
-        if ((!inputLine.hasArg(HELP_SWITCH)) && (!inputLine.hasArgs() || inputLine.getArg(ACTION_INDEX).startsWith(SWITCH))) {
+        if (!_doHelp(inputLine) && inputLine.getArgCount() == 0) {
             return _funcsList(inputLine);
         }
         switch (inputLine.getArg(ACTION_INDEX)) {
             case "--help":
                 say("Function commands:");
+                sayi("   (no arg) - Same as list");
                 sayi("  drop name - Remove the (user defined) function from the system");
                 sayi("edit {args} - edit the function with args (an integer) arguments");
                 sayi("              No arg means it defaults to 0.");
@@ -2994,8 +3066,8 @@ public class WorkspaceCommands implements Logable, Serializable {
                 sayi("       list - list all known user-defined functions. Allows display options.");
                 sayi("              Fully qualified names are supported as an argument.");
                 sayi("              E.g.");
-                sayi("              )funcs list foo");
-                sayi("                  lists all of the functions in the imported module foo");
+                sayi("                 )funcs list foo");
+                sayi("              lists all of the functions in the imported module foo");
                 sayi("     system - list all known system functions. Allows display options.");
                 sayi("    -system - same as system.");
                 return RC_NO_OP;
@@ -3591,6 +3663,10 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     protected Object _varsSystem(InputLine inputLine) {
+        if (_doHelp(inputLine)) {
+            say("list system variables");
+            return RC_NO_OP;
+        }
         TreeSet<String> sysVars = new TreeSet<>();
         //  sysVars.addAll(getState().getSystemVars().listVariables());
         return printList(inputLine, sysVars);
@@ -3614,13 +3690,14 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     protected Object _varsList(InputLine inputLine) {
         if (_doHelp(inputLine)) {
-            say("list [" + COMPACT_ALIAS_SWITCH + "]");
-            sayi("Lists the variables in the current workspace.");
-            sayi("list module - lists the variables in the module.");
-            sayi(COMPACT_ALIAS_SWITCH + " will collapse all modules to show by alias.");
-            sayi(LIST_MODULES_SWITCH + " list variables in modules");
-            sayi(LIST_INTRINSIC_SWITCH + " show intrinsic variables");
-            sayi(LIST_EXTRINSIC_SWITCH + " show extrinsic (i.e. global) variables");
+            int width = 15;
+            say(RJustify( "list [" + COMPACT_ALIAS_SWITCH + "]", width) + " - Lists the variables in the current workspace.");
+            sayi(RJustify(LIST_INTRINSIC_SWITCH, width) + " - show intrinsic variables");
+            sayi(RJustify(LIST_EXTRINSIC_SWITCH, width)  + " - show extrinsic (i.e. global) variables");
+            sayi("Command for old module system:");
+            sayi("These only apply to modules imported using " + MODULE_IMPORT);
+            sayi(RJustify(COMPACT_ALIAS_SWITCH, width) + " - collapse all modules to show by alias.");
+            sayi(RJustify(LIST_MODULES_SWITCH, width)  + " - list variables in modules");
             return RC_NO_OP;
         }
         boolean includeModules = inputLine.hasArg(LIST_MODULES_SWITCH);
@@ -3846,7 +3923,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             StringTokenizer st = new StringTokenizer(name, State.NS_DELIMITER);
             while (st.hasMoreTokens()) {
                 String currentToken = st.nextToken();
-                QDLValue  obj = currentState.getValue(currentToken);
+                QDLValue obj = currentState.getValue(currentToken);
                 if (obj.isModule()) {
                     previousState = currentState;
                     currentState = obj.asModule().getState();
@@ -3868,7 +3945,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         while (st.hasMoreTokens()) {
             currentName = st.nextToken();
             QDLValue object = currentState.getValue(currentName);
-            if (object.isModule()) {
+            if (object != null && object.isModule()) {
                 currentModule = object.asModule();
                 currentState = currentModule.getState();
             } else {
@@ -3910,7 +3987,7 @@ public class WorkspaceCommands implements Logable, Serializable {
      */
     protected Object doWS(InputLine inputLine) {
         if (!inputLine.hasArgs()) { // so no arguments
-            say("no command found");
+            say("no default command");
             return RC_CONTINUE;
         }
         switch (inputLine.getArg(ACTION_INDEX)) {
@@ -4144,6 +4221,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     /**
      * Get a workspace variable. These may be strings or booleans.
+     *
      * @param key
      * @return
      */
@@ -5666,7 +5744,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         for (Object varName : state.getVStack().listVariables()) {
             QDLValue qdlObject = state.getValue(varName.toString());
             String output = inputFormVar((String) varName, 2, state);
-            fileWriter.write(varName + " := " + output + (output.endsWith(";")?"":";"+"\n"));
+            fileWriter.write(varName + " := " + output + (output.endsWith(";") ? "" : ";" + "\n"));
         }
         if (!state.getIntrinsicVariables().isEmpty()) {
             fileWriter.write("\n/* ** user defined intrinsic variables ** */\n");
@@ -5693,7 +5771,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             Module module = getState().getMInstances().getModule(key);
             List<String> aliases = getState().getMInstances().getAliasesAsString(module.getMTKey());
             for (String alias : aliases) {
-                String output = SystemEvaluator.MODULE_IMPORT + "('" + module.getNamespace() + "','" + alias + "');";
+                String output = MODULE_IMPORT + "('" + module.getNamespace() + "','" + alias + "');";
                 fileWriter.write(output + "\n");
             }
         }
@@ -6334,12 +6412,12 @@ public class WorkspaceCommands implements Logable, Serializable {
         try {
             getWorkspace().runMacro(commands);
         } catch (Throwable t) {
-            if(t instanceof ReturnException){
-                ReturnException re = (ReturnException)t;
-                if(re.hasResult()) {
+            if (t instanceof ReturnException) {
+                ReturnException re = (ReturnException) t;
+                if (re.hasResult()) {
                     say(re.result.toString());
                 }
-            }else {
+            } else {
                 say("could not execute macro");
             }
         }
@@ -6461,6 +6539,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     public static final String HOME_DIR_ARG = "-home_dir";
+
     public void fromConfigFile(InputLine inputLine, QDLEnvironment qe) throws Throwable {
         // The state probably exists at this point if the user had to set the terminal type.
         // Make sure the logger ends up in the actual state.
@@ -7056,7 +7135,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             } catch (Throwable t) {
                 if (!SystemEvaluator.newInterruptHandler && (t instanceof InterruptException)) {
                     InterruptException ie = (InterruptException) t;
-                    InterruptUtil.createInterrupt(ie,  null);
+                    InterruptUtil.createInterrupt(ie, null);
                     InterruptUtil.printSetupMessage(this, ie);
                     try {
                         getWorkspace().mainLoop();
@@ -7401,7 +7480,8 @@ public class WorkspaceCommands implements Logable, Serializable {
     public List<LibLoader> getLibLoaders() {
         return new ArrayList<>();
     }
-    public SIEntry getCurrentSIEntry(){
+
+    public SIEntry getCurrentSIEntry() {
         return getSIEntries().get(getCurrentPID());
     }
 }
