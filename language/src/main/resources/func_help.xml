@@ -5009,6 +5009,17 @@ Short form of external_editor.
 See also: external_editor]]>
         </body>
     </entry>
+    <entry id="templates_on">
+        <body>
+            <![CDATA[(workspace variable)
+Globally toggle whether QDL expressions are preprocessed for templates.
+Workspace commands are always preprocessed, but the overhead of checking
+every QDL statements for templates of the form ${var} can add a fair
+amount of resources. The default is off. You may also set this as
+either a flag at startup or in the configuratio file as a workspace
+option.]]>
+        </body>
+    </entry>
     <entry id="assertions_on">
         <body>
             <![CDATA[(workspace variable)

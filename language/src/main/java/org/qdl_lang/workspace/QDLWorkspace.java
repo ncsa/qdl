@@ -280,6 +280,10 @@ public class QDLWorkspace implements Serializable {
 
         try {
             if (input != null && !input.isEmpty()) {
+                if(workspaceCommands.isPreprocessorOn()){
+                input = workspaceCommands.applyTemplates(input);
+            }
+
                 // if you try to evaluate only a ";" then you will get a syntax exception from
                 // the parser for an empty statement.
                 if (workspaceCommands.isEchoModeOn() && !input.endsWith(";")) {

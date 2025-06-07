@@ -974,6 +974,12 @@ public class State extends FunctionState implements QDLConstants {
         return !vfsFileProviders.isEmpty();
     }
 
+    /**
+     * Returns if the {@link VFSPaths#SCHEME_DELIMITER} is part of this path, while means it
+     * is intended for the virtual file system.
+     * @param path
+     * @return
+     */
     public boolean isVFSFile(String path) {
         if (path.startsWith(VFSPaths.SCHEME_DELIMITER) || path.indexOf(VFSPaths.SCHEME_DELIMITER) == -1) {
             return false;

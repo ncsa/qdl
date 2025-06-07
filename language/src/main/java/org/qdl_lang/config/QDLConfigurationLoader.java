@@ -295,6 +295,11 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
         return getFirstBooleanValue(node, WS_ATTR_ECHO_MODE_ON, true);
     }
 
+    protected boolean isPreprocessorOn(){
+        ConfigurationNode node = getFirstNode(cn, WS_TAG);
+        return getFirstBooleanValue(node, WS_ATTR_PREPROCESSOR_ON, false);
+
+    }
     protected boolean areAssertionsEnabled() {
         ConfigurationNode node = getFirstNode(cn, WS_TAG);
         return getFirstBooleanValue(node, WS_ATTR_ASSERTIONS_ON, true);
@@ -526,7 +531,8 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
                 isAnsiModeOn(),
                 useLogo(),
                 getTerminalType(),
-                getFont());
+                getFont(),
+                isPreprocessorOn());
     }
 
     @Override

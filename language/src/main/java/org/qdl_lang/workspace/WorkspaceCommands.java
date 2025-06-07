@@ -83,8 +83,7 @@ import java.util.zip.GZIPOutputStream;
 
 import static org.qdl_lang.config.QDLConfigurationConstants.*;
 import static org.qdl_lang.config.QDLConfigurationLoaderUtils.*;
-import static org.qdl_lang.evaluate.SystemEvaluator.MODULE_IMPORT;
-import static org.qdl_lang.evaluate.SystemEvaluator.SHEBANG;
+import static org.qdl_lang.evaluate.SystemEvaluator.*;
 import static org.qdl_lang.gui.FontUtil.findQDLFonts;
 import static org.qdl_lang.util.InputFormUtil.*;
 import static org.qdl_lang.util.QDLFileUtil.*;
@@ -344,7 +343,14 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     }
 
+    protected String applyTemplates(String inline) {
+        if(!isPreprocessorOn()) return inline;
+        return TemplateUtil.replaceAll(inline, getEnv()); // allow replacements in commands too...
+
+    }
     public Object execute2(String inline) throws Throwable {
+
+
 
         inline = TemplateUtil.replaceAll(inline, env); // allow replacements in commands too...
         InputLine inputLine = new InputLine(CLT.tokenize(inline));
@@ -495,9 +501,6 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("unrecognized font command");
                 return RC_CONTINUE;
         }
-
-        // If they just issue ")fonts 97" assume they mean ")fonts list 97"
-
     }
 
     private int _doFontCheck(InputLine inputLine) {
@@ -1278,12 +1281,13 @@ public class WorkspaceCommands implements Logable, Serializable {
             case "help":
             case "--help":
                 say("File commands:");
-                sayi("    copy source target - copy the source to the target, overwriting its contents.");
-                sayi("delete or rm file_name - delete the given file");
-                sayi("             ls or dir - list the contents of a directory. Directories end with a /");
-                sayi("            mkdir path - make a directory. This makes all intermediate directories as needed.");
-                sayi("            rmdir path - remove a single directory. This fails if there are any entries in the directory.");
-                sayi("                   vfs - list information about all currently mounted virtual file systems.");
+                sayi("copy source target - copy the source to the target, overwriting its contents.");
+                sayi("  delete file_name - Same as rm.");
+                sayi("         ls or dir - list the contents of a directory. Directories end with a /");
+                sayi("        mkdir path - make a directory. This makes all intermediate directories as needed.");
+                sayi("      rm file_name - remove a single file.");
+                sayi("        rmdir path - remove a single directory. This fails if there are any entries in the directory.");
+                sayi("               vfs - list information about all currently mounted virtual file systems.");
                 return RC_NO_OP;
             case "copy":
                 return _fileCopy(inputLine);
@@ -2722,6 +2726,9 @@ public class WorkspaceCommands implements Logable, Serializable {
                 sayi("    load file - load a saved environment from a file");
                 sayi("    save file - save the entire current environment to the file");
                 sayi("set var value - set the given variable to the given value");
+                sayi("Remember that the environment refers to a collection of key/value pairs you may");
+                sayi("use as a pre-processor to commands and QDL expressions. See the Workspace reference");
+                say("manual section on 'Templates, pre-processing and variables'.");
                 return RC_NO_OP;
             case "clear":
                 if (_doHelp(inputLine)) {
@@ -2732,6 +2739,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
                 env = new XProperties();
                 say("Environment cleared.");
+                return RC_CONTINUE;
             case "drop":
                 return _envDrop(inputLine);
             case "get":
@@ -2789,10 +2797,18 @@ public class WorkspaceCommands implements Logable, Serializable {
         return RC_CONTINUE;
     }
 
+    protected static final String LOAD_ENV_AS_INPUT_FORM = "-input_form";
+
     protected Object _envLoad(InputLine inputLine) {
         if (_doHelp(inputLine)) {
-            say("load file");
+            say("load [" + LOAD_ENV_AS_INPUT_FORM + "] (" + QDL_DUMP_FLAG + " | " + JSON_FLAG + ") file ");
             sayi("Load the given file as the current environment. This adds to the current environment");
+            sayi(LOAD_ENV_AS_INPUT_FORM + " if present for a stem will convert every value to its input form.");
+            sayi("Otherwise, the values are given in their string representation.");
+            sayi(QDL_DUMP_FLAG + " - if present, interpret the file as QDL. ");
+            sayi(JSON_FLAG + " - if present, interpret the file as JSON. ");
+            sayi("\nTip: If using QDL, it is interpreted like any other script, so it is goof practice");
+            say("        to return the value you want to use.");
             return RC_NO_OP;
         }
 
@@ -2801,21 +2817,134 @@ public class WorkspaceCommands implements Logable, Serializable {
             say("Sorry but you must specify a file to load it");
             return RC_CONTINUE;
         }
-        File f = resolveAgainstRoot(inputLine.getArg(FIRST_ARG_INDEX));
-        if (!f.exists()) {
-            say("Sorry, but +\"" + f.getAbsolutePath() + "\" does not exist.");
-            return RC_CONTINUE;
+        boolean toInputForm = inputLine.hasArg(LOAD_ENV_AS_INPUT_FORM);
+        inputLine.removeSwitch(LOAD_ENV_AS_INPUT_FORM);
+        boolean loadAsQDL = inputLine.hasArg(QDL_DUMP_FLAG);
+        inputLine.removeSwitch(QDL_DUMP_FLAG);
+        boolean loadAsJSON = inputLine.hasArg(JSON_FLAG);
+        inputLine.removeSwitch(JSON_FLAG);
+        String filePath = inputLine.getLastArg();
+        String realFilePath = filePath;
+        if (!getState().isVFSFile(filePath)) {
+            File f = resolveAgainstRoot(filePath);
+            realFilePath = f.getAbsolutePath();
         }
-        if (!f.isFile()) {
-            say("Sorry, but +\"" + f.getAbsolutePath() + "\" is not a file.");
-            return RC_CONTINUE;
+        String content = null;
+        try {
+            content = QDLFileUtil.readTextFile(getState(), realFilePath);
+        } catch (Throwable e) {
+            if (isDebugOn()) {
+                e.printStackTrace();
+            }
+            say("uh-oh, that didn't work:" + e.getMessage());
+            return RC_NO_OP;
         }
-        if (!f.canRead()) {
-            say("Sorry, but +\"" + f.getAbsolutePath() + "\" is not readable.");
-            return RC_CONTINUE;
+
+// so at this point it is an absolute path
+/*
+        if(getState().isVFSFile(filePath)){
+          QDLFileUtil.readTextFileAsLines(getState(), filePath);
+        }else{
+            File f = resolveAgainstRoot(filePath);
+            if (!f.exists()) {
+                say("Sorry, but +\"" + f.getAbsolutePath() + "\" does not exist.");
+                return RC_CONTINUE;
+            }
+            if (!f.isFile()) {
+                say("Sorry, but +\"" + f.getAbsolutePath() + "\" is not a file.");
+                return RC_CONTINUE;
+            }
+            if (!f.canRead()) {
+                say("Sorry, but +\"" + f.getAbsolutePath() + "\" is not readable.");
+                return RC_CONTINUE;
+            }
+
+
         }
-        env.load(f);
-        say(f.getAbsolutePath() + " loaded.");
+*/
+        boolean done = false;
+        if (loadAsJSON || realFilePath.endsWith(".json")) {
+            try {
+                JSONObject jsonObject = JSONObject.fromObject(content);
+                if (env == null) {
+                    env = new XProperties();
+                    env.add(jsonObject, true);
+                }
+                done = true;
+            } catch (Throwable e) {
+                say("tried to process as JSON failed.");
+            }
+        }
+
+        if (loadAsQDL || realFilePath.endsWith(".qdl") && !done) {
+            try {
+                QDLInterpreter qi = new QDLInterpreter(getState().newLocalState());
+                QDLRunner runner = qi.execute(content);
+                Object obj = runner.getLastResult();
+                if (obj != null) {
+                    QDLStem qdlStem = null;
+                    if (obj instanceof QDLValue) {
+                        QDLValue qdlValue = (QDLValue) obj;
+                        if (qdlValue.isStem()) {
+                            qdlStem = qdlValue.asStem();
+                        }
+                    } else {
+                        if (obj instanceof QDLStem) {
+                            qdlStem = (QDLStem) obj;
+                        }
+                    }
+                    if (qdlStem == null) {
+                        say("QDL does not evaluate to  a stem. Cannot load environment.");
+                        return RC_NO_OP;
+                    }
+                    if (toInputForm) {
+                        for (QDLKey key : qdlStem.keySet()) {
+                            env.put(key.toString(), InputFormUtil.inputForm(qdlStem.get(key)));
+                        }
+                    } else {
+                        env.add(qdlStem, true);
+                    }
+                    done = true;
+                }
+            } catch (Throwable e) {
+                if (e instanceof ReturnException) {
+                    ReturnException re = (ReturnException) e;
+                    if (re.hasResult()) {
+                        QDLValue qdlValue = (QDLValue) re.result;
+                        if (qdlValue.isStem()) {
+                            QDLStem stemIn = qdlValue.asStem();
+                            if(toInputForm){
+                               for(QDLKey key : stemIn.keySet()){
+                                   env.put(key.toString(), InputFormUtil.inputForm(stemIn.get(key)));
+                               }
+                            }else {
+                                env.add(qdlValue.asStem(), true);
+                            }
+                            done = true;
+                        }
+                    }
+                } else {
+                    say("Unexpected error: " + e.getMessage());
+                }
+                if (isDebugOn()) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        if (!done) {
+            StringReader stringReader = new StringReader(content);
+            try {
+                env.load(stringReader);
+            } catch (IOException e) {
+                if (isDebugOn()) {
+                    e.printStackTrace();
+                }
+                say("uh-oh, that didn't work:" + e.getMessage());
+                return RC_NO_OP;
+            }
+        }
+
+        say(realFilePath + " loaded.");
         return RC_CONTINUE;
     }
 
@@ -2985,8 +3114,8 @@ public class WorkspaceCommands implements Logable, Serializable {
         if (_doHelp(inputLine)) {
             say("(Old import system -- now you can just set a variable for the module.)");
             sayi("A table of imported modules and their aliases. ");
-            sayi("You must either directly create a module with QDL, or load from an external source " );
-            say("using "+ SystemEvaluator.MODULE_LOAD + " to make QDL aware of it before importing it");
+            sayi("You must either directly create a module with QDL, or load from an external source ");
+            say("using " + SystemEvaluator.MODULE_LOAD + " to make QDL aware of it before importing it");
             return RC_NO_OP;
         }
 
@@ -3691,13 +3820,13 @@ public class WorkspaceCommands implements Logable, Serializable {
     protected Object _varsList(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             int width = 15;
-            say(RJustify( "list [" + COMPACT_ALIAS_SWITCH + "]", width) + " - Lists the variables in the current workspace.");
+            say(RJustify("list [" + COMPACT_ALIAS_SWITCH + "]", width) + " - Lists the variables in the current workspace.");
             sayi(RJustify(LIST_INTRINSIC_SWITCH, width) + " - show intrinsic variables");
-            sayi(RJustify(LIST_EXTRINSIC_SWITCH, width)  + " - show extrinsic (i.e. global) variables");
+            sayi(RJustify(LIST_EXTRINSIC_SWITCH, width) + " - show extrinsic (i.e. global) variables");
             sayi("Command for old module system:");
             sayi("These only apply to modules imported using " + MODULE_IMPORT);
             sayi(RJustify(COMPACT_ALIAS_SWITCH, width) + " - collapse all modules to show by alias.");
-            sayi(RJustify(LIST_MODULES_SWITCH, width)  + " - list variables in modules");
+            sayi(RJustify(LIST_MODULES_SWITCH, width) + " - list variables in modules");
             return RC_NO_OP;
         }
         boolean includeModules = inputLine.hasArg(LIST_MODULES_SWITCH);
@@ -4186,6 +4315,15 @@ public class WorkspaceCommands implements Logable, Serializable {
         return text + spaces.substring(0, spaces.length() - text.length());
     }
 
+    public boolean isPreprocessorOn() {
+        return preprocessorOn;
+    }
+
+    public void setPreprocessorOn(boolean preprocessorOn) {
+        this.preprocessorOn = preprocessorOn;
+    }
+
+    boolean preprocessorOn = false;
     public boolean isPrettyPrint() {
         return prettyPrint;
     }
@@ -4197,7 +4335,11 @@ public class WorkspaceCommands implements Logable, Serializable {
     boolean prettyPrint = false;
 
     protected boolean isOnOrTrue(String x) {
-        return x.equals("on") || x.equals("true");
+        return x.equals("on") || x.equals("true") || x.equals("1");
+    }
+
+    protected boolean isOffOrFalse(String x) {
+        return x.equals("off") || x.equals("false") || x.equals("0");
     }
 
     protected String onOrOff(boolean b) {
@@ -4240,6 +4382,8 @@ public class WorkspaceCommands implements Logable, Serializable {
                 return isAssertionsOn();
             case ANSI_MODE_ON:
                 return isAnsiModeOn();
+            case PREPROCESSOR_ON:
+                return isPreprocessorOn();
             case RUN_INIT_ON_LOAD:
                 return runInitOnLoad;
             case START_TS:
@@ -4344,6 +4488,9 @@ public class WorkspaceCommands implements Logable, Serializable {
             case ANSI_MODE_ON:
                 say(onOrOff(ansiModeOn));
                 break;
+            case PREPROCESSOR_ON:
+                say(onOrOff(preprocessorOn));
+                break;
             case START_TS:
                 if (startTimeStamp != null) {
                     say("startup time at " + Iso8601.date2String(startTimeStamp));
@@ -4439,6 +4586,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     public static final String ENABLE_LIBRARY_SUPPORT = "enable_library_support";
     public static final String ASSERTIONS_ON = "assertions_on";
     public static final String ANSI_MODE_ON = "ansi_mode";
+    public static final String PREPROCESSOR_ON = "preprocessor";
     public static final String OVERWRITE_BASE_FUNCTIONS_ON = "overwrite_base_functions";
     public static final String LIB_LIST_FORCE_FORMAT_SWITCH = "-format";
 
@@ -5038,29 +5186,49 @@ public class WorkspaceCommands implements Logable, Serializable {
 
         }
         String value = inputLine.getArg(3);
+        Boolean bValue = null;
+        if(isOnOrTrue(value)) {
+            bValue = Boolean.TRUE;
+        }else{
+            if(isOffOrFalse(value)){
+                bValue = Boolean.FALSE;
+            }
+        }
         switch (inputLine.getArg(2)) {
             case OVERWRITE_BASE_FUNCTIONS_ON:
-                getState().setAllowBaseFunctionOverrides(isOnOrTrue(value));
-                say("overwriting QDL base functions on");
+                if(bValue == null)return handleBadValue(value, OVERWRITE_BASE_FUNCTIONS_ON);
+                getState().setAllowBaseFunctionOverrides(bValue);
+                say("overwriting QDL base functions " + onOrOff(bValue));
                 break;
             case PRETTY_PRINT:
             case PRETTY_PRINT_SHORT:
-                setPrettyPrint(isOnOrTrue(value));
-                getInterpreter().setPrettyPrint(isPrettyPrint());
-                say("pretty print " + (prettyPrint ? "on" : "off"));
+                if(bValue == null)return handleBadValue(value, PRETTY_PRINT);
+                    setPrettyPrint(bValue);
+                    getInterpreter().setPrettyPrint(bValue);
+                    say("pretty print " + onOrOff(bValue));
+
                 break;
             case ECHO:
-                setEchoModeOn(isOnOrTrue(value));
-                getInterpreter().setEchoModeOn(isEchoModeOn());
-                say("echo mode " + (echoModeOn ? "on" : "off"));
+                if(bValue == null)return handleBadValue(value, ECHO);
+                setEchoModeOn(bValue);
+                getInterpreter().setEchoModeOn(bValue);
+                say("echo mode " + onOrOff(bValue));
                 break;
             case JAVA_TRACE:
-                setDebugOn(isOnOrTrue(value));
-                say("java trace is " + (debugOn ? "on" : "off"));
+                if(bValue == null)return handleBadValue(value, JAVA_TRACE);
+                setDebugOn(bValue);
+                say("java trace is " + onOrOff(bValue));
                 break;
             case UNICODE_ON:
-                State.setPrintUnicode(isOnOrTrue(value));
-                say("unicode printing of system constants is now " + (State.isPrintUnicode() ? "on" : "off"));
+                if(bValue == null)return handleBadValue(value, UNICODE_ON);
+                State.setPrintUnicode(bValue);
+                say("unicode printing of system constants is now " + onOrOff(bValue));
+                break;
+            case PREPROCESSOR_ON:
+                // Fix https://github.com/ncsa/qdl/issues/127
+                if(bValue == null)return handleBadValue(value, PREPROCESSOR_ON);
+                setPreprocessorOn(bValue);
+                say("QDL preprocessing is " + onOrOff(bValue));
                 break;
             case ANSI_MODE_ON:
 
@@ -5068,9 +5236,13 @@ public class WorkspaceCommands implements Logable, Serializable {
             the whole JVM shuts down. There is probably a way to do it, but that is
             highly non-obvious, so I'll leave this here now as a later improvement
             if this gets important.
-            Another consideration is that there is no way to know if turning on ansi mode
-            will crash the JVM (some terminal values cannot use it), so at best being able
-            to toggle this is dicey.
+            Consideration 1: If a user is in text only mode because they have to be, loading
+                             a workspace saved in ANSI or Swing mode may crash everything or
+                             render the system unresponsive. Cannot preserve this across loads.
+            Consideration 2 : There is no way to know if turning on ansi mode
+                              will crash the JVM (some terminal values cannot use it), so
+                              at best being able to toggle this is dicey. If the system starts,
+                              keep it that way.
                 if (isOnOrTrue(value)) {
                     try {
                         QDLTerminal qdlTerminal = new QDLTerminal(null);
@@ -5088,8 +5260,9 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("ansi mode is read only and " + (ansiModeOn ? "on" : "off"));
                 break;
             case USE_EXTERNAL_EDITOR:
-                setUseExternalEditor(isOnOrTrue(value));
-                say("use external editor " + (isUseExternalEditor() ? "on" : "off"));
+                if(bValue == null)return handleBadValue(value, USE_EXTERNAL_EDITOR);
+                setUseExternalEditor(bValue);
+                say("use external editor " + onOrOff(bValue));
                 break;
             case EXTERNAL_EDITOR:
             case SHORT_EXTERNAL_EDITOR:
@@ -5107,16 +5280,19 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("external editor was '" + oldName + "' now is '" + getExternalEditorName() + "'");
                 break;
             case ENABLE_LIBRARY_SUPPORT:
-                getState().setEnableLibrarySupport(isOnOrTrue(value));
-                say("library support is now " + (getState().isEnableLibrarySupport() ? "on" : "off"));
+                if(bValue == null)return handleBadValue(value, ENABLE_LIBRARY_SUPPORT);
+                getState().setEnableLibrarySupport(bValue);
+                say("library support is now " + onOrOff(bValue));
                 break;
             case ASSERTIONS_ON:
-                getState().setAssertionsOn(isOnOrTrue(value));
-                say("assertions are now " + (getState().isAssertionsOn() ? "on" : "off"));
+                if(bValue == null)return handleBadValue(value, ASSERTIONS_ON);
+                getState().setAssertionsOn(bValue);
+                say("assertions are now " + onOrOff(bValue));
                 break;
             case RUN_INIT_ON_LOAD:
-                runInitOnLoad = isOnOrTrue(value);
-                say("run " + DEFAULT_BOOT_FUNCTION_ON_LOAD_NAME + " on loading this workspace is " + (getState().isAssertionsOn() ? "on" : "off"));
+                if(bValue == null)return handleBadValue(value, RUN_INIT_ON_LOAD);
+                runInitOnLoad = bValue;
+                say("run " + DEFAULT_BOOT_FUNCTION_ON_LOAD_NAME + " on loading this workspace is " + onOrOff(bValue));
                 break;
             case LIB_PATH_TAG:
                 getState().setLibPath(value);
@@ -5157,8 +5333,9 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("workspace id set to '" + getWSID() + "'");
                 break;
             case COMPRESS_XML:
-                setCompressXML(isOnOrTrue(value));
-                say("xml compression " + (compressXML ? "on" : "off"));
+                if(bValue == null)return handleBadValue(value, COMPRESS_FLAG);
+                setCompressXML(bValue);
+                say("xml compression " + onOrOff(bValue));
                 break;
             case SAVE_DIR:
                 saveDir = value;
@@ -5212,7 +5389,8 @@ public class WorkspaceCommands implements Logable, Serializable {
                 if (currentWorkspace == null) {
                     say("warning: you have not a set a file for saves. Please set " + CURRENT_WORKSPACE_FILE + " first.");
                 } else {
-                    setAutosaveOn(isOnOrTrue(value));
+                    if(bValue == null)return handleBadValue(value, AUTOSAVE_ON);
+                    setAutosaveOn(bValue);
                     if (autosaveThread != null) {
                         autosaveThread.interrupt();
                         autosaveThread.setStopThread(true);
@@ -5221,13 +5399,14 @@ public class WorkspaceCommands implements Logable, Serializable {
                     if (isAutosaveOn()) {
                         initAutosave();
                     }
-                    say("autosave is now " + (isAutosaveOn() ? "on" : "off"));
+                    say("autosave is now " + onOrOff(bValue));
 
                 }
                 break;
             case AUTOSAVE_MESSAGES_ON:
-                setAutosaveMessagesOn(isOnOrTrue(value));
-                say("autosave messages are now " + (isAutosaveMessagesOn() ? "on" : "off"));
+                if(bValue == null)return handleBadValue(value, JAVA_TRACE);
+               setAutosaveMessagesOn(bValue);
+                say("autosave messages are now " + onOrOff(bValue));
                 break;
             case AUTOSAVE_INTERVAL:
                 String rawTime = value;
@@ -5243,9 +5422,19 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
 
         return RC_CONTINUE;
-
     }
 
+    /**
+     * If the raw value does not evaluate to a boolean, this is called to gracefully exit.
+     * @param rawValue
+     * @param varName
+     * @return
+     */
+    // Fixes https://github.com/ncsa/qdl/issues/126
+    int handleBadValue(String rawValue, String varName) {
+        say("bad value of '" + rawValue + "' for " + varName);
+        return RC_NO_OP;
+    }
     protected void listEditors() {
         say("Available editors:");
         say(LINE_EDITOR_NAME);
@@ -5272,6 +5461,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             LIB_PATH_TAG,
             PRETTY_PRINT,
             PRETTY_PRINT_SHORT,
+            PREPROCESSOR_ON,
             ROOT_DIR,
             RUN_INIT_ON_LOAD,
             SAVE_DIR,
@@ -6451,10 +6641,19 @@ public class WorkspaceCommands implements Logable, Serializable {
     public static final String CLA_LOGO = "-logo";
     public static final String CLA_DEBUG_ON = "-debug";
     public static final String CLA_RUN_SCRIPT_ON = "-run";
+    public static final String CLA_PREPROCESSOR_ON = "-" + WorkspaceCommands.PREPROCESSOR_ON;
     public static final String CLA_SCRIPT_PATH = "-script_path";
     public static final String CLA_MODULE_PATH = "-module_path";
     public static final String CLA_LIB_PATH = "-lib_path";
 
+    /**
+     * If this is a relative file, it is resolved against the root directory. Otherwise, it
+     * is just returned.<br/>
+     * Absolute as per spec means it starts with a / on unix, or drive:\ on Windows.
+     *
+     * @param file
+     * @return
+     */
     protected File resolveAgainstRoot(String file) {
         File f = new File(file);
         if (!f.isAbsolute()) {
@@ -6583,6 +6782,14 @@ public class WorkspaceCommands implements Logable, Serializable {
         isRunScript = inputLine.hasArg(CLA_RUN_SCRIPT_ON);
         state.setAssertionsOn(qe.isAssertionsOn());
         assertionsOn = qe.isAssertionsOn();
+        preprocessorOn = qe.isPreprocesserOn();
+        if(inputLine.hasArg(CLA_PREPROCESSOR_ON)){
+            Boolean x = inputLine.getBooleanNextArgFor(CLA_PREPROCESSOR_ON);
+            if(x != null){
+                preprocessorOn = x;
+            }
+            inputLine.removeSwitchAndValue(CLA_PREPROCESSOR_ON);
+        }
         if (isRunScript) {
             runScriptPath = inputLine.getNextArgFor(CLA_RUN_SCRIPT_ON);
             inputLine.removeSwitchAndValue(CLA_RUN_SCRIPT_ON);
@@ -6592,8 +6799,10 @@ public class WorkspaceCommands implements Logable, Serializable {
         showBanner = qe.isShowBanner();
         if (inputLine.hasArg(CLA_SHOW_BANNER)) {
             // allows for override.
-            String raw = inputLine.getNextArgFor(CLA_SHOW_BANNER);
-            showBanner = "true".equals(raw);
+            Boolean raw = inputLine.getBooleanNextArgFor(CLA_SHOW_BANNER);
+            if(raw != null){
+                showBanner = raw;
+            }
             inputLine.removeSwitchAndValue(CLA_SHOW_BANNER);
         }
         logoName = qe.getLogoName();
@@ -6891,9 +7100,18 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
 
         if (inputLine.hasArg(CLA_SHOW_BANNER)) {
-            String raw = inputLine.getNextArgFor(CLA_SHOW_BANNER);
-            showBanner = "true".equals(raw);
+            Boolean raw = inputLine.getBooleanNextArgFor(CLA_SHOW_BANNER);
+            if(raw != null ) {
+                showBanner = raw;
+            }
             inputLine.removeSwitch(CLA_SHOW_BANNER);
+        }
+        if(inputLine.hasArg(CLA_PREPROCESSOR_ON)){
+            Boolean raw = inputLine.getBooleanNextArgFor(CLA_PREPROCESSOR_ON);
+            if(raw != null ) {
+                preprocessorOn = raw;
+            }
+            inputLine.removeSwitch(CLA_PREPROCESSOR_ON);
         }
         logoName = "default";
         if (inputLine.hasArg(CLA_LOGO)) {

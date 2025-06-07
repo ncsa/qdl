@@ -59,7 +59,8 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
                           boolean ansiModeOn,
                           String logo,
                           String terminalType,
-                          Font font) {
+                          Font font,
+                          boolean preprocesserOn) {
         super(myLogger);
         this.cfgFile = cfgFile;
         this.name = name;
@@ -96,7 +97,19 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
         this.logo = logo;
         this.terminalType = terminalType;
         this.font = font;
+        this.preprocesserOn = preprocesserOn;
     }
+
+    // Fix https://github.com/ncsa/qdl/issues/127
+    public Boolean isPreprocesserOn() {
+        return preprocesserOn;
+    }
+
+    public void setPreprocesserOn(Boolean preprocesserOn) {
+        this.preprocesserOn = preprocesserOn;
+    }
+
+    Boolean preprocesserOn = null;
 
     String terminalType=WS_TERMINAL_TYPE_TEXT; // default
 

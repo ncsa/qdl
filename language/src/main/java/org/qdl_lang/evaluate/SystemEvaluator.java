@@ -1260,7 +1260,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             argName = ((VariableNode) polyad.getArguments().get(0)).getVariableReference();
             gotOne = true;
         } else {
-            if ((!gotOne) && (polyad.getArguments().get(0) instanceof ExpressionImpl || polyad.getArguments().get(0) instanceof ExpressionNode)) {
+            if ((!gotOne) && (polyad.getArguments().get(0) instanceof ExpressionInterface)) {
                 String out = InputFormUtil.inputForm(polyad.evalArg(0, state));
                 if (out == null) {
                     out = "";

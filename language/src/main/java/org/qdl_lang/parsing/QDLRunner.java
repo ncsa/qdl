@@ -120,6 +120,10 @@ public class QDLRunner implements Serializable {
         return lastResult;
     }
 
+    public void setLastResult(Object lastResult) {
+        this.lastResult = lastResult;
+    }
+
     Object lastResult = null;
 
 

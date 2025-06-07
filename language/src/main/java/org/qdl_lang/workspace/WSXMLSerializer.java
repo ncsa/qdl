@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import static org.qdl_lang.workspace.WorkspaceCommands.PREPROCESSOR_ON;
 import static org.qdl_lang.xml.SerializationConstants.*;
 import static edu.uiuc.ncsa.security.core.util.StringUtils.isTrivial;
 import static org.apache.commons.codec.binary.Base64.encodeBase64String;
@@ -199,6 +200,7 @@ public class WSXMLSerializer {
         if(json.containsKey(USE_EXTERNAL_EDITOR)) workspaceCommands.setUseExternalEditor(json.getBoolean(USE_EXTERNAL_EDITOR));
         if(json.containsKey(ASSERTIONS_ON)) workspaceCommands.setAssertionsOn(json.getBoolean(ASSERTIONS_ON));
         if(json.containsKey(PRETTY_PRINT)) workspaceCommands.setPrettyPrint(json.getBoolean(PRETTY_PRINT));
+        if(json.containsKey(PREPROCESSOR_ON)) workspaceCommands.setPreprocessorOn(json.getBoolean(PREPROCESSOR_ON));
         if(json.containsKey(ENABLE_LIBRARY_SUPPORT)) workspaceCommands.getState().setEnableLibrarySupport(json.getBoolean(ENABLE_LIBRARY_SUPPORT));
         if(json.containsKey(OVERWRITE_BASE_FUNCTIONS)) workspaceCommands.getState().setAllowBaseFunctionOverrides(json.getBoolean(OVERWRITE_BASE_FUNCTIONS));
 // ints
@@ -236,6 +238,7 @@ public class WSXMLSerializer {
         json.put(USE_EXTERNAL_EDITOR, workspaceCommands.isUseExternalEditor());
         json.put(ASSERTIONS_ON, workspaceCommands.isAssertionsOn());
         json.put(PRETTY_PRINT, workspaceCommands.isPrettyPrint());
+        json.put(PREPROCESSOR_ON, workspaceCommands.isPreprocessorOn());
         json.put(ENABLE_LIBRARY_SUPPORT, workspaceCommands.getState().isEnableLibrarySupport());
         json.put(OVERWRITE_BASE_FUNCTIONS, workspaceCommands.getState().isAllowBaseFunctionOverrides());
 // ints
@@ -656,6 +659,7 @@ break;
         workspaceCommands.compressXML = json.getBoolean(COMPRESS_XML);
         workspaceCommands.setUseExternalEditor(json.getBoolean(USE_EXTERNAL_EDITOR));
         workspaceCommands.setAssertionsOn(json.getBoolean(ASSERTIONS_ON));
+        workspaceCommands.setPreprocessorOn(json.getBoolean(PREPROCESSOR_ON));
         workspaceCommands.setPrettyPrint(json.getBoolean(PRETTY_PRINT));
         if (json.containsKey(OVERWRITE_BASE_FUNCTIONS)) {
             workspaceCommands.getState().setAllowBaseFunctionOverrides(json.getBoolean(OVERWRITE_BASE_FUNCTIONS));
@@ -713,6 +717,9 @@ break;
                     if (v != null) {
                         testCommands.setAutosaveInterval(Long.parseLong(v));
                     }
+                    break;
+                case PREPROCESSOR_ON:
+                    testCommands.setPreprocessorOn(Boolean.parseBoolean(v));
                     break;
                 case ASSERTIONS_ON:
                     testCommands.setAssertionsOn(Boolean.parseBoolean(v));

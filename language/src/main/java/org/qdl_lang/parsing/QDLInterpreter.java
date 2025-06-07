@@ -56,12 +56,12 @@ public class QDLInterpreter implements Serializable {
      * is to create a new parser each time, but we manage the state in between. For working directly from
      * the command line this is ok but does not scale in any way.
      */
-    public void execute(String line) throws Throwable {
+    public QDLRunner execute(String line) throws Throwable {
         if (line == null || line.length() == 0) {
-            return;
+            return null;
         }
         StringReader reader = new StringReader(line);
-        execute(reader);
+        return execute(reader);
     }
 
     public void execute(String line, boolean startProcess, SIInterrupts siInterrupts, boolean noInterrupt) throws Throwable {
