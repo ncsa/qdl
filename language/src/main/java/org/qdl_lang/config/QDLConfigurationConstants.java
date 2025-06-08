@@ -55,7 +55,7 @@ public interface QDLConfigurationConstants {
     String WS_ATTR_SHOW_BANNER = "showBanner";
     String WS_ATTR_logo = "logo";
     String WS_ATTR_ECHO_MODE_ON = "echoModeOn";
-    String WS_ATTR_ASSERTIONS_ON = "assertions_on";
+    String WS_ATTR_ASSERTIONS_ON = "assertions";
     String WS_ATTR_PREPROCESSOR_ON = "preprocessor";
     String WS_ATTR_PRETTY_PRINT = "prettyPrint";
     String WS_ATTR_AUTOSAVE_ON = "autoSaveOn";

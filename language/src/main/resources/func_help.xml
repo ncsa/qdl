@@ -1213,11 +1213,12 @@ See also: values]]>
     </entry>
     <entry id="halt">
         <body>
-            <![CDATA[halt([message]]) - This will halt the system on this line and update the
-                     workspace state indicator, passing along the message.
-                     Note that this is properly a debugging tool.
+            <![CDATA[halt([{label}, message]]) - This will halt the system on the current statement
+and update the workspace state indicator, passing along the message.
+Note that this is properly a debugging tool.
 
-This is disabled in server mode.]]>
+This is disabled in server mode, since the effect is to stop processing and drop you
+to the workspace prompt so you can inspect the progress of your code.]]>
         </body>
     </entry>
     <entry id="union">
@@ -2375,7 +2376,7 @@ thequickbrownfoxjumped
     -->
     <entry id="pp">
         <body>
-            <![CDATA[(workspace variable)
+            <![CDATA[(boolean workspace variable)
 pp - short form for pretty_print.
 
 See also: pretty_print]]>
@@ -2384,37 +2385,37 @@ See also: pretty_print]]>
 
     <entry id="pretty_print">
         <body>
-            <![CDATA[(workspace variable)
-pretty_print - toggle printing stems on one line (off | false) or
-               vertically (on | true).
+            <![CDATA[(boolean workspace variable)
+Toggle printing stems on one line (off | false) or
+vertically (on | true).
 pp is the short form for this.]]>
         </body>
     </entry>
     <entry id="echo">
         <body>
-            <![CDATA[(workspace variable)
-echo - toggle echo mode in the workspace. If (on | true), this allows you to
-       enter QDL commands without the final semi-colon (;) and the result is
-       printed to the console. The default is on.]]>
+            <![CDATA[(boolean workspace variable)
+toggle echo mode in the workspace. If (on | true), this allows you to
+enter QDL commands without the final semi-colon (;) and the result is
+printed to the console. The default is on.]]>
         </body>
     </entry>
 
     <entry id="ws_id">
         <body>
-            <![CDATA[(workspace variable)
-ws_id - the internal identifier for this workspace. This is especially useful
-        if the file name is munged or strange.
+            <![CDATA[(string workspace variable)
+the internal identifier for this workspace. This is especially useful
+if the file name is munged or strange.
 
 See also: name, description]]>
         </body>
     </entry>
     <entry id="description">
         <body>
-            <![CDATA[(workspace variable)
-description - A human readable description of this workspace. This is printed
-              on load if present. It should tell the user what the workspace
-              does for instance. Note that you can set it using a QDL variable
-              too so
+            <![CDATA[(string workspace variable)
+A human readable description of this workspace. This is printed
+on load if present. It should tell the user what the workspace
+does for instance. Note that you can set it using a QDL variable
+too so
 E.g.
     )ws set description >my_descr.
 
@@ -2566,20 +2567,20 @@ this is the way to go since you can pull up the log in your editor and search it
 
     <entry id="start_ts">
         <body>
-            <![CDATA[(workspace variable)
-start_ts - The time stamp when this was first created. You *may* change this,
-           but probably just want the system to manage. Set it using either
-           as an integer (in milliseconds) or as an ISO 8601 date.]]>
+            <![CDATA[(Date/integer workspace variable)
+The time stamp when this was first created. You *may* change this,
+but probably just want the system to manage. Set it using either
+as an integer (in milliseconds) or as an ISO 8601 date.]]>
         </body>
     </entry>
     <entry id="root_dir">
         <body>
-            <![CDATA[(workspace variable)
-root_dir - The root directory for all relative file directories. If you attempt
-           to save the workspace and the file name is relative (so does not
-           e.g., start with a /) then it is assumed to reside in this
-           directory. At startup, this is set to the directory where QDL
-           was started by default.
+            <![CDATA[(string workspace variable)
+The root directory for all relative file directories. If you attempt
+to save the workspace and the file name is relative (so does not
+e.g., start with a /) then it is assumed to reside in this
+directory. At startup, this is set to the directory where QDL
+was started by default.
 E.g.
 
 )save ws/var/my_ws.zml
@@ -2590,76 +2591,75 @@ E.g.
 
     <entry id="save_dir">
         <body>
-            <![CDATA[(workspace variable)
-save_dir - The default directory for saving and loading files. This is set
-           at startup automatically This overrides relativizing the path
-           from the root_dir.]]>
+            <![CDATA[(string workspace variable)
+The default directory for saving and loading files. This is set
+at startup automatically This overrides relativizing the path
+from the root_dir.]]>
         </body>
     </entry>
 
-    <entry id="autosave_on">
+    <entry id="autosave">
         <body>
-            <![CDATA[(workspace variable)
-autosave_on - Turn on automatically saving workspace. If on then every time the
-              autosave_interval (measured in milliseconds) passes, the current
-              workspace is saved.
-See also: autosave_messages_on, autosave_interval]]>
+            <![CDATA[(boolean workspace variable)
+Turn on/off automatically saving workspace. If on then every time the
+autosave_interval (measured in milliseconds) passes, the current
+workspace is saved.
+See also: autosave_messages, autosave_interval]]>
         </body>
     </entry>
 
-    <entry id="autosave_messages_on">
+    <entry id="autosave_messages">
         <body>
-            <![CDATA[(workspace variable)
-autosave_messages_on - Turn on notifications by the autosave system. If on then
-             every time the workspace is automatically saved, the usual
-             messages (size, time) are printed. If false, nothing is printed.
+            <![CDATA[(string workspace variable)
+Turn on notifications by the autosave system. If on then
+every time the workspace is automatically saved, the usual
+messages (size, time) are printed. If false, nothing is printed.
 
-See also: autosave_on, autosave_interval]]>
+See also: autosave, autosave_interval]]>
         </body>
     </entry>
 
     <entry id="autosave_interval">
         <body>
-            <![CDATA[(workspace variable)
-autosave_interval - The interval in either seconds or milliseconds that
-                    determines how often the workspace is saved. The default
-                    is 10 minutes or 600000 ms. You may enter this as
-                    milliseconds (default units) or as seconds.
+            <![CDATA[(integer workspace variable)
+The interval in either seconds or milliseconds that
+determines how often the workspace is saved. The default
+is 10 minutes or 600000 ms. You may enter this as
+milliseconds (default units) or as seconds.
 E.g.
    )ws set autosave_interval 900 sec.
 
              Would set the autosave interval to 900 seconds or 15 minutes.
-             See also: autosave_on, autosave_interval]]>
+             See also: autosave, autosave_interval]]>
         </body>
     </entry>
 
     <entry id="compress_xml">
         <body>
-            <![CDATA[(workspace variable)
-compress_xml - toggle compression of XML on WS save. Options are (on | true)
-               or (off | false). Note that on loading workspaces, this not used
-                -- the workspace will figure out if it was saved with
-                compression and decompress it, so you don't have to worry about
-               the compression of stored workspaces.]]>
+            <![CDATA[(boolean workspace variable)
+toggle compression of XML off/on for WS save. Note that on loading
+workspaces, this not used -- the workspace will figure out if it
+was saved with compression and decompress it, so you don't have to
+worry about the compression of stored workspaces.]]>
         </body>
     </entry>
-    <entry id="enable_library_support">
+    <entry id="library_support">
         <body>
-            <![CDATA[(workspace variable)
-enable_library_support - enable on the fly resolution of scripts as if they
-               were functions. You must set the lib_path as well for
-               this to work.
+            <![CDATA[(boolean workspace variable)
+Enable on the fly resolution of scripts as if they
+were functions. You must set the lib_path as well for
+this to work.
 
 See also: lib_path]]>
         </body>
     </entry>
     <entry id="lib_path">
         <body>
-            <![CDATA[(workspace variable)
-lib_path - the paths that are used in resolving library references. A library
-           is a collection of QDL scripts, each ending with .qdl. If library
-           support is enabled then calls to scripts are resolved dynamically.
-           See the reference manual for full details.
+            <![CDATA[(string workspace variable)
+The paths that are used in resolving library references. A library
+is a collection of QDL scripts, each ending with .qdl. If library
+support is enabled then calls to scripts are resolved dynamically.
+See the reference manual for full details.
 E.g.
    if you have a lib_path set and there is a file called sqrt.qdl that accepts
     a single number and returns it square root, then you could invoke it for
@@ -2668,19 +2668,19 @@ E.g.
    You could do this directly as
        script_run('/path/to/sqrt.qdl', x)
 
-See also: enable_library_support]]>
+See also: library_support]]>
         </body>
     </entry>
     <entry id="ws_file">
         <body>
-            <![CDATA[(workspace variable)
-ws_file - the current file to save to/load from by default. If you save or load a file
-          this is set to that value. You may then issue commands like
+            <![CDATA[(string workspace variable)
+The current file to save to/load from by default. If you save or load a file
+this is set to that value. You may then issue commands like
 
 )save
 
-          (so no file argument) and the workspace is saved. Note that this is independent of the
-          save_dir, which used for resolving all relative path loads and saves.]]>
+(so no file argument) and the workspace is saved. Note that this is independent of the
+save_dir, which used for resolving all relative path loads and saves.]]>
         </body>
     </entry>
     <entry id="reduce" alt="⊙">
@@ -4579,8 +4579,8 @@ See also: unicode]]>
     </entry>
     <entry id="ansi_mode">
         <body>
-            <![CDATA[(workspace variable)
-ansi_mode - (read only) true if QDL is running in ANSI mode.
+            <![CDATA[(boolean workspace variable)
+(read only) true if QDL is running in ANSI mode.
 
 QDL may be started in ANSI (American Standards National Institute) mode
 which allows for command line editing (normally not possible in Java)
@@ -5003,26 +5003,27 @@ See also: ee]]>
     </entry>
     <entry id="ee">
         <body>
-            <![CDATA[(workspace variable)
+            <![CDATA[(string workspace variable)
 Short form of external_editor.
 
 See also: external_editor]]>
         </body>
     </entry>
-    <entry id="templates_on">
+    <entry id="preprocessor">
         <body>
-            <![CDATA[(workspace variable)
-Globally toggle whether QDL expressions are preprocessed for templates.
+            <![CDATA[(boolean workspace variable)
+Globally toggle whether QDL expressions are preprocessed using templates,
+which are resolved against the loaded environment.
 Workspace commands are always preprocessed, but the overhead of checking
-every QDL statements for templates of the form ${var} can add a fair
+every QDL statements for templates of the form ${var} can use a fair
 amount of resources. The default is off. You may also set this as
-either a flag at startup or in the configuratio file as a workspace
+either a flag at startup or in the configuration file as a workspace
 option.]]>
         </body>
     </entry>
-    <entry id="assertions_on">
+    <entry id="assertions">
         <body>
-            <![CDATA[(workspace variable)
+            <![CDATA[(boolean workspace variable)
 Globally toggle assertions on or off. If off, then no
 assertions will be active. If assertions are off, then all
 assertions will be skipped at runtime. This is also a
@@ -7545,7 +7546,22 @@ This removes a, b and c from the left hand side, leaving only d.
    ]]>
         </example>
     </entry>
+    <entry id="si">
+        <body>
+            <![CDATA[SI  = State Indicator. QDL's debugging system for
+code. You can access the online help via
 
+   )si --help
+
+which lists the individual actions, then detailed help for any action as
+
+)si action --help
+
+See the workspace reference manual for a thorough discussion.
+
+See also: halt]]>
+        </body>
+    </entry>
     <!-- template without example  block
     <entry id="">
        <body>

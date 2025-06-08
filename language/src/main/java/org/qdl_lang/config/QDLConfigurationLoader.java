@@ -176,7 +176,14 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
             if (isTrivial(x)) {
                 return defaultValue;
             } //  Null argument returns false.
-            return Boolean.parseBoolean(x);
+            if(WorkspaceCommands.isOnOrTrue(x)){
+                return Boolean.TRUE;
+            }else{
+                if(WorkspaceCommands.isOffOrFalse(x)){
+                    return Boolean.FALSE;
+                }
+                return defaultValue;
+            }
         } catch (Throwable t) {
 
         }

@@ -255,6 +255,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         sayi(RJustify(CLEAR_COMMAND, length) + " - clear the state of the workspace. All variables, functions etc. will be lost.");
         sayi(RJustify(ENV_COMMAND, length) + " - commands relating to environment variables in this workspace.");
         sayi(RJustify(ECHO_COMMAND, length) + " - echo whatever is passed in. Useful in ws_macro, e.g.");
+        sayi(RJustify(FILE_COMMAND, length) + " - file operations");
         sayi(RJustify(FUNCS_COMMAND, length) + " - list all of the imported and user defined functions this workspace knows about.");
         sayi(RJustify(RESUME_COMMAND, length) + " - short hand to resume execution for a halted process. Note the argument is the process id (pid), not the buffer number. ");
         sayi(RJustify(HELP_COMMAND, length) + " - this message.");
@@ -4334,12 +4335,12 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     boolean prettyPrint = false;
 
-    protected boolean isOnOrTrue(String x) {
-        return x.equals("on") || x.equals("true") || x.equals("1");
+    public static boolean isOnOrTrue(String x) {
+        return x.equals("on") || x.equals("true") || x.equals("1") || x.equals("enable");
     }
 
-    protected boolean isOffOrFalse(String x) {
-        return x.equals("off") || x.equals("false") || x.equals("0");
+    public static boolean isOffOrFalse(String x) {
+        return x.equals("off") || x.equals("false") || x.equals("0") || x.equals("disable");
     }
 
     protected String onOrOff(boolean b) {
@@ -4577,14 +4578,14 @@ public class WorkspaceCommands implements Logable, Serializable {
     public static final String WS_ID = "id";
     public static final String DESCRIPTION = "description";
     public static final String CURRENT_WORKSPACE_FILE = "ws_file";
-    public static final String AUTOSAVE_ON = "autosave_on";
-    public static final String AUTOSAVE_MESSAGES_ON = "autosave_messages_on";
+    public static final String AUTOSAVE_ON = "autosave";
+    public static final String AUTOSAVE_MESSAGES_ON = "autosave_messages";
     public static final String AUTOSAVE_INTERVAL = "autosave_interval";
     public static final String EXTERNAL_EDITOR = "external_editor";
     public static final String SHORT_EXTERNAL_EDITOR = "ee";
     public static final String USE_EXTERNAL_EDITOR = "use_external_editor";
-    public static final String ENABLE_LIBRARY_SUPPORT = "enable_library_support";
-    public static final String ASSERTIONS_ON = "assertions_on";
+    public static final String ENABLE_LIBRARY_SUPPORT = "library_support";
+    public static final String ASSERTIONS_ON = "assertions";
     public static final String ANSI_MODE_ON = "ansi_mode";
     public static final String PREPROCESSOR_ON = "preprocessor";
     public static final String OVERWRITE_BASE_FUNCTIONS_ON = "overwrite_base_functions";
