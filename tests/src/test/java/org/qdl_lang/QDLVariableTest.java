@@ -182,7 +182,49 @@ public class QDLVariableTest extends AbstractQDLTester {
         assert getBooleanValue("ok5", state) : "is_defined failed to check general stem elements.";
     }
 
-    public void isDefinedMissingStemTest(int testCase) throws Throwable {
+    /**
+     * If is_defined is called on a non-existent stem variable, an exception should be raised.
+     * This allows users to see if they have a scope issue with the variable, rather than
+     * a false positive that the variable exists, but something is undefined (especially with stems!).
+     * @throws Throwable
+     */
+    public void isDefinedFailedTest() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "∃a.0;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        boolean bad = true;
+        try {
+            interpreter.execute(script.toString());
+        }catch(UnknownSymbolException unknownSymbolException){
+            bad = false;
+        }
+        assert !bad : "Failed to throw undefined symbol exception for undefined stem symbol";
+    }
+
+    /**
+     * Case is that there is a stem of stem values. Check the elements of the stem
+     * for existence.
+     * @throws Throwable
+     */
+    public void isDefinedOnStemList() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "a.3 := 0;");
+        addLine(script, "ok := ⊗∧⊙(∃[a.0,a.3,a.21]) == [false, true, false];");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        boolean bad = true;
+            interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "is_defined failed for a stem of stem values";
+
+    }
+    /*
+    a.3 ≔ 0;
+∃Q;
+∃[a.0,a.3,a.21]
+     */
+
+    public void testIsUndefinedMissingStem() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, "ok3 := ∄aaa.ZZZ;"); // check that no stem is caught right
@@ -225,7 +267,7 @@ public class QDLVariableTest extends AbstractQDLTester {
 
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
-        assert getBooleanValue("ok0", state) : "∃ failed for testing any function existance";
+        assert getBooleanValue("ok0", state) : "∃ failed for testing any function existence";
         assert getBooleanValue("ok1", state) : "∃ failed for f with one argument";
         assert getBooleanValue("ok2", state) : "!∃ test failed";
         assert getBooleanValue("ok3", state) : "∄ test failed";

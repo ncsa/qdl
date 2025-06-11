@@ -1741,7 +1741,15 @@ It works on lists and stems too
 which is very convenient in switch expressions, such as
    b:=3;
    ∃[p,q,b] ?! [p/2, q^2, √b]
-1.73205080756888]]>
+1.73205080756888
+
+Finally, it does indeed work on lists of stem values (also really useful for
+switch statement):
+   a.3 := 0; // Only a.3 is defined
+   ∃[a.0,a.3,a.21];
+[false, true, false]
+
+]]>
         </example>
     </entry>
     <entry id="is_function" alt="∃">

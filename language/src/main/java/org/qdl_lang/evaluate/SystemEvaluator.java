@@ -3269,6 +3269,15 @@ public class SystemEvaluator extends AbstractEvaluator {
             }
         }
         if (exp instanceof ESN2) {
+            if(!exp.isEvaluated()){
+                try{
+                    exp.evaluate(state);
+                    // If an UnknownSymbolException is thrown, handle that so
+                    // they can track down scope errors.
+                }catch(IndexError t){
+                    return false;
+                }
+            }
             Object object = exp.getResult();
             if (object == null) {
                 isDef = false;

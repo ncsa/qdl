@@ -2786,6 +2786,26 @@ public class ParserTest extends AbstractQDLTester {
         assert getBooleanValue("ok", state);
     }
 
+    /**
+     * Test that shuffle(list., n) rotates the elements as expected.
+     * @throws Throwable
+     */
+    public void testShuffleWithRotate() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ok0 := ⊗∧⊙shuffle([;7], 3)≡[3,4,5,6,0,1,2];"); // shuffle left
+        addLine(script, "ok1 := ⊗∧⊙shuffle([;7], -3)≡ [4,5,6,0,1,2,3];"); // shuffle right
+        addLine(script, "a.:=[;3];a.17 ≔ 99; a.23 ≔ 100;"); // most basic test
+        addLine(script, "ok2 := ⊗∧⊙shuffle(a., 2)≡ {0:2, 1:99, 2:100, 17:0, 23:1};"); // shuffle left 2
+        addLine(script, "ok3 := ⊗∧⊙shuffle(a., -3)≡ {0:2, 1:99, 2:100, 17:0, 23:1};"); // same as shuffle right 3 for 5 element list
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "Did not rotate list left correctly";
+        assert getBooleanValue("ok1", state) : "Did not rotate list right correctly";
+        assert getBooleanValue("ok2", state) : "Did not rotate parse list left correctly";
+        assert getBooleanValue("ok3", state) : "Did not rotate parse list right correctly";
+    }
+
 
     /**
      * Very simple recursion test using lambdas
