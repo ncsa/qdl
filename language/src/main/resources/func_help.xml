@@ -1476,13 +1476,18 @@ This returns a list (always) so that it works with mask and other functions.]]>
 
     <entry id="shuffle">
         <body>
-            <![CDATA[shuffle(n) - n is a positive integer, shuffle the first n integers randomly
+            <![CDATA[
+             shuffle(n) - n is a positive integer, shuffle the first n integers randomly
+    shuffle(target., n) - (for a list only) shift entries 0<=n, n to the left n,
+                          or if n<0 |n| units right. Note that this rotates the
+                          elements within the indices for the list, so if the list
+                          has sparse entries, the indices are not changed.
 shuffle(target., keys.) - shuffle (i.e., permute) the keys in the target.
                           according to keys.
                           Argument keys. must have the same keys as the target.
                           AND the values of keys. are (as a set) the same as
                           the keys. in the target.
-See also: indices, rename_keys, which lets you rename some of the keys in a
+See also: indices, remap, rename_keys, which lets you rename some of the keys in a
           stem.]]>
         </body>
         <example>
@@ -1491,6 +1496,23 @@ See also: indices, rename_keys, which lets you rename some of the keys in a
 [5,0,4,6,1,2,3]
 Note that if you run this example, the result will be very probably be
 different since the result is random.
+
+   [;7]
+[0,1,2,3,4,5,6]
+   shuffle([;7],3) ; 3 to the left
+[3,4,5,6,0,1,2]
+   shuffle([;7],-1); // 1 to the right
+[6,0,1,2,3,4,5]
+
+E.g. for a list with sparse entries
+   a.:=[;3];a.17 ≔ 99; a.23 ≔ 100;
+   a.;
+{0:0, 1:1, 2:2, 17:99, 23:100}
+   shuffle(a., 2);
+{0:2, 1:99, 2:100, 17:0, 23:1}
+
+Note that the indices do not change, but the elements rotate within
+the indices.
 
 E.g.
     shuffle(2+3*[;4], [2,1,3,0])

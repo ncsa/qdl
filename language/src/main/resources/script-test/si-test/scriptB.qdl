@@ -1,0 +1,11 @@
+/*
+   Used by scriptA.qdl. This takes one argument:
+   0 - an integer >0 which is the depth of the stack.
+*/
+args().0 <= 0 ⇒ return(); //
+depth := args().0;
+halt('startB_' + depth, 'halting script B before variable, depth:' + depth);
+interpret('B_' + depth + ':= random_string(2*' + depth + ');');
+halt('endB_' + depth, 'halting script B after variable, depth: ' + depth);
+script_load('/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/script-test/si-test/scriptB.qdl', depth-1);
+return('scriptB_' + depth + ' done');

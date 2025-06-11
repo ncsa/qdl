@@ -672,9 +672,9 @@ public class WorkspaceCommands implements Logable, Serializable {
                 key0 = 1 + maxKey;
                 maxKey++;
             } else {
-                if (containsKey(key)) {
-                    throw new IllegalArgumentException("Error: PID is in use");
-                }
+              //  if (containsKey(key)) {
+               //     throw new IllegalArgumentException("Error: PID is in use");
+             //   }
             }
             maxKey = Math.max(maxKey, key0);
             addLabel(value);
@@ -787,12 +787,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("state indicator reset.");
                 return RC_CONTINUE;
             case "resume":
-                if (_doHelp(inputLine)) {
-                    say("resume [-go] - resume the current process id.");
-                    say("               If the flag -go is supplied, the pid will run with no more halts");
-                    say("               until it ends. ");
-                    return RC_NO_OP;
-                }
+
                 // resume the execution of a process by pid
                 return _doSIResume(inputLine);
             case "rm":
@@ -865,6 +860,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     public static final String SI_INTERRUPT_INCLUDE_SHORT = "-ii";
     public static final String SI_INTERRUPT_EXCLUDE = "-interrupt_exclude";
     public static final String SI_INTERRUPT_EXCLUDE_SHORT = "-xi";
+    public static final String SI_INTERRUPT_GO = "-go";
 
     protected Object _doSIGet(InputLine inputLine) {
         if (_doHelp(inputLine)) {
@@ -928,10 +924,11 @@ public class WorkspaceCommands implements Logable, Serializable {
             say("set pid");
             say("This makes this the current process.");
             say("Case 2. Set interrupts for a pid");
-            say("set [pid] [" + SI_INTERRUPT_INCLUDE_SHORT + " list | regex] [" + SI_INTERRUPT_EXCLUDE_SHORT + " >list | regex] -  set the current process id and/or");
-            say("   the excluded or included interrupt labels. You may also use the long forms of the flags ");
+            say("set [pid] [" + SI_INTERRUPT_INCLUDE_SHORT + " list | regex] [" + SI_INTERRUPT_EXCLUDE_SHORT + " >list | regex]");
+            say("   set the current process id and/or the excluded or included interrupt ");
+            say("   labels. You may also use the long forms of the flags ");
             say("   " + SI_INTERRUPT_INCLUDE + " or " + SI_INTERRUPT_EXCLUDE);
-            say("If interrupts have been set, these will be replace the current ones. ");
+            say("If interrupts have been set, e.g. in )b run, then these will be replace the current ones. ");
         }
         if (inputLine.getArgCount() == 2) {
             // Case 1. Only a pid is passed in.
@@ -970,9 +967,13 @@ public class WorkspaceCommands implements Logable, Serializable {
         // whittle off interrupts
         SIInterruptList includes = getSIInterruptList(inputLine, SI_INTERRUPT_INCLUDE, SI_INTERRUPT_INCLUDE_SHORT);
         SIInterruptList excludes = getSIInterruptList(inputLine, SI_INTERRUPT_EXCLUDE, SI_INTERRUPT_EXCLUDE_SHORT);
+        if(includes != null && excludes != null) {
+            // If both sent, normalize to includes/excludes, zero out excludes.
+            includes.interrupts.removeAll(excludes.interrupts);
+            excludes = null;
+        }
         boolean gotIncludes = includes != null;
         boolean gotExcludes = excludes != null;
-
         int pid = 0;
         if (inputLine.getArgCount() == 0) {
             pid = currentPID;
@@ -989,15 +990,15 @@ public class WorkspaceCommands implements Logable, Serializable {
             }
         }
 
-        // handle case that there is no pid sent
-        SIEntry sie = siEntries.get(pid);
-        SIInterrupts interrupts = sie.getInterrupts();
+
+        SIInterrupts interrupts = siEntries.get(pid).getInterrupts();
         if (gotIncludes) {
             interrupts.setInclusions(includes);
         }
         if (gotExcludes) {
             interrupts.setExclusions(excludes);
         }
+
         String message;
         if (gotIncludes) {
             if (gotExcludes) {
@@ -1015,52 +1016,15 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         say(message);
         return RC_CONTINUE;
-  /*      try {
-            int pid = inputLine.getIntArg(FIRST_ARG_INDEX);
-            if (pid == 0) {
-                interpreter = defaultInterpreter;
-                state = defaultState;
-                currentPID = 0;
-                say("system process restored ");
-                return RC_CONTINUE;
-            }
-            if (!siEntries.containsKey(pid)) {
-                say("invalid pid " + pid);
-                return RC_NO_OP;
-            }
-
-            SIInterrupts interrupts = interruptTable.get(pid);
-
-            if (gotIncludes) {
-                interrupts.setInclusions(includes);
-            }
-            if (gotExcludes) {
-                interrupts.setExclusions(excludes);
-            }
-            if (pid == currentPID) {
-                if (gotIncludes || gotExcludes) {
-                    say("interrupts updated for pid " + currentPID);
-                }
-                return RC_NO_OP;
-            }
-
-            SIEntry sie = siEntries.get(pid);
-            interpreter = sie.interpreter;
-            // bare bones what new
-            interpreter.setEchoModeOn(isEchoModeOn());
-            interpreter.setPrettyPrint(isPrettyPrint());
-            sie.state.setIoInterface(state.getIoInterface());
-            state = sie.state;
-            currentPID = pid;
-            say("pid set to " + pid);
-        } catch (ArgumentNotFoundException ax) {
-            say("Sorry, but that was not a valid pid");
-        }
-
-        return RC_NO_OP;
-   */
     }
 
+    /**
+     * Create the interrupt list from the input line with any flags. A null response
+     * means no such interrupts were found.
+     * @param inputLine
+     * @param flags
+     * @return
+     */
     protected SIInterruptList getSIInterruptList(InputLine inputLine, String... flags) {
         if (!inputLine.hasArg(flags)) {
             return null;
@@ -1110,6 +1074,14 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     protected Object _doSIResume(InputLine inputLine) {
+        if (_doHelp(inputLine)) {
+            int width = 12;
+            say("resume ["+ SI_INTERRUPT_GO + "] [" + SI_INTERRUPT_INCLUDE_SHORT + " >list | regex] [" + SI_INTERRUPT_EXCLUDE_SHORT + " >list | regex]");
+            say(getBlanks(width + 3) + "Resume the current process id, setting the included or excluded.");
+            say(getBlanks(width + 3) + "interrupts, or clearing all using " + SI_INTERRUPT_GO + ".");
+            interruptHelpBlock(width);
+            return RC_NO_OP;
+        }
         SIEntry sie = null; // needed for visibility in catch block
         int originalPID = currentPID;
         try {
@@ -1118,8 +1090,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             // whittle off interrupts
             SIInterruptList includes = getSIInterruptList(inputLine, SI_INTERRUPT_INCLUDE, SI_INTERRUPT_INCLUDE_SHORT);
             SIInterruptList excludes = getSIInterruptList(inputLine, SI_INTERRUPT_EXCLUDE, SI_INTERRUPT_EXCLUDE_SHORT);
-            boolean gotIncludes = includes != null;
-            boolean gotExcludes = excludes != null;
+
             int pid = 0;
             if (inputLine.getCommand().equals(RESUME_COMMAND)) {
                 if (inputLine.getArgCount() == 0) {
@@ -1722,27 +1693,38 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     boolean isSI = true;
 
+    protected String BUFFER_RUN_I_MESSAGE_FLAG = "-i_msg";
+    protected String BUFFER_RUN_CLONE_STATE_FLAG = "&";
+    protected String BUFFER_RUN_CLEAN_STATE_FLAG = "!";
+
+
     protected Object _doBufferRun(InputLine inputLine) {
         if (_doHelp(inputLine)) {
+            int width = 12;
             say("run (handle | alias) [-go] [-i_msg on|off] [& | !]");
+            say("run (handle | alias) " +
+                    "["+ BUFFER_RUN_I_MESSAGE_FLAG + " on|off] " +
+                    "[" + BUFFER_RUN_CLONE_STATE_FLAG + " | " + BUFFER_RUN_CLEAN_STATE_FLAG + "] " +
+                    "["+ SI_INTERRUPT_GO + "] " +
+                    "[" + SI_INTERRUPT_INCLUDE_SHORT + " >list | regex] [" + SI_INTERRUPT_EXCLUDE_SHORT + " >list | regex]");
             say("Run the given buffer. This will execute as if you had typed the contents ");
             say("in to the current session.");
-            say("         -go - run with no interrupts.");
-            say("-i_msg on|off - turn off or on interrupt messages. Default is on.");
-            say("           & - the current workspace is cloned and the code is run in that. ");
-            say("           ! - completely clean state is created (VFS and script path are still set,");
-            say("               but no imports etc.) and the code is run in that. ");
-            say("N.B. & and ! are mutually exclusive.");
+            interruptHelpBlock(width);
+            say(RJustify(BUFFER_RUN_I_MESSAGE_FLAG,width) + " - (on/off), turn off or on interrupt messages. Default is on.");
+            say( RJustify(BUFFER_RUN_CLONE_STATE_FLAG,width) + " - clone the current workspace state and run. ");
+            say(RJustify(BUFFER_RUN_CLEAN_STATE_FLAG,width) + " - create completely clean state and run ");
+            say(getBlanks(width + 3) + "Note that VFS and script path are still set,");
+            say("N.B. "+ BUFFER_RUN_CLONE_STATE_FLAG +  " and " + BUFFER_RUN_CLEAN_STATE_FLAG + " are mutually exclusive.");
             say("See the state indicator documentation for more");
             say(" Synonyms: ");
             say("   ) index|name  - start running a buffer. You must start a process before it can be suspended.");
             say("   )) pid -- resume a suspended process by process if (pid)");
             return RC_NO_OP;
         }
-        boolean noInterrupts = inputLine.hasArg("-go");
-        inputLine.removeSwitch("-go");
-        if (inputLine.hasArg("-i_msg")) {
-            Boolean iMsg = inputLine.getBooleanNextArgFor("i_msg");
+        boolean noInterrupts = inputLine.hasArg(SI_INTERRUPT_GO);
+        inputLine.removeSwitch(SI_INTERRUPT_GO);
+        if (inputLine.hasArg(BUFFER_RUN_I_MESSAGE_FLAG)) {
+            Boolean iMsg = inputLine.getBooleanNextArgFor(BUFFER_RUN_I_MESSAGE_FLAG);
             if (iMsg != null) {
                 siMessagesOn = iMsg;
             }
@@ -1750,6 +1732,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         // whittle off interrupts
         SIInterruptList includes = getSIInterruptList(inputLine, SI_INTERRUPT_INCLUDE, SI_INTERRUPT_INCLUDE_SHORT);
         SIInterruptList excludes = getSIInterruptList(inputLine, SI_INTERRUPT_EXCLUDE, SI_INTERRUPT_EXCLUDE_SHORT);
+
         boolean gotIncludes = includes != null;
         boolean gotExcludes = excludes != null;
         SIInterrupts siInterrupts = null;
@@ -1794,10 +1777,9 @@ public class WorkspaceCommands implements Logable, Serializable {
                 }
             }
         }
-        // flag & = start new one
         // Lead shebang for scripts is removed at execution
         content = stripShebang(content);
-        int flag = (inputLine.hasArg("&") ? 1 : 0) + (inputLine.hasArg("!") ? 2 : 0);
+        int flag = (inputLine.hasArg(BUFFER_RUN_CLONE_STATE_FLAG) ? 1 : 0) + (inputLine.hasArg(BUFFER_RUN_CLEAN_STATE_FLAG) ? 2 : 0);
         if (flag == 3) {
             say("sorry, you have specified both to clone the workspace and ignore it. You can only do one of these.");
             return RC_NO_OP;
@@ -1868,23 +1850,19 @@ public class WorkspaceCommands implements Logable, Serializable {
                         InterruptUtil.printSetupMessage(this, ie);
                     }
 
-                } else {
-             /*       if (!SystemEvaluator.newInterruptHandler) {
-                        say("could not interpret buffer:" + t.getMessage());
-                    }*/
                 }
-/*
-                if (!SystemEvaluator.newInterruptHandler && (t instanceof InterruptException)) {
-                    InterruptException ie = (InterruptException) t;
-                    InterruptUtil.createInterrupt(ie, siInterrupts);
-                    InterruptUtil.printSetupMessage(this, ie);
-                } else {
-                    say("could not interpret buffer:" + t.getMessage());
-                }
-*/
             }
         }
         return RC_CONTINUE;
+    }
+
+    private void interruptHelpBlock(int width) {
+        say(RJustify(SI_INTERRUPT_GO, width) +  " - run with no interrupts.");
+        say(RJustify(SI_INTERRUPT_INCLUDE_SHORT, width) +  " - run only interrupts with given labels. You can also use the long version");
+        say(getBlanks(width + 3) + SI_INTERRUPT_INCLUDE);
+        say(RJustify(SI_INTERRUPT_EXCLUDE_SHORT, width) +  " - run interrupts except for the given labels. You can also use the long version");
+        say(getBlanks(width + 3) + SI_INTERRUPT_EXCLUDE);
+        say(getBlanks(width + 3) + "Note that setting both results in the set includes := includes ?~ excludes");
     }
 
     private List<String> stripShebang(List<String> content) {
@@ -1899,11 +1877,16 @@ public class WorkspaceCommands implements Logable, Serializable {
     QDLInterpreter defaultInterpreter;
     State defaultState;
 
-    public int getCurrentPID() {
+    public static int getCurrentPID() {
         return currentPID;
     }
 
-    int currentPID = 0;
+    public void setCurrentPID(int currentPID) {
+        this.currentPID = currentPID;
+    }
+
+    public static final int DEFAULT_WORKSPACE_PID = 0;
+    protected static int currentPID = DEFAULT_WORKSPACE_PID;
 
     /**
      * Save all of the buffers. This just invokes the save method since there is a lot of state to ferret out
@@ -5444,7 +5427,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
     }
 
-    protected String[] ALL_WS_VARS = new String[]{
+    public static String[] ALL_WS_VARS = new String[]{
             ANSI_MODE_ON,
             ASSERTIONS_ON,
             AUTOSAVE_INTERVAL,

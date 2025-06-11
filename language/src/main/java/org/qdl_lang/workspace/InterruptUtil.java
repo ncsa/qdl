@@ -20,18 +20,24 @@ public class InterruptUtil {
     public static void createInterrupt(InterruptException ie,
                                        SIInterrupts siInterrupts) {
         WorkspaceCommands.SIEntries siEntries = WorkspaceCommands.getInstance().getSIEntries(); // since it's static
-        int nextPID = siEntries.nextKey();
+        int nextPID;
         SIEntry siEntry = ie.getSiEntry();
-        siEntry.pid = nextPID;
+        if (WorkspaceCommands.getCurrentPID() != WorkspaceCommands.DEFAULT_WORKSPACE_PID) {
+            nextPID = WorkspaceCommands.getCurrentPID();
+        } else {
+            nextPID = siEntries.nextKey();
+        }
         siEntries.put(nextPID, siEntry);
+        siEntry.pid = nextPID;
         if (siInterrupts != null) {
             siEntry.setInterrupts(siInterrupts);
         }
     }
 
     /**
-     *  After the resume command, this updates the entry with the next {@link org.qdl_lang.exceptions.InterruptException}'s
+     * After the resume command, this updates the entry with the next {@link org.qdl_lang.exceptions.InterruptException}'s
      * state. Print out the update message if needed.
+     *
      * @param ix
      * @param sie
      */
@@ -41,7 +47,8 @@ public class InterruptUtil {
         sie.statement = ix.getSiEntry().statement;
         sie.timestamp = ix.getSiEntry().timestamp;
     }
-    public static void printUpdateMessage(WorkspaceCommands workspaceCommands,SIEntry sie) {
+
+    public static void printUpdateMessage(WorkspaceCommands workspaceCommands, SIEntry sie) {
         if (workspaceCommands.siMessagesOn) {
             if (sie.statement.hasTokenPosition()) {
                 workspaceCommands.say(sie.message + ": at line " + sie.statement.getTokenPosition().line);
@@ -50,6 +57,7 @@ public class InterruptUtil {
             }
         }
     }
+
     public static void printSetupMessage(WorkspaceCommands workspaceCommands, InterruptException ie) {
         if (workspaceCommands.siMessagesOn) {
             workspaceCommands.say(ie.getSiEntry().message + " at line " + ie.getStatement().getTokenPosition().line);
@@ -64,6 +72,7 @@ public class InterruptUtil {
         }
 
         InterruptException ie;
+
         public WorkspaceCommands getWorkspaceCommands() {
             return getQDLState().getWorkspaceCommands();
         }
@@ -92,6 +101,7 @@ public class InterruptUtil {
         }
 
         Throwable lastException;
+
         @Override
         public void run() {
             try {
@@ -106,9 +116,9 @@ public class InterruptUtil {
                         getIO().println(rx.result);
                         getIO().flush();
                     }
-                //    System.exit(0); // exit once they exit the main loop
+                    //    System.exit(0); // exit once they exit the main loop
                 }
-                if(qdlState.isDebugOn()) {
+                if (qdlState.isDebugOn()) {
                     e.printStackTrace();
                 }
                 lastException = e;

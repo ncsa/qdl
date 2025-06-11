@@ -527,12 +527,6 @@ public class QDLWorkspace implements Serializable {
                     }
                 }
 
-/*
-
-                if (0 <= lineNo && lineNo < workspaceCommands.commandHistory.size()) {
-                    return workspaceCommands.commandHistory.get(lineNo);
-                }
-*/
             } catch (Throwable t) {
                 // do nothing, just print out the history.
             }

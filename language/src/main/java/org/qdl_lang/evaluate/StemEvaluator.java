@@ -2796,6 +2796,7 @@ f(x.)→x.0+x.1;
         checkNull(arg, polyad.getArgAt(0));
 
         if (arg.isLong()) {
+            // Fix https://github.com/ncsa/qdl/issues/128
             Long argL = arg.asLong();
             int argInt = argL.intValue();
             if (argL < 0L) {
@@ -2821,12 +2822,60 @@ f(x.)→x.0+x.1;
 
         QDLValue arg2 = polyad.evalArg(1, state);
         checkNull(arg2, polyad.getArgAt(1));
-
-        if (!arg2.isStem()) {
-            throw new BadArgException(SHUFFLE + " requires a stem as its second argument.", polyad.getArgAt(1));
-        }
         QDLStem target = arg.asStem();
-        QDLStem newKeyStem = arg2.asStem();
+
+        QDLStem newKeyStem;
+        if(arg2.isLong()){
+            // contract is to return a new stem.
+            QDLList targetList = target.getQDLList();
+           int targetSize =  targetList.size();
+           // Case 1, nix to do
+           if(targetSize == 0){
+               polyad.setResult(target);
+               polyad.setEvaluated(true);
+               return;
+           }
+
+            QDLList<QDLValue> outList = new QDLList<>();
+            long shift = arg2.asLong();
+            shift = shift % targetSize;
+            if(shift < 0L){
+                shift = shift + targetSize; // make positive if needed
+            }
+           // Case 2, no sparse values
+            if(!targetList.hasSparseEntries()){
+                ArrayList<QDLValue> arrayList = new ArrayList<>();
+                for(long j = 0; j < targetSize; j++){
+                    arrayList.add(new LongValue((j+shift)%targetSize));
+                }
+                outList.setArrayList(arrayList);
+
+            }else{
+                // case 3: Sparse entries, so rotate, keeping same indices.
+                TreeSet<LongValue> orderedKeys = targetList.orderedKeys().getListkeys();
+                long[] indices  = new long[orderedKeys.size()];
+                int j = 0;
+                for(LongValue key : orderedKeys){
+                    indices[j++] = key.asLong();
+                }
+                // nopw we can run through the indices directly.
+                for(int i = 0 ; i < indices.length ; i++){
+                    outList.set(indices[i] , targetList.get(indices[(int) ((i+shift)%targetSize)]));
+                }
+            }
+            polyad.setResult(new QDLStem(outList));
+            polyad.setEvaluated(true);
+            return;
+
+
+
+        }else {
+            if (!arg2.isStem()) {
+                throw new BadArgException(SHUFFLE + " requires a stem as its second argument.", polyad.getArgAt(1));
+            }
+             newKeyStem = arg2.asStem();
+        }
+
         StemKeys newKeys = newKeyStem.keySet();
         StemKeys usedKeys = target.keySet();
 

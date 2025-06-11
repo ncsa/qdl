@@ -4,5 +4,4 @@
   Jeff Gaynor
   1/26/2020
 */
-say('args:'+ to_string(args()));
 return('Hello world!');

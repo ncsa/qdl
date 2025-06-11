@@ -699,7 +699,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
      * @return
      */
     @Override
-    public Collection<QDLValue> values() {
+    public QDLSet<QDLValue> values() {
         return valueSet();
     }
 

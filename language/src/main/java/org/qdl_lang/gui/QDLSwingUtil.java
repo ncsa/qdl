@@ -4,6 +4,7 @@ import org.qdl_lang.state.State;
 import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
+import org.qdl_lang.workspace.WorkspaceCommands;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +58,12 @@ public class QDLSwingUtil {
             function = function.substring(0, function.indexOf("("));
             provider.addCompletion(new BasicCompletion(provider, function + "("));
         }
+
+        // Add WS variables
+        for (String wsVar : WorkspaceCommands.ALL_WS_VARS) {
+            provider.addCompletion(new BasicCompletion(provider, wsVar));
+        }
+
         // statements with open [
         provider.addCompletion(new BasicCompletion(provider, "assert["));
         provider.addCompletion(new BasicCompletion(provider, "block["));

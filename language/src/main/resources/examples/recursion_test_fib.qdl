@@ -1,5 +1,10 @@
 /*
   Tests recursion by computing Fibonacci series for n a non-negative integer.
+  This can, of course, be done much more directly as a lambda, viz.,
+
+     fib(n)-> n <= 2 ?1:fib(n-1)+fib(n-2);
+
+
   Jeff Gaynor
   1/25/2020
 

@@ -54,6 +54,7 @@ import java.util.*;
 import java.util.logging.Level;
 
 import static org.qdl_lang.config.QDLConfigurationConstants.MODULE_ATTR_VERSION_1_0;
+import static org.qdl_lang.variables.Constants.*;
 import static org.qdl_lang.variables.StemUtility.axisWalker;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 import static org.qdl_lang.variables.values.QDLValue.castToJavaValues;
@@ -596,7 +597,7 @@ public class SystemEvaluator extends AbstractEvaluator {
         }
         polyad.setResult(0L);
         polyad.setEvaluated(true);
-   }
+    }
 
     private void doSleep(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
@@ -639,7 +640,7 @@ public class SystemEvaluator extends AbstractEvaluator {
         int pid = runnit(polyad, state, state.getScriptPaths(), false, true);
         polyad.setEvaluated(true);
         polyad.setResult((long) pid);
-   }
+    }
 
     private void doIsNull(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
@@ -658,7 +659,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
         QDLValue result = polyad.evalArg(0, state);
         polyad.setEvaluated(true);
-        polyad.setResult(asQDLValue(result.isNull()? Boolean.TRUE : Boolean.FALSE));
+        polyad.setResult(asQDLValue(result.isNull() ? Boolean.TRUE : Boolean.FALSE));
     }
 
     private void doForLines(Polyad polyad, State state) {
@@ -747,7 +748,7 @@ public class SystemEvaluator extends AbstractEvaluator {
         }
 
         ;
-        QDLValue  obj = polyad.evalArg(0, state);
+        QDLValue obj = polyad.evalArg(0, state);
 
         try {
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -1108,7 +1109,7 @@ public class SystemEvaluator extends AbstractEvaluator {
     private static void doReduceAll(Polyad polyad, ExpressionImpl f, State state, QDLStem stemVariable) {
         Object rrr;
         ReduceAll reduceAll = new ReduceAll(f, state);
-        QDLAggregateUtil.process(QDLValue.asQDLValue( stemVariable), reduceAll);
+        QDLAggregateUtil.process(QDLValue.asQDLValue(stemVariable), reduceAll);
         rrr = reduceAll.out;
         polyad.setResult(rrr);
         polyad.setEvaluated(true);
@@ -1395,10 +1396,11 @@ public class SystemEvaluator extends AbstractEvaluator {
         polyad.setEvaluated(true);
         polyad.setResult(message);
     }
+
     public static boolean newInterruptHandler = true;
 
-    protected void doSendInterrupt(Polyad polyad, State state){
-        InterruptException ie = startHalt(polyad,state);
+    protected void doSendInterrupt(Polyad polyad, State state) {
+        InterruptException ie = startHalt(polyad, state);
         if (ie == null) {
             return;
         }
@@ -1729,7 +1731,7 @@ public class SystemEvaluator extends AbstractEvaluator {
         if (state.getScriptName() != null) {
             title = state.getScriptName();
             title = title.substring(title.lastIndexOf('/') + 1);
-            if(StringUtils.isTrivial(title)) {
+            if (StringUtils.isTrivial(title)) {
                 // if for some reason the name of the script cannot be determined, do not
                 // just print garbage.
                 title = state.getDebugUtil().getTitle();
@@ -1740,7 +1742,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
             if (arg0.isLong()) {
                 newLogLevel = arg0.asLong().intValue();
-                if (!isValidLoggingLevel( arg0.asLong() )) {
+                if (!isValidLoggingLevel(arg0.asLong())) {
                     throw new BadArgException("unknown logging level of " + arg0.getValue() + " encountered.", polyad.getArgAt(0));
                 }
 
@@ -1765,12 +1767,12 @@ public class SystemEvaluator extends AbstractEvaluator {
             }
             QDLValue arg1 = polyad.evalArg(1, state);
             checkNull(arg1, polyad.getArgAt(1), state);
-            if(arg1.isString()) {
+            if (arg1.isString()) {
                 message = arg1.asString();
-            }else{
-                if(arg1.isStem()){
+            } else {
+                if (arg1.isStem()) {
                     message = arg1.asStem().toString(1);
-                }else{
+                } else {
                     message = arg1.toString();
                 }
             }
@@ -1929,7 +1931,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             QDLList qdlList = stemVariable.getQDLList();
             List<String> sp = new ArrayList<>();
             for (int i = 0; i < qdlList.size(); i++) {
-                QDLValue  entry = qdlList.get(i);
+                QDLValue entry = qdlList.get(i);
                 if (entry != null && !(entry.isNull())) {
                     String newPath = entry.asString();
                     newPath = newPath + (newPath.endsWith(VFSPaths.PATH_SEPARATOR) ? "" : VFSPaths.PATH_SEPARATOR);
@@ -2267,6 +2269,7 @@ public class SystemEvaluator extends AbstractEvaluator {
     public static final String SI_INCLUDES_KEY = "includes";
     public static final String SI_EXCLUDES_KEY = "excludes";
     public static final String SI_NO_INTERRUPTS_KEY = "no_interrupts";
+
     public static int runnit(Polyad polyad, State state, List<String> paths, boolean hasNewState, boolean newThread) {
 
         if (polyad.getArgCount() == 0) {
@@ -2331,43 +2334,43 @@ public class SystemEvaluator extends AbstractEvaluator {
         }*/
         state.setTargetState(null);
         String resourceName = null;
-        SIInterrupts siInterrupts =null;
+        SIInterrupts siInterrupts = null;
         boolean noInterrupts = false;
-        if(arg1.isStem()) {
+        if (arg1.isStem()) {
             // default if the stem is present at all or no break points
             noInterrupts = false;
             QDLStem inStem = arg1.asStem();
-            if((inStem).containsKey(SCRIPT_PATH_KEY)){
+            if ((inStem).containsKey(SCRIPT_PATH_KEY)) {
                 resourceName = inStem.getString(SCRIPT_PATH_KEY);
             }
-            if(inStem.containsKey(SI_KEY)){
-                QDLStem inStem2 =  inStem.getStem(SI_KEY);
+            if (inStem.containsKey(SI_KEY)) {
+                QDLStem inStem2 = inStem.getStem(SI_KEY);
                 siInterrupts = new SIInterrupts();
 
-                if((inStem2).containsKey(SI_INCLUDES_KEY)){
+                if ((inStem2).containsKey(SI_INCLUDES_KEY)) {
                     setupSIList(polyad, inStem2.get(SI_INCLUDES_KEY), siInterrupts);
                 }
-                if((inStem2).containsKey(SI_EXCLUDES_KEY)){
+                if ((inStem2).containsKey(SI_EXCLUDES_KEY)) {
                     setupSIList(polyad, inStem2.get(SI_EXCLUDES_KEY), siInterrupts);
                 }
-                if((inStem2).containsKey(SI_NO_INTERRUPTS_KEY)){
+                if ((inStem2).containsKey(SI_NO_INTERRUPTS_KEY)) {
                     QDLValue obj = inStem2.get(SI_NO_INTERRUPTS_KEY);
                     // if the explicitly set it, use that.
-                    if(obj.isBoolean()){
+                    if (obj.isBoolean()) {
                         noInterrupts = obj.asBoolean();
-                    }else{
+                    } else {
                         throw new QDLExceptionWithTrace("The " + SI_NO_INTERRUPTS_KEY + " key requires a boolean value. Got " + obj, polyad.getArgAt(0));
                     }
                 }
             }
-        }else{
-            if(arg1.isString()){
+        } else {
+            if (arg1.isString()) {
                 resourceName = arg1.asString();
-            }else{
+            } else {
                 throw new QDLExceptionWithTrace("first argument must be a string", polyad.getArgAt(0));
             }
         }
-        if(resourceName == null) {
+        if (resourceName == null) {
             throw new QDLExceptionWithTrace("could not determine script name", polyad);
         }
         QDLScript script;
@@ -2427,11 +2430,11 @@ public class SystemEvaluator extends AbstractEvaluator {
                     polyad.setEvaluated(true);
                     return 0;
                 }
-                if(qe instanceof InterruptException){
-                    if(!newInterruptHandler){
+                if (qe instanceof InterruptException) {
+                    if (!newInterruptHandler) {
                         throw qe;
                     }
-                }else{
+                } else {
                     if (qe instanceof QDLExceptionWithTrace) {
                         QDLExceptionWithTrace qq = (QDLExceptionWithTrace) qe;
                         qq.setScriptName(resourceName);
@@ -2459,16 +2462,20 @@ public class SystemEvaluator extends AbstractEvaluator {
         return 0;
     }
 
-    private static void setupSIList(Polyad polyad, Object obj, SIInterrupts siInterrupts) {
+    private static void setupSIList(Polyad polyad, QDLValue qdlValue, SIInterrupts siInterrupts) {
         SIInterruptList incl;
-        if(obj instanceof String){
-            incl = new SIInterruptList((String)obj);
-        }else{
-            if(obj instanceof Collection){
-                 incl = new SIInterruptList((Collection) obj);
-            }else{
-               throw new QDLExceptionWithTrace("unknown SI includes type:" + obj, polyad.getArgAt(0));
-            }
+        switch (qdlValue.getType()){
+            case STRING_TYPE:
+                incl = new SIInterruptList(qdlValue.asString());
+                break;
+            case SET_TYPE:
+                incl = new SIInterruptList(qdlValue.asSet());
+                break;
+            case STEM_TYPE:
+                incl = new SIInterruptList(QDLValue.castToQDLValues((Set)qdlValue.asStem().values()));
+                break;
+            default:
+                throw new QDLExceptionWithTrace("unknown SI includes type:" + qdlValue, polyad.getArgAt(0));
         }
         siInterrupts.setInclusions(incl);
     }
@@ -2514,8 +2521,8 @@ public class SystemEvaluator extends AbstractEvaluator {
             case 1:
                 //state.getVStack().put(new VThing(new XKey(TryCatch.ERROR_CODE_NAME), stateCode));
         }
-        state.getVStack().put(new VThing(new XKey(TryCatch.ERROR_STATE_NAME),new QDLVariable(asQDLValue( stateStem == null ? new QDLStem() : stateStem))));
-        state.getVStack().put(new VThing(new XKey(TryCatch.ERROR_CODE_NAME), new QDLVariable(asQDLValue( stateCode))));
+        state.getVStack().put(new VThing(new XKey(TryCatch.ERROR_STATE_NAME), new QDLVariable(asQDLValue(stateStem == null ? new QDLStem() : stateStem))));
+        state.getVStack().put(new VThing(new XKey(TryCatch.ERROR_CODE_NAME), new QDLVariable(asQDLValue(stateCode))));
 
         polyad.setResult(Boolean.TRUE);
         polyad.setEvaluated(true);
@@ -3040,7 +3047,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                     case Constant.STRING_TYPE:
                         String x = (String) objects[0];
                         try {
-                            r.result =asQDLValue( Long.parseLong(x));
+                            r.result = asQDLValue(Long.parseLong(x));
                         } catch (NumberFormatException nfx0) {
                             try {
                                 r.result = asQDLValue(new BigDecimal(x));
@@ -3122,10 +3129,13 @@ public class SystemEvaluator extends AbstractEvaluator {
                 if (temp.isStem()) {
                     QDLStem s = temp.asStem();
                     if (prettyPrintForStems) {
-
                         result = s.toString(1);
                     } else {
-                        result = String.valueOf(temp);
+                        if (temp == null) {
+                            result = "(missing)"; // means somehow a java null is present.
+                        } else {
+                            result = temp.toString();
+                        }
                     }
                 } else {
                     if (temp.isDecimal()) {
@@ -3168,7 +3178,7 @@ public class SystemEvaluator extends AbstractEvaluator {
         }
 
         if (polyad.getArgCount() == 0) {
-            polyad.setResult(new QDLValue((long)Constants.NULL_TYPE));
+            polyad.setResult(new QDLValue((long) Constants.NULL_TYPE));
             polyad.setEvaluated(true);
             return;
         }

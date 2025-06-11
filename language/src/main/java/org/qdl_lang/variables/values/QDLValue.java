@@ -10,10 +10,7 @@ import org.qdl_lang.variables.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * The top-level wrapper class for every value QDL knows about.
@@ -406,6 +403,19 @@ public class QDLValue implements Constants, Serializable, Comparable<QDLValue> {
             list.add(asQDLValue(value));
         }
         return list;
+    }
+
+    public static Collection<QDLValue> castToQDLValues(Collection<Object> values) {
+        if(values instanceof Set) return castToQDLValues((Set) values);
+        if(values instanceof List) return castToQDLValues((List) values);
+        throw new WrongValueException("expected a set or list, but got a " + values.getClass().getSimpleName(), null);
+    }
+    public static Set<QDLValue> castToQDLValues(Set<Object> values) {
+        HashSet<QDLValue> set = new HashSet<>(values.size());
+        for (Object value : values) {
+            set.add(asQDLValue(value));
+        }
+        return set;
     }
 
     public static List<QDLValue> castToQDLValueList(Object[] values) {

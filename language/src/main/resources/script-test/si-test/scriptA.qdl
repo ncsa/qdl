@@ -1,0 +1,17 @@
+#! /usr/bin/env -S qdl-run
+
+/*
+   Top-level for testing SI on scripts. This script will call scriptB which will in turn call itself
+   n times with various halts in it to show stack and such.
+*/
+depth := 5;
+ // default
+size(args()) == 1 ? depth := args().0;
+say('Starting depth check example for SI. Depth = ' + depth);
+rs := random_string(2*depth);
+interpret('A0_' + depth + ':= rs;');
+halt('start A', 'starting SI test, check variables');
+script_load('/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/script-test/si-test/scriptB.qdl', depth);
+interpret('A1_' + depth + ':= rs;');
+
+return('scriptA done!');
