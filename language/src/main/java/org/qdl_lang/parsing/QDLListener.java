@@ -406,12 +406,15 @@ public class QDLListener implements QDLParserListener {
 /*     Attempt at having lambdas directly evaluated. If ∂ then it makes sense but might open the door
        to functions being defined everywhere on a whim -- which may be ok.
        Do we want (x)->x^2 + (y)->y^3 to be allowed?
-       For one thing, it makes the @ functor implicit everywhere.
-       On the other hand, makes lamdas behave like expressions.
+       If no, we would need to intercept this misuse and flag it.
+       For another thing, it makes the @ functor implicit everywhere.
+       On the other hand, makes lamdas behave like generic expressions.
 
-       We'd have to intercept it everywhere. Here is just for dyads.
 
-       Test QDL:
+       Here it is just for dyads, but we'd also have to do this for monads and polyads.
+
+       Tests in QDL:
+       5∂(x)->x^2;
        [2,3]∂(x,y)->x*y
 
        You will then have to track down every place that a lamda might end
@@ -438,10 +441,20 @@ public class QDLListener implements QDLParserListener {
 
         } */
 
-        dyad.setRightArgument((ExpressionInterface) s);
-        List<String> source = new ArrayList<>();
-        source.add(parseTree.getText());
-        dyad.setSourceCode(source);
+
+
+        if(s instanceof ExpressionInterface){
+            dyad.setRightArgument((ExpressionInterface) s);
+            List<String> source = new ArrayList<>();
+            source.add(parseTree.getText());
+            dyad.setSourceCode(source);
+            return;
+        }
+        if(s instanceof FunctionDefinitionStatement){
+            // See note abouve for enabling these!
+            throw new ParsingException("Function definition not supported here.");
+        }
+        throw new ParsingException(s.getClass().getSimpleName() + " not supported here.");
     }
 
     protected void finish(Monad monad, ParseTree parseTree) {
@@ -1261,8 +1274,13 @@ illegal argument:no module named "b" was  imported at (1, 67)
         for (int i = 0; i < ctx.getChildCount(); i++) {
             ParseTree pt = ctx.getChild(i);
             if (pt instanceof QDLParserParser.StemValueContext) {
-                ExpressionInterface stmt = (ExpressionInterface) resolveChild(pt);
-                sln.getStatements().add(stmt);
+                Statement statement = resolveChild(pt);
+                if(statement instanceof ExpressionInterface) {
+                    ExpressionInterface stmt = (ExpressionInterface) resolveChild(pt);
+                    sln.getStatements().add(stmt);
+                }else{
+                    throw new ParsingException("unexpected statement of type " + statement.getClass().getSimpleName());
+                }
             }
         }
     }
@@ -2703,28 +2721,33 @@ illegal argument:no module named "b" was  imported at (1, 67)
         fNode = new FunctionReferenceNode();
         // The symbol always includes the @ or ⊗ for the function reference. Strip it.
         String marker = ctx.FunctionMarker().getText();
-        String symbol;
-        ExpressionInterface expression = (ExpressionInterface) resolveChild(ctx.expression());
-        switch (expression.getNodeType()) {
-            case VARIABLE_NODE:
-                symbol = ((VariableNode) expression).getVariableReference();
-                break;
-            case POLYAD_NODE:
-                symbol = ((Polyad) expression).getName();
-                break;
-            case MODULE_NODE:
-                symbol = ((ModuleExpression) expression).getAlias();
-                break;
-            default:
-                throw new ParsingException("unknown node type:" + expression.getClass().getCanonicalName());
-        }
+        String symbol = null;
+        Statement statement =  resolveChild(ctx.expression());
+        if(statement instanceof ExpressionInterface) {
+            ExpressionInterface expression = (ExpressionInterface) resolveChild(ctx.expression());
+            switch (expression.getNodeType()) {
+                case VARIABLE_NODE:
+                    symbol = ((VariableNode) expression).getVariableReference();
+                    break;
+                case POLYAD_NODE:
+                    symbol = ((Polyad) expression).getName();
+                    break;
+                case MODULE_NODE:
+                    symbol = ((ModuleExpression) expression).getAlias();
+                    break;
+                default:
+                    throw new ParsingException("unknown node type:" + expression.getClass().getCanonicalName());
+            }
+            int parenIndex = symbol.indexOf("(");
+            if (-1 < parenIndex) {
+                // whack off any dangling parenthes
+                symbol = symbol.substring(0, symbol.indexOf("("));
+            }
+            fNode.setFunctionName(symbol);
+        }else{
+            throw new ParsingException("unknown node type:" + statement.getClass().getCanonicalName());
 
-        int parenIndex = symbol.indexOf("(");
-        if (-1 < parenIndex) {
-            // whack off any dangling parenthese
-            symbol = symbol.substring(0, symbol.indexOf("("));
         }
-        fNode.setFunctionName(symbol);
         fNode.setTokenPosition(tp(ctx));
         fNode.setSourceCode(getSource(ctx));
         stash(ctx, fNode);

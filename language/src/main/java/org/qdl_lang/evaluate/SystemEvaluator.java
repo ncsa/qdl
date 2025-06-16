@@ -42,6 +42,7 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.beans.Expression;
 import java.io.*;
 import java.math.BigDecimal;
 import java.net.InetAddress;
@@ -54,6 +55,7 @@ import java.util.*;
 import java.util.logging.Level;
 
 import static org.qdl_lang.config.QDLConfigurationConstants.MODULE_ATTR_VERSION_1_0;
+import static org.qdl_lang.statements.ExpressionInterface.*;
 import static org.qdl_lang.variables.Constants.*;
 import static org.qdl_lang.variables.StemUtility.axisWalker;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
@@ -1221,7 +1223,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             throw new ExtraArgException(INPUT_FORM + " requires at most 2 arguments", polyad.getArgAt(2));
         }
 
-        if (polyad.getArguments().get(0).getNodeType() == ExpressionInterface.CONSTANT_NODE) {
+        if (polyad.getArguments().get(0).getNodeType() == CONSTANT_NODE) {
             QDLValue arg = polyad.evalArg(0, state);
             String out = InputFormUtil.inputForm(arg.getValue());
             if (out == null) {
@@ -2952,7 +2954,7 @@ public class SystemEvaluator extends AbstractEvaluator {
         Element lastElement = elements.get(elements.size() - 1);
         if (lastElement.getStatement() instanceof ExpressionInterface) {
             ExpressionInterface swri = (ExpressionInterface) lastElement.getStatement();
-            if (swri.getNodeType() == ExpressionInterface.ASSIGNMENT_NODE) {
+            if (swri.getNodeType() == ASSIGNMENT_NODE) {
                 polyad.setResult("");
                 polyad.setEvaluated(true);
                 return;
@@ -3198,6 +3200,10 @@ public class SystemEvaluator extends AbstractEvaluator {
         polyad.setEvaluated(true);
     }
 
+    /*
+    a.≔[;5];
+   ∃{'a':{'p':a.0, 'q':a.10}}
+     */
     protected void isDefined(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
             polyad.setAllowedArgCounts(new int[]{1});
@@ -3213,78 +3219,130 @@ public class SystemEvaluator extends AbstractEvaluator {
         }
 
         boolean isDef = false;
-        if (polyad.getArguments().get(0) instanceof StemListNode) {
-            StemListNode stemListNode = (StemListNode) polyad.getArguments().get(0);
-            // check each node.
-            QDLList list = new QDLList();
-            for (int i = 0; i < stemListNode.getStatements().size(); i++) {
-                list.add(asQDLValue(checkDefined(stemListNode.getStatements().get(i), state)));
-            }
-            QDLStem stem = new QDLStem(list);
-            polyad.setResult(new QDLValue(stem));
-            polyad.setEvaluated(true);
-            return;
+
+        //next switch kicks off descent if aggregate value
+        switch (polyad.getArguments().get(0).getNodeType()){
+            case LIST_NODE:
+                polyad.setResult(checkDefined( (StemListNode) polyad.getArguments().get(0),state));
+                polyad.setEvaluated(true);
+                return;
+            case STEM_NODE:
+                polyad.setResult(checkDefined((StemVariableNode) polyad.getArguments().get(0), state));
+                polyad.setEvaluated(true);
+                return;
         }
-        if (polyad.getArguments().get(0) instanceof StemVariableNode) {
-            StemVariableNode stemVariableNode = (StemVariableNode) polyad.getArguments().get(0);
-            // check each node.
-            QDLStem stem = new QDLStem();
-            for (StemEntryNode sem : stemVariableNode.getStatements()) {
-                stem.put(QDLKey.from(sem.getKey().evaluate(state).getValue()), asQDLValue(checkDefined((ExpressionInterface) sem.getValue(), state)));
-            }
-            polyad.setResult(new QDLValue(stem));
-            polyad.setEvaluated(true);
-            return;
-        }
+        polyad.setResult(checkDefined(polyad.getArguments().get(0), state));
+        polyad.setEvaluated(true);
+        return;
+
+/*
         try {
             polyad.evalArg(0, state);
         } catch (IndexError exception) {
             // ESN's can throw illegal arg exception
             // Fix https://github.com/ncsa/qdl/issues/118
-            polyad.setResult(new QDLValue(Boolean.FALSE));
+            polyad.setResult(BooleanValue.False);
             polyad.setEvaluated(true);
             return;
         }
         isDef = checkDefined(polyad.getArgAt(0), state);
         polyad.setResult(new QDLValue(isDef));
         polyad.setEvaluated(true);
+*/
     }
 
+protected QDLStem checkDefined(StemListNode stemListNode, State state){
+    QDLList list = new QDLList();
+    for (int i = 0; i < stemListNode.getStatements().size(); i++) {
+        ExpressionInterface value = stemListNode.getStatements().get(i);
+        switch (value.getNodeType()){
+            case LIST_NODE:
+                list.add(asQDLValue(checkDefined((StemListNode) value, state)));
+                break;
+                case STEM_NODE:
+                    list.add(asQDLValue(checkDefined((StemVariableNode) value, state)));
+                    break;
+            default:
+                list.add(asQDLValue(checkDefined(stemListNode.getStatements().get(i), state)));
+break;
+        }
+    }
+    return  new QDLStem(list);
+
+}
+protected QDLStem checkDefined(StemVariableNode stemVariableNode, State state){
+        QDLStem outStem = new QDLStem();
+    for (StemEntryNode sem : stemVariableNode.getStatements()) {
+        QDLKey  key = QDLKey.from(sem.getKey().evaluate(state).getValue());
+        ExpressionInterface value = (ExpressionInterface) sem.getValue();
+        switch (value.getNodeType()){
+            case  STEM_NODE:
+                outStem.put(key, checkDefined((StemVariableNode) value, state)  );
+                break;
+                    case LIST_NODE:
+            case SET_NODE:
+            default:
+                outStem.put(QDLKey.from(sem.getKey().evaluate(state).getValue()), asQDLValue(checkDefined((ExpressionInterface) sem.getValue(), state)));
+        }
+    }
+    return outStem;
+}
     protected boolean checkDefined(ExpressionInterface exp, State state) {
         boolean isDef = false;
-        if (exp instanceof VariableNode) {
-            VariableNode variableNode = (VariableNode) exp;
-            // Don't evaluate this because it might not exist (that's what we are testing for). Just check
-            // if the name is defined.
-            isDef = state.isDefined(variableNode.getVariableReference());
-        }
-        if (exp instanceof ConstantNode) {
-            ConstantNode variableNode = (ConstantNode) exp;
-            Object x = variableNode.getResult();
-            if (x == null) {
-                isDef = false; // oddball edge case
-            } else {
-                // isDef = state.isDefined(x.toString());
-                isDef = true; // constants are always defined, actually.
-            }
-        }
-        if (exp instanceof ESN2) {
-            if(!exp.isEvaluated()){
-                try{
-                    exp.evaluate(state);
-                    // If an UnknownSymbolException is thrown, handle that so
-                    // they can track down scope errors.
-                }catch(IndexError t){
+        switch (exp.getNodeType()){
+            case SET_NODE:
+                QDLSetNode setNode = (QDLSetNode) exp;
+                try {
+                    setNode.evaluate(state);
+                    return true;
+                }catch(UnknownSymbolException unknownSymbolException){
+                    if(unknownSymbolException.hasUnknownSymbol() && unknownSymbolException.isUnknownSymbolAStem()){
+                        throw unknownSymbolException;
+                    }
+                    return false;
+                }catch(IndexError indexError){
+
+                }
+                return false;
+            case VARIABLE_NODE:
+                VariableNode variableNode = (VariableNode) exp;
+                // Don't evaluate this because it might not exist (that's what we are testing for). Just check
+                // if the name is defined.
+                return state.isDefined(variableNode.getVariableReference());
+            case EXPRESSION_STEM2_NODE:
+                if(!exp.isEvaluated()){
+                    try{
+                        exp.evaluate(state);
+                        // If an UnknownSymbolException is thrown, handle that so
+                        // they can track down scope errors.
+                    }catch(IndexError t){
+                        return false;
+                    }
+                }
+                Object object = exp.getResult();
+                if (object == null) {
                     return false;
                 }
-            }
-            Object object = exp.getResult();
-            if (object == null) {
-                isDef = false;
-            } else {
-                isDef = true;
-            }
+                    return true;
+            case CONSTANT_NODE:
+            case DYAD_NODE:
+            case MONAD_NODE:
+            case NILAD_NODE:
+                if(!exp.isEvaluated()){
+                    exp.evaluate(state);
+                }
+                Object x = exp.getResult(); // already evaluated at creation
+                if (x == null) {
+                    return false; // oddball edge case
+                }
+                return true;
+            case OPEN_SLICE_NODE:
+            case CLOSED_SLICE_NODE:
+                exp.evaluate(state); // make sure it's not hinky, so throw whatever
+                return true;
+            default:
+                return false;
+
         }
-        return isDef;
     }
 }

@@ -102,16 +102,16 @@ public class ESN2 extends ExpressionImpl {
                 // try to make an error report
                 if (ei instanceof VariableNode) {
                     VariableNode vn = (VariableNode) ei;
-                    throw new UnknownSymbolException("the stem '" + vn.getVariableReference() + "' was not found.", this);
+                    throw new UnknownSymbolException("the stem '" + vn.getVariableReference() + "' was not found.", this, vn.getVariableReference());
                 }
-                throw new UnknownSymbolException("left argument must evaluate to a stem ", this);
+                throw new UnknownSymbolException("left argument must evaluate to a stem ", this, null);
             }
             if (!r0.isStem()) {
                 if (ei instanceof VariableNode) {
                     VariableNode vn = (VariableNode) ei;
-                    throw new UnknownSymbolException("the variable '" + vn.getVariableReference() + "' is not a stem.", this);
+                    throw new UnknownSymbolException("the variable '" + vn.getVariableReference() + "' is not a stem.", this, vn.getVariableReference());
                 }
-                throw new UnknownSymbolException("left argument must evaluate to a stem ", this);
+                throw new UnknownSymbolException("left argument must evaluate to a stem ", this, null);
             }
             QDLStem stemVariable = r0.asStem();
             setResult(stemVariable);
@@ -131,7 +131,7 @@ public class ESN2 extends ExpressionImpl {
         if (r0 == null) {
             ExpressionInterface lll = leftArgs.get(leftArgs.size() - 1);
             if (lll instanceof VariableNode) {
-                throw new UnknownSymbolException("variable '" + ((VariableNode) lll).getVariableReference() + "' is undefined", lll);
+                throw new UnknownSymbolException("variable '" + ((VariableNode) lll).getVariableReference() + "' is undefined", lll, ((VariableNode) lll).getVariableReference());
             }
             throw new IndexError("left argument is undefined", lll);
         }

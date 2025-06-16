@@ -101,6 +101,7 @@ public static class QDLStackTraceElement{
     public static final String INTRINSIC_PREFIX = "__";
 
     public static boolean isIntrinsic(String x) {
+        if(x == null) {return false;}
         // Exactly the first two characters are '__' A name of __ is not allowed.
         return x.startsWith(INTRINSIC_PREFIX) && 2 < x.length() && !x.substring(2).startsWith("_");
     }

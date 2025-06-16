@@ -236,8 +236,65 @@ public class QDLVariableTest extends AbstractQDLTester {
             good = true;
         }
         assert good : "unknown symbol exception for missing stem in is_defined not thrown.";
-
     }
+
+    /**
+     * Case is that the stem is a bit more complex.
+     * @throws Throwable
+     */
+    public void testIsDefinedTestOnNestedStem() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "a.≔[;5];");
+        addLine(script, "ok := ⊗∧⊙((∃{'a':{'p':a.0, 'q':a.10}}) == {'a':{'p':true, 'q':false}})`*;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "is_defined failed for a nested stem";
+    }
+
+    public void testIsDefinedTestOnNestedList() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "a.≔[;5];");
+        addLine(script, "ok := ⊗∧⊙((∃[[a.0,a.1],a.10]) == [[true,true],false])`*;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "is_defined failed for a nested list";
+    }
+
+    /**
+     * the contract for sets is that they are treated like funky scalars, to wit, the
+     * test returns a scalar boolean if everything is defined/
+     * @throws Throwable
+     */
+    public void testIsDefinedTestOnSet() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "a.≔[;5];");
+        addLine(script, "ok := ∃{a.0,a.2,{a.0,a.1}};");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "is_defined failed for a set";
+    }
+
+    public void testIsDefinedTestOnNestedSet() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "a.≔[;5];");
+        addLine(script, "ok := ∄{a.0,a.2,{a.0,a.10}};"); // element in subset fails.
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "is_defined failed for a nested set";
+    }
+    public void testIsDefinedTestOnConstants() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer(); //
+        addLine(script, "ok := ⊗∧⊙((∃[2,π()/3,[;5]]) ≡ [true,true,true]);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "is_defined failed for a list of constants";
+    }
+
 
     public void testIsFunction() throws Throwable {
         isFunctionTest(ROUNDTRIP_NONE);

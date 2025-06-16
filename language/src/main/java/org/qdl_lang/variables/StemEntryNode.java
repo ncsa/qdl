@@ -90,7 +90,7 @@ public class StemEntryNode implements ExpressionInterface {
             getKey().evaluate(state);
             if(getKey() instanceof VariableNode){
                 if(((VariableNode)getKey()).getResult() == null){
-                    throw new UnknownSymbolException("\'" + ((VariableNode)getKey()).getVariableReference() + "' not found for stem key", getKey());
+                    throw new UnknownSymbolException("\'" + ((VariableNode)getKey()).getVariableReference() + "' not found for stem key", getKey(), ((VariableNode)getKey()).getVariableReference());
                 }
             }
 
@@ -98,7 +98,7 @@ public class StemEntryNode implements ExpressionInterface {
         getValue().evaluate(state);
         if(getValue() instanceof VariableNode){
             if(((VariableNode)getValue()).getResult() == null){
-                throw new UnknownSymbolException("\'" + ((VariableNode)getValue()).getVariableReference() + "' not found for stem value", getValue());
+                throw new UnknownSymbolException("\'" + ((VariableNode)getValue()).getVariableReference() + "' not found for stem value", getValue(), ((VariableNode)getKey()).getVariableReference());
             }
         }
         setEvaluated(true);

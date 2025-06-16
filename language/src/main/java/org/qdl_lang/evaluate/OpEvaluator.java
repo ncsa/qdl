@@ -555,16 +555,6 @@ public class OpEvaluator extends AbstractEvaluator {
         QDLStem wrapper;
         if (lArg.isStem()) {
             wrapper = lArg.asStem();
-/*            if(!wrapper.isList()){
-                // If it's not a list, wrap it so it can be used by lists.
-                // Assumption is that the stem is passing in the values by name
-                // and we do not want the stem of elements to be mis-interpreted.
-                // Only a partial solution...
-                QDLStem s = new QDLStem();
-                s.getQDLList().add(wrapper);
-                wrapper = s;
-
-            }*/
         } else {
             // arguments are wrapper, so if they sent a scalar or set,
             QDLStem s = new QDLStem();
@@ -728,7 +718,7 @@ apply([@f,@g],[2])
                     expression = polyad;
                 } else {
                     if (!actualState.getOpEvaluator().isMathOperator(fRecord.getName())) {
-                        throw new UnknownSymbolException("unknown function '" + fRecord.getName() + "'", dyad.getLeftArgument());
+                        throw new UnknownSymbolException("unknown function '" + fRecord.getName() + "'", dyad.getLeftArgument(), fRecord.getName());
                     }
                     // so it's an operator.
                     if (lStem.size() == 1) {
@@ -838,7 +828,7 @@ apply([@f,@g],[2])
                     expression = polyad;
                 } else {
                     if (!state.getOpEvaluator().isMathOperator(fNode.getFunctionName())) {
-                        throw new UnknownSymbolException("unknown function '" + fNode.getFunctionName() + "'", dyad.getLeftArgument());
+                        throw new UnknownSymbolException("unknown function '" + fNode.getFunctionName() + "'", dyad.getLeftArgument(), fNode.getFunctionName());
                     }
                     // so it's an operator.
                     if (lStem.size() == 1) {
@@ -1889,7 +1879,7 @@ a.⌆b.
                             // final case, this might be just an operator. Operators like +
                             // are processed in the OpEvaluator, so check there.
                             if (!isMathOperator(fNode.getFunctionName())) {
-                                throw new UnknownSymbolException("no such function named '" + fNode.getFunctionName() + "'", monad.getArgument());
+                                throw new UnknownSymbolException("no such function named '" + fNode.getFunctionName() + "'", monad.getArgument(), fNode.getFunctionName());
                             }
                             int[] argCounts = getArgCount(fNode.getFunctionName());
                             for (int argCount : argCounts) {

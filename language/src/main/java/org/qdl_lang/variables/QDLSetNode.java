@@ -69,7 +69,7 @@ public class QDLSetNode implements ExpressionInterface {
         for (ExpressionInterface stmt : statements) {
             stmt.evaluate(state);
             if(stmt.getResult() == null && stmt instanceof VariableNode){
-                     throw new UnknownSymbolException("\'" + ((VariableNode)stmt).getVariableReference() + "' not found for set value", stmt);
+                     throw new UnknownSymbolException("\'" + ((VariableNode)stmt).getVariableReference() + "' not found for set value", stmt, ((VariableNode)stmt).getVariableReference());
                  }
             stmt.setEvaluated(true);
             setOut.add(stmt.getResult());

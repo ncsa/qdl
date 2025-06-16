@@ -217,7 +217,7 @@ public class FunctionEvaluator extends AbstractEvaluator {
                         // final case, this might be just an operator. Operators like +
                         // are processed in the OpEvaluator, so check there.
                         if (!state.getOpEvaluator().isMathOperator(fNode.getFunctionName())) {
-                            throw new UnknownSymbolException("no such function named '" + fNode.getFunctionName() + "'", polyad.getArgAt(0));
+                            throw new UnknownSymbolException("no such function named '" + fNode.getFunctionName() + "'", polyad.getArgAt(0), fNode.getFunctionName());
                         }
                         argCounts = state.getOpEvaluator().getArgCount(fNode.getFunctionName());
                     }

@@ -105,7 +105,7 @@ public class StemListNode implements ExpressionInterface {
         for (ExpressionInterface stmt : statements) {
             stmt.evaluate(state);
             if(stmt.getResult() == null && stmt instanceof VariableNode){
-                throw new UnknownSymbolException("\'" + ((VariableNode)stmt).getVariableReference() + "' not found", stmt);
+                throw new UnknownSymbolException("\'" + ((VariableNode)stmt).getVariableReference() + "' not found", stmt, ((VariableNode)stmt).getVariableReference());
             }
             stmt.setEvaluated(true);
             //stmt.setResultType(Constant.getType(stmt.getResult()));

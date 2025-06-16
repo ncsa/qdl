@@ -1700,9 +1700,13 @@ See also: info()]]>
     </entry>
     <entry id="is_defined" alt="∃">
         <body>
-            <![CDATA[is_defined(var) - a boolean-valued function that tells you if a given variable
+            <![CDATA[is_defined(expression) - a boolean-valued function that tells you if a given variable
                   has been named.
-Note: the argument is not a string, it is the actual variable.
+Note: the argument is not a string, it is the actual variable. If it is just a value (like the number 2)
+the result is always trivially true.
+
+In the case of sets, this returns true only if every element in the set is defined, false
+otherwise.
 
 This will raise an undefined symbol exception at times. See the examples.
 
@@ -1742,6 +1746,17 @@ which is very convenient in switch expressions, such as
    b:=3;
    ∃[p,q,b] ?! [p/2, q^2, √b]
 1.73205080756888
+
+On sets, every element must be defined:
+   ∃{3,pi()/6}
+true
+   ∃{3,pi()/6, z.'a'}
+true
+  ∃{3,pi()/6,z.0}; // z.'a' is defined, not z.0
+  false;
+   ∃{3,pi()/6, y.}; // y. is undefined and an error is raised
+'y.' not found for set value at (1, 12)
+
 
 Finally, it does indeed work on lists of stem values (also really useful for
 switch statement):

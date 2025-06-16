@@ -1228,9 +1228,9 @@ g(1@f, 2)
         }
         if (swri instanceof VariableNode) {
             VariableNode vNode = (VariableNode) swri;
-            throw new UnknownSymbolException("unknown symbol '" + vNode.getVariableReference() + "'", vNode);
+            throw new UnknownSymbolException("unknown symbol '" + vNode.getVariableReference() + "'", vNode,  vNode.getVariableReference());
         }
-        throw new UnknownSymbolException("unknown symbol", swri);
+        throw new UnknownSymbolException("unknown symbol", swri, null);
     }
 
     /**
@@ -1246,9 +1246,9 @@ g(1@f, 2)
             String message = "unknown symbol";
             if (swri instanceof VariableNode) {
                 message = message + " '" + ((VariableNode) swri).getVariableReference() + "'";
-                unknownSymbolException = new UnknownSymbolException(message, swri);
+                unknownSymbolException = new UnknownSymbolException(message, swri, ((VariableNode) swri).getVariableReference());
             } else {
-                unknownSymbolException = new UnknownSymbolException(message, swri);
+                unknownSymbolException = new UnknownSymbolException(message, swri, null);
             }
             if (state.getLogger() != null) {
                 // Check they have logging in the first place before writing to it.

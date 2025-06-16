@@ -80,7 +80,7 @@ public class ModuleExpression extends ExpressionImpl {
                 VariableNode vvv = (VariableNode) getExpression();
                 Object obj = ambientState.getRootState().getValue(vvv.getVariableReference());
                 if (obj == null) {
-                    throw new UnknownSymbolException("'" + vvv.getVariableReference() + "'   not found", vvv);
+                    throw new UnknownSymbolException("'" + vvv.getVariableReference() + "'   not found", vvv, vvv.getVariableReference());
                 } else {
                     setResult(obj);
                     setEvaluated(true);
@@ -119,7 +119,7 @@ public class ModuleExpression extends ExpressionImpl {
             }
             if (getExpression() instanceof VariableNode) {
                 VariableNode vvv = (VariableNode) getExpression();
-                throw new UnknownSymbolException("'" + vvv.getVariableReference() + "'   not found", vvv);
+                throw new UnknownSymbolException("'" + vvv.getVariableReference() + "'   not found", vvv, vvv.getVariableReference());
             }
             if (getExpression() instanceof Polyad) {
                 ambientState.getMetaEvaluator().evaluate(getAlias(), (Polyad) getExpression(), ambientState);

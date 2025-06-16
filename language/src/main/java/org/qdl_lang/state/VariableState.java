@@ -369,7 +369,7 @@ public abstract class VariableState extends NamespaceAwareState {
                 return null;
             case OP_REMOVE:
                 if (stem == null && !isQDLNull) {
-                    throw new UnknownSymbolException("error: The stem variable \"" + variableName + "\" does not exist, so cannot remove a value from it.", null);
+                    throw new UnknownSymbolException("error: The stem variable \"" + variableName + "\" does not exist, so cannot remove a value from it.", null, variableName);
                 }
                 if (w.isEmpty()) {
                     if (isExtrinsic(variableName)) {
@@ -626,6 +626,7 @@ public abstract class VariableState extends NamespaceAwareState {
     public static final String EXTRINSIC_MARKER = "$$";
 
     public static boolean isExtrinsic(String x) {
+        if(x == null) {return false;}
         return x.startsWith(EXTRINSIC_MARKER);
     }
 
