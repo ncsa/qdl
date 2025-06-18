@@ -4037,7 +4037,7 @@ public class WorkspaceCommands implements Logable, Serializable {
             while (st.hasMoreTokens()) {
                 String currentToken = st.nextToken();
                 QDLValue obj = currentState.getValue(currentToken);
-                if (obj.isModule()) {
+                if (obj != null && obj.isModule()) {
                     previousState = currentState;
                     currentState = obj.asModule().getState();
                 } else {
