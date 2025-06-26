@@ -261,11 +261,7 @@ subset(b., 3, 6)
                 arrayList.add(new LongValue(i));
             } else {
                 QDLValue ooo = fill[(int) i % fillSize];
-//                if(ooo instanceof QDLValue) {
                 arrayList.add(ooo);
-                //              }else {
-                //                arrayList.add(new QDLValue(ooo));
-                //          }
             }
         }
     }
@@ -1101,7 +1097,7 @@ subset(b., 3, 6)
             if (objectsOnly) {
                 return (sparseEntryIterator.next()).entry;
             }
-            return sparseEntryIterator.next();
+            return sparseEntryIterator.next().entry;
         }
     }
 
@@ -1267,12 +1263,7 @@ subset(b., 3, 6)
     }
 
     public boolean add(QDLValue qdlValue) {
-/*
-        if(o instanceof Integer) {
-            // assume they are adding just an number to the list
-            o = ((Integer) o).longValue();
-        }
-*/
+
         if (hasSparseEntries()) {
             SparseEntry lastEntry = getSparseEntries().last();
             SparseEntry newEntry = new SparseEntry(lastEntry.index + 1, qdlValue);

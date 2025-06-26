@@ -5918,6 +5918,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         for (Object varName : state.getVStack().listVariables()) {
             QDLValue qdlObject = state.getValue(varName.toString());
             String output = inputFormVar((String) varName, 2, state);
+            //String output = inputFormVar(qdlObject.getValue(), 2, state);
             fileWriter.write(varName + " := " + output + (output.endsWith(";") ? "" : ";" + "\n"));
         }
         if (!state.getIntrinsicVariables().isEmpty()) {

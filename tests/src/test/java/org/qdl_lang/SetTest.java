@@ -303,6 +303,33 @@ public class SetTest extends AbstractQDLTester {
     }
 
     /**
+     * Regression test for https://github.com/ncsa/qdl/issues/130
+     * @throws Throwable
+     */
+    public void testSetFromSparseList() throws Throwable {
+        setFromSparseListTest(ROUNDTRIP_NONE);
+        if(isSerializationTestsOff()) return;
+        setFromSparseListTest(ROUNDTRIP_XML);
+        setFromSparseListTest(ROUNDTRIP_QDL);
+        setFromSparseListTest(ROUNDTRIP_JAVA);
+        setFromSparseListTest(ROUNDTRIP_JSON);
+    }
+
+    public void setFromSparseListTest(int testCase) throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "a.4:=4;a.5:=5;a.11:=92;a.93:=92;"); // internally no entries in arraylist
+        addLine(script, "b.0:=4;b.1:=5;b.11:=92;b.93:=92;"); // internally, arraylist has some entries
+        addLine(script, "ok := {4,5,92} == " +OpEvaluator.TO_SET2 + "a.;");
+        addLine(script, "ok2 := {4,5,92} == " +OpEvaluator.TO_SET2 + "b.;");
+        state = rountripState(state, script, testCase);
+
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) : "failed to turn only sprase list into a set";
+        assert getBooleanValue("ok2", state) : "failed to turn mixed list into a set";
+    }
+    /**
      * Killer test of various famous set identities and edge cases with null sets.
      * Also tests serialization of the sets and state.
      *

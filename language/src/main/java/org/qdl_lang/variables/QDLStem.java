@@ -515,7 +515,6 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
      * Convenience setter to put an object. If it is not a {@link QDLValue} it will be converted to one.
      *
      * @param key
-     * @param value
      */
 /*    public void putLongOrString(Object key, Object value) {
         if (value instanceof QDLValue) {
@@ -1842,7 +1841,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     protected String toString(boolean showDefaultValues) {
         String list = null;
         try {
-            if (!getQDLList().isEmpty()) {
+            if (!getQDLList().isEmpty() && getQDLList().getSparseEntries().isEmpty()) {
                 list = getQDLList().toString();
                 if (isList()) {
                     if (showDefaultValues && hasDefaultValue()) {
@@ -1905,7 +1904,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     public String inputForm() {
         String list = null;
         try {
-            if (!getQDLList().isEmpty()) {
+            if (!getQDLList().isEmpty() && getQDLList().getSparseEntries().isEmpty()) {
                 list = getQDLList().inputForm();
                 if (isList()) {
                     if (getDefaultValue() != null) {
@@ -1958,7 +1957,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     public String inputForm(int indentFactor, String currentIndent) {
         String list = null;
         try {
-            if (!getQDLList().isEmpty()) {
+            if (!getQDLList().isEmpty() && getQDLList().getSparseEntries().isEmpty()) {
                 list = getQDLList().inputForm(indentFactor, currentIndent);
                 if (isList()) {
                     if (getDefaultValue() != null) {
@@ -1990,14 +1989,9 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
             // now for any list
             long i = 0;
             isFirst = true;
-            for (Object obj : getQDLList()) {
-                String temp = null;
-                if (obj instanceof SparseEntry) {
-                    SparseEntry entry = (SparseEntry) obj;
-                    temp = newIndent + InputFormUtil.inputForm(entry.index) + STEM_ENTRY_CONNECTOR + InputFormUtil.inputForm(entry.entry);
-                } else {
-                    temp = newIndent + InputFormUtil.inputForm(i++) + STEM_ENTRY_CONNECTOR + InputFormUtil.inputForm(obj);
-                }
+            // Fix for https://github.com/ncsa/qdl/issues/131
+            for (QDLValue v : getQDLList().getArrayList()) {
+                String temp = newIndent + InputFormUtil.inputForm(i++) + STEM_ENTRY_CONNECTOR + InputFormUtil.inputForm(v.getValue());
                 if (isFirst) {
                     isFirst = false;
                 } else {
@@ -2005,12 +1999,18 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
                 }
                 output = output + temp;
             }
-        } else {
-            output = list + "~" + output;
+            for (SparseEntry sparseEntry : getQDLList().getSparseEntries()) {
+                String temp = newIndent + InputFormUtil.inputForm(sparseEntry.index) + STEM_ENTRY_CONNECTOR + InputFormUtil.inputForm(sparseEntry.entry);
+                if (isFirst) {
+                    isFirst = false;
+                } else {
+                    output = output + ",\n";
+                }
+                output = output + temp;
 
+            }
         }
         return output + "\n" + currentIndent + "}";
-
     }
 
     /**
