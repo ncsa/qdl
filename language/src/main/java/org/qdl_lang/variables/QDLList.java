@@ -566,6 +566,7 @@ subset(b., 3, 6)
         return inputForm(indent, "");
     }
 
+
     public String inputForm() {
         String output = "[";
         boolean isFirst = true;
@@ -576,11 +577,11 @@ subset(b., 3, 6)
             } else {
                 output = output + ",";
             }
-            QDLValue obj = get(i);
-            if (obj == null) {
+            QDLValue qdlValue = get(i);
+            if (qdlValue == null) {
                 throw new seGapException();
             }
-            output = output + obj.getInputForm();
+            output = output + qdlValue.getInputForm();
         }
         return output + "]";
     }

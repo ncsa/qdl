@@ -3230,46 +3230,38 @@ public class SystemEvaluator extends AbstractEvaluator {
                 polyad.setResult(checkDefined((StemVariableNode) polyad.getArguments().get(0), state));
                 polyad.setEvaluated(true);
                 return;
+            case EXPRESSION_STEM2_NODE: // Fix https://github.com/ncsa/qdl/issues/132
+                try {
+                    polyad.evalArg(0, state);
+                }catch(IndexError indexError){
+                    polyad.setResult(BooleanValue.False);
+                    polyad.setEvaluated(true);
+                    return;
+                }
         }
         polyad.setResult(checkDefined(polyad.getArguments().get(0), state));
         polyad.setEvaluated(true);
-        return;
-
-/*
-        try {
-            polyad.evalArg(0, state);
-        } catch (IndexError exception) {
-            // ESN's can throw illegal arg exception
-            // Fix https://github.com/ncsa/qdl/issues/118
-            polyad.setResult(BooleanValue.False);
-            polyad.setEvaluated(true);
-            return;
-        }
-        isDef = checkDefined(polyad.getArgAt(0), state);
-        polyad.setResult(new QDLValue(isDef));
-        polyad.setEvaluated(true);
-*/
     }
 
-protected QDLStem checkDefined(StemListNode stemListNode, State state){
-    QDLList list = new QDLList();
-    for (int i = 0; i < stemListNode.getStatements().size(); i++) {
-        ExpressionInterface value = stemListNode.getStatements().get(i);
-        switch (value.getNodeType()){
-            case LIST_NODE:
-                list.add(asQDLValue(checkDefined((StemListNode) value, state)));
-                break;
+    protected QDLStem checkDefined(StemListNode stemListNode, State state) {
+        QDLList list = new QDLList();
+        for (int i = 0; i < stemListNode.getStatements().size(); i++) {
+            ExpressionInterface value = stemListNode.getStatements().get(i);
+            switch (value.getNodeType()) {
+                case LIST_NODE:
+                    list.add(asQDLValue(checkDefined((StemListNode) value, state)));
+                    break;
                 case STEM_NODE:
                     list.add(asQDLValue(checkDefined((StemVariableNode) value, state)));
                     break;
-            default:
-                list.add(asQDLValue(checkDefined(stemListNode.getStatements().get(i), state)));
-break;
+                default:
+                    list.add(asQDLValue(checkDefined(stemListNode.getStatements().get(i), state)));
+                    break;
+            }
         }
-    }
-    return  new QDLStem(list);
+        return new QDLStem(list);
 
-}
+    }
 protected QDLStem checkDefined(StemVariableNode stemVariableNode, State state){
         QDLStem outStem = new QDLStem();
     for (StemEntryNode sem : stemVariableNode.getStatements()) {

@@ -639,8 +639,8 @@ public class OpEvaluator extends AbstractEvaluator {
             }
 
             QDLValue nextRArg = rArg.get(key);
-            Object result = evaluateNextArgForApplies(nextLArg==null?null:nextLArg,
-                    nextRArg==null?null: nextRArg.getValue(), defaultValue, state, dyad);
+            Object result = evaluateNextArgForApplies(nextLArg == null ? null : nextLArg,
+                    nextRArg == null ? null : nextRArg.getValue(), defaultValue, state, dyad);
             output.put(key, result);
         }
         return output;
@@ -970,7 +970,7 @@ a.⌆b.
         if (!(obj.isStem())) {
             throw new QDLExceptionWithTrace("right argument of " + FOR_ALL_KEY + " must be a list", dyad.getRightArgument());
         }
-        QDLStem stem =  obj.asStem();
+        QDLStem stem = obj.asStem();
         if (!stem.isList()) {
             throw new QDLExceptionWithTrace("right argument of " + FOR_ALL_KEY + " must be a list", dyad.getRightArgument());
         }
@@ -1039,7 +1039,7 @@ a.⌆b.
             // If it's a stem with an axis, it is still a stem, get that
             // and let the machinery do its work here.
             lhs = lhQDLValue.asAxisExpression().getStem();
-        }else{
+        } else {
             lhs = lhQDLValue.getValue();
         }
         if (!(dyad.getRightArgument() instanceof VariableNode)) {
@@ -1066,7 +1066,7 @@ a.⌆b.
                 x = lhQDLValue.isBoolean();
                 break;
             case Types.STRING:
-                x = lhQDLValue .isString();
+                x = lhQDLValue.isString();
                 break;
             case Types.NUMBER:
                 x = (lhQDLValue.isLong()) || (lhQDLValue.isDecimal());
@@ -1472,11 +1472,11 @@ a.⌆b.
                                 temp = objects[1] == objects[0];
                             } else {
                                 // edge case == null
-                            //    if (objects[1] instanceof QDLNull) {
-                              //      temp = objects[0] instanceof QDLNull;
-                               // } else {
-                                    temp = objects[0].equals(objects[1]);
-                               // }
+                                //    if (objects[1] instanceof QDLNull) {
+                                //      temp = objects[0] instanceof QDLNull;
+                                // } else {
+                                temp = objects[0].equals(objects[1]);
+                                // }
                             }
                             break;
                         case NOT_EQUAL_VALUE:
@@ -1503,6 +1503,24 @@ a.⌆b.
             public fpResult process(Object... objects) {
                 fpResult r = new fpResult();
                 objects = castToJavaValues(objects);
+        /*   //Problem with the next bit is that the processor splits up stems into components and
+             // sends along values, hence this gets scalars or sets, never stems. Need different control flow
+             QDLSet leftSet = null;
+                if (objects[0] instanceof QDLSet) {
+                    leftSet = (QDLSet) objects[0];
+                }else {
+                    if (objects[0] instanceof QDLStem) {
+                        leftSet = ((QDLStem) objects[0]).valueSet();
+                    }
+                }
+                QDLSet rightSet = null;
+                if (objects[1] instanceof QDLSet) {
+                    rightSet = (QDLSet) objects[1];
+                } else {
+                    if (objects[1] instanceof QDLStem) {
+                        rightSet = ((QDLStem) objects[1]).valueSet();
+                    }
+                }*/
                 if (!areAllSets(objects)) {
                     throw new QDLExceptionWithTrace("Set operations require only sets", dyad.getLeftArgument());
                 }
@@ -1533,8 +1551,9 @@ a.⌆b.
                 op = INTERSECTION;
                 break;
         }
+        dyad.evalArg(0,state);
+        dyad.evalArg(1,state);
         process2(dyad, pointer, op, state);
-
     }
 
     protected void doDyadLogicalOperator(Dyad dyad, State state) {
@@ -2126,7 +2145,6 @@ a.⌆b.
     public boolean dispatch(Polyad polyad, State state) {
         return false;
     }
-
 
 
 }

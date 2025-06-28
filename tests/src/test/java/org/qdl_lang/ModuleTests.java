@@ -1057,4 +1057,40 @@ p:='/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/modules/math-x.mdl';
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "github issue 89 test script failed";
     }
+
+    // Fix https://github.com/ncsa/qdl/issues/132
+    /* This requires the module be used and some state checked.
+module['A:A'][
+ define[f(x.)]
+ [
+   if[∃x.'a'][return(1);]else[return(0);];
+ ];
+];
+
+z ≔ import('A:A');
+q.'b':=3;
+z#f(q.); // returns 0
+
+q.'a':=2;
+say(z#f(q.)); // returns 1;
+
+remove(q.'a');
+say(z#f(q.)); // should return 0
+     */
+    public void testIsDefinedInModuleFunction_Github132() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "module['A:A'][define[f(x.)][if[∃x.'a'][return(1);]else[return(0);];];];");
+        addLine(script, "z ≔ import('A:A');q.'b':=3;");
+        addLine(script, "ok0 ≔ 0≡ z#f(q.);");
+        addLine(script, "q.'a':=2;\n");
+        addLine(script, "ok1 ≔ 1 ≡ z#f(q.);");
+        addLine(script, "remove(q.'a');");
+        addLine(script, "ok2 ≔ 0≡ z#f(q.);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok0", state) : "testing nested is_defined in a module failed";
+        assert getBooleanValue("ok1", state) : "testing nested is_defined in a module failed";
+        assert getBooleanValue("ok2", state) : "testing nested is_defined in a module failed";
+    }
 }
