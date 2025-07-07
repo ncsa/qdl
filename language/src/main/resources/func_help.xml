@@ -883,7 +883,17 @@ don't have using pick:
   has_email. := ~pick((k,v)->'email'∋v, clients.);
    no_email. := ~pick((k,v)->'email'∌v, clients.);}
 
-Note that the initial ~ is just to re-index the list.]]>
+Note that the initial ~ is just to re-index the list.
+
+If you are going to snoop inside a stem for a specific value,
+you'd have to make sure the pick function is aware it is a stem.
+Here a list of RSA keys is generated and we pick the one key from
+a list that has 'alg == 'RS256':
+
+   aa. ≔ jwt#create_keys({'type':'RSA', 'size':4096}).'keys';
+   admin_key. ≔ (~pick((k,v.)→v.'alg'≡'RS256',aa.)).0;
+
+]]>
         </example>
     </entry>
 

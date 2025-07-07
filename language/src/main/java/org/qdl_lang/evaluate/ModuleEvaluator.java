@@ -1173,7 +1173,13 @@ protected VStack cloneIntrinsicVariables(State state) throws Throwable {
             // if there is an embedded ., process that.
             possibleName = possibleName.indexOf(STEM_INDEX_MARKER) == 0 ? possibleName.substring(1) : possibleName;
             if (state.getLibMap().containsKey(possibleName)) { // look for it directly in tools
-                possibleName = state.getLibMap().getString(possibleName);
+                QDLValue qdlValue = state.getLibMap().get(possibleName);
+
+                if(qdlValue.isString()) {
+                    possibleName = state.getLibMap().getString(possibleName);
+                }else{
+                    throw new BadArgException("you specified an index, not an entry. Specify the entry.", polyad.getArgAt(0));
+                }
             } else {
                 // This looks in the extensions added to the lib element, e.g. oa2.woof in OA4MP
                 // These can be defined in extensions to QDL and can be arbitrarily complex.
