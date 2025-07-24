@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.qdl_lang</groupId>
         <artifactId>qdl</artifactId>
-        <version>1.6-QDL-SNAPSHOT</version>
+        <version>1.6.2</version>
     </parent>
 
     <artifactId>language</artifactId>
@@ -198,14 +198,14 @@
         <dependency>
             <groupId>edu.uiuc.ncsa.security</groupId>
             <artifactId>storage</artifactId>
-            <version>6.x-SNAPSHOT</version>
+            <version>6.2</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>edu.uiuc.ncsa.security</groupId>
             <artifactId>util</artifactId>
-            <version>6.x-SNAPSHOT</version>
+            <version>6.2</version>
             <scope>compile</scope>
         </dependency>
 <!--        <dependency>
@@ -273,7 +273,7 @@
         <dependency>
             <groupId>edu.uiuc.ncsa.security</groupId>
             <artifactId>sas-server</artifactId>
-            <version>6.x-SNAPSHOT</version>
+            <version>6.2</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -284,7 +284,7 @@
 <!--        <dependency>
             <groupId>org.qdl_lang</groupId>
             <artifactId>language</artifactId>
-            <version>1.6-QDL-SNAPSHOT</version>
+            <version>1.6.2</version>
             <scope>compile</scope>
         </dependency>-->
     </dependencies>
