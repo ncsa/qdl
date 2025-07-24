@@ -3,6 +3,7 @@ org.qdl_lang.config
 org.qdl_lang.evaluate
 org.qdl_lang.exceptions
 org.qdl_lang.expressions
+org.qdl_lang.expressions.module
 org.qdl_lang.extensions
 org.qdl_lang.extensions.convert
 org.qdl_lang.extensions.crypto
@@ -21,7 +22,6 @@ org.qdl_lang.gui.editor
 org.qdl_lang.gui.flex
 org.qdl_lang.ini_generated
 org.qdl_lang.install
-org.qdl_lang.module
 org.qdl_lang.parsing
 org.qdl_lang.sas
 org.qdl_lang.sas.action
@@ -35,6 +35,7 @@ org.qdl_lang.util
 org.qdl_lang.util.aggregate
 org.qdl_lang.variables
 org.qdl_lang.variables.codecs
+org.qdl_lang.variables.values
 org.qdl_lang.vfs
 org.qdl_lang.workspace
 org.qdl_lang.xml
