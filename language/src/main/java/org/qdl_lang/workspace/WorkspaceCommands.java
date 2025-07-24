@@ -29,7 +29,6 @@ import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLSet;
 import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.VStack;
-import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.vfs.AbstractVFSFileProvider;
 import org.qdl_lang.vfs.VFSEntry;
@@ -2347,7 +2346,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         int i = 0;
         if (result.isStem()) {
             QDLStem stemVariable = result.asStem();
-            for (QDLKey key : stemVariable.keySet()) {
+            for (org.qdl_lang.variables.values.QDLKey key : stemVariable.keySet()) {
                 i++;
                 say(stemVariable.get(key).toString());
             }
@@ -2882,7 +2881,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                         return RC_NO_OP;
                     }
                     if (toInputForm) {
-                        for (QDLKey key : qdlStem.keySet()) {
+                        for (org.qdl_lang.variables.values.QDLKey key : qdlStem.keySet()) {
                             env.put(key.toString(), InputFormUtil.inputForm(qdlStem.get(key)));
                         }
                     } else {
@@ -2898,7 +2897,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                         if (qdlValue.isStem()) {
                             QDLStem stemIn = qdlValue.asStem();
                             if(toInputForm){
-                               for(QDLKey key : stemIn.keySet()){
+                               for(org.qdl_lang.variables.values.QDLKey key : stemIn.keySet()){
                                    env.put(key.toString(), InputFormUtil.inputForm(stemIn.get(key)));
                                }
                             }else {
@@ -3062,9 +3061,9 @@ public class WorkspaceCommands implements Logable, Serializable {
             if (StringUtils.isTrivial(arg)) {
                 // They are asking for documentation for the default module, and there is none.
             } else {
-                XKey xKey = new XKey(arg);
-                if (state.getMInstances().containsKey(xKey)) {
-                    module = state.getMInstances().getModule(xKey);
+                XKey QDLKey = new XKey(arg);
+                if (state.getMInstances().containsKey(QDLKey)) {
+                    module = state.getMInstances().getModule(QDLKey);
                     if (module != null) {
                         // pull it off the template.
                         module = state.getMTemplates().getModule(new MTKey(module.getNamespace()));
@@ -5941,9 +5940,8 @@ public class WorkspaceCommands implements Logable, Serializable {
         // now do the imports
         fileWriter.write("\n/* ** module " + SerializationConstants.VERSION_2_0_TAG + " imports ** */\n");
 
-        for (Object kk : getState().getMInstances().keySet()) {
-            XKey key = (XKey) kk;
-            Module module = getState().getMInstances().getModule(key);
+        for (Object key : getState().getMInstances().keySet()) {
+            Module module = getState().getMInstances().getModule((XKey)key);
             List<String> aliases = getState().getMInstances().getAliasesAsString(module.getMTKey());
             for (String alias : aliases) {
                 String output = MODULE_IMPORT + "('" + module.getNamespace() + "','" + alias + "');";

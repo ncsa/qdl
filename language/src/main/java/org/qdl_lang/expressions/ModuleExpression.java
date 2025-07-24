@@ -149,11 +149,11 @@ public class ModuleExpression extends ExpressionImpl {
                 setAmbientState(ambientState);
             }
         } else {
-            XKey xKey = new XKey(getAlias());
-            if (!(alias.equals("this") || ambientState.getMInstances().containsKey(xKey))) {
+            XKey QDLKey = new XKey(getAlias());
+            if (!(alias.equals("this") || ambientState.getMInstances().containsKey(QDLKey))) {
                 throw new IllegalArgumentException("no module named '" + getAlias() + "' was  imported");
             }
-            setModule(ambientState.getMInstances().getModule(xKey));
+            setModule(ambientState.getMInstances().getModule(QDLKey));
             setNewModuleVersion(false);
         }
         QDLValue result = null;
@@ -167,9 +167,9 @@ public class ModuleExpression extends ExpressionImpl {
                 result = nextME.evaluate(getModuleState());
             } else {
                 // old module system
-                XKey xKey = new XKey(nextME.getAlias());
-                if (getModuleState(ambientState).getMInstances().containsKey(xKey)) {
-                    nextME.setModuleState(getModuleState(ambientState).getMInstances().getModule(xKey).getState());
+                XKey QDLKey = new XKey(nextME.getAlias());
+                if (getModuleState(ambientState).getMInstances().containsKey(QDLKey)) {
+                    nextME.setModuleState(getModuleState(ambientState).getMInstances().getModule(QDLKey).getState());
                 }
                 //getExpression().setAlias(getAlias());
                 getExpression().setAlias(nextME.getAlias());
@@ -387,23 +387,23 @@ http#host(qqq('https://foo'))
             return null;
         }
         if (moduleState == null) {
-            XKey xKey = new XKey(getAlias());
-            if (state.getVStack().containsKey(xKey)) {
-                VThing vThing = (VThing) state.getVStack().get(xKey);
+            XKey QDLKey = new XKey(getAlias());
+            if (state.getVStack().containsKey(QDLKey)) {
+                VThing vThing = (VThing) state.getVStack().get(QDLKey);
                 if (vThing.getVariable().getQDLValue().isModule()) {
                     Module m = vThing.getVariable().getQDLValue().asModule();
                     setModule(m);
                     moduleState = m.getState();
 
                 } else {
-                    throw new NFWException("expected module for key " + xKey + ", but got a " + vThing.getVariable().getQDLValue().getClass().getSimpleName());
+                    throw new NFWException("expected module for key " + QDLKey + ", but got a " + vThing.getVariable().getQDLValue().getClass().getSimpleName());
                 }
             } else {
-                if (!(alias.equals("this") || state.getMInstances().containsKey(xKey))) {
+                if (!(alias.equals("this") || state.getMInstances().containsKey(QDLKey))) {
                     throw new IllegalArgumentException("no module named '" + getAlias() + "' was  imported");
                 }
 
-                moduleState = state.newLocalState(state.getMInstances().getModule(xKey).getState());
+                moduleState = state.newLocalState(state.getMInstances().getModule(QDLKey).getState());
             }
         }
         return moduleState;

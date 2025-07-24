@@ -14,7 +14,7 @@ public class X509Loader implements QDLLoader {
     @Override
     public List<Module> load() {
         List<Module> modules = new ArrayList<>();
-         modules.add(new X509Module().newInstance(null));
+         modules.add(new QDL509Module().newInstance(null));
          return modules;
     }
 }

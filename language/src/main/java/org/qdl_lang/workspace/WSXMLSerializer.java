@@ -89,13 +89,15 @@ public class WSXMLSerializer {
             processWSEnvOLD(workspaceCommands, xsw);
         }
 
-        xsw.writeEndElement(); // end WS env
+        xsw.writeEndElement();
+        xsw.flush();// end WS env
         // Buffer manager can stay full XML for a bit since it is pretty complex and not a simple
         // data structure.
         if (workspaceCommands.bufferManager != null && !workspaceCommands.bufferManager.isEmpty()) {
             xsw.writeStartElement(BUFFER_MANAGER);
             workspaceCommands.bufferManager.toXML(xsw);
             xsw.writeEndElement();
+            xsw.flush();// end WS env
         }
         if (workspaceCommands.env != null && !workspaceCommands.env.isEmpty()) {
             JSONObject jsonObject = new JSONObject();
@@ -103,11 +105,13 @@ public class WSXMLSerializer {
             xsw.writeStartElement(ENV_PROPERTIES);
             xsw.writeCData(encodeBase64String(jsonObject.toString().getBytes(StandardCharsets.UTF_8)));
             xsw.writeEndElement();
+            xsw.flush();// end WS env
         }
         saveWSList(xsw, workspaceCommands.commandHistory, COMMAND_HISTORY, serializationState);
         saveWSList(xsw, workspaceCommands.getState().getScriptPaths(), SCRIPT_PATH, serializationState);
         saveWSList(xsw, workspaceCommands.getState().getModulePaths(), MODULE_PATH, serializationState);
         saveWSList(xsw, workspaceCommands.editorClipboard, EDITOR_CLIPBOARD, serializationState);
+        xsw.flush();// end WS env
 
         // Global list of templates
         xsw.writeStartElement(MODULE_TEMPLATE_TAG);
@@ -117,10 +121,12 @@ public class WSXMLSerializer {
             module.toXML(xsw, null, true, serializationState);
         }
         xsw.writeEndElement(); // end module templates
+        xsw.flush();// end WS env
 
         // Save other states (in modules).
         xsw.writeStartElement(STATES_TAG);
         xsw.writeComment("module states");
+        xsw.flush();// end WS env
 
         /**
          * At this point we have a flat list of states. Serialize all of them.
@@ -134,6 +140,7 @@ public class WSXMLSerializer {
 
 
         xsw.writeEndElement(); // end states reference
+        xsw.flush();// end WS env
 
         // Absolute last thing to write is the actual state object for the workspace.
         state.toXML(xsw, serializationState);
@@ -141,23 +148,29 @@ public class WSXMLSerializer {
             xsw.writeStartElement(EXTRINSIC_VARIABLES_TAG);
             state.getExtrinsicVars().toXML(xsw, serializationState);
             xsw.writeEndElement();
+            xsw.flush();// end WS env
+
         }
         if (!state.getExtrinsicFuncs().isEmpty()) {
             xsw.writeStartElement(EXTRINSIC_FUNCTIONS_TAG);
             state.getExtrinsicFuncs().toXML(xsw, serializationState);
             xsw.writeEndElement();
+            xsw.flush();// end WS env
         }
         if (!state.getIntrinsicVariables().isEmpty()) {
             xsw.writeStartElement(INTRINSIC_VARIABLES_TAG);
             state.getIntrinsicVariables().toXML(xsw, serializationState);
             xsw.writeEndElement();
+            xsw.flush();// end WS env
         }
         if (!state.getIntrinsicFunctions().isEmpty()) {
             xsw.writeStartElement(INTRINSIC_FUNCTIONS_TAG);
             state.getIntrinsicFunctions().toXML(xsw, serializationState);
             xsw.writeEndElement();
+            xsw.flush();// end WS env
         }
         xsw.writeEndElement(); // end workspace tag
+        xsw.flush();// end WS env
     }
 
     private void saveWSList(XMLStreamWriter xsw,
@@ -281,6 +294,7 @@ public class WSXMLSerializer {
 
     private void processWSEnvNEW(WorkspaceCommands workspaceCommands, XMLStreamWriter xsw) throws XMLStreamException {
         xsw.writeCData(encodeBase64String(envToJSON(workspaceCommands).toString().getBytes(StandardCharsets.UTF_8)));
+        xsw.flush();
     }
 
     private void processWSEnvOLD(WorkspaceCommands workspaceCommands, XMLStreamWriter xsw) throws XMLStreamException {

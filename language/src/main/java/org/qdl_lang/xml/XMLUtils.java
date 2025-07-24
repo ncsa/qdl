@@ -20,6 +20,7 @@ import net.sf.json.JSONObject;
 import javax.xml.namespace.QName;
 import javax.xml.stream.*;
 import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
@@ -223,6 +224,7 @@ public class XMLUtils implements SerializationConstants {
                 // All that SHOULD be here is white space. Loop along until the contents is found
                 // then grab it.
                 boolean doLoop = true;
+                String raw = null;
                 while (doLoop && xer.hasNext()) {
                     switch (xe.getEventType()) {
                         case XMLEvent.CHARACTERS:
@@ -230,6 +232,7 @@ public class XMLUtils implements SerializationConstants {
                                 doLoop = false;
                             }
                             break;
+
                         default:
                             // hit something other than character data.
                             doLoop = false;
@@ -239,7 +242,23 @@ public class XMLUtils implements SerializationConstants {
                         xe = xer.nextEvent();
                     }
                 }
-                String raw = xe.asCharacters().getData();
+                raw = xe.asCharacters().getData();
+
+              /* Next attempt is to get the actual CDATA value. The XMLInputFactory does not seem
+                 to honor this anymore and includes the whitespace around the CDATA element.
+                Characters characters = xe.asCharacters();
+                if(characters.isWhiteSpace() || characters.isIgnorableWhiteSpace()) {
+
+                }else{
+                    if(characters.isCData()) {
+                        System.out.println("XMLUtils: is CDATA ");
+                        raw = xer.getElementText();
+                    }else{
+                        System.out.println("XMLUtils: is NOT CDATA ");
+                      //  raw = xer.getElementText();
+                    }
+                }*/
+
 
                 // several of these strip out the whitespace (which may include line feeds and other cruft.
                 switch (tagName) {
@@ -642,7 +661,6 @@ public class XMLUtils implements SerializationConstants {
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", Integer.toString(indent));
         StringWriter stringWriter = new StringWriter();
         StreamResult xmlOutput = new StreamResult(stringWriter);
-
         Source xmlInput = new StreamSource(new StringReader(input));
         transformer.transform(xmlInput, xmlOutput);
 

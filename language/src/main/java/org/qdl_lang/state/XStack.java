@@ -57,6 +57,12 @@ import static org.qdl_lang.xml.SerializationConstants.STACK_TAG;
  * <p>Created by Jeff Gaynor<br>
  * on 11/8/21 at  6:27 AM
  */
+/*
+  Internal note: The code for this was boilerplated to NCSA asecurity lib as SStack, STable, etc. and while it
+  might seem these can extend those, the reality (I tried it briefly) is that Java generics turn it into a nightmare of
+  casts -- like several hundred and a massive headache. On top of that, a lot of low-level unit tests manipulate
+  the state directly and all of those have to be tinkered with, amounting again to several hundred instances.
+ */
 public abstract class XStack<V extends XTable<? extends XKey, ? extends XThing>> implements Serializable {
     /**
      * Clears the entire stack and resets it.

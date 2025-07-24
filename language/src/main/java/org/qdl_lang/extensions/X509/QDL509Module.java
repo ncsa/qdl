@@ -14,17 +14,17 @@ import java.util.List;
  * <p>Created by Jeff Gaynor<br>
  * on 8/16/22 at  3:17 PM
  */
-public class X509Module extends JavaModule {
-    public X509Module() {
+public class QDL509Module extends JavaModule {
+    public QDL509Module() {
     }
 
-    public X509Module(URI namespace, String alias) {
+    public QDL509Module(URI namespace, String alias) {
         super(namespace, alias);
     }
 
     @Override
     public Module newInstance(State state) {
-        X509Module x509Module = new X509Module(URI.create("qdl:/tools/x509"), "x509");
+        QDL509Module x509Module = new QDL509Module(URI.create("qdl:/tools/x509"), "x509");
         X509 x509 = new X509();
         x509Module.setMetaClass(x509);
         ArrayList<QDLFunction> funcs = new ArrayList<>();

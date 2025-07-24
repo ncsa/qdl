@@ -140,7 +140,7 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.11</version>
+            <version>1.17.1</version>
         </dependency>
 
         <!-- OAUTH-179: fix SSL server hostname  vulnerability in previous versions of httpcomponents. -->

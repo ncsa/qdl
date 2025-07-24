@@ -188,10 +188,10 @@ public class XMLUtilsV2 {
         //xStack.setStateStack(state, xStack);
     }
 
-    protected static void deserializeXStack(XMLEventReader xer, XStack xStack, State state, SerializationState serializationState) throws XMLStreamException {
+    protected static void deserializeXStack(XMLEventReader xer, XStack QDLStack, State state, SerializationState serializationState) throws XMLStreamException {
         xer.nextEvent();// advance cursor
-        xStack.fromXML(xer, serializationState);
-        xStack.setStateStack(state, xStack);
+        QDLStack.fromXML(xer, serializationState);
+        QDLStack.setStateStack(state, QDLStack);
     }
 
     public static class StateAttributes {
