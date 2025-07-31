@@ -165,21 +165,11 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
 
     public QDLValue get(String key) {
         // TODO -- Horribly inefficient. This should be improved but that may take some serious work, so deferring
-        if (key.endsWith(STEM_INDEX_MARKER)) {
-            key = key.substring(0, key.length() - 1);
-        }
         try {
-            if (isLongIndex(key)) {
+            if (!containsKey(key) && key.endsWith(STEM_INDEX_MARKER)) {
+                key = key.substring(0, key.length() - 1);
+            }            if (isLongIndex(key)) {
                 return get(Long.parseLong(key));
-            }
-            if (key.endsWith(STEM_INDEX_MARKER)) {
-                try {
-                    Long kk = Long.parseLong(key.substring(0, key.length() - 1));
-                    return get(kk);
-
-                } catch (Throwable t) {
-                    // not a number
-                }
             }
             if (!containsKey(key) && defaultValue != null) {
                 return defaultValue;

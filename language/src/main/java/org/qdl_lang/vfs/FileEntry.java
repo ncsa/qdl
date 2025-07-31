@@ -122,13 +122,17 @@ public class FileEntry implements VFSEntry {
         return text;
     }
 
+    protected String linesToString() {
+        String text = "";
+        for (String line : lines) {
+            text = text + line + "\n";
+        }
+        return text;
+    }
     @Override
     public String getText() {
         if (text == null) {
-            text = "";
-            for (String line : lines) {
-                text = text + line + "\n";
-            }
+            text = linesToString();
         }
         return text;
     }

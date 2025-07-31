@@ -11,6 +11,7 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+        AnaphorTest.class,
         QDLVariableTest.class,
         ModuleTests.class,
         TestMonadicOperations.class,
