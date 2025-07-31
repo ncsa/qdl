@@ -1,5 +1,6 @@
 package org.qdl_lang.scripting;
 
+import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import org.qdl_lang.evaluate.StemEvaluator;
 import org.qdl_lang.evaluate.SystemEvaluator;
 import org.qdl_lang.util.QDLVersion;
@@ -18,10 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Utility for reading/processing QDL anaphors
  * <p>Created by Jeff Gaynor<br>
  * on 6/1/20 at  3:52 PM
  */
-public class AnotherJSONUtil implements ScriptingConstants {
+public class AnaphorUtil implements ScriptingConstants {
+    public static final String QDL_TAG = "qdl";
     public static final String XMD_TAG = "xmd";
     public static final String ARGS_TAG = "args";
 
@@ -125,7 +128,7 @@ public class AnotherJSONUtil implements ScriptingConstants {
     }
 
     /**
-     * Create an individual script.
+     * Create an individual script from a JSON Object.
      *
      * @param jsonObject
      * @return
@@ -151,7 +154,16 @@ public class AnotherJSONUtil implements ScriptingConstants {
             }
             String rawArgs = "";
             if (jsonObject.containsKey(ARGS_TAG)) {
-                rawArgs = buildArgList((JSON) jsonObject.get(ARGS_TAG));
+                Object o = jsonObject.get(ARGS_TAG);
+                if(o instanceof String) {
+                    rawArgs = "'" + o.toString() + "'";
+                }else{
+                    if(o instanceof JSON) {
+                        rawArgs = buildArgList((JSON) jsonObject.get(ARGS_TAG));
+                    }else{
+                      throw new NFWException("unknown args type: " + o.getClass().getName());
+                    }
+                }
             }
 
             String cmd;
@@ -221,7 +233,7 @@ public class AnotherJSONUtil implements ScriptingConstants {
         // Do not build it as a list, pass the arguments so we are consistent
         // with script arguments across the board.
         //out = "to_list(" + out + ")";
-        DebugUtil.trace(AnotherJSONUtil.class, "returned arg list =" + out);
+        DebugUtil.trace(AnaphorUtil.class, "returned arg list =" + out);
         return out;
         // must be a stem list
     }
@@ -229,7 +241,7 @@ public class AnotherJSONUtil implements ScriptingConstants {
     public static void main(String[] args) {
         try {
             JSONObject j = JSONObject.fromObject(test6);
-            ScriptSet<QDLScript> scripts = createScripts((JSON) j.get("qdl"));
+            ScriptSet<QDLScript> scripts = createScripts((JSON) j.get(QDL_TAG));
             System.out.println(SRE_PRE_AUTH + " scripts = " + scripts.get(SRE_EXEC_PHASE, SRE_PRE_AUTH));
             System.out.println(SRE_POST_AT + " scripts = " + scripts.get(SRE_EXEC_PHASE, SRE_POST_AT));
         } catch (Throwable t) {

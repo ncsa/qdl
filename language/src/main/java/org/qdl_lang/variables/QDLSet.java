@@ -16,6 +16,11 @@ public class QDLSet<K extends QDLValue> extends HashSet<K>  {
     public QDLSet() {
     }
 
+    @Override
+    public boolean contains(Object o) {
+        // Fix https://github.com/ncsa/qdl/issues/134
+        return super.contains(QDLValue.asQDLValue(o));
+    }
 
     /**
      * Constructor to initialize a set from another non-QDL set. This adds every

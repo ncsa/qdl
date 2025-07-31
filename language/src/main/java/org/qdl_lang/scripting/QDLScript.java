@@ -134,8 +134,8 @@ public class QDLScript extends FileEntry implements ScriptInterface {
 
     @Override
     public String toString() {
-        String x = "QDLScript{" +
-                Scripts.CODE + "=\n" + getText() +
+        String x = "QDLScript{"
+                 + "lines=\n" + linesToString() +
                 "properties=" + getProperties();
         return x + "\n}";
     }
