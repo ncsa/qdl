@@ -1,6 +1,7 @@
 package org.qdl_lang.variables;
 
 import org.qdl_lang.exceptions.UnknownSymbolException;
+import org.qdl_lang.expressions.ConstantNode;
 import org.qdl_lang.expressions.VariableNode;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.HasResultInterface;
@@ -22,21 +23,30 @@ import java.util.List;
  */
 public class StemEntryNode implements ExpressionInterface {
     TokenPosition tokenPosition = null;
-    @Override
-    public void setTokenPosition(TokenPosition tokenPosition) {this.tokenPosition=tokenPosition;}
 
     @Override
-    public TokenPosition getTokenPosition() {return tokenPosition;}
+    public void setTokenPosition(TokenPosition tokenPosition) {
+        this.tokenPosition = tokenPosition;
+    }
 
     @Override
-    public boolean hasTokenPosition() {return tokenPosition!=null;}
+    public TokenPosition getTokenPosition() {
+        return tokenPosition;
+    }
+
+    @Override
+    public boolean hasTokenPosition() {
+        return tokenPosition != null;
+    }
+
     ExpressionInterface key;
     ExpressionInterface value;
 
     @Override
     public boolean hasAlias() {
-        return alias!=null;
+        return alias != null;
     }
+
     String alias = null;
 
     @Override
@@ -46,7 +56,7 @@ public class StemEntryNode implements ExpressionInterface {
 
     @Override
     public void setAlias(String alias) {
-         this.alias = alias;
+        this.alias = alias;
     }
 
     public boolean isDefaultValue() {
@@ -58,6 +68,7 @@ public class StemEntryNode implements ExpressionInterface {
     }
 
     boolean isDefaultValue = false;
+
     public ExpressionInterface getKey() {
         return key;
     }
@@ -86,24 +97,30 @@ public class StemEntryNode implements ExpressionInterface {
 
     @Override
     public QDLValue evaluate(State state) {
-        if(!isDefaultValue) {
+        if (!isDefaultValue) {
             getKey().evaluate(state);
-            if(getKey() instanceof VariableNode){
-                if(((VariableNode)getKey()).getResult() == null){
-                    throw new UnknownSymbolException("\'" + ((VariableNode)getKey()).getVariableReference() + "' not found for stem key", getKey(), ((VariableNode)getKey()).getVariableReference());
+            if (getKey() instanceof VariableNode) {
+                if (((VariableNode) getKey()).getResult() == null) {
+                    throw new UnknownSymbolException("\'" + ((VariableNode) getKey()).getVariableReference() + "' not found for stem key", getKey(), ((VariableNode) getKey()).getVariableReference());
                 }
             }
 
         }
         getValue().evaluate(state);
-        if(getValue() instanceof VariableNode){
-            if(((VariableNode)getValue()).getResult() == null){
-                throw new UnknownSymbolException("\'" + ((VariableNode)getValue()).getVariableReference() + "' not found for stem value", getValue(), ((VariableNode)getKey()).getVariableReference());
+        if (getValue() instanceof VariableNode) {
+            if (((VariableNode) getValue()).getResult() == null) {
+                String key;
+                if (getKey() instanceof VariableNode) {
+                    key = ((VariableNode) getKey()).getVariableReference();
+                } else {
+                    key = getKey().getResult().toString();
+                }
+                throw new UnknownSymbolException("\'" + ((VariableNode) getValue()).getVariableReference() + "' not found for stem value", getValue(), key);
             }
         }
         setEvaluated(true);
-        if(getValue() instanceof HasResultInterface){
-            setResult(((HasResultInterface)getValue()).getResult());
+        if (getValue() instanceof HasResultInterface) {
+            setResult(((HasResultInterface) getValue()).getResult());
             return getResult();
         }
         return null;
@@ -131,15 +148,17 @@ public class StemEntryNode implements ExpressionInterface {
     public QDLValue getResult() {
         return null;
     }
-QDLValue result;
+
+    QDLValue result;
+
     @Override
     public void setResult(QDLValue object) {
-this.result = object;
+        this.result = object;
     }
 
     @Override
     public void setResult(Object result) {
-        this.result = QDLValue.asQDLValue( result);
+        this.result = QDLValue.asQDLValue(result);
     }
 
     @Override
@@ -148,7 +167,7 @@ this.result = object;
     }
 
     @Override
-        public int getNodeType() {
-            return STEM_ENTRY_NODE;
-        }
+    public int getNodeType() {
+        return STEM_ENTRY_NODE;
+    }
 }
