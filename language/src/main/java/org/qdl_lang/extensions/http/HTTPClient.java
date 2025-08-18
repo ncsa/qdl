@@ -178,16 +178,52 @@ public class HTTPClient implements QDLMetaModule {
         String p = parameters.size() == 0 ? "" : "?";
         boolean isFirst = true;
         for (QDLKey key : parameters.keySet()) {
-            String v = URLEncoder.encode(parameters.get(key).asString(), "UTF-8");
+            // Fix https://github.com/ncsa/qdl/issues/135
+            QDLValue value = parameters.get(key);
+            String v;
+            switch (value.getType()){
+                case Constant.STEM_TYPE:
+                    QDLStem stem = value.asStem();
+                    if(stem.isList()){
+                        v = toParamList(key.toString(), stem.getQDLList().values());
+                    }else{
+                        throw new BadArgException("only lists supported as values, not stems", 0);
+                    }
+                    break;
+                case Constant.SET_TYPE:
+                    v = toParamList(key.toString(), value.asSet());
+                    break;
+                case Constant.FUNCTION_TYPE:
+                case Constant.DYADIC_FUNCTION_TYPE:
+                case Constant.AXIS_RESTRICTION_TYPE:
+                case Constant.ALL_INDICES_TYPE:
+                    throw new BadArgException("unsupported parameter value", 0);
+                default:
+                v = key + "=" + URLEncoder.encode(value.toString(), "UTF-8");
+            }
             if (isFirst) {
-                p = p + key + "=" + v;
+                p = p + v;
                 isFirst = false;
             } else {
                 // Always encode parameters or this bombs on even simple calls.
-                p = p + "&" + key + "=" + v;
+                p = p + "&" + v;
             }
         }
         return actualHost + p;
+    }
+
+    public String toParamList(String key, Collection<? extends QDLValue> values) throws UnsupportedEncodingException {
+        String v = "";
+        boolean first = true;
+        for(QDLValue vv: values){
+            if(first){
+                v = key + "[]=" + URLEncoder.encode(vv.toString(), "UTF-8");
+                first = false;
+            }else{
+                v = v + "&" + key + "[]=" + URLEncoder.encode(vv.toString(), "UTF-8");
+            }
+        }
+        return v;
     }
 
     public class Host implements QDLFunction {
