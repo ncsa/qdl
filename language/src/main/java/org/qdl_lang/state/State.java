@@ -1238,6 +1238,9 @@ public class State extends FunctionState implements QDLConstants {
         newState.setModulePaths(getModulePaths());
         newState.setVfsFileProviders(getVfsFileProviders());
         newState.setDebugUtil(getDebugUtil());
+        newState.setLibPath(getLibPath());
+        newState.setEnableLibrarySupport(isEnableLibrarySupport());
+        newState.setLibrarySupportMode(getLibrarySupportMode());
         newState.systemInfo = systemInfo;//systemInfo can only be be created at startup.
         newState.setWorkspaceCommands(getWorkspaceCommands());
         return newState;

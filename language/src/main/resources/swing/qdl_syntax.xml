@@ -49,6 +49,7 @@ By Jeff Gaynor</classComment>
     <keyword>∉</keyword>
     <keyword>∋</keyword>
     <keyword>∌</keyword>
+    <keyword>√</keyword>
     <keyword>∧</keyword>
     <keyword>∨</keyword>
     <keyword>∩</keyword>
@@ -71,7 +72,6 @@ By Jeff Gaynor</classComment>
     <keyword>⌊</keyword>
     <keyword>⟦</keyword>
     <keyword>⟧</keyword>
-    <keyword>√</keyword>
   </keywords2>
   <dataTypes>
     <dataType>Boolean</dataType>
@@ -164,6 +164,7 @@ By Jeff Gaynor</classComment>
     <function>kill</function>
     <function>lcm</function>
     <function>lib_entries</function>
+    <function>lib_support</function>
     <function>list_copy</function>
     <function>list_keys</function>
     <function>ln</function>

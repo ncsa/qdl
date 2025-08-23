@@ -1,6 +1,7 @@
 package org.qdl_lang.state;
 
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
+import org.qdl_lang.config.QDLConfigurationConstants;
 import org.qdl_lang.evaluate.MetaEvaluator;
 import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.statements.TokenPosition;
@@ -312,7 +313,17 @@ public static class QDLStackTraceElement{
         this.enableLibrarySupport = enableLibrarySupport;
     }
 
-    boolean enableLibrarySupport = true;
+    boolean enableLibrarySupport = false;
+
+    public String getLibrarySupportMode() {
+        return librarySupportMode;
+    }
+
+    public void setLibrarySupportMode(String librarySupportMode) {
+        this.librarySupportMode = librarySupportMode;
+    }
+
+    String librarySupportMode = QDLConfigurationConstants.LIBRARY_SUPPORT_MODE_LOAD;
 
     public List<String> getLibPath() {
         return libPath;
@@ -326,7 +337,7 @@ public static class QDLStackTraceElement{
         this.libPath = libPath;
     }
 
-    protected List<String> libPath = new ArrayList<>();
+    protected List<String> libPath =  new ArrayList<>(Arrays.asList(System.getProperty("user.dir")));
 
     public List<String> getModulePaths() {
         return modulePaths;

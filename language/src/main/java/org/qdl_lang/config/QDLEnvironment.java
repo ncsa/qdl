@@ -60,7 +60,8 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
                           String logo,
                           String terminalType,
                           Font font,
-                          boolean preprocesserOn) {
+                          boolean preprocesserOn,
+                          String librarySupportMode) {
         super(myLogger);
         this.cfgFile = cfgFile;
         this.name = name;
@@ -98,7 +99,18 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
         this.terminalType = terminalType;
         this.font = font;
         this.preprocesserOn = preprocesserOn;
+        this.librarySupportMode = librarySupportMode;
     }
+
+    public String getLibrarySupportMode() {
+        return librarySupportMode;
+    }
+
+    public void setLibrarySupportMode(String librarySupportMode) {
+        this.librarySupportMode = librarySupportMode;
+    }
+
+    String librarySupportMode;
 
     // Fix https://github.com/ncsa/qdl/issues/127
     public Boolean isPreprocesserOn() {
@@ -111,7 +123,7 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
 
     Boolean preprocesserOn = null;
 
-    String terminalType=WS_TERMINAL_TYPE_TEXT; // default
+    String terminalType = WS_TERMINAL_TYPE_TEXT; // default
 
     public String getTerminalType() {
         return terminalType;
@@ -126,11 +138,13 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
     }
 
     String logo;
+
     public boolean isAnsiModeOn() {
         return ansiModeOn;
     }
 
-    boolean ansiModeOn= false;
+    boolean ansiModeOn = false;
+
     public boolean isAllowOverwriteBaseFunctions() {
         return allowOverwriteBaseFunctions;
     }
@@ -386,8 +400,9 @@ public class QDLEnvironment extends AbstractEnvironment implements QDLConfigurat
     }
 
     LibLoader libLoader = null;
-    public boolean hasLibLoader(){
-        return libLoader!=null;
+
+    public boolean hasLibLoader() {
+        return libLoader != null;
     }
 
     public Font getFont() {

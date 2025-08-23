@@ -81,7 +81,10 @@ public interface QDLConfigurationConstants {
     String SCRIPT_PATH_TAG = "script_path";
     String MODULE_PATH_TAG = "module_path";
     String LIB_PATH_TAG = "lib_path";
-    String ENABLE_LIBRARY_SUPPORT = "enable_library_support";
+    String ENABLE_LIBRARY_SUPPORT = "library_support";
+    String LIBRARY_SUPPORT_MODE = "library_support_mode";
+    String LIBRARY_SUPPORT_MODE_LOAD = "load";
+    String LIBRARY_SUPPORT_MODE_RUN = "run";
     String RUN_INIT_ON_LOAD = "run_init_on_load";
 
 

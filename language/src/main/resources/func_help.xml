@@ -7616,6 +7616,34 @@ See the workspace reference manual for a thorough discussion.
 
 See also: halt]]>
         </body>
+        <entry id="lib_support">
+            <body>
+                <![CDATA[Query or set the library extension facility in QDL.
+lib_support() - query current status
+lib_support(enabled) - (boolean) toggle facility on (true) or off (false)
+lib_support(mode) - (string) set the mode. 'load' or 'run' are supported
+lib_support(path.) - (list) set the path where the scripts live
+lib_support(arg.)- Set the status with a general stem whose form is
+
+{'enabled' : true | false,
+ 'mode' : 'load' | 'run',
+ 'path' : ['path0',…]
+}
+
+Note that the default is this facility is off. Also, if no library path is set, the
+invocatio directory (the directory from which QDL was started) is the default.
+
+See also:"Extending QDL with the library facility" in the the reference manual]]>
+            </body>
+            <example>
+                <![CDATA[
+   lib_support()
+{enabled:true,
+ mode:load,
+ path:[/home/ncsa/dev/ncsa-git/oa4mp/di-service/src/main/scripts/qdl]}
+]]>
+            </example>
+        </entry>
     </entry>
     <!-- template without example  block
     <entry id="">

@@ -1,0 +1,2 @@
+⊨b('fnort') == 'bfnort';
+return('a'+args().0);

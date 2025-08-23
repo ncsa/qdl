@@ -178,6 +178,9 @@ public class ModuleUtils implements Serializable {
             script = resolveScript(resourceName, state.getModulePaths(), state);
             if (script == null) {
                 script = resolveScript(resourceName + MODULE_DEFAULT_EXTENSION, state.getModulePaths(), state);
+                if(script == null && state.isEnableLibrarySupport()){
+                    script = resolveScript(resourceName + MODULE_DEFAULT_EXTENSION, state.getLibPath(), state);
+                }
             }
         } catch (Throwable t) {
             state.warn("Could not find module:" + t.getMessage());

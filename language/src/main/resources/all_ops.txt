@@ -80,6 +80,7 @@ keys
 kill
 lcm
 lib_entries
+lib_support
 list_copy
 list_keys
 ln

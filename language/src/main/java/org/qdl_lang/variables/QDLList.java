@@ -427,11 +427,11 @@ subset(b., 3, 6)
     }
 
     /**
-     * Appends all elements in a list. Terrifically inefficient. Optimize. Someday. Maybe.
+     * Appends all elements in a list. Converts elements as needed
      *
      * @param objects
      */
-    public void appendAll(List<QDLValue> objects) {
+    public void appendAll(List objects) {
         for (Object obj : objects) {
             add(QDLValue.asQDLValue(obj));
         }

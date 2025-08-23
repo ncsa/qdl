@@ -223,7 +223,7 @@ public class HTTPClient implements QDLMetaModule {
                 v = v + "&" + key + "[]=" + URLEncoder.encode(vv.toString(), "UTF-8");
             }
         }
-        return v;
+        return URLEncoder.encode(v, "UTF-8");
     }
 
     public class Host implements QDLFunction {

@@ -54,6 +54,7 @@ public interface SerializationConstants {
     String AUTOSAVE_ON = "autosave_on";
     String AUTOSAVE_INTERVAL = "autosave_interval";
     String ENABLE_LIBRARY_SUPPORT = "enable_library_support";
+    String LIBRARY_SUPPORT_MODE = "library_support_mode";
     String EXTERNAL_EDITOR_NAME = "external_editor";
     String AUTOSAVE_MESSAGES_ON = "autosave_messages_on";
     String START_TS = "start_ts";

@@ -1,0 +1,2 @@
+⊨c('fneeze') == 'cfneeze';
+return('b'+args().0);

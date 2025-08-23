@@ -195,39 +195,46 @@ public class SystemEvaluator extends AbstractEvaluator {
     public static final String LOAD_COMMAND = "script_load";
     public static final int LOAD_COMMAND_TYPE = 401 + SYSTEM_BASE_VALUE;
 
+    // scripts
+
     public static final String SCRIPT_ARGS_COMMAND = "script_args";
     public static final int SCRIPT_ARGS_COMMAND_TYPE = 402 + SYSTEM_BASE_VALUE;
-
+    public static final String SCRIPT_ARGS2_COMMAND = "args";
     public static final String SCRIPT_PATH_COMMAND = "script_path";
     public static final int SCRIPT_PATH_COMMAND_TYPE = 403 + SYSTEM_BASE_VALUE;
+    public static final String SCRIPT_NAME_COMMAND = "script_name";
+    public static final int SCRIPT_NAME_COMMAND_TYPE = 404 + SYSTEM_BASE_VALUE;
+
+    // forks
     public static final String FORK = "fork";
-    public static final int FORK_TYPE = 404 + SYSTEM_BASE_VALUE;
+    public static final int FORK_TYPE = 405 + SYSTEM_BASE_VALUE;
     public static final String KILL_PROCESS = "kill";
-    public static final int KILL_PROCESS_TYPE = 405 + SYSTEM_BASE_VALUE;
+    public static final int KILL_PROCESS_TYPE = 406 + SYSTEM_BASE_VALUE;
 
     // WS macro
     public static final String WS_MACRO = "ws_macro";
-    public static final int WS_MACRO_COMMAND_TYPE = 404 + SYSTEM_BASE_VALUE;
+    public static final int WS_MACRO_COMMAND_TYPE = 414 + SYSTEM_BASE_VALUE;
 
+    // clipboard
     public static final String HAS_CLIPBOARD = "cb_exists";
-    public static final int HAS_CLIPBOARD_COMMAND_TYPE = 405 + SYSTEM_BASE_VALUE;
+    public static final int HAS_CLIPBOARD_COMMAND_TYPE = 415 + SYSTEM_BASE_VALUE;
 
     public static final String CLIPBOARD_COPY = "cb_read";
-    public static final int CLIPBOARD_COPY_COMMAND_TYPE = 406 + SYSTEM_BASE_VALUE;
+    public static final int CLIPBOARD_COPY_COMMAND_TYPE = 416 + SYSTEM_BASE_VALUE;
 
     public static final String CLIPBOARD_PASTE = "cb_write";
-    public static final int CLIPBOARD_PASTE_COMMAND_TYPE = 407 + SYSTEM_BASE_VALUE;
+    public static final int CLIPBOARD_PASTE_COMMAND_TYPE = 417 + SYSTEM_BASE_VALUE;
 
-    public static final String SCRIPT_ARGS2_COMMAND = "args";
-
-    public static final String SCRIPT_NAME_COMMAND = "script_name";
-    public static final int SCRIPT_NAME_COMMAND_TYPE = 408 + SYSTEM_BASE_VALUE;
+    // lib support
+    public static final String LIB_SUPPORT_COMMAND = "lib_support";
+    public static final int LIB_SUPPORT_COMMAND_TYPE = 420 + SYSTEM_BASE_VALUE;
 
 
     @Override
     public String[] getFunctionNames() {
         if (fNames == null) {
             fNames = new String[]{
+                    LIB_SUPPORT_COMMAND,
                     SCRIPT_NAME_COMMAND,
                     KILL_PROCESS,
                     FORK,
@@ -278,6 +285,8 @@ public class SystemEvaluator extends AbstractEvaluator {
     @Override
     public int getType(String name) {
         switch (name) {
+            case LIB_SUPPORT_COMMAND:
+                return LIB_SUPPORT_COMMAND_TYPE;
             case SCRIPT_NAME_COMMAND:
                 return SCRIPT_NAME_COMMAND_TYPE;
             case KILL_PROCESS:
@@ -378,6 +387,9 @@ public class SystemEvaluator extends AbstractEvaluator {
         boolean printIt = false;
 
         switch (polyad.getName()) {
+            case LIB_SUPPORT_COMMAND:
+                doLibSupport(polyad, state);
+                return true;
             case SCRIPT_NAME_COMMAND:
                 doScriptName(polyad, state);
                 return true;
@@ -557,6 +569,95 @@ public class SystemEvaluator extends AbstractEvaluator {
                 return true;
         }
         return false;
+    }
+
+    public static final String LIB_SUPPORT_ENABLED_KEY = "enabled";
+    public static final String LIB_SUPPORT_PATH_KEY = "path";
+    public static final String LIB_SUPPORT_MODE_KEY = "mode";
+    public static final String LIB_SUPPORT_MODE_LOAD = "load";
+    public static final String LIB_SUPPORT_MODE_RUN = "run";
+
+    /**
+     * Library support.
+     *
+     * @param polyad
+     * @param state
+     */
+    private void doLibSupport(Polyad polyad, State state) {
+        if (polyad.isSizeQuery()) {
+            polyad.setAllowedArgCounts(new int[]{0, 1});
+            polyad.setEvaluated(true);
+            return;
+        }
+        if (0 == polyad.getArgCount()) {
+            // query for existing state.
+            QDLStem stem = new QDLStem();
+            stem.put(QDLKey.from(LIB_SUPPORT_ENABLED_KEY), QDLValue.asQDLValue(state.isEnableLibrarySupport()));
+            QDLList list = new QDLList();
+            list.appendAll(state.getLibPath());
+            QDLStem libPath = new QDLStem();
+            libPath.setQDLList(list);
+            stem.put(QDLKey.from(LIB_SUPPORT_PATH_KEY), libPath);
+            polyad.setEvaluated(true);
+            polyad.setResult(stem);
+            stem.put(QDLKey.from(LIB_SUPPORT_MODE_KEY), QDLValue.asQDLValue(LIB_SUPPORT_MODE_LOAD));
+            return;
+        }
+        QDLValue in = polyad.evalArg(0, state);
+        if (in.isStem()) {
+
+            QDLStem stem = in.asStem();
+            if (stem.isList()) {
+                // they are resetting the lib path only. Disambiguate here
+                polyad.setResult(setLibSupport(in, polyad, state));
+            } else {
+                for (QDLKey key : stem.keySet()) {
+                    switch (key.asString()) {
+                        case LIB_SUPPORT_PATH_KEY:
+                        case LIB_SUPPORT_ENABLED_KEY:
+                        case LIB_SUPPORT_MODE_KEY:
+                            polyad.setResult(setLibSupport(stem.get(key), polyad, state));
+                            break;
+                        default:
+                            throw new BadArgException("unknown lib path option '" + key + "'", polyad.getArgAt(0));
+                    }
+                }
+            }
+        } else {
+            polyad.setResult(setLibSupport(in, polyad, state));
+        }
+        polyad.setEvaluated(true);
+    }
+
+    private QDLValue setLibSupport(QDLValue in, Polyad polyad, State state) {
+        int type =in.getType();
+        if(in.isStem()){
+            if(in.asStem().isList()){
+                type = LIST_TYPE;
+            }
+        }
+        switch (type) {
+            case BOOLEAN_TYPE:
+                Boolean oldValue = state.isEnableLibrarySupport();
+                state.setEnableLibrarySupport(in.asBoolean());
+                return QDLValue.asQDLValue(oldValue);
+            case STRING_TYPE:
+                return QDLValue.asQDLValue(LIB_SUPPORT_MODE_LOAD); // only one
+            case LIST_TYPE:
+                // lib path
+                QDLStem oldPath = new QDLStem();
+                oldPath.getQDLList().appendAll(state.getLibPath());
+                QDLStem inStem = in.asStem();
+                List<? extends QDLValue> newPath = inStem.getQDLList().values();
+                List<String> x = new ArrayList<>(newPath.size());
+                for (QDLValue v : newPath) {
+                    x.add(v.toString());
+                }
+                state.setLibPath(x);
+                return QDLValue.asQDLValue(oldPath);
+            default:
+                throw new BadArgException("unsupported argument type for " + LIB_SUPPORT_COMMAND, polyad.getArgAt(0));
+        }
     }
 
     private void doScriptName(Polyad polyad, State state) {
@@ -2233,6 +2334,9 @@ public class SystemEvaluator extends AbstractEvaluator {
                 }
             }
             for (String p : paths) {
+                if(!p.endsWith("/")){
+                    p = p + "/";
+                }
                 String resourceName = p + name;
                 //    DebugUtil.trace(SystemEvaluator.class, " path = " + resourceName);
                 if (QDLFileUtil.isVFSPath(resourceName)) {
@@ -2466,7 +2570,7 @@ public class SystemEvaluator extends AbstractEvaluator {
 
     private static void setupSIList(Polyad polyad, QDLValue qdlValue, SIInterrupts siInterrupts) {
         SIInterruptList incl;
-        switch (qdlValue.getType()){
+        switch (qdlValue.getType()) {
             case STRING_TYPE:
                 incl = new SIInterruptList(qdlValue.asString());
                 break;
@@ -2474,7 +2578,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 incl = new SIInterruptList(qdlValue.asSet());
                 break;
             case STEM_TYPE:
-                incl = new SIInterruptList(QDLValue.castToQDLValues((Set)qdlValue.asStem().values()));
+                incl = new SIInterruptList(QDLValue.castToQDLValues((Set) qdlValue.asStem().values()));
                 break;
             default:
                 throw new QDLExceptionWithTrace("unknown SI includes type:" + qdlValue, polyad.getArgAt(0));
@@ -3221,9 +3325,9 @@ public class SystemEvaluator extends AbstractEvaluator {
         boolean isDef = false;
 
         //next switch kicks off descent if aggregate value
-        switch (polyad.getArguments().get(0).getNodeType()){
+        switch (polyad.getArguments().get(0).getNodeType()) {
             case LIST_NODE:
-                polyad.setResult(checkDefined( (StemListNode) polyad.getArguments().get(0),state));
+                polyad.setResult(checkDefined((StemListNode) polyad.getArguments().get(0), state));
                 polyad.setEvaluated(true);
                 return;
             case STEM_NODE:
@@ -3233,7 +3337,7 @@ public class SystemEvaluator extends AbstractEvaluator {
             case EXPRESSION_STEM2_NODE: // Fix https://github.com/ncsa/qdl/issues/132
                 try {
                     polyad.evalArg(0, state);
-                }catch(IndexError indexError){
+                } catch (IndexError indexError) {
                     polyad.setResult(BooleanValue.False);
                     polyad.setEvaluated(true);
                     return;
@@ -3262,37 +3366,39 @@ public class SystemEvaluator extends AbstractEvaluator {
         return new QDLStem(list);
 
     }
-protected QDLStem checkDefined(StemVariableNode stemVariableNode, State state){
+
+    protected QDLStem checkDefined(StemVariableNode stemVariableNode, State state) {
         QDLStem outStem = new QDLStem();
-    for (StemEntryNode sem : stemVariableNode.getStatements()) {
-        QDLKey  key = QDLKey.from(sem.getKey().evaluate(state).getValue());
-        ExpressionInterface value = (ExpressionInterface) sem.getValue();
-        switch (value.getNodeType()){
-            case  STEM_NODE:
-                outStem.put(key, checkDefined((StemVariableNode) value, state)  );
-                break;
-                    case LIST_NODE:
-            case SET_NODE:
-            default:
-                outStem.put(QDLKey.from(sem.getKey().evaluate(state).getValue()), asQDLValue(checkDefined((ExpressionInterface) sem.getValue(), state)));
+        for (StemEntryNode sem : stemVariableNode.getStatements()) {
+            QDLKey key = QDLKey.from(sem.getKey().evaluate(state).getValue());
+            ExpressionInterface value = (ExpressionInterface) sem.getValue();
+            switch (value.getNodeType()) {
+                case STEM_NODE:
+                    outStem.put(key, checkDefined((StemVariableNode) value, state));
+                    break;
+                case LIST_NODE:
+                case SET_NODE:
+                default:
+                    outStem.put(QDLKey.from(sem.getKey().evaluate(state).getValue()), asQDLValue(checkDefined((ExpressionInterface) sem.getValue(), state)));
+            }
         }
+        return outStem;
     }
-    return outStem;
-}
+
     protected boolean checkDefined(ExpressionInterface exp, State state) {
         boolean isDef = false;
-        switch (exp.getNodeType()){
+        switch (exp.getNodeType()) {
             case SET_NODE:
                 QDLSetNode setNode = (QDLSetNode) exp;
                 try {
                     setNode.evaluate(state);
                     return true;
-                }catch(UnknownSymbolException unknownSymbolException){
-                    if(unknownSymbolException.hasUnknownSymbol() && unknownSymbolException.isUnknownSymbolAStem()){
+                } catch (UnknownSymbolException unknownSymbolException) {
+                    if (unknownSymbolException.hasUnknownSymbol() && unknownSymbolException.isUnknownSymbolAStem()) {
                         throw unknownSymbolException;
                     }
                     return false;
-                }catch(IndexError indexError){
+                } catch (IndexError indexError) {
 
                 }
                 return false;
@@ -3302,12 +3408,12 @@ protected QDLStem checkDefined(StemVariableNode stemVariableNode, State state){
                 // if the name is defined.
                 return state.isDefined(variableNode.getVariableReference());
             case EXPRESSION_STEM2_NODE:
-                if(!exp.isEvaluated()){
-                    try{
+                if (!exp.isEvaluated()) {
+                    try {
                         exp.evaluate(state);
                         // If an UnknownSymbolException is thrown, handle that so
                         // they can track down scope errors.
-                    }catch(IndexError t){
+                    } catch (IndexError t) {
                         return false;
                     }
                 }
@@ -3315,12 +3421,12 @@ protected QDLStem checkDefined(StemVariableNode stemVariableNode, State state){
                 if (object == null) {
                     return false;
                 }
-                    return true;
+                return true;
             case CONSTANT_NODE:
             case DYAD_NODE:
             case MONAD_NODE:
             case NILAD_NODE:
-                if(!exp.isEvaluated()){
+                if (!exp.isEvaluated()) {
                     exp.evaluate(state);
                 }
                 Object x = exp.getResult(); // already evaluated at creation

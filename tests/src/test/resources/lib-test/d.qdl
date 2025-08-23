@@ -1,0 +1,1 @@
+return('d'+args().0);

@@ -148,6 +148,7 @@ syntax keyword qdlFunction keys
 syntax keyword qdlFunction kill
 syntax keyword qdlFunction lcm
 syntax keyword qdlFunction lib_entries
+syntax keyword qdlFunction lib_support
 syntax keyword qdlFunction list_copy
 syntax keyword qdlFunction list_keys
 syntax keyword qdlFunction ln

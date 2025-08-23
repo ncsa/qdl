@@ -161,7 +161,10 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
 
     protected String getLibPath() {
         String x = getFirstAttribute(cn, LIB_PATH_TAG);
-        return x == null ? "" : x;
+        if(StringUtils.isTrivial(x)){
+            x = System.getProperty("user.dir"); // set to invocation dir
+        }
+        return  x;
     }
 
     protected String getModulePath() {
@@ -337,8 +340,15 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
         return autosaveInterval;
     }
 
+    protected String getLibrarySupportMode() {
+        String mode =  getFirstAttribute(cn, LIBRARY_SUPPORT_MODE);
+        if(StringUtils.isTrivial(mode)) {
+            mode = LIBRARY_SUPPORT_MODE_LOAD;
+        }
+        return mode;
+    }
     protected boolean isEnableLibrarySupport() {
-        return getFirstBooleanValue(cn, ENABLE_LIBRARY_SUPPORT, true);
+        return getFirstBooleanValue(cn, ENABLE_LIBRARY_SUPPORT, false);
     }
 
     protected boolean isRunInitOnLoad() {
@@ -539,7 +549,8 @@ public class QDLConfigurationLoader<T extends QDLEnvironment> extends LoggingCon
                 useLogo(),
                 getTerminalType(),
                 getFont(),
-                isPreprocessorOn());
+                isPreprocessorOn(),
+                getLibrarySupportMode());
     }
 
     @Override

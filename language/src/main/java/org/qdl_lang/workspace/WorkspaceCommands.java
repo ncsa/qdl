@@ -6909,6 +6909,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         interpreter.setPrettyPrint(qe.isPrettyPrint());
         getState().setScriptPaths(qe.getScriptPath());
         getState().setEnableLibrarySupport(qe.isEnableLibrarySupport());
+        getState().setLibrarySupportMode(qe.getLibrarySupportMode());
         defaultInterpreter = interpreter;
         getState().setEnableLibrarySupport(qe.isEnableLibrarySupport());
         defaultState = state;

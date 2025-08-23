@@ -24,7 +24,7 @@ public class AnaphorTest extends AbstractQDLTester{
         addLine(script, "anaphors.1 := a#to_load('foo', ['bar0','bar1']);");
         addLine(script, "anaphors.2 := a#to_load('foo', [['bar0','bar1']]);");
         addLine(script, "anaphors.3 := a#to_load('foo', {'a':'bar0','b':'bar1'});");
-        addLine(script,"say(print(anaphors.));");
+        //addLine(script,"say(print(anaphors.));");
         // Each line is an anaphor.
         addLine(script,"file_write('" + temp.getAbsolutePath() +"',anaphors.);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
@@ -46,6 +46,6 @@ public class AnaphorTest extends AbstractQDLTester{
     }
     protected void p(JSONObject json) {
         ScriptSet<QDLScript> scripts =  (AnaphorUtil.createScripts(json.getJSONObject(AnaphorUtil.QDL_TAG)));
-        System.out.println(scripts.iterator().next().getLines().get(0));
+        //System.out.println(scripts.iterator().next().getLines().get(0));
     }
 }

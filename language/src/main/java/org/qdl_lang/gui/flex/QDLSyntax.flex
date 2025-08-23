@@ -1,5 +1,5 @@
 /*
- * Generated on 4/20/25, 8:42 AM
+ * Generated on 8/22/25, 9:21 AM
  */
 package org.qdl_lang.gui.flex;
 
@@ -390,6 +390,7 @@ URL						= (((https?|f(tp|ile))"://"|"www.")({URLCharacters}{URLEndCharacter})?)
 "kill" |
 "lcm" |
 "lib_entries" |
+"lib_support" |
 "list_copy" |
 "list_keys" |
 "ln" |

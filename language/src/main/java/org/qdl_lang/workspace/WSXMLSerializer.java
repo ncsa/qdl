@@ -215,6 +215,7 @@ public class WSXMLSerializer {
         if(json.containsKey(PRETTY_PRINT)) workspaceCommands.setPrettyPrint(json.getBoolean(PRETTY_PRINT));
         if(json.containsKey(PREPROCESSOR_ON)) workspaceCommands.setPreprocessorOn(json.getBoolean(PREPROCESSOR_ON));
         if(json.containsKey(ENABLE_LIBRARY_SUPPORT)) workspaceCommands.getState().setEnableLibrarySupport(json.getBoolean(ENABLE_LIBRARY_SUPPORT));
+        if(json.containsKey(LIBRARY_SUPPORT_MODE)) workspaceCommands.getState().setLibrarySupportMode(json.getString(LIBRARY_SUPPORT_MODE));
         if(json.containsKey(OVERWRITE_BASE_FUNCTIONS)) workspaceCommands.getState().setAllowBaseFunctionOverrides(json.getBoolean(OVERWRITE_BASE_FUNCTIONS));
 // ints
         if(json.containsKey(CURRENT_PID)) workspaceCommands.currentPID = json.getInt(CURRENT_PID);
@@ -253,6 +254,7 @@ public class WSXMLSerializer {
         json.put(PRETTY_PRINT, workspaceCommands.isPrettyPrint());
         json.put(PREPROCESSOR_ON, workspaceCommands.isPreprocessorOn());
         json.put(ENABLE_LIBRARY_SUPPORT, workspaceCommands.getState().isEnableLibrarySupport());
+        json.put(LIBRARY_SUPPORT_MODE, workspaceCommands.getState().getLibrarySupportMode());
         json.put(OVERWRITE_BASE_FUNCTIONS, workspaceCommands.getState().isAllowBaseFunctionOverrides());
 // ints
         json.put(CURRENT_PID, Integer.toString(workspaceCommands.currentPID));

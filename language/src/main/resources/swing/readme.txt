@@ -3,7 +3,7 @@ is used in various projects for its simplicity (such as Intellij or the
 RSyntaxtTextArea component) but is not nearly as heavy weight as ANTLR.
 
 In theory we could use the actual QDL grammar from ANTLR and pass its output through
-to a TokenMaker class, but no online attempts I read to do it seemed to work right
+to a TokenMaker class, but no online attempts I read to do it seemed to not work right
 even for real gurus,  and ANTLR's model for issuing tokens is very different
 from JFlex to the point that nobody seems to be able to bridge the
 gap, except in toy cases, so I'm not even going to bother.

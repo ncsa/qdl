@@ -1,5 +1,6 @@
 package org.qdl_lang.evaluate;
 
+import org.qdl_lang.config.QDLConfigurationConstants;
 import org.qdl_lang.exceptions.*;
 import org.qdl_lang.expressions.*;
 import org.qdl_lang.extensions.JavaModule;
@@ -530,23 +531,55 @@ public class FunctionEvaluator extends AbstractEvaluator {
     }
 
     protected boolean tryScript(Polyad polyad, State state) {
-        if (!state.isEnableLibrarySupport() || state.getLibPath().isEmpty()) {
+        if (!state.isEnableLibrarySupport() ) {
             return false;
         }
+        List<String >libPath;;boolean usedInvocDir = false;
+        Object[] oldArgs = state.getScriptArgs();
+        if( state.getLibPath().isEmpty()){
+            if(state.isServerMode()){
+                throw new UndefinedFunctionException("lib path not set is not defined", polyad);
+            }
+            libPath = new ArrayList<>(1);
+            libPath.add(System.getProperty("user.dir"));// default is invocation directory
+            usedInvocDir = true;
+        }else{
+            libPath = state.getLibPath();
+        }
         String scriptName = polyad.getName() + QDLVersion.DEFAULT_FILE_EXTENSION;
-        Polyad tryScript = new Polyad(SystemEvaluator.RUN_COMMAND);
+        Polyad tryScript;
+        boolean runMode = false; // bivalued for now
+        switch(state.getLibrarySupportMode()){
+            case QDLConfigurationConstants.LIBRARY_SUPPORT_MODE_LOAD:
+                tryScript = new Polyad(SystemEvaluator.LOAD_COMMAND);
+                runMode = true;
+                break;
+            case QDLConfigurationConstants.LIBRARY_SUPPORT_MODE_RUN:
+            tryScript = new Polyad(SystemEvaluator.RUN_COMMAND);
+            break;
+            default:
+                throw new NFWException("unknown library support mode:state.getLibrarySupportMode()");
+        }
         ConstantNode constantNode = new ConstantNode(new StringValue(scriptName));
         tryScript.getArguments().add(constantNode);
         for (int i = 0; i < polyad.getArgCount(); i++) {
             tryScript.getArguments().add(polyad.getArguments().get(i));
         }
         try {
-            SystemEvaluator.runnit(tryScript, state, state.getLibPath(), true, false);
-            tryScript.evaluate(state);
+            // fixes https://github.com/ncsa/qdl/issues/136
+            SystemEvaluator.runnit(tryScript, state, libPath, !runMode, false);
+            if(usedInvocDir){
+                // if we tried the invocation dir and it worked, start using it.
+                state.setLibPath(libPath);
+            }
+//            tryScript.evaluate(state);
             polyad.setResult(tryScript.getResult());
             polyad.setEvaluated(true);
+            state.setScriptArgs(oldArgs);
             return true;
-        } catch (Throwable t) {
+        } catch(QDLException qe) {
+            throw qe;
+        }catch(Throwable t) {
             DebugUtil.trace(this, ".tryScript failed:");
             if (DebugUtil.isEnabled()) {
                 t.printStackTrace();
@@ -593,7 +626,17 @@ public class FunctionEvaluator extends AbstractEvaluator {
         if (frs.isJavaFunction()) {
             doJavaFunction(polyad, state, frs);
         } else {
-            doFunctionEvaluation(polyad, state, frs);
+            try {
+                doFunctionEvaluation(polyad, state, frs);
+            }catch(UndefinedFunctionException udx){
+                if (!state.isEnableLibrarySupport()) {
+                    throw udx; // don't try to resolve libraries if support is off.
+                }
+                if (!tryScript(polyad, state)) {
+                    throw udx;
+                }
+                return; // if it gets here, then the script worked, exit gracefully.
+            }
         }
     }
 

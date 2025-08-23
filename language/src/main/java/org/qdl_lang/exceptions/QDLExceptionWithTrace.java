@@ -92,7 +92,18 @@ public class QDLExceptionWithTrace extends QDLException{
         int size = getScriptStack().size();
         for(int i = 0; i < size; i++) {
             AbstractState.QDLStackTraceElement se = getScriptStack().get(size-i-1);
-            String s = se.resource + " called at (" + se.position.line + "," + se.position.col + ") in";
+            String s;
+            if(se!=null) {
+                if (se.position != null) {
+
+                    s = se.resource + " called at (" + se.position.line + "," + se.position.col + ") in";
+                }else{
+                    s = se.resource + " called  in";
+
+                }
+            }else{
+                s = "";
+            }
             stringBuilder.append(indent + s + "\n");
             indent = indent + " ";
         }
