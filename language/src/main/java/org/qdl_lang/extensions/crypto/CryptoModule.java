@@ -36,9 +36,13 @@ public class CryptoModule extends JavaModule {
         funcs.add(crypto.new Encrypt());
         funcs.add(crypto.new Decrypt());
         funcs.add(crypto.new CreateKey());
-        funcs.add(crypto.new GetPublicKey());
-        funcs.add(crypto.new ToJWT());
         funcs.add(crypto.new FromJWT());
+        funcs.add(crypto.new GetPublicKey());
+        funcs.add(crypto.new HexToInt());
+        funcs.add(crypto.new B64ToInt());
+        funcs.add(crypto.new IntToHex());
+        funcs.add(crypto.new IntToBase64());
+        funcs.add(crypto.new ToJWT());
         funcs.add(crypto.new VerifyJWT());
         cryptoModule.addFunctions(funcs);
         ArrayList<QDLVariable> vars = new ArrayList<>();

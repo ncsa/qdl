@@ -16,13 +16,13 @@
     <name>NCSA QDL Website</name>
     <url>http://ncsa.github.io/qdl</url>
     <inceptionYear>2020</inceptionYear>
-
+<!--
     <distributionManagement>
         <site>
             <id>Github</id>
             <url>https://github.com/ncsa/qdl</url>
         </site>
-    </distributionManagement>
+    </distributionManagement>-->
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -39,6 +39,7 @@ import org.qdl_lang.variables.values.QDLValue;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.CertificateParsingException;
@@ -148,17 +149,14 @@ crypto#create_key({'type':'AES','alg':'A256GCM','length':512})
                             */
                         }
                         SecretKey key = getSecureRandomKey(alg, length);
-                        JWK jwk = new OctetSequenceKey.Builder(key)
-                                .keyID(getRandomID())
-                                .issueTime(new Date())
-                                .build();
+                        JWK jwk = new OctetSequenceKey.Builder(key).keyID(getRandomID()).issueTime(new Date()).build();
 
-System.out.println("JOSE:"+ jwk.toJSONString());
+                        System.out.println("JOSE:" + jwk.toJSONString());
                         JSONObject jsonObject = new JSONObject();
-                        jsonObject.put("key","oct");
-                        jsonObject.put("iat",new Date().getTime()/1000);
-                        jsonObject.put("alg" , alg);
-                        jsonObject.put("kid" , getRandomID());
+                        jsonObject.put("key", "oct");
+                        jsonObject.put("iat", new Date().getTime() / 1000);
+                        jsonObject.put("alg", alg);
+                        jsonObject.put("kid", getRandomID());
                         jsonObject.put("k", Base64.encodeBase64URLSafeString(key.getEncoded()));
 
                         QDLStem out = new QDLStem();
@@ -187,6 +185,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
             return asQDLValue(stem);
 
         }
+
         protected SecretKey getSecureRandomKey(String cipher, int keySize) {
             byte[] secureRandomKeyBytes = new byte[keySize / 8];
             secureRandom = new SecureRandom();
@@ -212,9 +211,9 @@ System.out.println("JOSE:"+ jwk.toJSONString());
                     dd.add("key_size = bit count for an RSA RS256 key. ");
                     dd.add("Note that the key_size must be a multiple of 256.");
                     dd.add("If a stem of parameters is passed, it is of the form");
-                    dd.add("  {'type' :'" + RSA_TYPE +"'|'" + EC_TYPE+ "' | '" + AES_TYPE + "', 'alg':algorithm, 'length':rsa or aes key length, 'curve' : elliptic curve.}");
+                    dd.add("  {'type' :'" + RSA_TYPE + "'|'" + EC_TYPE + "' | '" + AES_TYPE + "', 'alg':algorithm, 'length':rsa or aes key length, 'curve' : elliptic curve.}");
                     dd.add("E.g.");
-                    dd.add("    " + getName() + "({'type':'"+ EC_TYPE + "':'curve':'P-256', 'alg':'ES256'})");
+                    dd.add("    " + getName() + "({'type':'" + EC_TYPE + "':'curve':'P-256', 'alg':'ES256'})");
                     dd.add("would use the curve P-256 with the ES256 algorithm to create an elliptic curve key.");
                     dd.add("EC curves:P-256, P-256K, P-384, P-521, secp256k1");
                     dd.add("EC algortihms:ES256, ES256k, ES384, ES512");
@@ -227,8 +226,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
                     dd.add("    " + getName() + "({'length':4096, 'alg':'RS512', 'type':'" + RSA_TYPE + "'})");
                     dd.add("{alg:RS512,...");
                     dd.add("\nE.g. An AES key");
-                    dd.add(" crypto#create_key({'type':'" + AES_TYPE + "','alg':'A256GCM','length':512})\n" +
-                            "{alg:A256GCM, k:H4t50v....");
+                    dd.add(" crypto#create_key({'type':'" + AES_TYPE + "','alg':'A256GCM','length':512})\n" + "{alg:A256GCM, k:H4t50v....");
                     break;
             }
             dd.add("\nOne hears of 'key pairs', for RSA and EC keys, though in point of fact, the public bits of a key");
@@ -340,13 +338,8 @@ System.out.println("JOSE:"+ jwk.toJSONString());
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             publicKey = keyFactory.generatePublic(publicKeySpec);
 
-            jwk = new RSAKey.Builder((RSAPublicKey) publicKey)
-                    .privateKey((RSAPrivateKey) privateKey)
-                    .keyID(getRandomID())
-                    .issueTime(new Date())
-                    .algorithm(JWSAlgorithm.RS256) // for use in signing, not from the key
-                    .keyUse(new KeyUse("sig"))
-                    .build();
+            jwk = new RSAKey.Builder((RSAPublicKey) publicKey).privateKey((RSAPrivateKey) privateKey).keyID(getRandomID()).issueTime(new Date()).algorithm(JWSAlgorithm.RS256) // for use in signing, not from the key
+                    .keyUse(new KeyUse("sig")).build();
         }
         JSONWebKey jsonWebKey = new JSONWebKey(jwk);
         QDLStem outStem = webKeyToStem(jsonWebKey);
@@ -442,8 +435,8 @@ System.out.println("JOSE:"+ jwk.toJSONString());
         if (!qdlValues[1].isString()) {
             throw new BadArgException("The second argument of " + EXPORT_NAME + " must be a string", 1);
         }
-        QDLStem inStem =  qdlValues[0].asStem();
-        String filePath =  qdlValues[1].asString();
+        QDLStem inStem = qdlValues[0].asStem();
+        String filePath = qdlValues[1].asString();
         JSONArray array = new JSONArray();
         JSONObject jsonObject = new JSONObject();
         if (isSingleKey(inStem)) {
@@ -485,7 +478,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
                 throw new BadArgException(EXPORT_NAME + " third argument must be a string that is the type of key", 2);
             }
             type = qdlValues[2].asString();
-            if(type.equals(PKCS_1_TYPE)) {
+            if (type.equals(PKCS_1_TYPE)) {
                 throw new BadArgException(EXPORT_NAME + " - does not support writing PKCS 1 files. Use PKCS 8", 1);
             }
         }
@@ -555,12 +548,8 @@ System.out.println("JOSE:"+ jwk.toJSONString());
     public static JWK getJwk(PublicKey publicKey) {
         JWK jwk = null;
         if (publicKey instanceof RSAPublicKey) {
-            jwk = new RSAKey.Builder((RSAPublicKey) publicKey)
-                    .keyID(getRandomID())
-                    .issueTime(new Date())
-                    .algorithm(JWSAlgorithm.RS256) // for use in signing, not from the key
-                    .keyUse(new KeyUse("sig"))
-                    .build();
+            jwk = new RSAKey.Builder((RSAPublicKey) publicKey).keyID(getRandomID()).issueTime(new Date()).algorithm(JWSAlgorithm.RS256) // for use in signing, not from the key
+                    .keyUse(new KeyUse("sig")).build();
         }
 /*        if(publicKey instanceof ECPublicKey){
             ECPublicKey ecPublicKey = (ECPublicKey)publicKey;
@@ -616,7 +605,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
             // try to process each entry as a separate key
             for (QDLKey kk : inStem.keySet()) {
                 //QDLStem currentStem = (kk instanceof String) ? inStem.getStem((String) kk) : inStem.getStem((Long) kk);
-                QDLStem currentStem =  inStem.get(kk).asStem();
+                QDLStem currentStem = inStem.get(kk).asStem();
                 if (isAES(currentStem)) {
                     outStem.put(kk, currentStem);
                     continue;
@@ -633,8 +622,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
         /*
          key. := rsa_create_key(2048); // create 2048 bit key pair
          rsa_public_key(key.)
-         */
-        List<String> dd = new ArrayList<>();
+         */ List<String> dd = new ArrayList<>();
 
         @Override
         public List<String> getDocumentation(int argCount) {
@@ -659,28 +647,28 @@ System.out.println("JOSE:"+ jwk.toJSONString());
 
         @Override
         public int[] getArgCount() {
-            return new int[]{0,2, 3};
+            return new int[]{0, 2, 3};
         }
 
         @Override
         public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
-            if(qdlValues.length ==0){
-                    // Query for supported ciphers.
-                    // we used to allow a query for this, but really cannot support them all
-                    QDLStem outStem = new QDLStem();
-                    ArrayList<QDLValue> ciphers = new ArrayList<>();
-                    for(String x : DecryptUtils.listCiphers()){
-                        ciphers.add(asQDLValue(x));
-                    }
-                    outStem.getQDLList().setArrayList(ciphers);
-                    return asQDLValue(outStem);
+            if (qdlValues.length == 0) {
+                // Query for supported ciphers.
+                // we used to allow a query for this, but really cannot support them all
+                QDLStem outStem = new QDLStem();
+                ArrayList<QDLValue> ciphers = new ArrayList<>();
+                for (String x : DecryptUtils.listCiphers()) {
+                    ciphers.add(asQDLValue(x));
+                }
+                outStem.getQDLList().setArrayList(ciphers);
+                return asQDLValue(outStem);
             }
             if (!qdlValues[1].isStem()) {
                 throw new BadArgException("The key for " + getName() + " must be a stem", 1);
             }
             // arg 0 is either stem of the key or a cfg stem (which includes the key as 'key' entry)
             // arg 1 is either string or stem of strings to encrypt.
-            QDLStem keyStem =  qdlValues[1].asStem();
+            QDLStem keyStem = qdlValues[1].asStem();
             if (isAES(keyStem)) {
                 return asQDLValue(sDeOrEnCrypt(qdlValues, true, getName()));
             }
@@ -690,10 +678,10 @@ System.out.println("JOSE:"+ jwk.toJSONString());
             JSONWebKey jsonWebKey;
             String cipher = "RSA"; // There are several available.
             boolean usePrivateKey = true;
-            if(qdlValues.length == 3 ) {
-                if(qdlValues[2].isBoolean()) {
+            if (qdlValues.length == 3) {
+                if (qdlValues[2].isBoolean()) {
                     usePrivateKey = qdlValues[2].asBoolean();
-                }else{
+                } else {
                     throw new BadArgException(getName() + " final argument must be a boolean if present", 2);
                 }
             }
@@ -753,8 +741,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
             dd.add("Symmetric encryption, however, is unlimited");
             dd.add("\nE.g.\nIf RSA your key is 1024 bits, then 1024/8 = 128 bytes or characters is the max length string.\n");
             dd.add("Note that the result is base 64 encoded, since the result of the encryption will be an array of bytes.");
-            dd.add("One final reminder is that if encrypt/decrypt with one key and decrypt/encrypt with the" +
-                    "\nother or you will get an error");
+            dd.add("One final reminder is that if encrypt/decrypt with one key and decrypt/encrypt with the" + "\nother or you will get an error");
             dd.add("E.g.");
             dd.add("   " + getName() + "('marizy doats', key.)");
             dd.add("(whole bunch of base 64 stuff that depends on the key)");
@@ -762,11 +749,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
             dd.add("public key in " + DECRYPT_NAME + " (which is, incidentally, the default there).");
             dd.add("\nE.g. Symmetric example");
             dd.add("Here, a symmetric key (AES) is created and used.");
-            dd.add("    aes. := crypto#create_key({'type':'" + AES_TYPE + "','alg':'A256GCM','length':512})\n" +
-                    "    crypto#encrypt('woof woof woof', aes.) \n" +
-                    "67dmKZ6lqHwSt-mIZGs\n" +
-                    "    crypto#decrypt('67dmKZ6lqHwSt-mIZGs', aes.)\n" +
-                    "woof woof woof\n");
+            dd.add("    aes. := crypto#create_key({'type':'" + AES_TYPE + "','alg':'A256GCM','length':512})\n" + "    crypto#encrypt('woof woof woof', aes.) \n" + "67dmKZ6lqHwSt-mIZGs\n" + "    crypto#decrypt('67dmKZ6lqHwSt-mIZGs', aes.)\n" + "woof woof woof\n");
             return dd;
         }
     }
@@ -777,10 +760,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
         boolean usePrivateKey;
         boolean doDecrypt;
 
-        public IdentityEncryptDecrypt(JSONWebKey jsonWebKey,
-                                      String cipher,
-                                      boolean usePrivateKey,
-                                      boolean doDecrypt) {
+        public IdentityEncryptDecrypt(JSONWebKey jsonWebKey, String cipher, boolean usePrivateKey, boolean doDecrypt) {
             this.cipher = cipher;
             this.jsonWebKey = jsonWebKey;
             this.usePrivateKey = usePrivateKey;
@@ -900,8 +880,7 @@ System.out.println("JOSE:"+ jwk.toJSONString());
                 }
             }
             String cipher = "RSA"; // There are several available.
-            IdentityEncryptDecrypt processEncryptDecrypt = new IdentityEncryptDecrypt(jsonWebKey,
-                    cipher, usePrivateKey, true);
+            IdentityEncryptDecrypt processEncryptDecrypt = new IdentityEncryptDecrypt(jsonWebKey, cipher, usePrivateKey, true);
             return asQDLValue(QDLAggregateUtil.process(qdlValues[0], processEncryptDecrypt));
         }
 
@@ -1305,17 +1284,18 @@ kazrnybI9mX73qv6NqA
             }
 
             X509Certificate x509Certificate;
+
             @Override
-            public Object getDefaultValue(List<Object> index,Object key, Object value) {
+            public Object getDefaultValue(List<Object> index, Object key, Object value) {
                 return QDLNull.getInstance();
             }
 
             @Override
             public Object process(String oidKey) {
                 byte[] bb = x509Certificate.getExtensionValue(oidKey);
-               if(bb == null){
-                   return QDLNull.getInstance();
-               }
+                if (bb == null) {
+                    return QDLNull.getInstance();
+                }
                 return Base64.encodeBase64URLSafeString(bb);
             }
 
@@ -1429,8 +1409,7 @@ kazrnybI9mX73qv6NqA
             // If the algorithm is none, then do not sign the JWT, just return the encoded header + "." +  payload + "."
             // (note the trailing period!)
             if (header != null && header.containsKey(JWT_ALGORITHM) && header.get(JWT_ALGORITHM).equals(JWT_ALGORITHM_NONE)) {
-                return asQDLValue(Base64.encodeBase64URLSafeString(header.toString().getBytes()) + "." +
-                        Base64.encodeBase64URLSafeString(payload.toString().getBytes()) + ".");
+                return asQDLValue(Base64.encodeBase64URLSafeString(header.toString().getBytes()) + "." + Base64.encodeBase64URLSafeString(payload.toString().getBytes()) + ".");
 
             }
             if (webkey.isOctetKey()) {
@@ -1511,7 +1490,7 @@ kazrnybI9mX73qv6NqA
         }
 
         @Override
-        public QDLValue  evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             //   JSONWebKey webKey = getKeys((QDLStem) objects[1]);
             IdentityJWT processJWT = new IdentityJWT();
             return asQDLValue(QDLAggregateUtil.process(qdlValues[0], processJWT));
@@ -1608,7 +1587,7 @@ kazrnybI9mX73qv6NqA
         JSONWebKey webKey;
 
         @Override
-        public Object getDefaultValue(List<Object> index,Object key, Object value) {
+        public Object getDefaultValue(List<Object> index, Object key, Object value) {
             return Boolean.FALSE;
         }
 
@@ -1646,9 +1625,7 @@ kazrnybI9mX73qv6NqA
             }
             try {
 
-                SignedJWT signedJWT = new SignedJWT(new Base64URL(b64s[0]),
-                        new Base64URL(b64s[1]),
-                        new Base64URL(b64s[2]));
+                SignedJWT signedJWT = new SignedJWT(new Base64URL(b64s[0]), new Base64URL(b64s[1]), new Base64URL(b64s[2]));
                 JWSVerifier verifier = null;
                 boolean unsupportedProtocol = true;
                 if (webKey.isRSAKey()) {
@@ -1720,4 +1697,254 @@ kazrnybI9mX73qv6NqA
         }
     }
 
+    public static final String HEX_TO_INT = "hex_to_int";
+
+    public class HexToInt implements QDLFunction {
+        @Override
+        public String getName() {
+            return HEX_TO_INT;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1};
+        }
+
+        @Override
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            QDLValue value = qdlValues[0];
+            ProcessHexToInt processHexToInt = new ProcessHexToInt();
+
+            switch (value.getType()) {
+                case QDLValue.STEM_TYPE:
+                case QDLValue.SET_TYPE:
+                    return QDLValue.asQDLValue(QDLAggregateUtil.process(value, processHexToInt));
+                case QDLValue.STRING_TYPE:
+                    return QDLValue.asQDLValue(processHexToInt.process(value.asString()));
+            }
+            return value;
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            dd.add(getName() + "(arg) - convert a hex string representing an integer (such as from a hash) to an integer");
+            dd.add("One way of encoding very long byte arrays is to give the hexadecimal representation of it. This function");
+            dd.add("lets you work with such values.");
+            dd.add("Note that the results are exact so you  may pass them to other crypto functions. However, algebraic");
+            dd.add("operations on them will reduce the accuracy to whatever the current numeric precision is so something like");
+            dd.add("x := (√x)^2;");
+            dd.add("on your 100 digit integer value, x, while technically correct, will render it unusable for further cryptographic work.");
+            return dd;
+        }
+    }
+
+    protected class ProcessHexToInt extends IdentityScalarImpl {
+        public ProcessHexToInt() {
+        }
+
+        // Rememebr that both of these methods need to be overridden since one is for nested
+        // stems, the scalar is used for nested sets.
+        @Override
+        public Object process(List<Object> index, Object key, String stringValue) {
+            return process(stringValue);
+        }
+
+        @Override
+        public Object process(String stringValue) {
+            BigInteger b = new BigInteger(stringValue, 16);
+            try {
+                //return QDLValue.asQDLValue(b.longValueExact());
+                return b.longValueExact();
+            } catch (ArithmeticException xx) {
+                // ok, not a long value
+                //return QDLValue.asQDLValue(new BigDecimal(b));
+                return new BigDecimal(b);
+            }
+        }
+    }
+
+    public static final String INT_TO_HEX = "int_to_hex";
+
+    public class IntToHex implements QDLFunction {
+        @Override
+        public String getName() {
+            return INT_TO_HEX;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1};
+        }
+
+        @Override
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            QDLValue value = qdlValues[0];
+            ProcessIntToHex processIntToHex = new ProcessIntToHex();
+            switch (value.getType()) {
+                case QDLValue.STEM_TYPE:
+                case QDLValue.SET_TYPE:
+                    return QDLValue.asQDLValue(QDLAggregateUtil.process(value, processIntToHex));
+                case QDLValue.DECIMAL_TYPE:
+                    BigDecimal b = value.asDecimal();
+                    return QDLValue.asQDLValue(processIntToHex.process(value.asDecimal()));
+                case QDLValue.INTEGER_TYPE:
+                    BigInteger bi = new BigInteger(value.toString()); // safest way
+                    return QDLValue.asQDLValue(processIntToHex.process(value.asLong()));
+            }
+            return value;
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            dd.add(getName() + "(arg) - convert an  integer to a hexadecimal integer.");
+            return dd;
+        }
+    }
+
+    protected class ProcessIntToHex extends IdentityScalarImpl {
+        @Override
+        public Object process(BigDecimal decimalValue) {
+            return decimalValue.toBigIntegerExact().toString(16);
+        }
+
+        @Override
+        public Object process(List<Object> index, Object key, BigDecimal decimalValue) {
+            return process(decimalValue);
+        }
+
+        @Override
+        public Object process(Long longValue) {
+            BigInteger bi = new BigInteger(longValue.toString()); // safest way
+            return bi.toString(16);
+        }
+
+        @Override
+        public Object process(List<Object> index, Object key, Long longValue) {
+            return process(longValue);
+        }
+    }
+
+    public static String TO_BASE64 = "int_to_b64";
+
+    public class IntToBase64 implements QDLFunction {
+        @Override
+        public String getName() {
+            return TO_BASE64;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1};
+        }
+
+        /**
+         * Take a Long or exact BigDecimal and turn the bytes into a base 64 representation.
+         *
+         * @param qdlValues
+         * @param state
+         * @return
+         * @throws Throwable
+         */
+        @Override
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            QDLValue value = qdlValues[0];
+            ProcessIntToB64 processIntToB64 = new ProcessIntToB64();
+            switch (value.getType()) {
+                case QDLValue.STEM_TYPE:
+                case QDLValue.SET_TYPE:
+                    return QDLValue.asQDLValue(QDLAggregateUtil.process(value, processIntToB64));
+                case QDLValue.DECIMAL_TYPE:
+                    BigDecimal b = value.asDecimal();
+                    return QDLValue.asQDLValue(processIntToB64.process(value.asDecimal()));
+                case QDLValue.INTEGER_TYPE:
+                    BigInteger bi = new BigInteger(value.toString()); // safest way
+                    return QDLValue.asQDLValue(processIntToB64.process(value.asLong()));
+            }
+            return value;
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            dd.add(getName() + "(arg) - convert an integer to base 64. In particular, very long integers");
+            dd.add("such as returned from " + HEX_TO_INT + "(arg)");
+            return dd;
+        }
+    }
+
+    protected class ProcessIntToB64 extends IdentityScalarImpl {
+        @Override
+        public Object process(Long longValue) {
+            BigInteger bi = new BigInteger(longValue.toString());
+            return Base64.encodeBase64URLSafeString(bi.toByteArray());
+        }
+
+        @Override
+        public Object process(List<Object> index, Object key, Long longValue) {
+            return process(longValue);
+        }
+
+        @Override
+        public Object process(List<Object> index, Object key, BigDecimal decimalValue) {
+            return process(decimalValue);
+        }
+
+        @Override
+        public Object process(BigDecimal decimalValue) {
+            BigInteger bi = decimalValue.toBigIntegerExact();
+            return Base64.encodeBase64URLSafeString(bi.toByteArray());
+        }
+    }
+
+    public static String FROM_BASE64 = "b64_to_int";
+
+    public class B64ToInt implements QDLFunction {
+        @Override
+        public String getName() {
+            return FROM_BASE64;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1};
+        }
+
+        @Override
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            QDLValue value = qdlValues[0];
+            ProcessB64ToInt processB64ToInt = new ProcessB64ToInt();
+            switch (value.getType()) {
+                case QDLValue.STEM_TYPE:
+                case QDLValue.SET_TYPE:
+                    return QDLValue.asQDLValue(QDLAggregateUtil.process(value, processB64ToInt));
+                case QDLValue.STRING_TYPE:
+                    return QDLValue.asQDLValue(processB64ToInt.process(value.asString()));
+            }
+            return value;
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            return List.of();
+        }
+    }
+
+    public class ProcessB64ToInt extends IdentityScalarImpl {
+        @Override
+        public Object process(String stringValue) {
+            BigInteger bi = new BigInteger(Base64.decodeBase64(stringValue));
+            try {
+                return bi.longValueExact();
+            } catch (ArithmeticException ax) {
+                 return new BigDecimal(bi);
+            }
+        }
+
+        @Override
+        public Object process(List<Object> index, Object key, String stringValue) {
+            return process(stringValue);
+        }
+    }
 }

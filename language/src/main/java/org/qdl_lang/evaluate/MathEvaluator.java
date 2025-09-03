@@ -15,6 +15,8 @@ import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.LocalTime;
 import java.util.Date;
@@ -473,7 +475,9 @@ public class MathEvaluator extends AbstractEvaluator {
         byte[] ba = new byte[length];
         if (returnCount == 1) {
             secureRandom.nextBytes(ba);
-            String rc = Base64.encodeBase64URLSafeString(ba);
+            BigInteger bi = new BigInteger(ba);
+            bi = bi.abs(); // or subsequent usages may not work right in other apps
+            String rc = Base64.encodeBase64URLSafeString(bi.toByteArray());
             polyad.setResult(rc);
             polyad.setEvaluated(true);
             return;
@@ -483,7 +487,9 @@ public class MathEvaluator extends AbstractEvaluator {
         QDLStem stem = new QDLStem();
         for (int i = 0; i < returnCount; i++) {
             secureRandom.nextBytes(ba);
-            String rc = Base64.encodeBase64URLSafeString(ba);
+            BigInteger bi = new BigInteger(ba);
+            bi = bi.abs(); // or subsequent usages may not work right in other apps
+            String rc = Base64.encodeBase64URLSafeString(bi.toByteArray());
             stem.put(from(i), asQDLValue(rc));
         }
         polyad.setResult(stem);
@@ -522,26 +528,28 @@ public class MathEvaluator extends AbstractEvaluator {
                         }
                     }
                     String token = (String) objects[0];
+                    // Fix https://github.com/ncsa/qdl/issues/137
+                    byte[] bb = token.getBytes(StandardCharsets.UTF_8); // Make SURE it's UTF 8
                     String tempOut;
                     switch (algorithm) {
                         case HASH_ALGORITHM_MD2:
-                             tempOut = DigestUtils.md2Hex(token);
+                             tempOut = DigestUtils.md2Hex(bb);
                             break;
                         case HASH_ALGORITHM_MD5:
-                             tempOut = DigestUtils.md5Hex(token);
+                             tempOut = DigestUtils.md5Hex(bb);
                             break;
                         case HASH_ALGORITHM_SHA1:
-                             tempOut = DigestUtils.sha1Hex(token);
+                             tempOut = DigestUtils.sha1Hex(bb);
                             break;
                         case HASH_ALGORITHM_SHA2:
                         case HASH_ALGORITHM_SHA_256:
-                             tempOut = DigestUtils.sha256Hex(token);
+                             tempOut = DigestUtils.sha256Hex(bb);
                             break;
                         case HASH_ALGORITHM_SHA_384:
-                             tempOut = DigestUtils.sha384Hex(token);
+                             tempOut = DigestUtils.sha384Hex(bb);
                             break;
                         case HASH_ALGORITHM_SHA_512:
-                             tempOut = DigestUtils.sha512Hex(token);
+                             tempOut = DigestUtils.sha512Hex(bb);
                             break;
                         default:
                             throw new BadArgException("unknown hash algorithm'" + algorithm + "'", polyad.getArgAt(1));
