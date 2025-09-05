@@ -2098,6 +2098,15 @@ kazrnybI9mX73qv6NqA
     }
 
     public static String CODE_CHALLENGE = "code_challenge";
+
+    /**
+     * Computes an RFC 7636 code challenge. This is needed since the QDL <b>hash</b> function may
+     * return values that have lead zeros. Using the QDL API here to turn hash a string to a
+     * hex number then convert it to an int,
+     *  yields very different
+     * values than what the algorithm dictates, which is simply using the raw bytes
+     * to compute it.
+     */
     public class CodeChallenge implements QDLFunction {
         @Override
         public String getName() {
