@@ -14,6 +14,7 @@ import edu.uiuc.ncsa.security.core.exceptions.UnsupportedProtocolException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import edu.uiuc.ncsa.security.util.crypto.CertUtil;
 import edu.uiuc.ncsa.security.util.crypto.KeyUtil;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.exceptions.BadStemValueException;
 import org.qdl_lang.extensions.QDLFunction;
@@ -41,6 +42,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -49,6 +51,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.*;
 
+import static org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString;
 import static org.qdl_lang.variables.values.QDLKey.from;
 import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 
@@ -1743,7 +1746,7 @@ kazrnybI9mX73qv6NqA
         public ProcessHexToInt() {
         }
 
-        // Rememebr that both of these methods need to be overridden since one is for nested
+        // Rememeber that both of these methods need to be overridden since one is for nested
         // stems, the scalar is used for nested sets.
         @Override
         public Object process(List<Object> index, Object key, String stringValue) {
@@ -1788,7 +1791,7 @@ kazrnybI9mX73qv6NqA
                 case QDLValue.DECIMAL_TYPE:
                     BigDecimal b = value.asDecimal();
                     return QDLValue.asQDLValue(processIntToHex.process(value.asDecimal()));
-                case QDLValue.INTEGER_TYPE:
+                case QDLValue.LONG_TYPE:
                     BigInteger bi = new BigInteger(value.toString()); // safest way
                     return QDLValue.asQDLValue(processIntToHex.process(value.asLong()));
             }
@@ -1858,8 +1861,7 @@ kazrnybI9mX73qv6NqA
                 case QDLValue.DECIMAL_TYPE:
                     BigDecimal b = value.asDecimal();
                     return QDLValue.asQDLValue(processIntToB64.process(value.asDecimal()));
-                case QDLValue.INTEGER_TYPE:
-                    BigInteger bi = new BigInteger(value.toString()); // safest way
+                case QDLValue.LONG_TYPE:
                     return QDLValue.asQDLValue(processIntToB64.process(value.asLong()));
             }
             return value;
@@ -1908,13 +1910,14 @@ kazrnybI9mX73qv6NqA
 
         @Override
         public int[] getArgCount() {
-            return new int[]{1};
+            return new int[]{1, 2};
         }
 
         @Override
         public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             QDLValue value = qdlValues[0];
-            ProcessB64ToInt processB64ToInt = new ProcessB64ToInt();
+            int sign = getSign(qdlValues);
+            ProcessB64ToInt processB64ToInt = new ProcessB64ToInt(sign);
             switch (value.getType()) {
                 case QDLValue.STEM_TYPE:
                 case QDLValue.SET_TYPE:
@@ -1927,18 +1930,39 @@ kazrnybI9mX73qv6NqA
 
         @Override
         public List<String> getDocumentation(int argCount) {
-            return List.of();
+            List<String> dd = new ArrayList<>();
+            dd.add(getName() + "(arg{,sign}) - convert an  base 64 representation to an (possibly very large) integer.");
+            noteAboutSign(dd);
+            return dd;
         }
     }
 
+    private static void noteAboutSign(List<String> dd) {
+        dd.add("sign = -1, 0 or 1 and is optional. If supplied it forces the sign of the number. Omitting it means to  ");
+        dd.add("interpret the number directly which includes a possible sign. Some cryptographic applications always assume");
+        dd.add("an unsigned integer, so in that case the sign is 1. Note that if the sign is 0 and the bytes in the");
+        dd.add("evaluate to anything other than all zeros, an error will be raised.");
+    }
+
     public class ProcessB64ToInt extends IdentityScalarImpl {
+        int sign = -2;
+
+        public ProcessB64ToInt(int sign) {
+            this.sign = sign;
+        }
+
         @Override
         public Object process(String stringValue) {
-            BigInteger bi = new BigInteger(Base64.decodeBase64(stringValue));
+            BigInteger bi;
+            if (sign == -2) {
+                bi = new BigInteger(Base64.decodeBase64(stringValue));
+            } else {
+                bi = new BigInteger(sign, Base64.decodeBase64(stringValue));
+            }
             try {
                 return bi.longValueExact();
             } catch (ArithmeticException ax) {
-                 return new BigDecimal(bi);
+                return new BigDecimal(bi);
             }
         }
 
@@ -1947,4 +1971,179 @@ kazrnybI9mX73qv6NqA
             return process(stringValue);
         }
     }
+
+    public static String B64_TO_HEX = "b64_to_hex";
+
+    public class B64ToHex implements QDLFunction {
+        @Override
+        public String getName() {
+            return B64_TO_HEX;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1, 2};
+        }
+
+        @Override
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            QDLValue value = qdlValues[0];
+            int sign = getSign(qdlValues);
+            ProcessB64ToHex processB64ToHex = new ProcessB64ToHex(sign);
+            switch (value.getType()) {
+                case QDLValue.STEM_TYPE:
+                case QDLValue.SET_TYPE:
+                    return QDLValue.asQDLValue(QDLAggregateUtil.process(value, processB64ToHex));
+                case QDLValue.STRING_TYPE:
+                    return QDLValue.asQDLValue(processB64ToHex.process(value.asString()));
+            }
+            return value;
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            dd.add(getName() + "(arg) - convert an base 64 string to a hexadecimal number (string). ");
+            noteAboutSign(dd);
+            return dd;
+        }
+    }
+
+    // Fixes https://github.com/ncsa/qdl/issues/138
+    private static int getSign(QDLValue[] qdlValues) {
+        if (qdlValues.length == 2) {
+            if (!qdlValues[1].isLong()) {
+                throw new IllegalArgumentException(qdlValues[1] + " is not an integer value");
+            }
+            int arg = qdlValues[1].asLong().intValue();
+            switch (arg) {
+                case -1:
+                case 0:
+                case 1:
+                    return arg;
+                default:
+                    throw new IllegalArgumentException(qdlValues[1] + " must be -1, 0 or 1 only");
+            }
+        }
+        return -2;
+    }
+
+    public class ProcessB64ToHex extends IdentityScalarImpl {
+        public ProcessB64ToHex(int sign) {
+            this.sign = sign;
+        }
+
+        int sign = -2;
+
+        @Override
+        public Object process(String stringValue) {
+            byte[] b = Base64.decodeBase64(stringValue);
+            BigInteger bi;
+            if (sign == -2) {
+                bi = new BigInteger(b);
+            } else {
+                bi = new BigInteger(sign, b);
+            }
+            return bi.toString(16);
+        }
+
+        @Override
+        public Object process(List<Object> index, Object key, String stringValue) {
+            return process(stringValue);
+        }
+    }
+
+    public static String HEX_TO_B64 = "hex_to_b64";
+
+    public class HexToB64 implements QDLFunction {
+        @Override
+        public String getName() {
+            return HEX_TO_B64;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1};
+        }
+
+        @Override
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            QDLValue value = qdlValues[0];
+            ProcessHexToB64 processHexToB64 = new ProcessHexToB64();
+            switch (value.getType()) {
+                case QDLValue.STEM_TYPE:
+                case QDLValue.SET_TYPE:
+                    return QDLValue.asQDLValue(QDLAggregateUtil.process(value, processHexToB64));
+                case QDLValue.STRING_TYPE:
+                    return QDLValue.asQDLValue(processHexToB64.process(value.asString()));
+            }
+            return value;
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            dd.add(getName() + "(arg) - convert a hexadecimal number (string) to base 64.");
+            dd.add("This turns the number into its byte representation, then encodes the bytes.");
+            return dd;
+        }
+
+        protected class ProcessHexToB64 extends IdentityScalarImpl {
+            @Override
+            public Object process(String stringValue) {
+                BigInteger b = new BigInteger(stringValue, 16);
+                return Base64.encodeBase64URLSafeString(b.toByteArray());
+            }
+        }
+    }
+
+    public static String CODE_CHALLENGE = "code_challenge";
+    public class CodeChallenge implements QDLFunction {
+        @Override
+        public String getName() {
+            return CODE_CHALLENGE;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1};
+        }
+
+        @Override
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            QDLValue value = qdlValues[0];
+            ProcessCodeChallenge processCC = new ProcessCodeChallenge();
+            switch (value.getType()) {
+                case QDLValue.STEM_TYPE:
+                case QDLValue.SET_TYPE:
+                    return QDLValue.asQDLValue(QDLAggregateUtil.process(value, processCC));
+                case QDLValue.STRING_TYPE:
+                    return QDLValue.asQDLValue(processCC.process(value.asString()));
+            }
+            return value;
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            dd.add(getName() + "(arg) - convert a verifier string to a an RFC 7636 code challege.");
+            dd.add("This requires a bit of extra work and is easy to get wrong, so this is a convenience method");
+            dd.add("It uses the SHA-256 hash algorithm on a (random) string.");
+            return dd;
+        }
+        protected class ProcessCodeChallenge extends IdentityScalarImpl {
+            @Override
+            public Object process(String stringValue) {
+                // Trick is that normally in QDL we hash to a hex string, but in some cases, the bytes don't
+                // line up right and the challenge is incorrect. This works directly with bytes.
+                return encodeBase64URLSafeString(DigestUtils.sha256(stringValue.getBytes(StandardCharsets.UTF_8)));
+            }
+
+            @Override
+            public Object process(List<Object> index, Object key, String stringValue) {
+                return process(stringValue);
+            }
+        }
+    }
+
 }

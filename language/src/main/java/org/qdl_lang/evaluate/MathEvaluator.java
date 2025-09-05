@@ -6,6 +6,7 @@ import org.qdl_lang.exceptions.MissingArgException;
 import org.qdl_lang.expressions.Polyad;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.Statement;
+import org.qdl_lang.util.aggregate.IdentityScalarImpl;
 import org.qdl_lang.variables.*;
 import org.qdl_lang.variables.codecs.AbstractCodec;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
@@ -440,7 +441,8 @@ public class MathEvaluator extends AbstractEvaluator {
             throw new ExtraArgException(RANDOM_STRING + " requires at most 2 arguments", polyad.getArgAt(2));
         }
 
-        int length = 16;
+        int returnLength = 16;
+        int byteCount = 12;
 
         if (0 < polyad.getArgCount()) {
             polyad.evalArg(0, state);
@@ -448,7 +450,9 @@ public class MathEvaluator extends AbstractEvaluator {
             checkNull(obj, polyad.getArgAt(0));
 
             if (obj.isLong()) {
-                length = obj.asLong().intValue();
+                returnLength = obj.asLong().intValue();
+                //byteCount = obj.asLong().intValue();
+                byteCount = returnLength*4/3 + 2; // pad it so it is long enough
             } else {
                 throw new BadArgException(RANDOM_STRING + " takes an integer as its first argument", polyad.getArgAt(0));
 
@@ -472,12 +476,11 @@ public class MathEvaluator extends AbstractEvaluator {
         }
 
 
-        byte[] ba = new byte[length];
+        byte[] ba = new byte[byteCount];
         if (returnCount == 1) {
             secureRandom.nextBytes(ba);
-            BigInteger bi = new BigInteger(ba);
-            bi = bi.abs(); // or subsequent usages may not work right in other apps
-            String rc = Base64.encodeBase64URLSafeString(bi.toByteArray());
+            BigInteger bi = new BigInteger(1,ba);
+            String rc = Base64.encodeBase64URLSafeString(bi.toByteArray()).substring(0, returnLength);
             polyad.setResult(rc);
             polyad.setEvaluated(true);
             return;
@@ -487,16 +490,14 @@ public class MathEvaluator extends AbstractEvaluator {
         QDLStem stem = new QDLStem();
         for (int i = 0; i < returnCount; i++) {
             secureRandom.nextBytes(ba);
-            BigInteger bi = new BigInteger(ba);
-            bi = bi.abs(); // or subsequent usages may not work right in other apps
-            String rc = Base64.encodeBase64URLSafeString(bi.toByteArray());
+            BigInteger bi = new BigInteger(1,ba);
+            String rc = Base64.encodeBase64URLSafeString(bi.toByteArray()).substring(0, returnLength);
             stem.put(from(i), asQDLValue(rc));
         }
         polyad.setResult(stem);
         polyad.setEvaluated(true);
         return;
     }
-
 
     protected void doHash(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
@@ -543,6 +544,10 @@ public class MathEvaluator extends AbstractEvaluator {
                             break;
                         case HASH_ALGORITHM_SHA2:
                         case HASH_ALGORITHM_SHA_256:
+/*   NMext bit is debugging an OA4MP issue with RFC 7636 code challenges.
+                            BigInteger bi = new BigInteger(DigestUtils.sha256(bb));
+                            System.out.println(getClass().getSimpleName() + " hash 256 no hex " + Base64.encodeBase64URLSafeString(bi.toByteArray()));
+*/
                              tempOut = DigestUtils.sha256Hex(bb);
                             break;
                         case HASH_ALGORITHM_SHA_384:

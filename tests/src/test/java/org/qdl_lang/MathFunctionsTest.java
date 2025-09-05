@@ -97,13 +97,13 @@ public class MathFunctionsTest extends AbstractQDLTester {
     public void testRandomStringWithArg() throws Exception {
         State state = testUtils.getNewState();
 
-        Long size = 32L;
+        Long size = 48L;
         Polyad polyad = new Polyad(MathEvaluator.RANDOM_STRING);
         ConstantNode arg = new ConstantNode(asQDLValue(size));
         polyad.addArgument(arg);
         polyad.evaluate(state);
         assert polyad.getResult().isString();
-        assert polyad.getResult().toString().length() == 43;
+        assert polyad.getResult().toString().length() == size : "expected string length = " + size + ", got " + polyad.getResult().toString().length();
     }
 
 

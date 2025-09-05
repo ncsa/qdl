@@ -1,0 +1,176 @@
+Apr 20, 2025 3:35:11 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+Apr 20, 2025 3:35:27 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade error
+SEVERE: extraneous input 'a' expecting ';'
+org.qdl_lang.exceptions.ParsingException: extraneous input 'a' expecting ';'
+	at org.qdl_lang.parsing.ParserExceptionListener.syntaxError(ParserExceptionListener.java:22)
+	at org.antlr.v4.runtime.ProxyErrorListener.syntaxError(ProxyErrorListener.java:41)
+	at org.antlr.v4.runtime.Parser.notifyErrorListeners(Parser.java:544)
+	at org.antlr.v4.runtime.DefaultErrorStrategy.reportUnwantedToken(DefaultErrorStrategy.java:377)
+	at org.antlr.v4.runtime.DefaultErrorStrategy.singleTokenDeletion(DefaultErrorStrategy.java:548)
+	at org.antlr.v4.runtime.DefaultErrorStrategy.recoverInline(DefaultErrorStrategy.java:467)
+	at org.antlr.v4.runtime.Parser.match(Parser.java:206)
+	at org.qdl_lang.generated.QDLParserParser.element(QDLParserParser.java:235)
+	at org.qdl_lang.generated.QDLParserParser.elements(QDLParserParser.java:185)
+	at org.qdl_lang.parsing.QDLParserDriver.parse(QDLParserDriver.java:152)
+	at org.qdl_lang.parsing.QDLInterpreter.execute(QDLInterpreter.java:79)
+	at org.qdl_lang.parsing.QDLInterpreter.execute(QDLInterpreter.java:63)
+	at org.qdl_lang.workspace.QDLWorkspace.execute(QDLWorkspace.java:284)
+	at org.qdl_lang.workspace.QDLWorkspace.mainLoop(QDLWorkspace.java:312)
+	at org.qdl_lang.workspace.QDLWorkspace.main(QDLWorkspace.java:557)
+
+May 15, 2025 3:06:23 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:08:23 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:10:21 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:13:13 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:13:18 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:13:36 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:15:01 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:17:19 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:17:57 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:19:00 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:21:53 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:22:46 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:25:02 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:26:03 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:26:37 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:27:41 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:28:32 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:31:52 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 3:58:32 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 15, 2025 4:02:54 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 5:29:46 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 5:35:28 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 5:36:58 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 5:44:16 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 5:56:14 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 5:57:17 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 5:58:53 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 6:04:33 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 6:05:49 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 6:08:50 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 6:10:05 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 6:15:48 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 6:29:17 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 6:52:03 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 6:56:33 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 6:57:35 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 6:58:07 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 7:03:32 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 7:07:29 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 7:08:06 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 7:08:32 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 8:39:05 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 8:39:31 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 8:40:27 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade error
+SEVERE: ws_macro requires at most 1 argument
+org.qdl_lang.exceptions.ExtraArgException: ws_macro requires at most 1 argument
+	at org.qdl_lang.evaluate.SystemEvaluator.doWSMacro(SystemEvaluator.java:842)
+	at org.qdl_lang.evaluate.SystemEvaluator.dispatch(SystemEvaluator.java:412)
+	at org.qdl_lang.evaluate.AbstractEvaluator.evaluate(AbstractEvaluator.java:86)
+	at org.qdl_lang.evaluate.MetaEvaluator.evaluateOLD(MetaEvaluator.java:293)
+	at org.qdl_lang.evaluate.MetaEvaluator.evaluate(MetaEvaluator.java:168)
+	at org.qdl_lang.expressions.Polyad.evaluate(Polyad.java:85)
+	at org.qdl_lang.expressions.ExpressionImpl.evalArg(ExpressionImpl.java:120)
+	at org.qdl_lang.evaluate.SystemEvaluator.doSay(SystemEvaluator.java:3174)
+	at org.qdl_lang.evaluate.SystemEvaluator.dispatch(SystemEvaluator.java:430)
+	at org.qdl_lang.evaluate.AbstractEvaluator.evaluate(AbstractEvaluator.java:86)
+	at org.qdl_lang.evaluate.MetaEvaluator.evaluateOLD(MetaEvaluator.java:293)
+	at org.qdl_lang.evaluate.MetaEvaluator.evaluate(MetaEvaluator.java:168)
+	at org.qdl_lang.expressions.Polyad.evaluate(Polyad.java:85)
+	at org.qdl_lang.parsing.QDLRunner.run(QDLRunner.java:166)
+	at org.qdl_lang.parsing.QDLRunner.run(QDLRunner.java:100)
+	at org.qdl_lang.parsing.QDLInterpreter.execute(QDLInterpreter.java:106)
+	at org.qdl_lang.parsing.QDLInterpreter.execute(QDLInterpreter.java:95)
+	at org.qdl_lang.parsing.QDLInterpreter.execute(QDLInterpreter.java:64)
+	at org.qdl_lang.workspace.QDLWorkspace.execute(QDLWorkspace.java:289)
+	at org.qdl_lang.workspace.QDLWorkspace.mainLoop(QDLWorkspace.java:317)
+	at org.qdl_lang.workspace.WorkspaceCommands.runScript(WorkspaceCommands.java:7016)
+	at org.qdl_lang.workspace.WorkspaceCommands.fromCommandLine(WorkspaceCommands.java:6963)
+	at org.qdl_lang.workspace.WorkspaceCommands.init(WorkspaceCommands.java:6737)
+	at org.qdl_lang.workspace.QDLWorkspace.init(QDLWorkspace.java:661)
+	at org.qdl_lang.workspace.QDLWorkspace.main(QDLWorkspace.java:558)
+
+May 16, 2025 8:41:55 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 8:43:09 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 8:45:16 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 8:45:54 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 8:45:59 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade error
+SEVERE: missing ';' at 'not'
+org.qdl_lang.exceptions.ParsingException: missing ';' at 'not'
+	at org.qdl_lang.parsing.ParserExceptionListener.syntaxError(ParserExceptionListener.java:22)
+	at org.antlr.v4.runtime.ProxyErrorListener.syntaxError(ProxyErrorListener.java:41)
+	at org.antlr.v4.runtime.Parser.notifyErrorListeners(Parser.java:544)
+	at org.antlr.v4.runtime.DefaultErrorStrategy.reportMissingToken(DefaultErrorStrategy.java:409)
+	at org.antlr.v4.runtime.DefaultErrorStrategy.singleTokenInsertion(DefaultErrorStrategy.java:519)
+	at org.antlr.v4.runtime.DefaultErrorStrategy.recoverInline(DefaultErrorStrategy.java:476)
+	at org.antlr.v4.runtime.Parser.match(Parser.java:206)
+	at org.qdl_lang.generated.QDLParserParser.element(QDLParserParser.java:236)
+	at org.qdl_lang.generated.QDLParserParser.elements(QDLParserParser.java:186)
+	at org.qdl_lang.parsing.QDLParserDriver.parse(QDLParserDriver.java:152)
+	at org.qdl_lang.parsing.QDLInterpreter.execute(QDLInterpreter.java:101)
+	at org.qdl_lang.parsing.QDLInterpreter.execute(QDLInterpreter.java:95)
+	at org.qdl_lang.parsing.QDLInterpreter.execute(QDLInterpreter.java:64)
+	at org.qdl_lang.workspace.QDLWorkspace.execute(QDLWorkspace.java:289)
+	at org.qdl_lang.workspace.QDLWorkspace.mainLoop(QDLWorkspace.java:317)
+	at org.qdl_lang.workspace.WorkspaceCommands.runScript(WorkspaceCommands.java:7019)
+	at org.qdl_lang.workspace.WorkspaceCommands.fromCommandLine(WorkspaceCommands.java:6966)
+	at org.qdl_lang.workspace.WorkspaceCommands.init(WorkspaceCommands.java:6740)
+	at org.qdl_lang.workspace.QDLWorkspace.init(QDLWorkspace.java:661)
+	at org.qdl_lang.workspace.QDLWorkspace.main(QDLWorkspace.java:558)
+
+May 16, 2025 8:48:04 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 8:53:04 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 8:59:28 AM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml
+May 16, 2025 1:53:53 PM edu.uiuc.ncsa.security.core.util.MyLoggingFacade info
+INFO: cli logger:Logging to file /home/ncsa/dev/ncsa-git/qdl/qdl_log.xml

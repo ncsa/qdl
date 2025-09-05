@@ -30,6 +30,7 @@ public class CryptoModule extends JavaModule {
         ArrayList<QDLFunction> funcs = new ArrayList<>();
 
         funcs.add(crypto.new ImportKey());
+        funcs.add(crypto.new CodeChallenge());
         funcs.add(crypto.new ExportKeys());
         funcs.add(crypto.new ReadOID());
         funcs.add(crypto.new ReadCert());
@@ -42,6 +43,8 @@ public class CryptoModule extends JavaModule {
         funcs.add(crypto.new B64ToInt());
         funcs.add(crypto.new IntToHex());
         funcs.add(crypto.new IntToBase64());
+        funcs.add(crypto.new B64ToHex());
+        funcs.add(crypto.new HexToB64());
         funcs.add(crypto.new ToJWT());
         funcs.add(crypto.new VerifyJWT());
         cryptoModule.addFunctions(funcs);
