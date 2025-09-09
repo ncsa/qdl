@@ -14,7 +14,7 @@
   <skin>
       <groupId>org.qdl_lang.skin</groupId>
       <artifactId>skin</artifactId>
-      <version>1.6-QDL-SNAPSHOT</version>
+      <version>1.6.2.1</version>
   </skin>
   <body>
 
