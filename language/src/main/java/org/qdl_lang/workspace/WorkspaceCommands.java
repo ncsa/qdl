@@ -1,5 +1,9 @@
 package org.qdl_lang.workspace;
 
+import edu.uiuc.ncsa.security.core.cf.CFBundle;
+import edu.uiuc.ncsa.security.core.cf.CFLoader;
+import edu.uiuc.ncsa.security.core.cf.CFNode;
+import org.qdl_lang.config.QDLCFConfigurationLoader;
 import org.qdl_lang.config.QDLConfigurationLoader;
 import org.qdl_lang.config.QDLConfigurationLoaderUtils;
 import org.qdl_lang.config.QDLEnvironment;
@@ -344,12 +348,12 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     protected String applyTemplates(String inline) {
-        if(!isPreprocessorOn()) return inline;
+        if (!isPreprocessorOn()) return inline;
         return TemplateUtil.replaceAll(inline, getEnv()); // allow replacements in commands too...
 
     }
-    public Object execute2(String inline) throws Throwable {
 
+    public Object execute2(String inline) throws Throwable {
 
 
         inline = TemplateUtil.replaceAll(inline, env); // allow replacements in commands too...
@@ -671,9 +675,9 @@ public class WorkspaceCommands implements Logable, Serializable {
                 key0 = 1 + maxKey;
                 maxKey++;
             } else {
-              //  if (containsKey(key)) {
-               //     throw new IllegalArgumentException("Error: PID is in use");
-             //   }
+                //  if (containsKey(key)) {
+                //     throw new IllegalArgumentException("Error: PID is in use");
+                //   }
             }
             maxKey = Math.max(maxKey, key0);
             addLabel(value);
@@ -966,7 +970,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         // whittle off interrupts
         SIInterruptList includes = getSIInterruptList(inputLine, SI_INTERRUPT_INCLUDE, SI_INTERRUPT_INCLUDE_SHORT);
         SIInterruptList excludes = getSIInterruptList(inputLine, SI_INTERRUPT_EXCLUDE, SI_INTERRUPT_EXCLUDE_SHORT);
-        if(includes != null && excludes != null) {
+        if (includes != null && excludes != null) {
             // If both sent, normalize to includes/excludes, zero out excludes.
             includes.interrupts.removeAll(excludes.interrupts);
             excludes = null;
@@ -1020,6 +1024,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     /**
      * Create the interrupt list from the input line with any flags. A null response
      * means no such interrupts were found.
+     *
      * @param inputLine
      * @param flags
      * @return
@@ -1075,7 +1080,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     protected Object _doSIResume(InputLine inputLine) {
         if (_doHelp(inputLine)) {
             int width = 12;
-            say("resume ["+ SI_INTERRUPT_GO + "] [" + SI_INTERRUPT_INCLUDE_SHORT + " >list | regex] [" + SI_INTERRUPT_EXCLUDE_SHORT + " >list | regex]");
+            say("resume [" + SI_INTERRUPT_GO + "] [" + SI_INTERRUPT_INCLUDE_SHORT + " >list | regex] [" + SI_INTERRUPT_EXCLUDE_SHORT + " >list | regex]");
             say(getBlanks(width + 3) + "Resume the current process id, setting the included or excluded.");
             say(getBlanks(width + 3) + "interrupts, or clearing all using " + SI_INTERRUPT_GO + ".");
             interruptHelpBlock(width);
@@ -1702,18 +1707,18 @@ public class WorkspaceCommands implements Logable, Serializable {
             int width = 12;
             say("run (handle | alias) [-go] [-i_msg on|off] [& | !]");
             say("run (handle | alias) " +
-                    "["+ BUFFER_RUN_I_MESSAGE_FLAG + " on|off] " +
+                    "[" + BUFFER_RUN_I_MESSAGE_FLAG + " on|off] " +
                     "[" + BUFFER_RUN_CLONE_STATE_FLAG + " | " + BUFFER_RUN_CLEAN_STATE_FLAG + "] " +
-                    "["+ SI_INTERRUPT_GO + "] " +
+                    "[" + SI_INTERRUPT_GO + "] " +
                     "[" + SI_INTERRUPT_INCLUDE_SHORT + " >list | regex] [" + SI_INTERRUPT_EXCLUDE_SHORT + " >list | regex]");
             say("Run the given buffer. This will execute as if you had typed the contents ");
             say("in to the current session.");
             interruptHelpBlock(width);
-            say(RJustify(BUFFER_RUN_I_MESSAGE_FLAG,width) + " - (on/off), turn off or on interrupt messages. Default is on.");
-            say( RJustify(BUFFER_RUN_CLONE_STATE_FLAG,width) + " - clone the current workspace state and run. ");
-            say(RJustify(BUFFER_RUN_CLEAN_STATE_FLAG,width) + " - create completely clean state and run ");
+            say(RJustify(BUFFER_RUN_I_MESSAGE_FLAG, width) + " - (on/off), turn off or on interrupt messages. Default is on.");
+            say(RJustify(BUFFER_RUN_CLONE_STATE_FLAG, width) + " - clone the current workspace state and run. ");
+            say(RJustify(BUFFER_RUN_CLEAN_STATE_FLAG, width) + " - create completely clean state and run ");
             say(getBlanks(width + 3) + "Note that VFS and script path are still set,");
-            say("N.B. "+ BUFFER_RUN_CLONE_STATE_FLAG +  " and " + BUFFER_RUN_CLEAN_STATE_FLAG + " are mutually exclusive.");
+            say("N.B. " + BUFFER_RUN_CLONE_STATE_FLAG + " and " + BUFFER_RUN_CLEAN_STATE_FLAG + " are mutually exclusive.");
             say("See the state indicator documentation for more");
             say(" Synonyms: ");
             say("   ) index|name  - start running a buffer. You must start a process before it can be suspended.");
@@ -1856,10 +1861,10 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     private void interruptHelpBlock(int width) {
-        say(RJustify(SI_INTERRUPT_GO, width) +  " - run with no interrupts.");
-        say(RJustify(SI_INTERRUPT_INCLUDE_SHORT, width) +  " - run only interrupts with given labels. You can also use the long version");
+        say(RJustify(SI_INTERRUPT_GO, width) + " - run with no interrupts.");
+        say(RJustify(SI_INTERRUPT_INCLUDE_SHORT, width) + " - run only interrupts with given labels. You can also use the long version");
         say(getBlanks(width + 3) + SI_INTERRUPT_INCLUDE);
-        say(RJustify(SI_INTERRUPT_EXCLUDE_SHORT, width) +  " - run interrupts except for the given labels. You can also use the long version");
+        say(RJustify(SI_INTERRUPT_EXCLUDE_SHORT, width) + " - run interrupts except for the given labels. You can also use the long version");
         say(getBlanks(width + 3) + SI_INTERRUPT_EXCLUDE);
         say(getBlanks(width + 3) + "Note that setting both results in the set includes := includes ?~ excludes");
     }
@@ -2896,11 +2901,11 @@ public class WorkspaceCommands implements Logable, Serializable {
                         QDLValue qdlValue = (QDLValue) re.result;
                         if (qdlValue.isStem()) {
                             QDLStem stemIn = qdlValue.asStem();
-                            if(toInputForm){
-                               for(org.qdl_lang.variables.values.QDLKey key : stemIn.keySet()){
-                                   env.put(key.toString(), InputFormUtil.inputForm(stemIn.get(key)));
-                               }
-                            }else {
+                            if (toInputForm) {
+                                for (org.qdl_lang.variables.values.QDLKey key : stemIn.keySet()) {
+                                    env.put(key.toString(), InputFormUtil.inputForm(stemIn.get(key)));
+                                }
+                            } else {
                                 env.add(qdlValue.asStem(), true);
                             }
                             done = true;
@@ -4307,6 +4312,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     }
 
     boolean preprocessorOn = false;
+
     public boolean isPrettyPrint() {
         return prettyPrint;
     }
@@ -5170,46 +5176,46 @@ public class WorkspaceCommands implements Logable, Serializable {
         }
         String value = inputLine.getArg(3);
         Boolean bValue = null;
-        if(isOnOrTrue(value)) {
+        if (isOnOrTrue(value)) {
             bValue = Boolean.TRUE;
-        }else{
-            if(isOffOrFalse(value)){
+        } else {
+            if (isOffOrFalse(value)) {
                 bValue = Boolean.FALSE;
             }
         }
         switch (inputLine.getArg(2)) {
             case OVERWRITE_BASE_FUNCTIONS_ON:
-                if(bValue == null)return handleBadValue(value, OVERWRITE_BASE_FUNCTIONS_ON);
+                if (bValue == null) return handleBadValue(value, OVERWRITE_BASE_FUNCTIONS_ON);
                 getState().setAllowBaseFunctionOverrides(bValue);
                 say("overwriting QDL base functions " + onOrOff(bValue));
                 break;
             case PRETTY_PRINT:
             case PRETTY_PRINT_SHORT:
-                if(bValue == null)return handleBadValue(value, PRETTY_PRINT);
-                    setPrettyPrint(bValue);
-                    getInterpreter().setPrettyPrint(bValue);
-                    say("pretty print " + onOrOff(bValue));
+                if (bValue == null) return handleBadValue(value, PRETTY_PRINT);
+                setPrettyPrint(bValue);
+                getInterpreter().setPrettyPrint(bValue);
+                say("pretty print " + onOrOff(bValue));
 
                 break;
             case ECHO:
-                if(bValue == null)return handleBadValue(value, ECHO);
+                if (bValue == null) return handleBadValue(value, ECHO);
                 setEchoModeOn(bValue);
                 getInterpreter().setEchoModeOn(bValue);
                 say("echo mode " + onOrOff(bValue));
                 break;
             case JAVA_TRACE:
-                if(bValue == null)return handleBadValue(value, JAVA_TRACE);
+                if (bValue == null) return handleBadValue(value, JAVA_TRACE);
                 setDebugOn(bValue);
                 say("java trace is " + onOrOff(bValue));
                 break;
             case UNICODE_ON:
-                if(bValue == null)return handleBadValue(value, UNICODE_ON);
+                if (bValue == null) return handleBadValue(value, UNICODE_ON);
                 State.setPrintUnicode(bValue);
                 say("unicode printing of system constants is now " + onOrOff(bValue));
                 break;
             case PREPROCESSOR_ON:
                 // Fix https://github.com/ncsa/qdl/issues/127
-                if(bValue == null)return handleBadValue(value, PREPROCESSOR_ON);
+                if (bValue == null) return handleBadValue(value, PREPROCESSOR_ON);
                 setPreprocessorOn(bValue);
                 say("QDL preprocessing is " + onOrOff(bValue));
                 break;
@@ -5243,7 +5249,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("ansi mode is read only and " + (ansiModeOn ? "on" : "off"));
                 break;
             case USE_EXTERNAL_EDITOR:
-                if(bValue == null)return handleBadValue(value, USE_EXTERNAL_EDITOR);
+                if (bValue == null) return handleBadValue(value, USE_EXTERNAL_EDITOR);
                 setUseExternalEditor(bValue);
                 say("use external editor " + onOrOff(bValue));
                 break;
@@ -5263,17 +5269,17 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("external editor was '" + oldName + "' now is '" + getExternalEditorName() + "'");
                 break;
             case ENABLE_LIBRARY_SUPPORT:
-                if(bValue == null)return handleBadValue(value, ENABLE_LIBRARY_SUPPORT);
+                if (bValue == null) return handleBadValue(value, ENABLE_LIBRARY_SUPPORT);
                 getState().setEnableLibrarySupport(bValue);
                 say("library support is now " + onOrOff(bValue));
                 break;
             case ASSERTIONS_ON:
-                if(bValue == null)return handleBadValue(value, ASSERTIONS_ON);
+                if (bValue == null) return handleBadValue(value, ASSERTIONS_ON);
                 getState().setAssertionsOn(bValue);
                 say("assertions are now " + onOrOff(bValue));
                 break;
             case RUN_INIT_ON_LOAD:
-                if(bValue == null)return handleBadValue(value, RUN_INIT_ON_LOAD);
+                if (bValue == null) return handleBadValue(value, RUN_INIT_ON_LOAD);
                 runInitOnLoad = bValue;
                 say("run " + DEFAULT_BOOT_FUNCTION_ON_LOAD_NAME + " on loading this workspace is " + onOrOff(bValue));
                 break;
@@ -5316,7 +5322,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 say("workspace id set to '" + getWSID() + "'");
                 break;
             case COMPRESS_XML:
-                if(bValue == null)return handleBadValue(value, COMPRESS_FLAG);
+                if (bValue == null) return handleBadValue(value, COMPRESS_FLAG);
                 setCompressXML(bValue);
                 say("xml compression " + onOrOff(bValue));
                 break;
@@ -5372,7 +5378,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 if (currentWorkspace == null) {
                     say("warning: you have not a set a file for saves. Please set " + CURRENT_WORKSPACE_FILE + " first.");
                 } else {
-                    if(bValue == null)return handleBadValue(value, AUTOSAVE_ON);
+                    if (bValue == null) return handleBadValue(value, AUTOSAVE_ON);
                     setAutosaveOn(bValue);
                     if (autosaveThread != null) {
                         autosaveThread.interrupt();
@@ -5387,8 +5393,8 @@ public class WorkspaceCommands implements Logable, Serializable {
                 }
                 break;
             case AUTOSAVE_MESSAGES_ON:
-                if(bValue == null)return handleBadValue(value, JAVA_TRACE);
-               setAutosaveMessagesOn(bValue);
+                if (bValue == null) return handleBadValue(value, JAVA_TRACE);
+                setAutosaveMessagesOn(bValue);
                 say("autosave messages are now " + onOrOff(bValue));
                 break;
             case AUTOSAVE_INTERVAL:
@@ -5409,6 +5415,7 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     /**
      * If the raw value does not evaluate to a boolean, this is called to gracefully exit.
+     *
      * @param rawValue
      * @param varName
      * @return
@@ -5418,6 +5425,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         say("bad value of '" + rawValue + "' for " + varName);
         return RC_NO_OP;
     }
+
     protected void listEditors() {
         say("Available editors:");
         say(LINE_EDITOR_NAME);
@@ -5941,7 +5949,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         fileWriter.write("\n/* ** module " + SerializationConstants.VERSION_2_0_TAG + " imports ** */\n");
 
         for (Object key : getState().getMInstances().keySet()) {
-            Module module = getState().getMInstances().getModule((XKey)key);
+            Module module = getState().getMInstances().getModule((XKey) key);
             List<String> aliases = getState().getMInstances().getAliasesAsString(module.getMTKey());
             for (String alias : aliases) {
                 String output = MODULE_IMPORT + "('" + module.getNamespace() + "','" + alias + "');";
@@ -6705,15 +6713,41 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     QDLEnvironment qdlEnvironment = null;
 
-    public void loadQE(InputLine inputLine, String cfgName) throws Throwable {
+    /**
+     * Uses Apache commons. This should be replaced by the CF loader system
+     * @param inputLine
+     * @param cfgName
+     * @throws Throwable
+     */
+    protected void oldLoad(InputLine inputLine, String cfgName) throws Throwable {
         if (qdlEnvironment == null) {
-            // New style -- multi-inheritance.
-            //     ConfigurationNode node = ConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgname, CONFIG_TAG_NAME );
             ConfigurationNode node = XMLConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgName, CONFIG_TAG_NAME);
             QDLConfigurationLoader loader = new QDLConfigurationLoader(inputLine.getNextArgFor(CONFIG_FILE_FLAG), node);
-
             qdlEnvironment = loader.load();
         }
+    }
+
+    /**
+     * CF Loader for XML configurationn file.
+     * @param inputLine
+     * @param cfgName
+     * @throws Throwable
+     */
+    protected void cfLoad(InputLine inputLine, String cfgName) throws Throwable {
+        if (qdlEnvironment == null) {
+            // Using CF system
+            FileInputStream fis = new FileInputStream(inputLine.getNextArgFor(CONFIG_FILE_FLAG));
+            CFLoader loader = new CFLoader();
+            CFBundle bundle = loader.loadBundle(fis, "qdl");
+            CFNode node = bundle.getNamedConfig(cfgName);
+            QDLCFConfigurationLoader qdlcfConfigurationLoader = new QDLCFConfigurationLoader(inputLine.getNextArgFor(CONFIG_FILE_FLAG), node);
+            qdlEnvironment = qdlcfConfigurationLoader.load();
+        }
+    }
+
+    public void loadQE(InputLine inputLine, String cfgName) throws Throwable {
+        //oldLoad(inputLine,cfgName);
+        cfLoad(inputLine, cfgName);
     }
 
     protected boolean isQELoaded() {
@@ -6766,9 +6800,9 @@ public class WorkspaceCommands implements Logable, Serializable {
         state.setAssertionsOn(qe.isAssertionsOn());
         assertionsOn = qe.isAssertionsOn();
         preprocessorOn = qe.isPreprocesserOn();
-        if(inputLine.hasArg(CLA_PREPROCESSOR_ON)){
+        if (inputLine.hasArg(CLA_PREPROCESSOR_ON)) {
             Boolean x = inputLine.getBooleanNextArgFor(CLA_PREPROCESSOR_ON);
-            if(x != null){
+            if (x != null) {
                 preprocessorOn = x;
             }
             inputLine.removeSwitchAndValue(CLA_PREPROCESSOR_ON);
@@ -6783,7 +6817,7 @@ public class WorkspaceCommands implements Logable, Serializable {
         if (inputLine.hasArg(CLA_SHOW_BANNER)) {
             // allows for override.
             Boolean raw = inputLine.getBooleanNextArgFor(CLA_SHOW_BANNER);
-            if(raw != null){
+            if (raw != null) {
                 showBanner = raw;
             }
             inputLine.removeSwitchAndValue(CLA_SHOW_BANNER);
@@ -7085,14 +7119,14 @@ public class WorkspaceCommands implements Logable, Serializable {
 
         if (inputLine.hasArg(CLA_SHOW_BANNER)) {
             Boolean raw = inputLine.getBooleanNextArgFor(CLA_SHOW_BANNER);
-            if(raw != null ) {
+            if (raw != null) {
                 showBanner = raw;
             }
             inputLine.removeSwitch(CLA_SHOW_BANNER);
         }
-        if(inputLine.hasArg(CLA_PREPROCESSOR_ON)){
+        if (inputLine.hasArg(CLA_PREPROCESSOR_ON)) {
             Boolean raw = inputLine.getBooleanNextArgFor(CLA_PREPROCESSOR_ON);
-            if(raw != null ) {
+            if (raw != null) {
                 preprocessorOn = raw;
             }
             inputLine.removeSwitch(CLA_PREPROCESSOR_ON);
@@ -7374,7 +7408,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                     System.exit(0); // Best we can do. Java does not allow for returned values.
                 }
                 getState().getLogger().error(t);
-                if(isDebugOn()){
+                if (isDebugOn()) {
                     t.printStackTrace();
                 }
                 say("Error executing script '" + runScriptPath + "'" + (t.getMessage() == null ? "." : ":" + t.getMessage()));
