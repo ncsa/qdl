@@ -7,7 +7,7 @@
         <artifactId>oss-parent</artifactId>
         <version>9</version>
     </parent>
-    <groupId>org.qdl_lang</groupId>
+    <groupId>org.qdl-lang</groupId>
     <artifactId>qdl</artifactId>
     <version>1.6.2.1</version>
     <name>QDL root module</name>
@@ -47,7 +47,7 @@
         <module>tests</module>
         <!--    <module>gui</module> -->
         <module>sas</module>
-        <module>skin</module>
+       <!-- <module>skin</module>-->
     </modules>
     <build>
         <plugins>
@@ -71,7 +71,7 @@
                 <artifactId>maven-gpg-plugin</artifactId>
                 <version>1.6</version>
                 <configuration>
-                    <skip>true</skip>
+                    <skip>false</skip>
                 </configuration>
                 <executions>
                     <execution>
@@ -84,7 +84,7 @@
                 </executions>
             </plugin>
 
-            <plugin>
+          <!--  <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.5.0</version>
@@ -97,11 +97,11 @@
                     </execution>
                 </executions>
             </plugin>
-
+-->
         </plugins>
 
     </build>
-    <distributionManagement>
+<!--    <distributionManagement>
         <repository>
             <id>sonatype-nexus-staging</id>
             <name>sonatype</name>
@@ -114,7 +114,7 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
             <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
-    </distributionManagement>
+    </distributionManagement>-->
     <reporting>
         <plugins>
             <plugin>

@@ -12,7 +12,7 @@ public interface HasResultInterface {
     void setResult(QDLValue result);
 
     /**
-     * Convenience method.This should turn the object into a proper {@link QDLValue)} as needed.
+     * Convenience method.This should turn the object into a proper {@link QDLValue} as needed.
      * @param result
      */
     void setResult(Object result);
