@@ -4,12 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>qdl</artifactId>
-        <groupId>org.qdl_lang</groupId>
-        <version>1.6-QDL-SNAPSHOT</version>
+        <groupId>org.qdl-lang</groupId>
+        <version>1.6.2.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
     <artifactId>tests</artifactId>
+    <name>QDL Tests</name>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -17,12 +18,12 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>org.qdl_lang</groupId>
+            <groupId>org.qdl-lang</groupId>
             <artifactId>language</artifactId>
             <version>1.6-QDL-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>org.qdl_lang</groupId>
+            <groupId>org.qdl-lang</groupId>
             <artifactId>language</artifactId>
             <version>1.6-QDL-SNAPSHOT</version>
             <scope>test</scope>
@@ -57,7 +58,7 @@
             <version>10.14.2.0</version>
         </dependency>
         <dependency>
-            <groupId>org.qdl_lang</groupId>
+            <groupId>org.qdl-lang</groupId>
             <artifactId>language</artifactId>
             <version>1.6-QDL-SNAPSHOT</version>
             <scope>test</scope>
