@@ -47,7 +47,7 @@
         <module>tests</module>
         <!--    <module>gui</module> -->
         <module>sas</module>
-       <!-- <module>skin</module>-->
+       <module>skin</module>
     </modules>
     <build>
         <plugins>
@@ -84,10 +84,10 @@
                 </executions>
             </plugin>
 
-          <!--  <plugin>
+           <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.11.3</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -97,7 +97,7 @@
                     </execution>
                 </executions>
             </plugin>
--->
+
         </plugins>
 
     </build>
