@@ -211,20 +211,14 @@ public class QDLCFConfigurationLoader<T extends QDLEnvironment> extends CFLoggin
 
     protected String getExternalEditorPath() {
         CFNode node = getFirstNode(cn, WS_TAG);
-        String x = getFirstAttribute(node, WS_EDITOR_NAME);
-        if (isTrivial(x)) {
-            return "";
-        }
-        return x;
-    }
+        if(node == null) return "";
+        return node.getFirstAttribute( WS_EDITOR_NAME, "");
+   }
 
     protected String getSaveDir() {
         CFNode node = getFirstNode(cn, WS_TAG);
-        String x = getFirstAttribute(node, WS_SAVE_DIR);
-        if (isTrivial(x)) {
-            return null; // means none set.
-        }
-        return x;
+        if(node == null) return null;
+        return node.getFirstAttribute( WS_SAVE_DIR, null);
     }
 
     protected Editors getEditors() {
@@ -255,14 +249,14 @@ public class QDLCFConfigurationLoader<T extends QDLEnvironment> extends CFLoggin
 
     protected String useLogo() {
         CFNode node = getFirstNode(cn, WS_TAG);
-        String logo = getFirstAttribute(node, WS_ATTR_logo);
-        if (StringUtils.isTrivial(logo)) return "default";
-        return logo;
+        if(node == null) return "default";
+        return node.getFirstAttribute( WS_ATTR_logo, "default");
     }
 
     protected String getTerminalType() {
         CFNode node = getFirstNode(cn, WS_TAG);
-        String terminalType = getFirstAttribute(node, WS_ATTR_TERMINAL_TYPE);
+        if(node == null) return WS_TERMINAL_TYPE_TEXT;
+        String terminalType = node.getFirstAttribute( WS_ATTR_TERMINAL_TYPE);
         if (StringUtils.isTrivial(terminalType)) {
             terminalType = getFirstAttribute(node, WS_ATTR_TERMINAL_TYPE2); // in case they used the alternate
         }
@@ -276,11 +270,7 @@ public class QDLCFConfigurationLoader<T extends QDLEnvironment> extends CFLoggin
 
 
     protected String getName() {
-        String name = getFirstAttribute(cn, CONFG_ATTR_NAME);
-        if (isTrivial(name)) {
-            return "(none)";
-        }
-        return name;
+        return cn.getFirstAttribute( CONFG_ATTR_NAME, "(none)");
     }
 
     protected boolean isOverwriteBaseFunctionsOn() {
@@ -311,53 +301,55 @@ public class QDLCFConfigurationLoader<T extends QDLEnvironment> extends CFLoggin
 
     protected boolean isPreprocessorOn(){
         CFNode node = getFirstNode(cn, WS_TAG);
+        if(node == null) return false;
         return getFirstBooleanValue(node, WS_ATTR_PREPROCESSOR_ON, false);
 
     }
     protected boolean areAssertionsEnabled() {
         CFNode node = getFirstNode(cn, WS_TAG);
+        if(node == null) return true;
         return getFirstBooleanValue(node, WS_ATTR_ASSERTIONS_ON, true);
     }
 
     protected boolean isPrettyPrint() {
         CFNode node = getFirstNode(cn, WS_TAG);
+        if(node == null) return false;
         return getFirstBooleanValue(node, WS_ATTR_PRETTY_PRINT, false);
     }
 
     protected boolean isAutosaveOn() {
         CFNode node = getFirstNode(cn, WS_TAG);
+        if(node == null) return false;
         return getFirstBooleanValue(node, WS_ATTR_AUTOSAVE_ON, false);
     }
 
     protected boolean isAutosaveMessagesOn() {
         CFNode node = getFirstNode(cn, WS_TAG);
+        if(node == null) return false;
         return getFirstBooleanValue(node, WS_ATTR_AUTOSAVE_MESSAGES_ON, false);
     }
 
     protected long getAutosaveInterval() {
-        CFNode node = getFirstNode(cn, WS_TAG);
-        String rawValue = getFirstAttribute(node, WS_ATTR_AUTOSAVE_INTERVAL);
         long autosaveInterval = 10 * 60 * 1000L; // 10 minutes in milliseconds.
-        if (rawValue != null) {
-            autosaveInterval = XMLConfigUtil.getValueSecsOrMillis(rawValue);
+        CFNode node = getFirstNode(cn, WS_TAG);
+        if(node == null){
+            return autosaveInterval;
         }
-        return autosaveInterval;
+        return node.getFirstLongAttribute( WS_ATTR_AUTOSAVE_INTERVAL, autosaveInterval);
     }
 
     protected String getLibrarySupportMode() {
-        String mode =  getFirstAttribute(cn, LIBRARY_SUPPORT_MODE);
-        if(StringUtils.isTrivial(mode)) {
-            mode = LIBRARY_SUPPORT_MODE_LOAD;
-        }
-        return mode;
+        return  cn.getFirstAttribute( LIBRARY_SUPPORT_MODE, LIBRARY_SUPPORT_MODE_LOAD);
     }
+
     protected boolean isEnableLibrarySupport() {
         return getFirstBooleanValue(cn, ENABLE_LIBRARY_SUPPORT, false);
     }
 
     protected boolean isRunInitOnLoad() {
         CFNode node = getFirstNode(cn, WS_TAG);
-        return getFirstBooleanValue(cn, RUN_INIT_ON_LOAD, true);
+        if(node == null) return true;
+        return node.getFirstBooleanValue(RUN_INIT_ON_LOAD, true);
 
     }
 
