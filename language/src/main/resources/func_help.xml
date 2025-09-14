@@ -3847,8 +3847,20 @@ baz
 a gets re-assigned to 'baz' inside the block, ok does not exist any place but the block.
 This is extremely useful in many places, such as scripts.
 
+
 See also: local, visibility]]>
         </body>
+        <example>E.g. comparison of local[ ... ] and block[ ... ]
+   x :=5;
+   local[say(x);];
+unknown symbol 'x' at (2, 13)
+   block[say(x);];
+5
+
+So again, local means only local variables exist, block means the statement is
+a self-contained unit or block.
+        </example>
+
     </entry>
 
     <entry id="slice">
@@ -7630,10 +7642,16 @@ lib_support(arg.)- Set the status with a general stem whose form is
  'path' : ['path0',…]
 }
 
-Note that the default is this facility is off. Also, if no library path is set, the
-invocatio directory (the directory from which QDL was started) is the default.
+Library support in QDL means that scripts in the library path are imported and
+run as if the were declared. The mode determines the scope when run.
+This allows you to have a directory of scripts that
+can be used together for a specific task and is extremely useful if QDL is being run
+as a scripting language.
 
-See also:"Extending QDL with the library facility" in the the reference manual]]>
+Note that the default is this facility is off. Also, if no library path is set, the
+invocation directory (the directory from which QDL was started) is the default.
+
+See also:"Extending QDL with the library facility" in the the reference manual.]]>
             </body>
             <example>
                 <![CDATA[
@@ -7644,6 +7662,63 @@ See also:"Extending QDL with the library facility" in the the reference manual]]
 ]]>
             </example>
         </entry>
+    </entry>
+    <entry id="expression">
+        <body>
+            <![CDATA[In QDL expression is
+
+a finite combination of numbers, variables, functions and operator symbols (like +, ∈, ≤, ×, ÷)
+that evaluate to a value.
+
+(Unlike Math, QDL expressions may include an equals sign, or other
+which means they return a boolean value.)
+
+E.g.
+   f(x) -> x^2;
+   g(x,y) ->f(x)+f(y);
+   g(3,4)
+25
+
+They are in the current scope, so every variable, function, etc. currently defined is
+visible and may be used.
+
+See also: statement, block, local
+  ]]>
+        </body>
+    </entry>
+    <entry id="statement">
+        <body>
+            <![CDATA[In QDL a statement is
+
+a self-contained unit of code with its own scope. At the least, anything defined in the statement
+is only in that statement and ceases to exist once the statement is complete.
+
+E.g.
+  if[3 < 3^2] // true
+then[
+      f(x) -> x^2;
+      g(x,y) ->f(x)+f(y);
+   ];
+
+   g(3,4);
+the function 'g' with 2 arguments was not found. at (1, 0)
+
+In this case, the functions are defined in a conditional statement and vanish once the statement
+is executed. But you could define them outside of the conditional and use them in it.
+
+E.g.
+      f(x) -> x^2;
+      g(x,y) ->f(x)+f(y);
+
+  if[3 < 3^2] // true
+then[
+     say(g(3,4));
+   ];
+25
+
+See also: expression, block, local
+  ]]>
+        </body>
     </entry>
     <!-- template without example  block
     <entry id="">
