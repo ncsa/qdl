@@ -348,7 +348,7 @@ public class QDLValue implements Constants, Serializable, Comparable<QDLValue> {
             case ALL_INDICES_TYPE:
                return AllIndicesValue.getAllIndicesValue();
             case Constants.UNKNOWN_TYPE:
-                throw new IllegalArgumentException(" unknown object type for '" + value + "'");
+                throw new IllegalArgumentException(" unknown object type for '" + value + "' " + value.getClass().getName());
             default:
                 return new QDLValue(value);
         }

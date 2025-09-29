@@ -13,6 +13,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
         SystemTest.class,
         AnaphorTest.class,
+        QDLModuleTest.class,
         QDLVariableTest.class,
         ModuleTests.class,
         TestMonadicOperations.class,

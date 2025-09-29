@@ -5676,10 +5676,7 @@ false
 
 Note that in the last case, is_null returns true if the entire argument is null.]]>
         </body>
-        <example>
-            <![CDATA[
-   ]]>
-        </example>
+
     </entry>
     <entry id="gcd">
         <body>
@@ -7345,6 +7342,7 @@ as will the workspace commands
     <entry id="lib_entries">
         <body>
             <![CDATA[lib_entries() - list all library entries
+lib_entries(class_path) - use a Java isntance of LibLoader to load the librariy entries
 lib_entries(key, stem.) - add a set of library entries
 
 The system has a library in info().'lib' of names and classpaths
@@ -7363,8 +7361,18 @@ so
 
 You can then access these as relative paths to info().'lib' using
 j_load or j_use very conveniently.
+
+If you have a library loader, you may add your own entries from that.
    ]]>
         </body>
+<example>E.g. If you have loaded a workspace in OA4MP and need to refresh to
+library entries:
+    lib_entries('org.oa4mp.server.qdl.OA2LibLoader2')
+
+Or from CILogon:
+
+    lib_entries('org.cilogon.qdl.module.CILLibLoader')
+</example>
      </entry>
 
     <entry id="lambda">
@@ -7403,10 +7411,7 @@ j_load or j_use very conveniently.
 
  See also: visibility, define, ∂ or apply]]>
       </body>
-      <example>
-  <![CDATA[
-  ]]>
-       </example>
+
    </entry>
 
     <entry id="run_init_on_load">

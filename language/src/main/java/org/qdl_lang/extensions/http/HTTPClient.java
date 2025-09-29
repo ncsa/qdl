@@ -1,10 +1,10 @@
 package org.qdl_lang.extensions.http;
 
+import edu.uiuc.ncsa.security.core.util.DebugUtil;
+import edu.uiuc.ncsa.security.servlet.HeaderUtils;
 import org.qdl_lang.exceptions.BadArgException;
-import org.qdl_lang.exceptions.QDLException;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
-import org.qdl_lang.extensions.examples.basic.StemVar;
 import org.qdl_lang.state.State;
 import org.qdl_lang.util.QDLFileUtil;
 import org.qdl_lang.variables.Constant;
@@ -181,13 +181,13 @@ public class HTTPClient implements QDLMetaModule {
             // Fix https://github.com/ncsa/qdl/issues/135
             QDLValue value = parameters.get(key);
             String v;
-            switch (value.getType()){
+            switch (value.getType()) {
                 case Constant.STEM_TYPE:
                     QDLStem stem = value.asStem();
-                    if(stem.isList()){
+                    if (stem.isList()) {
                         v = toParamList(key.toString(), stem.getQDLList().values());
-                    }else{
-                        throw new BadArgException("only lists supported as values, not stems", 0);
+                    } else {
+                        throw new BadArgException("only lists or sets supported as multiple values, not stems", 0);
                     }
                     break;
                 case Constant.SET_TYPE:
@@ -199,7 +199,7 @@ public class HTTPClient implements QDLMetaModule {
                 case Constant.ALL_INDICES_TYPE:
                     throw new BadArgException("unsupported parameter value", 0);
                 default:
-                v = key + "=" + URLEncoder.encode(value.toString(), "UTF-8");
+                    v = key + "=" + URLEncoder.encode(value.toString(), "UTF-8");
             }
             if (isFirst) {
                 p = p + v;
@@ -215,16 +215,40 @@ public class HTTPClient implements QDLMetaModule {
     public String toParamList(String key, Collection<? extends QDLValue> values) throws UnsupportedEncodingException {
         String v = "";
         boolean first = true;
-        for(QDLValue vv: values){
-            if(first){
-                v = key + "[]=" + URLEncoder.encode(vv.toString(), "UTF-8");
-                first = false;
-            }else{
-                v = v + "&" + key + "[]=" + URLEncoder.encode(vv.toString(), "UTF-8");
+        if (values.size() == 1) {
+            v = key + "=" + URLEncoder.encode(values.iterator().next().toString(), "UTF-8");
+            return URLEncoder.encode(v, "UTF-8");
+        }
+        // Next encodes multiple values in the form key[]=v0&key[]=v2&...
+        if (LIST_ENCODE_TYPE.equals(LIST_ENCODE_AS_VALUE)) {
+            for (QDLValue vv : values) {
+                if (first) {
+                    v = key + "=" + URLEncoder.encode(vv.toString(), "UTF-8");
+                    first = false;
+                } else {
+                    v = v + LIST_VALUE_SEPARATOR + URLEncoder.encode(vv.toString(), "UTF-8");
+                }
+            }
+        } else {
+            boolean asArray = LIST_ENCODE_TYPE.equals(LIST_ENCODE_AS_ARRAY);
+            for (QDLValue vv : values) {
+                if (first) {
+                    v = key + (asArray ? "[]=" : "=") + URLEncoder.encode(vv.toString(), "UTF-8");
+                    first = false;
+                } else {
+                    v = v + "&" + key + (asArray ? "[]=" : "=") + URLEncoder.encode(vv.toString(), "UTF-8");
+                }
             }
         }
+
         return URLEncoder.encode(v, "UTF-8");
     }
+
+    final protected String LIST_ENCODE_AS_ARRAY = "array";
+    final protected String LIST_ENCODE_AS_PARAMETER = "parameter";
+    final protected String LIST_ENCODE_AS_VALUE = "value";
+    protected String LIST_ENCODE_TYPE = LIST_ENCODE_AS_ARRAY;
+    protected String LIST_VALUE_SEPARATOR = ",";
 
     public class Host implements QDLFunction {
         @Override
@@ -273,11 +297,11 @@ public class HTTPClient implements QDLMetaModule {
             String r = null;
             // Fix https://github.com/ncsa/qdl/issues/88
             QDLValue[] obj2 = qdlValues;
-            if(qdlValues.length == 1){
-                if(qdlValues[0].isString()){
+            if (qdlValues.length == 1) {
+                if (qdlValues[0].isString()) {
                     obj2 = new QDLValue[]{qdlValues[0], new StemValue()};
-                }else{
-                    if(!(qdlValues[0].isStem())){
+                } else {
+                    if (!(qdlValues[0].isStem())) {
                         throw new BadArgException(getName() + " requires a stem if there is a single argument.", 0);
                     }
                 }
@@ -289,8 +313,22 @@ public class HTTPClient implements QDLMetaModule {
                     request.addHeader(key.toString(), headers.getString(key.toString()));
                 }
             }
-            CloseableHttpResponse response = httpClient.execute(request);
-            return asQDLValue(getResponseStem(response));
+            if (echoHttpRequest) {
+                HeaderUtils.echoRequest(request);
+            }
+            try {
+                CloseableHttpResponse response = httpClient.execute(request);
+                return asQDLValue(getResponseStem(response));
+            } catch (Throwable e) {
+                if (DebugUtil.isTraceEnabled()) {
+                    e.printStackTrace();
+                }
+                if (echoHttpResponse) {
+                    HeaderUtils.echoErrorResponse(e);
+                }
+                throw e;
+            }
+
         }
 
 
@@ -333,7 +371,7 @@ public class HTTPClient implements QDLMetaModule {
     }
 
     /**
-     * Utillity to turn the response, whatever it is, into a stem.
+     * Utility to turn the response, whatever it is, into a stem.
      *
      * @param response
      * @return
@@ -349,7 +387,12 @@ public class HTTPClient implements QDLMetaModule {
         HttpEntity entity = response.getEntity();
         QDLStem stemResponse = null;
         if (entity != null) {
-            String rawResult = EntityUtils.toString(entity);
+            String rawResult = null;
+            if (echoHttpResponse) {
+                rawResult = HeaderUtils.echoResponse(entity, response.getStatusLine());
+            } else {
+                rawResult = EntityUtils.toString(entity);
+            }
             if (!StringUtils.isTrivial(rawResult)) {
                 if ((entity.getContentType() != null) && entity.getContentType().getValue().contains("application/json")) {
                     stemResponse = jsonToStemJSON(rawResult);
@@ -614,11 +657,12 @@ public class HTTPClient implements QDLMetaModule {
             List<String> doxx = new ArrayList<>();
             switch (argCount) {
                 case 1:
+                    doxx.add(getName() + "(body | parameters.) - does an HTTP POST to the host with either the string as the body or encodes the parameters as the body.");
                     break;
                 case 2:
+                    doxx.add(getName() + "(uri_path , parameters.) - does an HTTP POST to the host with  the path and encodes the parameters as the body.");
                     break;
             }
-            doxx.add(getName() + "({uri_path,} string|stem.) do a post with the payload as a string or stem. ");
             if (argCount == 2) {
                 doxx.addAll(getURIPathBlurb());
             }
@@ -704,7 +748,7 @@ public class HTTPClient implements QDLMetaModule {
                 if (qdlValues[0].isString()) {
                     uriPath = qdlValues[0].asString();
                 } else {
-                    throw new BadArgException("dyadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a string as it first argument",0);
+                    throw new BadArgException("dyadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a string as it first argument", 0);
                 }
                 if (qdlValues[1].isStem()) {
                     payload = qdlValues[1].asStem();
@@ -712,7 +756,7 @@ public class HTTPClient implements QDLMetaModule {
                     if (qdlValues[1].isString()) {
                         stringPayload = qdlValues[1].asString();
                     } else {
-                        throw new BadArgException("dyadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a stem or string as its second argument",1);
+                        throw new BadArgException("dyadic " + (isPost ? POST_METHOD : PUT_METHOD) + " must have a stem or string as its second argument", 1);
                     }
                 }
                 break;
@@ -810,13 +854,28 @@ public class HTTPClient implements QDLMetaModule {
             }
         }
         try {
+            if (echoHttpRequest) {
+                if (request instanceof HttpRequestBase) {
+                    HeaderUtils.echoRequest((HttpRequestBase) request); // Only two options here are PUT or POST, so should always work
+                }
+            }
             CloseableHttpResponse response = httpClient.execute((HttpUriRequest) request);
             return asQDLValue(getResponseStem(response));
-        } catch (
-                ClientProtocolException e) {
+        } catch (ClientProtocolException e) {
+            if (DebugUtil.isTraceEnabled()) {
+                e.printStackTrace();
+            }
+            if (echoHttpResponse) {
+                HeaderUtils.echoErrorResponse(e);
+            }
             throw new IllegalStateException((isPost ? POST_METHOD : PUT_METHOD) + " protocol error:'" + e.getMessage() + "'");
-        } catch (
-                IOException e) {
+        } catch (IOException e) {
+            if (DebugUtil.isTraceEnabled()) {
+                e.printStackTrace();
+            }
+            if (echoHttpResponse) {
+                HeaderUtils.echoErrorResponse(e);
+            }
             throw new IllegalStateException((isPost ? POST_METHOD : PUT_METHOD) + " I/O error:'" + e.getMessage() + "'");
         }
     }
@@ -842,8 +901,21 @@ public class HTTPClient implements QDLMetaModule {
                     request.addHeader(key.toString(), headers.getString(key.toString()));
                 }
             }
-            CloseableHttpResponse response = httpClient.execute(request);
-            return asQDLValue(getResponseStem(response));
+            if (echoHttpRequest) {
+                HeaderUtils.echoRequest(request);
+            }
+            try {
+                CloseableHttpResponse response = httpClient.execute(request);
+                return asQDLValue(getResponseStem(response));
+            } catch (Throwable t) {
+                if (DebugUtil.isTraceEnabled()) {
+                    t.printStackTrace();
+                }
+                if (echoHttpResponse) {
+                    HeaderUtils.echoErrorResponse(t);
+                }
+                throw t;
+            }
         }
 
         @Override
@@ -928,8 +1000,8 @@ public class HTTPClient implements QDLMetaModule {
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> dd = new ArrayList<>();
-            dd.add(getName() + "(resp.) - check if the response content is JSON.");
-            dd.add("You may supply either the whole response or just the content part of it");
+            dd.add(getName() + "(resp.) - check if the response content type is JSON.");
+            dd.add("You may supply either the whole response or just the headers");
             return dd;
         }
     }
@@ -968,14 +1040,14 @@ public class HTTPClient implements QDLMetaModule {
                         type.contains("/xhtml+xml") ||
                         type.contains("/javascript"));
             }
-            throw new BadArgException("could not find content type",0);
+            throw new BadArgException("could not find content type", 0);
         }
 
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> dd = new ArrayList<>();
-            dd.add(getName() + "(resp.) - check if the response content is text.");
-            dd.add("You may supply either the whole response or just the content part of it");
+            dd.add(getName() + "(resp.) - check if the response content type is text.");
+            dd.add("You may supply either the whole response or just the headers.");
             dd.add("This includes values like text, html, java, javascript etc.");
             return dd;
         }
@@ -995,15 +1067,16 @@ public class HTTPClient implements QDLMetaModule {
         @Override
         public QDLValue evaluate(QDLValue[] objects, State state) throws Throwable {
             if (!objects[0].isString()) throw new BadArgException("zeroth argument must be a string", 0);
-            if (!objects[1].isString()) throw new BadArgException("first argument must be a string",1);
-            boolean isZip = false;
-            if (objects.length == 3) {
+            if (!objects[1].isString()) throw new BadArgException("first argument must be a string", 1);
+            boolean isArchive = false;
+            boolean isTriadic  = objects.length == 3;
+            if (isTriadic) {
                 if (!(objects[2].isBoolean())) {
-                    throw new BadArgException(getName() + " must have a boolean as its third argument if present",2);
+                    throw new BadArgException(getName() + " must have a boolean as its third argument if present", 2);
                 }
-                isZip = objects[2].asBoolean();
+                isArchive = objects[2].asBoolean();
             }
-            String targetPath =  objects[1].asString();
+            String targetPath = objects[1].asString();
             if (QDLFileUtil.isVFSPath(targetPath)) {
                 VFSFileProvider vfs = state.getVFS(objects[1].asString());
                 if (!vfs.canWrite()) throw new IllegalAccessException("VFS is read only");
@@ -1011,7 +1084,7 @@ public class HTTPClient implements QDLMetaModule {
                     VFSPassThruFileProvider vfsPassThruFileProvider = (VFSPassThruFileProvider) vfs;
                     targetPath = vfsPassThruFileProvider.getRealPath(targetPath);
                 } else {
-                    throw new BadArgException("can only download to a physical file",1);
+                    throw new BadArgException("can only download to a physical file", 1);
                 }
             } else {
                 if (state.isServerMode()) throw new IllegalAccessException("cannot download in server mode");
@@ -1020,10 +1093,16 @@ public class HTTPClient implements QDLMetaModule {
             File targetFile = new File(targetPath);
             Long totalBytes = -1L;
             try {
-                if (isZip) {
-                    totalBytes = downloadZip(url, targetFile);
+                if (isArchive) {
+                    totalBytes = downloadArchive(url, targetFile);
                 } else {
-                    totalBytes = download(url, targetFile);
+                    if(isTriadic) {
+                        // In this case, the target is a directory, but they want the archive downloaded to that.
+                        String path = url.getPath();
+                        String fileName = path.substring(1+path.lastIndexOf("/"));
+                        targetFile = new File(targetPath, fileName);
+                    }
+                        totalBytes = download(url, targetFile);
                 }
             } catch (IOException iox) {
                 if (state.isDebugOn()) {
@@ -1044,21 +1123,21 @@ public class HTTPClient implements QDLMetaModule {
             return totalBytes;
         }
 
-        protected Long downloadZip(URL url, File targetFile) throws IOException {
+        protected Long downloadArchive(URL url, File targetDirectory) throws IOException {
             long totalSize = 0L;
-            if (targetFile.exists()) {
-                if (!targetFile.isDirectory()) {
+            if (targetDirectory.exists()) {
+                if (!targetDirectory.isDirectory()) {
                     throw new IllegalArgumentException("The target of the download for a zip file must be a directory");
                 }
             } else {
-                if (!targetFile.mkdirs()) {
-                    throw new IllegalArgumentException("unable to create directory '" + targetFile.getAbsolutePath() + "\'");
+                if (!targetDirectory.mkdirs()) {
+                    throw new IllegalArgumentException("unable to create directory '" + targetDirectory.getAbsolutePath() + "\'");
                 }
             }
 
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             DataInputStream dis = new DataInputStream(connection.getInputStream());
-            String targetName = targetFile.getAbsolutePath();
+            String targetName = targetDirectory.getAbsolutePath();
             targetName = targetName.endsWith(File.separator) ? targetName : (targetName + File.separator);
             ZipInputStream stream = new ZipInputStream(dis);
             byte[] buffer = new byte[2048];
@@ -1103,10 +1182,10 @@ public class HTTPClient implements QDLMetaModule {
                     d.add("Download a file from a site to a file.");
                     break;
                 case 3:
-                    d.add(getName() + "(url, target_file, is_zip) - download from a site to a file");
-                    d.add("Download a zipped file (includes jars) directory. This will unzip the");
+                    d.add(getName() + "(url, target_directory, is_archive) - download from a site to a file");
+                    d.add("Download a zipped file (includes jars) to a directory. This will unzip the");
                     d.add("entire archive to the location you specify; If you just want the unzipped");
-                    d.add("file, use the dyadic version or set is_zip to false.");
+                    d.add("file, use the dyadic version or set is_archive to false.");
                     d.add("If the target directory does not exist, it will be created.");
                     break;
             }
@@ -1144,6 +1223,10 @@ public class HTTPClient implements QDLMetaModule {
         if (headers != null) {
             json.put("headers", headers);
         }
+        json.put(ECHO_HTTP_REQUEST, echoHttpRequest);
+        json.put(ECHO_HTTP_RESPONSE, echoHttpResponse);
+        json.put("encode", LIST_ENCODE_TYPE);
+        json.put("separator", LIST_VALUE_SEPARATOR);
         return json;
     }
 
@@ -1155,5 +1238,251 @@ public class HTTPClient implements QDLMetaModule {
         if (json.containsKey("headers")) {
             headers = json.getJSONObject("headers");
         }
+        if(json.containsKey("separator")) {
+            LIST_VALUE_SEPARATOR = json.getString("separator");
+        }
+        if(json.containsKey("encode")) {
+            LIST_ENCODE_TYPE = json.getString("encode");
+        }
+        if(json.containsKey(ECHO_HTTP_RESPONSE)) {
+            echoHttpResponse = json.getBoolean(ECHO_HTTP_RESPONSE);
+        }
+        if(json.containsKey(ECHO_HTTP_REQUEST)) {
+            echoHttpRequest = json.getBoolean(ECHO_HTTP_REQUEST);
+        }
+
     }
+
+    boolean echoHttpRequest = false;
+    boolean echoHttpResponse = false;
+    public static final String ECHO_HTTP_REQUEST = "echo_request";
+    public static final String ECHO_HTTP_RESPONSE = "echo_response";
+
+    public class EchoHTTPRequest implements QDLFunction {
+        @Override
+        public String getName() {
+            return ECHO_HTTP_REQUEST;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{0, 1};
+        }
+
+        @Override
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            if (qdlValues.length == 0) {
+                return asQDLValue(echoHttpRequest);
+            }
+            if (!qdlValues[0].isBoolean()) {
+                throw new IllegalArgumentException("The argument for " + getName() + " must be a boolean");
+            }
+            boolean oldValue = echoHttpRequest;
+            echoHttpRequest = qdlValues[0].asBoolean();
+            return asQDLValue(oldValue);
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            switch (argCount) {
+                case 0:
+                    dd.add(getName() + "() - query if on (true) or off (false).");
+                    break;
+                case 1:
+                    dd.add(getName() + "(boolean) - sets to on (true) or off (false).");
+            }
+            dd.add("This toggles or queries echoing the entire http request to standard out");
+            dd.add("before sending it. It is intended as a low-level debugging aid.");
+            dd.add("This may be very chatty so be warned.");
+            dd.add("See also:" + ECHO_HTTP_RESPONSE);
+            return dd;
+        }
+    }
+
+    public class EchoHTTPResponse implements QDLFunction {
+        @Override
+        public String getName() {
+            return ECHO_HTTP_RESPONSE;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{0, 1};
+        }
+
+        @Override
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            if (qdlValues.length == 0) {
+                return asQDLValue(echoHttpResponse);
+            }
+            if (!qdlValues[0].isBoolean()) {
+                throw new IllegalArgumentException("The argument for " + getName() + " must be a boolean");
+            }
+            boolean oldValue = echoHttpResponse;
+            echoHttpResponse = qdlValues[0].asBoolean();
+            return asQDLValue(oldValue);
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            switch (argCount) {
+                case 0:
+                    dd.add(getName() + "() - query if on (true) or off (false).");
+                    break;
+                case 1:
+                    dd.add(getName() + "(boolean) - sets to on (true) or off (false).");
+            }
+            dd.add("This toggles or queries echoing the entire http response to standard out");
+            dd.add("It is intended as a low-level debugging aid.");
+            dd.add("This may be very chatty so be warned.");
+            dd.add("See also:" + ECHO_HTTP_REQUEST);
+            return dd;
+        }
+    }
+
+    public static final String CONFIGURATION = "configure";
+
+    public class Configuration implements QDLFunction {
+        @Override
+        public String getName() {
+            return CONFIGURATION;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{0, 1};
+        }
+
+        @Override
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+
+            QDLStem out = new QDLStem();
+            if(echoHttpResponse == echoHttpRequest){
+                out.put("echo", asQDLValue(echoHttpRequest));
+            }else {
+                QDLStem echos = new QDLStem();
+                echos.put("request", asQDLValue(echoHttpRequest));
+                echos.put("response", asQDLValue(echoHttpResponse));
+                out.put("echo", asQDLValue(echos));
+            }
+            QDLStem lists = new QDLStem();
+            lists.put("encode", asQDLValue(LIST_ENCODE_TYPE));
+            lists.put("separator", asQDLValue(LIST_VALUE_SEPARATOR));
+            out.put("list", asQDLValue(lists));
+            if (qdlValues.length == 0) {
+                return asQDLValue(out);
+            }
+            if (!qdlValues[0].isStem()) {
+                throw new IllegalArgumentException("The argument for " + getName() + " must be a stem");
+            }
+            QDLStem stem = qdlValues[0].asStem();
+            try {
+                setConfigurationValues(stem);
+            }catch(Throwable ex){
+                // There was an error, rollback
+                setConfigurationValues(out);
+                throw ex;
+            }
+            return asQDLValue(out);
+        }
+
+        /**
+         * Sets the configuration values from a stem.
+         * @param stem
+         */
+        private void setConfigurationValues(QDLStem stem) {
+            if (stem.containsKey("echo")) {
+                QDLValue eValue = stem.get("echo");
+                if (eValue.isBoolean()) {
+                    echoHttpRequest = eValue.asBoolean();
+                    echoHttpResponse = eValue.asBoolean();
+                } else {
+                    if (!eValue.isStem()) {
+                        throw new IllegalArgumentException("The echo argument for " + getName() + " must be a stem");
+                    }
+                    QDLStem es = eValue.asStem();
+                    if (es.containsKey("request")) {
+                        QDLValue reqValue = es.get("request");
+                        if (!reqValue.isBoolean()) {
+                            throw new IllegalArgumentException("echo request argument for " + getName() + " must be a boolean");
+                        }
+                        echoHttpRequest = reqValue.asBoolean();
+                    }
+                    if (es.containsKey("response")) {
+                        QDLValue reqValue = es.get("response");
+                        if (!reqValue.isBoolean()) {
+                            throw new IllegalArgumentException("echo response argument for " + getName() + " must be a boolean");
+                        }
+                        echoHttpResponse = reqValue.asBoolean();
+                    }
+
+                }
+
+            }
+            if(stem.containsKey("list")) {
+                QDLValue listValue = stem.get("list");
+                if(!listValue.isStem()) {
+                    throw new IllegalArgumentException("list argument for " + getName() + " must be a stem");
+                }
+                QDLStem listStem = listValue.asStem();
+                if(listStem.containsKey("encode")) {
+                    QDLValue encodeValue = listStem.get("encode");
+                    if(!encodeValue.isString()) {
+                        throw new IllegalArgumentException("list encode argument for " + getName() + " must be a string");
+                    }
+                    switch(encodeValue.asString()) {
+                        case "array":
+                        case "parameter":
+                        case "value":
+                            LIST_ENCODE_TYPE = encodeValue.asString();
+                            break;
+                        default:
+                            throw new IllegalArgumentException("unknown list encode argument for " + getName() + " \"" + encodeValue.asString() + "\"");
+                    }
+                }
+                if(listStem.containsKey("separator")) {
+                    QDLValue separatorValue = listStem.get("separator");
+                    if(!separatorValue.isString()) {
+                            throw new IllegalArgumentException("list separator argument for " + getName() + " must be a string");
+                    }
+                    LIST_VALUE_SEPARATOR = separatorValue.asString();
+                }
+            }
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> dd = new ArrayList<>();
+            switch (argCount) {
+                case 0:
+                    dd.add(getName() + "() - query current configuration. Returns a stem.");
+                    break;
+                case 1:
+                    dd.add(getName() + "(arg.) - sets the current configuration.");
+            }
+            dd.add("The configuration stem has the following structure;");
+            dd.add("key0  key1      value     ");
+            dd.add("---------------------------");
+            dd.add("echo  request   true|false");
+            dd.add("      response  true|false");
+            dd.add("                true|false");
+            dd.add("list  encode    'array' | 'parameter' | 'value'");
+            dd.add("list  separator ',' | other");
+            dd.add("If the value of echo is a boolean, then both are toggled. Otherwise you specify");
+            dd.add("which you want. You may also toggle them using the calls for " + ECHO_HTTP_REQUEST + " and " + ECHO_HTTP_RESPONSE + ".");
+            dd.add("Encoding multiple values is a tricky thing since there is no standard. This configuration gives");
+            dd.add("the major ways that some servers support it.");
+            dd.add("array - means each value is ecoded as key[]=v0&key[]=v1&... ");
+            dd.add("parameter - values are encoed without [], so key=v0&key=v1&...");
+            dd.add("value - values are encoded as key=v0,v1,... ");
+            dd.add("separator - if the encoding is 'value', this is what goes between the elements");
+            dd.add("            Note that this should be a reserved subdelimiter character in the URL specfication");
+            dd.add("            So one of !$&'()+,;= with a strong preference for ',' unless the target server has a");
+            dd.add("            very specific requirement. If your server wants something else, you should encoded it first");
+            return dd;
+        }
+    }
+
 }

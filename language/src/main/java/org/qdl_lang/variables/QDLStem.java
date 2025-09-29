@@ -2,6 +2,7 @@ package org.qdl_lang.variables;
 
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
+import net.sf.json.JSONNull;
 import org.qdl_lang.exceptions.IndexError;
 import org.qdl_lang.exceptions.NoDefaultValue;
 import org.qdl_lang.expressions.AllIndices;
@@ -168,7 +169,8 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
         try {
             if (!containsKey(key) && key.endsWith(STEM_INDEX_MARKER)) {
                 key = key.substring(0, key.length() - 1);
-            }            if (isLongIndex(key)) {
+            }
+            if (isLongIndex(key)) {
                 return get(Long.parseLong(key));
             }
             if (!containsKey(key) && defaultValue != null) {
@@ -561,7 +563,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
                 value = getDefaultValue();
             }
         } else {
-            if(value.isStem()) {
+            if (value.isStem()) {
                 if (hasDefaultValue()) {
                     value.asStem().setDefaultValue(getDefaultValue());
                 }
@@ -1600,9 +1602,9 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
                     case NULL_TYPE:
                         json.put(encodedKey, QDLConstants.JSON_QDL_NULL);
                         break;
-                        case SET_TYPE:
-                            json.put(encodedKey, defaultValue.asSet().toJSON());
-                            break;
+                    case SET_TYPE:
+                        json.put(encodedKey, defaultValue.asSet().toJSON());
+                        break;
 
                     default:
                         // Can't put this in a JSON object. This is the fall through case
@@ -1656,9 +1658,18 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     public QDLStem fromJSON(JSONObject jsonObject, boolean convertVars, int type) {
         MetaCodec codec = convertVars ? (new MetaCodec(type)) : null;
         for (Object k : jsonObject.keySet()) {
+            if (k == null) {
+                continue;
+            }
             String key = k.toString();
-
             Object v = jsonObject.get(k);
+            if (v == null) {
+                continue; // possible the JSON has a Java null. Skip it.
+            }
+            if(v instanceof JSONNull){
+                // Another edge case from our JSON library.
+                continue;
+            }
             if (v instanceof JSONObject) {
                 QDLStem x = newInstance();
                 if (convertVars) {
@@ -1689,7 +1700,9 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
                             if (v instanceof String && v.equals(QDLConstants.JSON_QDL_NULL)) {
                                 put(key, getNullValue());
                             } else {
-                                put(key, asQDLValue(v));
+                                if (v != null) {
+                                    put(key, asQDLValue(v));
+                                }
                             }
                         }
                     }

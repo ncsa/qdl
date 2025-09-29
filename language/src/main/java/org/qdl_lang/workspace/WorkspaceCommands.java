@@ -1827,6 +1827,10 @@ public class WorkspaceCommands implements Logable, Serializable {
         } catch (Throwable t) {
             interpreter.setEchoModeOn(origEchoMode);
             interpreter.setPrettyPrint(ppOn);
+            if(t instanceof ParsingException){
+                say("Parsing exception: " + t.getMessage());
+                return RC_CONTINUE;
+            }
             if (t instanceof ReturnException) {
                 ReturnException rx = (ReturnException) t;
                 if (rx.hasResult()) {
@@ -1854,6 +1858,12 @@ public class WorkspaceCommands implements Logable, Serializable {
                         InterruptUtil.printSetupMessage(this, ie);
                     }
 
+                }else{
+                    say("There was an error running the buffer: " + t.getMessage());
+                    if(isDebugOn()){
+                        t.printStackTrace();
+                    }
+                    return RC_CONTINUE;
                 }
             }
         }

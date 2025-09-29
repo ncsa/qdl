@@ -119,6 +119,8 @@ module[
           if[types ≡ 2][right.≔y;r_dim.≔dim(y);l_dim.≔clone(r_dim.);left.≔n(l_dim., [x]);];
           if[types ≡ 3][left.≔x;right.≔y;l_dim.≔dim(x);r_dim.≔dim(y);];
       ]; // end switch
+      size(left.) ≡ 0 ⇒ return(right.);
+      size(right.) ≡ 0 ⇒ return(left.);
       // one may be one rank high if they are conformable
       l_rank ≔ size(l_dim.); r_rank ≔ size(r_dim.);
       ⊨ abs(l_rank - r_rank) ≤ 1 : 'rank error';
@@ -182,15 +184,6 @@ module[
        return(module_import(module_load(path)));
     ];
 
-/*
-    define[
-      jload(path)
-    ][
-      » Convenience to import a java module and load an instance of it all at
-      » once. This returns the name of the imported module.
-       return(module_import(module_load(path, 'java')));
-    ];
-*/
 
       // make sure it loads in the main process.
       lib_load(name)->

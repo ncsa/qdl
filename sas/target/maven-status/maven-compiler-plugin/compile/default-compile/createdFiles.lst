@@ -19,3 +19,4 @@ org/qdl_lang/sas/response/QDLSASResponseDeserializer.class
 org/qdl_lang/sas/response/BufferSaveResponse.class
 org/qdl_lang/sas/action/GetHelpTopicAction.class
 org/qdl_lang/sas/QDLSASTerminal$QDLSASHistoryKeyAdapter.class
+org/qdl_lang/sas/loader/QDLSASCFConfigurationLoader.class

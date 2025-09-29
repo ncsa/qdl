@@ -1167,7 +1167,7 @@ public class State extends FunctionState implements QDLConstants {
         newState.setVfsFileProviders(getVfsFileProviders());
         newState.setIoInterface(getIoInterface());
         newState.setWorkspaceCommands(getWorkspaceCommands());
-        newState.systemInfo = systemInfo;
+        newState.systemInfo = getSystemInfo();
         newState.setDebugUtil(getDebugUtil()); // share the debugger.
         newState.setSuperState(moduleState);
         if (moduleState != null) {
@@ -1241,7 +1241,7 @@ public class State extends FunctionState implements QDLConstants {
         newState.setLibPath(getLibPath());
         newState.setEnableLibrarySupport(isEnableLibrarySupport());
         newState.setLibrarySupportMode(getLibrarySupportMode());
-        newState.systemInfo = systemInfo;//systemInfo can only be be created at startup.
+        newState.systemInfo = getSystemInfo();//systemInfo can only be be created at startup.
         newState.setWorkspaceCommands(getWorkspaceCommands());
         return newState;
     }

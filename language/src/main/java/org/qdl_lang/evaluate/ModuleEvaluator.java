@@ -14,6 +14,7 @@ import org.qdl_lang.functions.FStack;
 import org.qdl_lang.expressions.module.MTKey;
 import org.qdl_lang.expressions.module.Module;
 import org.qdl_lang.expressions.module.QDLModule;
+import org.qdl_lang.state.LibLoader;
 import org.qdl_lang.state.State;
 import org.qdl_lang.state.StateUtils;
 import org.qdl_lang.util.ModuleUtils;
@@ -25,6 +26,8 @@ import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.xml.SerializationState;
 import net.sf.json.JSONArray;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.*;
 
@@ -180,7 +183,7 @@ public class ModuleEvaluator extends AbstractEvaluator {
      */
     private void doLibEntries(Polyad polyad, State state) {
         if (polyad.isSizeQuery()) {
-            polyad.setAllowedArgCounts(new int[]{0, 2});
+            polyad.setAllowedArgCounts(new int[]{0, 1, 2});
             polyad.setEvaluated(true);
             return;
         }
@@ -190,11 +193,28 @@ public class ModuleEvaluator extends AbstractEvaluator {
             polyad.setResult(info.get("lib"));
             return;
         }
-        if (polyad.getArgCount() == 1) {
-            throw new WrongArgCountException(ADD_LIB_ENTRIES + " requires either no or two arguments", polyad.getArgAt(0));
-        }
-        if (2 < polyad.getArgCount()) {
-            throw new WrongArgCountException(ADD_LIB_ENTRIES + " requires at most two arguments", polyad.getArgAt(2));
+
+        if(polyad.getArgCount() == 1){
+            // Then it is assumed to be a java library loader. Run it.
+            QDLValue classPath = polyad.evalArg(0,state);
+            Object instance = null;
+            try {
+                Class<?> myClass = Class.forName(classPath.asString());
+                Constructor<?> constructor = myClass.getDeclaredConstructor();
+                instance = constructor.newInstance();
+            }catch (ReflectiveOperationException  e){
+                throw new QDLExceptionWithTrace("Could not create instance of " + classPath , polyad.getArgAt(0));
+            }
+            if(instance == null){
+                throw new QDLExceptionWithTrace("Could not create instance of " + classPath , polyad.getArgAt(0));
+            }
+            if(!(instance instanceof LibLoader)){
+                throw new QDLExceptionWithTrace(classPath + " is not an instance of " + LibLoader.class.getSimpleName(), polyad.getArgAt(0));
+            }
+            ((LibLoader)instance).add(state);
+            polyad.setResult(BooleanValue.True);
+            polyad.setEvaluated(true);
+            return;
         }
         QDLValue x = polyad.evalArg(0, state);
         if (!x.isString()) {
