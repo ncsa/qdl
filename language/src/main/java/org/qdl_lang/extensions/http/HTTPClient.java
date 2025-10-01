@@ -434,7 +434,7 @@ public class HTTPClient implements QDLMetaModule {
             stemVariable.fromJSON(JSONObject.fromObject(rawJSON));
             return stemVariable;
         } catch (Throwable t) {
-
+         t.printStackTrace();
         }
         try {
             stemVariable.fromJSON(JSONArray.fromObject(rawJSON));
