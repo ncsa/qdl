@@ -3633,6 +3633,367 @@ input_form((a\*\((k,v)→!is_list(v)))); // extracts all non-lists elements
         assert getBooleanValue("ok", state) :  "Could not set stem value using exact decimals";
 
     }
+    public void testJSONNull() throws Throwable{
+
+        String from_json = "from_json('{\\n'+\n" +
+                "'  \"0\": {\\n'+\n" +
+                "'    \"CoPerson\": {\\n'+\n" +
+                "'      \"meta\": {\\n'+\n" +
+                "'        \"id\": 926,\\n'+\n" +
+                "'        \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'        \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'        \"co_person_id\": null,\\n'+\n" +
+                "'        \"revision\": 0,\\n'+\n" +
+                "'        \"deleted\": false,\\n'+\n" +
+                "'        \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'      },\\n'+\n" +
+                "'      \"co_id\": 2,\\n'+\n" +
+                "'      \"status\": \"A\",\\n'+\n" +
+                "'      \"date_of_birth\": null,\\n'+\n" +
+                "'      \"timezone\": null\\n'+\n" +
+                "'    },\\n'+\n" +
+                "'    \"CoGroupMember\": [\\n'+\n" +
+                "'      {\\n'+\n" +
+                "'        \"meta\": {\\n'+\n" +
+                "'          \"id\": 969,\\n'+\n" +
+                "'          \"source_org_identity_id\": null,\\n'+\n" +
+                "'          \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"co_group_member_id\": null,\\n'+\n" +
+                "'          \"revision\": 0,\\n'+\n" +
+                "'          \"deleted\": false,\\n'+\n" +
+                "'          \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'        },\\n'+\n" +
+                "'        \"co_group_id\": 5,\\n'+\n" +
+                "'        \"member\": true,\\n'+\n" +
+                "'        \"owner\": false,\\n'+\n" +
+                "'        \"valid_from\": null,\\n'+\n" +
+                "'        \"valid_through\": null,\\n'+\n" +
+                "'        \"co_group_nesting_id\": null\\n'+\n" +
+                "'      },\\n'+\n" +
+                "'      {\\n'+\n" +
+                "'        \"meta\": {\\n'+\n" +
+                "'          \"id\": 970,\\n'+\n" +
+                "'          \"source_org_identity_id\": null,\\n'+\n" +
+                "'          \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"co_group_member_id\": null,\\n'+\n" +
+                "'          \"revision\": 0,\\n'+\n" +
+                "'          \"deleted\": false,\\n'+\n" +
+                "'          \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'        },\\n'+\n" +
+                "'        \"co_group_id\": 6,\\n'+\n" +
+                "'        \"member\": true,\\n'+\n" +
+                "'        \"owner\": false,\\n'+\n" +
+                "'        \"valid_from\": null,\\n'+\n" +
+                "'        \"valid_through\": null,\\n'+\n" +
+                "'        \"co_group_nesting_id\": null\\n'+\n" +
+                "'      }\\n'+\n" +
+                "'    ],\\n'+\n" +
+                "'    \"EmailAddress\": [\\n'+\n" +
+                "'      {\\n'+\n" +
+                "'        \"meta\": {\\n'+\n" +
+                "'          \"id\": 1067,\\n'+\n" +
+                "'          \"source_email_address_id\": null,\\n'+\n" +
+                "'          \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"email_address_id\": null,\\n'+\n" +
+                "'          \"revision\": 0,\\n'+\n" +
+                "'          \"deleted\": false,\\n'+\n" +
+                "'          \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'        },\\n'+\n" +
+                "'        \"mail\": \"gaynor@illinois.edu\",\\n'+\n" +
+                "'        \"description\": null,\\n'+\n" +
+                "'        \"type\": \"official\",\\n'+\n" +
+                "'        \"verified\": true\\n'+\n" +
+                "'      }\\n'+\n" +
+                "'    ],\\n'+\n" +
+                "'    \"CoPersonRole\": [\\n'+\n" +
+                "'      {\\n'+\n" +
+                "'        \"meta\": {\\n'+\n" +
+                "'          \"id\": 794,\\n'+\n" +
+                "'          \"sponsor_co_person_id\": null,\\n'+\n" +
+                "'          \"source_org_identity_id\": null,\\n'+\n" +
+                "'          \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"co_person_role_id\": null,\\n'+\n" +
+                "'          \"revision\": 0,\\n'+\n" +
+                "'          \"deleted\": false,\\n'+\n" +
+                "'          \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'        },\\n'+\n" +
+                "'        \"cou_id\": null,\\n'+\n" +
+                "'        \"affiliation\": \"member\",\\n'+\n" +
+                "'        \"title\": null,\\n'+\n" +
+                "'        \"o\": null,\\n'+\n" +
+                "'        \"ou\": null,\\n'+\n" +
+                "'        \"valid_from\": null,\\n'+\n" +
+                "'        \"valid_through\": null,\\n'+\n" +
+                "'        \"ordr\": null,\\n'+\n" +
+                "'        \"status\": \"A\",\\n'+\n" +
+                "'        \"manager_co_person_id\": null,\\n'+\n" +
+                "'        \"Address\": [],\\n'+\n" +
+                "'        \"AdHocAttribute\": [],\\n'+\n" +
+                "'        \"TelephoneNumber\": []\\n'+\n" +
+                "'      }\\n'+\n" +
+                "'    ],\\n'+\n" +
+                "'    \"Identifier\": [\\n'+\n" +
+                "'      {\\n'+\n" +
+                "'        \"meta\": {\\n'+\n" +
+                "'          \"id\": 2933,\\n'+\n" +
+                "'          \"co_group_id\": null,\\n'+\n" +
+                "'          \"source_identifier_id\": null,\\n'+\n" +
+                "'          \"co_provisioning_target_id\": null,\\n'+\n" +
+                "'          \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"identifier_id\": null,\\n'+\n" +
+                "'          \"revision\": 0,\\n'+\n" +
+                "'          \"deleted\": false,\\n'+\n" +
+                "'          \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'        },\\n'+\n" +
+                "'        \"identifier\": \"http:\\\\/\\\\/cilogon.org\\\\/serverI\\\\/users\\\\/3106\",\\n'+\n" +
+                "'        \"type\": \"oidcsub\",\\n'+\n" +
+                "'        \"login\": true,\\n'+\n" +
+                "'        \"status\": \"A\",\\n'+\n" +
+                "'        \"language\": null\\n'+\n" +
+                "'      },\\n'+\n" +
+                "'      {\\n'+\n" +
+                "'        \"meta\": {\\n'+\n" +
+                "'          \"id\": 2935,\\n'+\n" +
+                "'          \"co_group_id\": null,\\n'+\n" +
+                "'          \"source_identifier_id\": null,\\n'+\n" +
+                "'          \"co_provisioning_target_id\": null,\\n'+\n" +
+                "'          \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"identifier_id\": null,\\n'+\n" +
+                "'          \"revision\": 0,\\n'+\n" +
+                "'          \"deleted\": false,\\n'+\n" +
+                "'          \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'        },\\n'+\n" +
+                "'        \"identifier\": \"1000156\",\\n'+\n" +
+                "'        \"type\": \"cadrenumber\",\\n'+\n" +
+                "'        \"login\": false,\\n'+\n" +
+                "'        \"status\": \"A\",\\n'+\n" +
+                "'        \"language\": null\\n'+\n" +
+                "'      },\\n'+\n" +
+                "'      {\\n'+\n" +
+                "'        \"meta\": {\\n'+\n" +
+                "'          \"id\": 2936,\\n'+\n" +
+                "'          \"co_group_id\": null,\\n'+\n" +
+                "'          \"source_identifier_id\": null,\\n'+\n" +
+                "'          \"co_provisioning_target_id\": null,\\n'+\n" +
+                "'          \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"identifier_id\": null,\\n'+\n" +
+                "'          \"revision\": 0,\\n'+\n" +
+                "'          \"deleted\": false,\\n'+\n" +
+                "'          \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'        },\\n'+\n" +
+                "'        \"identifier\": \"CADRE1000156\",\\n'+\n" +
+                "'        \"type\": \"cadreid\",\\n'+\n" +
+                "'        \"login\": false,\\n'+\n" +
+                "'        \"status\": \"A\",\\n'+\n" +
+                "'        \"language\": null\\n'+\n" +
+                "'      },\\n'+\n" +
+                "'      {\\n'+\n" +
+                "'        \"meta\": {\\n'+\n" +
+                "'          \"id\": 2937,\\n'+\n" +
+                "'          \"co_group_id\": null,\\n'+\n" +
+                "'          \"source_identifier_id\": null,\\n'+\n" +
+                "'          \"co_provisioning_target_id\": null,\\n'+\n" +
+                "'          \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"identifier_id\": null,\\n'+\n" +
+                "'          \"revision\": 0,\\n'+\n" +
+                "'          \"deleted\": false,\\n'+\n" +
+                "'          \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'        },\\n'+\n" +
+                "'        \"identifier\": \"jgaynor\",\\n'+\n" +
+                "'        \"type\": \"dataverseid\",\\n'+\n" +
+                "'        \"login\": false,\\n'+\n" +
+                "'        \"status\": \"A\",\\n'+\n" +
+                "'        \"language\": null\\n'+\n" +
+                "'      },\\n'+\n" +
+                "'      {\\n'+\n" +
+                "'        \"meta\": {\\n'+\n" +
+                "'          \"id\": 2938,\\n'+\n" +
+                "'          \"co_group_id\": null,\\n'+\n" +
+                "'          \"source_identifier_id\": null,\\n'+\n" +
+                "'          \"co_provisioning_target_id\": null,\\n'+\n" +
+                "'          \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"identifier_id\": null,\\n'+\n" +
+                "'          \"revision\": 0,\\n'+\n" +
+                "'          \"deleted\": false,\\n'+\n" +
+                "'          \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'        },\\n'+\n" +
+                "'        \"identifier\": \"jgaynor\",\\n'+\n" +
+                "'        \"type\": \"dataverseid2\",\\n'+\n" +
+                "'        \"login\": false,\\n'+\n" +
+                "'        \"status\": \"A\",\\n'+\n" +
+                "'        \"language\": null\\n'+\n" +
+                "'      }\\n'+\n" +
+                "'    ],\\n'+\n" +
+                "'    \"Name\": [\\n'+\n" +
+                "'      {\\n'+\n" +
+                "'        \"meta\": {\\n'+\n" +
+                "'          \"id\": 1336,\\n'+\n" +
+                "'          \"source_name_id\": null,\\n'+\n" +
+                "'          \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"name_id\": null,\\n'+\n" +
+                "'          \"revision\": 0,\\n'+\n" +
+                "'          \"deleted\": false,\\n'+\n" +
+                "'          \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'        },\\n'+\n" +
+                "'        \"honorific\": null,\\n'+\n" +
+                "'        \"given\": \"Jeffrey\",\\n'+\n" +
+                "'        \"middle\": null,\\n'+\n" +
+                "'        \"family\": \"Gaynor\",\\n'+\n" +
+                "'        \"suffix\": null,\\n'+\n" +
+                "'        \"type\": \"official\",\\n'+\n" +
+                "'        \"language\": null,\\n'+\n" +
+                "'        \"primary_name\": true\\n'+\n" +
+                "'      }\\n'+\n" +
+                "'    ],\\n'+\n" +
+                "'    \"Url\": [],\\n'+\n" +
+                "'    \"OrgIdentity\": [\\n'+\n" +
+                "'      {\\n'+\n" +
+                "'        \"meta\": {\\n'+\n" +
+                "'          \"id\": 686,\\n'+\n" +
+                "'          \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'          \"org_identity_id\": null,\\n'+\n" +
+                "'          \"revision\": 0,\\n'+\n" +
+                "'          \"deleted\": false,\\n'+\n" +
+                "'          \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'        },\\n'+\n" +
+                "'        \"status\": null,\\n'+\n" +
+                "'        \"date_of_birth\": null,\\n'+\n" +
+                "'        \"affiliation\": null,\\n'+\n" +
+                "'        \"title\": null,\\n'+\n" +
+                "'        \"o\": \"University of Illinois at Urbana-Champaign\",\\n'+\n" +
+                "'        \"ou\": null,\\n'+\n" +
+                "'        \"co_id\": 2,\\n'+\n" +
+                "'        \"valid_from\": null,\\n'+\n" +
+                "'        \"valid_through\": null,\\n'+\n" +
+                "'        \"manager_identifier\": null,\\n'+\n" +
+                "'        \"sponsor_identifier\": null,\\n'+\n" +
+                "'        \"Address\": [],\\n'+\n" +
+                "'        \"AdHocAttribute\": [\\n'+\n" +
+                "'          {\\n'+\n" +
+                "'            \"meta\": {\\n'+\n" +
+                "'              \"id\": 226,\\n'+\n" +
+                "'              \"co_person_role_id\": null,\\n'+\n" +
+                "'              \"source_ad_hoc_attribute_id\": null,\\n'+\n" +
+                "'              \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'              \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'              \"ad_hoc_attribute_id\": null,\\n'+\n" +
+                "'              \"revision\": 0,\\n'+\n" +
+                "'              \"deleted\": false,\\n'+\n" +
+                "'              \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'            },\\n'+\n" +
+                "'            \"tag\": \"affiliation_scoped\",\\n'+\n" +
+                "'            \"value\": \"member@illinois.edu;staff@illinois.edu;employee@illinois.edu\"\\n'+\n" +
+                "'          },\\n'+\n" +
+                "'          {\\n'+\n" +
+                "'            \"meta\": {\\n'+\n" +
+                "'              \"id\": 227,\\n'+\n" +
+                "'              \"co_person_role_id\": null,\\n'+\n" +
+                "'              \"source_ad_hoc_attribute_id\": null,\\n'+\n" +
+                "'              \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'              \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'              \"ad_hoc_attribute_id\": null,\\n'+\n" +
+                "'              \"revision\": 0,\\n'+\n" +
+                "'              \"deleted\": false,\\n'+\n" +
+                "'              \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'            },\\n'+\n" +
+                "'            \"tag\": \"affiliation\",\\n'+\n" +
+                "'            \"value\": \"member;staff;employee\"\\n'+\n" +
+                "'          }\\n'+\n" +
+                "'        ],\\n'+\n" +
+                "'        \"EmailAddress\": [\\n'+\n" +
+                "'          {\\n'+\n" +
+                "'            \"meta\": {\\n'+\n" +
+                "'              \"id\": 1068,\\n'+\n" +
+                "'              \"source_email_address_id\": null,\\n'+\n" +
+                "'              \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'              \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'              \"email_address_id\": null,\\n'+\n" +
+                "'              \"revision\": 0,\\n'+\n" +
+                "'              \"deleted\": false,\\n'+\n" +
+                "'              \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'            },\\n'+\n" +
+                "'            \"mail\": \"gaynor@illinois.edu\",\\n'+\n" +
+                "'            \"description\": null,\\n'+\n" +
+                "'            \"type\": \"official\",\\n'+\n" +
+                "'            \"verified\": true\\n'+\n" +
+                "'          }\\n'+\n" +
+                "'        ],\\n'+\n" +
+                "'        \"Identifier\": [\\n'+\n" +
+                "'          {\\n'+\n" +
+                "'            \"meta\": {\\n'+\n" +
+                "'              \"id\": 2934,\\n'+\n" +
+                "'              \"co_group_id\": null,\\n'+\n" +
+                "'              \"source_identifier_id\": null,\\n'+\n" +
+                "'              \"co_provisioning_target_id\": null,\\n'+\n" +
+                "'              \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'              \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'              \"identifier_id\": null,\\n'+\n" +
+                "'              \"revision\": 0,\\n'+\n" +
+                "'              \"deleted\": false,\\n'+\n" +
+                "'              \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'            },\\n'+\n" +
+                "'            \"identifier\": \"http:\\\\/\\\\/cilogon.org\\\\/serverI\\\\/users\\\\/3106\",\\n'+\n" +
+                "'            \"type\": \"oidcsub\",\\n'+\n" +
+                "'            \"login\": true,\\n'+\n" +
+                "'            \"status\": \"A\",\\n'+\n" +
+                "'            \"language\": null\\n'+\n" +
+                "'          }\\n'+\n" +
+                "'        ],\\n'+\n" +
+                "'        \"Name\": [\\n'+\n" +
+                "'          {\\n'+\n" +
+                "'            \"meta\": {\\n'+\n" +
+                "'              \"id\": 1337,\\n'+\n" +
+                "'              \"source_name_id\": null,\\n'+\n" +
+                "'              \"created\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'              \"modified\": \"2025-10-01 14:49:04\",\\n'+\n" +
+                "'              \"name_id\": null,\\n'+\n" +
+                "'              \"revision\": 0,\\n'+\n" +
+                "'              \"deleted\": false,\\n'+\n" +
+                "'              \"actor_identifier\": \"co_2.transparent_enroller\"\\n'+\n" +
+                "'            },\\n'+\n" +
+                "'            \"honorific\": null,\\n'+\n" +
+                "'            \"given\": \"Jeffrey\",\\n'+\n" +
+                "'            \"middle\": null,\\n'+\n" +
+                "'            \"family\": \"Gaynor\",\\n'+\n" +
+                "'            \"suffix\": null,\\n'+\n" +
+                "'            \"type\": \"official\",\\n'+\n" +
+                "'            \"language\": null,\\n'+\n" +
+                "'            \"primary_name\": true\\n'+\n" +
+                "'          }\\n'+\n" +
+                "'        ],\\n'+\n" +
+                "'        \"TelephoneNumber\": [],\\n'+\n" +
+                "'        \"Url\": []\\n'+\n" +
+                "'      }\\n'+\n" +
+                "'    ],\\n'+\n" +
+                "'    \"Cadre\": [],\\n'+\n" +
+                "'    \"SshKey\": []\\n'+\n" +
+                "'  },\\n'+\n" +
+                "'  \"currentPage\": \"1\",\\n'+\n" +
+                "'  \"itemsPerPage\": \"1\",\\n'+\n" +
+                "'  \"pageCount\": \"1\",\\n'+\n" +
+                "'  \"startIndex\": \"1\",\\n'+\n" +
+                "'  \"totalResults\": \"1\"\\n'+\n" +
+                "'}');";
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script,"stem.  ≔ "+from_json ); // drop a big one as part of test
+        addLine(script,"ok ≔ stem.0.'CoPerson'.'meta'.'co_person_id' ≡ null;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        assert getBooleanValue("ok", state) :  "Parse JSON null object correctly";
+
+    }
 }
 /*
    zeta.'Communities:LSCVirgoLIGOGroupMembers' := ['read:/DQSegDB' ,'read:/frames', 'read:/GraceDB'];
