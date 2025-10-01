@@ -1666,9 +1666,13 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
             if (v == null) {
                 continue; // possible the JSON has a Java null. Skip it.
             }
+            // Fix https://github.com/ncsa/qdl/issues/143
             if(v instanceof JSONNull){
-                // Another edge case from our JSON library.
-                continue;
+                // Another edge case from our JSON library. A null is a perfectly fine value in JSON, but
+                // representing it as a JSONNull object means that failures occur only if the value is accessed
+                // in any way. Now we are using QDLValue, so this cannot be returned as a raw Jova Object embedded in a
+                // stem.
+                v = QDLNullValue.getNullValue();
             }
             if (v instanceof JSONObject) {
                 QDLStem x = newInstance();

@@ -485,7 +485,12 @@ public class HTTPClient implements QDLMetaModule {
             stemVariable.fromJSON(JSONArray.fromObject(rawJSON));
             return stemVariable;
         } catch (Throwable t) {
-            throw new IllegalArgumentException("could not convert '" + rawJSON + "' to stem:" + t.getMessage());
+            if (DebugUtil.isTraceEnabled()) {
+                t.printStackTrace();
+                DebugUtil.trace("Failed to parse JSON:\n" + rawJSON, t);
+            }
+            // In really large errors,
+            throw new IllegalArgumentException("could not convert to stem(" + t.getMessage() + "): " + StringUtils.truncate(rawJSON.toString(), 50)  );
         }
     }
 
