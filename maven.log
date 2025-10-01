@@ -53,7 +53,7 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #14,752 (2025-09-24T17:29:57.235-05:00) at timestamp: 1758752997235
+[[1;34mINFO[m] Storing buildNumber: Build: #14,758 (2025-10-01T12:04:57.150-05:00) at timestamp: 1759338297150
 [[1;34mINFO[m] Storing buildScmBranch: main
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mlanguage[0;1m ---[m
@@ -85,7 +85,7 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #14,753 (2025-09-24T17:30:00.718-05:00) at timestamp: 1758753000718
+[[1;34mINFO[m] Storing buildNumber: Build: #14,759 (2025-10-01T12:05:00.979-05:00) at timestamp: 1759338300979
 [[1;34mINFO[m] Storing buildScmBranch: main
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m<<< [0;32mmaven-source-plugin:3.3.1:jar[m [1m(attach-sources)[0;1m < [0;1mgenerate-sources[m @ [36mlanguage[0;1m <<<[m
@@ -342,9 +342,12 @@ Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_l
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/examples/stateful/StatefulModule.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/HTTPClient.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/HTTPClient.Close.html...
+Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/HTTPClient.Configuration.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/HTTPClient.CreateCredentials.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/HTTPClient.Delete.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/HTTPClient.Download.html...
+Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/HTTPClient.EchoHTTPRequest.html...
+Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/HTTPClient.EchoHTTPResponse.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/HTTPClient.Get.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/HTTPClient.Headers.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/HTTPClient.Host.html...
@@ -1223,6 +1226,9 @@ Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_l
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/examples/basic/class-use/EGModule.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/class-use/QDLHTTPLoader.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/class-use/HTTPClient.html...
+Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/class-use/HTTPClient.Configuration.html...
+Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/class-use/HTTPClient.EchoHTTPResponse.html...
+Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/class-use/HTTPClient.EchoHTTPRequest.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/class-use/HTTPClient.Download.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/class-use/HTTPClient.IsText.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/http/class-use/HTTPClient.IsJSON.html...
@@ -1496,7 +1502,7 @@ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
   ~`!@#$%^&*()[]{}<>\/'"-_=+|;:,.?
   ¬¿¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧√≁⊕⊗⊙⌆µ⊢∈∉∀∋∌∃∄∩∪∆∂
   ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω
-[[1;34mINFO[m] [1;32mTests run: [0;1;32m625[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.256 s - in org.qdl_lang.[1mTestSuite[m
+[[1;34mINFO[m] [1;32mTests run: [0;1;32m625[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.762 s - in org.qdl_lang.[1mTestSuite[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] Results:
 [[1;34mINFO[m] 
@@ -1691,15 +1697,15 @@ Generating /home/ncsa/dev/ncsa-git/qdl/sas/target/reports/apidocs/help-doc.html.
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1mReactor Summary for QDL root module 1.6-QDL-SNAPSHOT:[m
 [[1;34mINFO[m] 
-[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.438 s]
-[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [  8.554 s]
-[[1;34mINFO[m] NCSA QDL Website ................................... [1;32mSUCCESS[m [  0.059 s]
-[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [ 10.567 s]
-[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  1.188 s]
-[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.110 s]
+[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.413 s]
+[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [  9.679 s]
+[[1;34mINFO[m] NCSA QDL Website ................................... [1;32mSUCCESS[m [  0.057 s]
+[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [  9.591 s]
+[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  1.315 s]
+[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.148 s]
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1;32mBUILD SUCCESS[m
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] Total time:  21.088 s
-[[1;34mINFO[m] Finished at: 2025-09-24T17:30:17-05:00
+[[1;34mINFO[m] Total time:  21.374 s
+[[1;34mINFO[m] Finished at: 2025-10-01T12:05:17-05:00
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m

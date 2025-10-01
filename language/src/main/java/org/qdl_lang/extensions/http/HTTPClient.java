@@ -477,7 +477,9 @@ public class HTTPClient implements QDLMetaModule {
             stemVariable.fromJSON(JSONObject.fromObject(rawJSON));
             return stemVariable;
         } catch (Throwable t) {
-
+            if (DebugUtil.isTraceEnabled()) {
+                t.printStackTrace();
+            }
         }
         try {
             stemVariable.fromJSON(JSONArray.fromObject(rawJSON));
@@ -1069,7 +1071,7 @@ public class HTTPClient implements QDLMetaModule {
             if (!objects[0].isString()) throw new BadArgException("zeroth argument must be a string", 0);
             if (!objects[1].isString()) throw new BadArgException("first argument must be a string", 1);
             boolean isArchive = false;
-            boolean isTriadic  = objects.length == 3;
+            boolean isTriadic = objects.length == 3;
             if (isTriadic) {
                 if (!(objects[2].isBoolean())) {
                     throw new BadArgException(getName() + " must have a boolean as its third argument if present", 2);
@@ -1096,13 +1098,13 @@ public class HTTPClient implements QDLMetaModule {
                 if (isArchive) {
                     totalBytes = downloadArchive(url, targetFile);
                 } else {
-                    if(isTriadic) {
+                    if (isTriadic) {
                         // In this case, the target is a directory, but they want the archive downloaded to that.
                         String path = url.getPath();
-                        String fileName = path.substring(1+path.lastIndexOf("/"));
+                        String fileName = path.substring(1 + path.lastIndexOf("/"));
                         targetFile = new File(targetPath, fileName);
                     }
-                        totalBytes = download(url, targetFile);
+                    totalBytes = download(url, targetFile);
                 }
             } catch (IOException iox) {
                 if (state.isDebugOn()) {
@@ -1238,16 +1240,16 @@ public class HTTPClient implements QDLMetaModule {
         if (json.containsKey("headers")) {
             headers = json.getJSONObject("headers");
         }
-        if(json.containsKey("separator")) {
+        if (json.containsKey("separator")) {
             LIST_VALUE_SEPARATOR = json.getString("separator");
         }
-        if(json.containsKey("encode")) {
+        if (json.containsKey("encode")) {
             LIST_ENCODE_TYPE = json.getString("encode");
         }
-        if(json.containsKey(ECHO_HTTP_RESPONSE)) {
+        if (json.containsKey(ECHO_HTTP_RESPONSE)) {
             echoHttpResponse = json.getBoolean(ECHO_HTTP_RESPONSE);
         }
-        if(json.containsKey(ECHO_HTTP_REQUEST)) {
+        if (json.containsKey(ECHO_HTTP_REQUEST)) {
             echoHttpRequest = json.getBoolean(ECHO_HTTP_REQUEST);
         }
 
@@ -1359,9 +1361,9 @@ public class HTTPClient implements QDLMetaModule {
         public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
 
             QDLStem out = new QDLStem();
-            if(echoHttpResponse == echoHttpRequest){
+            if (echoHttpResponse == echoHttpRequest) {
                 out.put("echo", asQDLValue(echoHttpRequest));
-            }else {
+            } else {
                 QDLStem echos = new QDLStem();
                 echos.put("request", asQDLValue(echoHttpRequest));
                 echos.put("response", asQDLValue(echoHttpResponse));
@@ -1380,7 +1382,7 @@ public class HTTPClient implements QDLMetaModule {
             QDLStem stem = qdlValues[0].asStem();
             try {
                 setConfigurationValues(stem);
-            }catch(Throwable ex){
+            } catch (Throwable ex) {
                 // There was an error, rollback
                 setConfigurationValues(out);
                 throw ex;
@@ -1390,6 +1392,7 @@ public class HTTPClient implements QDLMetaModule {
 
         /**
          * Sets the configuration values from a stem.
+         *
          * @param stem
          */
         private void setConfigurationValues(QDLStem stem) {
@@ -1421,18 +1424,18 @@ public class HTTPClient implements QDLMetaModule {
                 }
 
             }
-            if(stem.containsKey("list")) {
+            if (stem.containsKey("list")) {
                 QDLValue listValue = stem.get("list");
-                if(!listValue.isStem()) {
+                if (!listValue.isStem()) {
                     throw new IllegalArgumentException("list argument for " + getName() + " must be a stem");
                 }
                 QDLStem listStem = listValue.asStem();
-                if(listStem.containsKey("encode")) {
+                if (listStem.containsKey("encode")) {
                     QDLValue encodeValue = listStem.get("encode");
-                    if(!encodeValue.isString()) {
+                    if (!encodeValue.isString()) {
                         throw new IllegalArgumentException("list encode argument for " + getName() + " must be a string");
                     }
-                    switch(encodeValue.asString()) {
+                    switch (encodeValue.asString()) {
                         case "array":
                         case "parameter":
                         case "value":
@@ -1442,10 +1445,10 @@ public class HTTPClient implements QDLMetaModule {
                             throw new IllegalArgumentException("unknown list encode argument for " + getName() + " \"" + encodeValue.asString() + "\"");
                     }
                 }
-                if(listStem.containsKey("separator")) {
+                if (listStem.containsKey("separator")) {
                     QDLValue separatorValue = listStem.get("separator");
-                    if(!separatorValue.isString()) {
-                            throw new IllegalArgumentException("list separator argument for " + getName() + " must be a string");
+                    if (!separatorValue.isString()) {
+                        throw new IllegalArgumentException("list separator argument for " + getName() + " must be a string");
                     }
                     LIST_VALUE_SEPARATOR = separatorValue.asString();
                 }
