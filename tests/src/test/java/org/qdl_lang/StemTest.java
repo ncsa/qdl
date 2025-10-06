@@ -3987,8 +3987,9 @@ input_form((a\*\((k,v)→!is_list(v)))); // extracts all non-lists elements
                 "'}');";
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script,"stem.  ≔ "+from_json ); // drop a big one as part of test
+        addLine(script,"stem.  ≔ "+from_json ); // drop a big one from a service as part of test.
         addLine(script,"ok ≔ stem.0.'CoPerson'.'meta'.'co_person_id' ≡ null;");
+        addLine(script, "say(to_json(stem.));");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) :  "Parse JSON null object correctly";
