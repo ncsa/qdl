@@ -53,7 +53,7 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #14,776 (2025-10-06T06:25:34.550-05:00) at timestamp: 1759749934550
+[[1;34mINFO[m] Storing buildNumber: Build: #14,806 (2025-10-09T15:06:00.645-05:00) at timestamp: 1760040360645
 [[1;34mINFO[m] Storing buildScmBranch: main
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mlanguage[0;1m ---[m
@@ -85,7 +85,7 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #14,777 (2025-10-06T06:25:37.472-05:00) at timestamp: 1759749937472
+[[1;34mINFO[m] Storing buildNumber: Build: #14,807 (2025-10-09T15:06:04.243-05:00) at timestamp: 1760040364243
 [[1;34mINFO[m] Storing buildScmBranch: main
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m<<< [0;32mmaven-source-plugin:3.3.1:jar[m [1m(attach-sources)[0;1m < [0;1mgenerate-sources[m @ [36mlanguage[0;1m <<<[m
@@ -1503,7 +1503,7 @@ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
   ~`!@#$%^&*()[]{}<>\/'"-_=+|;:,.?
   ¬¿¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧√≁⊕⊗⊙⌆µ⊢∈∉∀∋∌∃∄∩∪∆∂
   ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω
-[[1;34mINFO[m] [1;32mTests run: [0;1;32m626[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.815 s - in org.qdl_lang.[1mTestSuite[m
+[[1;34mINFO[m] [1;32mTests run: [0;1;32m626[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.445 s - in org.qdl_lang.[1mTestSuite[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] Results:
 [[1;34mINFO[m] 
@@ -1698,15 +1698,15 @@ Generating /home/ncsa/dev/ncsa-git/qdl/sas/target/reports/apidocs/help-doc.html.
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1mReactor Summary for QDL root module 1.6-QDL-SNAPSHOT:[m
 [[1;34mINFO[m] 
-[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.373 s]
-[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [  7.361 s]
-[[1;34mINFO[m] NCSA QDL Website ................................... [1;32mSUCCESS[m [  0.046 s]
-[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [ 10.614 s]
-[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  1.074 s]
-[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.112 s]
+[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.388 s]
+[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [  8.356 s]
+[[1;34mINFO[m] NCSA QDL Website ................................... [1;32mSUCCESS[m [  0.061 s]
+[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [ 10.358 s]
+[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  1.155 s]
+[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.128 s]
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1;32mBUILD SUCCESS[m
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] Total time:  19.733 s
-[[1;34mINFO[m] Finished at: 2025-10-06T06:25:53-05:00
+[[1;34mINFO[m] Total time:  20.592 s
+[[1;34mINFO[m] Finished at: 2025-10-09T15:06:20-05:00
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
