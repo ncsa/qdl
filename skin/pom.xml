@@ -8,7 +8,6 @@
         <version>1.6-QDL-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.qdl-lang.skin</groupId>
 
     <artifactId>skin</artifactId>
 

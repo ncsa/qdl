@@ -12,7 +12,7 @@
   </bannerRight>
 
   <skin>
-      <groupId>org.qdl_lang.skin</groupId>
+      <groupId>org.qdl-lang</groupId>
       <artifactId>skin</artifactId>
       <version>1.6-QDL-SNAPSHOT</version>
   </skin>
