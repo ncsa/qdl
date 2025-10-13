@@ -32,6 +32,7 @@
 [[1;34mINFO[m] [1m--------------------------------[ pom ]---------------------------------[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36mqdl[0;1m ---[m
+[[1;34mINFO[m] Deleting /home/ncsa/dev/ncsa-git/qdl/target
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mqdl[0;1m ---[m
 [[1;34mINFO[m] 
@@ -53,7 +54,7 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #14,820 (2025-10-10T14:36:33.752-05:00) at timestamp: 1760124993752
+[[1;34mINFO[m] Storing buildNumber: Build: #14,840 (2025-10-13T15:27:01.241-05:00) at timestamp: 1760387221241
 [[1;34mINFO[m] Storing buildScmBranch: 1.6.2.2
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mlanguage[0;1m ---[m
@@ -85,7 +86,7 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #14,821 (2025-10-10T14:36:37.803-05:00) at timestamp: 1760124997803
+[[1;34mINFO[m] Storing buildNumber: Build: #14,841 (2025-10-13T15:27:05.885-05:00) at timestamp: 1760387225885
 [[1;34mINFO[m] Storing buildScmBranch: 1.6.2.2
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m<<< [0;32mmaven-source-plugin:3.3.1:jar[m [1m(attach-sources)[0;1m < [0;1mgenerate-sources[m @ [36mlanguage[0;1m <<<[m
@@ -1503,7 +1504,7 @@ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
   ~`!@#$%^&*()[]{}<>\/'"-_=+|;:,.?
   ¬¿¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧√≁⊕⊗⊙⌆µ⊢∈∉∀∋∌∃∄∩∪∆∂
   ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω
-[[1;34mINFO[m] [1;32mTests run: [0;1;32m626[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.164 s - in org.qdl_lang.[1mTestSuite[m
+[[1;34mINFO[m] [1;32mTests run: [0;1;32m626[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.129 s - in org.qdl_lang.[1mTestSuite[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] Results:
 [[1;34mINFO[m] 
@@ -1659,7 +1660,7 @@ Generating /home/ncsa/dev/ncsa-git/qdl/sas/target/reports/apidocs/help-doc.html.
 [[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-javadoc.jar to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6.2.2/sas-1.6.2.2-javadoc.jar
 [[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-sources.jar to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6.2.2/sas-1.6.2.2-sources.jar
 [[1;34mINFO[m] 
-[[1;34mINFO[m] [1m-----------------------< [0;36morg.qdl-lang.skin:skin[0;1m >-----------------------[m
+[[1;34mINFO[m] [1m-------------------------< [0;36morg.qdl-lang:skin[0;1m >--------------------------[m
 [[1;34mINFO[m] [1mBuilding skin 1.6.2.2                                              [6/6][m
 [[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
 [[1;34mINFO[m] 
@@ -1693,20 +1694,20 @@ Generating /home/ncsa/dev/ncsa-git/qdl/sas/target/reports/apidocs/help-doc.html.
 [[1;34mINFO[m] [1m--- [0;32mmaven-gpg-plugin:1.6:sign[m [1m(sign-artifacts)[m @ [36mskin[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-install-plugin:2.5.2:install[m [1m(default-install)[m @ [36mskin[0;1m ---[m
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/skin/target/skin-1.6.2.2.jar to /home/ncsa/.m2/repository/org/qdl-lang/skin/skin/1.6.2.2/skin-1.6.2.2.jar
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/skin/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/skin/skin/1.6.2.2/skin-1.6.2.2.pom
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/skin/target/skin-1.6.2.2.jar to /home/ncsa/.m2/repository/org/qdl-lang/skin/1.6.2.2/skin-1.6.2.2.jar
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/skin/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/skin/1.6.2.2/skin-1.6.2.2.pom
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1mReactor Summary for QDL root module 1.6.2.2:[m
 [[1;34mINFO[m] 
-[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.437 s]
-[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [  9.612 s]
-[[1;34mINFO[m] NCSA QDL Website ................................... [1;32mSUCCESS[m [  0.056 s]
-[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [ 10.033 s]
-[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  1.038 s]
-[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.108 s]
+[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.636 s]
+[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [  9.825 s]
+[[1;34mINFO[m] NCSA QDL Website ................................... [1;32mSUCCESS[m [  0.068 s]
+[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [ 10.041 s]
+[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  1.134 s]
+[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.110 s]
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1;32mBUILD SUCCESS[m
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] Total time:  21.437 s
-[[1;34mINFO[m] Finished at: 2025-10-10T14:36:53-05:00
+[[1;34mINFO[m] Total time:  22.003 s
+[[1;34mINFO[m] Finished at: 2025-10-13T15:27:21-05:00
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
