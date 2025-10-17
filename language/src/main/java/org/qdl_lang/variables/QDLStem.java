@@ -1600,7 +1600,8 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
                         }
                         break;
                     case NULL_TYPE:
-                        json.put(encodedKey, QDLConstants.JSON_QDL_NULL);
+                        //json.put(encodedKey, QDLConstants.JSON_QDL_NULL);
+                        json.put(encodedKey, JSONNull.getInstance());
                         break;
                     case SET_TYPE:
                         json.put(encodedKey, defaultValue.asSet().toJSON());
@@ -1667,7 +1668,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
                 continue; // possible the JSON has a Java null. Skip it.
             }
             // Fix https://github.com/ncsa/qdl/issues/143
-            if(v instanceof JSONNull){
+            if (v instanceof JSONNull) {
                 // Another edge case from our JSON library. A null is a perfectly fine value in JSON, but
                 // representing it as a JSONNull object means that failures occur only if the value is accessed
                 // in any way. Now we are using QDLValue, so this cannot be returned as a raw Jova Object embedded in a
@@ -1729,7 +1730,6 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
                     QDLStem x = newInstance();
                     put(ii, asQDLValue(x.fromJSON((JSONArray) v, convert, type)));
                 } else {
-                    //   sl.add(new StemEntry(i, v));
                     if (v instanceof Integer) {
                         put(ii, new LongValue((Integer) v));
                     } else if (v instanceof Float) {
@@ -1737,10 +1737,14 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
                     } else if (v instanceof Double) {
                         put(ii, new DecimalValue(new BigDecimal(Double.toString((Double) v))));
                     } else {
-                        if ((v instanceof String) && QDLConstants.JSON_QDL_NULL.equals(v)) {
+                        if (v instanceof JSONNull) {
                             put(ii, getNullValue());
                         } else {
-                            put(ii, asQDLValue(v));
+                            if ((v instanceof String) && (QDLConstants.JSON_QDL_NULL.equals(v))) {
+                                put(ii, getNullValue());
+                            } else {
+                                put(ii, asQDLValue(v));
+                            }
                         }
                     }
                 }

@@ -1617,6 +1617,7 @@ f(x.)→x.0+x.1;
                 if (!value.isString()) {
                     continue;
                 }
+                System.out.println("[StemEvaluator.dofromJSON] " + key + " -> " + value);
                 try {
                     QDLStem nextStem = new QDLStem();
                     jsonObject = JSONObject.fromObject(value);
@@ -1650,7 +1651,7 @@ f(x.)→x.0+x.1;
                     // ok, so this is not valid JSON. Constrcut error message with first exception since that
                     // is more apt to be correct.
                     throw new BadArgException(FROM_JSON + " could not parse the argument as valid JSON: " +
-                            t.getMessage().substring(0, Math.min(100, t.getMessage().length())), polyad.getArgAt(0));
+                            tt.getMessage().substring(0, Math.min(100, tt.getMessage().length())), polyad.getArgAt(0));
                 }
             }
         }

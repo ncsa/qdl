@@ -32,7 +32,6 @@
 [[1;34mINFO[m] [1m--------------------------------[ pom ]---------------------------------[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36mqdl[0;1m ---[m
-[[1;34mINFO[m] Deleting /home/ncsa/dev/ncsa-git/qdl/target
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mqdl[0;1m ---[m
 [[1;34mINFO[m] 
@@ -54,7 +53,7 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #14,812 (2025-10-10T08:20:30.244-05:00) at timestamp: 1760102430244
+[[1;34mINFO[m] Storing buildNumber: Build: #14,830 (2025-10-17T16:24:17.176-05:00) at timestamp: 1760736257176
 [[1;34mINFO[m] Storing buildScmBranch: main
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mlanguage[0;1m ---[m
@@ -86,7 +85,7 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #14,813 (2025-10-10T08:20:34.872-05:00) at timestamp: 1760102434872
+[[1;34mINFO[m] Storing buildNumber: Build: #14,831 (2025-10-17T16:24:21.184-05:00) at timestamp: 1760736261184
 [[1;34mINFO[m] Storing buildScmBranch: main
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m<<< [0;32mmaven-source-plugin:3.3.1:jar[m [1m(attach-sources)[0;1m < [0;1mgenerate-sources[m @ [36mlanguage[0;1m <<<[m
@@ -1403,12 +1402,12 @@ Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/help-doc.
 [[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/util/ModuleUtils.java:64: warning - invalid usage of tag >
 [[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/util/ModuleUtils.java:65: warning - invalid usage of tag >
 [[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/util/ModuleUtils.java:66: warning - invalid usage of tag >
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:308: warning - invalid usage of tag <
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:242: warning - invalid usage of tag <
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:243: warning - invalid usage of tag >
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:308: warning - invalid usage of tag <
+[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:309: warning - invalid usage of tag <
+[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:243: warning - invalid usage of tag <
+[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:244: warning - invalid usage of tag >
+[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:309: warning - invalid usage of tag <
 [[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/exceptions/package-info.java:2: warning - Tag @link: reference not found: edu.uiuc.ncsa.qdl.exceptions.QDLException
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:308: warning - invalid usage of tag <
+[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:309: warning - invalid usage of tag <
 [[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT-javadoc.jar
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-gpg-plugin:1.6:sign[m [1m(sign-artifacts)[m @ [36mlanguage[0;1m ---[m
@@ -1497,18 +1496,17 @@ Check that the phrase "These are not the droids you are looking for" is printed:
 These are not the droids you are looking for
 Clipboard test exist skipped
 Clipboard test read/write skipped
-{"pageCount":"1","startIndex":"1","totalResults":"1","itemsPerPage":"1","currentPage":"1","0":{"SshKey":{},"OrgIdentity":[{"manager_identifier":"$$$qdl_null$$$","valid_through":"$$$qdl_null$$$","Address":{},"date_of_birth":"$$$qdl_null$$$","ou":"$$$qdl_null$$$","co_id":2,"valid_from":"$$$qdl_null$$$","title":"$$$qdl_null$$$","TelephoneNumber":{},"EmailAddress":[{"mail":"gaynor@illinois.edu","meta":{"deleted":false,"actor_identifier":"co_2.transparent_enroller","created":"2025-10-01 14:49:04","email_address_id":"$$$qdl_null$$$","modified":"2025-10-01 14:49:04","source_email_address_id":"$$$qdl_null$$$","id":1068,"revision":0},"verified":true,"description":"$$$qdl_null$$$","type":"official"}],"Url":{},"o":"University of Illinois at Urbana-Champaign","Name":[{"given":"Jeffrey","middle":"$$$qdl_null$$$","meta":{"deleted":false,"actor_identifier":"co_2.transparent_enroller","created":"2025-10-01 14:49:04","source_name_id":"$$$qdl_null$$$","modified":"2025-10-01 14:49:04","id":1337,"name_id":"$$$qdl_null$$$","revision":0},"language":"$$$qdl_null$$$","primary_name":true,"family":"Gaynor","suffix":"$$$qdl_null$$$","type":"official","honorific":"$$$qdl_null$$$"}],"Identifier":[{"identifier":"http://cilogon.org/serverI/users/3106","meta":{"co_group_id":"$$$qdl_null$$$","co_provisioning_target_id":"$$$qdl_null$$$","deleted":false,"actor_identifier":"co_2.transparent_enroller","created":"2025-10-01 14:49:04","identifier_id":"$$$qdl_null$$$","modified":"2025-10-01 14:49:04","id":2934,"source_identifier_id":"$$$qdl_null$$$","revision":0},"language":"$$$qdl_null$$$","type":"oidcsub","login":true,"status":"A"}],"affiliation":"$$$qdl_null$$$","meta":{"deleted":false,"actor_identifier":"co_2.transparent_enroller","org_identity_id":"$$$qdl_null$$$","created":"2025-10-01 14:49:04","modified":"2025-10-01 14:49:04","id":686,"revision":0},"sponsor_identifier":"$$$qdl_null$$$","AdHocAttribute":[{"meta":{"co_person_role_id":"$$$qdl_null$$$","deleted":false,"actor_identifier":"co_2.transparent_enroller","created":"2025-10-01 14:49:04","modified":"2025-10-01 14:49:04","source_ad_hoc_attribute_id":"$$$qdl_null$$$","id":226,"ad_hoc_attribute_id":"$$$qdl_null$$$","revision":0},"tag":"affiliation_scoped","value":"member@illinois.edu;staff@illinois.edu;employee@illinois.edu"},{"meta":{"co_person_role_id":"$$$qdl_null$$$","deleted":false,"actor_identifier":"co_2.transparent_enroller","created":"2025-10-01 14:49:04","modified":"2025-10-01 14:49:04","source_ad_hoc_attribute_id":"$$$qdl_null$$$","id":227,"ad_hoc_attribute_id":"$$$qdl_null$$$","revision":0},"tag":"affiliation","value":"member;staff;employee"}],"status":"$$$qdl_null$$$"}],"Identifier":[{"identifier":"http://cilogon.org/serverI/users/3106","meta":{"co_group_id":"$$$qdl_null$$$","co_provisioning_target_id":"$$$qdl_null$$$","deleted":false,"actor_identifier":"co_2.transparent_enroller","created":"2025-10-01 14:49:04","identifier_id":"$$$qdl_null$$$","modified":"2025-10-01 14:49:04","id":2933,"source_identifier_id":"$$$qdl_null$$$","revision":0},"language":"$$$qdl_null$$$","type":"oidcsub","login":true,"status":"A"},{"identifier":"1000156","meta":{"co_group_id":"$$$qdl_null$$$","co_provisioning_target_id":"$$$qdl_null$$$","deleted":false,"actor_identifier":"co_2.transparent_enroller","created":"2025-10-01 14:49:04","identifier_id":"$$$qdl_null$$$","modified":"2025-10-01 14:49:04","id":2935,"source_identifier_id":"$$$qdl_null$$$","revision":0},"language":"$$$qdl_null$$$","type":"cadrenumber","login":false,"status":"A"},{"identifier":"CADRE1000156","meta":{"co_group_id":"$$$qdl_null$$$","co_provisioning_target_id":"$$$qdl_null$$$","deleted":false,"actor_identifier":"co_2.transparent_enroller","created":"2025-10-01 14:49:04","identifier_id":"$$$qdl_null$$$","modified":"2025-10-01 14:49:04","id":2936,"source_identifier_id":"$$$qdl_null$$$","revision":0},"language":"$$$qdl_null$$$","type":"cadreid","login":false,"status":"A"},{"identifier":"jgaynor","meta":{"co_group_id":"$$$qdl_null$$$","co_provisioning_target_id":"$$$qdl_null$$$","deleted":false,"actor_identifier":"co_2.transparent_enroller","created":"2025-10-01 14:49:04","identifier_id":"$$$qdl_null$$$","modified":"2025-10-01 14:49:04","id":2937,"source_identifier_id":"$$$qdl_null$$$","revision":0},"language":"$$$qdl_null$$$","type":"dataverseid","login":false,"status":"A"},{"identifier":"jgaynor","meta":{"co_group_id":"$$$qdl_null$$$","co_provisioning_target_id":"$$$qdl_null$$$","deleted":false,"actor_identifier":"co_2.transparent_enroller","created":"2025-10-01 14:49:04","identifier_id":"$$$qdl_null$$$","modified":"2025-10-01 14:49:04","id":2938,"source_identifier_id":"$$$qdl_null$$$","revision":0},"language":"$$$qdl_null$$$","type":"dataverseid2","login":false,"status":"A"}],"Cadre":{},"CoGroupMember":[{"owner":false,"co_group_id":5,"valid_through":"$$$qdl_null$$$","meta":{"co_group_member_id":"$$$qdl_null$$$","deleted":false,"actor_identifier":"co_2.transparent_enroller","created":"2025-10-01 14:49:04","modified":"2025-10-01 14:49:04","id":969,"source_org_identity_id":"$$$qdl_null$$$","revision":0},"member":true,"valid_from":"$$$qdl_null$$$","co_group_nesting_id":"$$$qdl_null$$$"},{"owner":false,"co_group_id":6,"valid_through":"$$$qdl_null$$$","meta":{"co_group_member_id":"$$$qdl_null$$$","deleted":false,"actor_identifier":"co_2.transparent_enroller","created":"2025-10-01 14:49:04","modified":"2025-10-01 14:49:04","id":970,"source_org_identity_id":"$$$qdl_null$$$","revision":0},"member":true,"valid_from":"$$$qdl_null$$$","co_group_nesting_id":"$$$qdl_null$$$"}],"CoPerson":{"meta":{"deleted":false,"actor_identifier":"co_2.transparent_enroller","created":"2025-10-01 14:49:04","modified":"2025-10-01 14:49:04","co_person_id":"$$$qdl_null$$$","id":926,"revision":0},"date_of_birth":"$$$qdl_null$$$","timezone":"$$$qdl_null$$$","co_id":2,"status":"A"},"CoPersonRole":[{"valid_through":"$$$qdl_null$$$","manager_co_person_id":"$$$qdl_null$$$","Address":{},"ordr":"$$$qdl_null$$$","ou":"$$$qdl_null$$$","valid_from":"$$$qdl_null$$$","title":"$$$qdl_null$$$","TelephoneNumber":{},"o":"$$$qdl_null$$$","cou_id":"$$$qdl_null$$$","affiliation":"member","meta":{"co_person_role_id":"$$$qdl_null$$$","deleted":false,"actor_identifier":"co_2.transparent_enroller","sponsor_co_person_id":"$$$qdl_null$$$","created":"2025-10-01 14:49:04","modified":"2025-10-01 14:49:04","id":794,"source_org_identity_id":"$$$qdl_null$$$","revision":0},"AdHocAttribute":{},"status":"A"}],"EmailAddress":[{"mail":"gaynor@illinois.edu","meta":{"deleted":false,"actor_identifier":"co_2.transparent_enroller","created":"2025-10-01 14:49:04","email_address_id":"$$$qdl_null$$$","modified":"2025-10-01 14:49:04","source_email_address_id":"$$$qdl_null$$$","id":1067,"revision":0},"verified":true,"description":"$$$qdl_null$$$","type":"official"}],"Url":{},"Name":[{"given":"Jeffrey","middle":"$$$qdl_null$$$","meta":{"deleted":false,"actor_identifier":"co_2.transparent_enroller","created":"2025-10-01 14:49:04","source_name_id":"$$$qdl_null$$$","modified":"2025-10-01 14:49:04","id":1336,"name_id":"$$$qdl_null$$$","revision":0},"language":"$$$qdl_null$$$","primary_name":true,"family":"Gaynor","suffix":"$$$qdl_null$$$","type":"official","honorific":"$$$qdl_null$$$"}]}}
 
 printing all base characters with say:
 abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
   ~`!@#$%^&*()[]{}<>\/'"-_=+|;:,.?
   ¬¿¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧√≁⊕⊗⊙⌆µ⊢∈∉∀∋∌∃∄∩∪∆∂
   ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω
-[[1;34mINFO[m] [1;32mTests run: [0;1;32m626[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.288 s - in org.qdl_lang.[1mTestSuite[m
+[[1;34mINFO[m] [1;32mTests run: [0;1;32m628[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.126 s - in org.qdl_lang.[1mTestSuite[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] Results:
 [[1;34mINFO[m] 
-[[1;34mINFO[m] [1;32mTests run: 626, Failures: 0, Errors: 0, Skipped: 0[m
+[[1;34mINFO[m] [1;32mTests run: 628, Failures: 0, Errors: 0, Skipped: 0[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-jar-plugin:3.3.0:test-jar[m [1m(default-jar)[m @ [36mtests[0;1m ---[m
@@ -1660,7 +1658,7 @@ Generating /home/ncsa/dev/ncsa-git/qdl/sas/target/reports/apidocs/help-doc.html.
 [[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-javadoc.jar to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6-QDL-SNAPSHOT/sas-1.6-QDL-SNAPSHOT-javadoc.jar
 [[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-sources.jar to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6-QDL-SNAPSHOT/sas-1.6-QDL-SNAPSHOT-sources.jar
 [[1;34mINFO[m] 
-[[1;34mINFO[m] [1m-----------------------< [0;36morg.qdl-lang.skin:skin[0;1m >-----------------------[m
+[[1;34mINFO[m] [1m-------------------------< [0;36morg.qdl-lang:skin[0;1m >--------------------------[m
 [[1;34mINFO[m] [1mBuilding skin 1.6-QDL-SNAPSHOT                                     [6/6][m
 [[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
 [[1;34mINFO[m] 
@@ -1694,20 +1692,20 @@ Generating /home/ncsa/dev/ncsa-git/qdl/sas/target/reports/apidocs/help-doc.html.
 [[1;34mINFO[m] [1m--- [0;32mmaven-gpg-plugin:1.6:sign[m [1m(sign-artifacts)[m @ [36mskin[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-install-plugin:2.5.2:install[m [1m(default-install)[m @ [36mskin[0;1m ---[m
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/skin/target/skin-1.6-QDL-SNAPSHOT.jar to /home/ncsa/.m2/repository/org/qdl-lang/skin/skin/1.6-QDL-SNAPSHOT/skin-1.6-QDL-SNAPSHOT.jar
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/skin/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/skin/skin/1.6-QDL-SNAPSHOT/skin-1.6-QDL-SNAPSHOT.pom
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/skin/target/skin-1.6-QDL-SNAPSHOT.jar to /home/ncsa/.m2/repository/org/qdl-lang/skin/1.6-QDL-SNAPSHOT/skin-1.6-QDL-SNAPSHOT.jar
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/skin/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/skin/1.6-QDL-SNAPSHOT/skin-1.6-QDL-SNAPSHOT.pom
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1mReactor Summary for QDL root module 1.6-QDL-SNAPSHOT:[m
 [[1;34mINFO[m] 
-[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.466 s]
-[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [ 10.651 s]
+[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.399 s]
+[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [  9.406 s]
 [[1;34mINFO[m] NCSA QDL Website ................................... [1;32mSUCCESS[m [  0.057 s]
-[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [ 11.273 s]
-[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  1.307 s]
-[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.120 s]
+[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [ 11.158 s]
+[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  1.318 s]
+[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.117 s]
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1;32mBUILD SUCCESS[m
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] Total time:  24.058 s
-[[1;34mINFO[m] Finished at: 2025-10-10T08:20:53-05:00
+[[1;34mINFO[m] Total time:  22.615 s
+[[1;34mINFO[m] Finished at: 2025-10-17T16:24:38-05:00
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m

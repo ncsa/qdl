@@ -1,5 +1,6 @@
 package org.qdl_lang;
 
+import net.sf.json.JSONNull;
 import org.qdl_lang.evaluate.ListEvaluator;
 import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.evaluate.StemEvaluator;
@@ -1091,7 +1092,7 @@ public class StemTest extends AbstractQDLTester {
         addLine(script, "ok := size(a.) == size(test.) && reduce(@&&, a. == test.);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
-        assert getBooleanValue("ok", state) : "failed to round trip JSON array with QDL nulls in it.";
+        assert getBooleanValue("ok", state) : "copy onto a sparse list fails.";
     }
 
 
@@ -1130,7 +1131,7 @@ public class StemTest extends AbstractQDLTester {
         addLine(script, "ok := size(a.) == size(test.) && reduce(@&&, a. == test.);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
-        assert getBooleanValue("ok", state) : "failed sparse list insert_at.";
+        assert getBooleanValue("ok", state) : "failed to insert elemants in sparse list.";
     }
 
     /*
@@ -1146,7 +1147,7 @@ public class StemTest extends AbstractQDLTester {
         addLine(script, "ok := size(a.) == size(test.) && reduce(@&&, a. == test.);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
-        assert getBooleanValue("ok", state) : "failed to round trip JSON array with QDL nulls in it.";
+        assert getBooleanValue("ok", state) : "copy intoa sparse list fails.";
     }
 
     /*
@@ -2825,14 +2826,74 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok4", state) : "Did not create a new variable on " + ListEvaluator.LIST_INSERT_AT;
     }
 
-    public void testRoundtripJSONWithNull() throws Throwable {
+    /**
+     * <pre>
+     * QDL -> JSON -> QDL
+     * </pre>
+     * @throws Throwable
+     */
+    public void testRoundtripJSONArrayValues() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "a.:=[null,null,null,1,-2,'q'];");
+        String rawJSON = "[null,false,2,-2,1.234,\"foo\"]";
+
+        addLine(script, "a.:=[null,2,false,-2,'q'];");
         addLine(script, "ok := reduce(@&&, from_json(to_json(a.)) == a.);");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) : "failed to round trip JSON array with QDL nulls in it.";
+    }
+
+    /**
+     * <pre>
+     * JSON -> QDL -> JSON
+     * </pre>
+     * @throws Throwable
+     */
+    public void testRoundtripJSONArrayValues1() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        String rawJSON = "[null,false,2,-2,1.234,\"foo\"]";
+
+        addLine(script, "a.:=from_json('" + rawJSON + "');");
+        addLine(script, "json:=to_json(a.);");
+
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        String json = getStringValue("json", state);
+        JSONArray jsonArray = JSONArray.fromObject(json);
+        assert jsonArray.get(0).equals(JSONNull.getInstance());
+        assert jsonArray.get(1).equals(Boolean.FALSE);
+        assert jsonArray.get(2).equals(2);
+        assert jsonArray.get(3).equals(-2);
+        assert jsonArray.get(4).equals(1.234D);
+        assert jsonArray.getString(5).equals("foo");
+
+    }
+
+    /**
+     * Basic test of round tripping JSON values.
+     * <pre>
+     *     JSON -> QDL -> JSON
+     * </pre>
+     * @throws Throwable
+     */
+    public void testRoundtripJSONValues() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        String w = "{\"a\":null,\"b\":2,\"c\":-2,\"d\":1.234,\"e\":false,\"f\":\"foo\"}";
+        addLine(script, "a.:= from_json('" + w + "');");
+        addLine(script, "json:= to_json(a.);");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+        String json = getStringValue("json", state);
+        JSONObject jsonObject = JSONObject.fromObject(json);
+        assert jsonObject.get("a").equals(JSONNull.getInstance());
+        assert jsonObject.get("b").equals(2);
+        assert jsonObject.get("c").equals(-2);
+        assert jsonObject.get("d").equals(1.234D);
+        assert jsonObject.get("e").equals(false);
+        assert jsonObject.get("f").equals("foo");
     }
 
     /**
@@ -3989,7 +4050,6 @@ input_form((a\*\((k,v)→!is_list(v)))); // extracts all non-lists elements
         StringBuffer script = new StringBuffer();
         addLine(script,"stem.  ≔ "+from_json ); // drop a big one from a service as part of test.
         addLine(script,"ok ≔ stem.0.'CoPerson'.'meta'.'co_person_id' ≡ null;");
-        addLine(script, "say(to_json(stem.));");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state) :  "Parse JSON null object correctly";

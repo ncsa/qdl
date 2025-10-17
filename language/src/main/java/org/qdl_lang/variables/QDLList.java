@@ -1,5 +1,6 @@
 package org.qdl_lang.variables;
 
+import net.sf.json.JSONNull;
 import org.qdl_lang.exceptions.IndexError;
 import org.qdl_lang.exceptions.QDLException;
 import org.qdl_lang.state.QDLConstants;
@@ -544,7 +545,8 @@ subset(b., 3, 6)
                 array.add(element.asStem().toJSON(escapeNames, conversionAlgorithm));
             } else {
                 if (element.isNull()) {
-                    array.add(QDLConstants.JSON_QDL_NULL);
+//                    array.add(QDLConstants.JSON_QDL_NULL);
+                    array.add(JSONNull.getInstance());
                 } else {
                     array.add(element.getValue());
                 }
