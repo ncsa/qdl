@@ -103,6 +103,13 @@ module[
       laminate should be a base function, however it's an example of something
       straightforward to write in QDL
       and darned near impossible to write in Java.
+
+      Q. := laminate(x, y, axis) means
+           axis == 0                  axis == 1                    axis == 2
+      Q.0.p.q... == x.p.q...      Q.p.0.q... := x.p.q...      Q.p.q.0... := x.p.q...
+      Q.1.p.q... == y.p.q...      Q.p.1.q... := y.p.q...      Q.p.q.1... := y.p.q...
+
+      etc. A scalar is treated like a
   */
   define[
       laminate(x, y, axis)
