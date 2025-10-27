@@ -127,9 +127,10 @@ public class QDLWorkspace implements Serializable {
         }
         if (t instanceof ParsingException) {
             ParsingException parsingException = (ParsingException) t;
-            String message;
+            boolean hasMessage = parsingException.getMessage() != null;
+            String message = "";
             if(parsingException.isKeywordError()){
-                 message = parsingException.getMessage();
+                 message = hasMessage ? parsingException.getMessage() : "keyword error";
 
             }else{
                  message = parsingException.getType() + " error";
@@ -142,7 +143,7 @@ public class QDLWorkspace implements Serializable {
             } else {
                 message = message + " at (" + parsingException.getLineNumber() + "," + parsingException.getCharacterPosition() + ") ";
             }
-            message = message + (workspaceCommands.isDebugOn() ? t.getMessage() : "could not parse input");
+            message = message + (hasMessage ? t.getMessage() : t.getMessage());
             workspaceCommands.say(message);
             return;
         }

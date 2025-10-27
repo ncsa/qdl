@@ -202,6 +202,10 @@ public class QDLListener implements QDLParserListener {
         // need to process its argument list.
         // There are 3 children  "f(" arglist ")", so we want the middle one.
 
+        if(ctx.getChildCount()==1){
+            TokenPosition tp = tp(ctx);
+            throw new ParsingException("Function definition could not be parsed",tp.line,tp.col,MISMATCH_TYPE);
+        }
         String name = ctx.getChild(0).getText();
         if (name.endsWith("(")) {
             name = name.substring(0, name.length() - 1);
@@ -825,7 +829,24 @@ public class QDLListener implements QDLParserListener {
         // end of line markers, so we cannot tell what was there. Since it may include documentation lines
         // we have to add back in EOLs at the end of every statement so the comments don't get lost.
         // Best we can do with ANTLR...
-
+        // catch if there was an parser error in the function signature before proceeding.
+        // Fix https://github.com/ncsa/qdl/issues/146
+        QDLParserParser.FunctionContext nameAndArgsNode = defineContext.function();
+        if (nameAndArgsNode.exception != null) {
+            String message = nameAndArgsNode.exception.getMessage();
+            if(message == null){
+                message = "Error parsing function signature";
+                if(nameAndArgsNode.exception.getOffendingToken() != null){
+                    message = message + ", offending token: " + nameAndArgsNode.exception.getOffendingToken().getText();
+                }
+            }
+            TokenPosition tp = tp(nameAndArgsNode);
+            throw new ParsingException(message,tp.line,tp.col,MISMATCH_TYPE);
+        }
+        if(defineContext.getChildCount() < 4){
+            // ending parenthesis (most likely) missing form function signature
+            throw new ParsingException("Function definition could not be parsed",tp(nameAndArgsNode).line,tp(nameAndArgsNode).col,MISMATCH_TYPE);
+        }
         List<String> stringList = new ArrayList<>();
         for (int i = 0; i < defineContext.getChildCount() - 1; i++) {
             //stringList.add((i == 0 ? "" : "\n") + defineContext.getChild(i).getText());
@@ -846,7 +867,7 @@ public class QDLListener implements QDLParserListener {
         }
 
         functionRecord.sourceCode = stringList;
-        QDLParserParser.FunctionContext nameAndArgsNode = defineContext.function();
+
         String name = nameAndArgsNode.getChild(0).getText();
         if (name.endsWith("(")) {
             name = name.substring(0, name.length() - 1);
@@ -862,18 +883,6 @@ public class QDLListener implements QDLParserListener {
                 functionRecord.argNames.add(st.nextToken());
             }
         }
-/*
-        for (QDLParserParser.F_argsContext argListContext : nameAndArgsNode.f_args()) {
-            // this is a comma delimited list of arguments.
-            String allArgs = argListContext.getText();
-
-            StringTokenizer st = new StringTokenizer(allArgs, ",");
-            while (st.hasMoreElements()) {
-                functionRecord.argNames.add(st.nextToken());
-            }
-        }
-*/
-        //docStatementBlockContext = defineContext.docStatementBlock();
         for (QDLParserParser.FdocContext fd : docStatementBlockContext.fdoc()) {
             functionRecord.documentation.add(getFdocLine(fd.getText()));
         }

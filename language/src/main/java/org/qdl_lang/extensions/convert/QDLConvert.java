@@ -1,5 +1,6 @@
 package org.qdl_lang.extensions.convert;
 
+import com.mysql.cj.util.StringInspector;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigRenderOptions;
@@ -28,7 +29,7 @@ import net.sf.json.JSON;
 import net.sf.json.JSONObject;
 import net.sf.json.xml.XMLSerializer;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
+import software.amazon.awssdk.utils.StringInputStream;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLOutputFactory;
@@ -158,12 +159,8 @@ public class QDLConvert implements QDLMetaModule {
                 configStem = new QDLStem();
                 configStem = qdlValues[1].asStem();
             }
-/*
-            if (!(configStem instanceof QDLStem)) {
-                throw new BadArgException(getName() + " requires that that the configuration argument is  a stem", 1);
-            }
-*/
-            inStem = (QDLStem) configStem;
+
+            inStem =  configStem;
             String inString = getFileArg(qdlValues[0].getValue(), state, getName());
             if (inStem.containsKey(ARG_VALIDATE)) {
                 validate = inStem.getBoolean(ARG_VALIDATE);
@@ -841,18 +838,18 @@ public class QDLConvert implements QDLMetaModule {
         @Override
         public QDLValue evaluate(QDLValue[] qdlValues, State state) {
             String inString = getFileArg(qdlValues[0].getValue(), state, getName());
-            // deprecated SafeConstructor, but prevents a very scary injection attack:
-            // https://devhub.checkmarx.com/cve-details/CVE-2022-1471/?utm_source=jetbrains&utm_medium=referral&utm_campaign=idea&utm_term=maven
-            Yaml yaml = new Yaml(new SafeConstructor());
-            Object map = yaml.load(inString);
+            Yaml yaml = new Yaml();
+            StringInputStream stringInputStream = new StringInputStream(inString);
+
+            Object map = yaml.load(stringInputStream);
             QDLStem stem = null;
             if (map instanceof Map) {
-                stem = StemUtility.mapToStem((Map) map);
+                return StemUtility.mapToStem((Map) map);
             }
             if (map instanceof List) {
-                stem = StemUtility.listToStem((List) map);
+                return StemUtility.listToStem((List) map);
             }
-            return asQDLValue(stem);
+            return asQDLValue(stem); // default
         }
 
         List<String> doxx = new ArrayList<>();

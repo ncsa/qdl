@@ -1350,14 +1350,26 @@ public class SystemEvaluator extends AbstractEvaluator {
             if (module == null) {
                 throw new BadArgException("no module named '" + moduleExpression.getAlias() + "' found.", moduleExpression);
             }
-            if (!(moduleExpression.getExpression() instanceof VariableNode)) {
+            if (moduleExpression.getExpression() instanceof VariableNode) {
+                argName = ((VariableNode) moduleExpression.getExpression()).getVariableReference();
+                moduleExpression.setModuleState(module.getState());
+                state = moduleExpression.getModuleState(state);
+                gotOne = true;
+
+            }else{
+/*           Does not work because can't find possible functions in module. Needs much sleuthing to work.
+              if(moduleExpression.getExpression() instanceof ExpressionInterface){
+                  String out = InputFormUtil.inputForm(moduleExpression.getExpression().evaluate(state));
+                  if (out == null) {
+                      out = "";
+                  }
+                  polyad.setEvaluated(true);
+                  polyad.setResult(out);
+                  return;
+              }
+*/
                 throw new BadArgException(INPUT_FORM + " requires a variable or function name", moduleExpression.getExpression());
             }
-
-            argName = ((VariableNode) moduleExpression.getExpression()).getVariableReference();
-            moduleExpression.setModuleState(module.getState());
-            state = moduleExpression.getModuleState(state);
-            gotOne = true;
         }
 
         if (polyad.getArguments().get(0) instanceof VariableNode) {

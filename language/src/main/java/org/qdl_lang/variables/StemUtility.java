@@ -45,8 +45,8 @@ public class StemUtility {
     }
 
     public static boolean isStem(Object o) {
-        if(o instanceof QDLValue) {
-            o = ((QDLValue)o).getValue();
+        if (o instanceof QDLValue) {
+            o = ((QDLValue) o).getValue();
         }
         return (o instanceof QDLStem) || (o instanceof AxisExpression);
     }
@@ -89,7 +89,7 @@ public class StemUtility {
 
             QDLStem left1 = null;
             if (leftQV.isStem()) {
-                left1 =  leftQV.asStem();
+                left1 = leftQV.asStem();
             } else {
                 if (rightQV == null) {
                     throw new RankException("There are no more elements in the left argument.");
@@ -355,71 +355,51 @@ public class StemUtility {
      * @param map
      * @return
      */
-    public static QDLStem mapToStem(Map map) {
+    public static QDLValue mapToStem(Map map) {
         QDLStem out = new QDLStem();
         return mapToStem(out, map);
     }
 
-    public static QDLStem listToStem(List list) {
+    public static QDLValue listToStem(List list) {
         QDLStem outStem = new QDLStem();
-        QDLList<? extends QDLValue> out  = outStem.getQDLList();
+        QDLList<? extends QDLValue> out = outStem.getQDLList();
         int i = 0;
-      for(Object value : list){
-          out.add((QDLValue)value);
-
-/*
-          if(value instanceof QDLValue){
-              out.add((QDLValue)value);
-          }else{
-              out.add(asQDLValue(convert(value)));
-          }
-*/
-      }
-      return outStem;
+        for (Object value : list) {
+            out.add(convert(value));
+        }
+        return QDLValue.asQDLValue(outStem);
     }
-    public static QDLStem mapToStem(QDLStem out, Map map) {
+
+    public static QDLValue mapToStem(QDLStem out, Map map) {
         for (Object k : map.keySet()) {
             QDLKey key = QDLKey.from(k);
-/*
-            switch (key)) {
-                case STRING_TYPE:
-                case LONG_TYPE:
-                    realKey = key;
-                    break;
-                case INT_TYPE:
-                    realKey = ((Integer) key).longValue();
-                    break;
-                default:
-                    realKey = key.toString(); // crappy, but...
-            }
-*/
             Object value = map.get(k);
             out.put(key, convert(value));
         }
-        return out;
+        return QDLValue.asQDLValue(out);
     }
 
     /**
      * Converts Java objects to one of the Java objects that QDL uses.
+     *
      * @param value
      * @return
      */
-    protected static Object convert(Object value) {
+    protected static QDLValue convert(Object value) {
         QDLStem out2;
         switch (getType(value)) {
             case INT_TYPE:
-                return ((Integer) value).longValue(); // convert to a long.
+//                return ((Integer) value).longValue(); // convert to a long.
             case STRING_TYPE:
             case BOOLEAN_TYPE:
             case LONG_TYPE:
-                return value; // convert to a long.
             case FLOAT_TYPE:
             case DOUBLE_TYPE:
-                return new BigDecimal(value.toString());
+                return QDLValue.asQDLValue(value);
             case LIST_TYPE:
                 return listToStem((List) value);
             case MAP_TYPE:
-                return mapToStem( new QDLStem(), (Map) value);
+                return mapToStem(new QDLStem(), (Map) value);
             default:
             case UNKNON_TYPE:
                 throw new IllegalArgumentException("unknown map entry type " + value.getClass().getCanonicalName());
@@ -453,22 +433,20 @@ public class StemUtility {
 
     /**
      * Floats a map of values to {@link QDLValue}s in the stem. This way you don't have to mess with conversions
+     *
      * @param stem
      * @param values
      */
     public static void setStemValue(QDLStem stem, Map<String, Object> values) {
         for (String key : values.keySet()) {
             Object value = values.get(key);
-            if (value instanceof QDLValue) {
-                stem.put(key, (QDLValue) value);
-            } else {
-                stem.put(key, asQDLValue(value));
-            }
+            stem.put(key, asQDLValue(value));
         }
     }
 
     /**
      * Since Java's use of generics precludes a general {@link QDLStem} put on Objects, this utility does that.
+     *
      * @param stem
      * @param key
      * @param value
@@ -479,6 +457,7 @@ public class StemUtility {
 
     /**
      * For use in filtering {@link QDLValue}s to POJOs (plain old java object) that can be put into JSON.
+     *
      * @param element
      * @param escapeNames
      * @param type
@@ -500,9 +479,9 @@ public class StemUtility {
                 //return QDLConstants.JSON_QDL_NULL;
                 return JSONNull.getInstance();
             case Constants.UNKNOWN_TYPE:
-                if(element.isDecimal()) return element.asDecimal().doubleValue();
-                if(element.isStem()) return element.asStem().toJSON(escapeNames, type);
-                if(element.isNull()) return QDLConstants.JSON_QDL_NULL;
+                if (element.isDecimal()) return element.asDecimal().doubleValue();
+                if (element.isStem()) return element.asStem().toJSON(escapeNames, type);
+                if (element.isNull()) return QDLConstants.JSON_QDL_NULL;
                 return element.getValue();
             case Constants.AXIS_RESTRICTION_TYPE:
             case Constants.DYADIC_FUNCTION_TYPE:
