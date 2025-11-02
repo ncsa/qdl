@@ -471,26 +471,29 @@ public class HTTPClient implements QDLMetaModule {
         if (StringUtils.isTrivial(rawJSON)) {
             return stemVariable; // trivial response should be trivial JSON.
         }
+        Throwable foundException = null;
         // So there is something there and it is asserted to be JSON.
         // Try to process it as such
         try {
             stemVariable.fromJSON(JSONObject.fromObject(rawJSON));
             return stemVariable;
         } catch (Throwable t) {
+            foundException = t;
             if (DebugUtil.isTraceEnabled()) {
-                t.printStackTrace();
+                DebugUtil.trace("Failed to parse JSON (usually benign):\n" + t.getMessage());
+//                t.printStackTrace();
             }
         }
         try {
             stemVariable.fromJSON(JSONArray.fromObject(rawJSON));
             return stemVariable;
         } catch (Throwable t) {
+            foundException = t;
             if (DebugUtil.isTraceEnabled()) {
-                t.printStackTrace();
-                DebugUtil.trace("Failed to parse JSON:\n" + rawJSON, t);
+                foundException.printStackTrace();
             }
             // In really large errors,
-            throw new IllegalArgumentException("could not convert to stem(" + t.getMessage() + "): " + StringUtils.truncate(rawJSON.toString(), 50)  );
+            throw new IllegalArgumentException("could not convert JSON to stem (" + foundException.getMessage() + "): " + StringUtils.truncate(rawJSON.toString(), 50)  );
         }
     }
 

@@ -25,6 +25,8 @@ public class QDLEditor2 extends JFrame {
         textArea.setSyntaxEditingStyle("text/qdl");
         textArea.setCodeFoldingEnabled(true);
         RTextScrollPane sp = new RTextScrollPane(textArea);
+        sp.setLineNumbersEnabled(true);
+        sp.setFoldIndicatorEnabled(true);
         cp.add(sp);
 
         setContentPane(cp);

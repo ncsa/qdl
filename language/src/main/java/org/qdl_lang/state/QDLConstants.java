@@ -158,7 +158,7 @@ public interface QDLConstants {
 
     String GREEK_CHARS = "ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω";
     String UNICODE_CHARS = "⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧√≁⊕⊗⊙⌆⊢∈∉∀∋∌∃∄∩∪∆∂√";
-    String ASCII_CHARS = "  ~`!@#$%^&*()[]{}<>\\/'\"-_=+|;:,.?¬¿µ¯·×÷";
+    String ASCII_CHARS = "  ~`!@#$%^&*()[]{}<>\\/'\"-_=+|;:,.?¬¿µ¯·×÷»";
     String ALPHA_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     String ALL_CHARS = ALPHA_CHARS + ASCII_CHARS + GREEK_CHARS + UNICODE_CHARS;
     String[] KEYWORDS = new String[]{

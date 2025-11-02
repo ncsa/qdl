@@ -111,39 +111,94 @@ module[
 
       etc. A scalar is treated like a
   */
-  define[
-      laminate(x, y, axis)
-   ][
-     » laminate(x, y, axis) - paste two stems together along an axis
-     » At least one of x and y is a stem. This works best for rectangular arrays.
-      types ≔ (var_type(x) ≡ 4?1:0) + (var_type(y) ≡ 4?2:0);
-      // 0 - both scalars, 1 - x only stem, 2 - y only stem 3 - both stems
-      if[types ≡ 0][return([x,y]);]; // trivial case
-      left. ≔ []; right. ≔ [];
-      l_dim. ≔ []; r_dim.≔ [];
-      switch[
-          if[types ≡ 1][left.≔x; l_dim.≔ dim(x);r_dim.≔clone(l_dim.);right.≔n(r_dim., [y]);];
-          if[types ≡ 2][right.≔y;r_dim.≔dim(y);l_dim.≔clone(r_dim.);left.≔n(l_dim., [x]);];
-          if[types ≡ 3][left.≔x;right.≔y;l_dim.≔dim(x);r_dim.≔dim(y);];
-      ]; // end switch
-      size(left.) ≡ 0 ⇒ return(right.);
-      size(right.) ≡ 0 ⇒ return(left.);
-      // one may be one rank high if they are conformable
-      l_rank ≔ size(l_dim.); r_rank ≔ size(r_dim.);
-      ⊨ abs(l_rank - r_rank) ≤ 1 : 'rank error';
-      axis ≔ axis<0?axis+min(l_rank, r_rank)+1:axis; // axis <0 ok, but count against l_rank
-      ⊨ (0 ≤ axis) ∧ (axis ≤ min(l_rank, r_rank)) : 'axis error';
-      // Next function augments the rank of the argument(s)
-      aug(δ., α)->(size(δ.) ≡ α)?δ.~1:insert_at([1],0,1,δ., α);
-      if[r_rank ≡ l_rank][l_dim. ≔ aug(l_dim., axis);r_dim. ≔ aug(r_dim., axis);];
-      if[l_rank < r_rank][l_dim. ≔ aug(l_dim., axis);];
-      if[r_rank < l_rank][r_dim. ≔ aug(r_dim., axis);];
-      // Final conformability check. All but the axis of the join must match
-      v. ≔ l_dim. ≡ r_dim.;
-      v.axis ≔ true; // set test for axis of join true so this passes if the others match
-      ⊨ reduce(⊗∧, v.) : 'ranks not conformable';
-      return(join(n(l_dim., ravel(left.)), n(r_dim., ravel(right.)), axis));
-   ]; // end laminate
+  /*
+    Workhorse function for laminate. This does the recursive descent.
+  */
+
+define[__dd(Q.,A.,B.,index.,depth)]
+[
+ » This does the recursive descent needed to reach the
+ » right arbitrary axis.
+blanks ≔ '          ';
+bb ≔ substring(blanks, 0, 2 + size(index.))+ 'δ: ';
+ss(x)→debugger(1, bb+x);
+ss('depth≡' + depth + ', index.≡' + to_string(index.));
+  if[depth≡0]
+then[
+     i3. ≔ sort(⊢list_keys(A.(index.)) ∩ ⊢list_keys(B.(index.)));
+
+     if[size(i3.) ≡ 0]
+   then[
+            ss('processing empty keys');
+            Q.(index.~0):=A.(index.);
+            Q.(index.~1):=B.(index.);
+            ss( 'returning  Q. ≡' + to_string(Q.));
+            return(Q.);
+       ]; //end if
+
+     ss('i3≡' + to_string(i3.));
+     while[j ∈ i3.]
+        [
+             ss('j≡' + j);
+             Q.(index.~0~j):=A.(index.~j);
+             Q.(index.~1~j):=B.(index.~j);
+
+        ]; // end while
+
+     ss('depth≡' + depth + ', returning Q.≡' + to_string(Q.));
+     return(Q.);
+     ]; // end if, depth ≡ 0
+
+ss('starting: index.='+to_string(index.));
+index2. ≔ sort(⊢list_keys(A.(index.)) ∩ ⊢list_keys(B.(index.)));
+ss('index2 ≡ '+to_string(index2.));
+
+while[k∈index2.]
+   do[ss('k='+k+'. Q,='+to_string(Q.));
+        __dd(Q.,A.,B.,index.~k,depth-1);
+      ]; //end while
+      ss('post loop, depth≡' + depth);
+]; //end __dd
+
+
+define[laminate(A,B,axis)]
+[
+  » laminate(A, B, axis) - Laminate along the given axis.
+  » A, B are scalars or stems
+  » 0 ≤ axis ≤ 1 + min(rank(A),rank(B))
+  » By laminate we mean to paste together two stems along a given axis. This
+  » results in a new stem whose rank is one greater than the rank of the two.
+  » The basic contract is
+  » Q. ≔ laminate(A,B,a)
+  » Q.r.s...t.0.u... := A.r.s...t.u...
+  » Q.r.s...t.1.u... := B.r.s...t.u...
+  »           ^
+  »           +--- at axis
+  » E.g.
+  »    laminate([;3],[100;103],0)
+  » [[0,1,2],[100,101,102]]
+  »    laminate([;3],[100;103],1)
+  » [[0,100],[1,101],[2,102]]
+  »
+  » Final note: Subsetting is on, so conformable (rectangular) stems are most intutive,
+  » but you may also use general stems:
+  » E.g.
+  »    laminate({'a':[;3],'b':[3;7]}, {'a':[7;10],'b':[10;13]},1)
+  » {a:[[0,1,2],[7,8,9]], b:[[3,4,5],[10,11,12]]}
+
+
+  axis ≡ 0 ⇒ return([A,B]);
+  is_stem(x)->var_type(x)==4;
+  A. := is_stem(A)?A:{*:A};
+  B. := is_stem(B)?B:{*:B};
+  Q. ≔ [];
+  keys. ≔ sort(⊢list_keys(A.) ∩ ⊢list_keys(B.));
+while[k∈keys.]
+   do[debugger(1,'λ:k='+k);
+     __dd(Q.,A.,B.,[k],axis- 1);
+     ]; // end while
+   return(Q.);
+]; //end laminate
 
     define[
       m_set(x., y., z)

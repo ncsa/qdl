@@ -142,7 +142,7 @@ public class EditorKeyPressedAdapter extends KeyAdapter {
     /**
      * <h1>NOTE</h1>
      * This is not just a text area, it is an {@link RSyntaxTextArea} which masks off
-     * various keystroked for itself. A symptom of this is if you attempt to use one of
+     * various keystrokes for itself. A symptom of this is if you attempt to use one of
      * the (not well documented) reserved keystrokes, you will get mysterious enter key
      * events as it tries to reformat (or whatever) the input area. So far the list of reserved
      * keys are
@@ -423,11 +423,15 @@ public class EditorKeyPressedAdapter extends KeyAdapter {
         }
     }
 
+    /**
+     * Invokes the )save command for the workspace.
+     */
     protected void doSave() {
         String x = ")save";
         String old = null;
         if (output != null) {
             old = output.getText();
+            output.setText("");
         }
         Object rc = workspaceCommands.execute(x);
         String resp = rc.equals(WorkspaceCommands.RC_CONTINUE) ? "save ok" : "not saved";

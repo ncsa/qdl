@@ -78,6 +78,18 @@ public class QDLModuleTest extends AbstractQDLTester {
         interpreter.execute(script.toString());
     }
 
+    public void testEXTMLaminate() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ext := import(load('" + EXT_MODULE + "'));");
+        addLine(script, "⊨ ⊗∧⊙(ext#laminate([;3],[100;103],0) ≡ [[0,1,2],[100,101,102]])`* : 'laminate on axis 0 failed';");
+        addLine(script, "⊨ ⊗∧⊙(ext#laminate([;3],[100;103],0) ≡ [[0,1,2],[100,101,102]])`* : 'laminate on axis 0 failed';");
+        addLine(script, "⊨ ⊗∧⊙(ext# laminate({'a':[;3],'b':[3;7]}, {'a':[7;10],'b':[10;13]},0) ≡ [{'a':[0,1,2], 'b':[3,4,5,6]},{'a':[7,8,9], 'b':[10,11,12]}])`*: 'laminate stems axis 0 failed';");
+        addLine(script, "⊨ ⊗∧⊙(ext# laminate({'a':[;3],'b':[3;7]}, {'a':[7;10],'b':[10;13]},1) ≡ {'a':[[0,1,2],[7,8,9]], 'b':[[3,4,5],[10,11,12]]})`*: 'laminate stems axis 1 failed';");
+        addLine(script, "⊨ ⊗∧⊙(ext# laminate({'a':[;3],'b':[3;7]}, {'a':[7;10],'b':[10;13]},2) ≡ {'a':[[0,7],[1,8],[2,9]], 'b':[[3,10],[4,11],[5,12]]})`*: 'laminate stems axis 2 failed';");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+    }
     public void testEXTMToUUID() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -93,6 +105,15 @@ public class QDLModuleTest extends AbstractQDLTester {
         addLine(script, "ext := import(load('" + EXT_MODULE + "'));");
         addLine(script, "x. ≔ ext#m_indices([2;5],'a');");
         addLine(script, "⊨⊗∧⊙[[2,'a'],[3,'a'],[4,'a']] ≡ x.`*;");
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        interpreter.execute(script.toString());
+    }
+
+    public void testEXTMRavel() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, "ext := import(load('" + EXT_MODULE + "'));");
+        addLine(script, "⊨⊗∧⊙ext#ravel(n(2,3,4,[;24])) ≡ [;24]`* : 'ravel failed';");
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
     }

@@ -107,29 +107,12 @@ public class StemVariableNode implements ExpressionInterface {
 
             if (sen.isDefaultValue) {
                 stemOut.setDefaultValue(value);
-                setResult(stemOut);
-                return getResult();
+                continue;
             }
 
             ExpressionInterface keyRI = sen.getKey();
             QDLKey key = from(keyRI.getResult());
             stemOut.put(key, value);
-
-/*
-            switch (keyRI.getResultType()) {
-                case Constant.LONG_TYPE:
-                    stemOut.put(keyRI.getResult(), value);
-                    break;
-                case Constant.STRING_TYPE:
-                case Constant.DECIMAL_TYPE:
-
-                    stemOut.put(keyRI.getResult().toString(), value);
-                    break;
-
-                default:
-                    throw new IllegalArgumentException("Error: Illegal type for key \"" + keyRI.getResult() + "\"");
-            }
-*/
         }
         setResult( new QDLValue(stemOut));
         return getResult();

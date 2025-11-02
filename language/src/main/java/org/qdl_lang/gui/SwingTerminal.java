@@ -181,9 +181,9 @@ public class SwingTerminal implements TerminalInterface {
         prompt.setText("    ");
         panel1.add(prompt, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         RTextScrollPane1 = new RTextScrollPane();
-        RTextScrollPane1.setFoldIndicatorEnabled(false);
+        RTextScrollPane1.setFoldIndicatorEnabled(true);
         RTextScrollPane1.setIconRowHeaderEnabled(false);
-        RTextScrollPane1.setLineNumbersEnabled(false);
+        RTextScrollPane1.setLineNumbersEnabled(true);
         panel1.add(RTextScrollPane1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(800, 250), null, null, 0, false));
         input = new RSyntaxTextArea();
         input.setBackground(new Color(-65537));

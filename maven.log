@@ -32,7 +32,6 @@
 [[1;34mINFO[m] [1m--------------------------------[ pom ]---------------------------------[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36mqdl[0;1m ---[m
-[[1;34mINFO[m] Deleting /home/ncsa/dev/ncsa-git/qdl/target
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mqdl[0;1m ---[m
 [[1;34mINFO[m] 
@@ -54,7 +53,7 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #14,862 (2025-10-27T11:01:01.798-05:00) at timestamp: 1761580861798
+[[1;34mINFO[m] Storing buildNumber: Build: #14,874 (2025-10-30T08:21:05.316-05:00) at timestamp: 1761830465316
 [[1;34mINFO[m] Storing buildScmBranch: main
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mlanguage[0;1m ---[m
@@ -86,7 +85,7 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #14,863 (2025-10-27T11:01:06.184-05:00) at timestamp: 1761580866184
+[[1;34mINFO[m] Storing buildNumber: Build: #14,875 (2025-10-30T08:21:08.393-05:00) at timestamp: 1761830468393
 [[1;34mINFO[m] Storing buildScmBranch: main
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m<<< [0;32mmaven-source-plugin:3.3.1:jar[m [1m(attach-sources)[0;1m < [0;1mgenerate-sources[m @ [36mlanguage[0;1m <<<[m
@@ -1503,7 +1502,7 @@ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
   ~`!@#$%^&*()[]{}<>\/'"-_=+|;:,.?
   ¬¿¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧√≁⊕⊗⊙⌆µ⊢∈∉∀∋∌∃∄∩∪∆∂
   ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω
-[[1;34mINFO[m] [1;32mTests run: [0;1;32m636[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.428 s - in org.qdl_lang.[1mTestSuite[m
+[[1;34mINFO[m] [1;32mTests run: [0;1;32m636[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.686 s - in org.qdl_lang.[1mTestSuite[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] Results:
 [[1;34mINFO[m] 
@@ -1698,15 +1697,15 @@ Generating /home/ncsa/dev/ncsa-git/qdl/sas/target/reports/apidocs/help-doc.html.
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1mReactor Summary for QDL root module 1.6-QDL-SNAPSHOT:[m
 [[1;34mINFO[m] 
-[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.558 s]
-[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [ 12.898 s]
-[[1;34mINFO[m] NCSA QDL Website ................................... [1;32mSUCCESS[m [  0.095 s]
-[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [ 11.480 s]
-[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  1.472 s]
-[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.133 s]
+[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.405 s]
+[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [  7.560 s]
+[[1;34mINFO[m] NCSA QDL Website ................................... [1;32mSUCCESS[m [  0.047 s]
+[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [  9.426 s]
+[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  1.269 s]
+[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.186 s]
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1;32mBUILD SUCCESS[m
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] Total time:  26.844 s
-[[1;34mINFO[m] Finished at: 2025-10-27T11:01:27-05:00
+[[1;34mINFO[m] Total time:  19.065 s
+[[1;34mINFO[m] Finished at: 2025-10-30T08:21:23-05:00
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
