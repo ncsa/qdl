@@ -38,7 +38,6 @@ public class QDLCharKeyAdapter extends KeyAdapter {
         switch (e.getKeyChar()) {
             case KeyEvent.VK_PLUS:
            if (e.getKeyLocation() == KeyEvent.KEY_LOCATION_NUMPAD && e.isControlDown()) {
-               System.out.println("Numpad pressed!");
                Font oldFont = swingTerminal.getInput().getFont();
                Font newFont = new Font(oldFont.getName(), oldFont.getStyle(), oldFont.getSize() + 2);
                swingTerminal.getInput().setFont(newFont);

@@ -205,7 +205,7 @@ while[k∈keys.]
       ][
        » m_set(x.,keys.,values | values.) sets multiple values in the stem x.
        »   keys. - a list of multi-indices.
-       »   values - a  scalar or a lsit  of values
+       »   values - a  scalar or a list  of values
        »            in 1-1 correspondence with keys.
        » So x.keys.k := z | values.k
        » depending on if z is a scalar or a stem.

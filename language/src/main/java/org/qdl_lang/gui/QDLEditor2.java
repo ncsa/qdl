@@ -3,10 +3,13 @@ package org.qdl_lang.gui;
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
+import org.fife.ui.rsyntaxtextarea.folding.FoldParserManager;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
 import java.awt.*;
+
+import static org.qdl_lang.gui.SwingTerminal.syntaxEditStyle;
 
 /**
  * Basic testing for GUI.
@@ -21,8 +24,9 @@ public class QDLEditor2 extends JFrame {
 
         RSyntaxTextArea textArea = new RSyntaxTextArea(20, 60);
         AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
-        atmf.putMapping("text/qdl", "org.qdl_lang.gui.flex.QDLSyntax");
-        textArea.setSyntaxEditingStyle("text/qdl");
+        atmf.putMapping(syntaxEditStyle, "org.qdl_lang.gui.flex.QDLSyntax");
+        textArea.setSyntaxEditingStyle(syntaxEditStyle);
+        FoldParserManager.get().addFoldParserMapping(syntaxEditStyle, new QDLFoldParser());
         textArea.setCodeFoldingEnabled(true);
         RTextScrollPane sp = new RTextScrollPane(textArea);
         sp.setLineNumbersEnabled(true);

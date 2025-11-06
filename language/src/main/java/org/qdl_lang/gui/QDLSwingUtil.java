@@ -117,17 +117,6 @@ public class QDLSwingUtil {
         provider.addCompletion(new BasicCompletion(provider, "read"));
         provider.addCompletion(new BasicCompletion(provider, "write"));
         provider.addCompletion(new BasicCompletion(provider, "drop"));
-
-
-        // Add a couple of "shorthand" completions. These completions don't
-        // require the input text to be the same thing as the replacement text.
-   /*
-           provider.addCompletion(new ShorthandCompletion(provider, "sysout",
-                   "System.out.println(", "System.out.println("));
-           provider.addCompletion(new ShorthandCompletion(provider, "syserr",
-                   "System.err.println(", "System.err.println("));
-   */
-
         return provider;
 
     }

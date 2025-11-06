@@ -12,11 +12,9 @@ import org.qdl_lang.workspace.QDLWorkspace;
 import org.qdl_lang.workspace.WorkspaceCommands;
 import edu.uiuc.ncsa.security.util.cli.InputLine;
 import org.fife.ui.autocomplete.AutoCompletion;
-import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
-import org.fife.ui.rsyntaxtextarea.folding.CurlyFoldParser;
 import org.fife.ui.rsyntaxtextarea.folding.FoldParserManager;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
@@ -41,6 +39,8 @@ public class SwingTerminal implements TerminalInterface {
     public JPanel getMainPanel() {
         return panel1;
     }
+
+    public static final String syntaxEditStyle = "text/qdl";
 
     private JPanel panel1;
 
@@ -80,6 +80,7 @@ public class SwingTerminal implements TerminalInterface {
                 super.mouseClicked(e);
             }
         });
+
     }
 
     @Override
@@ -137,6 +138,23 @@ public class SwingTerminal implements TerminalInterface {
    /*   How to do a key binding. Probably should switch to these at some point...
         KeyStroke key = KeyStroke.getKeyStroke(KeyEvent.VK_B, InputEvent.CTRL_DOWN_MASK);
            panel1.getInputMap().put(key,"∈");*/
+
+        for (Component c : panel1.getComponents()) {
+            if (c instanceof RTextScrollPane) {
+                ((RTextScrollPane) c).setLineNumbersEnabled(true);
+                ((RTextScrollPane) c).setFoldIndicatorEnabled(true);
+
+            }
+        }
+        if (FoldParserManager.get().getFoldParser(syntaxEditStyle) == null) {
+            //   FoldParserManager.get().addFoldParserMapping(syntaxEditStyle, new QDLFoldParser());
+
+            FoldParserManager.get().addFoldParserMapping(syntaxEditStyle, new QDLFoldParser());
+        }
+        AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
+        atmf.putMapping(syntaxEditStyle, "org.qdl_lang.gui.flex.QDLSyntax");
+        input.setCodeFoldingEnabled(true);
+        input.setSyntaxEditingStyle(syntaxEditStyle);
 
 
         // setup IO. Has to be done before everything else.
@@ -228,6 +246,11 @@ public class SwingTerminal implements TerminalInterface {
 
     boolean sasMode = false;
 
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+        System.out.println("Hello World");
+    }
+
     /**
      * This listens for ctrl+up or down arrows and will scroll through the input/outputs in tandem
      */
@@ -241,7 +264,7 @@ public class SwingTerminal implements TerminalInterface {
                 textArea.setText(lines.get(ndx));
                 return ndx;
             }
-            if(lines.size()!=0) {
+            if (lines.size() != 0) {
                 textArea.setText(lines.get((ndx) % lines.size()));
                 return ndx + 1;
             }
@@ -264,7 +287,7 @@ public class SwingTerminal implements TerminalInterface {
         /**
          * <h1>NOTE</h1>
          * This is not just a text area, it is an {@link RSyntaxTextArea} which masks off
-         * various keystroked for itself. A symptom of this is if you attempt to use one of
+         * various keystroks for itself. A symptom of this is if you attempt to use one of
          * the (not well documented) reserved keystrokes, you will get mysterious enter key
          * events as it tries to reformat (or whatever) the input area. So far the list of reserved
          * keys are
@@ -378,24 +401,22 @@ public class SwingTerminal implements TerminalInterface {
     }
 
     protected JFrame frame;
-    protected static String syntaxEditStyle = "text/qdl";
-    public DefaultCompletionProvider setup(JFrame frame1, List<String> functions) {
 
-/*
-        UIManager.put("OptionPane.messageFont", new Font("DialogInput", Font.BOLD, 14));
-        UIManager.put("OptionPane.buttonFont", new Font("DialogInput", Font.PLAIN, 12));
-*/
+    public DefaultCompletionProvider setup(JFrame frame1, List<String> functions) {
         frame = frame1;
         //System.setProperty("awt.useSystemAAFontSettings", "on");
         frame.setTitle("QDL Workspace (version 1.6-QDL-SNAPSHOT)");
         frame.setContentPane(getMainPanel());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
-        atmf.putMapping(syntaxEditStyle, "org.qdl_lang.gui.flex.QDLSyntax");
         DefaultCompletionProvider provider = QDLSwingUtil.createCompletionProvider(functions);
         AutoCompletion ac = new AutoCompletion(provider);
         ac.install(getInput());
+/*        FoldParserManager.get().addFoldParserMapping(syntaxEditStyle, new QDLFoldParserOLD());
+        AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
+        atmf.putMapping(syntaxEditStyle, "org.qdl_lang.gui.flex.QDLSyntax");*/
         input.setSyntaxEditingStyle(syntaxEditStyle);
+        input.setCodeFoldingEnabled(true);
+
 /*      Runs through every font on your system at startup and prints a list of fonts at 12 and 14
         points that display all of the QDL characters
 
@@ -407,9 +428,6 @@ public class SwingTerminal implements TerminalInterface {
 
 */
         Font font = workspaceCommands.getFont();
-        CurlyFoldParser curlyFoldParser = new CurlyFoldParser();
-        FoldParserManager.get().addFoldParserMapping(syntaxEditStyle, curlyFoldParser);
-        input.setCodeFoldingEnabled(true);
 
         input.setFont(font);
         output.setFont(font);
@@ -472,6 +490,13 @@ public class SwingTerminal implements TerminalInterface {
 
     QDLWorkspace qdlWorkspace;
 
+    /**
+     * Note this runs a dummy terminal -- just the basics, no actual QDL. For debugging the
+     * user interface.
+     *
+     * @param args
+     * @throws Throwable
+     */
     public static void main(String[] args) throws Throwable {
         Vector v = new Vector();
         v.add("dummy"); // so the command line switches are all found. Dummy method name
@@ -483,13 +508,15 @@ public class SwingTerminal implements TerminalInterface {
         SwingTerminal swingTerminal = new SwingTerminal();
         frame.setContentPane(swingTerminal.panel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
-        atmf.putMapping(syntaxEditStyle, "org.qdl_lang.gui.flex.QDLSyntax");
-        swingTerminal.input.setSyntaxEditingStyle(syntaxEditStyle);
+/*        AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
+        atmf.putMapping(syntaxEditStyle, "org.qdl_lang.gui.flex.QDLSyntax");*/
         // Folding sounds nice, but is going to be quite some work here. This turns on java -style
         // curly brace folding.
-        /*FoldParserManager.get().addFoldParserMapping(syntaxEditStyle, new CurlyFoldParser());
-        swingTerminal.input.setCodeFoldingEnabled(true);*/
+        FoldParserManager.get().addFoldParserMapping(syntaxEditStyle, new QDLFoldParser());
+        //FoldParserManager.get().addFoldParserMapping(SyntaxConstants.SYNTAX_STYLE_JAVA, new CurlyFoldParser(true, true));
+//        swingTerminal.input.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
+        swingTerminal.input.setSyntaxEditingStyle(syntaxEditStyle);
+        swingTerminal.input.setCodeFoldingEnabled(true);
         swingTerminal.setupWS(inputLine);
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
         int w = (int) dimension.getWidth() * 3 / 4;

@@ -26,7 +26,8 @@ Since that is the only common key.
 
 One common issue with APL is if there are missing entries, they may be supplied with a default of 0 or ' '.
 In many cases that is reasonable, but some case it introduces errors that are hard to track down. If QDL
-returns less than expected, the data was bad going in and you know that up front. Also, to only have corresponding
+returns less than expected, the data was bad going in and you know that up front.
+Also, to only have corresponding
 parts of arrays act on each other sometimes requires a lot of surgery to get the conformity right.
 
 Another point is performance.

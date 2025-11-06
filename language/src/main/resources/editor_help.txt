@@ -41,7 +41,12 @@ and hit F1.
 +------------+-------+---------------------------------------------+
 |^r          | E     | replicate current line or selection         |
 +------------+-------+---------------------------------------------+
-|^s          | E     | save workspace                              |
+|^s          | WE    | save workspace. In an edit window, update   |
+|            |       | the current buffer.                         |
++------------+-------+---------------------------------------------+
+|^t          | E     | transpose current line with next line       |
++------------+-------+---------------------------------------------+
+|^u          | E     | undo last action                            |
 +------------+-------+---------------------------------------------+
 |^v          | E     | Paste from clipboard                        |
 +------------+-------+---------------------------------------------+
@@ -57,7 +62,10 @@ and hit F1.
 +------------+-------+---------------------------------------------+
 |^enter      | E     | Complete word                               |
 +------------+-------+---------------------------------------------+
-|^@enter     | W     | execute current code                        |
+|^@enter     | WE    | execute current code.                       |
+|            |       | If editing a buffer in a window, this       |
+|            |       | executes the buffer. ctrl+s updates it      |
+|            |       | first.                                      |
 +------------+-------+---------------------------------------------+
 |^@page up   | B     | Go to previous entry in history             |
 +------------+-------+---------------------------------------------+
@@ -79,11 +87,12 @@ and hit F1.
 |^F1         | E     | Show QDL keyboard layout.                   |
 +------------+-------+---------------------------------------------+
 | ^mouseclick| E     | ctrl + mouse left click on the result window|
-|            |       | will open the result in a dumb edit window. |
+|            |       | will open the result in a dumb edit window*.|
 +------------+-------+---------------------------------------------+
 
-A dumb edit window is just for editing -- you need to cut and paste
-the contents someplace to keep them.
+* A dumb edit window is just for editing -- you need to cut and paste
+the contents someplace to keep them. Basically it's just a scratchpad.
+You can still hit ^@enter and execute whatever is in the window though.
 
 Keys:
  ^a = ctrl + a

@@ -331,6 +331,11 @@ public class WorkspaceCommands implements Logable, Serializable {
      */
     public List<String> commandHistory = new LinkedList<>();
 
+    /**
+     * Execute a workspace command.
+     * @param inline
+     * @return
+     */
     public Object execute(String inline) {
         try {
             return execute2(inline);

@@ -2,6 +2,9 @@ package org.qdl_lang.gui.editor;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import org.fife.ui.rsyntaxtextarea.folding.FoldParserManager;
+import org.fife.ui.rtextarea.RTextScrollPane;
+import org.qdl_lang.gui.QDLFoldParser;
 import org.qdl_lang.gui.QDLSwingUtil;
 import org.qdl_lang.gui.SwingTerminal;
 import org.qdl_lang.workspace.QDLTerminal;
@@ -26,6 +29,7 @@ import java.util.UUID;
 
 import static java.awt.event.InputEvent.ALT_DOWN_MASK;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
+import static org.qdl_lang.gui.SwingTerminal.syntaxEditStyle;
 
 /**
  * A standalone editor for QDL. This can be invoked by the GUI.
@@ -35,12 +39,11 @@ import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 public class QDLEditor {
     public QDLEditor(WorkspaceCommands workspaceCommands,
                      String alias, int handle) throws HeadlessException {
+        this();
         this.workspaceCommands = workspaceCommands;
         this.alias = alias;
         this.handle = handle;
-
         type = EditDoneEvent.TYPE_BUFFER;
-        init();
     }
 
     protected SwingTerminal getSwingTerminal() {
@@ -107,6 +110,7 @@ public class QDLEditor {
     protected UUID uuid = UUID.randomUUID();
     protected RSyntaxTextArea input;
     private JPanel mainPanel;
+    private RTextScrollPane RTextScrollPane1;
 
     protected int altMask = ALT_DOWN_MASK;
     protected int ctrlMask = CTRL_DOWN_MASK;
@@ -119,12 +123,24 @@ public class QDLEditor {
     File file;
 
     public QDLEditor(File file) {
+        this();
         this.file = file;
         alias = file.getAbsolutePath();
-        init();
     }
 
     protected void init() {
+
+        Component container =  mainPanel.getComponent(0);
+        if(container instanceof RTextScrollPane){
+            ((RTextScrollPane)container).setLineNumbersEnabled(true);
+            ((RTextScrollPane)container).setFoldIndicatorEnabled(true);
+        }
+        if(FoldParserManager.get().getFoldParser(syntaxEditStyle)==null) {
+            FoldParserManager.get().addFoldParserMapping(syntaxEditStyle, new QDLFoldParser());
+        }
+        input.setCodeFoldingEnabled(true);
+        input.setSyntaxEditingStyle(syntaxEditStyle);
+
         jFrame = new JFrame();
         input.addKeyListener(new MyKeyAdapter());
         //input.addKeyListener(new QDLCharKeyAdapter(s));
@@ -148,7 +164,7 @@ public class QDLEditor {
     private void $$$setupUI$$$() {
         mainPanel = new JPanel();
         mainPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        final JScrollPane scrollPane1 = new JScrollPane();
+        final JScrollPane scrollPane1 = new RTextScrollPane();
         mainPanel.add(scrollPane1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         input = new RSyntaxTextArea();
         Font inputFont = this.$$$getFont$$$("DialogInput", Font.BOLD, 14, input.getFont());
@@ -184,6 +200,10 @@ public class QDLEditor {
      */
     public JComponent $$$getRootComponent$$$() {
         return mainPanel;
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
     }
 
     public class ControlOperations extends EditorKeyPressedAdapter {
@@ -225,17 +245,24 @@ public class QDLEditor {
     }
 
     public class MyKeyAdapter extends KeyAdapter {
-
         @Override
         public void keyTyped(KeyEvent e) {
             switch (e.getKeyChar()) {
                 case KeyEvent.VK_ENTER:
                     //if ((e.getModifiersEx() & (altMask | ctrlMask)) == ctrlMask) {
                     if (e.isControlDown() && e.isAltDown()) {
-                        String current = ") " + handle;
-                        // previousResults.add(0, getResultText());
-                        getWorkspaceCommands().execute(current);
-                        //doSend(current);
+                        String current;
+                        if(handle < 0){
+                            // then this is a dumb edit window.
+                            current = input.getText();
+                        }else {
+                            current = ") " + handle;
+                        }
+                        try {
+                            getWorkspaceCommands().getWorkspace().execute(current);
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
                         return;
                     }
                     break;
@@ -305,11 +332,13 @@ public class QDLEditor {
         // Don't want exit on close since it shuts down VM including main QDL window.
         //   jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
-        atmf.putMapping("text/qdl", "org.qdl_lang.gui.flex.QDLSyntax");
+        atmf.putMapping(syntaxEditStyle, "org.qdl_lang.gui.flex.QDLSyntax");
         CompletionProvider provider = QDLSwingUtil.createCompletionProvider();
         AutoCompletion ac = new AutoCompletion(provider);
         ac.install(input);
-        input.setSyntaxEditingStyle("text/qdl");
+        input.setSyntaxEditingStyle(syntaxEditStyle);
+        FoldParserManager.get().addFoldParserMapping(syntaxEditStyle, new QDLFoldParser());
+        input.setCodeFoldingEnabled(true);
         Font font = workspaceCommands.getFont();
         input.setFont(font);
         if (content != null) {

@@ -128,8 +128,8 @@ public class QDLSASTerminal extends SwingTerminal implements QDLSASConstants {
         frame.setContentPane(qdlTerminal.getPanel1());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
-        atmf.putMapping("text/qdl", "org.qdl_lang.gui.flex.QDLSyntax");
-        qdlTerminal.getInput().setSyntaxEditingStyle("text/qdl");
+        atmf.putMapping(syntaxEditStyle, "org.qdl_lang.gui.flex.QDLSyntax");
+        qdlTerminal.getInput().setSyntaxEditingStyle(syntaxEditStyle);
         qdlTerminal.setupSAS(inputLine);
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
         int w = (int) dimension.getWidth() * 3 / 4;
