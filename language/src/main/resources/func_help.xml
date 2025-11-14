@@ -4428,6 +4428,11 @@ E.g.
 [3,4,5,6,4,5,6,7,8,9,10]
    [;5]~{12:12,{15:15}
 [0,1,2,3,4,12,15}
+  {'a':1,'b':2}~{'a':3}
+{a:3, b:2}
+
+(Note that this also allows for a type of inheritence in stems, where b. overrides corresponding
+ elements of a.)
 
 E.g. Operation on higher rank lists
   n(4,5)~n(3,4)
