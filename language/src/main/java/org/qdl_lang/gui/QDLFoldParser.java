@@ -1,5 +1,6 @@
 package org.qdl_lang.gui;
 
+import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.folding.Fold;
 import org.fife.ui.rsyntaxtextarea.folding.FoldParser;
@@ -13,23 +14,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Fold parser for QDL. Formerly possible in 2.5.8, but seems to have been removed in
- * current version, 3.3.1. Seems that the preferred way is via Flex, which
- * is close to impossible to do from an ANTLR grammar.
+ * Fold parser for QDL. This recognizes multi-line comments (including ones inside
+ * folds) and nested folds based on []. It also will not fold a line
+ * that has both start and end brackets, so expressions like
+ * <pre>
+ *     a. := [;5];
+ * </pre>
+ * <p>are not folded. This could probably (and will probably) be improved,
+ * but is quite serviceable now.</p>
  */
 // Fix for https://github.com/ncsa/qdl/issues/147
 public class QDLFoldParser implements FoldParser {
+    Pattern startBlockPattern = Pattern.compile("^.*\\[.*$");
+    Pattern endBlockPattern = Pattern.compile("^.*\\].*$");
+    Pattern startMLCommentPattern = Pattern.compile("^.*/\\*.*$");
+    Pattern endMLCommentPattern = Pattern.compile("^.*\\*/.*$");
+
     public List<Fold> getFolds(RSyntaxTextArea textArea) {
         List<Fold> folds = new ArrayList<>();
         Document doc = textArea.getDocument();
-        Pattern startBlockPattern = Pattern.compile("^.*\\[.*$");
-        Pattern endBlockPattern = Pattern.compile("^.*\\].*$");
-        Pattern startMLCommentPattern = Pattern.compile("^.*/\\*.*$");
-        Pattern endMLCommentPattern = Pattern.compile("^.*\\*/.*$");
-
         int lineCount = textArea.getLineCount();
-        System.out.println(getClass().getSimpleName() + " lineCount: " + lineCount);
-
         Fold currentFold = null;
         boolean inComment = false;
 
@@ -38,11 +42,10 @@ public class QDLFoldParser implements FoldParser {
                 int startOffset = textArea.getLineStartOffset(i);
                 int endOffset = textArea.getLineEndOffset(i);
                 String line = doc.getText(startOffset, endOffset - startOffset);
-                System.out.println(getClass().getSimpleName() + " line: " + line);
                 Matcher endMLCommentMatcher = endMLCommentPattern.matcher(line);
                 boolean isEndComment = endMLCommentMatcher.find();
-                if(inComment){
-                    if(isEndComment){
+                if (inComment) {
+                    if (isEndComment) {
                         if (currentFold != null) {
                             currentFold.setEndOffset(endOffset);
                             currentFold = currentFold.getParent(); // Move up the hierarchy
@@ -53,7 +56,7 @@ public class QDLFoldParser implements FoldParser {
                 }
                 Matcher startMLCommentMatcher = startMLCommentPattern.matcher(line);
                 inComment = startMLCommentMatcher.find();
-                if(inComment && isEndComment){ // skip single line comments
+                if (inComment && isEndComment) { // skip single line comments
                     inComment = false;
                     continue;
                 }
@@ -63,14 +66,14 @@ public class QDLFoldParser implements FoldParser {
                 Matcher endBlockMatcher = endBlockPattern.matcher(line);
                 boolean isStartBlock = startBlockMatcher.find();
                 boolean isEndBlock = endBlockMatcher.find();
-                if(isStartBlock && isEndBlock){ // skip single line [], like lists
+                if (isStartBlock && isEndBlock) { // skip single line [], like lists
                     continue;
                 }
                 // in QDL, it is possible to have [] on a line (e.g., lists), so
                 // only flag it as a fold if there is no closing bracket
                 if (isStartBlock || inComment) {
                     // Found a start marker
-                    int foldType = inComment ? FoldType.COMMENT : FoldType.CODE ;
+                    int foldType = inComment ? FoldType.COMMENT : FoldType.CODE;
                     Fold fold;
                     if (currentFold != null) {
                         fold = currentFold.createChild(foldType, startOffset);
@@ -81,18 +84,23 @@ public class QDLFoldParser implements FoldParser {
                     currentFold = fold;
                 } else {
 
-                    if (isEndBlock || isEndComment ) {
+                    if (isEndBlock || isEndComment) {
                         // Found an end marker
                         if (currentFold != null) {
-                            currentFold.setEndOffset(endOffset-1);
+                            currentFold.setEndOffset(endOffset - 1);
                             currentFold = currentFold.getParent(); // Move up the hierarchy
                         }
                     }
                 }
             } catch (BadLocationException e) {
-                e.printStackTrace();
+                // (Swing exception) Normally this is only thrown if bad math attempts to access
+                // part of the text area that does not exist. It should never be thrown
+                // in normal function and denotes (usually) a programming error.
+                if (DebugUtil.isTraceEnabled()) {
+                    e.printStackTrace();
+                }
             }
         }
         return folds;
     }
- }
+}

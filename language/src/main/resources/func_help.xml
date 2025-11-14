@@ -3263,6 +3263,34 @@ E.g. Check for common spammer spellings in emails, to flag:
   'v[i!1][a@]gr[a@]'≈['vi@gra','v1agra','v1@gra','v!@gr@'];
 [true,true,true,true]
 
+E.g. An example on sets:
+   '[a-zA-Z]{3}' =~ {'aBc', 'pqr', 'ab'}
+{true, false}
+
+In this case the regex checks each string has 3 characters. Note that since sets are unique, the
+result is a set in this case of true and false. One idiom that is useful it to check if any
+elements are false as
+
+false ∈ '[a-zA-Z]{3}' =~ {'aBc', 'pqr', 'ab'}
+
+which would evaluate to true.
+
+E.g. A useful idiom
+A common construction is filtering out elements from a stem or list
+that satisfy a regex. The basic structure is
+
+mask(X., regex =~ X.)
+
+or in operators
+
+regex ≈ X. ⌆ X.
+
+So
+   X. ≔ ['aBc', 'pqr', 'ab'];
+  '[a-zA-Z]{3}' ≈ X. ⌆ X.
+[aBc,pqr]
+
+
 A possible use for spam filter, with a function that rejects the message:
    if['.*v[i!1][a@]gr[a@].*'≈message][reject(message);];
 
@@ -3281,25 +3309,30 @@ each time.
     <entry id="[|" alt="⟦">
         <body>
             <![CDATA[Closed slice notation.
-Equivalent to: [|
-You may use ⟦ (\u27e6) or [| ,  ⟧ (\u27e7) or |].
-⟦ start;stop;count ⟧
+x. :=  ⟦ start ; stop ; count ⟧
 will create the list with count elements evenly distributed between start and stop,
 inclusive.
+x.0 == start
+x.(-1) == stop
+
+This notation is equivalent to: [|
+You may use ⟦ (\u27e6) or [| ,  ⟧ (\u27e7) or |].
+Theyare  on the QDL keyboard at alt+{ or alt+} repectively.
+
 See also: slice]]>
         </body>
         <example>
             <![CDATA[   ⟦-1/2; 1/pi(); 5⟧
 [-0.5,-0.295422528454052,-0.090845056908104,0.113732414637844,0.318309886183792]
 
-Yields 5 numbers from -1/2 to 1/pi inclusive.]]>
+Yields 5 numbers equally distributed from -1/2 to 1/pi inclusive.]]>
         </example>
 
     </entry>
     <entry id="|]" alt="⟧">
         <body>
             <![CDATA[Closed slice operator close bracket.
-See slice]]>
+See slice, [|]]>
         </body>
     </entry>
 
@@ -3313,7 +3346,7 @@ expect. For instance
 
 ! true && false == !(true && false) == true
 
-which is not
+which is not (as in a few other languages)
 
 (! true) && false == false
 
@@ -3423,7 +3456,9 @@ b is assigned the value of a. Note that the colon goes next to the variable.]]>
     <entry id="{}" alt="∅">
         <body>
             <![CDATA[The empty or null set. This is the set with no elements. It is a proper
-subset of every set except itself.]]>
+subset of every set except itself.
+
+Note that the empty list or stem is [].]]>
         </body>
     </entry>
     <entry id="&lt;=" alt="≤">
@@ -3633,8 +3668,6 @@ Since the last example has rank 3, the following are equivalent too
    ((x)->rank(x))∀[n(3,4,5)];      // Default, implicit last axis
    ((x)->rank(x))∀[n(3,4,5)`(-1)]; // Axes are signed, so -1 is always last axis
 
-
-
 More examples.
 --------------
 Simple example, making a multiplication table.
@@ -3656,12 +3689,12 @@ cf.
 Things to note. The result is the product of the stems, so here there is
 a 5 x 6 array that results. a.i.j = x.i * y.j.
 
-+-----------------------------------------------+
-| tip: The output shape is dictated by the      |
-|           arguments to the function, so you   |
-|           may have to restructure the data to |
-|           your liking.                        |
-+-----------------------------------------------+
++------------------------------------------+
+| tip: The output shape is dictated by the |
+|      arguments to the function, so you   |
+|      may have to restructure the data to |
+|      your liking.                        |
++------------------------------------------+
 
 E.g. With axis operator.
 For instance, if we had a list of stems like

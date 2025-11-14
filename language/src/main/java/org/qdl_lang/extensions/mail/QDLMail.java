@@ -109,7 +109,7 @@ public class QDLMail implements QDLMetaModule {
                     body.append(bodyStem.get(key) + "\n");
                 }
             }
-            mailUtil.sendMessage(subject, body.toString(), null);
+            mailUtil.sendMessage(null, subject, body.toString(), null);
             return BooleanValue.True;
         }
 
