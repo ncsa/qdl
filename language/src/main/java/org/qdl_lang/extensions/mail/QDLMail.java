@@ -1,5 +1,6 @@
 package org.qdl_lang.extensions.mail;
 
+import edu.uiuc.ncsa.security.util.events.NotificationEvent;
 import org.qdl_lang.evaluate.SystemEvaluator;
 import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.extensions.QDLFunction;
@@ -30,6 +31,11 @@ import static org.qdl_lang.variables.values.QDLValue.asQDLValue;
 public class QDLMail implements QDLMetaModule {
     public static String SEND_NAME = "send";
 
+
+    protected NotificationEvent newNotificationEvent() {
+        return new NotificationEvent(this); // need to get with right source
+    }
+
     public class Send implements QDLFunction {
         @Override
         public String getName() {
@@ -44,6 +50,9 @@ public class QDLMail implements QDLMetaModule {
         @Override
         public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             QDLStem message;
+            if(!hasCfg()){
+                throw new IllegalStateException("You must set the configuration before sending a message.");
+            }
             if (qdlValues[0].isString()) {
                 StringTokenizer st = new StringTokenizer(qdlValues[0].asString(), "\n");
                 long index = 0L;
@@ -55,10 +64,10 @@ public class QDLMail implements QDLMetaModule {
                 if (qdlValues[0].isStem()) {
                     message = qdlValues[0].asStem();
                     if (!message.isList()) {
-                        throw new BadArgException(getName() + " requires a list as its first argument.",0);
+                        throw new BadArgException(getName() + " requires a list as its first argument.", 0);
                     }
                 } else {
-                    throw new BadArgException(getName() + " requires a string or stem as its first argument.",0);
+                    throw new BadArgException(getName() + " requires a string or stem as its first argument.", 0);
                 }
             }
             QDLStem templates = null;
@@ -66,38 +75,23 @@ public class QDLMail implements QDLMetaModule {
                 if (qdlValues[1].isStem()) {
                     templates = qdlValues[1].asStem();
                 } else {
-                    throw new BadArgException(getName() + " requires a stem as its second argument, if present.",1);
+                    throw new BadArgException(getName() + " requires a stem as its second argument, if present.", 1);
                 }
             }
             QDLStem newMessage = new QDLStem();
             if (templates != null && !templates.isEmpty()) {
                 newMessage = new QDLStem();
                 for (QDLKey key : message.keySet()) {
-                    QDLValue  currentLine = message.get(key);
+                    QDLValue currentLine = message.get(key);
                     if (!(currentLine.isNull())) {
                         newMessage.put(key, TemplateUtil.replaceAll(currentLine.toString(), templates));
                     }
                 }
-            }else{
+            } else {
                 newMessage = message;
             }
             // Now we can set up the environment for the message
-            MailEnvironment mailEnvironment = MailEnvironment.create()
-                    .setEnabled(true) // always for QDL Mail
-                    .setDebug(getCfg().containsKey("debug")?getCfg().getBoolean("debug"):false)
-                    .setBCC(getAddresses(getCfg().get(MAIL_BCC), MAIL_BCC))
-                    .setCC(getAddresses(getCfg().get(MAIL_CC), MAIL_CC))
-                    .setFrom(getCfg().getString(MAIL_FROM))
-                    .setRecipients(getAddresses(getCfg().get(MAIL_TO), MAIL_TO))
-                    .setContentType(getCfg().getString(MAIL_CONTENT_TYPE))
-                    .useSSL(getCfg().containsKey(MAIL_USE_SSL)?getCfg().getBoolean(MAIL_USE_SSL):false)
-                    .startTLS(getCfg().containsKey(MAIL_START_TLS)?getCfg().getBoolean(MAIL_START_TLS):false)
-                    .setPort(getCfg().containsKey(MAIL_PORT)?getCfg().getLong(MAIL_PORT).intValue():-1)
-                    .setServer(getCfg().getString(MAIL_SERVER))
-                    .setPassword(getCfg().getString(MAIL_PASSWORD))
-                    .setReplyTo(getCfg().getString(MAIL_REPLY_TO))
-                    .setUsername(getCfg().getString(MAIL_USERNAME));
-            MailUtil mailUtil = new MailUtil(mailEnvironment);
+            MailUtil mailUtil = new MailUtil(getMailEnvironment());
             mailUtil.setMyLogger(state.getLogger());
 
             // Mail util only understands strings, so we have to get the body.
@@ -109,7 +103,7 @@ public class QDLMail implements QDLMetaModule {
                     body.append(bodyStem.get(key) + "\n");
                 }
             }
-            mailUtil.sendMessage(null, subject, body.toString(), null);
+            mailUtil.sendMessage(newNotificationEvent(), subject, body.toString(), null);
             return BooleanValue.True;
         }
 
@@ -157,6 +151,7 @@ public class QDLMail implements QDLMetaModule {
     /**
      * Convert QDL entry of addresses -- a string or a list of addresses -- to a Java
      * list so it can be passed to the {@link MailEnvironment}
+     *
      * @param rawAddresses
      * @param typeName
      * @return
@@ -164,30 +159,39 @@ public class QDLMail implements QDLMetaModule {
 
     private List<String> getAddresses(Object rawAddresses, String typeName) {
         List<String> addresses = new ArrayList<>();
-        if(rawAddresses == null){
+        if (rawAddresses == null) {
             return addresses;
         }
-            if (rawAddresses instanceof String) {
-                addresses.add( (String)rawAddresses);
-            } else {
-                if (rawAddresses instanceof QDLStem) {
-                    QDLStem rawRR = (QDLStem) rawAddresses;
-                    TreeSet<String> addressList = new TreeSet<>(); // re-order, keep unique
+        if (rawAddresses instanceof String) {
+            addresses.add((String) rawAddresses);
+        } else {
+            if (rawAddresses instanceof QDLStem) {
+                QDLStem rawRR = (QDLStem) rawAddresses;
+                TreeSet<String> addressList = new TreeSet<>(); // re-order, keep unique
 
-                    for (QDLKey key : rawRR.keySet()) {
-                        QDLValue possibleRecipient = rawRR.get(key);
-                        if(possibleRecipient.isString()){
-                            addressList.add(possibleRecipient.asString());
-                        }
+                for (QDLKey key : rawRR.keySet()) {
+                    QDLValue possibleRecipient = rawRR.get(key);
+                    if (possibleRecipient.isString()) {
+                        addressList.add(possibleRecipient.asString());
                     }
-                    addresses.addAll(addressList);
-                } else {
-                    throw new IllegalArgumentException(typeName + " recipients of the message '" + rawAddresses + "'cannot be parsed");
                 }
+                addresses.addAll(addressList);
+            } else {
+                throw new IllegalArgumentException(typeName + " recipients of the message '" + rawAddresses + "'cannot be parsed");
             }
+        }
         return addresses;
     }
 
+    public MailEnvironment getMailEnvironment() {
+        return mailEnvironment;
+    }
+
+    public void setMailEnvironment(MailEnvironment mailEnvironment) {
+        this.mailEnvironment = mailEnvironment;
+    }
+
+    MailEnvironment mailEnvironment;
     public static String CFG_METHOD_NAME = "cfg";
 
     public class SetCfg implements QDLFunction {
@@ -209,6 +213,26 @@ public class QDLMail implements QDLMetaModule {
             if (qdlValues[0].isStem()) {
                 QDLStem old = getCfg();
                 setCfg(qdlValues[0].asStem());
+                // reset the mail env to the new configuration.
+                // we don't want this to get recreated a bunch, so manage it here
+                // The QDL config is the authoritative source for the mail configuration.
+                setMailEnvironment( MailEnvironment.create()
+                        .setEnabled(true) // always for QDL Mail
+                        .setDebug(getCfg().containsKey("debug")?getCfg().getBoolean("debug"):false)
+                        .setBCC(getAddresses(getCfg().get(MAIL_BCC), MAIL_BCC))
+                        .setCC(getAddresses(getCfg().get(MAIL_CC), MAIL_CC))
+                        .setFrom(getCfg().getString(MAIL_FROM))
+                        .setRecipients(getAddresses(getCfg().get(MAIL_TO), MAIL_TO))
+                        .setContentType(getCfg().getString(MAIL_CONTENT_TYPE))
+                        .useSSL(getCfg().containsKey(MAIL_USE_SSL)?getCfg().getBoolean(MAIL_USE_SSL):false)
+                        .startTLS(getCfg().containsKey(MAIL_START_TLS)?getCfg().getBoolean(MAIL_START_TLS):false)
+                        .setPort(getCfg().containsKey(MAIL_PORT)?getCfg().getLong(MAIL_PORT).intValue():-1)
+                        .setServer(getCfg().getString(MAIL_SERVER))
+                        .setPassword(getCfg().getString(MAIL_PASSWORD))
+                        .setReplyTo(getCfg().getString(MAIL_REPLY_TO))
+                        .setUsername(getCfg().getString(MAIL_USERNAME))
+                        .setThrottleInterval(getCfg().containsKey(MAIL_THROTTLE_INTERVAL)?getCfg().getLong(MAIL_THROTTLE_INTERVAL):-1L)
+                 );
                 return asQDLValue(old);
             }
             throw new BadArgException("The argument must be a stem", 0);
@@ -238,6 +262,7 @@ public class QDLMail implements QDLMetaModule {
             d.add(RJustify(MAIL_REPLY_TO, width) + " : single address for the reply to field. Default is to use " + MAIL_FROM);
             d.add(RJustify(MAIL_SERVER, width) + " : address of the mail server");
             d.add(RJustify(MAIL_START_TLS, width) + " : boolean, use start TLS?");
+            d.add(RJustify(MAIL_THROTTLE_INTERVAL, width) + " : the throttle interval in milliseconds. Default is -1 (disabled).");
             d.add(RJustify(MAIL_TO, width) + " : list of recipients");
             d.add(RJustify(MAIL_USE_SSL, width) + " : boolean, use SSL?");
             d.add(RJustify(MAIL_USERNAME, width) + " : the user name to use for logging in to the mail server");
@@ -275,6 +300,7 @@ public class QDLMail implements QDLMetaModule {
     public static String MAIL_USE_SSL = "use_ssl";
     public static String MAIL_USERNAME = "username";
     public static String MAIL_REPLY_TO = "reply_to";
+    public static String MAIL_THROTTLE_INTERVAL = "throttle_interval";
 
     public QDLStem getCfg() {
         if (cfg == null) {
@@ -293,65 +319,69 @@ public class QDLMail implements QDLMetaModule {
 
     QDLStem cfg = null;
 
-    protected static QDLStem addAll(List<String> x){
-        if(x == null || x.isEmpty()){
+    protected static QDLStem addAll(List<String> x) {
+        if (x == null || x.isEmpty()) {
             return null;
         }
         QDLStem q = new QDLStem();
         q.getQDLList().addAll(x);
         return q;
     }
+
     /**
      * Convert a {@link MailEnvironment} to a stem. This is not for the current configuration,
      * but is a general utility that should go in this class.
+     *
      * @param me
      * @return
      */
-     public static QDLStem convertMEToStem(MailEnvironment me){
-      QDLStem stem = new QDLStem();
-      if(me.carbonCopy!=null){
-          QDLStem q = addAll(me.carbonCopy);
-          if(q!=null){
-              stemPut(stem, MAIL_CC, q);
-          }
-      }
+    public static QDLStem convertMEToStem(MailEnvironment me) {
+        QDLStem stem = new QDLStem();
+        if (me.carbonCopy != null) {
+            QDLStem q = addAll(me.carbonCopy);
+            if (q != null) {
+                stemPut(stem, MAIL_CC, q);
+            }
+        }
 
 
-      if(me.blindCarbonCopy!=null){
-          QDLStem q = addAll(me.blindCarbonCopy);
-          if(q!=null){
-              stemPut(stem,MAIL_BCC, q);
-          }
-      }
-      if(me.recipients!=null){
-          QDLStem q = addAll(me.recipients);
-          if(q!=null){
-              stemPut(stem,MAIL_TO, q);
-          }
-      }
+        if (me.blindCarbonCopy != null) {
+            QDLStem q = addAll(me.blindCarbonCopy);
+            if (q != null) {
+                stemPut(stem, MAIL_BCC, q);
+            }
+        }
+        if (me.recipients != null) {
+            QDLStem q = addAll(me.recipients);
+            if (q != null) {
+                stemPut(stem, MAIL_TO, q);
+            }
+        }
 
-      if(me.replyTo!=null)stemPut(stem,MAIL_REPLY_TO, me.replyTo);
-      if(me.from!=null)stemPut(stem,MAIL_FROM, me.from);
-      if(me.username!=null)stemPut(stem,MAIL_USERNAME, me.username);
-      if(me.server!=null)stemPut(stem,MAIL_SERVER, me.server);
-      if(me.password!=null)stemPut(stem,MAIL_PASSWORD, me.password);
-      if(me.contentType!=null)stemPut(stem,MAIL_CONTENT_TYPE, me.contentType);
-      stemPut(stem,MAIL_USE_SSL, me.useSSL);
-      stemPut(stem,MAIL_START_TLS, me.starttls);
-      stemPut(stem,MAIL_PORT, (long)me.port);
+        if (me.replyTo != null) stemPut(stem, MAIL_REPLY_TO, me.replyTo);
+        if (me.from != null) stemPut(stem, MAIL_FROM, me.from);
+        if (me.username != null) stemPut(stem, MAIL_USERNAME, me.username);
+        if (me.server != null) stemPut(stem, MAIL_SERVER, me.server);
+        if (me.password != null) stemPut(stem, MAIL_PASSWORD, me.password);
+        if (me.contentType != null) stemPut(stem, MAIL_CONTENT_TYPE, me.contentType);
+        stemPut(stem, MAIL_USE_SSL, me.useSSL);
+        stemPut(stem, MAIL_START_TLS, me.starttls);
+        stemPut(stem, MAIL_PORT, (long) me.port);
 
-      return stem;
-     }
+        return stem;
+    }
 
     /**
      * Centralize adding values to stem
+     *
      * @param stem
      * @param k
      * @param v
      */
-    protected static void stemPut(QDLStem stem, Object k, Object v){
-         stem.put(from(k),QDLValue.asQDLValue(v));
-}
+    protected static void stemPut(QDLStem stem, Object k, Object v) {
+        stem.put(from(k), QDLValue.asQDLValue(v));
+    }
+
     @Override
     public JSONObject serializeToJSON() {
         return null;
