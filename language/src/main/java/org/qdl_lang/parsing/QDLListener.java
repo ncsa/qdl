@@ -202,9 +202,9 @@ public class QDLListener implements QDLParserListener {
         // need to process its argument list.
         // There are 3 children  "f(" arglist ")", so we want the middle one.
 
-        if(ctx.getChildCount()==1){
+        if (ctx.getChildCount() == 1) {
             TokenPosition tp = tp(ctx);
-            throw new ParsingException("Function definition could not be parsed",tp.line,tp.col,MISMATCH_TYPE);
+            throw new ParsingException("Function definition could not be parsed", tp.line, tp.col, MISMATCH_TYPE);
         }
         String name = ctx.getChild(0).getText();
         if (name.endsWith("(")) {
@@ -446,15 +446,14 @@ public class QDLListener implements QDLParserListener {
         } */
 
 
-
-        if(s instanceof ExpressionInterface){
+        if (s instanceof ExpressionInterface) {
             dyad.setRightArgument((ExpressionInterface) s);
             List<String> source = new ArrayList<>();
             source.add(parseTree.getText());
             dyad.setSourceCode(source);
             return;
         }
-        if(s instanceof FunctionDefinitionStatement){
+        if (s instanceof FunctionDefinitionStatement) {
             // See note abouve for enabling these!
             throw new ParsingException("Function definition not supported here.");
         }
@@ -547,7 +546,7 @@ public class QDLListener implements QDLParserListener {
         polyad.setTokenPosition(tp(ctx));
         polyad.setSourceCode(getSource(ctx));
         polyad.addArgument((ExpressionInterface) resolveChild(ctx.getChild(1)));
-        polyad.addArgument(new ConstantNode(asQDLValue(2L))) ;
+        polyad.addArgument(new ConstantNode(asQDLValue(2L)));
         stash(ctx, polyad);
     }
 
@@ -834,18 +833,18 @@ public class QDLListener implements QDLParserListener {
         QDLParserParser.FunctionContext nameAndArgsNode = defineContext.function();
         if (nameAndArgsNode.exception != null) {
             String message = nameAndArgsNode.exception.getMessage();
-            if(message == null){
+            if (message == null) {
                 message = "Error parsing function signature";
-                if(nameAndArgsNode.exception.getOffendingToken() != null){
+                if (nameAndArgsNode.exception.getOffendingToken() != null) {
                     message = message + ", offending token: " + nameAndArgsNode.exception.getOffendingToken().getText();
                 }
             }
             TokenPosition tp = tp(nameAndArgsNode);
-            throw new ParsingException(message,tp.line,tp.col,MISMATCH_TYPE);
+            throw new ParsingException(message, tp.line, tp.col, MISMATCH_TYPE);
         }
-        if(defineContext.getChildCount() < 4){
+        if (defineContext.getChildCount() < 4) {
             // ending parenthesis (most likely) missing form function signature
-            throw new ParsingException("Function definition could not be parsed",tp(nameAndArgsNode).line,tp(nameAndArgsNode).col,MISMATCH_TYPE);
+            throw new ParsingException("Function definition could not be parsed", tp(nameAndArgsNode).line, tp(nameAndArgsNode).col, MISMATCH_TYPE);
         }
         List<String> stringList = new ArrayList<>();
         for (int i = 0; i < defineContext.getChildCount() - 1; i++) {
@@ -1284,10 +1283,10 @@ illegal argument:no module named "b" was  imported at (1, 67)
             ParseTree pt = ctx.getChild(i);
             if (pt instanceof QDLParserParser.StemValueContext) {
                 Statement statement = resolveChild(pt);
-                if(statement instanceof ExpressionInterface) {
+                if (statement instanceof ExpressionInterface) {
                     ExpressionInterface stmt = (ExpressionInterface) resolveChild(pt);
                     sln.getStatements().add(stmt);
-                }else{
+                } else {
                     throw new ParsingException("unexpected statement of type " + statement.getClass().getSimpleName());
                 }
             }
@@ -2068,6 +2067,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
      * @param lambdaContext
      */
     @Override
+
     public void exitLambdaDef(QDLParserParser.LambdaDefContext lambdaContext) {
         // Github https://github.com/ncsa/qdl/issues/99 change to parser yields 2 cases
         QDLParserParser.FunctionContext nameAndArgsNode;
@@ -2092,7 +2092,13 @@ illegal argument:no module named "b" was  imported at (1, 67)
                 justArgs.add(nameAndArgsNode.f_args());
             }
         }
-
+        // Fix https://github.com/ncsa/qdl/issues/148
+        if (lambdaContext.exception != null) {
+            if (lambdaContext.LambdaConnector() == null) {
+                throw new ParsingException("missing lambda connector", lambdaContext.exception);
+            }
+            throw new ParsingException("Error parsing function definition", lambdaContext.exception);
+        }
 
         FunctionRecord functionRecord = new FunctionRecord();
         functionRecord.setTokenPosition(tp(lambdaContext));
@@ -2731,8 +2737,8 @@ illegal argument:no module named "b" was  imported at (1, 67)
         // The symbol always includes the @ or ⊗ for the function reference. Strip it.
         String marker = ctx.FunctionMarker().getText();
         String symbol = null;
-        Statement statement =  resolveChild(ctx.expression());
-        if(statement instanceof ExpressionInterface) {
+        Statement statement = resolveChild(ctx.expression());
+        if (statement instanceof ExpressionInterface) {
             ExpressionInterface expression = (ExpressionInterface) resolveChild(ctx.expression());
             switch (expression.getNodeType()) {
                 case VARIABLE_NODE:
@@ -2753,7 +2759,7 @@ illegal argument:no module named "b" was  imported at (1, 67)
                 symbol = symbol.substring(0, symbol.indexOf("("));
             }
             fNode.setFunctionName(symbol);
-        }else{
+        } else {
             throw new ParsingException("unknown node type:" + statement.getClass().getCanonicalName());
 
         }

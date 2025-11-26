@@ -5,7 +5,6 @@ import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.state.State;
-import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.values.QDLNullValue;
 import org.qdl_lang.variables.values.QDLValue;
 

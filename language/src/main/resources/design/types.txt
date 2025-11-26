@@ -1,3 +1,34 @@
+11/23/2025
+More thinking.... It is better to separate interfaces into separate types. Types
+check interfaces, not implementations. Looking over ML, it specifies signatures as
+lists of functions, and allows for a type/module implementing them using
+a functions call, so something like
+
+signature[X][f(x,y);g(x,y). A, B];
+
+module[T][
+ use(X);
+    f(x,y)->...;
+ ];
+
+or locally.
+
+module[T][
+   signature[X][f(x,y);g(x,y)]];
+   use(X);
+   // lots of stuffs and things
+]; // end module
+
+In this case, the programmer must handle inheritance, but it grafts onto the
+current module system seamlessly. Visibility for signatures is the same
+as other objects and has scope. They are not NS qualified (that's for modules).
+
+This would permit composition and essentially letting implementations
+configure themselves dynamically. Cool, but also possible to cause issues.
+
+Then type(a, X) would check that a implements X.
+
+
 4/10/2023
 This document is the most current thinking on types.
  Type = common features for a set of objects. They have an interface and an implementation.   They are
