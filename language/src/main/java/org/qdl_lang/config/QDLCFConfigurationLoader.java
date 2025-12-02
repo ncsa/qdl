@@ -9,7 +9,6 @@ import edu.uiuc.ncsa.security.core.util.*;
 import edu.uiuc.ncsa.security.util.cli.editing.EditorEntry;
 import edu.uiuc.ncsa.security.util.cli.editing.EditorUtils;
 import edu.uiuc.ncsa.security.util.cli.editing.Editors;
-import edu.uiuc.ncsa.security.util.configuration.XMLConfigUtil;
 import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.exceptions.QDLException;
 import org.qdl_lang.gui.FontUtil;
@@ -565,7 +564,6 @@ public class QDLCFConfigurationLoader<T extends QDLEnvironment> extends CFLoggin
         CFBundle bundle = loader.loadBundle(fis, "qdl");
         CFNode node = bundle.getNamedConfig("oa2-dev");
 
-        //CFNode node = XMLConfigUtil.findConfiguration(path, "test", QDLConfigurationConstants.CONFIG_TAG_NAME);
 
         QDLCFConfigurationLoader qdlcfConfigurationLoader = new QDLCFConfigurationLoader(path, node);
 

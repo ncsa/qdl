@@ -3,8 +3,8 @@ package org.qdl_lang.workspace;
 import edu.uiuc.ncsa.security.core.cf.CFBundle;
 import edu.uiuc.ncsa.security.core.cf.CFLoader;
 import edu.uiuc.ncsa.security.core.cf.CFNode;
+import edu.uiuc.ncsa.security.util.configuration.TimeUtil;
 import org.qdl_lang.config.QDLCFConfigurationLoader;
-import org.qdl_lang.config.QDLConfigurationLoader;
 import org.qdl_lang.config.QDLConfigurationLoaderUtils;
 import org.qdl_lang.config.QDLEnvironment;
 import org.qdl_lang.exceptions.*;
@@ -52,12 +52,10 @@ import edu.uiuc.ncsa.security.util.cli.editing.EditorUtils;
 import edu.uiuc.ncsa.security.util.cli.editing.Editors;
 import edu.uiuc.ncsa.security.util.cli.editing.LineEditor;
 import edu.uiuc.ncsa.security.util.configuration.TemplateUtil;
-import edu.uiuc.ncsa.security.util.configuration.XMLConfigUtil;
 import edu.uiuc.ncsa.security.util.terminal.ISO6429IO;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
-import org.apache.commons.configuration.tree.ConfigurationNode;
 import org.qdl_lang.evaluate.*;
 import org.qdl_lang.state.*;
 import org.w3c.dom.CharacterData;
@@ -5417,7 +5415,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                 if (4 <= inputLine.getArgCount()) {
                     rawTime = rawTime + " " + inputLine.getArg(4);
                 }
-                setAutosaveInterval(XMLConfigUtil.getValueSecsOrMillis(rawTime));
+                setAutosaveInterval(TimeUtil.getValueSecsOrMillis(rawTime));
                 say("autosave interval is now " + getAutosaveInterval() + " ms.");
                 break;
             default:
@@ -6728,19 +6726,6 @@ public class WorkspaceCommands implements Logable, Serializable {
 
     QDLEnvironment qdlEnvironment = null;
 
-    /**
-     * Uses Apache commons. This should be replaced by the CF loader system
-     * @param inputLine
-     * @param cfgName
-     * @throws Throwable
-     */
-    protected void oldLoad(InputLine inputLine, String cfgName) throws Throwable {
-        if (qdlEnvironment == null) {
-            ConfigurationNode node = XMLConfigUtil.findMultiNode(inputLine.getNextArgFor(CONFIG_FILE_FLAG), cfgName, CONFIG_TAG_NAME);
-            QDLConfigurationLoader loader = new QDLConfigurationLoader(inputLine.getNextArgFor(CONFIG_FILE_FLAG), node);
-            qdlEnvironment = loader.load();
-        }
-    }
 
     /**
      * CF Loader for XML configurationn file.
