@@ -29,14 +29,18 @@ public class QDLDBModule extends JavaModule {
         QDLDB qdldb = new QDLDB();
         module.setMetaClass(qdldb);
         ArrayList<QDLFunction> funcs = new ArrayList<>();
-        funcs.add(qdldb.new Connect());
-        funcs.add(qdldb.new Read());
         funcs.add(qdldb.new BatchExecute());
         funcs.add(qdldb.new BatchRead());
-        funcs.add(qdldb.new Update());
+        funcs.add(qdldb.new Connect());
+        funcs.add(qdldb.new Create());
         funcs.add(qdldb.new Execute());
+        funcs.add(qdldb.new GetTableMetadata());
+        funcs.add(qdldb.new PreparedRead());
+        funcs.add(qdldb.new PreparedUpdate());
+        funcs.add(qdldb.new Update());
         ArrayList<QDLVariable> vars = new ArrayList<>();
         vars.add(qdldb.new SQLTypes());
+        vars.add(qdldb.new QDLTypes());
         module.addFunctions(funcs);
         module.addVariables(vars);
         if (state != null) {
@@ -55,7 +59,7 @@ public class QDLDBModule extends JavaModule {
             doxx.add("mysql, maridb, postgresql and derby");
             doxx.add("There are 4 basic functions available");
             doxx.add(QDLDB.QUERY_COMMAND + " allows for statements that return a result, such as select or count");
-            doxx.add(QDLDB.UPDATE_COMMAND + " allows for updating an existing database. This does not return a result");
+            doxx.add(QDLDB.PREPARED_UPDATE_COMMAND + " allows for updating an existing database. This does not return a result");
             doxx.add(QDLDB.EXECUTE_COMMAND + " allows for executing other commands that may/may not return a result, such as insert or delete");
             doxx.add("    This is the most generic way to execute a command to the database. Reads and updates are just");
             doxx.add("    special cases of this");

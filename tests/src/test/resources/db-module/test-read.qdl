@@ -1,0 +1,30 @@
+#! /usr/bin/env -S qdl-run
+
+⊨ 0 < size(args()) : 'Missing connection ini';
+debugger(10);
+  db ≔ j_load('db');
+cfg. ≔ interpret(file_read(args().0));
+db#connect(cfg.);
+qt. := {'blob_0':db#qdl_types.'string',
+        'timestamp_long':db#qdl_types.'date'
+        };
+c. ≔ db#query('select * from oauth2.db_test where varchar_128=?',['id123'],qt.).0;
+debugger(1, '\n--- original c:\n' + print(c.));
+c.'varchar_128' ≔ 'id-' + random_string(4);
+c.'timestamp_long'≔ date_iso();
+c.'blob_0'≔ 'Twas brillig and the slithy toves';
+db#create('oauth2.db_test',c.,qt.);
+a. ≔ db#query('select * from oauth2.db_test where varchar_128=?',[c.'varchar_128'],qt.).0;
+out. ≔ a. ≡ c.;
+debugger(1, '---c:\n' + print(c.));
+debugger(1, '---a:\n' + print(a.));
+debugger(1, '---out:\n' + print(out.));
+db#execute('delete from oauth2.db_test where varchar_128=?',[c.'varchar_128']);
+ok ≔  ⊗∧⊙out.;
+  if[¬ok]
+then[
+    bad_a.≔ (¬out.)⌆a.; // received
+//    ⊨ ok : bad_a.; // pass back the columns that don't match in the check.
+];
+//⊨ ok;
+

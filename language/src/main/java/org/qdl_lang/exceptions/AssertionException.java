@@ -29,7 +29,7 @@ public class AssertionException extends QDLExceptionWithTrace{
         setAssertionState(stateStem);
     }
 
-    public Object getAssertionState() {
+    public QDLStem getAssertionState() {
         return assertionState;
     }
 
