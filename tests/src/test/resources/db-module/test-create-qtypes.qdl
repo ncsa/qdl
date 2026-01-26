@@ -9,42 +9,14 @@ debugger(10);
 cfg. ≔ interpret(file_read(args().0));
 db#connect(cfg.);
 numeric_digits(20);
-qt. := {'blob_0':db#qdl_types.'json',
-        'set_0':db#qdl_types.'input_form',
-        'timestamp_long':db#qdl_types.'date'
-        };
 
-random_string := 'ANxX505vlEUAiuaMaI-jATBIl7qmrlLO_547yNSYGZYwEdFqOhpbrY3uCU3bJtZK';
-             iso_date ≔ date_iso(); // make sure it is consistent across all entries
-            a.'bit_0' ≔ true;
-           a.'blob_0' ≔ qt.; // just to have a stem
-        a.'boolean_0' ≔ false;
-         a.'double_0' ≔ 54321.987654321;
-          a.'float_0' ≔ -4.25;
-        a.'integer_0' ≔ 2^11;
-        a.'numeric_0' ≔ pi();            // precision set high
-            a.'set_0' ≔ {'a',2,{5,7}};     // should be a string if no QDL types
-       a.'smallint_0' ≔ 5;
-           a.'text_0' ≔ random_string;
-   a.'timestamp_long' ≔ date_iso();        // For testing QDL conversion, here we are not and the QSL column type is long
-        a.'tinyint_0' ≔ -2;
-      a.'varchar_128' ≔ 'id-'+random_string(4);   // unique identifier
-debugger(1,'updating object with id = ' + a.'varchar_128');
-db#create('oauth2.db_test',a., qt.);
-c. ≔ db#query('select * from oauth2.db_test where varchar_128=?',[a.'varchar_128'], qt.).0;
-stem_check := ⊗∧⊙(c.'blob_0' == a.'blob_0');
-debugger(1, 'stem_check='+stem_check);
-remove(c.'blob_0');
-out. ≔ a. ≡ c.;
-debugger(1, '---a:\n' + print(a.));
-debugger(1, '---c:\n' + print(c.));
-debugger(1, '---c:\n' + input_form(c.));
-debugger(1, '---out:\n' + print(out.));
+                a. ≔ rr(true,true);
+a.'timestamp_long' ≔ date_iso();  // For testing QDL conversion, where the SQL column type is long, but QDL is a date.
+               qt. ≔ {'blob_0':db#qdl_types.'json',
+                       'set_0':db#qdl_types.'input_form',
+                       'timestamp_long':db#qdl_types.'date'
+                       };
+db#create('db_test',a., qt.);
+c. ≔ db#read('select * from oauth2.db_test where varchar_128=?',[a.'varchar_128'], qt.).0;
 ⊨ 1 == db#execute('delete from oauth2.db_test where varchar_128=?',[a.'varchar_128']) : 'Could not delete object with id \'' + a.'varchar_128' + '\'';
-ok := stem_check ∧ (⊗∧⊙out.);
-  if[¬ok]
-then[
-    bad_c.≔ (¬out.)⌆c.; // received
-    ⊨ ok : bad_c.; // pass back the columns that don't match in the check.
-];
-return(ok);
+   return(check_stem(a., c., true));

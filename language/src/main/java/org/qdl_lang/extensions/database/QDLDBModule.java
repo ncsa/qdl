@@ -37,7 +37,8 @@ public class QDLDBModule extends JavaModule {
         funcs.add(qdldb.new GetTableMetadata());
         funcs.add(qdldb.new PreparedRead());
         funcs.add(qdldb.new PreparedUpdate());
-        funcs.add(qdldb.new Update());
+        funcs.add(qdldb.new QDLToSQL());
+        funcs.add(qdldb.new QDLUpdate());
         ArrayList<QDLVariable> vars = new ArrayList<>();
         vars.add(qdldb.new SQLTypes());
         vars.add(qdldb.new QDLTypes());
@@ -57,7 +58,7 @@ public class QDLDBModule extends JavaModule {
             doxx.add("Module for database operations in QDL.");
             doxx.add("This supports CRUD (Create, Read, Update and Delete) operations in");
             doxx.add("mysql, maridb, postgresql and derby");
-            doxx.add("There are 4 basic functions available");
+/*
             doxx.add(QDLDB.QUERY_COMMAND + " allows for statements that return a result, such as select or count");
             doxx.add(QDLDB.PREPARED_UPDATE_COMMAND + " allows for updating an existing database. This does not return a result");
             doxx.add(QDLDB.EXECUTE_COMMAND + " allows for executing other commands that may/may not return a result, such as insert or delete");
@@ -65,6 +66,7 @@ public class QDLDBModule extends JavaModule {
             doxx.add("    special cases of this");
             doxx.add(QDLDB.CONNECT_COMMAND + " command that connects to a database. You must run this first before access the database");
             doxx.add("    or an error will occur.");
+*/
             doxx.add("This is not intended to be a full fledged database access module, it is designed to provide the tools");
             doxx.add("to write one with all basic access patterns and data conversions taken care of");
             doxx.add("Database administration (such as creating them and setting permissions, etc.) are outside of this");

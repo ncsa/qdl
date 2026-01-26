@@ -8,6 +8,7 @@ import org.qdl_lang.expressions.Polyad;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.extensions.QDLVariable;
+import org.qdl_lang.extensions.http.HTTPClient;
 import org.qdl_lang.state.State;
 import org.qdl_lang.util.InputFormUtil;
 import org.qdl_lang.variables.*;
@@ -38,6 +39,7 @@ import java.sql.Date;
 import java.text.ParseException;
 import java.util.*;
 
+import static edu.uiuc.ncsa.security.core.util.StringUtils.justify;
 import static edu.uiuc.ncsa.security.storage.sql.ConnectionPoolProvider.*;
 import static edu.uiuc.ncsa.security.storage.sql.SQLDatabase.rsToMap;
 import static java.sql.Types.*;
@@ -163,7 +165,7 @@ public class QDLDB implements QDLMetaModule {
             if (!(qdlValues[1].isStem())) {
                 throw new BadArgException(getName() + " requires a stem as its second argument", 1);
             }
-            QDLStem inStem = qdlValues[1].asStem();
+            QDLStem args = qdlValues[1].asStem();
             QDLStem outStem = new QDLStem();
             boolean flattenList = false;
             if (qdlValues.length == 3) {
@@ -173,10 +175,15 @@ public class QDLDB implements QDLMetaModule {
                     throw new BadArgException(getName() + " requires a boolean as its third argument", 2);
                 }
             }
+            /*
+            Nota Bene: JDBC does not support batch more for select statements and will throw
+                       a BatchUpdateException. It is intended to insert, update and delete statements.
+                       Therefore, we deledate multiple selects to the module function.
+             */
             PreparedRead preparedRead = new PreparedRead();
-            for (QDLKey key : inStem.keySet()) {
+            for (QDLKey key : args.keySet()) {
                 try {
-                    QDLValue rawArg = inStem.get(key);
+                    QDLValue rawArg = args.get(key);
                     QDLStem stemArg;
                     if (rawArg.isStem()) {
                         stemArg = rawArg.asStem();
@@ -251,7 +258,7 @@ public class QDLDB implements QDLMetaModule {
         }
     }
 
-    public static final String QUERY_COMMAND = "query";
+    public static final String QUERY_COMMAND = "read";
 
     public class PreparedRead implements QDLFunction {
         @Override
@@ -276,6 +283,8 @@ public class QDLDB implements QDLMetaModule {
             String rawStatement = qdlValues[0].asString();
             List<QDLValue> args = null;
             QDLStem qdlTypes = null;
+
+            boolean hasQDLTypes = qdlValues.length > 2;
             switch (qdlValues.length) {
                 case 1:
                     qdlTypes = new QDLStem();
@@ -292,7 +301,7 @@ public class QDLDB implements QDLMetaModule {
                             throw new BadArgException(QUERY_COMMAND + " requires its second argument, if present to be a list", 1);
                         }
                     }
-                    if (qdlValues.length == 3) {
+                    if (hasQDLTypes) {
                         if (qdlValues[2].isStem()) {
                             qdlTypes = qdlValues[2].asStem();
                         } else {
@@ -323,12 +332,20 @@ public class QDLDB implements QDLMetaModule {
             ConnectionRecord connectionRecord = connectionPool.pop();
             Connection c = connectionRecord.connection;
             QDLStem outStem;
+
             try {
                 PreparedStatement stmt = c.prepareStatement(rawStatement);
                 if (args != null) {
+                    Map<Long, int[]> qdlTypeMap = creatQDLTypeMap(qdlTypes);
                     int i = 1;
                     for (QDLValue entry : args) {
-                        setParam(stmt, i++, entry.getValue());
+                        if (hasQDLTypes && qdlTypeMap.containsKey((long) i - 1)) {
+                            int[] q = qdlTypeMap.get((long) i - 1);
+                            setParam(stmt, i, q[0], q[1], entry);
+                        } else {
+                            setParam(stmt, i, entry.getValue());
+                        }
+                        i++;
                     }
                 }
                 stmt.executeQuery();
@@ -355,7 +372,7 @@ public class QDLDB implements QDLMetaModule {
                     doc.add(getName() + "(statement,arg_list.) - execute a prepared query");
                     doc.add("statement - an SQL statement that returns a result set.");
                     doc.add("arg_list. = a list of parameters that will be used in order to prepare the statement.");
-                            doc.add("It may be empty");
+                    doc.add("It may be empty");
                     break;
                 case 3:
                     doc.add(getName() + "(statement,arg_list., qdl_types.) - execute a prepared query with qdl data types specified.");
@@ -372,7 +389,7 @@ public class QDLDB implements QDLMetaModule {
             doc.add("If it is prepared, then arg_list is a list of either scalars or pairs of the form [value, type]");
             doc.add("where type is one of the values in the variable " + SQL_TYPES_VAR_NAME);
             doc.add("E.g.");
-            doc.add("db#"+getName() +"(select * from my_table where user_id=?',['user_2355']);");
+            doc.add("db#" + getName() + "(select * from my_table where user_id=?',['user_2355']);");
             doc.add("Note that the values are specific to the table structure of the database! ");
             doc.add("If you do not supply them then the default will be ");
             doc.add("if you specify the qdl_type for a column, then the returned SQL value will");
@@ -380,6 +397,85 @@ public class QDLDB implements QDLMetaModule {
             doc.add("as a string and turn it into a stem. Updating the object should include this, so the ");
             doc.add("conversion back to the correct SQL type is done.");
             return doc;
+        }
+    }
+
+    public static final String QDL_TO_SQL = "qdl_to_sql";
+
+    public class QDLToSQL implements QDLFunction {
+        @Override
+        public String getName() {
+            return QDL_TO_SQL;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{3};
+        }
+
+        @Override
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            boolean isScalar = true;
+            QDLStem value;    // arg 0
+            QDLStem qdlTypes; // arg 1
+            QDLStem sqlTypes; // arg 2
+            switch (qdlValues[0].getType()) {
+                case QDLValue.STEM_TYPE:
+                    value = qdlValues[0].asStem();
+                    break;
+                default:
+                    value = new QDLStem();
+                    value.put(QDLKey.from(0L), qdlValues[0]);
+                    isScalar = true;
+            }
+            if (qdlValues[1].isStem()) {
+                qdlTypes = qdlValues[1].asStem();
+            } else {
+                if (!qdlValues[1].isLong()) {
+                    throw new BadArgException("qdl_type must be a long", 1);
+                }
+                qdlTypes = new QDLStem();
+                qdlTypes.setDefaultValue(qdlValues[1]);
+                //qdlTypes.put(QDLKey.from(0L), qdlValues[1]);
+            }
+            if (qdlValues[2].isStem()) {
+                sqlTypes = qdlValues[2].asStem();
+            } else {
+                if (!qdlValues[2].isLong()) {
+                    throw new BadArgException("sql_type must be a long", 2);
+                }
+                sqlTypes = new QDLStem();
+                sqlTypes.setDefaultValue(qdlValues[2]);
+                //sqlTypes.put(QDLKey.from(0L), qdlValues[2]);
+            }
+            QDLStem outStem = new QDLStem();
+            for (QDLKey key : value.keySet()) {
+                outStem.put(key, qdlToSQL(sqlTypes.getLong(key).intValue(), qdlTypes.getLong(key).intValue(), value.get(key)));
+            }
+            if (isScalar) {
+                return outStem.getQDLList().get(0L);
+            }
+            return QDLValue.asQDLValue(outStem);
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> docs = new ArrayList<>();
+            docs.add(getName() + "(value{.},  qdl_type{.}, sql_type{.}) - convert a QDL value to a SQL value");
+            docs.add("   value - a QDL value to convert");
+            docs.add("qdl_type - the QDL type to convert from");
+            docs.add("sql_type - the SQL type to convert to");
+            docs.add("Returns the (scalar) SQL value.");
+            docs.add("Note that if value is a stem, then arbitrary keys are allowed but either sql and qdl type are scalaras, or the same keys must");
+            docs.add("be used.");
+            docs.add("This is used for prepared statements when you want to do the conversion directly,");
+            docs.add("then pass it in. Complex SQL statements are allowed, so if it is quite complex (such as an updated with an embedded");
+            docs.add("join), then it is better to do the conversion yourself and just pass it in. ");
+            docs.add("Or, if the entries to your stem are very complex and require manual handling, this is a useful tool.");
+            docs.add("Since this module supports arbitrar SQL statements, it may be in fact impossible to ");
+            docs.add("interpret it without having an industrial strength SQL engine which would be very complex to ");
+            docs.add("create and maintain, mostly negating the utility of this module.");
+            return docs;
         }
     }
 
@@ -508,6 +604,19 @@ db#create('oauth2.db_test',c.,{'blob_0':4, 'timestamp_long':3});
                           int sqlType,
                           int qdlType,
                           QDLValue entry) throws SQLException, ParseException {
+        stmt.setObject(i, qdlToSQL(sqlType, qdlType, entry), sqlType);
+    }
+
+    /*
+    This was used as one stop setting the parameter. It has been borken out due to the complex
+    logic needed to convert QDL to SQL. Keep for reference, but it can probably go away.
+     */
+    private void OLDsetParam(PreparedStatement stmt,
+                             int i,
+                             int sqlType,
+                             int qdlType,
+                             QDLValue entry) throws SQLException, ParseException {
+
         Object value;
         switch (entry.getType()) {
             case QDLValue.STEM_TYPE:
@@ -701,6 +810,191 @@ db#create('oauth2.db_test',c.,{'blob_0':4, 'timestamp_long':3});
                 throw new IllegalArgumentException("incompatible value -- unrecognized SQL type  " + sqlType + " for QDL value of type " + value.getClass().getSimpleName());
         }
     }
+
+    protected Object qdlToSQL(int sqlType,
+                              int qdlType,
+                              QDLValue entry) throws SQLException, ParseException {
+        Object value;
+        switch (entry.getType()) {
+            case QDLValue.STEM_TYPE:
+                checkArg(entry.isStem(), "incompatible value -- must be a stem");
+                value = entry.asStem().toJSON().toString();
+                break;
+            case QDLValue.SET_TYPE:
+                checkArg(entry.isSet(), "incompatible value -- must be a set");
+                value = entry.asSet().inputForm();
+                break;
+            case QDLValue.LIST_TYPE:
+                checkArg(entry.isList(), "incompatible value -- must be a list");
+                value = entry.asStem().toJSON().toString();
+                break;
+            case QDLValue.NULL_TYPE:
+                return null;
+
+            default:
+                value = entry.getValue();
+        }
+        switch (sqlType) {
+            case Types.BIT:
+            case Types.BOOLEAN:
+                checkArg(entry.isBoolean(), "incompatible value -- must be a boolean");
+                break;
+            case Types.TINYINT:
+            case Types.SMALLINT:
+                checkArg(entry.isLong(), "incompatible value -- must be an integer, got a " + entry.getValue().getClass().getSimpleName());
+                break;
+            case Types.INTEGER:
+                checkArg(entry.isLong(), "incompatible value -- must be an integer");
+                break;
+            case BIGINT:
+                if (entry.getType() == Constant.STRING_TYPE) {
+                    // it's an ISO 8601 string, but the SQL column type is BigInt
+                    Calendar calendar = Iso8601.string2Date(entry.asString());
+                    return calendar.getTimeInMillis();
+                }
+                checkArg(entry.isLong(), "incompatible value -- must be an integer");
+                return entry.asLong();
+            case Types.NUMERIC:
+            case Types.DECIMAL:
+                checkArg(entry.isDecimal(), "incompatible value -- must be a decimal");
+                break;
+            case Types.VARCHAR:
+            case LONGVARCHAR:
+            case Types.CHAR:
+            case Types.CLOB:
+            case Types.NCHAR:
+            case Types.NCLOB:
+                switch (qdlType) {
+                    case QDL_TYPE_NONE:
+                        break;
+                    case QDL_TYPE_JSON:
+                        if (entry.isStem()) {
+                            value = entry.asStem().toJSON().toString();
+                        }
+                        if (entry.isSet()) {
+                            value = entry.asSet().toJSON().toString();
+                        }
+                        break;
+                    default:
+                    case QDL_TYPE_INPUT_FORM:
+                        value = entry.getInputForm();
+                        break;
+                    case QDL_TYPE_DATE:
+                        // Assumption is that the user wants an ISO 8601 date as a
+                        // string in the database, and the stem value is a long.
+                        if (entry.isLong()) {
+                            value = Iso8601.date2String(entry.asLong());
+                        }
+                        break;
+                    case QDL_TYPE_STRING:
+                        value = entry.asString();
+                        break;
+                }
+                checkArg(value instanceof String, "incompatible value -- must be a string");
+                break;
+            case FLOAT:
+            case REAL: // Same as Float
+                checkArg(entry.isDecimal() || entry.isLong(), "incompatible value -- must be a decimal");
+                value = Float.valueOf(value.toString()); // safest way
+                break;
+            case Types.DOUBLE:
+                checkArg(entry.isDecimal() || entry.isLong(), "incompatible value -- must be a decimal");
+                value = Double.valueOf(value.toString()); // safest wayu
+                break;
+            case Types.DATE:
+                if (entry.isString()) {
+                    Calendar calendar = Iso8601.string2Date(entry.asString());
+                    value = new java.sql.Date(calendar.getTimeInMillis());
+                } else {
+                    if (entry.isLong()) {
+                        value = new java.sql.Date(entry.asLong());
+                    } else {
+                        throw new IllegalArgumentException("incompatible value -- date must be an ISO string or integer, not a " + value.getClass().getSimpleName());
+                    }
+                }
+                break;
+            case Types.TIME:
+                // An SQL time is of the form hh:mm:ss and does not correspond to anything easily.
+                // The contract with JDBC is to have java.sql.Time thinly wrap a Date object and
+                // set year, month and day to 0, then ignore them. So it is up to the programmer
+                // to manage that if they have to. Messy but that's SQL...
+                if (entry.isString()) {
+                    Calendar calendar = Iso8601.string2Date(entry.asString());
+                    value = new java.sql.Time(calendar.getTimeInMillis());
+                    break;
+                } else {
+                    if (entry.isLong()) {
+                        value = new java.sql.Time(entry.asLong());
+                    } else {
+                        throw new IllegalArgumentException("incompatible value -- date must be an ISO string or integer, not a " + value.getClass().getSimpleName());
+                    }
+                }
+                break;
+            case Types.TIMESTAMP:
+                if (entry.isString()) {
+                    Calendar calendar = Iso8601.string2Date(entry.asString());
+                    value = new java.sql.Timestamp(calendar.getTimeInMillis());
+                    break;
+                } else {
+                    if (entry.isLong()) {
+                        value = new java.sql.Timestamp(entry.asLong());
+                    } else {
+                        throw new IllegalArgumentException("incompatible value -- date must be an ISO string or integer, not a " + value.getClass().getSimpleName());
+                    }
+                }
+                break;
+            case BLOB:
+            case Types.LONGVARBINARY:
+            case Types.VARBINARY:
+                //    System.out.println("setParam:" + new String(Base64.decodeBase64(entry.asString())));
+                ByteArrayInputStream bais;
+                switch (qdlType) {
+                    case QDL_TYPE_NONE:
+                        bais = new ByteArrayInputStream(Base64.decodeBase64(entry.asString()));
+                        break;
+                    default:
+
+                    case QDL_TYPE_JSON:
+                        checkArg(entry.isStem() || entry.isSet(), "incompatible value -- must be a stem or set");
+                        switch (entry.getType()) {
+                            case QDLValue.STEM_TYPE:
+                                bais = new ByteArrayInputStream(entry.asStem().toJSON().toString().getBytes(StandardCharsets.UTF_8));
+                                break;
+                            case QDLValue.SET_TYPE:
+                                bais = new ByteArrayInputStream(entry.asSet().toJSON().toString().getBytes(StandardCharsets.UTF_8));
+                                break;
+                            default:
+                                throw new IllegalArgumentException("incompatible value -- input form must be a stem or set");
+                        }
+                        break;
+                    case QDL_TYPE_INPUT_FORM:
+                        checkArg(entry.isStem() || entry.isSet(), "incompatible value -- must be a stem or set");
+                        switch (entry.getType()) {
+                            case QDLValue.STEM_TYPE:
+                                bais = new ByteArrayInputStream(entry.asStem().inputForm().getBytes(StandardCharsets.UTF_8));
+                                break;
+                            case QDLValue.SET_TYPE:
+                                bais = new ByteArrayInputStream(entry.asSet().inputForm().getBytes(StandardCharsets.UTF_8));
+                                break;
+                            default:
+                                throw new IllegalArgumentException("incompatible value -- input form must be a stem or set");
+                        }
+                        break;
+                    case QDL_TYPE_DATE:
+                        throw new IllegalArgumentException("incompatible value -- BLOB must be a " + value.getClass().getSimpleName());
+                    case QDL_TYPE_STRING: // store as a string
+                        checkArg(entry.isString(), "incompatible value -- BLOB must be a string");
+                        bais = new ByteArrayInputStream(entry.asString().getBytes(StandardCharsets.UTF_8));
+                        break;
+
+                }
+                value = bais;
+                break;
+            default:
+                throw new IllegalArgumentException("incompatible value -- unrecognized SQL type  " + sqlType + " for QDL value of type " + value.getClass().getSimpleName());
+        }
+        return value;
+    }
 /*
 db := j_load('db');
         cfg. := interpret(file_read('/home/ncsa/dev/csd/config/db-connector.qdl'));
@@ -779,17 +1073,17 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
         if (obj instanceof byte[]) {
             //System.out.println("x:" + new String(Base64.decodeBase64((byte[]) obj)));
             //System.out.println("y:" + new String((byte[]) obj));
-             if(qdlType != QDL_TYPE_NONE) {
-                 return sqlStringToQDLValue(new String((byte[])obj),qdlType,state);
-             }
+            if (qdlType != QDL_TYPE_NONE) {
+                return sqlStringToQDLValue(new String((byte[]) obj), qdlType, state);
+            }
             // in this case, we are getting back an array of bytes, not a decoded string.
             return asQDLValue(Base64.encodeBase64URLSafeString((byte[]) obj));
         }
         if (obj instanceof Blob) {
             Blob blob = (Blob) obj;
             byte[] b = blob.getBytes(1L, (int) blob.length());
-                if(qdlType != QDL_TYPE_NONE) {
-                return sqlStringToQDLValue(new String(b),qdlType,state);
+            if (qdlType != QDL_TYPE_NONE) {
+                return sqlStringToQDLValue(new String(b), qdlType, state);
             }
 /*
             if (qdlType == QDL_TYPE_STRING) {
@@ -801,8 +1095,8 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
         // finally! Since this is overlaoded for things like dates, can't check until everything else
         // has been checked.
         if (varType == Constant.STRING_TYPE) {
-            if(qdlType != QDL_TYPE_NONE) {
-                return sqlStringToQDLValue((String)obj,qdlType,state);
+            if (qdlType != QDL_TYPE_NONE) {
+                return sqlStringToQDLValue((String) obj, qdlType, state);
             }
             return QDLValue.asQDLValue(obj.toString());
         }
@@ -810,7 +1104,8 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
     }
 
     String dummyVar = "ξΞξΞξΞξ";
-    protected QDLValue sqlStringToQDLValue(String string, int qdlType, State state){
+
+    protected QDLValue sqlStringToQDLValue(String string, int qdlType, State state) {
 
         switch (qdlType) {
             case QDL_TYPE_STRING:
@@ -838,6 +1133,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
         }
         throw new IllegalArgumentException("unknown SQLtype for QDLtype=" + qdlType);
     }
+
     public void releaseConnection(ConnectionRecord c) {
         c.setLastAccessed(System.currentTimeMillis());
         connectionPool.push(c);
@@ -874,6 +1170,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
             }
             String tablename = qdlValues[0].asString();
             QDLStem arg = qdlValues[1].asStem();
+            boolean doBatch = arg.isList();
             QDLStem map = null;
             if (qdlValues.length > 2) {
                 map = qdlValues[2].asStem();
@@ -882,18 +1179,30 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
             }
             ConnectionRecord connectionRecord = connectionPool.pop();
             Connection c = connectionRecord.connection;
-            long rowsUpdates = 0;
+            long rowUpdated = 0;
+            long[] rowsUpdated = null;
             try {
                 TreeMap<String, Integer> columnNames = getSQLMetadata(c, tablename);
                 PreparedStatement pstmt = createInsertStatement(connectionRecord.connection, tablename,
                         columnNames, arg, map);
-                rowsUpdates = pstmt.executeUpdate();
+                if(doBatch){
+                    rowsUpdated = pstmt.executeLargeBatch();
+                }else {
+                    rowUpdated = pstmt.executeUpdate();
+                }
                 releaseConnection(connectionRecord);
             } catch (SQLException e) {
                 destroyConnection(connectionRecord);
                 throw new GeneralException("Error executing SQL: " + e.getMessage(), e);
             }
-            return QDLValue.asQDLValue(rowsUpdates);
+            if(doBatch){
+                QDLStem out = new QDLStem();
+                for(long row : rowsUpdated){
+                    out.getQDLList().add(QDLValue.asQDLValue(row));
+                }
+                return QDLValue.asQDLValue(out);
+            }
+            return QDLValue.asQDLValue(rowUpdated);
         }
 
         /*
@@ -918,9 +1227,8 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
                 case 3:
                     docs.add(getName() + "(table, arg., conversions.) - insert the stem into the database as a new row.");
                     docs.add("table = the (fully-qualified) table name to construct the insert statement.");
-                    ;
                     docs.add("arg. = the col-value pairs to use for the update.");
-                    addConversionMapBlurb(docs);
+                    addQDLTypesBlurb(docs);
                     break;
             }
             return docs;
@@ -928,12 +1236,13 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
     }
 
     public static String GET_TABLE_METADATA = "get_table_metadata";
-    public static String MD_TABLENAME="table_name";
-    public static String MD_CATALOG="catalog";
-    public static String MD_SCHEMA="schema";
-    public static String MD_PRIMARY_KEY="primary_key";
-    public static String MD_AUTO_COMMIT="auto_commit";
-    public static String MD_COLUMNS="columns";
+    public static String MD_TABLENAME = "table_name";
+    public static String MD_CATALOG = "catalog";
+    public static String MD_SCHEMA = "schema";
+    public static String MD_PRIMARY_KEY = "primary_key";
+    public static String MD_AUTO_COMMIT = "auto_commit";
+    public static String MD_COLUMNS = "columns";
+
     public class GetTableMetadata implements QDLFunction {
         @Override
         public String getName() {
@@ -954,35 +1263,37 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
 
             String tablename = qdlValues[0].asString();
             String dudQuery = "select * from " + tablename + " where 1 < 0";
-            // It is possible that the tablename is ffully qualified with the schema, e.g.
+            // It is possible that the tablename is fully qualified with the schema, e.g.
             // oauth2.clients. To get primary keys we need exactly the unqualified table name
             String unqTableName = tablename.substring(tablename.lastIndexOf('.') + 1);
             ConnectionRecord connectionRecord = connectionPool.pop();
             Connection c = connectionRecord.connection;
             QDLStem outStem = new QDLStem();
 
-            try{
-            Statement stmt = c.createStatement();
-            ResultSet res = stmt.executeQuery(dudQuery);
-            ResultSetMetaData rsmd = res.getMetaData();
-            nonTrivialPut(outStem, MD_CATALOG,c.getCatalog());
-            nonTrivialPut(outStem, MD_SCHEMA,c.getSchema());
-            nonTrivialPut(outStem, MD_AUTO_COMMIT,c.getAutoCommit());
-            ResultSet pkRS = c.getMetaData().getPrimaryKeys(c.getCatalog(),c.getSchema(),unqTableName);
-            QDLStem primaryKeyList = new QDLStem();
-            while (pkRS.next()) {
-                primaryKeyList.getQDLList().add(QDLValue.asQDLValue( pkRS.getString("COLUMN_NAME")));
-            }
-            pkRS.close();
-            nonTrivialPut(outStem, MD_PRIMARY_KEY,primaryKeyList);
-            QDLStem columns = new QDLStem();
-            for (int i = 1; i <= rsmd.getColumnCount(); i++) {
-                int type = rsmd.getColumnType(i);
-                columns.put(QDLKey.from(rsmd.getColumnName(i)), QDLValue.asQDLValue(type));
-            }
+            try {
+                Statement stmt = c.createStatement();
+                ResultSet res = stmt.executeQuery(dudQuery);
+                ResultSetMetaData rsmd = res.getMetaData();
+                nonTrivialPut(outStem, MD_TABLENAME, unqTableName);
+                nonTrivialPut(outStem, MD_CATALOG, c.getCatalog());
+                nonTrivialPut(outStem, MD_SCHEMA, c.getSchema());
+                nonTrivialPut(outStem, MD_AUTO_COMMIT, c.getAutoCommit());
+                ResultSet pkRS = c.getMetaData().getPrimaryKeys(c.getCatalog(), c.getSchema(), unqTableName);
+                QDLStem primaryKeyList = new QDLStem();
+                while (pkRS.next()) {
+                    primaryKeyList.getQDLList().add(QDLValue.asQDLValue(pkRS.getString("COLUMN_NAME")));
+                }
+                pkRS.close();
+                nonTrivialPut(outStem, MD_PRIMARY_KEY, primaryKeyList);
+                QDLStem columns = new QDLStem();
+                for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                    int type = rsmd.getColumnType(i);
+                    String columnName = rsmd.getColumnName(i);
+                    columns.put(QDLKey.from(columnName), QDLValue.asQDLValue(type));
+                }
 
-            stmt.close();
-            outStem.put(QDLKey.from(MD_COLUMNS),QDLValue.asQDLValue(columns));
+                stmt.close();
+                outStem.put(QDLKey.from(MD_COLUMNS), QDLValue.asQDLValue(columns));
             } catch (SQLException e) {
                 destroyConnection(connectionRecord);
                 throw e;
@@ -991,24 +1302,39 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
             return QDLValue.asQDLValue(outStem);
         }
 
-        protected void nonTrivialPut(QDLStem stem, Object  key, Object value){
-            if(value == null){return;}
-            if(value instanceof String){
-                if(StringUtils.isTrivial((String) value)){
+        protected void nonTrivialPut(QDLStem stem, Object key, Object value) {
+            if (value == null) {
+                return;
+            }
+            if (value instanceof String) {
+                if (StringUtils.isTrivial((String) value)) {
                     return;
                 }
             }
             stem.put(QDLKey.from(key), QDLValue.asQDLValue(value));
 
         }
+
         @Override
         public List<String> getDocumentation(int argCount) {
+            List<String> docs = new ArrayList<>();
+            docs.add(getName() + "(table) - get metadata about the given table. Returns a stem with the following keys:");
+            docs.add(justify(MD_AUTO_COMMIT, 15, true) + " = true if auto-commit is enabled.");
+            docs.add(justify(MD_CATALOG, 15, true) + " = the catalog name.");
+            docs.add(justify(MD_COLUMNS, 15, true) + " = a stem with the column names as keys and the column SQL types as values.");
+            docs.add(justify(MD_PRIMARY_KEY, 15, true) + " = a list with the primary key column names.");
+            docs.add(justify(MD_SCHEMA, 15, true) + " = the schema name.");
+            docs.add("");
+            docs.add("");
+            docs.add("");
+            docs.add("");
             return List.of();
         }
     }
 
     /**
      * Given tablename get just the columns names and their types.
+     *
      * @param c
      * @param tablename
      * @return
@@ -1016,7 +1342,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
      */
     protected TreeMap<String, Integer> getSQLMetadata(Connection c, String tablename) throws SQLException {
         String dudQuery = "select * from " + tablename + " where 1 < 0";
-        // It is possible that the tablename is ffully qualified with the schema, e.g.
+        // It is possible that the tablename is fully qualified with the schema, e.g.
         // oauth2.clients. To get primary keys we need exactly the unqualified table name
         Statement stmt = c.createStatement();
         ResultSet res = stmt.executeQuery(dudQuery);
@@ -1064,27 +1390,76 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
             }
         }
         insertStatement = insertStatement + ")" + values + ")";
-        //  System.out.println("DBModule createInsertStatement:" + insertStatement);
-        PreparedStatement pstmt = conn.prepareStatement(insertStatement);
-        int i = 1; // SQL columns start at 1
-        for (String columnName : actualColumns) {
-            int qdlType = map.containsKey(columnName) ? map.getLong(columnName).intValue() : QDL_TYPE_NONE;
-            setParam(pstmt, i++, columnNames.get(columnName), qdlType, arg.get(columnName));
+        return doPreparedStatement(conn, columnNames, arg, map, insertStatement, actualColumns);
+    }
+
+    /**
+     * Used by {@link #createInsertStatement(Connection, String, TreeMap, QDLStem, QDLStem)} and
+     * {@link #createUpdateStatement(Connection, String, TreeMap, QDLStem, QDLStem)} to actually
+     * populate the prepared statement created by this system. The point is the query is generated
+     * in this module and managed directly, rather than being sent by the user and this has the logic
+     * for that.
+     *
+     * @param conn
+     * @param columnNames
+     * @param arg
+     * @param map
+     * @param rawPStatement
+     * @param actualColumns
+     * @return
+     * @throws SQLException
+     * @throws ParseException
+     */
+    private PreparedStatement doPreparedStatement(Connection conn,
+                                                  TreeMap<String, Integer> columnNames,
+                                                  QDLStem arg,
+                                                  QDLStem map,
+                                                  String rawPStatement,
+                                                  List<String> actualColumns) throws SQLException, ParseException {
+        PreparedStatement pstmt = conn.prepareStatement(rawPStatement);
+        int counter = 1;
+        boolean doBatch = false;
+        if (arg.isList()) {
+            doBatch = true;
+            counter = arg.getQDLList().size();
+        }
+        for (int j = 0; j < counter; j++) {
+            int i = 1; // SQL columns start at 1
+            for (String columnName : actualColumns) {
+                int qdlType = QDL_TYPE_NONE;
+                if (map.hasDefaultValue() || map.containsKey(columnName)) {
+                    qdlType = map.getLong(columnName).intValue();
+                }
+                setParam(pstmt, i++, columnNames.get(columnName), qdlType, arg.get(columnName));
+            }
+            if (doBatch) {
+                pstmt.addBatch();
+            }
         }
         return pstmt;
     }
 
     PreparedStatement createUpdateStatement(Connection conn,
-                                            String tablename,
-                                            TreeMap<String, Integer> columnNames,
+                                            QDLStem metadata,
                                             QDLStem arg,
                                             QDLStem map) throws SQLException, ParseException {
-        String updateStatement = "update " + tablename + " set ";
+        String updateStatement = "update " + metadata.getString(MD_TABLENAME) + " set ";
         boolean isFirst = true;
         List<String> actualColumns = new ArrayList<>();
+        QDLStem mdColumns = metadata.getStem(MD_COLUMNS);
+        QDLList mdPrimaryKeys = metadata.getStem(MD_PRIMARY_KEY).getQDLList();
+        TreeMap<String, Integer> columnNames = new TreeMap<>();
+        for (QDLKey key : mdColumns.keySet()) {
+            columnNames.put(key.asString(), mdColumns.getLong(key).intValue());
+        }
+        TreeSet<String> primarykeyColumns = new TreeSet<>();
+        for (Object value : mdPrimaryKeys) {
+            primarykeyColumns.add(((QDLValue) value).asString());
+        }
+
         //Now just run through the column names and see what was sent,
         for (String column : columnNames.keySet()) {
-            if (arg.containsKey(column)) {
+            if (arg.containsKey(column) && !primarykeyColumns.contains(column)) {
                 actualColumns.add(column);
                 updateStatement = updateStatement + (isFirst ? "" : ", ") + column + "=?";
                 if (isFirst) {
@@ -1092,28 +1467,32 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
                 }
             }
         }
-        //  System.out.println("DBModule createUpdateStatement:" + updateStatement);
-        PreparedStatement pstmt = conn.prepareStatement(updateStatement);
-        int i = 1; // SQL columns start at 1
-        for (String columnName : actualColumns) {
-            int qdlType = map.containsKey(columnName) ? map.getLong(columnName).intValue() : QDL_TYPE_NONE;
-            setParam(pstmt, i++, columnNames.get(columnName), qdlType, arg.get(columnName));
+        // now create the where clause, or EVERY element in the table is updated!
+        updateStatement = updateStatement + " where ";
+        isFirst = true;
+        for (String pk : primarykeyColumns) {
+            actualColumns.add(pk);
+            updateStatement = updateStatement + (isFirst ? "" : " and ") + pk + "=?";
+            if (isFirst) {
+                isFirst = false;
+            }
         }
-        return pstmt;
+
+        return doPreparedStatement(conn, columnNames, arg, map, updateStatement, actualColumns);
 
     }
 
-    protected void addConversionMapBlurb(List<String> docs) {
-        docs.add("conversions. = a stem of code to use for conversions from values in the stem to SQL.");
-        docs.add("This will use the data type as found in " + DATA_TYPES_STEM_NAME + " to convert between");
+    protected void addQDLTypesBlurb(List<String> docs) {
+        docs.add("qdl_types. = a stem of code to use for conversions from values in the stem to SQL.");
+        docs.add("This will use the data type as found in " + QDL_TYPES_VAR_NAME + " to convert between");
         docs.add("QDL and SQL.");
         docs.add("Example.");
         docs.add("If an SQL store has a string representation of a JSON object, then on read");
-        docs.add("the string will be converted to a stem., On update or insert, an embdded stem");
+        docs.add("the string will be converted to a stem., On update or insert, an embedded stem");
         docs.add("will be converted to its JSON representation then stored as a string.");
     }
 
-    public static String DATA_TYPES_STEM_NAME = "$$DATA_TYPE.";
+/*    public static String DATA_TYPES_STEM_NAME = "$$DATA_TYPE.";
 
     public class StoreType implements QDLVariable {
         QDLStem storeTypes = null;
@@ -1127,7 +1506,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
         public Object getValue() {
             return getDataTypes();
         }
-    }
+    }*/
 
     /*
     We use these in case statements and longs as cae values are not supporte
@@ -1152,9 +1531,9 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
 
     QDLStem types = null;
 
-    public static String UPDATE_COMMAND = "update";
+    public static String UPDATE_COMMAND = "qdl_update";
 
-    public class Update implements QDLFunction {
+    public class QDLUpdate implements QDLFunction {
         @Override
         public String getName() {
             return UPDATE_COMMAND;
@@ -1170,7 +1549,6 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
             if (!isConnected) {
                 throw new IllegalStateException("No database connection. Please run " + CONNECT_COMMAND + " first.");
             }
-            String tablename = qdlValues[0].asString();
             QDLStem arg = qdlValues[1].asStem();
             QDLStem qdlTypes = null;
             if (qdlValues.length > 2) {
@@ -1181,15 +1559,29 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
             ConnectionRecord connectionRecord = connectionPool.pop();
             Connection c = connectionRecord.connection;
             long rowsUpdates = 0;
+            long[] rowsUpdated = null;
+            boolean doBatch = arg.isList();
             try {
-                TreeMap<String, Integer> columnNames = getSQLMetadata(c, tablename);
-                PreparedStatement pstmt = createUpdateStatement(connectionRecord.connection, tablename,
-                        columnNames, arg, qdlTypes);
-                rowsUpdates = pstmt.executeUpdate();
+                GetTableMetadata getTableMetadata = new GetTableMetadata();
+                QDLStem md = getTableMetadata.evaluate(new QDLValue[]{qdlValues[0]}, state).asStem();
+                PreparedStatement pstmt = createUpdateStatement(connectionRecord.connection, md, arg, qdlTypes);
+                if(doBatch){
+                    rowsUpdated = pstmt.executeLargeBatch();
+                }else {
+                    rowsUpdates = pstmt.executeUpdate();
+                }
+
                 releaseConnection(connectionRecord);
             } catch (SQLException e) {
                 destroyConnection(connectionRecord);
                 throw new GeneralException("Error executing SQL: " + e.getMessage(), e);
+            }
+            if(doBatch){
+                QDLStem out = new QDLStem();
+                for(long row : rowsUpdated){
+                    out.getQDLList().add(QDLValue.asQDLValue(row));
+                }
+                return QDLValue.asQDLValue(out);
             }
             return QDLValue.asQDLValue(rowsUpdates);
         }
@@ -1197,25 +1589,27 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> docs = new ArrayList<>();
-            switch (argCount) {
-                case 2:
-                    docs.add(getName() + "(tablename, arg.)");
-                    docs.add("tablename = name of the table to update.");
-                    docs.add("     arg. = the QDL stem that will be used tp update");
-                    break;
-                case 3:
-                    docs.add(getName() + "(tablename, arg., qdl_types.)");
-                    docs.add(" tablename = name of the table to update.");
-                    docs.add("      arg. = the QDL stem that will be used tp update");
-                    docs.add("qdl_types. = a stem of qdl types keyed by column name that governs how QDL values are mapped");
-                    docs.add("             to SQL values. ");
-                    break;
+            if (argCount == 2) {
+                docs.add(getName() + "(tablename, arg.)");
             }
+            if (argCount == 3) {
+                docs.add(getName() + "(tablename, arg., qdl_types.)");
+            }
+            docs.add("tablename = name of the table to update.");
+            docs.add("     arg. = the QDL stem that will be used tp update");
+            if (argCount == 3) {
+                addQDLTypesBlurb(docs);
+            }
+            docs.add("Returns the number of rows updated.");
+            docs.add("This function will create an update statement based on the arg., which is a QDL stem.");
+            docs.add("It will get the SQL types for the table and do conversions based on the qdl_types.");
+            docs.add("It will also update based on the primary key, so that must be part of the arg., ");
+            docs.add("otherwise the update will fail. Compound keys are allowed.");
             return docs;
         }
     }
 
-    public static String PREPARED_UPDATE_COMMAND = "p_update";
+    public static String PREPARED_UPDATE_COMMAND = "update";
 
     public class PreparedUpdate implements QDLFunction {
         @Override
@@ -1225,39 +1619,77 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
 
         @Override
         public int[] getArgCount() {
-            return new int[]{1, 2};
+            return new int[]{1, 2, 3};
         }
 
         @Override
-        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             if (!isConnected) {
                 throw new IllegalStateException("No database connection. Please run " + CONNECT_COMMAND + " first.");
             }
             String rawStatement = qdlValues[0].asString();
             List<QDLValue> args = null;
-            if (qdlValues.length == 2) {
-                if (qdlValues[1].isStem()) {
-                    QDLStem stemVariable = qdlValues[1].asStem();
-                    if (stemVariable.isList()) {
-                        args = stemVariable.getQDLList().toJSON();
-                    } else {
-                        throw new BadArgException(QUERY_COMMAND + " requires its second argument, if present to be a list", 1);
+            boolean hasQDLTypes = qdlValues.length > 2;
+            QDLStem qdlTypes = null;
+            switch (qdlValues.length) {
+                case 1:
+                    qdlTypes = new QDLStem();
+                    break;
+                case 2:
+                case 3:
+                    if (qdlValues[1].isStem()) {
+                        QDLStem stemVariable = qdlValues[1].asStem();
+                        if (stemVariable.isList()) {
+                            //args = stemVariable.getQDLList().toJSON();
+                            args = new ArrayList<>(stemVariable.getQDLList().size());
+                            args.addAll(stemVariable.getQDLList());
+                        } else {
+                            throw new BadArgException(QUERY_COMMAND + " requires its second argument, if present to be a list", 1);
+                        }
                     }
-                } else {
-                    args = new ArrayList();
-                    args.add(qdlValues[1]);
-                }
+                    if (hasQDLTypes) {
+                        if (qdlValues[2].isStem()) {
+                            qdlTypes = qdlValues[2].asStem();
+                        } else {
+                            throw new BadArgException(QUERY_COMMAND + " requires its last argument, if present to be a stem", 2);
+                        }
+                    } else {
+                        qdlTypes = new QDLStem();
+                    }
+                    break;
             }
 
             ConnectionRecord connectionRecord = connectionPool.pop();
             Connection c = connectionRecord.connection;
             Long updateCount = 0L;
+            /*
+
+             */
             try {
                 PreparedStatement stmt = c.prepareStatement(rawStatement);
                 if (args != null) {
+                    /*
+                       Map<Long, int[]> qdlTypeMap = creatQDLTypeMap(qdlTypes);
+                for (QDLValue entry : args) {
+                    if(qdlTypeMap.containsKey((long)i-1)){
+                        int[] q = qdlTypeMap.get((long)i-1);
+                         setParam(stmt, i, q[0], q[1], entry);
+                    }else {
+                        setParam(stmt, i, entry.getValue());
+                    }
+                    i++;
+                }
+                     */
+                    Map<Long, int[]> qdlTypeMap = creatQDLTypeMap(qdlTypes);
                     int i = 1;
                     for (QDLValue entry : args) {
-                        setParam(stmt, i++, entry.getValue());
+                        if (qdlTypeMap.containsKey((long) i - 1)) {
+                            int[] q = qdlTypeMap.get((long) i - 1);
+                            setParam(stmt, i, q[0], q[1], entry);
+                        } else {
+                            setParam(stmt, i, entry.getValue());
+                        }
+                        i++;
                     }
                 }
                 updateCount = (long) stmt.executeUpdate();
@@ -1304,7 +1736,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
         }
 
         @Override
-        public QDLValue evaluate(QDLValue[] qdlValues, State state) {
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
             return doSQLExecute(qdlValues, getName(), state);
         }
 
@@ -1408,7 +1840,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
      * @param name
      * @return
      */
-    public QDLValue doSQLExecute(QDLValue[] qdlValues, String name, State state) {
+    public QDLValue doSQLExecute(QDLValue[] qdlValues, String name, State state) throws ParseException {
         if (!isConnected) {
             throw new IllegalStateException("No database connection. Please run " + CONNECT_COMMAND + " first.");
         }
@@ -1431,9 +1863,13 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
             }
         }
         QDLStem qdlTypes = null;
-        if (qdlValues.length == 3) {
+        boolean hasQDlTypes = qdlValues.length == 3;
+        if (hasQDlTypes) {
             if (!qdlValues[2].isStem()) {
                 throw new BadArgException("The third argument must be a stem", 2);
+            }
+            if (!qdlValues[2].isList()) {
+                throw new BadArgException("The last argument if present must be a list of entries [sql_type, qdl_type]", 2);
             }
             qdlTypes = qdlValues[2].asStem();
         } else {
@@ -1446,10 +1882,17 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
         Long updateCount = 0L;
         try {
             PreparedStatement stmt = c.prepareStatement(rawStatement);
-            if (args != null) {
+            if (args != null && !args.isEmpty()) {
                 int i = 1;
+                Map<Long, int[]> qdlTypeMap = creatQDLTypeMap(qdlTypes);
                 for (QDLValue entry : args) {
-                    setParam(stmt, i++, entry.getValue());
+                    if (qdlTypeMap.containsKey((long) i - 1)) {
+                        int[] q = qdlTypeMap.get((long) i - 1);
+                        setParam(stmt, i, q[0], q[1], entry);
+                    } else {
+                        setParam(stmt, i, entry.getValue());
+                    }
+                    i++;
                 }
             }
             gotResult = stmt.execute();
@@ -1470,6 +1913,27 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
         }
         return asQDLValue(updateCount);
     }
+
+    protected Map<Long, int[]> creatQDLTypeMap(QDLStem qdlTypes) {
+
+        Map<Long, int[]> q = new HashMap<>();
+        if (qdlTypes == null) {
+            return q;
+        }
+        for (QDLKey key : qdlTypes.getQDLList().orderedKeys()) {
+            if (key.isLong()) {
+                QDLStem ee = qdlTypes.getStem(key.asLong());
+                int[] qq = new int[2];
+                qq[0] = ee.getLong(0L).intValue();
+                qq[1] = ee.getLong(1L).intValue();
+                q.put(key.asLong(), qq);
+            } else {
+                throw new BadArgException("The last argument if present must be a list of entries [sql_type, qdl_type]", 2);
+            }
+        }
+        return q;
+    }
+
 
     List<String> argStatement = new ArrayList<>();
 
@@ -1511,7 +1975,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
 
         @Override
         public int[] getArgCount() {
-            return new int[]{2};
+            return new int[]{2, 3};
         }
 
         // Fixes https://github.com/ncsa/qdl/issues/69
@@ -1524,7 +1988,8 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
                 throw new BadArgException("the second argument to " + getName() + " must be a stem", 1);
             }
             QDLStem qdlTypes = null;
-            if (qdlValues.length == 3) {
+            boolean hasQDLTypes = qdlValues.length == 3;
+            if (hasQDLTypes) {
                 if (!qdlValues[2].isStem()) {
                     throw new BadArgException("the second argument to " + getName() + " must be a stem", 2);
 
@@ -1537,20 +2002,23 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
                 qdlTypes = new QDLStem();
                 qdlTypes.setDefaultValue(QDL_TYPE_NONE);
             }
-            QDLStem stemVariable = qdlValues[1].asStem();
+            QDLStem args = qdlValues[1].asStem();
             ConnectionRecord connectionRecord = connectionPool.pop();
             Connection c = connectionRecord.connection;
             HashMap returnCodes = new HashMap();
             int counter = 0;
             try {
                 PreparedStatement stmt = c.prepareStatement(qdlValues[0].asString());
-                for (QDLKey key : stemVariable.keySet()) {
-                    QDLValue value = stemVariable.get(key);
+
+                Map<Long, int[]> qdlTypeMap = creatQDLTypeMap(qdlTypes);
+
+                for (QDLKey key : args.keySet()) {
+                    QDLValue value = args.get(key);
                     QDLList<? extends QDLValue> list;
                     if (value.isStem()) {
                         QDLStem arg = value.asStem();
                         if (!arg.isList()) {
-                            throw new IllegalArgumentException("the element with index '" + key + " must be a list");
+                            throw new IllegalArgumentException("the element with index '" + key + " must be a list or scalar");
                         }
                         list = arg.getQDLList();
                     } else {
@@ -1561,7 +2029,12 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
                     int i = 1;
                     for (QDLValue entry : list) {
                         //setParam(stmt, i, qdlTypes.get(i - 1).asLong().intValue(), entry);
-                        setParam(stmt, i, entry);
+                        if (hasQDLTypes && qdlTypeMap.containsKey((long) i - 1)) {
+                            int[] q = qdlTypeMap.get((long) i - 1);
+                            setParam(stmt, i, q[0], q[1], entry);
+                        } else {
+                            setParam(stmt, i, entry.getValue());
+                        }
                         i++;
                     }
                     stmt.addBatch();
@@ -1586,10 +2059,11 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
             List<String> documentation = new ArrayList<>();
             documentation.add(getName() + "(statement, values.) - execute a statement with multiple values. ");
             documentation.add("statement - the (prepared) statement to execute");
-            documentation.add("values. - a stem or list of lists wit the elements for the prepared statement");
-            documentation.add("This will take a prepared statement and a stem of values, each of whose");
-            documentation.add("entries is a list or scalar (converted to a list with one element)");
-            documentation.add(" for the prepared statement. It may be used for INSERT, DELETE or UPDATE.");
+            documentation.add("values. - a stem of scalars or lists, with the elements for the prepared statement");
+            documentation.add("It may be used for INSERT, DELETE or UPDATE.");
+            documentation.add("It returns either");
+            documentation.add("  a stem of return codes indexed by keys (if no result), or ");
+            documentation.add("  a stem of results indexed by keys (if result set).");
             documentation.add("See " + BATCH_QUERY_COMMAND + " for batch reads");
             documentation.add("This is logically equivalent to loop through statements and execute them,");
             documentation.add("but most SQL databases optimize such a batch execution and for very large");

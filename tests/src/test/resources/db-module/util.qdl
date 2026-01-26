@@ -1,0 +1,52 @@
+/*
+    Generates a random record.
+    use_set - true means that set_0 is a set.
+    blob_is_stem - set blob_0 to a random stem.
+*/
+
+numeric_digits(20);
+define[rr(use_set, blob_is_stem)][
+random_string := 'ANxX505vlEUAiuaMaI-jATBIl7qmrlLO_547yNSYGZYwEdFqOhpbrY3uCU3bJtZK';
+            a.'bit_0' ≔ mod(random() ,2)≡0;
+           a.'blob_0' ≔ blob_is_stem ⇒ {'a':'q','b':5,'c':mod(random(),1000),'d':11}:random_string(64);
+        a.'boolean_0' ≔ mod(random() ,2)≡0;
+         a.'double_0' ≔ mod(random(), 1000000)/5000;
+          a.'float_0' ≔ mod(random() ,1000)/500;
+        a.'integer_0' ≔ mod(random() ,10000);
+        a.'numeric_0' ≔ pi(mod(random() ,5));            // precision set high
+            a.'set_0' ≔ use_set?{'a','b',{1,4}}: 'This is not a set';     // should be a string if no QDL types
+       a.'smallint_0' ≔ mod(random() ,100);
+           a.'text_0' ≔ 'I could see that, if not actually disgruntled, he was far from being gruntled.';
+   a.'timestamp_long' ≔ date_ms();        // For testing QDL conversion, here we are not and the QSL column type is long
+        a.'tinyint_0' ≔ mod(random() ,10);
+      a.'varchar_128' ≔ 'id-'+random_string(4);
+      return(a.);
+];
+
+/*
+    Checks if two stems are equal. If blob_is_stem is true, then blob_0 is assumed to be a stem
+    and is checked separately for equality.
+*/
+define[check_stem(a.,c., blob_is_stem)][
+   stem_check := true;
+   if[blob_is_stem]
+   then[
+      stem_check := ⊗∧⊙(c.'blob_0' == a.'blob_0');
+      remove(c.'blob_0');
+   ];
+   out. ≔ a. ≡ c.;
+   print(out.);
+   ok := stem_check ∧ (⊗∧⊙out.);
+     if[¬ok]
+   then[
+        bad_c.≔ (¬out.)⌆c.; // received
+       ⊨ ok : bad_c.; // pass back the columns that don't match in the check.
+   ];
+];
+
+/*
+    default case that the blob_0 entry is just a string.
+*/
+check_stem(a.,c.) -> check_stem(a.,c.,false);
+
+return(true);

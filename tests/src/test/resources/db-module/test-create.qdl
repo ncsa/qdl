@@ -29,7 +29,7 @@ random_string := 'ANxX505vlEUAiuaMaI-jATBIl7qmrlLO_547yNSYGZYwEdFqOhpbrY3uCU3bJt
       a.'varchar_128' ≔ 'id-'+random_string(4);   // unique identifier
 
 db#create('oauth2.db_test',a.);
-c. ≔ db#query('select * from oauth2.db_test where varchar_128=?',[a.'varchar_128']).0;
+c. ≔ db#read('select * from oauth2.db_test where varchar_128=?',[a.'varchar_128']).0;
 out. ≔ a. ≡ c.;
 db#execute('delete from oauth2.db_test where varchar_128=?',[a.'varchar_128']);
 ok ≔  ⊗∧⊙out.;

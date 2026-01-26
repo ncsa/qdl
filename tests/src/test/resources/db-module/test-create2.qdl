@@ -1,0 +1,21 @@
+#! /usr/bin/env -S qdl-run
+
+/*
+    Basic creation test. So no qdl types just each SQL type is done with
+    no QDL -> SQL conversions.
+
+    Note that date, time and timestamp columns are set in the database
+    and sending them is ignored, so we don't set them here.
+*/
+⊨ 0 < size(args()) : 'Missing connection ini';
+
+db ≔ j_load('db');
+cfg. ≔ interpret(file_read(args().0));
+db#connect(cfg.);
+a. := rr(false, false);
+
+db#create('oauth2.db_test',a.);
+c. ≔ db#read('select * from db_test where varchar_128=?',[a.'varchar_128']).0;
+⊨ 1 ≡ db#execute('delete from db_test where varchar_128=?',[a.'varchar_128']) : 'Could not delete object with id \'' + a.'varchar_128' + '\'';
+return(check_stem(a., c., false));
+
