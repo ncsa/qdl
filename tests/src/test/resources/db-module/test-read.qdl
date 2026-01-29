@@ -13,10 +13,11 @@ c. ≔ db#read('select * from db_test where varchar_128=?',['id123'],qt.).0;
 c.'varchar_128' ≔ 'id-' + random_string(4);
 c.'timestamp_long'≔ date_iso();
 c.'blob_0'≔ 'Twas brillig and the slithy toves';
-db#create('db_test',c.,qt.);
+db#qdl_create('db_test',c.,qt.);
 a. ≔ db#read('select * from db_test where varchar_128=?',[c.'varchar_128'],qt.).0;
+say(c.'varchar_128');
 out. ≔ a. ≡ c.;
-⊨ 1 ≡ db#execute('delete from oauth2.db_test where varchar_128=?',[c.'varchar_128']) : 'Could not delete object with id \'' + a.'varchar_128' + '\'';
-return(check_stem(a., c., false));
-
+ok := check_stem(a., c., false);
+⊨ 1 ≡ db#execute('delete from db_test where varchar_128=?',[c.'varchar_128']) : 'Could not delete object with id \'' + a.'varchar_128' + '\'';
+return(ok);
 

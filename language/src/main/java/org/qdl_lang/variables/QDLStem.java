@@ -98,6 +98,12 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
         }
         QDLValue v = getQDLMap().get(key);
         if (v == null) {
+            if(hasDefaultValue()) {
+                if(getDefaultValue().isLong()) {
+                    return getDefaultValue().asLong();
+                }
+                throw new IllegalArgumentException("default value is not an integer");
+            }
             return null;
         }
         return v.asLong();
@@ -109,6 +115,12 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
         }
         QDLValue v = getQDLMap().get(key.asString());
         if (v == null) {
+                if(hasDefaultValue()) {
+                    if(getDefaultValue().isLong()) {
+                        return getDefaultValue().asLong();
+                    }
+                    throw new IllegalArgumentException("default value is not an integer");
+                }
             return null;
         }
         return v.asLong();
@@ -120,6 +132,12 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
         }
         QDLValue v = getQDLMap().get(key);
         if (v == null) {
+            if(hasDefaultValue()) {
+                if(getDefaultValue().isStem()) {
+                    return getDefaultValue().asStem();
+                }
+                throw new IllegalArgumentException("default value is not a stem");
+            }
             return null;
         }
         return v.asStem();
@@ -128,6 +146,12 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     public QDLStem getStem(Long key) {
         QDLValue v = getQDLMap().get(key);
         if (v == null) {
+            if(hasDefaultValue()) {
+                if(getDefaultValue().isStem()) {
+                    return getDefaultValue().asStem();
+                }
+                throw new IllegalArgumentException("default value is not a stem");
+            }
             return null;
         }
         return v.asStem();
@@ -136,6 +160,12 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     public Long getLong(Long key) {
         QDLValue v = getQDLList().get(key);
         if (v == null) {
+            if(hasDefaultValue()) {
+                if(getDefaultValue().isLong()) {
+                    return getDefaultValue().asLong();
+                }
+                throw new IllegalArgumentException("default value is not a long");
+            }
             return null;
         }
         return v.asLong();
@@ -162,6 +192,12 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     public String getString(String key) {
         QDLValue value = get(key);
         if (value == null) {
+            if(hasDefaultValue()) {
+                if(getDefaultValue().isStem()) {
+                    return getDefaultValue().asString();
+                }
+                throw new IllegalArgumentException("default value is not a string");
+            }
             return null;
         }
         return value.asString();
@@ -252,6 +288,12 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     public String getString(Long key) {
         QDLValue qdlValue = getQDLList().get(key);
         if (qdlValue == null) {
+            if(hasDefaultValue()) {
+                if(getDefaultValue().isStem()) {
+                    return getDefaultValue().asString();
+                }
+                throw new IllegalArgumentException("default value is not a string");
+            }
             return null;
         }
         return qdlValue.asString();
@@ -559,7 +601,6 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
                     value = get(stemPath);
                 } else {
                     value = getQDLMap().get(key.asString());
-                    ;
                 }
                 break;
             case STEM_TYPE:

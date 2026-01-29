@@ -1,11 +1,7 @@
 #! /usr/bin/env -S qdl-run
 
 /*
-    Basic creation test. So no qdl types just each SQL type is done with
-    no QDL -> SQL conversions.
-
-    Note that date, time and timestamp columns are set in the database
-    and sending them is ignored, so we don't set them here.
+  Test batch modes.
 */
 ⊨ 0 < size(args()) : 'Missing connection ini';
 
@@ -13,29 +9,39 @@
 cfg. ≔ interpret(file_read(args().0));
 db#connect(cfg.);
 numeric_digits(20);
-random_string := 'ANxX505vlEUAiuaMaI-jATBIl7qmrlLO_547yNSYGZYwEdFqOhpbrY3uCU3bJtZK';
-            a.'bit_0' ≔ true;
-           a.'blob_0' ≔ random_string;
-        a.'boolean_0' ≔ false;
-         a.'double_0' ≔ 54321.987654321;
-          a.'float_0' ≔ -4.25;
-        a.'integer_0' ≔ 2^11;
-        a.'numeric_0' ≔ pi();            // precision set high
-            a.'set_0' ≔ 'This is not a set';     // should be a string if no QDL types
-       a.'smallint_0' ≔ 5;
-           a.'text_0' ≔ 'I could see that, if not actually disgruntled, he was far from being gruntled.';
-   a.'timestamp_long' ≔ date_ms();        // For testing QDL conversion, here we are not and the QSL column type is long
-        a.'tinyint_0' ≔ -2;
-      a.'varchar_128' ≔ 'id-'+random_string(4);   // unique identifier
+ids.:= 'a-'+n(16);
+stmt := 'insert into xxx (id,name) values (?,?)';
+out. := db#batch_execute(stmt, [['a-0',random_string(20)],
+                         ['a-1',random_string(20)],
+                         ['a-2',random_string(20)],
+                         ['a-3',random_string(20)]]);
+⊨⊗∧⊙1≡out. : 'Insert failed for simple list:' + to_string(out.);
 
-db#create('oauth2.db_test',a.);
-c. ≔ db#read('select * from oauth2.db_test where varchar_128=?',[a.'varchar_128']).0;
-out. ≔ a. ≡ c.;
-db#execute('delete from oauth2.db_test where varchar_128=?',[a.'varchar_128']);
-ok ≔  ⊗∧⊙out.;
-  if[¬ok]
-then[
-    bad_c.≔ (¬out.)⌆c.; // received
-    ⊨ ok : bad_c.; // pass back the columns that don't match in the check.
-];
-return(ok);
+// next round, with a stem
+out. := db#batch_execute(stmt, {'a':['a-4',random_string(20)],
+                          'b':['a-5',random_string(20)],
+                         'c':['a-6',random_string(20)],
+                         'd':['a-7',random_string(20)]});
+⊨⊗∧⊙{'a':1, 'b':1, 'c':1, 'd':1}≡out. : 'Insert failed for stem:' + to_string(out.);
+
+// next, with QDL conversions.
+qq. := {'a':123,'b':{'c':234,'d':'SPQR'}};
+c.1 := [12,1]; // is an SQL string, element 1 has type JSON
+
+c.1 := [12,1]; // element 1 has type JSON
+out. := db#batch_execute(stmt, [['a-8',qq.],
+                         ['a-9',qq.],
+                         ['a-10',qq.],
+                         ['a-11',qq.]], c.);
+
+⊨⊗∧⊙1≡out. : 'Insert failed for list with QDL conversions:' + to_string(out.);
+
+// Finally, repeat for a stem argument.
+out. := db#batch_execute(stmt, {
+                          'a':['a-12',qq.],
+                          'b':['a-13',qq.],
+                          'c':['a-14',qq.],
+                          'd':['a-15',qq.]}, c.);
+⊨⊗∧⊙{'a':1, 'b':1, 'c':1, 'd':1}≡out. : 'Insert failed for stem with QDL:' + to_string(out.);
+
+out. := db#batch_execute('delete from xxx where id=?',ids.);

@@ -6,6 +6,8 @@ import org.qdl_lang.variables.QDLNull;
 /**
  * Since there is a single instance of the {@link QDLNull}, there needs to be a dedicated class
  * for it that sidesteps some bootstrapping issues.
+ * <h2>Usage</h2>
+ * <p>Invoke the non-arg constructor to get a null value.</p>
  */
 public class QDLNullValue extends QDLValue{
     public QDLNullValue() {

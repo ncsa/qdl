@@ -15,7 +15,7 @@ public class DBModuleTest extends AbstractQDLTester {
      * Path to the connection ini file. Since this has passwords etc. it cannot be in the
      * distribution lest it end up in GitHub/
      */
-    protected String CONNECTION_INI = "/home/ncsa/dev/csd/config/db-connector.qdl";
+    protected String CONNECTION_INI = "/home/ncsa/dev/csd/config/qdl-connector.qdl";
 
     /**
      * Creates the QDL script_run command from the name of the script to run.
@@ -71,6 +71,22 @@ public class DBModuleTest extends AbstractQDLTester {
         }
     }
 
+    public void testBatchExecute() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, createUtilLoad("util.qdl"));
+        addLine(script, createScriptRun("test-create.qdl"));
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        try {
+            interpreter.execute(script.toString());
+        } catch (AssertionException ae) {
+            System.out.println("Update failed. Columns that were not round-tripped:");
+            System.out.println(ae.getAssertionState().toString(1));
+            assert false : "Round-tripping failed.";
+        } catch (Throwable t) {
+            throw t;
+        }
+    }
     public void testCreateWithQDLTypes() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
@@ -83,6 +99,36 @@ public class DBModuleTest extends AbstractQDLTester {
             System.out.println("Update failed. Columns that were not round-tripped:");
             System.out.println(ae.getAssertionState().toString(1));
             assert false : "Round-tripping failed.";
+        } catch (Throwable t) {
+            throw t;
+        }
+    }
+
+    public void testQDLTOSQL() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, createScriptRun("test-qdl_to_sql.qdl"));
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        try {
+            interpreter.execute(script.toString());
+        } catch (AssertionException ae) {
+            System.out.println(ae.getMessage());
+            assert false : "Conversion failed";
+        } catch (Throwable t) {
+            throw t;
+        }
+    }
+
+    public void testSQLTOQDL() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, createScriptRun("test-sql_to_qdl.qdl"));
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        try {
+            interpreter.execute(script.toString());
+        } catch (AssertionException ae) {
+            System.out.println(ae.getMessage());
+            assert false : "Conversion failed";
         } catch (Throwable t) {
             throw t;
         }

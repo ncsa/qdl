@@ -1,8 +1,11 @@
 package org.qdl_lang.variables;
 
+import net.sf.json.JSONNull;
+import net.sf.json.JSONObject;
 import org.qdl_lang.state.State;
 import org.qdl_lang.util.InputFormUtil;
 import net.sf.json.JSONArray;
+import org.qdl_lang.variables.values.QDLNullValue;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
@@ -39,15 +42,45 @@ public class QDLSet<K extends QDLValue> extends HashSet<K>  {
      * @param array
      */
     public void fromJSON(JSONArray array) {
-        QDLStem stemVariable = new QDLStem();
-        stemVariable.fromJSON(array);
-        clear();
-        addAll((Collection<? extends K>) stemVariable.getQDLList().values());
+        for(Object object : array) {
+            if(object instanceof JSONNull) {
+                add((K)new QDLNullValue());
+            }else{
+                if(object instanceof JSONArray) {
+                    QDLSet qdlSet = new QDLSet();
+                    qdlSet.fromJSON((JSONArray) object);
+                }else{
+                    if(object instanceof JSONObject){
+                        QDLStem stem = new QDLStem();
+                        stem.fromJSON((JSONObject) object);
+                        add((K)QDLValue.asQDLValue(stem));
+                    }else{
+                        QDLValue value = QDLValue.asQDLValue(object);
+                        add((K)value);
+
+                    }
+                }
+            }
+        }
     }
 
     public JSONArray toJSON() {
         JSONArray jsonArray = new JSONArray();
-        jsonArray.addAll(this);
+        for(QDLValue element: this) {
+            switch (element.getType()) {
+                case QDLValue.STEM_TYPE:
+                    jsonArray.add(element.asStem().toJSON());
+                    break;
+                    case QDLValue.SET_TYPE:
+                        jsonArray.add(element.asSet().toJSON());
+                        break;
+                case QDLValue.NULL_TYPE:
+                    jsonArray.add(JSONNull.getInstance());
+                    break;
+                default:
+                    jsonArray.add(element.getValue());
+            }
+        }
         return jsonArray;
     }
 

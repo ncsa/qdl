@@ -1368,7 +1368,16 @@ public class SystemEvaluator extends AbstractEvaluator {
                   return;
               }
 */
-                throw new BadArgException(INPUT_FORM + " requires a variable or function name", moduleExpression.getExpression());
+                QDLValue arg = polyad.evalArg(0, state);
+                String out = InputFormUtil.inputForm(arg.getValue());
+                if (out == null) {
+                    out = "";
+                }
+                polyad.setEvaluated(true);
+                polyad.setResult(out);
+                return;
+
+            //    throw new BadArgException(INPUT_FORM + " requires a variable or function name", moduleExpression.getExpression());
             }
         }
 

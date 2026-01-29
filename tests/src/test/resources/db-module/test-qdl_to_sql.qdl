@@ -1,0 +1,28 @@
+#! /usr/bin/env -S qdl-run
+
+/*
+  Test batch modes.
+*/
+⊨ 0 < size(args()) : 'Missing connection ini';
+
+  db ≔ j_load('db');
+cfg. ≔ interpret(file_read(args().0));
+db#connect(cfg.);
+say(db#qdl_types.);
+
+// stems and lists
+⊨db#qdl_to_sql([;6]/4, db#qdl_types.'json',  db#sql_types.'VARCHAR') ≡ '[0,0.25,0.5,0.75,1,1.25]' : 'conversion of QDL stem -> JSON string failed';
+⊨db#qdl_to_sql([;6]/4, db#qdl_types.'input_form',  db#sql_types.'VARCHAR') ≡ '[0,0.25,0.5,0.75,1,1.25]' : 'conversion of QDL stem -> input form string failed';
+
+// dates
+d := date_iso();
+⊨db#qdl_to_sql(d, db#qdl_types.'date',  db#sql_types.'VARCHAR') ≡ d : 'conversion of QDL date -> string failed';
+⊨db#qdl_to_sql(d, db#qdl_types.'date', db#sql_types.'BIGINT' ) ≡ date_ms(d) : 'conversion of QDL date -> integer failed';
+⊨db#qdl_to_sql(d, db#qdl_types.'input_form', db#sql_types.'VARCHAR' ) ≡  '\'' + d + '\'' : 'conversion of QDL date -> input form string failed';
+
+// sets
+⊨ interpret(db#qdl_to_sql(⊢[;6]/4, db#qdl_types.'input_form',  db#sql_types.'VARCHAR')) ≡ {0.5,1,0,1.25,0.75,0.25} : 'conversion of QDL set -> input form string failed';
+// Slightly more complex test since the order of sets is not guaranteed.
+  a. := sort(interpret(db#qdl_to_sql(⊢[;6]/4, db#qdl_types.'json_set',  db#sql_types.'VARCHAR')));
+ ⊨ ⊗∧⊙a.  ≡ [0, 0.25, 0.5,0.75, 1, 1.25] : 'conversion of QDl set --> JSON string failed';
+

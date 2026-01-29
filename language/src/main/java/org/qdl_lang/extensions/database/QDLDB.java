@@ -8,7 +8,6 @@ import org.qdl_lang.expressions.Polyad;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.extensions.QDLVariable;
-import org.qdl_lang.extensions.http.HTTPClient;
 import org.qdl_lang.state.State;
 import org.qdl_lang.util.InputFormUtil;
 import org.qdl_lang.variables.*;
@@ -415,7 +414,9 @@ public class QDLDB implements QDLMetaModule {
 
         @Override
         public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
-            boolean isScalar = true;
+            boolean isArgScalar = true;
+            boolean isSQLTypeScalar = true;
+            boolean isQDLTypeScalar = true;
             QDLStem value;    // arg 0
             QDLStem qdlTypes; // arg 1
             QDLStem sqlTypes; // arg 2
@@ -426,10 +427,11 @@ public class QDLDB implements QDLMetaModule {
                 default:
                     value = new QDLStem();
                     value.put(QDLKey.from(0L), qdlValues[0]);
-                    isScalar = true;
+                    isArgScalar = true;
             }
             if (qdlValues[1].isStem()) {
                 qdlTypes = qdlValues[1].asStem();
+                isQDLTypeScalar = false;
             } else {
                 if (!qdlValues[1].isLong()) {
                     throw new BadArgException("qdl_type must be a long", 1);
@@ -440,19 +442,31 @@ public class QDLDB implements QDLMetaModule {
             }
             if (qdlValues[2].isStem()) {
                 sqlTypes = qdlValues[2].asStem();
+                isSQLTypeScalar = false;
             } else {
                 if (!qdlValues[2].isLong()) {
-                    throw new BadArgException("sql_type must be a long", 2);
+                    throw new BadArgException("sql_type must be a long", 1);
                 }
                 sqlTypes = new QDLStem();
                 sqlTypes.setDefaultValue(qdlValues[2]);
-                //sqlTypes.put(QDLKey.from(0L), qdlValues[2]);
+            }
+            // special case
+            if (isArgScalar && isQDLTypeScalar && isSQLTypeScalar) {
+                Object out = qdlToSQL(qdlTypes.getLong(0L).intValue(),
+                        sqlTypes.getLong(0L).intValue(),
+                        qdlValues[0]);
+                return QDLValue.asQDLValue(out);
             }
             QDLStem outStem = new QDLStem();
             for (QDLKey key : value.keySet()) {
-                outStem.put(key, qdlToSQL(sqlTypes.getLong(key).intValue(), qdlTypes.getLong(key).intValue(), value.get(key)));
+                Long sql = sqlTypes.getLong(key);
+                Long qdl = qdlTypes.getLong(key);
+                System.out.println(value.get(key));
+                outStem.put(key, qdlToSQL(qdl == null ? QDL_TYPE_DEFAULT : qdl.intValue(),
+                        sql == null ? -15 : sql.intValue(),
+                        value.get(key)));
             }
-            if (isScalar) {
+            if (isArgScalar) {
                 return outStem.getQDLList().get(0L);
             }
             return QDLValue.asQDLValue(outStem);
@@ -489,7 +503,7 @@ public class QDLDB implements QDLMetaModule {
      * @return
      * @throws SQLException
      */
-    private QDLStem processResultSet(PreparedStatement stmt, QDLStem qdlTypes, State state) throws SQLException {
+    private QDLStem processResultSet(PreparedStatement stmt, QDLStem qdlTypes, State state) throws Throwable {
         QDLStem outStem = new QDLStem();
         ResultSet rs = stmt.getResultSet();
         // Now we have to pull in all the values.
@@ -497,7 +511,7 @@ public class QDLDB implements QDLMetaModule {
             ColumnMap map = rsToMap(rs);
             QDLStem currentEntry = new QDLStem();
             for (String key : map.keySet()) {
-                int qdlType = qdlTypes.containsKey(key) ? qdlTypes.getLong(key).intValue() : QDL_TYPE_NONE;
+                int qdlType = qdlTypes.containsKey(key) ? qdlTypes.getLong(key).intValue() : QDL_TYPE_DEFAULT;
                 if (map.get(key) != null) {
                     currentEntry.put(QDLKey.from(key),
                             asQDLValue(sqlToQDL(map.get(key), qdlType, state)));
@@ -604,236 +618,13 @@ db#create('oauth2.db_test',c.,{'blob_0':4, 'timestamp_long':3});
                           int sqlType,
                           int qdlType,
                           QDLValue entry) throws SQLException, ParseException {
-        stmt.setObject(i, qdlToSQL(sqlType, qdlType, entry), sqlType);
+        stmt.setObject(i, qdlToSQL(qdlType ,sqlType, entry), sqlType);
     }
 
-    /*
-    This was used as one stop setting the parameter. It has been borken out due to the complex
-    logic needed to convert QDL to SQL. Keep for reference, but it can probably go away.
-     */
-    private void OLDsetParam(PreparedStatement stmt,
-                             int i,
-                             int sqlType,
-                             int qdlType,
-                             QDLValue entry) throws SQLException, ParseException {
-
-        Object value;
-        switch (entry.getType()) {
-            case QDLValue.STEM_TYPE:
-                checkArg(entry.isStem(), "incompatible value -- must be a stem");
-                value = entry.asStem().toJSON().toString();
-                break;
-            case QDLValue.SET_TYPE:
-                checkArg(entry.isSet(), "incompatible value -- must be a set");
-                value = entry.asSet().inputForm();
-                break;
-            case QDLValue.LIST_TYPE:
-                checkArg(entry.isList(), "incompatible value -- must be a list");
-                value = entry.asStem().toJSON().toString();
-                break;
-            case QDLValue.NULL_TYPE:
-                stmt.setNull(i, sqlType); // any may be null/
-                return;
-            default:
-                value = entry.getValue();
-        }
-        switch (sqlType) {
-            case Types.BIT:
-            case Types.BOOLEAN:
-                checkArg(entry.isBoolean(), "incompatible value -- must be a boolean");
-                stmt.setBoolean(i, (Boolean) value);
-                break;
-            case Types.TINYINT:
-            case Types.SMALLINT:
-                checkArg(entry.isLong(), "incompatible value -- must be an integer, got a " + entry.getValue().getClass().getSimpleName());
-                stmt.setShort(i, ((Long) value).shortValue());
-                break;
-            case Types.INTEGER:
-                checkArg(entry.isLong(), "incompatible value -- must be an integer");
-                stmt.setInt(i, ((Long) value).intValue());
-                break;
-            case BIGINT:
-                if (entry.getType() == Constant.STRING_TYPE) {
-                    // it's an ISO 8601 string, but the SQL column type is BigInt
-                    Calendar calendar = Iso8601.string2Date(entry.asString());
-                    stmt.setLong(i, calendar.getTimeInMillis());
-                    return;
-                }
-                checkArg(entry.isLong(), "incompatible value -- must be an integer");
-                stmt.setLong(i, entry.asLong());
-                break;
-            case Types.NUMERIC:
-            case Types.DECIMAL:
-                checkArg(entry.isDecimal(), "incompatible value -- must be a decimal");
-                stmt.setBigDecimal(i, (BigDecimal) value);
-                break;
-            case Types.VARCHAR:
-            case LONGVARCHAR:
-            case Types.CHAR:
-            case Types.CLOB:
-            case Types.NCHAR:
-            case Types.NCLOB:
-                switch (qdlType) {
-                    case QDL_TYPE_NONE:
-                        break;
-                    case QDL_TYPE_JSON:
-                        if (entry.isStem()) {
-                            value = entry.asStem().toJSON().toString();
-                        }
-                        if (entry.isSet()) {
-                            value = entry.asSet().toJSON().toString();
-                        }
-                        break;
-                    default:
-                    case QDL_TYPE_INPUT_FORM:
-                        value = entry.getInputForm();
-                        break;
-                    case QDL_TYPE_DATE:
-                        // Assumption is that the user wants an ISO 8601 date as a
-                        // string in the database, and the stem value is a long.
-                        if (entry.isLong()) {
-                            value = Iso8601.date2String(entry.asLong());
-                        }
-                        break;
-                    case QDL_TYPE_STRING:
-                        value = entry.asString();
-                        break;
-                }
-                checkArg(value instanceof String, "incompatible value -- must be a string");
-                stmt.setString(i, (String) value);
-                break;
-            case FLOAT:
-            case REAL: // Same as Float
-                checkArg(entry.isDecimal() || entry.isLong(), "incompatible value -- must be a decimal");
-                Float f = Float.valueOf(value.toString()); // safest way
-                stmt.setFloat(i, f);
-                break;
-            case Types.DOUBLE:
-                checkArg(entry.isDecimal() || entry.isLong(), "incompatible value -- must be a decimal");
-                Double d = Double.valueOf(value.toString()); // safest wayu
-                stmt.setDouble(i, d);
-                break;
-            case Types.DATE:
-                if (entry.isString()) {
-                    Calendar calendar = Iso8601.string2Date(entry.asString());
-                    java.sql.Date sqlDate = new java.sql.Date(calendar.getTimeInMillis());
-                    stmt.setDate(i, sqlDate);
-                } else {
-                    if (entry.isLong()) {
-                        java.sql.Date sqlDate = new java.sql.Date(entry.asLong());
-                        stmt.setDate(i, sqlDate);
-                    } else {
-                        throw new IllegalArgumentException("incompatible value -- date must be an ISO string or integer, not a " + value.getClass().getSimpleName());
-                    }
-                }
-                break;
-            case Types.TIME:
-                // An SQL time is of the form hh:mm:ss and does not correspond to anything easily.
-                // The contract with JDBC is to have java.sql.Time thinly wrap a Date object and
-                // set year, month and day to 0, then ignore them. So it is up to the programmer
-                // to manage that if they have to. Messy but that's SQL...
-                if (entry.isString()) {
-                    Calendar calendar = Iso8601.string2Date(entry.asString());
-                    java.sql.Time sqlTime = new java.sql.Time(calendar.getTimeInMillis());
-                    stmt.setTime(i, sqlTime);
-                    break;
-                } else {
-                    if (entry.isLong()) {
-                        stmt.setTime(i, new java.sql.Time(entry.asLong()));
-                    } else {
-                        throw new IllegalArgumentException("incompatible value -- date must be an ISO string or integer, not a " + value.getClass().getSimpleName());
-                    }
-                }
-                break;
-            case Types.TIMESTAMP:
-                if (entry.isString()) {
-                    Calendar calendar = Iso8601.string2Date(entry.asString());
-                    java.sql.Timestamp sqlTime = new java.sql.Timestamp(calendar.getTimeInMillis());
-                    stmt.setTimestamp(i, sqlTime);
-                    break;
-                } else {
-                    if (entry.isLong()) {
-                        stmt.setTimestamp(i, new java.sql.Timestamp(entry.asLong()));
-                    } else {
-                        throw new IllegalArgumentException("incompatible value -- date must be an ISO string or integer, not a " + value.getClass().getSimpleName());
-                    }
-                }
-                break;
-            case BLOB:
-            case Types.LONGVARBINARY:
-            case Types.VARBINARY:
-                //    System.out.println("setParam:" + new String(Base64.decodeBase64(entry.asString())));
-                ByteArrayInputStream bais;
-                switch (qdlType) {
-                    case QDL_TYPE_NONE:
-                        bais = new ByteArrayInputStream(Base64.decodeBase64(entry.asString()));
-                        break;
-                    default:
-
-                    case QDL_TYPE_JSON:
-                        checkArg(entry.isStem() || entry.isSet(), "incompatible value -- must be a stem or set");
-                        switch (entry.getType()) {
-                            case QDLValue.STEM_TYPE:
-                                bais = new ByteArrayInputStream(entry.asStem().toJSON().toString().getBytes(StandardCharsets.UTF_8));
-                                break;
-                            case QDLValue.SET_TYPE:
-                                bais = new ByteArrayInputStream(entry.asSet().toJSON().toString().getBytes(StandardCharsets.UTF_8));
-                                break;
-                            default:
-                                throw new IllegalArgumentException("incompatible value -- input form must be a stem or set");
-                        }
-                        break;
-                    case QDL_TYPE_INPUT_FORM:
-                        checkArg(entry.isStem() || entry.isSet(), "incompatible value -- must be a stem or set");
-                        switch (entry.getType()) {
-                            case QDLValue.STEM_TYPE:
-                                bais = new ByteArrayInputStream(entry.asStem().inputForm().getBytes(StandardCharsets.UTF_8));
-                                break;
-                            case QDLValue.SET_TYPE:
-                                bais = new ByteArrayInputStream(entry.asSet().inputForm().getBytes(StandardCharsets.UTF_8));
-                                break;
-                            default:
-                                throw new IllegalArgumentException("incompatible value -- input form must be a stem or set");
-                        }
-                        break;
-                    case QDL_TYPE_DATE:
-                        throw new IllegalArgumentException("incompatible value -- BLOB must be a " + value.getClass().getSimpleName());
-                    case QDL_TYPE_STRING: // store as a string
-                        checkArg(entry.isString(), "incompatible value -- BLOB must be a string");
-                        bais = new ByteArrayInputStream(entry.asString().getBytes(StandardCharsets.UTF_8));
-                        break;
-
-                }
-                stmt.setBlob(i, bais);
-                break;
-            default:
-                throw new IllegalArgumentException("incompatible value -- unrecognized SQL type  " + sqlType + " for QDL value of type " + value.getClass().getSimpleName());
-        }
-    }
-
-    protected Object qdlToSQL(int sqlType,
-                              int qdlType,
+    protected Object qdlToSQL(int qdlType,
+                              int sqlType,
                               QDLValue entry) throws SQLException, ParseException {
-        Object value;
-        switch (entry.getType()) {
-            case QDLValue.STEM_TYPE:
-                checkArg(entry.isStem(), "incompatible value -- must be a stem");
-                value = entry.asStem().toJSON().toString();
-                break;
-            case QDLValue.SET_TYPE:
-                checkArg(entry.isSet(), "incompatible value -- must be a set");
-                value = entry.asSet().inputForm();
-                break;
-            case QDLValue.LIST_TYPE:
-                checkArg(entry.isList(), "incompatible value -- must be a list");
-                value = entry.asStem().toJSON().toString();
-                break;
-            case QDLValue.NULL_TYPE:
-                return null;
-
-            default:
-                value = entry.getValue();
-        }
+        Object value = entry.getValue();
         switch (sqlType) {
             case Types.BIT:
             case Types.BOOLEAN:
@@ -847,10 +638,12 @@ db#create('oauth2.db_test',c.,{'blob_0':4, 'timestamp_long':3});
                 checkArg(entry.isLong(), "incompatible value -- must be an integer");
                 break;
             case BIGINT:
-                if (entry.getType() == Constant.STRING_TYPE) {
-                    // it's an ISO 8601 string, but the SQL column type is BigInt
-                    Calendar calendar = Iso8601.string2Date(entry.asString());
-                    return calendar.getTimeInMillis();
+                if (qdlType == QDL_TYPE_DATE) {
+                    if (entry.getType() == Constant.STRING_TYPE) {
+                        // it's an ISO 8601 string, but the SQL column type is BigInt
+                        Calendar calendar = Iso8601.string2Date(entry.asString());
+                        return calendar.getTimeInMillis();
+                    }
                 }
                 checkArg(entry.isLong(), "incompatible value -- must be an integer");
                 return entry.asLong();
@@ -863,14 +656,18 @@ db#create('oauth2.db_test',c.,{'blob_0':4, 'timestamp_long':3});
             case Types.CHAR:
             case Types.CLOB:
             case Types.NCHAR:
+            case NVARCHAR:
+            case LONGNVARCHAR:
             case Types.NCLOB:
                 switch (qdlType) {
-                    case QDL_TYPE_NONE:
+                    case QDL_TYPE_DEFAULT:
                         break;
                     case QDL_TYPE_JSON:
                         if (entry.isStem()) {
                             value = entry.asStem().toJSON().toString();
                         }
+                        break;
+                    case QDL_TYPE_JSON_SET:
                         if (entry.isSet()) {
                             value = entry.asSet().toJSON().toString();
                         }
@@ -914,6 +711,7 @@ db#create('oauth2.db_test',c.,{'blob_0':4, 'timestamp_long':3});
                 }
                 break;
             case Types.TIME:
+            case TIME_WITH_TIMEZONE:
                 // An SQL time is of the form hh:mm:ss and does not correspond to anything easily.
                 // The contract with JDBC is to have java.sql.Time thinly wrap a Date object and
                 // set year, month and day to 0, then ignore them. So it is up to the programmer
@@ -931,6 +729,7 @@ db#create('oauth2.db_test',c.,{'blob_0':4, 'timestamp_long':3});
                 }
                 break;
             case Types.TIMESTAMP:
+            case TIMESTAMP_WITH_TIMEZONE:
                 if (entry.isString()) {
                     Calendar calendar = Iso8601.string2Date(entry.asString());
                     value = new java.sql.Timestamp(calendar.getTimeInMillis());
@@ -949,19 +748,23 @@ db#create('oauth2.db_test',c.,{'blob_0':4, 'timestamp_long':3});
                 //    System.out.println("setParam:" + new String(Base64.decodeBase64(entry.asString())));
                 ByteArrayInputStream bais;
                 switch (qdlType) {
-                    case QDL_TYPE_NONE:
+                    case QDL_TYPE_DEFAULT:
                         bais = new ByteArrayInputStream(Base64.decodeBase64(entry.asString()));
                         break;
                     default:
+                    case QDL_TYPE_JSON_SET:
+                        checkArg(entry.isSet(), "incompatible value -- must be a set");
+                        bais = new ByteArrayInputStream(entry.asSet().toJSON().toString().getBytes(StandardCharsets.UTF_8));
+                        break;
 
                     case QDL_TYPE_JSON:
-                        checkArg(entry.isStem() || entry.isSet(), "incompatible value -- must be a stem or set");
+                        checkArg(entry.isStem(), "incompatible value -- must be a stem");
                         switch (entry.getType()) {
                             case QDLValue.STEM_TYPE:
                                 bais = new ByteArrayInputStream(entry.asStem().toJSON().toString().getBytes(StandardCharsets.UTF_8));
                                 break;
-                            case QDLValue.SET_TYPE:
-                                bais = new ByteArrayInputStream(entry.asSet().toJSON().toString().getBytes(StandardCharsets.UTF_8));
+                            case QDLValue.LIST_TYPE:
+                                bais = new ByteArrayInputStream(entry.asStem().getQDLList().toJSON().toString().getBytes(StandardCharsets.UTF_8));
                                 break;
                             default:
                                 throw new IllegalArgumentException("incompatible value -- input form must be a stem or set");
@@ -997,7 +800,7 @@ db#create('oauth2.db_test',c.,{'blob_0':4, 'timestamp_long':3});
     }
 /*
 db := j_load('db');
-        cfg. := interpret(file_read('/home/ncsa/dev/csd/config/db-connector.qdl'));
+        cfg. := interpret(file_read('/home/ncsa/dev/csd/config/qdl-connector.qdl'));
         db#connect(cfg.);
 c. ≔ db#p_read('select * from oauth2.db_test',[],{'blob_0':4, 'timestamp_long':3}).0;
 c.'varchar_128' ≔ 'id-333';
@@ -1018,6 +821,37 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
         throw new IllegalArgumentException(message);
     }
 
+    public static final String SQL_TO_QDL = "sql_to_qdl";
+
+    public class SQLToQDL implements QDLFunction {
+        @Override
+        public String getName() {
+            return SQL_TO_QDL;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{2};
+        }
+
+        @Override
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            QDLValue v = sqlToQDL(qdlValues[0].getValue(), qdlValues[1].asLong().intValue(), state);
+            return v;
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> docs = new ArrayList<>();
+            docs.add(getName() + "(sql_value, qdl_type) - convert a SQL value to a QDL value");
+            docs.add("   sql_value - an SQL value to convert");
+            docs.add("    qdl_type - the QDL type to convert to");
+            docs.add("Returns the (scalar) QDL value. Note this is mostly informational so you can");
+            docs.add("inspect the value and see what it is.");
+            return docs;
+        }
+    }
+
     /**
      * Converts a generic object to a QDL object. If it is a known supported type, that is just used otherwise
      * only basic conversions are done.
@@ -1026,7 +860,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
      * @param qdlType The QDL type of the object to convert to, for in the qdl_types. stem.
      * @return
      */
-    protected QDLValue sqlToQDL(Object obj, int qdlType, State state) throws SQLException {
+    protected QDLValue sqlToQDL(Object obj, int qdlType, State state) throws Throwable {
         int varType = Constant.getType(obj); // The QDL var_type
         switch (varType) {
             case Constant.UNKNOWN_TYPE:
@@ -1073,7 +907,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
         if (obj instanceof byte[]) {
             //System.out.println("x:" + new String(Base64.decodeBase64((byte[]) obj)));
             //System.out.println("y:" + new String((byte[]) obj));
-            if (qdlType != QDL_TYPE_NONE) {
+            if (qdlType != QDL_TYPE_DEFAULT) {
                 return sqlStringToQDLValue(new String((byte[]) obj), qdlType, state);
             }
             // in this case, we are getting back an array of bytes, not a decoded string.
@@ -1082,34 +916,37 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
         if (obj instanceof Blob) {
             Blob blob = (Blob) obj;
             byte[] b = blob.getBytes(1L, (int) blob.length());
-            if (qdlType != QDL_TYPE_NONE) {
+            if (qdlType != QDL_TYPE_DEFAULT) {
                 return sqlStringToQDLValue(new String(b), qdlType, state);
             }
-/*
-            if (qdlType == QDL_TYPE_STRING) {
-                return asQDLValue(new String(Base64.decodeBase64(b)));
-            }
-*/
             return asQDLValue(Base64.encodeBase64URLSafeString(b));
         }
         // finally! Since this is overlaoded for things like dates, can't check until everything else
         // has been checked.
         if (varType == Constant.STRING_TYPE) {
-            if (qdlType != QDL_TYPE_NONE) {
-                return sqlStringToQDLValue((String) obj, qdlType, state);
-            }
-            return QDLValue.asQDLValue(obj.toString());
+            return sqlStringToQDLValue(obj.toString(), qdlType, state);
         }
-        throw new IllegalArgumentException("unknown SQLtype for " + obj.getClass().getCanonicalName());
+        throw new IllegalArgumentException("unknown SQL type for " + obj.getClass().getCanonicalName());
     }
 
     String dummyVar = "ξΞξΞξΞξ";
+    String dummyStem = "ξΞξΞξΞξ.";
 
-    protected QDLValue sqlStringToQDLValue(String string, int qdlType, State state) {
+    protected QDLValue sqlStringToQDLValue(String string, int qdlType, State state) throws ParseException {
 
         switch (qdlType) {
+            case QDL_TYPE_DEFAULT:
+                return asQDLValue(string);
+            case QDL_TYPE_DATE:
+                Calendar c = Iso8601.string2Date(string);
+                return QDLValue.asQDLValue(c.getTimeInMillis());
             case QDL_TYPE_STRING:
                 return asQDLValue(string);
+            case QDL_TYPE_JSON_SET:
+                JSONArray jsonArray = JSONArray.fromObject(string);
+                QDLSet set = new QDLSet();
+                set.fromJSON(jsonArray);
+                return asQDLValue(set);
             case QDL_TYPE_JSON:
                 QDLStem stem = new QDLStem();
                 try {
@@ -1118,18 +955,26 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
                     return asQDLValue(stem);
                 } catch (Throwable throwable) {
 
-                    JSONArray jsonArray = JSONArray.fromObject(string);
+                    jsonArray = JSONArray.fromObject(string);
                     stem.fromJSON(jsonArray);
                     return asQDLValue(stem);
                 }
             case QDL_TYPE_INPUT_FORM:
-                String x = dummyVar + ":=" + string;
+                //String x = dummyVar + ":=" + string;
+                /*
+                  Trickery! We need a handle to get this value back, hence we assign it to a variable.
+                  Since we don't know if the value is a stem or scalar and QDL blows up if we get it wrong,
+                  create a list with a single element and return that, then we just get the 0th element of that list.
+                  Also, part of the contract is that this has been pickled to input_form by the system alread
+                  so it is just the expression for a value, and not completely arbitrary QDL!
+                 */
+                String x = dummyStem + ":=" + "["+string+"]";
                 Polyad polyad = new Polyad(SystemEvaluator.INTERPRET);
                 polyad.addArgument(new ConstantNode(asQDLValue(x)));
                 state.getMetaEvaluator().evaluate(polyad, state);
-                QDLValue v = asQDLValue(state.getValue(dummyVar));
-                state.remove(dummyVar);
-                return v;
+                QDLValue v = asQDLValue(state.getValue(dummyStem));
+                state.remove(dummyStem); // don't litter the symbol table!
+                return v.asStem().get(0L);
         }
         throw new IllegalArgumentException("unknown SQLtype for QDLtype=" + qdlType);
     }
@@ -1150,7 +995,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
     }
 
 
-    public static String CREATE_COMMAND = "create";
+    public static String CREATE_COMMAND = "qdl_create";
 
     public class Create implements QDLFunction {
         @Override
@@ -1185,9 +1030,9 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
                 TreeMap<String, Integer> columnNames = getSQLMetadata(c, tablename);
                 PreparedStatement pstmt = createInsertStatement(connectionRecord.connection, tablename,
                         columnNames, arg, map);
-                if(doBatch){
+                if (doBatch) {
                     rowsUpdated = pstmt.executeLargeBatch();
-                }else {
+                } else {
                     rowUpdated = pstmt.executeUpdate();
                 }
                 releaseConnection(connectionRecord);
@@ -1195,9 +1040,9 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
                 destroyConnection(connectionRecord);
                 throw new GeneralException("Error executing SQL: " + e.getMessage(), e);
             }
-            if(doBatch){
+            if (doBatch) {
                 QDLStem out = new QDLStem();
-                for(long row : rowsUpdated){
+                for (long row : rowsUpdated) {
                     out.getQDLList().add(QDLValue.asQDLValue(row));
                 }
                 return QDLValue.asQDLValue(out);
@@ -1324,11 +1169,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
             docs.add(justify(MD_COLUMNS, 15, true) + " = a stem with the column names as keys and the column SQL types as values.");
             docs.add(justify(MD_PRIMARY_KEY, 15, true) + " = a list with the primary key column names.");
             docs.add(justify(MD_SCHEMA, 15, true) + " = the schema name.");
-            docs.add("");
-            docs.add("");
-            docs.add("");
-            docs.add("");
-            return List.of();
+            return docs;
         }
     }
 
@@ -1395,7 +1236,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
 
     /**
      * Used by {@link #createInsertStatement(Connection, String, TreeMap, QDLStem, QDLStem)} and
-     * {@link #createUpdateStatement(Connection, String, TreeMap, QDLStem, QDLStem)} to actually
+     * {@link #createUpdateStatement} (Connection, String, TreeMap, QDLStem, QDLStem)} to actually
      * populate the prepared statement created by this system. The point is the query is generated
      * in this module and managed directly, rather than being sent by the user and this has the logic
      * for that.
@@ -1426,7 +1267,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
         for (int j = 0; j < counter; j++) {
             int i = 1; // SQL columns start at 1
             for (String columnName : actualColumns) {
-                int qdlType = QDL_TYPE_NONE;
+                int qdlType = QDL_TYPE_DEFAULT;
                 if (map.hasDefaultValue() || map.containsKey(columnName)) {
                     qdlType = map.getLong(columnName).intValue();
                 }
@@ -1512,17 +1353,20 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
     We use these in case statements and longs as cae values are not supporte
     in Java. So have the fiddle with them here.
      */
-    public static final int QDL_TYPE_NONE = -1; //default
+    public static final int QDL_TYPE_DEFAULT = 0; //default
     public static final int QDL_TYPE_JSON = 1;
     public static final int QDL_TYPE_INPUT_FORM = 2;
     public static final int QDL_TYPE_DATE = 3;
     public static final int QDL_TYPE_STRING = 4;
+    public static final int QDL_TYPE_JSON_SET = 5;
 
     public QDLStem getDataTypes() {
         if (types == null) {
             types = new QDLStem();
             put(types, "json", (long) QDL_TYPE_JSON);
+            put(types, "json_set", (long) QDL_TYPE_JSON_SET);
             put(types, "input_form", (long) QDL_TYPE_INPUT_FORM);
+            put(types, "default", (long) QDL_TYPE_DEFAULT);
             put(types, "date", (long) QDL_TYPE_DATE);
             put(types, "string", (long) QDL_TYPE_STRING);
         }
@@ -1565,9 +1409,9 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
                 GetTableMetadata getTableMetadata = new GetTableMetadata();
                 QDLStem md = getTableMetadata.evaluate(new QDLValue[]{qdlValues[0]}, state).asStem();
                 PreparedStatement pstmt = createUpdateStatement(connectionRecord.connection, md, arg, qdlTypes);
-                if(doBatch){
+                if (doBatch) {
                     rowsUpdated = pstmt.executeLargeBatch();
-                }else {
+                } else {
                     rowsUpdates = pstmt.executeUpdate();
                 }
 
@@ -1576,9 +1420,9 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
                 destroyConnection(connectionRecord);
                 throw new GeneralException("Error executing SQL: " + e.getMessage(), e);
             }
-            if(doBatch){
+            if (doBatch) {
                 QDLStem out = new QDLStem();
-                for(long row : rowsUpdated){
+                for (long row : rowsUpdated) {
                     out.getQDLList().add(QDLValue.asQDLValue(row));
                 }
                 return QDLValue.asQDLValue(out);
@@ -1776,7 +1620,9 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
         public Object getValue() {
             if (qdlTypes == null) {
                 HashMap<String, Object> map = new HashMap<>();
+                map.put("none", (long) QDL_TYPE_DEFAULT);
                 map.put("json", (long) QDL_TYPE_JSON);
+                map.put("json_set", (long) QDL_TYPE_JSON_SET);
                 map.put("input_form", (long) QDL_TYPE_INPUT_FORM);
                 map.put("date", (long) QDL_TYPE_DATE);
                 map.put("string", (long) QDL_TYPE_STRING);
@@ -1808,22 +1654,30 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
                 map.put("NUMERIC", (long) NUMERIC);
                 map.put("TINYINT", (long) TINYINT);
                 map.put("SMALLINT", (long) SMALLINT);
+                map.put("DECIMAL", (long) DECIMAL);
                 map.put("INTEGER", (long) INTEGER);
                 map.put("BIGINT", (long) BIGINT);
                 map.put("REAL", (long) REAL);
                 map.put("FLOAT", (long) FLOAT);
+                map.put("NULL", (long) NULL_TYPE);
                 map.put("DOUBLE", (long) DOUBLE);
                 map.put("VARBINARY", (long) VARBINARY);
+                map.put("LONGVARBINARY", (long) LONGVARBINARY);
                 map.put("BINARY", (long) BINARY);
                 map.put("DATE", (long) DATE);
                 map.put("TIME", (long) TIME);
                 map.put("TIMESTAMP", (long) TIMESTAMP);
                 map.put("CLOB", (long) CLOB);
+                map.put("NCLOB", (long) NCLOB);
+                map.put("NCHAR", (long) NCHAR);
+                map.put("NVARCHAR", (long) NVARCHAR);
                 map.put("BLOB", (long) BLOB);
                 map.put("ARRAY", (long) ARRAY);
                 map.put("REF", (long) REF);
                 map.put("STRUCT", (long) STRUCT);
                 map.put("SQLXML", (long) SQLXML);
+                map.put("TIME_WITH_TIMEZONE", (long) TIME_WITH_TIMEZONE);
+                map.put("TIMESTAMP_WITH_TIMEZONE", (long) TIMESTAMP_WITH_TIMEZONE);
                 sqlTypes = new QDLStem();
                 StemUtility.setStemValue(sqlTypes, map);
             }
@@ -1840,7 +1694,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
      * @param name
      * @return
      */
-    public QDLValue doSQLExecute(QDLValue[] qdlValues, String name, State state) throws ParseException {
+    public QDLValue doSQLExecute(QDLValue[] qdlValues, String name, State state) throws Throwable {
         if (!isConnected) {
             throw new IllegalStateException("No database connection. Please run " + CONNECT_COMMAND + " first.");
         }
@@ -1922,10 +1776,10 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
         }
         for (QDLKey key : qdlTypes.getQDLList().orderedKeys()) {
             if (key.isLong()) {
-                QDLStem ee = qdlTypes.getStem(key.asLong());
+                QDLValue ee = qdlTypes.getQDLList().get(key.asLong());
                 int[] qq = new int[2];
-                qq[0] = ee.getLong(0L).intValue();
-                qq[1] = ee.getLong(1L).intValue();
+                qq[0] = ee.asStem().getLong(0L).intValue();
+                qq[1] = ee.asStem().getLong(1L).intValue();
                 q.put(key.asLong(), qq);
             } else {
                 throw new BadArgException("The last argument if present must be a list of entries [sql_type, qdl_type]", 2);
@@ -2000,7 +1854,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
                 }
             } else {
                 qdlTypes = new QDLStem();
-                qdlTypes.setDefaultValue(QDL_TYPE_NONE);
+                qdlTypes.setDefaultValue(QDL_TYPE_DEFAULT);
             }
             QDLStem args = qdlValues[1].asStem();
             ConnectionRecord connectionRecord = connectionPool.pop();
@@ -2057,24 +1911,39 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
         @Override
         public List<String> getDocumentation(int argCount) {
             List<String> documentation = new ArrayList<>();
-            documentation.add(getName() + "(statement, values.) - execute a statement with multiple values. ");
-            documentation.add("statement - the (prepared) statement to execute");
-            documentation.add("values. - a stem of scalars or lists, with the elements for the prepared statement");
+            if (argCount == 2) {
+                documentation.add(getName() + "(statement, values.) - execute a statement with multiple values. ");
+            }
+            if (argCount == 3) {
+                documentation.add(getName() + "(statement, values., conversions.) - execute a statement with multiple values. ");
+            }
+            documentation.add("  statement - the (prepared) statement to execute. There is no restriction on the complexity.");
+            documentation.add("              However, the same statement applies to all values.");
+            documentation.add("    values. - a stem of scalars or lists, with the elements for the prepared statement");
+            documentation.add("              If the elements are scalars, then this is assumed to be a single value. If lists,");
+            documentation.add("              then the values are applied to each element in the list.");
+            if (argCount == 3) {
+                documentation.add("conversions - a stem of [sql_type, qdl_type] pairs, one for each value in values.");
+                documentation.add("              sql_type -  one of the constants in the sql_types. variable");
+                documentation.add("              qdl_type - one of the constants in the qdl_types. variable");
+                documentation.add("              Note that this may be sparse, so {4:[-1,4]} is valid.");
+                documentation.add("              If this absent, then the default is to assume no conversion.");
+            }
             documentation.add("It may be used for INSERT, DELETE or UPDATE.");
-            documentation.add("It returns either");
-            documentation.add("  a stem of return codes indexed by keys (if no result), or ");
-            documentation.add("  a stem of results indexed by keys (if result set).");
-            documentation.add("See " + BATCH_QUERY_COMMAND + " for batch reads");
-            documentation.add("This is logically equivalent to loop through statements and execute them,");
-            documentation.add("but most SQL databases optimize such a batch execution and for very large");
-            documentation.add("datasets, the performance difference can be quite dramatic.");
-            documentation.add("Moreover, drivers that talk to databases need make a single call with this");
-            documentation.add("method, which saves resources and is much more efficient.");
-            documentation.add("\nThis returns a conformable stem each of whose values is a non-zero integer");
-            documentation.add("indicating the number of records in the database changed by this statment, or");
-            documentation.add("a negative integer where");
+            documentation.add("It returns either:");
+            documentation.add("  A stem of return codes indexed by keys (if no result), or ");
+            documentation.add("  a conformable stem each of whose values is a non-zero integer");
+            documentation.add("    indicating the number of records in the database changed by this statment, or");
+            documentation.add("     a negative integer where");
             documentation.add(Statement.SUCCESS_NO_INFO + " = the operation worked, but no other information is available");
             documentation.add(Statement.EXECUTE_FAILED + " = the statement failed, but processing continued.");
+            documentation.add("See help for " + BATCH_QUERY_COMMAND + " for batch reads");
+            documentation.add("This call is logically equivalent to loop through statements and execute them,");
+            documentation.add("but most SQL databases optimize such a batch execution and for very large");
+            documentation.add("datasets, the performance difference can be quite dramatic. ");
+            documentation.add("Moreover, drivers that talk to databases need make a single call with this");
+            documentation.add("method, which saves resources and is much more efficient. Indeed, a large loop may");
+            documentation.add("exhaust connection resources and cause a failure. Batches are optimized to always work.");
             documentation.add("\n");
             documentation.add("E.g.");
             documentation.add("Let us use the prepared statement");

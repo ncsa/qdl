@@ -15,10 +15,7 @@ import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static org.qdl_lang.state.NamespaceAwareState.NS_DELIMITER;
 import static org.qdl_lang.variables.StemUtility.axisWalker;

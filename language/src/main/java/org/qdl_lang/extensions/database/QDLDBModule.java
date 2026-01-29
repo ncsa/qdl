@@ -38,6 +38,7 @@ public class QDLDBModule extends JavaModule {
         funcs.add(qdldb.new PreparedRead());
         funcs.add(qdldb.new PreparedUpdate());
         funcs.add(qdldb.new QDLToSQL());
+        funcs.add(qdldb.new SQLToQDL());
         funcs.add(qdldb.new QDLUpdate());
         ArrayList<QDLVariable> vars = new ArrayList<>();
         vars.add(qdldb.new SQLTypes());

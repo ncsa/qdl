@@ -434,6 +434,7 @@ public class QDLValue implements Constants, Serializable, Comparable<QDLValue> {
     @Override
     public int compareTo(QDLValue qdlValue) {
         Comparable A = null, B = null;
+
         if(getValue() instanceof Comparable) {
             A = (Comparable) getValue();
         }else{
@@ -443,7 +444,22 @@ public class QDLValue implements Constants, Serializable, Comparable<QDLValue> {
             B = (Comparable) qdlValue.getValue();
         }else{
             throw new ClassCastException("value is not comparable");
+        }
+        if(getType() == qdlValue.getType()){
+            return A.compareTo(B); // just sort the same type with their default comparator.
+        }
 
+        // Fix for https://github.com/ncsa/qdl/issues/150
+        // *May* need to add more cases, but not sure what.
+        if(isDecimal()){
+            if(qdlValue.isLong()){
+                return asDecimal().compareTo(BigDecimal.valueOf(qdlValue.asLong()));
+            }
+        }
+        if(isLong()){
+            if(qdlValue.isDecimal()){
+                return BigDecimal.valueOf(asLong()).compareTo(qdlValue.asDecimal());
+            }
         }
         return A.compareTo(B);
     }

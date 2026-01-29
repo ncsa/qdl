@@ -2,9 +2,17 @@
     Table definition for testing the DB module round trip.
     Note that the system rejects column names that are reserved words,
     hence all of the column names are type_0
+
+    Generally create a database, and user. Replace XXXXXXXX with the password.:
+
+    create database qdl_test;
+    create user 'qdl_tester'@'localhost' identified by 'qwert123';
+    set password for 'qdl_tester'@'localhost' = 'XXXXXXXX';
+
+    use qdl_test;
  */
 
-CREATE TABLE oauth2.db_test
+CREATE TABLE qdl_test.db_test
 (
     varchar_128    VARCHAR(128) PRIMARY KEY,
     smallint_0     SMALLINT,
@@ -24,15 +32,15 @@ CREATE TABLE oauth2.db_test
     set_0          TEXT
 );
 
-GRANT
-All
-ON oauth2.db_test TO 'oa4mp-server'@'localhost';
+GRANT All PRIVILEGES ON qdl_test.* TO 'qdl_tester'@'localhost';
+grant create on qdl_test.* to 'qdl_tester'@'localhost';
 
-/* Create a single entry in the database. This has everything except a blob.
+
+/* Create a single default entry in the database. This has everything except a blob.
 It's not well documented, but you can set the blob using a string that is then
 turned into bytes.
 
-insert into oauth2.db_test
+insert into qdl_test.db_test
    (varchar_128,smallint_0,tinyint_0,float_0,
     integer_0,numeric_0,double_0,boolean_0,
     bit_0,text_0,timestamp_0,timestamp_long,
