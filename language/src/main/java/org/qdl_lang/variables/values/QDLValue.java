@@ -448,19 +448,6 @@ public class QDLValue implements Constants, Serializable, Comparable<QDLValue> {
         if(getType() == qdlValue.getType()){
             return A.compareTo(B); // just sort the same type with their default comparator.
         }
-
-        // Fix for https://github.com/ncsa/qdl/issues/150
-        // *May* need to add more cases, but not sure what.
-        if(isDecimal()){
-            if(qdlValue.isLong()){
-                return asDecimal().compareTo(BigDecimal.valueOf(qdlValue.asLong()));
-            }
-        }
-        if(isLong()){
-            if(qdlValue.isDecimal()){
-                return BigDecimal.valueOf(asLong()).compareTo(qdlValue.asDecimal());
-            }
-        }
         return A.compareTo(B);
     }
 

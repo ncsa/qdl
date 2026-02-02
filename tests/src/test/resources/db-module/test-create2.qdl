@@ -16,7 +16,7 @@ a. := rr(false, false);
 
 db#qdl_create('db_test',a.);
 c. ≔ db#read('select * from db_test where varchar_128=?',[a.'varchar_128']).0;
-say(a.'varchar_128');
+debugger(1, 'object id = ' + a.'varchar_128');
 ok := check_stem(a., c., false);
 ⊨ 1 ≡ db#execute('delete from db_test where varchar_128=?',[a.'varchar_128']) : 'Could not delete object with id \'' + a.'varchar_128' + '\'';
 return(ok);

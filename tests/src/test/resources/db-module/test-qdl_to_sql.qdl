@@ -8,7 +8,6 @@
   db ≔ j_load('db');
 cfg. ≔ interpret(file_read(args().0));
 db#connect(cfg.);
-say(db#qdl_types.);
 
 // stems and lists
 ⊨db#qdl_to_sql([;6]/4, db#qdl_types.'json',  db#sql_types.'VARCHAR') ≡ '[0,0.25,0.5,0.75,1,1.25]' : 'conversion of QDL stem -> JSON string failed';

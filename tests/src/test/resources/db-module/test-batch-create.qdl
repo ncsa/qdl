@@ -10,7 +10,7 @@ cfg. ≔ interpret(file_read(args().0));
 db#connect(cfg.);
 numeric_digits(20);
 ids.:= 'a-'+n(16);
-stmt := 'insert into xxx (id,name) values (?,?)';
+stmt := 'insert into qdl_test.xxx (id,name) values (?,?)';
 out. := db#batch_execute(stmt, [['a-0',random_string(20)],
                          ['a-1',random_string(20)],
                          ['a-2',random_string(20)],

@@ -17,6 +17,6 @@ a.'timestamp_long' ≔ date_iso();  // For testing QDL conversion, where the SQL
                        'timestamp_long':db#qdl_types.'date'
                        };
 db#qdl_create('db_test',a., qt.);
-c. ≔ db#read('select * from db_test where varchar_128=?',[a.'varchar_128'], qt.).0;
+c. ≔ db#read('select * from qdl_test.db_test where varchar_128=?',[a.'varchar_128'], qt.).0;
 ⊨ 1 == db#execute('delete from db_test where varchar_128=?',[a.'varchar_128']) : 'Could not delete object with id \'' + a.'varchar_128' + '\'';
    return(check_stem(a., c., true));

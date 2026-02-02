@@ -39,6 +39,8 @@ define[check_stem(a.,c., blob_is_stem)][
    ok := stem_check ∧ (⊗∧⊙out.);
      if[¬ok]
    then[
+   say('--- original:\n' + print(c.));
+   say('\n--- updated:\n' + print(a.));
         bad_c.≔ (¬out.)⌆c.; // received
        ⊨ ok : bad_c.; // pass back the columns that don't match in the check.
    ];

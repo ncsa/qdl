@@ -15,7 +15,8 @@ public class DBModuleTest extends AbstractQDLTester {
      * Path to the connection ini file. Since this has passwords etc. it cannot be in the
      * distribution lest it end up in GitHub/
      */
-    protected String CONNECTION_INI = "/home/ncsa/dev/csd/config/qdl-connector.qdl";
+    protected String MYSQL_CONNECTION_INI = "/home/ncsa/dev/csd/config/mysql-connector.qdl";
+    protected String DERBY_CONNECTION_INI = "/home/ncsa/dev/csd/config/derby-connector.qdl";
 
     /**
      * Creates the QDL script_run command from the name of the script to run.
@@ -24,7 +25,11 @@ public class DBModuleTest extends AbstractQDLTester {
      * @return
      */
     protected String createScriptRun(String qdlScript) {
-        return "script_load(os_env('NCSA_DEV_INPUT')+'" + SCRIPT_PATH + qdlScript + "','" + CONNECTION_INI + "');";
+        return "script_load(os_env('NCSA_DEV_INPUT')+'" + SCRIPT_PATH + qdlScript + "','" + MYSQL_CONNECTION_INI + "');";
+    }
+
+    protected String createScriptRun(String qdlScript, String connectionIni) {
+        return "script_load(os_env('NCSA_DEV_INPUT')+'" + SCRIPT_PATH + qdlScript + "','" + connectionIni + "');";
     }
 
     protected String createUtilLoad(String utils) {
@@ -32,10 +37,14 @@ public class DBModuleTest extends AbstractQDLTester {
     }
 
     public void testRead() throws Throwable {
+        testRead(MYSQL_CONNECTION_INI);
+        testRead(DERBY_CONNECTION_INI);
+    }
+    protected void testRead(String connectionIni) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, createUtilLoad("util.qdl"));
-        addLine(script, createScriptRun("test-read.qdl"));
+        addLine(script, createScriptRun("test-read.qdl", connectionIni));
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         try {
             interpreter.execute(script.toString());
@@ -55,10 +64,14 @@ public class DBModuleTest extends AbstractQDLTester {
      * @throws Throwable
      */
     public void testBasicCreate() throws Throwable {
+        testTableMetadata(MYSQL_CONNECTION_INI);
+        testTableMetadata(DERBY_CONNECTION_INI);
+    }
+    protected void testBasicCreate(String connectionIni) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, createUtilLoad("util.qdl"));
-        addLine(script, createScriptRun("test-create2.qdl"));
+        addLine(script, createScriptRun("test-create2.qdl",connectionIni));
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         try {
             interpreter.execute(script.toString());
@@ -72,10 +85,14 @@ public class DBModuleTest extends AbstractQDLTester {
     }
 
     public void testBatchExecute() throws Throwable {
+        testTableMetadata(MYSQL_CONNECTION_INI);
+        testTableMetadata(DERBY_CONNECTION_INI);
+    }
+    protected void testBatchExecute(String connectionIni) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, createUtilLoad("util.qdl"));
-        addLine(script, createScriptRun("test-create.qdl"));
+        addLine(script, createScriptRun("test-batch-create.qdl", connectionIni));
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         try {
             interpreter.execute(script.toString());
@@ -88,10 +105,14 @@ public class DBModuleTest extends AbstractQDLTester {
         }
     }
     public void testCreateWithQDLTypes() throws Throwable {
+        testTableMetadata(MYSQL_CONNECTION_INI);
+        testTableMetadata(DERBY_CONNECTION_INI);
+    }
+    protected void testCreateWithQDLTypes(String connectionIni) throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, createUtilLoad("util.qdl"));
-        addLine(script, createScriptRun("test-create-qtypes.qdl"));
+        addLine(script, createScriptRun("test-create-qtypes.qdl", connectionIni));
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         try {
             interpreter.execute(script.toString());
@@ -123,6 +144,24 @@ public class DBModuleTest extends AbstractQDLTester {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
         addLine(script, createScriptRun("test-sql_to_qdl.qdl"));
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        try {
+            interpreter.execute(script.toString());
+        } catch (AssertionException ae) {
+            System.out.println(ae.getMessage());
+            assert false : "Conversion failed";
+        } catch (Throwable t) {
+            throw t;
+        }
+    }
+    public void testTableMetadata() throws Throwable {
+        testTableMetadata(MYSQL_CONNECTION_INI);
+        testTableMetadata(DERBY_CONNECTION_INI);
+    }
+    protected void testTableMetadata(String connectionIni) throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        addLine(script, createScriptRun("test-table-metadata.qdl", connectionIni));
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         try {
             interpreter.execute(script.toString());

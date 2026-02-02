@@ -32,9 +32,16 @@ CREATE TABLE qdl_test.db_test
     set_0          TEXT
 );
 
+/*  This is created (then dropped) on the fly by the DB module tests, so it is here for reference.
+CREATE TABLE xxx (
+                       id varchar(20) NOT NULL,
+                       name varchar(128) DEFAULT NULL,
+                       PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+*/
+
 GRANT All PRIVILEGES ON qdl_test.* TO 'qdl_tester'@'localhost';
 grant create on qdl_test.* to 'qdl_tester'@'localhost';
-
 
 /* Create a single default entry in the database. This has everything except a blob.
 It's not well documented, but you can set the blob using a string that is then

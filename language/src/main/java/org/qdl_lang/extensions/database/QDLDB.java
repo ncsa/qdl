@@ -461,7 +461,6 @@ public class QDLDB implements QDLMetaModule {
             for (QDLKey key : value.keySet()) {
                 Long sql = sqlTypes.getLong(key);
                 Long qdl = qdlTypes.getLong(key);
-                System.out.println(value.get(key));
                 outStem.put(key, qdlToSQL(qdl == null ? QDL_TYPE_DEFAULT : qdl.intValue(),
                         sql == null ? -15 : sql.intValue(),
                         value.get(key)));
@@ -604,10 +603,19 @@ public class QDLDB implements QDLMetaModule {
     DATETIME, TIMESTAMP	        java.sql.Timestamp (or java.time.LocalDateTime)
     BLOB	                    java.sql.Blob or byte[]
 
+MySQL
 db := j_load('db');
-        cfg. := interpret(file_read('/home/ncsa/dev/csd/config/db-connector.qdl'));
+        cfg. := interpret(file_read('/home/ncsa/dev/csd/config/mysql-connector.qdl'));
         db#connect(cfg.);
-c. ≔ db#p_read('select * from oauth2.db_test',[],{'blob_0':4, 'timestamp_long':3}).0;
+
+Derby
+db := j_load('db');
+        cfg. := interpret(file_read('/home/ncsa/dev/csd/config/derby-connector.qdl'));
+        db#connect(cfg.);
+
+
+
+c. ≔ db#p_read('select * from qdl_test.db_test where varchar_128=?',['id123'],{'blob_0':4, 'timestamp_long':3}).0;
 c.'varchar_128' ≔ 'id-' + random_string(4);
 c.'timestamp_long'≔ date_iso();
 db#create('oauth2.db_test',c.,{'blob_0':4, 'timestamp_long':3});
@@ -618,7 +626,16 @@ db#create('oauth2.db_test',c.,{'blob_0':4, 'timestamp_long':3});
                           int sqlType,
                           int qdlType,
                           QDLValue entry) throws SQLException, ParseException {
-        stmt.setObject(i, qdlToSQL(qdlType ,sqlType, entry), sqlType);
+        Object obj = qdlToSQL(qdlType, sqlType, entry);
+        if (sqlType == BLOB) {
+            stmt.setBinaryStream(i, (ByteArrayInputStream) obj);
+        } else {
+            if (obj instanceof BigDecimal) {
+                stmt.setBigDecimal(i, (BigDecimal) obj);
+            } else {
+                stmt.setObject(i, qdlToSQL(qdlType, sqlType, entry), sqlType);
+            }
+        }
     }
 
     protected Object qdlToSQL(int qdlType,
@@ -743,6 +760,7 @@ db#create('oauth2.db_test',c.,{'blob_0':4, 'timestamp_long':3});
                 }
                 break;
             case BLOB:
+            case Types.BINARY:
             case Types.LONGVARBINARY:
             case Types.VARBINARY:
                 //    System.out.println("setParam:" + new String(Base64.decodeBase64(entry.asString())));
@@ -968,7 +986,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
                   Also, part of the contract is that this has been pickled to input_form by the system alread
                   so it is just the expression for a value, and not completely arbitrary QDL!
                  */
-                String x = dummyStem + ":=" + "["+string+"]";
+                String x = dummyStem + ":=" + "[" + string + "]";
                 Polyad polyad = new Polyad(SystemEvaluator.INTERPRET);
                 polyad.addArgument(new ConstantNode(asQDLValue(x)));
                 state.getMetaEvaluator().evaluate(polyad, state);
@@ -997,7 +1015,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
 
     public static String CREATE_COMMAND = "qdl_create";
 
-    public class Create implements QDLFunction {
+    public class QDLCreate implements QDLFunction {
         @Override
         public String getName() {
             return CREATE_COMMAND;
@@ -1013,12 +1031,44 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
             if (!isConnected) {
                 throw new IllegalStateException("No database connection. Please run " + CONNECT_COMMAND + " first.");
             }
-            String tablename = qdlValues[0].asString();
+            boolean forceCaseInsensitiveColumns = false;
+            String tablename = "";
+            QDLStem metadata = null;
+            boolean hasMetadata = false;
+            if (qdlValues[0].isString()) {
+                tablename = qdlValues[0].asString();
+            } else {
+                if (!qdlValues[0].isStem()) {
+                    throw new IllegalArgumentException("First argument must be a string or stem");
+                }
+                metadata = qdlValues[0].asStem();
+                // Worst case is the FQ name is catalog.schema.tablename
+                if (metadata.containsKey(MD_CATALOG)) {
+                    tablename = tablename + metadata.get(MD_CATALOG).asString() + ".";
+                }
+                if (metadata.containsKey(MD_SCHEMA)) {
+                    tablename = tablename + metadata.get(MD_SCHEMA).asString() + ".";
+                }
+
+                tablename = tablename + metadata.get(MD_TABLENAME).asString();
+                hasMetadata = true;
+            }
             QDLStem arg = qdlValues[1].asStem();
             boolean doBatch = arg.isList();
             QDLStem map = null;
             if (qdlValues.length > 2) {
-                map = qdlValues[2].asStem();
+                if(qdlValues[2].isStem()) {
+                    map = qdlValues[2].asStem();
+                    if(map.containsKey(QDL_TYPE_NAME_FORCE_COLUMN_CASE)){
+                        forceCaseInsensitiveColumns = map.get(QDL_TYPE_NAME_FORCE_COLUMN_CASE).asBoolean();
+                    }
+                }else{
+                    if(qdlValues[2].isBoolean()) {
+                        forceCaseInsensitiveColumns = qdlValues[2].asBoolean();
+                    }else{
+                        throw new IllegalArgumentException("Third argument must be a boolean or stem");
+                    }
+                }
             } else {
                 map = new QDLStem();
             }
@@ -1027,9 +1077,10 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
             long rowUpdated = 0;
             long[] rowsUpdated = null;
             try {
-                TreeMap<String, Integer> columnNames = getSQLMetadata(c, tablename);
+                TreeMap<String, Integer> columnNames = hasMetadata ? getColumns(metadata) : getSQLMetadata(c, tablename);
+                ;
                 PreparedStatement pstmt = createInsertStatement(connectionRecord.connection, tablename,
-                        columnNames, arg, map);
+                        columnNames, arg, map, forceCaseInsensitiveColumns);
                 if (doBatch) {
                     rowsUpdated = pstmt.executeLargeBatch();
                 } else {
@@ -1070,10 +1121,17 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
                     docs.add(" This uses all standard implicit conversions.");
                     break;
                 case 3:
-                    docs.add(getName() + "(table, arg., conversions.) - insert the stem into the database as a new row.");
+                    docs.add(getName() + "(table, arg., conversions. | "+QDL_TYPE_NAME_FORCE_COLUMN_CASE + ") - insert the stem into the database as a new row.");
                     docs.add("table = the (fully-qualified) table name to construct the insert statement.");
                     docs.add("arg. = the col-value pairs to use for the update.");
+                    docs.add(QDL_TYPE_NAME_FORCE_COLUMN_CASE + " = Some databases allow for case sensitive column names. This flag is");
+                    docs.add("                  for the situation where the database allows for case sensitive columns, but you are not using them.");
+                    docs.add("                  Typically this means the database reports the column names in all upper or lower case, which might not");
+                    docs.add("                  be how you have them in your stem. So, if true, it will force the all column names");
+                    docs.add("                  to be processed case insensitive. The default is false, meaning either (a) no matter how you use them,");
+                    docs.add("                  the database itself will ignore the case, or (b) you use the exact case at all times.");
                     addQDLTypesBlurb(docs);
+                    docs.add("Note that if you may also supply the " +QDL_TYPE_NAME_FORCE_COLUMN_CASE + " flag in the conversion stem.");
                     break;
             }
             return docs;
@@ -1087,6 +1145,10 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
     public static String MD_PRIMARY_KEY = "primary_key";
     public static String MD_AUTO_COMMIT = "auto_commit";
     public static String MD_COLUMNS = "columns";
+    public static String MD_DB_VENDOR = "vendor";
+    public static String MD_DB_VERSION = "version";
+    public static String MD_DB_MAJOR_RELEASE = "major_release";
+    public static String MD_DB_MINOR_RELEASE = "minor_release";
 
     public class GetTableMetadata implements QDLFunction {
         @Override
@@ -1110,23 +1172,43 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
             String dudQuery = "select * from " + tablename + " where 1 < 0";
             // It is possible that the tablename is fully qualified with the schema, e.g.
             // oauth2.clients. To get primary keys we need exactly the unqualified table name
+            String givenSchema = tablename.substring(0, tablename.lastIndexOf('.'));
             String unqTableName = tablename.substring(tablename.lastIndexOf('.') + 1);
             ConnectionRecord connectionRecord = connectionPool.pop();
             Connection c = connectionRecord.connection;
             QDLStem outStem = new QDLStem();
+            boolean isDerby = connectionPool.getConnectionParameters() instanceof DerbyConnectionParameters;
 
             try {
+                QDLStem db = new QDLStem();
+
+
+                db.put(MD_DB_VENDOR, asQDLValue(c.getMetaData().getDatabaseProductName()));
+                db.put(MD_DB_VERSION, asQDLValue(c.getMetaData().getDatabaseProductVersion()));
+                db.put(MD_DB_MAJOR_RELEASE, asQDLValue(c.getMetaData().getDatabaseMajorVersion()));
+                db.put(MD_DB_MINOR_RELEASE, asQDLValue(c.getMetaData().getDatabaseMinorVersion()));
+                outStem.put("db", QDLValue.asQDLValue(db));
                 Statement stmt = c.createStatement();
                 ResultSet res = stmt.executeQuery(dudQuery);
                 ResultSetMetaData rsmd = res.getMetaData();
-                nonTrivialPut(outStem, MD_TABLENAME, unqTableName);
+                String tttt = rsmd.getTableName(1);
+                nonTrivialPut(outStem, MD_TABLENAME, rsmd.getTableName(1));
                 nonTrivialPut(outStem, MD_CATALOG, c.getCatalog());
-                nonTrivialPut(outStem, MD_SCHEMA, c.getSchema());
+                if (isDerby) {
+                    // Derby has the annoying bug that the default schema is the username. So explicitly
+                    // getting the metadata for a table will return the wrong schema.
+                    nonTrivialPut(outStem, MD_SCHEMA, givenSchema);
+                } else {
+                    nonTrivialPut(outStem, MD_SCHEMA, c.getSchema());
+                }
                 nonTrivialPut(outStem, MD_AUTO_COMMIT, c.getAutoCommit());
-                ResultSet pkRS = c.getMetaData().getPrimaryKeys(c.getCatalog(), c.getSchema(), unqTableName);
+                ResultSet pkRS = c.getMetaData().getPrimaryKeys(c.getCatalog(), c.getSchema(), tttt);
                 QDLStem primaryKeyList = new QDLStem();
                 while (pkRS.next()) {
                     primaryKeyList.getQDLList().add(QDLValue.asQDLValue(pkRS.getString("COLUMN_NAME")));
+                    System.out.println("column name : " + pkRS.getString("COLUMN_NAME"));
+                    System.out.println("    pk name : " + pkRS.getString("PK_NAME"));
+                    System.out.println("    key seq : " + pkRS.getString("KEY_SEQ"));
                 }
                 pkRS.close();
                 nonTrivialPut(outStem, MD_PRIMARY_KEY, primaryKeyList);
@@ -1199,14 +1281,31 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
     }
 
     /**
+     * Utility to convert the columns entry in a metadata stem to usable (column, int) pairs
+     * for SQL.
+     *
+     * @param metadata
+     * @return
+     * @throws SQLException
+     */
+    protected TreeMap<String, Integer> getColumns(QDLStem metadata) throws SQLException {
+        TreeMap<String, Integer> columnNames = new TreeMap<>();
+        QDLStem columns = metadata.getStem("columns");
+        for (QDLKey k : columns.keySet()) {
+            columnNames.put(k.toString(), columns.get(k).asLong().intValue());
+        }
+        return columnNames;
+    }
+
+    /**
      * Create the prepared statement. This requires creating the SQL statement and managing
      * all the column names and types.
      *
      * @param conn
      * @param tablename
-     * @param columnNames
-     * @param arg
-     * @param map
+     * @param columnNames From the database, key = col name, value = SQL type.
+     * @param arg         = stem of col-value pairs to insert. May be partial
+     * @param map         = stem of QDL types keyed by column name.
      * @return
      * @throws SQLException
      */
@@ -1214,21 +1313,46 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
                                             String tablename,
                                             TreeMap<String, Integer> columnNames,
                                             QDLStem arg,
-                                            QDLStem map) throws SQLException, ParseException {
+                                            QDLStem map,
+                                            boolean forceCaseInsensitive) throws SQLException, ParseException {
         String insertStatement = "insert into " + tablename + " (";
         String values = " values (";
         boolean isFirst = true;
         List<String> actualColumns = new ArrayList<>();
         //Now just run through the column names and see what was sent,
-        for (String column : columnNames.keySet()) {
-            if (arg.containsKey(column)) {
-                actualColumns.add(column);
-                insertStatement = insertStatement + (isFirst ? "" : ",") + column;
-                values = values + (isFirst ? "" : ",") + "?";
-                if (isFirst) {
-                    isFirst = false;
+        if (!forceCaseInsensitive) {
+            for (String column : columnNames.keySet()) {
+                if (arg.containsKey(column)) {
+                    actualColumns.add(column);
+                    insertStatement = insertStatement + (isFirst ? "" : ",") + column;
+                    values = values + (isFirst ? "" : ",") + "?";
+                    if (isFirst) {
+                        isFirst = false;
+                    }
                 }
             }
+        } else {
+            TreeMap<String, Integer> columnNames2 = new TreeMap<>();
+
+            // E.g. for Derby, the column names are probably upper case, so we need to match them exactly.
+            for (String column : columnNames.keySet()) {
+                TreeMap<String, Integer> finalColumnNames = columnNames;
+                arg.keySet().stream().filter(k -> k.toString().equalsIgnoreCase(column)).forEach(k -> {
+                    actualColumns.add(k.toString());
+                    columnNames2.put(k.toString(), finalColumnNames.get(column));
+                });
+            }
+            for (String column : actualColumns) {
+                if (arg.containsKey(column.toLowerCase())) {
+                    //  actualColumns.add(column);
+                    insertStatement = insertStatement + (isFirst ? "" : ",") + column;
+                    values = values + (isFirst ? "" : ",") + "?";
+                    if (isFirst) {
+                        isFirst = false;
+                    }
+                }
+            }
+            columnNames = columnNames2;
         }
         insertStatement = insertStatement + ")" + values + ")";
         return doPreparedStatement(conn, columnNames, arg, map, insertStatement, actualColumns);
@@ -1360,15 +1484,24 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
     public static final int QDL_TYPE_STRING = 4;
     public static final int QDL_TYPE_JSON_SET = 5;
 
+    public static final String QDL_TYPE_NAME_DEFAULT = "default"; //default
+    public static final String QDL_TYPE_NAME_JSON = "json";
+    public static final String QDL_TYPE_NAME_INPUT_FORM = "input_form";
+    public static final String QDL_TYPE_NAME_DATE = "date";
+    public static final String QDL_TYPE_NAME_STRING = "string";
+    public static final String QDL_TYPE_NAME_JSON_SET = "json_set";
+    public static final String QDL_TYPE_NAME_FORCE_COLUMN_CASE = "force_column_case";
+
+
     public QDLStem getDataTypes() {
         if (types == null) {
             types = new QDLStem();
-            put(types, "json", (long) QDL_TYPE_JSON);
-            put(types, "json_set", (long) QDL_TYPE_JSON_SET);
-            put(types, "input_form", (long) QDL_TYPE_INPUT_FORM);
-            put(types, "default", (long) QDL_TYPE_DEFAULT);
-            put(types, "date", (long) QDL_TYPE_DATE);
-            put(types, "string", (long) QDL_TYPE_STRING);
+            put(types, QDL_TYPE_NAME_JSON, (long) QDL_TYPE_JSON);
+            put(types, QDL_TYPE_NAME_JSON_SET, (long) QDL_TYPE_JSON_SET);
+            put(types, QDL_TYPE_NAME_INPUT_FORM, (long) QDL_TYPE_INPUT_FORM);
+            put(types, QDL_TYPE_NAME_DEFAULT, (long) QDL_TYPE_DEFAULT);
+            put(types, QDL_TYPE_NAME_DATE, (long) QDL_TYPE_DATE);
+            put(types, QDL_TYPE_NAME_STRING, (long) QDL_TYPE_STRING);
         }
         return types;
     }
@@ -1434,12 +1567,16 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
         public List<String> getDocumentation(int argCount) {
             List<String> docs = new ArrayList<>();
             if (argCount == 2) {
-                docs.add(getName() + "(tablename, arg.)");
+                docs.add(getName() + "(table_metadate. | tablename, arg.)");
             }
             if (argCount == 3) {
-                docs.add(getName() + "(tablename, arg., qdl_types.)");
+                docs.add(getName() + "( table_metadate. | tablename, arg., qdl_types.)");
             }
-            docs.add("tablename = name of the table to update.");
+            docs.add("table_metadata. = the metadata for the table, typically from " + GET_TABLE_METADATA + "()");
+            docs.add("                   Some vendors (Derby is notorious) have very poor support for metadata queries.");
+            docs.add("                   In particular, they might not return primary keys. In that case for constructed");
+            docs.add("                   insert statements, should be specified in the metadata stem. Best we can do.");
+            docs.add("tablename = name of the table to update. The metadata will be obtained from " + GET_TABLE_METADATA + "().");
             docs.add("     arg. = the QDL stem that will be used tp update");
             if (argCount == 3) {
                 addQDLTypesBlurb(docs);
@@ -1512,18 +1649,7 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
             try {
                 PreparedStatement stmt = c.prepareStatement(rawStatement);
                 if (args != null) {
-                    /*
-                       Map<Long, int[]> qdlTypeMap = creatQDLTypeMap(qdlTypes);
-                for (QDLValue entry : args) {
-                    if(qdlTypeMap.containsKey((long)i-1)){
-                        int[] q = qdlTypeMap.get((long)i-1);
-                         setParam(stmt, i, q[0], q[1], entry);
-                    }else {
-                        setParam(stmt, i, entry.getValue());
-                    }
-                    i++;
-                }
-                     */
+
                     Map<Long, int[]> qdlTypeMap = creatQDLTypeMap(qdlTypes);
                     int i = 1;
                     for (QDLValue entry : args) {
@@ -1686,6 +1812,53 @@ b. ≔ db#p_read('select * from oauth2.db_test where varchar_128=\'id_AOGa\'', [
 
 
     }
+
+    public static final String SHUTDOWN = "close";
+
+    public class Shutdown implements QDLFunction {
+        @Override
+        public String getName() {
+            return SHUTDOWN;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{0};
+        }
+
+        @Override
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            BooleanValue b = True;
+            if ((connectionPool.getConnectionParameters() instanceof DerbyConnectionParameters)) {
+                DerbyConnectionParameters params = (DerbyConnectionParameters) connectionPool.getConnectionParameters();
+                try {
+                    DriverManager.getConnection(params.getJdbcUrl() + ";shutdown=true");
+                } catch (SQLException e) {
+                    if (e.getSQLState().equals("08006")) {
+                        b = True;
+                    } else {
+                        if (state.isDebugOn()) {
+                            e.printStackTrace();
+                        }
+                        b =  False;
+                    }
+                }
+            }
+            connectionPool = null; // contract is no more connections allowed after this called.
+            return b;
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> docs = new ArrayList<>();
+            docs.add(getName() + "() - closes the database connection pool. Further connection are not possible.");
+            docs.add("This returns true if the shutdown was successful, false otherwise.");
+            docs.add("Mostly this is only required for Derby, as it requires special handling.");
+            return docs;
+        }
+    }
+
+    /* *************** End of classes. Below is all utilities ************ */
 
     /**
      * Used for both create and delete.

@@ -1,0 +1,25 @@
+#! /usr/bin/env -S qdl-run
+
+/*
+    Basic creation test. So no qdl types just each SQL type is done with
+    no QDL -> SQL conversions.
+
+    Note that date, time and timestamp columns are set in the database
+    and sending them is ignored, so we don't set them here.
+*/
+⊨ 0 < size(args()) : 'Missing connection ini';
+
+db ≔ j_load('db');
+cfg. ≔ interpret(file_read(args().0));
+db#connect(cfg.);
+md. := db#get_table_metadata('qdl_test.db_test');
+  if[to_lower(md.'db'.'vendor') ≡'mysql']
+then[
+      ⊨md.'catalog' ≡ 'qdl_test' : 'incorrect catalog name';
+      ⊨∄md.'schema' : 'schema should be empty for mysql';
+      ⊨md.'table_name' ≡ 'db_test' : 'incorrect table name';
+      ⊨md.'auto_commit' : 'wrong auto commit value';
+      ⊨size(md.'primary_key') ≡ 1 : 'primary key should be a single column';
+      ⊨md.'primary_key'.0 ≡ 'varchar_128' : 'incorrect primary key column, expected varchar_128, got ' + md.'primary_key'.0;
+    ];
+return(true);

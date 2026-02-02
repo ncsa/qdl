@@ -2772,17 +2772,24 @@ public class StemTest extends AbstractQDLTester {
         assert getBooleanValue("ok", state);
     }
 
+    /**
+     * Shows that sorting works for mixed data types.
+     * @throws Throwable
+     */
     public void testSort() throws Throwable {
         State state = testUtils.getNewState();
         StringBuffer script = new StringBuffer();
-        addLine(script, "z. :=   sort([-3/5, 4==5, 'abc', 'SPQR', {3,4,5}]) == [false,'SPQR','abc',-0.6,{3,4,5}];");
-        addLine(script, "z1. :=   sort([-3/5, 4==5, 'abc', 'SPQR', {3,4,5}], false) == [{3,4,5},-0.6,'abc','SPQR',false];");
-        addLine(script, "ok := reduce(@&&, z.);"); // z. is boolean
-        addLine(script, "ok1 := reduce(@&&, z1.);"); // z1. is boolean
+        addLine(script, "z. :=   sort([-3/5, 4==5, 2, 'abc', 'SPQR', {3,4,5}]) ≡ [false,'SPQR','abc',-0.6,2, {3,4,5}];");
+        addLine(script, "z1. :=   sort([-3/5, 4==5, 'abc', 2, 'SPQR', {3,4,5}], false) ≡ [{3,4,5},2, -0.6,'abc','SPQR',false];");
+        addLine(script, "z2. :=   sort([-3/5, 4==5, null, 'abc',  null, 2, 'SPQR', null, {3,4,5}]) ≡ [null,null,null,false, 'SPQR','abc', -0.6,2, {3,4,5}];");
+        addLine(script, "ok :=  ⊗∧⊙z.;"); // z. is boolean
+        addLine(script, "ok1 := ⊗∧⊙z1.;"); // z1. is boolean
+        addLine(script, "ok2 := ⊗∧⊙z2.;"); // z1. is boolean
         QDLInterpreter interpreter = new QDLInterpreter(null, state);
         interpreter.execute(script.toString());
         assert getBooleanValue("ok", state);
         assert getBooleanValue("ok1", state);
+        assert getBooleanValue("ok2", state);
     }
 
     /*

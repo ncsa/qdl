@@ -177,14 +177,17 @@ public class ListEvaluator extends AbstractEvaluator {
                 polyad.setResult(stemVariable);
                 return;
         }
-        boolean sortUp = true;
+        boolean sortUp;
         if (polyad.getArgCount() == 2) {
             QDLValue arg1 = polyad.evalArg(1, state);
             if (arg1.isBoolean()) {
                 sortUp = arg1.asBoolean();
             } else {
+                sortUp = true;
                 throw new BadArgException(LIST_SORT + " requires a boolean as it second argument if present", polyad.getArgAt(1));
             }
+        } else {
+            sortUp = true;
         }
         try {
             doSorting(list, sortUp);
@@ -224,8 +227,24 @@ public class ListEvaluator extends AbstractEvaluator {
                     break;
             }
         }
-        doSorting(nulls, sortUp);
-        doSorting(numbers, sortUp);
+        // a list of nulls (all same value) don't need sorting.
+        //doSorting(nulls, sortUp);
+        /*
+           Have to sort BigDecimals and Longs in a specific way. Convert Longs to BigDecimal,
+           use BigDecimal machinery. Oddly, using BigDecimal's longValue() comes with a warning
+           it may return the wrong sign, which is completely unacceptable in sorting!
+         */
+        // Fix for https://github.com/ncsa/qdl/issues/150
+
+        Comparator<Object> numericComparator = (o1, o2) -> {
+            BigDecimal bd1 = (o1 instanceof Long)?BigDecimal.valueOf((Long) o1) : (BigDecimal) o1;
+            BigDecimal bd2 = (o2 instanceof Long)?BigDecimal.valueOf((Long) o2) : (BigDecimal) o2;
+            if (sortUp) return bd1.compareTo(bd2);
+            return bd2.compareTo(bd1);
+        };
+        // Can't mix DigDecimals and Longs, so have to do custom sorting
+        numbers.sort(numericComparator);
+
         doSorting(strings, sortUp);
         doSorting(booleans, sortUp);
         list.clear();
@@ -255,6 +274,7 @@ public class ListEvaluator extends AbstractEvaluator {
 
     /**
      * Sorts POJOs that are comparable.
+     *
      * @param list
      * @param sortUp
      */
@@ -298,21 +318,21 @@ public class ListEvaluator extends AbstractEvaluator {
         // it may be a variable. If the variable does not exist, then create it (that's the trick). So we have
         // to check if the argument is a variable node and take action accordingly.
         Object ooo = checkCopyNode(polyad.getLastArg(), state, doInsert);
-        if(ooo instanceof QDLStem){
+        if (ooo instanceof QDLStem) {
             targetStem = (QDLStem) ooo;
             targetIndex = 0L;
             targetArgIndex = polyad.getArgCount() - 1;
-        }else{
-            if(!(ooo instanceof Long)){
+        } else {
+            if (!(ooo instanceof Long)) {
                 throw new BadArgException((doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires an integer as its last argument", polyad.getArgAt(4));
             }
-            targetIndex = (Long)ooo;
-            ooo = checkCopyNode(polyad.getArgAt(polyad.getArgCount()-2), state, doInsert);
-            if(!(ooo instanceof QDLStem)){
+            targetIndex = (Long) ooo;
+            ooo = checkCopyNode(polyad.getArgAt(polyad.getArgCount() - 2), state, doInsert);
+            if (!(ooo instanceof QDLStem)) {
                 throw new BadArgException((doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires a stem as its next to lat argument", polyad.getArgAt(4));
             }
-            targetStem = (QDLStem)ooo;
-            if(targetIndex < 0L){
+            targetStem = (QDLStem) ooo;
+            if (targetIndex < 0L) {
                 targetIndex = targetIndex + targetStem.size();
             }
             targetArgIndex = polyad.getArgCount() - 2;
@@ -337,7 +357,7 @@ public class ListEvaluator extends AbstractEvaluator {
                 throw new BadArgException((doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires an integer as its third argument", polyad.getArgAt(2));
             }
             length = arg3.asLong();
-            if(length <0){
+            if (length < 0) {
                 length = length + sourceStem.size();
             }
         }
@@ -358,7 +378,7 @@ public class ListEvaluator extends AbstractEvaluator {
                     state, (doInsert ? LIST_INSERT_AT : LIST_COPY2) + " requires a stem as its target argument"
             );
         }
-            return expr.evaluate(state).getValue(); // May be a stem or Long
+        return expr.evaluate(state).getValue(); // May be a stem or Long
     }
 
     /*
@@ -527,25 +547,25 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
         FunctionReferenceNodeInterface frn = getFunctionReferenceNode(localState, polyad.getArgAt(0), true);
         //FunctionReferenceNodeInterface frn = getFunctionReferenceNode(state, polyad.getArgAt(0), true);
         QDLValue arg1 = polyad.evalArg(1, state);
-        if(arg1 == null){
+        if (arg1 == null) {
             throw new MissingArgException(PICK + " second argument not found ", polyad.getArgAt(1));
         }
         ExpressionImpl f = null;
         int argCount = 1; // default
         try {
             // addresses https://github.com/ncsa/qdl/issues/107
-            if(frn instanceof DyadicFunctionReferenceNode){
+            if (frn instanceof DyadicFunctionReferenceNode) {
                 ((DyadicFunctionReferenceNode) frn).evaluate(localState);
                 QDLValue ooo = ((DyadicFunctionReferenceNode) frn).getArgAt(0).getResult();
-                if(ooo.isLong()){
+                if (ooo.isLong()) {
                     argCount = ooo.asLong().intValue();
-                    if(argCount !=1 && argCount !=2){
+                    if (argCount != 1 && argCount != 2) {
                         throw new ExtraArgException(PICK + " function reference has illegal valence, must be 1 or 2.", polyad.getArgAt(0));
                     }
-                }else{
+                } else {
                     throw new ExtraArgException(PICK + " function reference has non-integer valence", polyad.getArgAt(0));
                 }
-            }else{
+            } else {
                 // not qualified. Try and find the right one
                 List<FunctionRecordInterface> functionRecordList = localState.getFTStack().getByAllName(frn.getFunctionName());
                 if (functionRecordList.isEmpty()) {
@@ -554,14 +574,14 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
                 int totalCount = 0;
                 for (FunctionRecordInterface fr : functionRecordList) {
                     if (2 == fr.getArgCount()) {
-                        totalCount = totalCount +2;
+                        totalCount = totalCount + 2;
                     }
                     if (1 == fr.getArgCount()) {
-                        totalCount = totalCount +1;
+                        totalCount = totalCount + 1;
                     }
                     argCount = Math.max(argCount, fr.getArgCount());
                 }
-                if(totalCount == 0 || totalCount == 3){
+                if (totalCount == 0 || totalCount == 3) {
                     // then there are multiple functions with the name and different valences. Don't
                     // try to choose one, just throw an exception.
                     throw new BadArgException(PICK + " unqualified function reference, both monad and dyad found. Specify which to use.", polyad.getArgAt(0));
@@ -707,7 +727,7 @@ pick((v)-> 7<v<20,[|pi(); pi(3) ; 10|])
             if (!(leftKey.isLong())) {
                 throw new IndexError(leftKey.asLong() + " is not an integer index", polyad.getArgAt(0));
             }
-           // Long leftIndex = leftKey;
+            // Long leftIndex = leftKey;
             for (QDLKey rightKey : rightStem.keySet()) {
                 if (!(rightKey.isLong())) {
                     throw new IndexError(rightKey + " is not an integer index", polyad.getArgAt(1));

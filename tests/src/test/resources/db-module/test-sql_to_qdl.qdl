@@ -8,7 +8,6 @@
   db ≔ j_load('db');
 cfg. ≔ interpret(file_read(args().0));
 db#connect(cfg.);
-say(db#qdl_types.);
 
 // stems and lists
 ⊨db#sql_to_qdl(to_json({'a':1}), db#qdl_types.'json').'a' ≡ 1 : 'conversion of QDL stem -> input form string failed';
