@@ -5,7 +5,7 @@
 [[1;33mWARNING[m] 
 [[1;33mWARNING[m] Some problems were encountered while building the effective model for org.qdl-lang:tests:jar:1.6-QDL-SNAPSHOT
 [[1;33mWARNING[m] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.qdl-lang:language:jar -> duplicate declaration of version 1.6-QDL-SNAPSHOT @ line 25, column 21
-[[1;33mWARNING[m] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.qdl-lang:language:jar -> duplicate declaration of version 1.6-QDL-SNAPSHOT @ line 47, column 21
+[[1;33mWARNING[m] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.qdl-lang:language:jar -> duplicate declaration of version 1.6-QDL-SNAPSHOT @ line 53, column 21
 [[1;33mWARNING[m] 
 [[1;33mWARNING[m] Some problems were encountered while building the effective model for org.qdl-lang:sas:jar:1.6-QDL-SNAPSHOT
 [[1;33mWARNING[m] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.qdl-lang:language:jar -> duplicate declaration of version 1.6-QDL-SNAPSHOT @ line 41, column 21
@@ -53,12 +53,12 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #15,115 (2026-01-29T16:13:40.219-06:00) at timestamp: 1769724820219
+[[1;34mINFO[m] Storing buildNumber: Build: #15,144 (2026-02-10T16:39:54.234-06:00) at timestamp: 1770763194234
 [[1;34mINFO[m] Storing buildScmBranch: main
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
-[[1;34mINFO[m] Copying 96 resources
+[[1;34mINFO[m] Copying 98 resources
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.1:compile[m [1m(default-compile)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] Changes detected - recompiling the module!
@@ -80,18 +80,18 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-jar-plugin:2.4:jar[m [1m(default-jar)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT.jar
 [[1;34mINFO[m] 
-[[1;34mINFO[m] [1m>>> [0;32mmaven-source-plugin:3.3.1:jar[m [1m(attach-sources)[0;1m > [0;1mgenerate-sources[m @ [36mlanguage[0;1m >>>[m
+[[1;34mINFO[m] [1m>>> [0;32mmaven-source-plugin:3.4.0:jar[m [1m(attach-sources)[0;1m > [0;1mgenerate-sources[m @ [36mlanguage[0;1m >>>[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #15,116 (2026-01-29T16:13:43.315-06:00) at timestamp: 1769724823315
+[[1;34mINFO[m] Storing buildNumber: Build: #15,145 (2026-02-10T16:39:59.545-06:00) at timestamp: 1770763199545
 [[1;34mINFO[m] Storing buildScmBranch: main
 [[1;34mINFO[m] 
-[[1;34mINFO[m] [1m<<< [0;32mmaven-source-plugin:3.3.1:jar[m [1m(attach-sources)[0;1m < [0;1mgenerate-sources[m @ [36mlanguage[0;1m <<<[m
+[[1;34mINFO[m] [1m<<< [0;32mmaven-source-plugin:3.4.0:jar[m [1m(attach-sources)[0;1m < [0;1mgenerate-sources[m @ [36mlanguage[0;1m <<<[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-source-plugin:3.3.1:jar[m [1m(attach-sources)[m @ [36mlanguage[0;1m ---[m
+[[1;34mINFO[m] [1m--- [0;32mmaven-source-plugin:3.4.0:jar[m [1m(attach-sources)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT-sources.jar
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-javadoc-plugin:3.11.3:jar[m [1m(attach-javadocs)[m @ [36mlanguage[0;1m ---[m
@@ -135,7 +135,7 @@ Loading source files for package org.qdl_lang.extensions.inputLine...
 Loading source files for package org.qdl_lang.extensions.database...
 Loading source files for package org.qdl_lang.extensions.X509...
 Constructing Javadoc information...
-Standard Doclet version 11.0.29
+Standard Doclet version 11.0.30
 Building tree for all the packages and classes...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/config/JavaModuleConfig.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/config/ModuleConfig.html...
@@ -307,16 +307,16 @@ Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_l
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/crypto/CryptoModule.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDB.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDB.BatchExecute.html...
-Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDB.BatchRead.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDB.Connect.html...
-Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDB.Create.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDB.Execute.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDB.GetTableMetadata.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDB.PreparedRead.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDB.PreparedUpdate.html...
+Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDB.QDLCreate.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDB.QDLToSQL.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDB.QDLTypes.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDB.QDLUpdate.html...
+Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDB.Shutdown.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDB.SQLToQDL.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDB.SQLTypes.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/QDLDBLoader.html...
@@ -1323,17 +1323,17 @@ Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_l
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/inputLine/class-use/QDLCLITools.ToStem.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDB.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDB.BatchExecute.html...
+Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDB.Shutdown.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDB.SQLTypes.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDB.QDLTypes.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDB.Execute.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDB.PreparedUpdate.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDB.QDLUpdate.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDB.GetTableMetadata.html...
-Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDB.Create.html...
+Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDB.QDLCreate.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDB.SQLToQDL.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDB.QDLToSQL.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDB.PreparedRead.html...
-Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDB.BatchRead.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDB.Connect.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDBModule.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/extensions/database/class-use/QDLDBLoader.html...
@@ -1393,9 +1393,9 @@ Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/overview-
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/help-doc.html...
 30 warnings
 [[1;33mWARNING[m] Javadoc Warnings
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/evaluate/AbstractEvaluator.java:1306: warning - invalid usage of tag >
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/evaluate/AbstractEvaluator.java:1307: warning - invalid usage of tag >
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/evaluate/AbstractEvaluator.java:1308: warning - invalid usage of tag >
+[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/evaluate/AbstractEvaluator.java:1312: warning - invalid usage of tag >
+[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/evaluate/AbstractEvaluator.java:1313: warning - invalid usage of tag >
+[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/evaluate/AbstractEvaluator.java:1314: warning - invalid usage of tag >
 [[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/evaluate/OpEvaluator.java:143: warning - invalid usage of tag >
 [[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/expressions/ESN2.java:231: warning - invalid usage of tag >
 [[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning - Tag @link: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
@@ -1490,7 +1490,7 @@ Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/help-doc.
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:testResources[m [1m(default-testResources)[m @ [36mtests[0;1m ---[m
 [[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
-[[1;34mINFO[m] Copying 34 resources
+[[1;34mINFO[m] Copying 36 resources
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.1:testCompile[m [1m(default-testCompile)[m @ [36mtests[0;1m ---[m
 [[1;34mINFO[m] Changes detected - recompiling the module!
@@ -1507,10 +1507,6 @@ Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/help-doc.
 [[1;34mINFO[m]  T E S T S
 [[1;34mINFO[m] -------------------------------------------------------
 [[1;34mINFO[m] Running org.qdl_lang.[1mTestSuite[m
-id-APXO
-{date:3, input_form:2, json:1, json_set:5, none:0, string:4}
-id-fJtN
-{date:3, input_form:2, json:1, json_set:5, none:0, string:4}
 Check that the phrase "These are not the droids you are looking for" is printed:
 These are not the droids you are looking for
 Clipboard test exist skipped
@@ -1521,11 +1517,11 @@ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
   ~`!@#$%^&*()[]{}<>\/'"-_=+|;:,.?
   ¬¿¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧√≁⊕⊗⊙⌆µ⊢∈∉∀∋∌∃∄∩∪∆∂
   ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω
-[[1;34mINFO[m] [1;32mTests run: [0;1;32m644[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 15.128 s - in org.qdl_lang.[1mTestSuite[m
+[[1;34mINFO[m] [1;32mTests run: [0;1;32m646[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.317 s - in org.qdl_lang.[1mTestSuite[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] Results:
 [[1;34mINFO[m] 
-[[1;34mINFO[m] [1;32mTests run: 644, Failures: 0, Errors: 0, Skipped: 0[m
+[[1;34mINFO[m] [1;32mTests run: 646, Failures: 0, Errors: 0, Skipped: 0[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-jar-plugin:3.3.0:test-jar[m [1m(default-jar)[m @ [36mtests[0;1m ---[m
@@ -1584,7 +1580,7 @@ Loading source files for package org.qdl_lang.sas.loader...
 Loading source files for package org.qdl_lang.sas.response...
 Loading source files for package org.qdl_lang.sas.action...
 Constructing Javadoc information...
-Standard Doclet version 11.0.29
+Standard Doclet version 11.0.30
 Building tree for all the packages and classes...
 Generating /home/ncsa/dev/ncsa-git/qdl/sas/target/reports/apidocs/org/qdl_lang/sas/QDLExe.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/sas/target/reports/apidocs/org/qdl_lang/sas/QDLSASConstants.html...
@@ -1657,14 +1653,14 @@ Generating /home/ncsa/dev/ncsa-git/qdl/sas/target/reports/apidocs/overview-summa
 Generating /home/ncsa/dev/ncsa-git/qdl/sas/target/reports/apidocs/help-doc.html...
 [[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-javadoc.jar
 [[1;34mINFO[m] 
-[[1;34mINFO[m] [1m>>> [0;32mmaven-source-plugin:3.3.1:jar[m [1m(attach-sources)[0;1m > [0;1mgenerate-sources[m @ [36msas[0;1m >>>[m
+[[1;34mINFO[m] [1m>>> [0;32mmaven-source-plugin:3.4.0:jar[m [1m(attach-sources)[0;1m > [0;1mgenerate-sources[m @ [36msas[0;1m >>>[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36msas[0;1m ---[m
 [[1;34mINFO[m] 
-[[1;34mINFO[m] [1m<<< [0;32mmaven-source-plugin:3.3.1:jar[m [1m(attach-sources)[0;1m < [0;1mgenerate-sources[m @ [36msas[0;1m <<<[m
+[[1;34mINFO[m] [1m<<< [0;32mmaven-source-plugin:3.4.0:jar[m [1m(attach-sources)[0;1m < [0;1mgenerate-sources[m @ [36msas[0;1m <<<[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-source-plugin:3.3.1:jar[m [1m(attach-sources)[m @ [36msas[0;1m ---[m
+[[1;34mINFO[m] [1m--- [0;32mmaven-source-plugin:3.4.0:jar[m [1m(attach-sources)[m @ [36msas[0;1m ---[m
 [[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-sources.jar
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-gpg-plugin:1.6:sign[m [1m(sign-artifacts)[m @ [36msas[0;1m ---[m
@@ -1714,15 +1710,15 @@ Generating /home/ncsa/dev/ncsa-git/qdl/sas/target/reports/apidocs/help-doc.html.
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1mReactor Summary for QDL root module 1.6-QDL-SNAPSHOT:[m
 [[1;34mINFO[m] 
-[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.497 s]
-[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [  8.248 s]
-[[1;34mINFO[m] NCSA QDL Website ................................... [1;32mSUCCESS[m [  0.058 s]
-[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [ 16.296 s]
-[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  1.453 s]
-[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.222 s]
+[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.572 s]
+[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [ 11.049 s]
+[[1;34mINFO[m] NCSA QDL Website ................................... [1;32mSUCCESS[m [  0.054 s]
+[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [ 14.354 s]
+[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  1.142 s]
+[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.119 s]
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1;32mBUILD SUCCESS[m
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] Total time:  26.964 s
-[[1;34mINFO[m] Finished at: 2026-01-29T16:14:05-06:00
+[[1;34mINFO[m] Total time:  27.488 s
+[[1;34mINFO[m] Finished at: 2026-02-10T16:40:20-06:00
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m

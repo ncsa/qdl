@@ -22,4 +22,24 @@ then[
       ⊨size(md.'primary_key') ≡ 1 : 'primary key should be a single column';
       ⊨md.'primary_key'.0 ≡ 'varchar_128' : 'incorrect primary key column, expected varchar_128, got ' + md.'primary_key'.0;
     ];
+    if['derby' < to_lower(md.'db'.'vendor')]
+    then[
+   // say('--- derby md:\n' + print(md.));
+      ⊨∄md.'catalog'  : 'catalog should be empty for derby';
+      ⊨md.'schema' ≡ 'qdl_test' : 'schema wrong, expected qdl_test, got ' + md.'schema';
+      ⊨to_lower(md.'table_name') ≡ 'db_test' : 'incorrect table name';
+      ⊨md.'auto_commit' : 'wrong auto commit value';
+      ⊨size(md.'primary_key') ≡ 0 : 'primary key should be a empty.';
+//      ⊨md.'primary_key'.0 ≡ 'varchar_128' : 'incorrect primary key column, expected varchar_128, got ' + md.'primary_key'.0;
+    ];
+    if['postgres'< to_lower(md.'db'.'vendor')]
+    then[
+  //  say('--- postgres md:\n' + print(md.));
+          ⊨md.'catalog' ≡ 'qdl_test' : 'incorrect catalog name';
+          ⊨∄md.'schema' : 'schema should be empty for postgres';
+          ⊨md.'table_name' ≡ 'db_test' : 'incorrect table name';
+          ⊨md.'auto_commit' : 'wrong auto commit value';
+          ⊨size(md.'primary_key') ≡ 1 : 'primary key should be have a single entry';
+          ⊨md.'primary_key'.0 ≡ 'varchar_128' : 'incorrect primary key column, expected varchar_128, got ' + md.'primary_key'.0;
+    ];
 return(true);

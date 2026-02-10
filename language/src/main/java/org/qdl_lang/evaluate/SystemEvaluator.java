@@ -53,6 +53,8 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import static org.qdl_lang.config.QDLConfigurationConstants.MODULE_ATTR_VERSION_1_0;
 import static org.qdl_lang.statements.ExpressionInterface.*;
@@ -159,9 +161,8 @@ public class SystemEvaluator extends AbstractEvaluator {
     public static final String MODULE_REMOVE = "module_remove";
     public static final int MODULE_REMOVE_TYPE = 212 + SYSTEM_BASE_VALUE;
 
-/*    public static final String MODULE_CREATE = "module";
-    public static final int MODULE_CREATE_TYPE = 214 + SYSTEM_BASE_VALUE;*/
-
+    public static final String CLONE = "clone";
+    public static final int CLONE_TYPE = 214 + SYSTEM_BASE_VALUE;
 
     // For system constants
     public static final String CONSTANTS = "constants";
@@ -234,6 +235,7 @@ public class SystemEvaluator extends AbstractEvaluator {
     public String[] getFunctionNames() {
         if (fNames == null) {
             fNames = new String[]{
+                    CLONE,
                     LIB_SUPPORT_COMMAND,
                     SCRIPT_NAME_COMMAND,
                     KILL_PROCESS,
@@ -285,6 +287,8 @@ public class SystemEvaluator extends AbstractEvaluator {
     @Override
     public int getType(String name) {
         switch (name) {
+            case CLONE:
+                return CLONE_TYPE;
             case LIB_SUPPORT_COMMAND:
                 return LIB_SUPPORT_COMMAND_TYPE;
             case SCRIPT_NAME_COMMAND:
@@ -387,6 +391,9 @@ public class SystemEvaluator extends AbstractEvaluator {
         boolean printIt = false;
 
         switch (polyad.getName()) {
+            case CLONE:
+                doClone(polyad, state);
+                return true;
             case LIB_SUPPORT_COMMAND:
                 doLibSupport(polyad, state);
                 return true;
@@ -571,6 +578,72 @@ public class SystemEvaluator extends AbstractEvaluator {
         return false;
     }
 
+    /**
+     * Serialize then deserialize the argument in toto.
+     *
+     * @param polyad
+     * @param state
+     */
+    private void doClone(Polyad polyad, State state) {
+        if (polyad.isSizeQuery()) {
+            polyad.setAllowedArgCounts(new int[]{1});
+            polyad.setEvaluated(true);
+            return;
+        }
+        QDLValue qdlValue = polyad.evalArg(0, state);
+        Object object;
+        switch (qdlValue.getType()) {
+            case STEM_TYPE:
+            case SET_TYPE:
+            case FUNCTION_TYPE:
+            case DYADIC_FUNCTION_TYPE:
+            case MODULE_TYPE:
+                object = qdlValue.getValue();
+                break;
+            default:
+                // DO nothing if it is not a stem, set, or module.
+                polyad.setResult(qdlValue);
+                polyad.setEvaluated(true);
+                return;
+        }
+
+        ByteArrayOutputStream gos;
+        try {
+            gos = new ByteArrayOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(gos);
+
+            // Method for serialization of object
+            out.writeObject(object);
+            out.flush();
+            out.close();
+
+        } catch (Throwable e) {
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            } else {
+                throw new QDLExceptionWithTrace("unable to clone object", e, polyad.getArgAt(0));
+            }
+        }
+        // ok, another block for the deserialization so we can get a little cleaner error handling
+        try {
+            ByteArrayInputStream gis = new ByteArrayInputStream(gos.toByteArray()); // *trick* set buffer size large really ups speed
+            ObjectInputStream in = new ObjectInputStream(gis);
+            // Method for deserialization of object
+            Object clonedObject = in.readObject();
+            in.close();
+            polyad.setResult(QDLValue.asQDLValue(clonedObject));
+            polyad.setEvaluated(true);
+
+        } catch (Throwable e) {
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            } else {
+                throw new QDLExceptionWithTrace("unable to clone object", e, polyad.getArgAt(0));
+            }
+        }
+
+    }
+
     public static final String LIB_SUPPORT_ENABLED_KEY = "enabled";
     public static final String LIB_SUPPORT_PATH_KEY = "path";
     public static final String LIB_SUPPORT_MODE_KEY = "mode";
@@ -630,9 +703,9 @@ public class SystemEvaluator extends AbstractEvaluator {
     }
 
     private QDLValue setLibSupport(QDLValue in, Polyad polyad, State state) {
-        int type =in.getType();
-        if(in.isStem()){
-            if(in.asStem().isList()){
+        int type = in.getType();
+        if (in.isStem()) {
+            if (in.asStem().isList()) {
                 type = LIST_TYPE;
             }
         }
@@ -1356,7 +1429,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 state = moduleExpression.getModuleState(state);
                 gotOne = true;
 
-            }else{
+            } else {
 /*           Does not work because can't find possible functions in module. Needs much sleuthing to work.
               if(moduleExpression.getExpression() instanceof ExpressionInterface){
                   String out = InputFormUtil.inputForm(moduleExpression.getExpression().evaluate(state));
@@ -1377,7 +1450,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 polyad.setResult(out);
                 return;
 
-            //    throw new BadArgException(INPUT_FORM + " requires a variable or function name", moduleExpression.getExpression());
+                //    throw new BadArgException(INPUT_FORM + " requires a variable or function name", moduleExpression.getExpression());
             }
         }
 
@@ -2355,7 +2428,7 @@ public class SystemEvaluator extends AbstractEvaluator {
                 }
             }
             for (String p : paths) {
-                if(!p.endsWith("/")){
+                if (!p.endsWith("/")) {
                     p = p + "/";
                 }
                 String resourceName = p + name;

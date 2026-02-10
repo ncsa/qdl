@@ -14,9 +14,9 @@ cfg. ≔ interpret(file_read(args().0));
 db#connect(cfg.);
 a. := rr(false, false);
 
-db#qdl_create('db_test',a.);
-c. ≔ db#read('select * from db_test where varchar_128=?',[a.'varchar_128']).0;
+db#qdl_create('qdl_test.db_test',a., args().1);
+c. ≔ db#read('select * from qdl_test.db_test where varchar_128=?',[a.'varchar_128'], true).0;
 debugger(1, 'object id = ' + a.'varchar_128');
 ok := check_stem(a., c., false);
-⊨ 1 ≡ db#execute('delete from db_test where varchar_128=?',[a.'varchar_128']) : 'Could not delete object with id \'' + a.'varchar_128' + '\'';
+⊨ 1 ≡ db#execute('delete from qdl_test.db_test where varchar_128=?',[a.'varchar_128']) : 'Could not delete object with id \'' + a.'varchar_128' + '\'';
 return(ok);

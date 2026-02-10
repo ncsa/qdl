@@ -1,0 +1,43 @@
+#! /usr/bin/env -S qdl-run
+/*
+    Read an existing record, use it to create a new one, then check it rondtrips.
+*/
+
+⊨ 0 < size(args()) : 'Missing connection ini';
+  db ≔ j_load('db');
+cfg. ≔ interpret(file_read(args().0));
+db#connect(cfg.);
+qt. ≔ {'blob_0':db#qdl_types.'string',
+        'timestamp_long':db#qdl_types.'date',
+        'flatten' : true
+       };
+original. ≔ db#read('select * from qdl_test.db_test where varchar_128=?',['id123'],qt.).0;
+new_id ≔ 'id-' + random_string(4);
+original.'varchar_128' := new_id;
+original.'timestamp_long'≔ date_iso();
+original.'blob_0'≔ 'Twas brillig and the slithy toves';
+md. := db#get_table_metadata('qdl_test.db_test');
+
+if['derby' < to_lower(md.'db'.'vendor')]
+then[
+   qt.'force_column_case' := true;
+];
+debugger(1, '----md:\n' + print(md.));
+ok := true;
+(db.'primary_key' := md.'primary_key');
+if['derby' < to_lower(md.'db'.'vendor')]
+then[
+    db.'primary_key' := ['varchar_128'];
+    original.'bit_0':=true;
+    ];
+db#qdl_create(md.,original.,qt.);
+// now check several cases of syntax
+debugger(1, 'id=' + new_id);
+
+created. ≔ db#read('select * from qdl_test.db_test where varchar_128=?',[new_id],qt.).0;
+debugger(1,'--- created:\n' +print( created.));
+out. ≔ created. ≡ original.;
+ok := check_stem(created., original., false);
+⊨ 1 ≡ db#execute('delete from qdl_test.db_test where varchar_128=?',[new_id]) : 'Could not delete object with id \'' + a.'varchar_128' + '\'';
+return(ok);
+

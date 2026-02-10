@@ -13,11 +13,11 @@ random_string := 'ANxX505vlEUAiuaMaI-jATBIl7qmrlLO_547yNSYGZYwEdFqOhpbrY3uCU3bJt
          a.'double_0' ≔ mod(random(), 1000000)/5000;
           a.'float_0' ≔ mod(random() ,1000)/500;
         a.'integer_0' ≔ mod(random() ,10000);
-        a.'numeric_0' ≔ pi(mod(random() ,5));            // precision set high
+        a.'numeric_0' ≔ mod(random() ,1000000) +  abs(mod(random() ,1000000))/1000000;           // precision set high
             a.'set_0' ≔ use_set?{'a','b',{1,4}}: 'This is not a set';     // should be a string if no QDL types
        a.'smallint_0' ≔ mod(random() ,100);
            a.'text_0' ≔ 'I could see that, if not actually disgruntled, he was far from being gruntled.';
-   a.'timestamp_long' ≔ date_ms();        // For testing QDL conversion, here we are not and the QSL column type is long
+   a.'timestamp_long' ≔ date_ms();        // For testing QDL conversion, here we are not and the QDL column type is long
         a.'tinyint_0' ≔ mod(random() ,10);
       a.'varchar_128' ≔ 'id-'+random_string(4);
       return(a.);

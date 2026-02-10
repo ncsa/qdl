@@ -126,6 +126,13 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
         return v.asLong();
     }
 
+    public QDLStem getStem(QDLKey key) {
+         if(key.isLong()){
+             return getStem(key.asLong());
+         }
+         return getStem(key.asString());
+    }
+
     public QDLStem getStem(String key) {
         if (isLongIndex(key)) {
             return getStem(Long.parseLong(key));
@@ -144,7 +151,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
     }
 
     public QDLStem getStem(Long key) {
-        QDLValue v = getQDLMap().get(key);
+        QDLValue v = getQDLList().get(key);
         if (v == null) {
             if(hasDefaultValue()) {
                 if(getDefaultValue().isStem()) {

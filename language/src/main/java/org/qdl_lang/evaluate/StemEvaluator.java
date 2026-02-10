@@ -1617,10 +1617,10 @@ f(x.)→x.0+x.1;
                 if (!value.isString()) {
                     continue;
                 }
-                System.out.println("[StemEvaluator.dofromJSON] " + key + " -> " + value);
+              //  System.out.println("[StemEvaluator.dofromJSON] " + key + " -> " + value);
                 try {
                     QDLStem nextStem = new QDLStem();
-                    jsonObject = JSONObject.fromObject(value);
+                    jsonObject = JSONObject.fromObject(value.asString());
                     nextStem.fromJSON(jsonObject, convertKeys, converterType);
                     output.put(key, nextStem);
 /*

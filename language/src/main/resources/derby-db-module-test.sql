@@ -1,15 +1,55 @@
 /*
-    Table definition for testing the DB module round trip.
-    Note that the system rejects column names that are reserved words,
-    hence all of the column names are type_0
+   Setup for testing the Derby database module.
+   
+      ******* My test stuff
 
-    Generally create a database, and user. Replace XXXXXXXX with the password.:
+   BOOT_PASSWORD = XXXXXXX
+   USER_PASSWORD = YYYYYYYY
+ 
 
-    create database qdl_test;
-    create user 'qdl_tester'@'localhost' identified by 'qwert123';
-    set password for 'qdl_tester'@'localhost' = 'XXXXXXXX';
+NOTE: This installs the database to /home/ncsa/dev/derby/qdl_test so if you want it elsewhere
+change that.
 
-    use qdl_test;
+ **  start ij and enter
+
+connect 'jdbc:derby:/home/ncsa/dev/derby/qdl_test;create=true;dataEncryption=true;bootPassword=XXXXXXX;user=qdl_tester';
+CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.connection.requireAuthentication', 'true');
+CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.database.sqlAuthorization','true');
+CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.authentication.provider', 'BUILTIN');
+CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.user.qdl_tester', 'YYYYYYYY');
+CALL SYSCS_UTIL.SYSCS_SET_DATABASE_PROPERTY('derby.database.propertiesOnly', 'true');
+
+ **  test it worked with
+create schema qdl_test;
+show schemas;
+
+ **  exit ij with
+
+exit;
+
+  ** Now the full connection string is
+
+connect 'jdbc:derby:/home/ncsa/dev/derby/qdl_test;user=qdl_tester;password=YYYYYYYY;bootPassword=XXXXXXX';
+
+ ** and you can create the database by issuing this in ij
+
+ij run '/home/ncsa/dev/ncsa-git/qdl/language/src/main/resources/derby-db-module-test.sql';
+
+   ============ derby-connector.qdl
+
+{
+ 'database':'/home/ncsa/dev/derby/qdl_test',
+ 'host':'localhost',
+ 'password':'YYYYYYYY',
+ 'bootPassword':'XXXXXXXX',
+ 'port':3306,
+ 'schema':'qdl_test',
+ 'storeType':'file',
+ 'type':'derby',
+ 'useSSL':false,
+ 'username':'qdl_tester'
+}
+
  */
 
 CREATE TABLE qdl_test.db_test
@@ -51,3 +91,6 @@ insert into qdl_test.db_test
       12345,123.987654321,345.123,true,
       true, 'mairzy doats',current_timestamp,1768481743359 ,
       current_time, current_date,'{1,2,3}');
+
+CREATE TABLE qdl_test.xxx (id varchar(20) NOT NULL PRIMARY KEY,name varchar(128) DEFAULT NULL);
+qdl_test=# GRANT ALL PRIVILEGES ON qdl_test.xxx TO qdl_tester;

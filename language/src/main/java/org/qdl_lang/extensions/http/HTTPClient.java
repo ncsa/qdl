@@ -1209,7 +1209,8 @@ public class HTTPClient implements QDLMetaModule {
 
     /**
      * Given a uriPath, return the actual path to the service. This does the nitpicky things
-     * to create the path.
+     * to create the path. Note that if the uriPath starts with the host, then that is used.
+     * The asusmption is that the user just repeated it.
      *
      * @param uriPath
      * @return
@@ -1218,7 +1219,11 @@ public class HTTPClient implements QDLMetaModule {
         if (StringUtils.isTrivial(uriPath)) {
             return host;
         }
-        String actualHost = host;
+        if(uriPath.startsWith(host)) {
+            return uriPath;
+        }
+             String actualHost = host;
+
         actualHost = actualHost + (actualHost.endsWith("/") ? "" : "/");
         // Fixes https://github.com/ncsa/qdl/issues/35
         return actualHost + (uriPath.startsWith("/") ? uriPath.substring(1) : uriPath);

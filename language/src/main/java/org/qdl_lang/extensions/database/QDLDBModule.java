@@ -30,7 +30,6 @@ public class QDLDBModule extends JavaModule {
         module.setMetaClass(qdldb);
         ArrayList<QDLFunction> funcs = new ArrayList<>();
         funcs.add(qdldb.new BatchExecute());
-        funcs.add(qdldb.new BatchRead());
         funcs.add(qdldb.new Connect());
         funcs.add(qdldb.new QDLCreate());
         funcs.add(qdldb.new Execute());

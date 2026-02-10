@@ -1110,6 +1110,12 @@ public abstract class AbstractEvaluator implements EvaluatorInterface {
         //   g(x,y,n)->x^n+y^n ;((@g))∀[4,[;5],1]
 
         switch (arg0.getNodeType()) {
+            case ExpressionInterface.POLYAD_NODE:
+                arg0.evaluate(state);
+                if(!(arg0.getResult().isFunction() || arg0.getResult().isDyadicFunction())){
+                    throw new QDLException("the  function does not return a function reference");
+                }
+                return (FunctionReferenceNodeInterface) arg0.getResult().getValue();
             case ExpressionInterface.LAMBDA_DEFINITION_NODE:
                 LambdaDefinitionNode lds = (LambdaDefinitionNode) arg0;
                 if (!lds.hasName()) {

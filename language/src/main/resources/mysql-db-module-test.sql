@@ -10,6 +10,20 @@
     set password for 'qdl_tester'@'localhost' = 'XXXXXXXX';
 
     use qdl_test;
+
+
+    ============== mysql-connector.qdl
+{
+ 'database':'qdl_test',
+ 'host':'localhost',
+ 'password':'XXXXXXXX',
+ 'port':3306,
+ 'schema':'qdl_test',
+ 'type':'mysql',
+ 'useSSL':false,
+ 'username':'qdl_tester'
+}
+
  */
 
 CREATE TABLE qdl_test.db_test
@@ -33,10 +47,9 @@ CREATE TABLE qdl_test.db_test
 );
 
 /*  This is created (then dropped) on the fly by the DB module tests, so it is here for reference.
-CREATE TABLE xxx (
-                       id varchar(20) NOT NULL,
-                       name varchar(128) DEFAULT NULL,
-                       PRIMARY KEY (`id`)
+CREATE TABLE qdl_test.xxx (
+                       id varchar(20) NOT NULL PRIMARY KEY,
+                       name varchar(128) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 */
 
@@ -58,3 +71,18 @@ insert into qdl_test.db_test
       now(), now(),'{1,2,3}',
       'ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω');
  */
+
+/*
+    Test table for document support. Run as root, create table, grant qdl_tester access!
+*/
+
+CREATE TABLE qdl_test.doc_test
+(
+    id            VARCHAR(128) PRIMARY KEY,
+    last_name     VARCHAR(250),
+    first_name    VARCHAR(250),
+    state         TEXT,
+    create_date   BIGINT
+);
+
+GRANT All PRIVILEGES ON qdl_test.doc_test TO 'qdl_tester'@'localhost';

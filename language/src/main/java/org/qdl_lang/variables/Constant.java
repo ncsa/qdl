@@ -25,7 +25,7 @@ public class Constant implements Constants {
         if (object instanceof QDLStem) {
             // Next line, while right, breaks stuff (every place there is
             // a check if the type is stem, it fails), so eventually use it
-            //if(((QDLStem)object).isList()) return LIST_TYPE;
+         //   if(((QDLStem)object).isList()) return LIST_TYPE;
             return STEM_TYPE;
         };
         if (object instanceof BigDecimal) return DECIMAL_TYPE;

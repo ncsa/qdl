@@ -1,0 +1,73 @@
+#! /usr/bin/env -S qdl-run
+/*
+    Read an existing record, use it to create a new one, then check it rondtrips.
+*/
+
+⊨ 0 < size(args()) : 'Missing connection ini';
+  db ≔ j_load('db');
+cfg. ≔ interpret(file_read(args().0));
+db#connect(cfg.);
+
+a. := rr(false, false);
+debugger(1, '----- a:\n' + print(a.));
+
+db#qdl_create('qdl_test.db_test',a., args().1);
+
+new. := clone(a.);
+new_id ≔ 'id-' + random_string(4);
+
+new.'varchar_128' := new_id;
+new.'timestamp_long'≔ date_ms();
+new.'text_0'≔ 'Twas brillig and the slithy toves';
+md. := db#get_table_metadata('qdl_test.db_test');
+qt. := [];
+if['derby' < to_lower(md.'db'.'vendor')]
+then[
+   qt.'force_column_case' := true;
+];
+debugger(1, '----md:\n' + print(md.));
+ok := true;
+//(db.'primary_key' := md.'primary_key');
+if['derby' < to_lower(md.'db'.'vendor')]
+then[
+    md.'db'.'primary_key' := ['varchar_128'];
+    new.'bit_0':=true;
+    ];
+db#qdl_create(md.,new.,true); // need qt. for this
+// now check several cases of syntax
+debugger(1, 'id=' + new_id);
+
+// Test basic SQL with no parameters works
+created. ≔ db#read('select * from qdl_test.db_test where varchar_128=\'' + new_id + '\'', [], true);
+ok := check_stem(created., new., false);
+
+// Test basic SQL with  scalar parameter works
+created. ≔ db#read('select * from qdl_test.db_test where varchar_128=?', new_id, true).0;
+ok := check_stem(created., new., false);
+
+// Test basic SQL with singleton parameter works
+created. ≔ db#read('select * from qdl_test.db_test where varchar_128=?', [new_id], true).0;
+ok := check_stem(created., new., false);
+
+// Test basic SQL with two singleton parameters works -- system should detect there is a parameter and loop
+created. ≔ db#read('select * from qdl_test.db_test where varchar_128=?', [new_id, new_id], true);
+ok := check_stem(created.0, new., false);
+ok := check_stem(created.1, new., false);
+
+// Test basic SQL with stem parameters works, values are singleton lists
+created. ≔ db#read('select * from qdl_test.db_test where varchar_128=?', {'a':[new_id], 'b':[new_id]}, true);
+ok := check_stem(created.'a', new., false);
+ok := check_stem(created.'b', new., false);
+
+// Test basic SQL with stem parameters works, values are scalars
+created. ≔ db#read('select * from qdl_test.db_test where varchar_128=?', {'a':new_id, 'b':new_id}, true);
+ok := check_stem(created.'a', new., false);
+ok := check_stem(created.'b', new., false);
+
+// Test basic SQL with stem parameters works, values is a single scalar
+created. ≔ db#read('select * from qdl_test.db_test where varchar_128=?', {'a':new_id}, true);
+ok := check_stem(created.'a', new., false);
+
+⊨ 1 ≡ db#execute('delete from qdl_test.db_test where varchar_128=?',[new_id]) : 'Could not delete object with id \'' + a.'varchar_128' + '\'';
+return(ok);
+

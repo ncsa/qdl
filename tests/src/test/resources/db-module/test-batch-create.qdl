@@ -44,4 +44,4 @@ out. := db#batch_execute(stmt, {
                           'd':['a-15',qq.]}, c.);
 ⊨⊗∧⊙{'a':1, 'b':1, 'c':1, 'd':1}≡out. : 'Insert failed for stem with QDL:' + to_string(out.);
 
-out. := db#batch_execute('delete from xxx where id=?',ids.);
+out. := db#batch_execute('delete from qdl_test.xxx where id=?',ids.);
