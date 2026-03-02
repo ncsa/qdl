@@ -7486,7 +7486,7 @@ public class WorkspaceCommands implements Logable, Serializable {
     /**
      * This takes an updated {@link WorkspaceCommands} object and updates the currently
      * active workspace. When this is done, there is new state and all the values
-     * ofr newCommnads have been migrated. This takes care to get the {@link IOInterface}
+     * of newCommnads have been migrated. This takes care to get the {@link IOInterface}
      * right since if that is not handled correctly, the entire workspace hangs unrecoverably.
      *
      * @param newCommands

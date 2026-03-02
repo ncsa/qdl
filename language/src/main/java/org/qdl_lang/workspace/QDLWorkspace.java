@@ -651,6 +651,8 @@ public class QDLWorkspace implements Serializable {
                 }
             } else {
                 //workspaceCommands = workspaceCommands.newInstance(new BasicIO());
+                // Fall through in case nothing else worked.
+                if(workspaceCommands == null)
                 workspaceCommands = getWorkspaceCommandsProvider().get(new BasicIO());
             }
         }
