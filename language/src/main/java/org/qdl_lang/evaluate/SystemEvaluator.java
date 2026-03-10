@@ -3417,27 +3417,32 @@ public class SystemEvaluator extends AbstractEvaluator {
         }
 
         boolean isDef = false;
+        // Fix https://github.com/ncsa/qdl/issues/153
+        ExpressionInterface ooo = polyad.getArguments().get(0);
+        while (ooo.getNodeType() == PARENTHESIZED_NODE) {
+            ooo = ((ParenthesizedExpression) ooo).getExpression();
+        }
 
         //next switch kicks off descent if aggregate value
-        switch (polyad.getArguments().get(0).getNodeType()) {
+        switch (ooo.getNodeType()) {
             case LIST_NODE:
-                polyad.setResult(checkDefined((StemListNode) polyad.getArguments().get(0), state));
+                polyad.setResult(checkDefined((StemListNode) ooo, state));
                 polyad.setEvaluated(true);
                 return;
             case STEM_NODE:
-                polyad.setResult(checkDefined((StemVariableNode) polyad.getArguments().get(0), state));
+                polyad.setResult(checkDefined((StemVariableNode) ooo, state));
                 polyad.setEvaluated(true);
                 return;
             case EXPRESSION_STEM2_NODE: // Fix https://github.com/ncsa/qdl/issues/132
                 try {
-                    polyad.evalArg(0, state);
+                    ooo.evaluate(state);
                 } catch (IndexError indexError) {
                     polyad.setResult(BooleanValue.False);
                     polyad.setEvaluated(true);
                     return;
                 }
         }
-        polyad.setResult(checkDefined(polyad.getArguments().get(0), state));
+        polyad.setResult(checkDefined(ooo, state));
         polyad.setEvaluated(true);
     }
 
