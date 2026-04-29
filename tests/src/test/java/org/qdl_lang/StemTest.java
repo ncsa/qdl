@@ -1,6 +1,6 @@
 package org.qdl_lang;
 
-import net.sf.json.JSONNull;
+import org.kordamp.json.JSONNull;
 import org.qdl_lang.evaluate.ListEvaluator;
 import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.evaluate.StemEvaluator;
@@ -14,9 +14,9 @@ import org.qdl_lang.state.State;
 import org.qdl_lang.state.XKey;
 import org.qdl_lang.variables.*;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSON;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONObject;
 import org.qdl_lang.parsing.QDLListener;
 import org.qdl_lang.variables.values.QDLKey;
 

@@ -12,7 +12,7 @@ import edu.uiuc.ncsa.security.core.util.StringUtils;
 import edu.uiuc.ncsa.security.util.configuration.TemplateUtil;
 import edu.uiuc.ncsa.security.util.mail.MailEnvironment;
 import edu.uiuc.ncsa.security.util.mail.MailUtil;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 import org.qdl_lang.variables.values.*;
 
 import java.util.ArrayList;

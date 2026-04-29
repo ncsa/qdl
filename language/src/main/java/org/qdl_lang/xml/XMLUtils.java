@@ -1,5 +1,7 @@
 package org.qdl_lang.xml;
 
+import edu.uiuc.ncsa.security.util.json.MyJSONUtil;
+import org.kordamp.json.JSONArray;
 import org.qdl_lang.exceptions.DeserializationException;
 import org.qdl_lang.extensions.JavaModule;
 import org.qdl_lang.functions.FTable;
@@ -15,7 +17,7 @@ import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.SparseEntry;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.*;
@@ -178,7 +180,7 @@ public class XMLUtils implements SerializationConstants {
         if (!(obj instanceof QDLStem)) {
             throw new IllegalArgumentException("Error: expected a stem and got a " + obj.getClass().getSimpleName());
         }
-        return ((QDLStem) obj).getQDLList().toJSON();
+        return MyJSONUtil.arraytoList(((QDLStem) obj).getQDLList().toJSON());
     }
 
     /**

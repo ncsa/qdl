@@ -12,7 +12,7 @@ import org.qdl_lang.xml.SerializationConstants;
 import org.qdl_lang.xml.SerializationState;
 import org.qdl_lang.xml.XMLUtils;
 import edu.uiuc.ncsa.security.core.util.MyLoggingFacade;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.xml.stream.XMLEventReader;
@@ -55,7 +55,7 @@ public abstract class StateUtils {
             }
             newState.setWorkspaceCommands(state.getWorkspaceCommands());
             return newState;
-        } catch(net.sf.json.JSONException | StackOverflowError sox){
+        } catch(org.kordamp.json.JSONException | StackOverflowError sox){
             // In this case, there the system will get overwhelmed with JSON messages
             // which are not searchable since we don't generate them, and it is hard
             // to see where this happened. It indicates

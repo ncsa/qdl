@@ -1,7 +1,7 @@
 package org.qdl_lang.scripting;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONObject;
 
 import static org.qdl_lang.vfs.FileEntryConstants.ID;
 

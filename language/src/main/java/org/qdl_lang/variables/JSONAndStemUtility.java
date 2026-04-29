@@ -3,8 +3,8 @@ package org.qdl_lang.variables;
 import org.qdl_lang.evaluate.OpEvaluator;
 import org.qdl_lang.util.InputFormUtil;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONObject;
 import org.qdl_lang.variables.values.QDLValue;
 
 import java.math.BigDecimal;

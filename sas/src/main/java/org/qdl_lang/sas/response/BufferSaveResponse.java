@@ -3,7 +3,7 @@ package org.qdl_lang.sas.response;
 import org.qdl_lang.sas.QDLSASConstants;
 import edu.uiuc.ncsa.sas.thing.response.Response;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 
 /**
  * <p>Created by Jeff Gaynor<br>

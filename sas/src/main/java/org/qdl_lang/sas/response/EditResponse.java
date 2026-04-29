@@ -2,7 +2,7 @@ package org.qdl_lang.sas.response;
 
 import org.qdl_lang.sas.QDLSASConstants;
 import edu.uiuc.ncsa.sas.thing.response.Response;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import java.nio.charset.StandardCharsets;

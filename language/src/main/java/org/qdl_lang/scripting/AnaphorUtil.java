@@ -1,6 +1,7 @@
 package org.qdl_lang.scripting;
 
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
+import edu.uiuc.ncsa.security.util.json.MyJSONUtil;
 import org.qdl_lang.evaluate.StemEvaluator;
 import org.qdl_lang.evaluate.SystemEvaluator;
 import org.qdl_lang.util.QDLVersion;
@@ -10,9 +11,9 @@ import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
 import edu.uiuc.ncsa.security.util.scripting.ScriptSet;
 import edu.uiuc.ncsa.security.util.scripting.ScriptingConstants;
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSON;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -30,8 +31,8 @@ public class AnaphorUtil implements ScriptingConstants {
 
 
     /**
-     * Contract is: Passing in a {@link net.sf.json.JSONObject}  means this has a single argument which is a stem.
-     * Passing in a {@link net.sf.json.JSONArray} means this is an array of objects.
+     * Contract is: Passing in a {@link org.kordamp.json.JSONObject}  means this has a single argument which is a stem.
+     * Passing in a {@link org.kordamp.json.JSONArray} means this is an array of objects.
      *
      * @param json
      * @return
@@ -189,7 +190,7 @@ public class AnaphorUtil implements ScriptingConstants {
                 script.setFromCode(true);
             }else{
                 if (object instanceof JSONArray) {
-                    lines.addAll(jsonObject.getJSONArray(Scripts.CODE));
+                    lines.addAll(MyJSONUtil.arraytoList(jsonObject.getJSONArray(Scripts.CODE)));
                     script = new QDLScript(lines, xp);
                     script.setFromCode(true);
                 }else{

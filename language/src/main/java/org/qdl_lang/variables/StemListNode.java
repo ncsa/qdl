@@ -5,7 +5,7 @@ import org.qdl_lang.expressions.VariableNode;
 import org.qdl_lang.state.State;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 import org.qdl_lang.variables.values.LongValue;
 import org.qdl_lang.variables.values.QDLValue;
 

@@ -5,7 +5,7 @@ import org.qdl_lang.statements.HasResultInterface;
 import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.statements.TokenPosition;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 

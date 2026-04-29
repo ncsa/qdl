@@ -1,5 +1,6 @@
 package org.qdl_lang.expressions.module;
 
+import edu.uiuc.ncsa.security.util.json.MyJSONUtil;
 import org.qdl_lang.evaluate.ModuleEvaluator;
 import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.state.State;
@@ -11,8 +12,8 @@ import org.qdl_lang.xml.SerializationState;
 import org.qdl_lang.xml.XMLMissingCloseTagException;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.xml.stream.XMLEventReader;
@@ -248,7 +249,7 @@ public abstract class Module implements XThing, Serializable {
         setNamespace(URI.create(json.getString(MODULE_NS_ATTR)));
         if (json.containsKey(MODULE_ALIAS_ATTR)) setAlias(json.getString(MODULE_ALIAS_ATTR));
         setId(UUID.fromString(json.getString(UUID_TAG)));
-        if (json.containsKey(MODULE_DOCUMENTATION_TAG)) setDocumentation(json.getJSONArray(MODULE_DOCUMENTATION_TAG));
+        if (json.containsKey(MODULE_DOCUMENTATION_TAG)) setDocumentation(MyJSONUtil.arraytoList(json,MODULE_DOCUMENTATION_TAG));
         if (json.containsKey(PARENT_INSTANCE_ALIAS_TAG))
             setParentInstanceAlias(json.getString(PARENT_INSTANCE_ALIAS_TAG));
         if (json.containsKey(PARENT_TEMPLATE_UUID_TAG))

@@ -1,10 +1,11 @@
 package org.qdl_lang.sas.response;
 
+import edu.uiuc.ncsa.security.util.json.MyJSONUtil;
 import org.qdl_lang.sas.QDLSASConstants;
 import edu.uiuc.ncsa.sas.thing.action.Action;
 import edu.uiuc.ncsa.sas.thing.response.Response;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,12 +39,12 @@ public class ListFunctionsResponse extends Response implements QDLSASConstants {
     @Override
     public JSONObject serialize() {
         JSONObject json = super.serialize();
-        if (functions instanceof JSONArray) {
+ /*       if (functions instanceof JSONArray) {
             json.put(KEY_FUNCTION_LIST, functions);
-        } else {
+        } else {*/
             JSONArray array = new JSONArray();
             array.addAll(functions);
-        }
+        //}
         return json;
     }
 
@@ -51,7 +52,7 @@ public class ListFunctionsResponse extends Response implements QDLSASConstants {
     public void deserialize(JSONObject json) {
         super.deserialize(json);
         if (json.containsKey(KEY_FUNCTION_LIST)) {
-            functions = json.getJSONArray(KEY_FUNCTION_LIST);
+            functions = MyJSONUtil.arraytoList(json,KEY_FUNCTION_LIST);
         }
     }
 }

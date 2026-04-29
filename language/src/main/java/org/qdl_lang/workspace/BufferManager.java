@@ -1,12 +1,13 @@
 package org.qdl_lang.workspace;
 
+import edu.uiuc.ncsa.security.util.json.MyJSONUtil;
 import org.qdl_lang.state.State;
 import org.qdl_lang.util.QDLFileUtil;
 import org.qdl_lang.vfs.VFSPaths;
 import org.qdl_lang.xml.XMLUtilsV2;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.xml.stream.XMLEventReader;
@@ -105,7 +106,7 @@ public class BufferManager implements Serializable {
             if (json.containsKey(BR_SOURCE_SAVE_PATH)) srcSavePath = json.getString(BR_SOURCE_SAVE_PATH);
             if (json.containsKey(BR_LINK_SAVE_PATH)) linkSavePath = json.getString(BR_LINK_SAVE_PATH);
             if (json.containsKey(BR_CONTENT)) {
-                content = JSONArray.fromObject(new String(Base64.decodeBase64(json.getString(BR_CONTENT)), UTF_8));
+                content = MyJSONUtil.arraytoList(JSONArray.fromObject(new String(Base64.decodeBase64(json.getString(BR_CONTENT)), UTF_8)));
             }
         }
 
@@ -182,7 +183,7 @@ public class BufferManager implements Serializable {
                     case XMLEvent.START_ELEMENT:
                         if (xe.asStartElement().getName().getLocalPart().equals(BR_CONTENT)) {
                             String raw = new String(Base64.decodeBase64(XMLUtilsV2.getText(xer, BR_CONTENT)));
-                            content = JSONArray.fromObject(raw);
+                            content = MyJSONUtil.arraytoList(JSONArray.fromObject(raw));
                         }
                         break;
                     case XMLEvent.END_ELEMENT:

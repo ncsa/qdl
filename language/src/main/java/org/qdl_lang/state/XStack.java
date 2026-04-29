@@ -15,8 +15,8 @@ import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.xml.SerializationState;
 import org.qdl_lang.xml.XMLUtilsV2;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONObject;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;

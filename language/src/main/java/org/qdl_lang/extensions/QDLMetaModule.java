@@ -1,6 +1,6 @@
 package org.qdl_lang.extensions;
 
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 
 import java.io.Serializable;
 

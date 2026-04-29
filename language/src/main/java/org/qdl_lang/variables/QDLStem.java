@@ -2,7 +2,7 @@ package org.qdl_lang.variables;
 
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
-import net.sf.json.JSONNull;
+import org.kordamp.json.JSONNull;
 import org.qdl_lang.exceptions.IndexError;
 import org.qdl_lang.exceptions.NoDefaultValue;
 import org.qdl_lang.expressions.AllIndices;
@@ -12,9 +12,9 @@ import org.qdl_lang.state.StemMultiIndex;
 import org.qdl_lang.state.VariableState;
 import org.qdl_lang.util.InputFormUtil;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSON;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONObject;
 import org.qdl_lang.statements.WhileLoop;
 import org.qdl_lang.util.aggregate.AxisRestrictionIdentity;
 import org.qdl_lang.util.aggregate.QDLAggregateUtil;
@@ -1688,7 +1688,7 @@ public class QDLStem implements Map<QDLKey, QDLValue>, Serializable {
         JSONArray array = getQDLList().toJSON();
         if (!array.isEmpty()) {
             for (int i = 0; i < array.size(); i++) {
-                json.put(i, array.get(i));
+                json.put(Integer.toString(i), array.get(i));
             }
         }
 

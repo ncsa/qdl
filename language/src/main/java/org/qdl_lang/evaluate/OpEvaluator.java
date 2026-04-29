@@ -11,7 +11,7 @@ import org.qdl_lang.statements.ExpressionInterface;
 import org.qdl_lang.types.Types;
 import org.qdl_lang.variables.*;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.qdl_lang.variables.values.*;
 
 import java.math.BigDecimal;

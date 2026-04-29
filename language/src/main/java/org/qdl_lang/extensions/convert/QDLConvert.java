@@ -25,9 +25,9 @@ import org.qdl_lang.xml.XMLUtils;
 import edu.uiuc.ncsa.security.core.exceptions.GeneralException;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.FileUtil;
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
-import net.sf.json.xml.XMLSerializer;
+import org.kordamp.json.JSON;
+import org.kordamp.json.JSONObject;
+import org.kordamp.json.xml.XMLSerializer;
 import org.yaml.snakeyaml.Yaml;
 import software.amazon.awssdk.utils.StringInputStream;
 

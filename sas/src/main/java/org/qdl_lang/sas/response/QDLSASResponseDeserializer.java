@@ -4,7 +4,7 @@ import org.qdl_lang.sas.QDLSASConstants;
 import edu.uiuc.ncsa.sas.exceptions.SASException;
 import edu.uiuc.ncsa.sas.thing.response.Response;
 import edu.uiuc.ncsa.sas.webclient.ResponseDeserializer;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 
 /**
  * <p>Created by Jeff Gaynor<br>

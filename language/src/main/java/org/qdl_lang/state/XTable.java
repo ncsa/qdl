@@ -4,8 +4,8 @@ import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.util.ModuleUtils;
 import org.qdl_lang.xml.SerializationState;
 import org.qdl_lang.xml.XMLMissingCloseTagException;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONObject;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;

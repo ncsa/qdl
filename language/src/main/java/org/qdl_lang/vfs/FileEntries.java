@@ -1,12 +1,13 @@
 package org.qdl_lang.vfs;
 
+import edu.uiuc.ncsa.security.util.json.MyJSONUtil;
 import org.qdl_lang.util.QDLFileUtil;
 import org.qdl_lang.util.QDLVersion;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import java.io.*;
@@ -148,7 +149,7 @@ public class FileEntries {
      */
     public static FileEntry fromJSON(JSONObject json) {
         JSONObject content = json.getJSONObject(TYPE);
-        JSONArray array = content.getJSONArray(CONTENT);
+        List<String> array = MyJSONUtil.arraytoList(content.getJSONArray(CONTENT));
         content.remove(CONTENT);
         XProperties xProperties = new XProperties();
         xProperties.putAll(content);

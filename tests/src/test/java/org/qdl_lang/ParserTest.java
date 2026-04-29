@@ -9,7 +9,7 @@ import org.qdl_lang.functions.FunctionRecord;
 import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.QDLStem;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 
 import java.math.BigDecimal;
 

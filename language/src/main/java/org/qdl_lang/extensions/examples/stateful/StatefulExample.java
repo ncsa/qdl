@@ -1,6 +1,6 @@
 package org.qdl_lang.extensions.examples.stateful;
 
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
 import org.qdl_lang.extensions.QDLVariable;

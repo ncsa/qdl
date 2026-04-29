@@ -1,6 +1,6 @@
 package org.qdl_lang.state;
 
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,10 +1,10 @@
 package org.qdl_lang.variables;
 
-import net.sf.json.JSONNull;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONNull;
+import org.kordamp.json.JSONObject;
 import org.qdl_lang.state.State;
 import org.qdl_lang.util.InputFormUtil;
-import net.sf.json.JSONArray;
+import org.kordamp.json.JSONArray;
 import org.qdl_lang.variables.values.QDLNullValue;
 import org.qdl_lang.variables.values.QDLValue;
 

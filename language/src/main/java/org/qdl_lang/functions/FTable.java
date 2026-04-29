@@ -11,7 +11,7 @@ import org.qdl_lang.xml.SerializationState;
 import org.qdl_lang.xml.XMLMissingCloseTagException;
 import edu.uiuc.ncsa.security.core.exceptions.NotImplementedException;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.xml.stream.XMLEventReader;

@@ -4,6 +4,7 @@ import edu.uiuc.ncsa.security.core.cf.CFBundle;
 import edu.uiuc.ncsa.security.core.cf.CFLoader;
 import edu.uiuc.ncsa.security.core.cf.CFNode;
 import edu.uiuc.ncsa.security.util.configuration.TimeUtil;
+import edu.uiuc.ncsa.security.util.json.MyJSONUtil;
 import org.qdl_lang.config.QDLCFConfigurationLoader;
 import org.qdl_lang.config.QDLConfigurationLoaderUtils;
 import org.qdl_lang.config.QDLEnvironment;
@@ -53,8 +54,8 @@ import edu.uiuc.ncsa.security.util.cli.editing.Editors;
 import edu.uiuc.ncsa.security.util.cli.editing.LineEditor;
 import edu.uiuc.ncsa.security.util.configuration.TemplateUtil;
 import edu.uiuc.ncsa.security.util.terminal.ISO6429IO;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONObject;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.qdl_lang.evaluate.*;
 import org.qdl_lang.state.*;
@@ -3714,8 +3715,7 @@ public class WorkspaceCommands implements Logable, Serializable {
                         say("sorry, but only a list of strings can be edited as text");
                         return RC_NO_OP;
                     }
-                    JSONArray jsonArray = (JSONArray) v.toJSON();
-                    content = jsonArray;
+                    content = MyJSONUtil.arraytoList((JSONArray) v.toJSON());
                 } else {
                     String v = getState().getValue(varName).toString();
                     v.replace("\n", "\\n");

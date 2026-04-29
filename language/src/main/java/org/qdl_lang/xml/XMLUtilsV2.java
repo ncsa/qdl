@@ -13,7 +13,7 @@ import org.qdl_lang.state.XStack;
 import org.qdl_lang.variables.VStack;
 import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
-import net.sf.json.JSONArray;
+import org.kordamp.json.JSONArray;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;

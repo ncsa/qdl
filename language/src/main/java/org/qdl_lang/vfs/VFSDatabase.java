@@ -1,5 +1,6 @@
 package org.qdl_lang.vfs;
 
+import edu.uiuc.ncsa.security.util.json.MyJSONUtil;
 import org.qdl_lang.exceptions.QDLIOException;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.GeneralException;
@@ -7,7 +8,7 @@ import edu.uiuc.ncsa.security.storage.sql.ConnectionPool;
 import edu.uiuc.ncsa.security.storage.sql.ConnectionRecord;
 import edu.uiuc.ncsa.security.storage.sql.SQLDatabase;
 import edu.uiuc.ncsa.security.storage.sql.internals.ColumnMap;
-import net.sf.json.JSONArray;
+import org.kordamp.json.JSONArray;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -152,7 +153,7 @@ public class VFSDatabase extends SQLDatabase {
                 array = new JSONArray();
                 array.add(map.getString(CONTENT));
             }
-            t = new FileEntry(array, eas);
+            t = new FileEntry(MyJSONUtil.arraytoList(array), eas);
             releaseConnection(cr);
         } catch (SQLException e) {
             destroyConnection(cr);

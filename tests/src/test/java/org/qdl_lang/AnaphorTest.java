@@ -2,7 +2,7 @@ package org.qdl_lang;
 
 import edu.uiuc.ncsa.security.core.util.FileUtil;
 import edu.uiuc.ncsa.security.util.scripting.ScriptSet;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 import org.qdl_lang.parsing.QDLInterpreter;
 import org.qdl_lang.scripting.AnaphorUtil;
 import org.qdl_lang.scripting.QDLScript;

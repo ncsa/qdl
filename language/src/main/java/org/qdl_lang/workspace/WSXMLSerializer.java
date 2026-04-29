@@ -1,5 +1,6 @@
 package org.qdl_lang.workspace;
 
+import edu.uiuc.ncsa.security.util.json.MyJSONUtil;
 import org.qdl_lang.exceptions.DeserializationException;
 import org.qdl_lang.exceptions.QDLRuntimeException;
 import org.qdl_lang.expressions.module.Module;
@@ -14,8 +15,8 @@ import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
 import edu.uiuc.ncsa.security.core.util.MetaDebugUtil;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.xml.stream.XMLEventReader;
@@ -555,8 +556,9 @@ break;
         String text = XMLUtilsV2.getText(xer, tag);
         String rawJSON = new String(Base64.decodeBase64(text));
         JSONArray array = JSONArray.fromObject(rawJSON);
-        List<String> xx = new ArrayList<>();
-        xx.addAll(array);
+        //List<String> xx = new ArrayList<>();
+        List<String> xx = MyJSONUtil.arraytoList(array);
+        //xx.addAll(array);
         return xx;
     }
 
@@ -639,7 +641,7 @@ break;
                 case XMLEvent.END_ELEMENT:
                     if (xe.asEndElement().getName().getLocalPart().equals(tag)) {
                         if (stem != null) {
-                            return stem.getQDLList().toJSON();
+                            return MyJSONUtil.arraytoList(stem.getQDLList().toJSON());
                         }
                         return null;
                     }

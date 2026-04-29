@@ -519,7 +519,21 @@ See also: shuffle(n) which also creates the same list of integers, but in
  ]
 
 This has dimension [3,4]. You could also enter this as
-    n(3,4,[;12])]]>
+    n(3,4,[;12])
+
+E.g pre-allocating
+In this case you want to read in a huge file and process each line. It is
+a bit faster to allocate space then fill it in.
+
+   a. := n(count, [' ']); // fills a. with blanks
+   i := 0; // index
+   while[for_lines(x, '/tmp/haiku.txt')]
+      do[
+          a.(i++) := process(x);
+        ]; // end while
+
+where the function process(x) does the line processing.
+]]>
         </example>
 
     </entry>
@@ -5514,6 +5528,8 @@ each element uses < in a different way, to test as a number, substring and subse
   This is available only in loops. It is intended for larger files to
   allow line by line processing when reading the entire file into memory
   as a stem or string is too expensive.
+
+  See also: file_read, file_write
   ]]>
         </body>
         <example>

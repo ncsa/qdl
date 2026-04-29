@@ -2,7 +2,7 @@ package org.qdl_lang.sas.action;
 
 import org.qdl_lang.sas.QDLSASConstants;
 import edu.uiuc.ncsa.sas.thing.action.Action;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 
 /**
  * Gets help for a given topic.

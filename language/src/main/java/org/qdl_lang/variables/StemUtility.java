@@ -1,6 +1,6 @@
 package org.qdl_lang.variables;
 
-import net.sf.json.JSONNull;
+import org.kordamp.json.JSONNull;
 import org.qdl_lang.exceptions.RankException;
 import org.qdl_lang.expressions.AxisExpression;
 import org.qdl_lang.expressions.ConstantNode;

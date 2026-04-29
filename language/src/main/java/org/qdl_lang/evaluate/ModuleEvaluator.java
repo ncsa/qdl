@@ -24,7 +24,7 @@ import org.qdl_lang.variables.values.LongValue;
 import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLValue;
 import org.qdl_lang.xml.SerializationState;
-import net.sf.json.JSONArray;
+import org.kordamp.json.JSONArray;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

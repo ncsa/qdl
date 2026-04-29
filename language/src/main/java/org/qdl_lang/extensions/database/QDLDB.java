@@ -25,8 +25,8 @@ import edu.uiuc.ncsa.security.storage.sql.mariadb.MariaDBConnectionParameters;
 import edu.uiuc.ncsa.security.storage.sql.mysql.MySQLConnectionParameters;
 import edu.uiuc.ncsa.security.storage.sql.mysql.MySQLConnectionPool;
 import edu.uiuc.ncsa.security.storage.sql.postgres.PostgresConnectionParameters;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 import org.qdl_lang.variables.values.*;
 

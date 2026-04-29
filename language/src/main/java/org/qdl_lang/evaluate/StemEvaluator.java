@@ -13,10 +13,10 @@ import org.qdl_lang.statements.Statement;
 import org.qdl_lang.util.aggregate.AxisRestrictionIdentity;
 import org.qdl_lang.variables.*;
 import edu.uiuc.ncsa.security.core.util.StringUtils;
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONException;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSON;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONException;
+import org.kordamp.json.JSONObject;
 import org.qdl_lang.variables.values.*;
 
 import java.util.*;

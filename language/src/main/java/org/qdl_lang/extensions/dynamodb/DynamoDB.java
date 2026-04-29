@@ -8,7 +8,7 @@ import org.qdl_lang.variables.Constant;
 import org.qdl_lang.variables.QDLList;
 import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.QDLStem;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 import org.qdl_lang.variables.values.BooleanValue;
 import org.qdl_lang.variables.values.QDLKey;

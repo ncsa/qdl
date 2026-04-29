@@ -8,7 +8,7 @@ import org.qdl_lang.variables.QDLStem;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.qdl_lang.variables.StemUtility;
 
 import java.math.BigDecimal;

@@ -7,7 +7,7 @@ import org.qdl_lang.state.XThing;
 import org.qdl_lang.xml.SerializationConstants;
 import org.qdl_lang.xml.SerializationState;
 import org.qdl_lang.xml.XMLUtils;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;

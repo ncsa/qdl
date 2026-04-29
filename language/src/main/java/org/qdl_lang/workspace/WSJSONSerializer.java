@@ -1,5 +1,6 @@
 package org.qdl_lang.workspace;
 
+import edu.uiuc.ncsa.security.util.json.MyJSONUtil;
 import org.qdl_lang.functions.FStack;
 import org.qdl_lang.expressions.module.Module;
 import org.qdl_lang.expressions.module.QDLModule;
@@ -10,8 +11,8 @@ import org.qdl_lang.xml.SerializationState;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.exceptions.NFWException;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONObject;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -85,10 +86,10 @@ public class WSJSONSerializer {
             workspaceCommands.getBufferManager().fromJSON(json.getJSONObject(BUFFER_MANAGER));
         }
 
-        if (json.containsKey(COMMAND_HISTORY)) workspaceCommands.commandHistory = json.getJSONArray(COMMAND_HISTORY);
-        if (json.containsKey(EDITOR_CLIPBOARD)) workspaceCommands.editorClipboard = json.getJSONArray(EDITOR_CLIPBOARD);
-        if (json.containsKey(SCRIPT_PATH)) workspaceCommands.getState().setScriptPaths(json.getJSONArray(SCRIPT_PATH));
-        if (json.containsKey(MODULE_PATH)) workspaceCommands.getState().setModulePaths(json.getJSONArray(MODULE_PATH));
+        if (json.containsKey(COMMAND_HISTORY)) workspaceCommands.commandHistory = MyJSONUtil.arraytoList(json, COMMAND_HISTORY);
+        if (json.containsKey(EDITOR_CLIPBOARD)) workspaceCommands.editorClipboard = MyJSONUtil.arraytoList(json,EDITOR_CLIPBOARD);
+        if (json.containsKey(SCRIPT_PATH)) workspaceCommands.getState().setScriptPaths(MyJSONUtil.arraytoList(json,SCRIPT_PATH));
+        if (json.containsKey(MODULE_PATH)) workspaceCommands.getState().setModulePaths(MyJSONUtil.arraytoList(json,MODULE_PATH));
 
         if (json.containsKey(WS_ENV_TAG)) {
             WSXMLSerializer.envFromJSON(workspaceCommands, json.getJSONObject(WS_ENV_TAG));

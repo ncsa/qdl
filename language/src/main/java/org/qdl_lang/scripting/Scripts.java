@@ -4,8 +4,8 @@ import org.qdl_lang.util.QDLVersion;
 import org.qdl_lang.vfs.FileEntryConstants;
 import edu.uiuc.ncsa.security.core.configuration.XProperties;
 import edu.uiuc.ncsa.security.core.util.Iso8601;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONArray;
+import org.kordamp.json.JSONObject;
 
 import java.io.StringReader;
 import java.util.ArrayList;

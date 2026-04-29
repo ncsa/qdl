@@ -2,7 +2,7 @@ package org.qdl_lang;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 
 import java.util.List;
 import java.util.Scanner;

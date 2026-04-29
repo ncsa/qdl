@@ -8,7 +8,7 @@ import org.qdl_lang.variables.QDLStem;
 import org.qdl_lang.variables.VThing;
 import org.qdl_lang.workspace.WorkspaceCommands;
 import org.qdl_lang.xml.XMLUtils;
-import net.sf.json.JSONObject;
+import org.kordamp.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.xml.stream.*;
