@@ -5212,32 +5212,50 @@ See also: ∈, intersection, has_value, pick(@func arg).]]>
     <entry id="/\" alt="∩">
         <body>
             <![CDATA[Ascii digraph for set intersection. The result is a set
-whose elements are common to both arguments.
+whose elements are common to both arguments. Note that this also accepts stems
+but the result is a set.
 
 See also: \/ (set union), pick(@func arg)]]>
         </body>
         <example>
             <![CDATA[    {0,2,3,5} /\ {4,2,1,0}
-{0,2}]]>
+{0,2}
+   [-5;5;2]∩[-1;10]
+{3,1,-1}
+
+Do be advised that when passing in stems, sets returned are, of course,
+unordered.
+]]>
         </example>
 
     </entry>
     <entry id="\/" alt="∪">
         <body>
             <![CDATA[Ascii digraph for set union, the result is a set whose
-elements are in either of
-the arguments.
+elements are in either of the arguments. This accepts stems but returns a set.
 E.g.
     {0,2,3,5} \/ {4,2,1,0}
 {0,1,2,3,4,5}
 
-The difference between ~ and union is that ~ is a list operator and
-returns a list, so a~b for two sets returns an error (since they are not
-lists). However, monadic ~ will convert a set to a list, which is also
-not union!
+The difference between ~, union and ∪ is
+
+ * ~ aka join operates on lists and concatenates them or on stems and adds the elements of the
+  second to the first. It also allows for specifying axes.
+
+* union gloms all stems together on the zero-th axis.
+
+* ∪ aka \/ is set union and the result will be a set or common elements.
+
+Note, monadic ~ will convert a set to a list, which is also not a union!
    ~{3,4}
 [3,4]
 
+This is not the same as the union function as it returns a set.
+
+   [1,1,1,1,1,1,1]∪[1,1,1,1,1]
+{1}
+   [1,1,1,1,1,1,1]~[1,1,1,1,1]
+[1,1,1,1,1,1,1,1,1,1,1,1]
 See also: /\ (set intersection), ~, pick(@func arg)]]>
         </body>
         <example>
@@ -7779,6 +7797,27 @@ See also: expression, block, local
   ]]>
         </body>
     </entry>
+    <entry id="&lt;">
+    <body>
+        <![CDATA[See comparisons]]>
+    </body>
+    </entry>
+    <entry id="&lt;=" alt="≤">
+    <body>
+        <![CDATA[See comparisons]]>
+    </body>
+    </entry>
+    <entry id="&gt;">
+    <body>
+        <![CDATA[See comparisons]]>
+    </body>
+    </entry>
+    <entry id="=&gt;" alt="≥">
+    <body>
+        <![CDATA[See comparisons]]>
+    </body>
+    </entry>
+
     <!-- template without example  block
     <entry id="">
        <body>

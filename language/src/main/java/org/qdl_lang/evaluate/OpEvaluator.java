@@ -1537,8 +1537,6 @@ a.⌆b.
                 }
                 r.result = asQDLValue(outSet);
                 return r;
-
-
             }
         };
         // Figure out the operator from the type to pass along
@@ -1553,7 +1551,26 @@ a.⌆b.
         }
         dyad.evalArg(0,state);
         dyad.evalArg(1,state);
-        process2(dyad, pointer, op, state);
+        Dyad dyad1 = dyad;
+        boolean stemArg = false;
+
+        // fix for https://github.com/ncsa/qdl/issues/155
+        if(dyad.getRightArgument().getResult().isStem()) {
+            stemArg = true;
+            QDLStem stem = dyad.getRightArgument().getResult().asStem();
+            dyad1.setRightArgument(new ConstantNode(QDLValue.asQDLValue(stem.valueSet())));
+        }
+        if(dyad.getLeftArgument().getResult().isStem()){
+                QDLStem stem = dyad.getLeftArgument().getResult().asStem();
+                dyad1.setLeftArgument(new ConstantNode(QDLValue.asQDLValue(stem.valueSet())));
+                stemArg = true;
+            }
+
+        process2(dyad1, pointer, op, state);
+        if(stemArg) {
+            dyad.setResult(dyad1.getResult());
+            dyad.setEvaluated(true);
+        }
     }
 
     protected void doDyadLogicalOperator(Dyad dyad, State state) {
