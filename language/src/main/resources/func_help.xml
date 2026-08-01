@@ -3331,7 +3331,7 @@ x.(-1) == stop
 
 This notation is equivalent to: [|
 You may use ⟦ (\u27e6) or [| ,  ⟧ (\u27e7) or |].
-Theyare  on the QDL keyboard at alt+{ or alt+} repectively.
+They are  on the QDL keyboard at alt+{ or alt+} repectively.
 
 See also: slice]]>
         </body>
@@ -5225,7 +5225,26 @@ See also: \/ (set union), pick(@func arg)]]>
 
 Do be advised that when passing in stems, sets returned are, of course,
 unordered.
-]]>
+
+Another idiom to find the intersection of two stems as stems is
+                            a.∈b.⌆a.
+which simply finds the common elements in a. and returns them.
+E.g.
+   a. := [1,2,2,5,7];
+   b. := [;5];
+   a.∈b.⌆a.;
+[1,2,2]
+
+This returns a stem with repeated elements. The reason this is not the default
+is that set operations should return sets for consistency. Also, it is most
+emphatically the case that
+
+                          a.∈b.⌆a. ≠ b.∈a.⌆b.
+
+although the unique elements in each stem are the same.  Note that
+there is also not a good alternative  for the union of two stems,
+except using the join function anyways, so sticking
+to sets all the way around for the operator is a good call.]]>
         </example>
 
     </entry>
@@ -5244,7 +5263,7 @@ The difference between ~, union and ∪ is
 
 * union gloms all stems together on the zero-th axis.
 
-* ∪ aka \/ is set union and the result will be a set or common elements.
+* ∪ aka \/ is set union and the result will be a set of common elements.
 
 Note, monadic ~ will convert a set to a list, which is also not a union!
    ~{3,4}
