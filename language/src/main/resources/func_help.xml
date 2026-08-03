@@ -5243,7 +5243,7 @@ emphatically the case that
 
 although the unique elements in each stem are the same.  Note that
 there is also not a good alternative  for the union of two stems,
-except using the join function anyways, so sticking
+except using the join function anyways (and a.~b. ≠ b.~a.) , so sticking
 to sets all the way around for the operator is a good call.]]>
         </example>
 
