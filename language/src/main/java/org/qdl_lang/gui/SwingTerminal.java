@@ -405,7 +405,7 @@ public class SwingTerminal implements TerminalInterface {
     public DefaultCompletionProvider setup(JFrame frame1, List<String> functions) {
         frame = frame1;
         //System.setProperty("awt.useSystemAAFontSettings", "on");
-        frame.setTitle("QDL Workspace (version 1.6-QDL-SNAPSHOT)");
+        frame.setTitle("QDL Workspace (version 1.6.3.3)");
         frame.setContentPane(getMainPanel());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         DefaultCompletionProvider provider = QDLSwingUtil.createCompletionProvider(functions);
