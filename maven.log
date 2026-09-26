@@ -1,14 +1,14 @@
 [[1;34mINFO[m] Scanning for projects...
 [[1;33mWARNING[m] 
-[[1;33mWARNING[m] Some problems were encountered while building the effective model for org.qdl-lang:language:jar:1.6-QDL-SNAPSHOT
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for org.qdl-lang:language:jar:1.6.3.3
 [[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-source-plugin is missing. @ line 35, column 21
 [[1;33mWARNING[m] 
-[[1;33mWARNING[m] Some problems were encountered while building the effective model for org.qdl-lang:tests:jar:1.6-QDL-SNAPSHOT
-[[1;33mWARNING[m] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.qdl-lang:language:jar -> duplicate declaration of version 1.6-QDL-SNAPSHOT @ line 25, column 21
-[[1;33mWARNING[m] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.qdl-lang:language:jar -> duplicate declaration of version 1.6-QDL-SNAPSHOT @ line 53, column 21
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for org.qdl-lang:tests:jar:1.6.3.3
+[[1;33mWARNING[m] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.qdl-lang:language:jar -> duplicate declaration of version 1.6.3.3 @ line 25, column 21
+[[1;33mWARNING[m] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.qdl-lang:language:jar -> duplicate declaration of version 1.6.3.3 @ line 53, column 21
 [[1;33mWARNING[m] 
-[[1;33mWARNING[m] Some problems were encountered while building the effective model for org.qdl-lang:sas:jar:1.6-QDL-SNAPSHOT
-[[1;33mWARNING[m] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.qdl-lang:language:jar -> duplicate declaration of version 1.6-QDL-SNAPSHOT @ line 41, column 21
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for org.qdl-lang:sas:jar:1.6.3.3
+[[1;33mWARNING[m] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.qdl-lang:language:jar -> duplicate declaration of version 1.6.3.3 @ line 41, column 21
 [[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-source-plugin is missing. @ line 64, column 21
 [[1;33mWARNING[m] 
 [[1;33mWARNING[m] It is highly recommended to fix these problems because they threaten the stability of your build.
@@ -28,7 +28,7 @@
 [[1;34mINFO[m] skin                                                               [jar]
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--------------------------< [0;36morg.qdl-lang:qdl[0;1m >--------------------------[m
-[[1;34mINFO[m] [1mBuilding QDL root module 1.6-QDL-SNAPSHOT                          [1/6][m
+[[1;34mINFO[m] [1mBuilding QDL root module 1.6.3.3                                   [1/6][m
 [[1;34mINFO[m] [1m--------------------------------[ pom ]---------------------------------[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36mqdl[0;1m ---[m
@@ -41,10 +41,10 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-gpg-plugin:1.6:sign[m [1m(sign-artifacts)[m @ [36mqdl[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-install-plugin:2.4:install[m [1m(default-install)[m @ [36mqdl[0;1m ---[m
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/qdl/1.6-QDL-SNAPSHOT/qdl-1.6-QDL-SNAPSHOT.pom
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/qdl/1.6.3.3/qdl-1.6.3.3.pom
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m-----------------------< [0;36morg.qdl-lang:language[0;1m >------------------------[m
-[[1;34mINFO[m] [1mBuilding QDL base language 1.6-QDL-SNAPSHOT                        [2/6][m
+[[1;34mINFO[m] [1mBuilding QDL base language 1.6.3.3                                 [2/6][m
 [[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36mlanguage[0;1m ---[m
@@ -53,8 +53,8 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #15,384 (2026-09-17T14:35:58.172-04:00) at timestamp: 1789670158172
-[[1;34mINFO[m] Storing buildScmBranch: main
+[[1;34mINFO[m] Storing buildNumber: Build: #15,392 (2026-09-26T08:31:07.360-04:00) at timestamp: 1790425867360
+[[1;34mINFO[m] Storing buildScmBranch: 1.6.3.3
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
@@ -78,21 +78,21 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-surefire-plugin:3.0.0-M7:test[m [1m(default-test)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-jar-plugin:2.4:jar[m [1m(default-jar)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT.jar
+[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6.3.3.jar
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m>>> [0;32mmaven-source-plugin:3.4.0:jar[m [1m(attach-sources)[0;1m > [0;1mgenerate-sources[m @ [36mlanguage[0;1m >>>[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #15,385 (2026-09-17T14:36:05.992-04:00) at timestamp: 1789670165992
-[[1;34mINFO[m] Storing buildScmBranch: main
+[[1;34mINFO[m] Storing buildNumber: Build: #15,393 (2026-09-26T08:31:11.106-04:00) at timestamp: 1790425871106
+[[1;34mINFO[m] Storing buildScmBranch: 1.6.3.3
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m<<< [0;32mmaven-source-plugin:3.4.0:jar[m [1m(attach-sources)[0;1m < [0;1mgenerate-sources[m @ [36mlanguage[0;1m <<<[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-source-plugin:3.4.0:jar[m [1m(attach-sources)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT-sources.jar
+[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6.3.3-sources.jar
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-javadoc-plugin:3.11.3:jar[m [1m(attach-javadocs)[m @ [36mlanguage[0;1m ---[m
 [[1;33mWARNING[m] Javadoc 1.4+ doesn't support the -1.1 switch anymore. Ignore this option.
@@ -135,7 +135,7 @@ Loading source files for package org.qdl_lang.extensions.inputLine...
 Loading source files for package org.qdl_lang.extensions.database...
 Loading source files for package org.qdl_lang.extensions.X509...
 Constructing Javadoc information...
-Standard Doclet version 11.0.32
+Standard Doclet version 11.0.32.1
 Building tree for all the packages and classes...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/config/JavaModuleConfig.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/org/qdl_lang/config/ModuleConfig.html...
@@ -1423,18 +1423,18 @@ Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/help-doc.
 [[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:309: warning - invalid usage of tag <
 [[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/exceptions/package-info.java:2: warning - Tag @link: reference not found: edu.uiuc.ncsa.qdl.exceptions.QDLException
 [[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:309: warning - invalid usage of tag <
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT-javadoc.jar
+[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6.3.3-javadoc.jar
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-gpg-plugin:1.6:sign[m [1m(sign-artifacts)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-install-plugin:2.4:install[m [1m(default-install)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT.jar to /home/ncsa/.m2/repository/org/qdl-lang/language/1.6-QDL-SNAPSHOT/language-1.6-QDL-SNAPSHOT.jar
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/language/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/language/1.6-QDL-SNAPSHOT/language-1.6-QDL-SNAPSHOT.pom
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT-sources.jar to /home/ncsa/.m2/repository/org/qdl-lang/language/1.6-QDL-SNAPSHOT/language-1.6-QDL-SNAPSHOT-sources.jar
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT-javadoc.jar to /home/ncsa/.m2/repository/org/qdl-lang/language/1.6-QDL-SNAPSHOT/language-1.6-QDL-SNAPSHOT-javadoc.jar
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6.3.3.jar to /home/ncsa/.m2/repository/org/qdl-lang/language/1.6.3.3/language-1.6.3.3.jar
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/language/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/language/1.6.3.3/language-1.6.3.3.pom
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6.3.3-sources.jar to /home/ncsa/.m2/repository/org/qdl-lang/language/1.6.3.3/language-1.6.3.3-sources.jar
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6.3.3-javadoc.jar to /home/ncsa/.m2/repository/org/qdl-lang/language/1.6.3.3/language-1.6.3.3-javadoc.jar
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m------------------------< [0;36morg.qdl-lang:website[0;1m >------------------------[m
-[[1;34mINFO[m] [1mBuilding NCSA QDL Website 1.6-QDL-SNAPSHOT                         [3/6][m
+[[1;34mINFO[m] [1mBuilding NCSA QDL Website 1.6.3.3                                  [3/6][m
 [[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:3.1.0:clean[m [1m(default-clean)[m @ [36mwebsite[0;1m ---[m
@@ -1461,7 +1461,7 @@ Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/help-doc.
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-jar-plugin:2.4:jar[m [1m(default-jar)[m @ [36mwebsite[0;1m ---[m
 [[1;33mWARNING[m] JAR will be empty - no content was marked for inclusion!
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/website/target/website-1.6-QDL-SNAPSHOT.jar
+[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/website/target/website-1.6.3.3.jar
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-javadoc-plugin:3.11.3:jar[m [1m(attach-javadocs)[m @ [36mwebsite[0;1m ---[m
 [[1;34mINFO[m] No Javadoc in project. Archive not created.
@@ -1469,11 +1469,11 @@ Generating /home/ncsa/dev/ncsa-git/qdl/language/target/reports/apidocs/help-doc.
 [[1;34mINFO[m] [1m--- [0;32mmaven-gpg-plugin:1.6:sign[m [1m(sign-artifacts)[m @ [36mwebsite[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-install-plugin:2.4:install[m [1m(default-install)[m @ [36mwebsite[0;1m ---[m
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/website/target/website-1.6-QDL-SNAPSHOT.jar to /home/ncsa/.m2/repository/org/qdl-lang/website/1.6-QDL-SNAPSHOT/website-1.6-QDL-SNAPSHOT.jar
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/website/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/website/1.6-QDL-SNAPSHOT/website-1.6-QDL-SNAPSHOT.pom
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/website/target/website-1.6.3.3.jar to /home/ncsa/.m2/repository/org/qdl-lang/website/1.6.3.3/website-1.6.3.3.jar
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/website/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/website/1.6.3.3/website-1.6.3.3.pom
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m-------------------------< [0;36morg.qdl-lang:tests[0;1m >-------------------------[m
-[[1;34mINFO[m] [1mBuilding QDL Tests 1.6-QDL-SNAPSHOT                                [4/6][m
+[[1;34mINFO[m] [1mBuilding QDL Tests 1.6.3.3                                         [4/6][m
 [[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36mtests[0;1m ---[m
@@ -1517,7 +1517,7 @@ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
   ~`!@#$%^&*()[]{}<>\/'"-_=+|;:,.?
   ¬¿¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧√≁⊕⊗⊙⌆µ⊢∈∉∀∋∌∃∄∩∪∆∂
   ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω
-[[1;34mINFO[m] [1;32mTests run: [0;1;32m646[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 18.422 s - in org.qdl_lang.[1mTestSuite[m
+[[1;34mINFO[m] [1;32mTests run: [0;1;32m646[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.283 s - in org.qdl_lang.[1mTestSuite[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] Results:
 [[1;34mINFO[m] 
@@ -1525,23 +1525,23 @@ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
 [[1;34mINFO[m] 
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-jar-plugin:3.3.0:test-jar[m [1m(default-jar)[m @ [36mtests[0;1m ---[m
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/tests/target/tests-1.6-QDL-SNAPSHOT-tests.jar
+[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/tests/target/tests-1.6.3.3-tests.jar
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-jar-plugin:3.3.0:jar[m [1m(default-jar)[m @ [36mtests[0;1m ---[m
 [[1;33mWARNING[m] JAR will be empty - no content was marked for inclusion!
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/tests/target/tests-1.6-QDL-SNAPSHOT.jar
+[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/tests/target/tests-1.6.3.3.jar
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-javadoc-plugin:3.5.0:jar[m [1m(attach-javadocs)[m @ [36mtests[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-gpg-plugin:1.6:sign[m [1m(sign-artifacts)[m @ [36mtests[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-install-plugin:2.4:install[m [1m(default-install)[m @ [36mtests[0;1m ---[m
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/tests/target/tests-1.6-QDL-SNAPSHOT.jar to /home/ncsa/.m2/repository/org/qdl-lang/tests/1.6-QDL-SNAPSHOT/tests-1.6-QDL-SNAPSHOT.jar
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/tests/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/tests/1.6-QDL-SNAPSHOT/tests-1.6-QDL-SNAPSHOT.pom
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/tests/target/tests-1.6-QDL-SNAPSHOT-tests.jar to /home/ncsa/.m2/repository/org/qdl-lang/tests/1.6-QDL-SNAPSHOT/tests-1.6-QDL-SNAPSHOT-tests.jar
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/tests/target/tests-1.6.3.3.jar to /home/ncsa/.m2/repository/org/qdl-lang/tests/1.6.3.3/tests-1.6.3.3.jar
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/tests/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/tests/1.6.3.3/tests-1.6.3.3.pom
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/tests/target/tests-1.6.3.3-tests.jar to /home/ncsa/.m2/repository/org/qdl-lang/tests/1.6.3.3/tests-1.6.3.3-tests.jar
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--------------------------< [0;36morg.qdl-lang:sas[0;1m >--------------------------[m
-[[1;34mINFO[m] [1mBuilding SAS for QDL 1.6-QDL-SNAPSHOT                              [5/6][m
+[[1;34mINFO[m] [1mBuilding SAS for QDL 1.6.3.3                                       [5/6][m
 [[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36msas[0;1m ---[m
@@ -1580,7 +1580,7 @@ Loading source files for package org.qdl_lang.sas.loader...
 Loading source files for package org.qdl_lang.sas.response...
 Loading source files for package org.qdl_lang.sas.action...
 Constructing Javadoc information...
-Standard Doclet version 11.0.32
+Standard Doclet version 11.0.32.1
 Building tree for all the packages and classes...
 Generating /home/ncsa/dev/ncsa-git/qdl/sas/target/reports/apidocs/org/qdl_lang/sas/QDLExe.html...
 Generating /home/ncsa/dev/ncsa-git/qdl/sas/target/reports/apidocs/org/qdl_lang/sas/QDLSASConstants.html...
@@ -1666,13 +1666,13 @@ Generating /home/ncsa/dev/ncsa-git/qdl/sas/target/reports/apidocs/help-doc.html.
 [[1;34mINFO[m] [1m--- [0;32mmaven-gpg-plugin:1.6:sign[m [1m(sign-artifacts)[m @ [36msas[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-install-plugin:2.4:install[m [1m(default-install)[m @ [36msas[0;1m ---[m
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas.jar to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6-QDL-SNAPSHOT/sas-1.6-QDL-SNAPSHOT.jar
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/sas/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6-QDL-SNAPSHOT/sas-1.6-QDL-SNAPSHOT.pom
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-javadoc.jar to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6-QDL-SNAPSHOT/sas-1.6-QDL-SNAPSHOT-javadoc.jar
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-sources.jar to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6-QDL-SNAPSHOT/sas-1.6-QDL-SNAPSHOT-sources.jar
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas.jar to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6.3.3/sas-1.6.3.3.jar
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/sas/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6.3.3/sas-1.6.3.3.pom
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-javadoc.jar to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6.3.3/sas-1.6.3.3-javadoc.jar
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-sources.jar to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6.3.3/sas-1.6.3.3-sources.jar
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m-------------------------< [0;36morg.qdl-lang:skin[0;1m >--------------------------[m
-[[1;34mINFO[m] [1mBuilding skin 1.6-QDL-SNAPSHOT                                     [6/6][m
+[[1;34mINFO[m] [1mBuilding skin 1.6.3.3                                              [6/6][m
 [[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:3.1.0:clean[m [1m(default-clean)[m @ [36mskin[0;1m ---[m
@@ -1698,27 +1698,27 @@ Generating /home/ncsa/dev/ncsa-git/qdl/sas/target/reports/apidocs/help-doc.html.
 [[1;34mINFO[m] No tests to run.
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-jar-plugin:3.0.2:jar[m [1m(default-jar)[m @ [36mskin[0;1m ---[m
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/skin/target/skin-1.6-QDL-SNAPSHOT.jar
+[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/skin/target/skin-1.6.3.3.jar
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-javadoc-plugin:3.5.0:jar[m [1m(attach-javadocs)[m @ [36mskin[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-gpg-plugin:1.6:sign[m [1m(sign-artifacts)[m @ [36mskin[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-install-plugin:2.5.2:install[m [1m(default-install)[m @ [36mskin[0;1m ---[m
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/skin/target/skin-1.6-QDL-SNAPSHOT.jar to /home/ncsa/.m2/repository/org/qdl-lang/skin/1.6-QDL-SNAPSHOT/skin-1.6-QDL-SNAPSHOT.jar
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/skin/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/skin/1.6-QDL-SNAPSHOT/skin-1.6-QDL-SNAPSHOT.pom
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/skin/target/skin-1.6.3.3.jar to /home/ncsa/.m2/repository/org/qdl-lang/skin/1.6.3.3/skin-1.6.3.3.jar
+[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/skin/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/skin/1.6.3.3/skin-1.6.3.3.pom
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] [1mReactor Summary for QDL root module 1.6-QDL-SNAPSHOT:[m
+[[1;34mINFO[m] [1mReactor Summary for QDL root module 1.6.3.3:[m
 [[1;34mINFO[m] 
-[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.907 s]
-[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [ 17.201 s]
-[[1;34mINFO[m] NCSA QDL Website ................................... [1;32mSUCCESS[m [  0.082 s]
-[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [ 19.878 s]
-[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  2.165 s]
-[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.187 s]
+[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.352 s]
+[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [  9.281 s]
+[[1;34mINFO[m] NCSA QDL Website ................................... [1;32mSUCCESS[m [  0.052 s]
+[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [ 12.201 s]
+[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  1.017 s]
+[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.128 s]
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1;32mBUILD SUCCESS[m
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] Total time:  40.814 s
-[[1;34mINFO[m] Finished at: 2026-09-17T14:36:36-04:00
+[[1;34mINFO[m] Total time:  23.174 s
+[[1;34mINFO[m] Finished at: 2026-09-26T08:31:29-04:00
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
