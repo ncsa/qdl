@@ -7,6 +7,8 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.jar.JarFile;
 
 /**
@@ -312,11 +314,11 @@ public class VFSPaths {
     public static boolean equals(String path1, String path2){
         return getScheme(path1).equals(getScheme(path2)) && compareTo(normalize(path1),normalize(path2))==0;
     }
-    public static void main(String[] args) throws Exception {
-        /*
+  /*  public static void main(String[] args) throws Exception {
+        *//*
         Nifty basic where a jar is read using the usual machinery then a FileSystem is created
         and it is navigated like a regular File.
-         */
+         *//*
         String pathToJar = DebugUtil.getDevOutput()+"/cilogon-oa2/cilogon-oa2-cp.jar";
         String pathInsideTheJar = "edu/uiuc/ncsa/oa4mp/oauth2/client";
         File testZip = new File(pathToJar);
@@ -331,7 +333,8 @@ public class VFSPaths {
         }));
         // now just mount it like a file system and print it (with a snazzy lambda)
         System.out.println("\n-------\nUsing FileSystems\n-----");
-        FileSystem fileSystem = FileSystems.newFileSystem(testZip.toPath(), null);
+        FileSystem fileSystem = FileSystems.newFileSystem(testZip.toPath(), new HashMap() {
+        });
         // need a path in the jar
         Path meow = fileSystem.getPath(pathInsideTheJar);
         Files.list(meow).forEach((path) -> System.out.println(path.getFileName()));
@@ -339,4 +342,4 @@ public class VFSPaths {
 
 
     }
-}
+*/}

@@ -7121,6 +7121,14 @@ target. altered, make a copy of it first. The reasons are that
 [a,b]
 Note that remove() removes by index and excise removes by value.
 
+Note that there is an operator form with digraph !~, so
+
+       excise(a.,b.) <==> a. !~ b.
+
+E.g.
+   [;5]!~[2,3]
+[0,1,4]
+
 See also: \ (extraction), pick, mask, remap, remove]]>
        </body>
        <example>

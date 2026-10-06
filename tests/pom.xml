@@ -47,7 +47,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.4.4</version>
+            <version>42.7.11</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -91,7 +91,15 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <configuration>
+                    <arguments>
+                        <argument>--add-exports=java.base/sun.security.util=ALL-UNNAMED</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
 
         </plugins>
     </build>
