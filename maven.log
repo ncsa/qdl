@@ -54,8 +54,8 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #15,440 (2026-10-08T13:59:20.490-04:00) at timestamp: 1791482360490
-[[1;34mINFO[m] Storing buildScmBranch: java_17
+[[1;34mINFO[m] Storing buildNumber: Build: #15,444 (2026-10-09T08:28:33.698-04:00) at timestamp: 1791548913698
+[[1;34mINFO[m] Storing buildScmBranch: main
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
@@ -86,8 +86,8 @@
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #15,441 (2026-10-08T13:59:24.542-04:00) at timestamp: 1791482364542
-[[1;34mINFO[m] Storing buildScmBranch: java_17
+[[1;34mINFO[m] Storing buildNumber: Build: #15,445 (2026-10-09T08:28:36.476-04:00) at timestamp: 1791548916476
+[[1;34mINFO[m] Storing buildScmBranch: main
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m<<< [0;32mmaven-source-plugin:3.4.0:jar[m [1m(attach-sources)[0;1m < [0;1mgenerate-sources[m @ [36mlanguage[0;1m <<<[m
 [[1;34mINFO[m] 
@@ -226,7 +226,6 @@
 [[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36mtests[0;1m ---[m
-[[1;34mINFO[m] Deleting /home/ncsa/dev/ncsa-git/qdl/tests/target
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mtests[0;1m ---[m
 [[1;34mINFO[m] 
@@ -266,7 +265,7 @@ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
   ~`!@#$%^&*()[]{}<>\/'"-_=+|;:,.?
   ¬¿¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧√≁⊕⊗⊙⌆µ⊢∈∉∀∋∌∃∄∩∪∆∂
   ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω
-[[1;34mINFO[m] [1;32mTests run: [0;1;32m646[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.31 s -- in org.qdl_lang.[1mTestSuite[m
+[[1;34mINFO[m] [1;32mTests run: [0;1;32m646[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.74 s -- in org.qdl_lang.[1mTestSuite[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] Results:
 [[1;34mINFO[m] 
@@ -349,7 +348,6 @@ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
 [[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:3.1.0:clean[m [1m(default-clean)[m @ [36mskin[0;1m ---[m
-[[1;34mINFO[m] Deleting /home/ncsa/dev/ncsa-git/qdl/skin/target
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mskin[0;1m ---[m
 [[1;34mINFO[m] 
@@ -384,15 +382,15 @@ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1mReactor Summary for QDL root module 1.6-QDL-SNAPSHOT:[m
 [[1;34mINFO[m] 
-[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.485 s]
-[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [ 10.578 s]
-[[1;34mINFO[m] NCSA QDL Website ................................... [1;32mSUCCESS[m [  0.109 s]
-[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [ 12.312 s]
-[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  1.321 s]
-[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.119 s]
+[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.532 s]
+[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [  7.040 s]
+[[1;34mINFO[m] NCSA QDL Website ................................... [1;32mSUCCESS[m [  0.040 s]
+[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [ 12.303 s]
+[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  0.900 s]
+[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.100 s]
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1;32mBUILD SUCCESS[m
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] Total time:  25.101 s
-[[1;34mINFO[m] Finished at: 2026-10-08T13:59:44-04:00
+[[1;34mINFO[m] Total time:  21.115 s
+[[1;34mINFO[m] Finished at: 2026-10-09T08:28:53-04:00
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
