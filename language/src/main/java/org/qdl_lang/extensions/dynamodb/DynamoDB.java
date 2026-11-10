@@ -225,7 +225,7 @@ public class DynamoDB implements QDLMetaModule {
     public static final String TABLE_NAME_KEY = "table_name";
     public static final String PARTITION_KEY = "partition_key";
     public static final String ADDRESS_KEY = "address_key";
-    public  static Region region = DEFAULT_REGION;
+    public   Region region = DEFAULT_REGION;
     // Fix for https://jira.ncsa.illinois.edu/browse/CIL-2478, https://github.com/ncsa/qdl/issues/157
     public  String tableName = null;
     public  String partitionKey = null;
