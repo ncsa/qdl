@@ -375,9 +375,10 @@ public class DynamoDB implements QDLMetaModule {
     public static final String CLOSE = "close";
     public static final String TABLE_NAME_KEY = "table_name";
     public static final String PARTITION_KEY = "partition_key";
-    public static Region region = DEFAULT_REGION;
-    public static String tableName = null;
-    public static String partitionKey = null;
+    // Fixes https://github.com/ncsa/qdl/issues/157 and https://jira.ncsa.illinois.edu/browse/CIL-2478
+    public  Region region = DEFAULT_REGION;
+    public  String tableName = null;
+    public  String partitionKey = null;
 
 
     public class Close implements QDLFunction {

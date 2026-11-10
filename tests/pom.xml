@@ -23,12 +23,6 @@
             <version>1.6.3.3</version>
         </dependency>
         <dependency>
-            <groupId>org.qdl-lang</groupId>
-            <artifactId>language</artifactId>
-            <version>1.6.3.3</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.13.1</version>
@@ -50,12 +44,7 @@
             <version>42.4.4</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>org.qdl-lang</groupId>
-            <artifactId>language</artifactId>
-            <version>1.6.3.3</version>
-            <scope>test</scope>
-        </dependency>
+
     </dependencies>
     <build>
         <plugins>
