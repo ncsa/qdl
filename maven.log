@@ -1,260 +1,289 @@
-[[1;34mINFO[m] Scanning for projects...
-[[1;33mWARNING[m] 
-[[1;33mWARNING[m] Some problems were encountered while building the effective model for org.qdl-lang:language:jar:1.6-QDL-SNAPSHOT
-[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-source-plugin is missing. @ line 35, column 21
-[[1;33mWARNING[m] 
-[[1;33mWARNING[m] Some problems were encountered while building the effective model for org.qdl-lang:tests:jar:1.6-QDL-SNAPSHOT
-[[1;33mWARNING[m] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.qdl-lang:language:jar -> duplicate declaration of version 1.6-QDL-SNAPSHOT @ line 25, column 21
-[[1;33mWARNING[m] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.qdl-lang:language:jar -> duplicate declaration of version 1.6-QDL-SNAPSHOT @ line 53, column 21
-[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.codehaus.mojo:exec-maven-plugin is missing. @ line 95, column 21
-[[1;33mWARNING[m] 
-[[1;33mWARNING[m] Some problems were encountered while building the effective model for org.qdl-lang:sas:jar:1.6-QDL-SNAPSHOT
-[[1;33mWARNING[m] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.qdl-lang:language:jar -> duplicate declaration of version 1.6-QDL-SNAPSHOT @ line 41, column 21
-[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-source-plugin is missing. @ line 64, column 21
-[[1;33mWARNING[m] 
-[[1;33mWARNING[m] It is highly recommended to fix these problems because they threaten the stability of your build.
-[[1;33mWARNING[m] 
-[[1;33mWARNING[m] For this reason, future Maven versions might no longer support building such malformed projects.
-[[1;33mWARNING[m] 
-[[1;34mINFO[m] Inspecting build with total of 6 modules
-[[1;34mINFO[m] Installing Central Publishing features
-[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] [1mReactor Build Order:[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] QDL root module                                                    [pom]
-[[1;34mINFO[m] QDL base language                                                  [jar]
-[[1;34mINFO[m] NCSA QDL Website                                                   [jar]
-[[1;34mINFO[m] QDL Tests                                                          [jar]
-[[1;34mINFO[m] SAS for QDL                                                        [jar]
-[[1;34mINFO[m] skin                                                               [jar]
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--------------------------< [0;36morg.qdl-lang:qdl[0;1m >--------------------------[m
-[[1;34mINFO[m] [1mBuilding QDL root module 1.6-QDL-SNAPSHOT                          [1/6][m
-[[1;34mINFO[m] [1m--------------------------------[ pom ]---------------------------------[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36mqdl[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mqdl[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-javadoc-plugin:3.11.3:jar[m [1m(attach-javadocs)[m @ [36mqdl[0;1m ---[m
-[[1;34mINFO[m] Not executing Javadoc as the project is not a Java classpath-capable package
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-gpg-plugin:1.6:sign[m [1m(sign-artifacts)[m @ [36mqdl[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-install-plugin:2.4:install[m [1m(default-install)[m @ [36mqdl[0;1m ---[m
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/qdl/1.6-QDL-SNAPSHOT/qdl-1.6-QDL-SNAPSHOT.pom
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m-----------------------< [0;36morg.qdl-lang:language[0;1m >------------------------[m
-[[1;34mINFO[m] [1mBuilding QDL base language 1.6-QDL-SNAPSHOT                        [2/6][m
-[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Deleting /home/ncsa/dev/ncsa-git/qdl/language/target
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #15,444 (2026-10-09T08:28:33.698-04:00) at timestamp: 1791548913698
-[[1;34mINFO[m] Storing buildScmBranch: main
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
-[[1;34mINFO[m] Copying 98 resources
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.1:compile[m [1m(default-compile)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Changes detected - recompiling the module!
-[[1;34mINFO[m] Compiling 361 source files to /home/ncsa/dev/ncsa-git/qdl/language/target/classes
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/VStack.java: Some input files use or override a deprecated API.
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/VStack.java: Recompile with -Xlint:deprecation for details.
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/values/QDLValue.java: Some input files use unchecked or unsafe operations.
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/values/QDLValue.java: Recompile with -Xlint:unchecked for details.
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:testResources[m [1m(default-testResources)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
-[[1;34mINFO[m] Copying 0 resource
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.1:testCompile[m [1m(default-testCompile)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] No sources to compile
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-surefire-plugin:3.2.5:test[m [1m(default-test)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-jar-plugin:2.4:jar[m [1m(default-jar)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT.jar
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m>>> [0;32mmaven-source-plugin:3.4.0:jar[m [1m(attach-sources)[0;1m > [0;1mgenerate-sources[m @ [36mlanguage[0;1m >>>[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mbuildnumber-maven-plugin:1.3:create[m [1m(default)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Storing buildNumber: Build: #15,445 (2026-10-09T08:28:36.476-04:00) at timestamp: 1791548916476
-[[1;34mINFO[m] Storing buildScmBranch: main
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m<<< [0;32mmaven-source-plugin:3.4.0:jar[m [1m(attach-sources)[0;1m < [0;1mgenerate-sources[m @ [36mlanguage[0;1m <<<[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-source-plugin:3.4.0:jar[m [1m(attach-sources)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT-sources.jar
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-javadoc-plugin:3.11.3:jar[m [1m(attach-javadocs)[m @ [36mlanguage[0;1m ---[m
-[[1;33mWARNING[m] Javadoc 1.4+ doesn't support the -1.1 switch anymore. Ignore this option.
-[[1;33mWARNING[m] Javadoc Warnings
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/crypto/Crypto.java:812: warning: Tag @param cannot be used in field documentation.  It can only be used in the following types of documentation: class/interface, constructor, method.
-[[1;33mWARNING[m] * @param rightArg
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/crypto/Crypto.java:813: warning: Tag @param cannot be used in field documentation.  It can only be used in the following types of documentation: class/interface, constructor, method.
-[[1;33mWARNING[m] * @param cipher
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/crypto/Crypto.java:814: warning: Tag @param cannot be used in field documentation.  It can only be used in the following types of documentation: class/interface, constructor, method.
-[[1;33mWARNING[m] * @param jsonWebKey
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/crypto/Crypto.java:815: warning: Tag @param cannot be used in field documentation.  It can only be used in the following types of documentation: class/interface, constructor, method.
-[[1;33mWARNING[m] * @param usePrivateKey
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/crypto/Crypto.java:816: warning: Tag @param cannot be used in field documentation.  It can only be used in the following types of documentation: class/interface, constructor, method.
-[[1;33mWARNING[m] * @param doDecrypt
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/crypto/Crypto.java:817: warning: Tag @return cannot be used in field documentation.  It can only be used in the following types of documentation: method.
-[[1;33mWARNING[m] * @return
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
-[[1;33mWARNING[m] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
-[[1;33mWARNING[m] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/install/ListDistroFiles.java:65: warning: @return tag cannot be used in method with void return type.
-[[1;33mWARNING[m] protected void createFileList(File rootDirectory) {
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
-[[1;33mWARNING[m] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
-[[1;33mWARNING[m] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
-[[1;33mWARNING[m] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/gui/editor/QDLEditor.java:199: warning: unknown tag. Unregistered custom tag?
-[[1;33mWARNING[m] * @noinspection ALL
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:309: warning: invalid input: '<'
-[[1;33mWARNING[m] * Used in cases where the index < 0 and we have to compute it relative to the other indices.
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:243: warning: invalid input: '<'
-[[1;33mWARNING[m] * Fill this list with size elements from the fill array. If size<length(fill)
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:309: warning: invalid input: '<'
-[[1;33mWARNING[m] * Used in cases where the index < 0 and we have to compute it relative to the other indices.
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
-[[1;33mWARNING[m] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
-[[1;33mWARNING[m] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
-[[1;33mWARNING[m] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/evaluate/StemEvaluator.java:2163: warning: unknown tag. Mistyped @deprecated or an unregistered custom tag?
-[[1;33mWARNING[m] * @Deprecated
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
-[[1;33mWARNING[m] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/gui/SwingTerminal.java:240: warning: unknown tag. Unregistered custom tag?
-[[1;33mWARNING[m] * @noinspection ALL
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/exceptions/package-info.java:2: warning: reference not found: edu.uiuc.ncsa.qdl.exceptions.QDLException
-[[1;33mWARNING[m] * All of the exceptions for QDL. These all extend {@link edu.uiuc.ncsa.qdl.exceptions.QDLException}.
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:309: warning: invalid input: '<'
-[[1;33mWARNING[m] * Used in cases where the index < 0 and we have to compute it relative to the other indices.
-[[1;33mWARNING[m] ^
-[[1;33mWARNING[m] The generated documentation contains diagnostic markers for invalid input.
-[[1;33mWARNING[m] 24 warnings
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT-javadoc.jar
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-gpg-plugin:1.6:sign[m [1m(sign-artifacts)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-install-plugin:2.4:install[m [1m(default-install)[m @ [36mlanguage[0;1m ---[m
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT.jar to /home/ncsa/.m2/repository/org/qdl-lang/language/1.6-QDL-SNAPSHOT/language-1.6-QDL-SNAPSHOT.jar
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/language/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/language/1.6-QDL-SNAPSHOT/language-1.6-QDL-SNAPSHOT.pom
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT-sources.jar to /home/ncsa/.m2/repository/org/qdl-lang/language/1.6-QDL-SNAPSHOT/language-1.6-QDL-SNAPSHOT-sources.jar
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT-javadoc.jar to /home/ncsa/.m2/repository/org/qdl-lang/language/1.6-QDL-SNAPSHOT/language-1.6-QDL-SNAPSHOT-javadoc.jar
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m------------------------< [0;36morg.qdl-lang:website[0;1m >------------------------[m
-[[1;34mINFO[m] [1mBuilding NCSA QDL Website 1.6-QDL-SNAPSHOT                         [3/6][m
-[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:3.1.0:clean[m [1m(default-clean)[m @ [36mwebsite[0;1m ---[m
-[[1;34mINFO[m] Deleting /home/ncsa/dev/ncsa-git/qdl/website/target
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mwebsite[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mwebsite[0;1m ---[m
-[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
-[[1;34mINFO[m] skip non existing resourceDirectory /home/ncsa/dev/ncsa-git/qdl/website/src/main/resources
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.1:compile[m [1m(default-compile)[m @ [36mwebsite[0;1m ---[m
-[[1;34mINFO[m] No sources to compile
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:testResources[m [1m(default-testResources)[m @ [36mwebsite[0;1m ---[m
-[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
-[[1;34mINFO[m] skip non existing resourceDirectory /home/ncsa/dev/ncsa-git/qdl/website/src/test/resources
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.1:testCompile[m [1m(default-testCompile)[m @ [36mwebsite[0;1m ---[m
-[[1;34mINFO[m] No sources to compile
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-surefire-plugin:2.12.4:test[m [1m(default-test)[m @ [36mwebsite[0;1m ---[m
-[[1;34mINFO[m] No tests to run.
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-jar-plugin:2.4:jar[m [1m(default-jar)[m @ [36mwebsite[0;1m ---[m
-[[1;33mWARNING[m] JAR will be empty - no content was marked for inclusion!
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/website/target/website-1.6-QDL-SNAPSHOT.jar
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-javadoc-plugin:3.11.3:jar[m [1m(attach-javadocs)[m @ [36mwebsite[0;1m ---[m
-[[1;34mINFO[m] No Javadoc in project. Archive not created.
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-gpg-plugin:1.6:sign[m [1m(sign-artifacts)[m @ [36mwebsite[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-install-plugin:2.4:install[m [1m(default-install)[m @ [36mwebsite[0;1m ---[m
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/website/target/website-1.6-QDL-SNAPSHOT.jar to /home/ncsa/.m2/repository/org/qdl-lang/website/1.6-QDL-SNAPSHOT/website-1.6-QDL-SNAPSHOT.jar
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/website/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/website/1.6-QDL-SNAPSHOT/website-1.6-QDL-SNAPSHOT.pom
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m-------------------------< [0;36morg.qdl-lang:tests[0;1m >-------------------------[m
-[[1;34mINFO[m] [1mBuilding QDL Tests 1.6-QDL-SNAPSHOT                                [4/6][m
-[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36mtests[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mtests[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36mtests[0;1m ---[m
-[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
-[[1;34mINFO[m] skip non existing resourceDirectory /home/ncsa/dev/ncsa-git/qdl/tests/src/main/resources
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.1:compile[m [1m(default-compile)[m @ [36mtests[0;1m ---[m
-[[1;34mINFO[m] No sources to compile
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:testResources[m [1m(default-testResources)[m @ [36mtests[0;1m ---[m
-[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
-[[1;34mINFO[m] Copying 36 resources
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.1:testCompile[m [1m(default-testCompile)[m @ [36mtests[0;1m ---[m
-[[1;34mINFO[m] Changes detected - recompiling the module!
-[[1;34mINFO[m] Compiling 26 source files to /home/ncsa/dev/ncsa-git/qdl/tests/target/test-classes
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/tests/src/test/java/org/qdl_lang/AbstractQDLTester.java: Some input files use or override a deprecated API.
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/tests/src/test/java/org/qdl_lang/AbstractQDLTester.java: Recompile with -Xlint:deprecation for details.
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/tests/src/test/java/org/qdl_lang/TestUtils.java: /home/ncsa/dev/ncsa-git/qdl/tests/src/test/java/org/qdl_lang/TestUtils.java uses unchecked or unsafe operations.
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/tests/src/test/java/org/qdl_lang/TestUtils.java: Recompile with -Xlint:unchecked for details.
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-surefire-plugin:3.2.5:test[m [1m(default-test)[m @ [36mtests[0;1m ---[m
-[[1;34mINFO[m] Using auto detected provider org.apache.maven.surefire.junit4.JUnit4Provider
-[[1;34mINFO[m] 
-[[1;34mINFO[m] -------------------------------------------------------
-[[1;34mINFO[m]  T E S T S
-[[1;34mINFO[m] -------------------------------------------------------
-[[1;34mINFO[m] Running org.qdl_lang.[1mTestSuite[m
+[INFO] Scanning for projects...
+[INFO] Loaded 24392 auto-discovered prefixes for remote repository central (prefixes-central.txt)
+[WARNING] Using credentials of server 'sonatype-nexus-snapshots' for repository https://oss.sonatype.org/content/repositories/snapshots, although no repository or mirror with this id is declared in settings or on the command line and the server declares no <repositoryOrigins>. Declare 'https://oss.sonatype.org' in <repositoryOrigins> of that server in settings to bind these credentials explicitly, or set maven.repository.credentialScope=strict to refuse such credential use.
+[WARNING] Using credentials of server 'sonatype-nexus-staging' for repository https://oss.sonatype.org/service/local/staging/deploy/maven2/, although no repository or mirror with this id is declared in settings or on the command line and the server declares no <repositoryOrigins>. Declare 'https://oss.sonatype.org' in <repositoryOrigins> of that server in settings to bind these credentials explicitly, or set maven.repository.credentialScope=strict to refuse such credential use.
+[INFO] Loaded 64 auto-discovered prefixes for remote repository apache.snapshots (prefixes-apache.snapshots.txt)
+[WARNING] Not applying session authentication to repository sonatype-nexus-snapshots (https://oss.sonatype.org/content/repositories/snapshots) declared by a remote artifact descriptor; set aether.remoteRepositoryManager.authToDescriptorRepositories=true to restore the legacy behavior of matching credentials to such repositories by repository ID
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for org.qdl-lang:language:jar:1.6-QDL-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-source-plugin is missing. @ line 35, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for org.qdl-lang:tests:jar:1.6-QDL-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:exec-maven-plugin is missing. @ line 85, column 21
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for org.qdl-lang:sas:jar:1.6-QDL-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-source-plugin is missing. @ line 64, column 21
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] Inspecting build with total of 6 modules
+[INFO] Installing Central Publishing features
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] QDL root module                                                    [pom]
+[INFO] QDL base language                                                  [jar]
+[INFO] NCSA QDL Website                                                   [jar]
+[INFO] QDL Tests                                                          [jar]
+[INFO] SAS for QDL                                                        [jar]
+[INFO] skin                                                               [jar]
+[INFO] 
+[INFO] --------------------------< org.qdl-lang:qdl >--------------------------
+[INFO] Building QDL root module 1.6-QDL-SNAPSHOT                          [1/6]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ qdl ---
+[INFO] 
+[INFO] --- enforcer:1.2:enforce (enforce-maven) @ qdl ---
+[INFO] 
+[INFO] --- javadoc:3.11.3:jar (attach-javadocs) @ qdl ---
+[INFO] Not executing Javadoc as the project is not a Java classpath-capable package
+[INFO] 
+[INFO] --- gpg:1.6:sign (sign-artifacts) @ qdl ---
+[INFO] 
+[INFO] --- install:3.2.0:install (default-install) @ qdl ---
+[INFO] Installing /home/ncsa/dev/ncsa-git/qdl/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/qdl/1.6-QDL-SNAPSHOT/qdl-1.6-QDL-SNAPSHOT.pom
+[INFO] 
+[INFO] -----------------------< org.qdl-lang:language >------------------------
+[INFO] Building QDL base language 1.6-QDL-SNAPSHOT                        [2/6]
+[INFO]   from language/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] Ignoring incompatible plugin version 4.0.0-beta-1: 
+The plugin org.apache.maven.plugins:maven-source-plugin:4.0.0-beta-1 has unmet prerequisites: 
+	Required Maven version 4.0.0-beta-3 is not met by current version 3.10.0
+[INFO] Latest version of plugin org.apache.maven.plugins:maven-source-plugin failed compatibility check
+[INFO] Looking for compatible RELEASE version of plugin org.apache.maven.plugins:maven-source-plugin
+[INFO] Selected plugin org.apache.maven.plugins:maven-source-plugin:3.4.0
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ language ---
+[INFO] Deleting /home/ncsa/dev/ncsa-git/qdl/language/target
+[INFO] 
+[INFO] --- enforcer:1.2:enforce (enforce-maven) @ language ---
+[INFO] 
+[INFO] --- buildnumber:1.3:create (default) @ language ---
+[INFO] Loaded 64 auto-discovered prefixes for remote repository apache.snapshots (prefixes-apache.snapshots.txt)
+[INFO] Storing buildNumber: Build: #15,483 (2026-11-06T15:38:59.796-05:00) at timestamp: 1793997539796
+[INFO] Storing buildScmBranch: main
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ language ---
+[INFO] Copying 98 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.16.0:compile (default-compile) @ language ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 362 source files with javac [debug target 11] to target/classes
+[WARNING] location of system modules is not set in conjunction with -source 11
+  not setting the location of system modules may lead to class files that cannot run on JDK 11
+    --release 11 is recommended instead of -source 11 -target 11 because it sets the location of system modules automatically
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/state/XStack.java:[401,28] deprecated item is not annotated with @Deprecated
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/state/XTable.java:[47,26] deprecated item is not annotated with @Deprecated
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/state/XTable.java:[59,26] deprecated item is not annotated with @Deprecated
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/state/XTable.java:[93,28] deprecated item is not annotated with @Deprecated
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/state/XTable.java:[99,28] deprecated item is not annotated with @Deprecated
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/state/XTable.java:[109,23] deprecated item is not annotated with @Deprecated
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/JavaModule.java:[72,15] deprecated item is not annotated with @Deprecated
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/StemVariable.java:[10,8] deprecated item is not annotated with @Deprecated
+[INFO] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/VStack.java: Some input files use or override a deprecated API.
+[INFO] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/VStack.java: Recompile with -Xlint:deprecation for details.
+[INFO] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/config/QDLCFConfigurationLoader.java: Some input files use unchecked or unsafe operations.
+[INFO] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/config/QDLCFConfigurationLoader.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ language ---
+[INFO] Copying 0 resource from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.16.0:testCompile (default-testCompile) @ language ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ language ---
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ language ---
+[INFO] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT.jar
+[INFO] 
+[INFO] >>> source:3.4.0:jar (attach-sources) > generate-sources @ language >>>
+[INFO] 
+[INFO] --- enforcer:1.2:enforce (enforce-maven) @ language ---
+[INFO] 
+[INFO] --- buildnumber:1.3:create (default) @ language ---
+[INFO] Storing buildNumber: Build: #15,484 (2026-11-06T15:39:03.377-05:00) at timestamp: 1793997543377
+[INFO] Storing buildScmBranch: main
+[INFO] 
+[INFO] <<< source:3.4.0:jar (attach-sources) < generate-sources @ language <<<
+[INFO] 
+[INFO] 
+[INFO] --- source:3.4.0:jar (attach-sources) @ language ---
+[INFO] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT-sources.jar
+[INFO] 
+[INFO] --- javadoc:3.11.3:jar (attach-javadocs) @ language ---
+[WARNING] Javadoc 1.4+ doesn't support the -1.1 switch anymore. Ignore this option.
+[WARNING] Javadoc Warnings
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/crypto/Crypto.java:812: warning: Tag @param cannot be used in field documentation.  It can only be used in the following types of documentation: class/interface, constructor, method.
+[WARNING] * @param rightArg
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/crypto/Crypto.java:813: warning: Tag @param cannot be used in field documentation.  It can only be used in the following types of documentation: class/interface, constructor, method.
+[WARNING] * @param cipher
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/crypto/Crypto.java:814: warning: Tag @param cannot be used in field documentation.  It can only be used in the following types of documentation: class/interface, constructor, method.
+[WARNING] * @param jsonWebKey
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/crypto/Crypto.java:815: warning: Tag @param cannot be used in field documentation.  It can only be used in the following types of documentation: class/interface, constructor, method.
+[WARNING] * @param usePrivateKey
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/crypto/Crypto.java:816: warning: Tag @param cannot be used in field documentation.  It can only be used in the following types of documentation: class/interface, constructor, method.
+[WARNING] * @param doDecrypt
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/crypto/Crypto.java:817: warning: Tag @return cannot be used in field documentation.  It can only be used in the following types of documentation: method.
+[WARNING] * @return
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
+[WARNING] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
+[WARNING] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
+[WARNING] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
+[WARNING] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/install/ListDistroFiles.java:65: warning: @return tag cannot be used in method with void return type.
+[WARNING] protected void createFileList(File rootDirectory) {
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
+[WARNING] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
+[WARNING] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
+[WARNING] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/gui/editor/QDLEditor.java:199: warning: unknown tag. Unregistered custom tag?
+[WARNING] * @noinspection ALL
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:309: warning: invalid input: '<'
+[WARNING] * Used in cases where the index < 0 and we have to compute it relative to the other indices.
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:243: warning: invalid input: '<'
+[WARNING] * Fill this list with size elements from the fill array. If size<length(fill)
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:309: warning: invalid input: '<'
+[WARNING] * Used in cases where the index < 0 and we have to compute it relative to the other indices.
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
+[WARNING] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
+[WARNING] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
+[WARNING] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/evaluate/StemEvaluator.java:2163: warning: unknown tag. Mistyped @deprecated or an unregistered custom tag?
+[WARNING] * @Deprecated
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/extensions/QDLVariable.java:38: warning: reference not found: edu.uiuc.ncsa.qdl.variables.QDLSet
+[WARNING] * {@link String}, {@link Long}, {@link BigDecimal}, {@link edu.uiuc.ncsa.qdl.variables.QDLSet}
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/gui/SwingTerminal.java:240: warning: unknown tag. Unregistered custom tag?
+[WARNING] * @noinspection ALL
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/exceptions/package-info.java:2: warning: reference not found: edu.uiuc.ncsa.qdl.exceptions.QDLException
+[WARNING] * All of the exceptions for QDL. These all extend {@link edu.uiuc.ncsa.qdl.exceptions.QDLException}.
+[WARNING] ^
+[WARNING] /home/ncsa/dev/ncsa-git/qdl/language/src/main/java/org/qdl_lang/variables/QDLList.java:309: warning: invalid input: '<'
+[WARNING] * Used in cases where the index < 0 and we have to compute it relative to the other indices.
+[WARNING] ^
+[WARNING] The generated documentation contains diagnostic markers for invalid input.
+[WARNING] 26 warnings
+[INFO] Building jar: /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT-javadoc.jar
+[INFO] 
+[INFO] --- gpg:1.6:sign (sign-artifacts) @ language ---
+[INFO] 
+[INFO] --- install:3.2.0:install (default-install) @ language ---
+[INFO] Installing /home/ncsa/dev/ncsa-git/qdl/language/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/language/1.6-QDL-SNAPSHOT/language-1.6-QDL-SNAPSHOT.pom
+[INFO] Installing /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT.jar to /home/ncsa/.m2/repository/org/qdl-lang/language/1.6-QDL-SNAPSHOT/language-1.6-QDL-SNAPSHOT.jar
+[INFO] Installing /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT-sources.jar to /home/ncsa/.m2/repository/org/qdl-lang/language/1.6-QDL-SNAPSHOT/language-1.6-QDL-SNAPSHOT-sources.jar
+[INFO] Installing /home/ncsa/dev/ncsa-git/qdl/language/target/language-1.6-QDL-SNAPSHOT-javadoc.jar to /home/ncsa/.m2/repository/org/qdl-lang/language/1.6-QDL-SNAPSHOT/language-1.6-QDL-SNAPSHOT-javadoc.jar
+[INFO] 
+[INFO] ------------------------< org.qdl-lang:website >------------------------
+[INFO] Building NCSA QDL Website 1.6-QDL-SNAPSHOT                         [3/6]
+[INFO]   from website/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.1.0:clean (default-clean) @ website ---
+[INFO] Deleting /home/ncsa/dev/ncsa-git/qdl/website/target
+[INFO] 
+[INFO] --- enforcer:1.2:enforce (enforce-maven) @ website ---
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ website ---
+[INFO] skip non existing resourceDirectory /home/ncsa/dev/ncsa-git/qdl/website/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.16.0:compile (default-compile) @ website ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ website ---
+[INFO] skip non existing resourceDirectory /home/ncsa/dev/ncsa-git/qdl/website/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.16.0:testCompile (default-testCompile) @ website ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.6.0:test (default-test) @ website ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ website ---
+[WARNING] JAR will be empty - no content was marked for inclusion!
+[INFO] Building jar: /home/ncsa/dev/ncsa-git/qdl/website/target/website-1.6-QDL-SNAPSHOT.jar
+[INFO] 
+[INFO] --- javadoc:3.11.3:jar (attach-javadocs) @ website ---
+[INFO] No Javadoc in project. Archive not created.
+[INFO] 
+[INFO] --- gpg:1.6:sign (sign-artifacts) @ website ---
+[INFO] 
+[INFO] --- install:3.2.0:install (default-install) @ website ---
+[INFO] Installing /home/ncsa/dev/ncsa-git/qdl/website/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/website/1.6-QDL-SNAPSHOT/website-1.6-QDL-SNAPSHOT.pom
+[INFO] Installing /home/ncsa/dev/ncsa-git/qdl/website/target/website-1.6-QDL-SNAPSHOT.jar to /home/ncsa/.m2/repository/org/qdl-lang/website/1.6-QDL-SNAPSHOT/website-1.6-QDL-SNAPSHOT.jar
+[INFO] 
+[INFO] -------------------------< org.qdl-lang:tests >-------------------------
+[INFO] Building QDL Tests 1.6-QDL-SNAPSHOT                                [4/6]
+[INFO]   from tests/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ tests ---
+[INFO] Deleting /home/ncsa/dev/ncsa-git/qdl/tests/target
+[INFO] 
+[INFO] --- enforcer:1.2:enforce (enforce-maven) @ tests ---
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ tests ---
+[INFO] skip non existing resourceDirectory /home/ncsa/dev/ncsa-git/qdl/tests/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.16.0:compile (default-compile) @ tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ tests ---
+[INFO] Copying 36 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.16.0:testCompile (default-testCompile) @ tests ---
+[WARNING] I/O error reading dependency state: /home/ncsa/dev/ncsa-git/qdl/tests/target/classes: /home/ncsa/dev/ncsa-git/qdl/tests/target/classes
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 26 source files with javac [debug target 11] to target/test-classes
+[WARNING] location of system modules is not set in conjunction with -source 11
+  not setting the location of system modules may lead to class files that cannot run on JDK 11
+    --release 11 is recommended instead of -source 11 -target 11 because it sets the location of system modules automatically
+[INFO] /home/ncsa/dev/ncsa-git/qdl/tests/src/test/java/org/qdl_lang/AbstractQDLTester.java: Some input files use or override a deprecated API.
+[INFO] /home/ncsa/dev/ncsa-git/qdl/tests/src/test/java/org/qdl_lang/AbstractQDLTester.java: Recompile with -Xlint:deprecation for details.
+[INFO] /home/ncsa/dev/ncsa-git/qdl/tests/src/test/java/org/qdl_lang/TestUtils.java: /home/ncsa/dev/ncsa-git/qdl/tests/src/test/java/org/qdl_lang/TestUtils.java uses unchecked or unsafe operations.
+[INFO] /home/ncsa/dev/ncsa-git/qdl/tests/src/test/java/org/qdl_lang/TestUtils.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ tests ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junit4.JUnit4Provider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running org.qdl_lang.TestSuite
 Check that the phrase "These are not the droids you are looking for" is printed:
 These are not the droids you are looking for
 Clipboard test exist skipped
@@ -265,132 +294,136 @@ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
   ~`!@#$%^&*()[]{}<>\/'"-_=+|;:,.?
   ¬¿¯·×÷⁺→⇒∅∧∨≈≔≕≠≡≤≥⊨⌈⌊⟦⟧√≁⊕⊗⊙⌆µ⊢∈∉∀∋∌∃∄∩∪∆∂
   ΑαΒβΓγΔδΕεΖζΗηΘθϑΙιΚκϰΛλΜμΝνΞξΟοΠπϖΡρϱΣσςΤτΥυΦφΧχΨψΩω
-[[1;34mINFO[m] [1;32mTests run: [0;1;32m646[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.74 s -- in org.qdl_lang.[1mTestSuite[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] Results:
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1;32mTests run: 646, Failures: 0, Errors: 0, Skipped: 0[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-jar-plugin:3.3.0:test-jar[m [1m(default-jar)[m @ [36mtests[0;1m ---[m
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/tests/target/tests-1.6-QDL-SNAPSHOT-tests.jar
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-jar-plugin:3.3.0:jar[m [1m(default-jar)[m @ [36mtests[0;1m ---[m
-[[1;33mWARNING[m] JAR will be empty - no content was marked for inclusion!
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/tests/target/tests-1.6-QDL-SNAPSHOT.jar
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-javadoc-plugin:3.11.3:jar[m [1m(attach-javadocs)[m @ [36mtests[0;1m ---[m
-[[1;34mINFO[m] No Javadoc in project. Archive not created.
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-gpg-plugin:1.6:sign[m [1m(sign-artifacts)[m @ [36mtests[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-install-plugin:2.4:install[m [1m(default-install)[m @ [36mtests[0;1m ---[m
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/tests/target/tests-1.6-QDL-SNAPSHOT.jar to /home/ncsa/.m2/repository/org/qdl-lang/tests/1.6-QDL-SNAPSHOT/tests-1.6-QDL-SNAPSHOT.jar
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/tests/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/tests/1.6-QDL-SNAPSHOT/tests-1.6-QDL-SNAPSHOT.pom
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/tests/target/tests-1.6-QDL-SNAPSHOT-tests.jar to /home/ncsa/.m2/repository/org/qdl-lang/tests/1.6-QDL-SNAPSHOT/tests-1.6-QDL-SNAPSHOT-tests.jar
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--------------------------< [0;36morg.qdl-lang:sas[0;1m >--------------------------[m
-[[1;34mINFO[m] [1mBuilding SAS for QDL 1.6-QDL-SNAPSHOT                              [5/6][m
-[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36msas[0;1m ---[m
-[[1;34mINFO[m] Deleting /home/ncsa/dev/ncsa-git/qdl/sas/target
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36msas[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:resources[m [1m(default-resources)[m @ [36msas[0;1m ---[m
-[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
-[[1;34mINFO[m] skip non existing resourceDirectory /home/ncsa/dev/ncsa-git/qdl/sas/src/main/resources
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.1:compile[m [1m(default-compile)[m @ [36msas[0;1m ---[m
-[[1;34mINFO[m] Changes detected - recompiling the module!
-[[1;34mINFO[m] Compiling 22 source files to /home/ncsa/dev/ncsa-git/qdl/sas/target/classes
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/sas/src/main/java/org/qdl_lang/sas/loader/QDLSASCFConfigurationLoader.java: Some input files use unchecked or unsafe operations.
-[[1;33mWARNING[m] /home/ncsa/dev/ncsa-git/qdl/sas/src/main/java/org/qdl_lang/sas/loader/QDLSASCFConfigurationLoader.java: Recompile with -Xlint:unchecked for details.
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:2.6:testResources[m [1m(default-testResources)[m @ [36msas[0;1m ---[m
-[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
-[[1;34mINFO[m] skip non existing resourceDirectory /home/ncsa/dev/ncsa-git/qdl/sas/src/test/resources
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.1:testCompile[m [1m(default-testCompile)[m @ [36msas[0;1m ---[m
-[[1;34mINFO[m] No sources to compile
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-surefire-plugin:2.12.4:test[m [1m(default-test)[m @ [36msas[0;1m ---[m
-[[1;34mINFO[m] No tests to run.
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-jar-plugin:2.4:jar[m [1m(default-jar)[m @ [36msas[0;1m ---[m
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas.jar
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-javadoc-plugin:3.11.3:jar[m [1m(attach-javadocs)[m @ [36msas[0;1m ---[m
-[[1;33mWARNING[m] Javadoc 1.4+ doesn't support the -1.1 switch anymore. Ignore this option.
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-javadoc.jar
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m>>> [0;32mmaven-source-plugin:3.4.0:jar[m [1m(attach-sources)[0;1m > [0;1mgenerate-sources[m @ [36msas[0;1m >>>[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36msas[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m<<< [0;32mmaven-source-plugin:3.4.0:jar[m [1m(attach-sources)[0;1m < [0;1mgenerate-sources[m @ [36msas[0;1m <<<[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-source-plugin:3.4.0:jar[m [1m(attach-sources)[m @ [36msas[0;1m ---[m
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-sources.jar
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-gpg-plugin:1.6:sign[m [1m(sign-artifacts)[m @ [36msas[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-install-plugin:2.4:install[m [1m(default-install)[m @ [36msas[0;1m ---[m
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas.jar to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6-QDL-SNAPSHOT/sas-1.6-QDL-SNAPSHOT.jar
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/sas/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6-QDL-SNAPSHOT/sas-1.6-QDL-SNAPSHOT.pom
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-javadoc.jar to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6-QDL-SNAPSHOT/sas-1.6-QDL-SNAPSHOT-javadoc.jar
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-sources.jar to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6-QDL-SNAPSHOT/sas-1.6-QDL-SNAPSHOT-sources.jar
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m-------------------------< [0;36morg.qdl-lang:skin[0;1m >--------------------------[m
-[[1;34mINFO[m] [1mBuilding skin 1.6-QDL-SNAPSHOT                                     [6/6][m
-[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:3.1.0:clean[m [1m(default-clean)[m @ [36mskin[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:1.2:enforce[m [1m(enforce-maven)[m @ [36mskin[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.0.2:resources[m [1m(default-resources)[m @ [36mskin[0;1m ---[m
-[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
-[[1;34mINFO[m] Copying 14 resources
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.8.0:compile[m [1m(default-compile)[m @ [36mskin[0;1m ---[m
-[[1;34mINFO[m] No sources to compile
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.0.2:testResources[m [1m(default-testResources)[m @ [36mskin[0;1m ---[m
-[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
-[[1;34mINFO[m] skip non existing resourceDirectory /home/ncsa/dev/ncsa-git/qdl/skin/src/test/resources
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.8.0:testCompile[m [1m(default-testCompile)[m @ [36mskin[0;1m ---[m
-[[1;34mINFO[m] No sources to compile
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-surefire-plugin:3.2.5:test[m [1m(default-test)[m @ [36mskin[0;1m ---[m
-[[1;34mINFO[m] No tests to run.
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-jar-plugin:3.0.2:jar[m [1m(default-jar)[m @ [36mskin[0;1m ---[m
-[[1;34mINFO[m] Building jar: /home/ncsa/dev/ncsa-git/qdl/skin/target/skin-1.6-QDL-SNAPSHOT.jar
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-javadoc-plugin:3.11.3:jar[m [1m(attach-javadocs)[m @ [36mskin[0;1m ---[m
-[[1;34mINFO[m] No Javadoc in project. Archive not created.
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-gpg-plugin:1.6:sign[m [1m(sign-artifacts)[m @ [36mskin[0;1m ---[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mmaven-install-plugin:2.5.2:install[m [1m(default-install)[m @ [36mskin[0;1m ---[m
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/skin/target/skin-1.6-QDL-SNAPSHOT.jar to /home/ncsa/.m2/repository/org/qdl-lang/skin/1.6-QDL-SNAPSHOT/skin-1.6-QDL-SNAPSHOT.jar
-[[1;34mINFO[m] Installing /home/ncsa/dev/ncsa-git/qdl/skin/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/skin/1.6-QDL-SNAPSHOT/skin-1.6-QDL-SNAPSHOT.pom
-[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] [1mReactor Summary for QDL root module 1.6-QDL-SNAPSHOT:[m
-[[1;34mINFO[m] 
-[[1;34mINFO[m] QDL root module .................................... [1;32mSUCCESS[m [  0.532 s]
-[[1;34mINFO[m] QDL base language .................................. [1;32mSUCCESS[m [  7.040 s]
-[[1;34mINFO[m] NCSA QDL Website ................................... [1;32mSUCCESS[m [  0.040 s]
-[[1;34mINFO[m] QDL Tests .......................................... [1;32mSUCCESS[m [ 12.303 s]
-[[1;34mINFO[m] SAS for QDL ........................................ [1;32mSUCCESS[m [  0.900 s]
-[[1;34mINFO[m] skin ............................................... [1;32mSUCCESS[m [  0.100 s]
-[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] [1;32mBUILD SUCCESS[m
-[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] Total time:  21.115 s
-[[1;34mINFO[m] Finished at: 2026-10-09T08:28:53-04:00
-[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[INFO] Tests run: 646, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.47 s -- in org.qdl_lang.TestSuite
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 646, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.3.0:test-jar (default-jar) @ tests ---
+[INFO] Building jar: /home/ncsa/dev/ncsa-git/qdl/tests/target/tests-1.6-QDL-SNAPSHOT-tests.jar
+[INFO] 
+[INFO] --- jar:3.3.0:jar (default-jar) @ tests ---
+[WARNING] JAR will be empty - no content was marked for inclusion!
+[INFO] Building jar: /home/ncsa/dev/ncsa-git/qdl/tests/target/tests-1.6-QDL-SNAPSHOT.jar
+[INFO] 
+[INFO] --- javadoc:3.11.3:jar (attach-javadocs) @ tests ---
+[INFO] No Javadoc in project. Archive not created.
+[INFO] 
+[INFO] --- gpg:1.6:sign (sign-artifacts) @ tests ---
+[INFO] 
+[INFO] --- install:3.2.0:install (default-install) @ tests ---
+[INFO] Installing /home/ncsa/dev/ncsa-git/qdl/tests/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/tests/1.6-QDL-SNAPSHOT/tests-1.6-QDL-SNAPSHOT.pom
+[INFO] Installing /home/ncsa/dev/ncsa-git/qdl/tests/target/tests-1.6-QDL-SNAPSHOT.jar to /home/ncsa/.m2/repository/org/qdl-lang/tests/1.6-QDL-SNAPSHOT/tests-1.6-QDL-SNAPSHOT.jar
+[INFO] Installing /home/ncsa/dev/ncsa-git/qdl/tests/target/tests-1.6-QDL-SNAPSHOT-tests.jar to /home/ncsa/.m2/repository/org/qdl-lang/tests/1.6-QDL-SNAPSHOT/tests-1.6-QDL-SNAPSHOT-tests.jar
+[INFO] 
+[INFO] --------------------------< org.qdl-lang:sas >--------------------------
+[INFO] Building SAS for QDL 1.6-QDL-SNAPSHOT                              [5/6]
+[INFO]   from sas/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ sas ---
+[INFO] Deleting /home/ncsa/dev/ncsa-git/qdl/sas/target
+[INFO] 
+[INFO] --- enforcer:1.2:enforce (enforce-maven) @ sas ---
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ sas ---
+[INFO] skip non existing resourceDirectory /home/ncsa/dev/ncsa-git/qdl/sas/src/main/resources
+[INFO] 
+[INFO] --- compiler:3.16.0:compile (default-compile) @ sas ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 22 source files with javac [debug target 11] to target/classes
+[WARNING] location of system modules is not set in conjunction with -source 11
+  not setting the location of system modules may lead to class files that cannot run on JDK 11
+    --release 11 is recommended instead of -source 11 -target 11 because it sets the location of system modules automatically
+[INFO] /home/ncsa/dev/ncsa-git/qdl/sas/src/main/java/org/qdl_lang/sas/QDLSASTerminal.java: Some input files use unchecked or unsafe operations.
+[INFO] /home/ncsa/dev/ncsa-git/qdl/sas/src/main/java/org/qdl_lang/sas/QDLSASTerminal.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ sas ---
+[INFO] skip non existing resourceDirectory /home/ncsa/dev/ncsa-git/qdl/sas/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.16.0:testCompile (default-testCompile) @ sas ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.6.0:test (default-test) @ sas ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ sas ---
+[INFO] Building jar: /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas.jar
+[INFO] 
+[INFO] --- javadoc:3.11.3:jar (attach-javadocs) @ sas ---
+[WARNING] Javadoc 1.4+ doesn't support the -1.1 switch anymore. Ignore this option.
+[INFO] Building jar: /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-javadoc.jar
+[INFO] 
+[INFO] >>> source:3.4.0:jar (attach-sources) > generate-sources @ sas >>>
+[INFO] 
+[INFO] --- enforcer:1.2:enforce (enforce-maven) @ sas ---
+[INFO] 
+[INFO] <<< source:3.4.0:jar (attach-sources) < generate-sources @ sas <<<
+[INFO] 
+[INFO] 
+[INFO] --- source:3.4.0:jar (attach-sources) @ sas ---
+[INFO] Building jar: /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-sources.jar
+[INFO] 
+[INFO] --- gpg:1.6:sign (sign-artifacts) @ sas ---
+[INFO] 
+[INFO] --- install:3.2.0:install (default-install) @ sas ---
+[INFO] Installing /home/ncsa/dev/ncsa-git/qdl/sas/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6-QDL-SNAPSHOT/sas-1.6-QDL-SNAPSHOT.pom
+[INFO] Installing /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas.jar to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6-QDL-SNAPSHOT/sas-1.6-QDL-SNAPSHOT.jar
+[INFO] Installing /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-javadoc.jar to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6-QDL-SNAPSHOT/sas-1.6-QDL-SNAPSHOT-javadoc.jar
+[INFO] Installing /home/ncsa/dev/ncsa-git/qdl/sas/target/qdl-sas-sources.jar to /home/ncsa/.m2/repository/org/qdl-lang/sas/1.6-QDL-SNAPSHOT/sas-1.6-QDL-SNAPSHOT-sources.jar
+[INFO] 
+[INFO] -------------------------< org.qdl-lang:skin >--------------------------
+[INFO] Building skin 1.6-QDL-SNAPSHOT                                     [6/6]
+[INFO]   from skin/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.1.0:clean (default-clean) @ skin ---
+[INFO] Deleting /home/ncsa/dev/ncsa-git/qdl/skin/target
+[INFO] 
+[INFO] --- enforcer:1.2:enforce (enforce-maven) @ skin ---
+[INFO] 
+[INFO] --- resources:3.0.2:resources (default-resources) @ skin ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 14 resources
+[INFO] 
+[INFO] --- compiler:3.8.0:compile (default-compile) @ skin ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- resources:3.0.2:testResources (default-testResources) @ skin ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/ncsa/dev/ncsa-git/qdl/skin/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.8.0:testCompile (default-testCompile) @ skin ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ skin ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- jar:3.0.2:jar (default-jar) @ skin ---
+[INFO] Building jar: /home/ncsa/dev/ncsa-git/qdl/skin/target/skin-1.6-QDL-SNAPSHOT.jar
+[INFO] 
+[INFO] --- javadoc:3.11.3:jar (attach-javadocs) @ skin ---
+[INFO] No Javadoc in project. Archive not created.
+[INFO] 
+[INFO] --- gpg:1.6:sign (sign-artifacts) @ skin ---
+[INFO] 
+[INFO] --- install:2.5.2:install (default-install) @ skin ---
+[INFO] Installing /home/ncsa/dev/ncsa-git/qdl/skin/target/skin-1.6-QDL-SNAPSHOT.jar to /home/ncsa/.m2/repository/org/qdl-lang/skin/1.6-QDL-SNAPSHOT/skin-1.6-QDL-SNAPSHOT.jar
+[INFO] Installing /home/ncsa/dev/ncsa-git/qdl/skin/pom.xml to /home/ncsa/.m2/repository/org/qdl-lang/skin/1.6-QDL-SNAPSHOT/skin-1.6-QDL-SNAPSHOT.pom
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for QDL root module 1.6-QDL-SNAPSHOT:
+[INFO] 
+[INFO] QDL root module .................................... SUCCESS [  0.369 s]
+[INFO] QDL base language .................................. SUCCESS [  9.698 s]
+[INFO] NCSA QDL Website ................................... SUCCESS [  0.086 s]
+[INFO] QDL Tests .......................................... SUCCESS [ 11.177 s]
+[INFO] SAS for QDL ........................................ SUCCESS [  1.663 s]
+[INFO] skin ............................................... SUCCESS [  0.185 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  24.223 s
+[INFO] Finished at: 2026-11-06T15:39:21-05:00
+[INFO] ------------------------------------------------------------------------

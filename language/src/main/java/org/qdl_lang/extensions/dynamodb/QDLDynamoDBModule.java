@@ -3,6 +3,7 @@ package org.qdl_lang.extensions.dynamodb;
 import org.qdl_lang.extensions.JavaModule;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.expressions.module.Module;
+import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.state.State;
 
 import java.net.URI;
@@ -35,7 +36,15 @@ public class QDLDynamoDBModule extends JavaModule {
         funcs.add(dynamoDB.new RegionFunction());
         funcs.add(dynamoDB.new TableNameFunction());
         funcs.add(dynamoDB.new PartitionKeyFunction());
+        funcs.add(dynamoDB.new Version());
+        funcs.add(dynamoDB.new CreateTableFunction());
+        funcs.add(dynamoDB.new DeleteTableFunction());
         module.addFunctions(funcs);
+
+        ArrayList<QDLVariable> vars = new ArrayList<>();
+        vars.add(dynamoDB.new QDLTypes());
+        vars.add(dynamoDB.new DynamoTypes());
+        module.addVariables(vars);
         if (state != null) {
             module.init(state);
         }

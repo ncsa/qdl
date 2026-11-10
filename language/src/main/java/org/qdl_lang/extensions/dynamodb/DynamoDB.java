@@ -1,15 +1,14 @@
 package org.qdl_lang.extensions.dynamodb;
 
+import edu.uiuc.ncsa.security.core.util.DebugUtil;
 import org.qdl_lang.exceptions.BadArgException;
 import org.qdl_lang.extensions.QDLFunction;
 import org.qdl_lang.extensions.QDLMetaModule;
+import org.qdl_lang.extensions.QDLVariable;
 import org.qdl_lang.state.State;
 import org.qdl_lang.variables.Constant;
-import org.qdl_lang.variables.QDLList;
-import org.qdl_lang.variables.QDLNull;
 import org.qdl_lang.variables.QDLStem;
 import org.kordamp.json.JSONObject;
-import org.apache.commons.codec.binary.Base64;
 import org.qdl_lang.variables.values.BooleanValue;
 import org.qdl_lang.variables.values.QDLKey;
 import org.qdl_lang.variables.values.QDLNullValue;
@@ -17,15 +16,15 @@ import org.qdl_lang.variables.values.QDLValue;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.SdkBytes;
+import software.amazon.awssdk.core.waiters.WaiterResponse;
 import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.regions.RegionMetadata;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.waiters.DynamoDbWaiter;
 
-import java.math.BigDecimal;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +44,7 @@ public class DynamoDB implements QDLMetaModule {
         return new JSONObject();
     }
 
+    DynamoCodec codec = new DynamoCodec();
     @Override
     public void deserializeFromJSON(JSONObject json) {
         // no state to reconstruct
@@ -70,10 +70,11 @@ public class DynamoDB implements QDLMetaModule {
             }
             String accessKeyId;
             String secretAccessKey;
+            String address = null;
             if (qdlValues[0].isString()) {
                 accessKeyId = qdlValues[0].asString();
                 if (!(qdlValues[1].isString())) {
-                    throw new BadArgException("The arguments to " + getName() + " must be a stem or pair of strings.",1);
+                    throw new BadArgException("The arguments to " + getName() + " must be a stem or pair of strings.", 1);
                 }
                 secretAccessKey = qdlValues[1].asString();
             } else {
@@ -94,6 +95,10 @@ public class DynamoDB implements QDLMetaModule {
                     partitionKey = cfg.getString(PARTITION_KEY);
                 }
 
+                if (cfg.containsKey(ADDRESS_KEY)) {
+
+                    address = cfg.getString(ADDRESS_KEY);
+                }
                 accessKeyId = cfg.getString(ACCESS_KEY_ID);
                 secretAccessKey = cfg.getString(SECRET_ACCESS_KEY);
                 if (cfg.containsKey(REGION_KEY)) {
@@ -104,11 +109,21 @@ public class DynamoDB implements QDLMetaModule {
             AwsCredentials credentials = AwsBasicCredentials.create(accessKeyId, secretAccessKey);
 
             // Instantiate a DynamoDB client for the region that uses the credentials.
-            dynamoDbClient = DynamoDbClient.builder()
-                    .region(region)
-                    .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                    .httpClientBuilder(ApacheHttpClient.builder())
-                    .build();
+            if (address != null) {
+                dynamoDbClient = DynamoDbClient.builder()
+                        .region(region)
+                        .endpointOverride(URI.create(address))
+                        .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                        .httpClientBuilder(ApacheHttpClient.builder())
+                        .build();
+            } else {
+                dynamoDbClient = DynamoDbClient.builder()
+                        .region(region)
+                        .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                        .httpClientBuilder(ApacheHttpClient.builder())
+                        .build();
+            }
+
             return BooleanValue.True;
         }
 
@@ -182,7 +197,7 @@ public class DynamoDB implements QDLMetaModule {
                     .build();
 
             item = dynamoDbClient.getItem(request).item();
-            out = mapToStem(item);
+            out = codec.mapToStem(item);
 
             return asQDLValue(out);
         }
@@ -199,173 +214,7 @@ public class DynamoDB implements QDLMetaModule {
 
 
     }
-    /*
-      Below starts the outline for writing values. There are some technical issues involved
-      since roundtripping values would seem impossible. The fly in the ointment is binary values
-      which end up as b64 encoded strings. Unless there is some way to track these by type,
-      then they are identical to just messy strings. This implies that, perhaps, values should be
-      added to them, so you get {'value':v, 'type':'b64'} or some such. Don't want to add values for
-      all values since that would be redundant and make stems hugely messy.
-     */
-    protected Map<String, AttributeValue> stemToMap(QDLStem stem) {
-        Map<String, AttributeValue> outMap = new HashMap<>();
 
-        return outMap;
-
-    }
-
-    protected AttributeValue convertToAV(Long lValue) {
-        return AttributeValue.builder().n(lValue.toString()).build();
-    }
-
-    protected AttributeValue convertToAV(String sValue) {
-        return AttributeValue.builder().s(sValue).build();
-    }
-
-    protected AttributeValue convertToAV(BigDecimal bigDecimal) {
-        return AttributeValue.builder().n(bigDecimal.toString()).build();
-    }
-
-    protected AttributeValue convertToAV(Boolean bValue) {
-        return AttributeValue.builder().bool(bValue).build();
-    }
-    protected AttributeValue convertToAV(QDLNull bValue) {
-    return AttributeValue.builder().nul(Boolean.TRUE).build();
-}
-    protected AttributeValue convertToAV(QDLList<QDLValue> qdlList) {
-        List<? extends QDLValue> list = qdlList.values();
-        int type = -1;
-        boolean isMixedType = false;
-        boolean isFirstPass = true;
-        for (QDLValue qdlValue : list) {
-            if (isFirstPass) {
-                isFirstPass = false;
-                type = qdlValue.getType();
-            } else {
-                if (type != qdlValue.getType()) {
-                    isMixedType = true;
-                    break;
-                }
-            }
-        }
-        // So now we can decide how to create this.
-        if(isMixedType){
-
-            //return AttributeValue.builder().l(sArray).build();
-
-        }
-        String[] sArray;
-        switch (type){
-            case Constant.STRING_TYPE:
-                 sArray = new String[list.size()];
-                for(int i = 0; i < list.size(); i++){
-                     sArray[i] = list.get(i).asString();
-                }
-                return AttributeValue.builder().ss(sArray).build();
-            case Constant.LONG_TYPE:
-            case Constant.DECIMAL_TYPE:
-                sArray = new String[list.size()];
-                for(int i = 0; i < list.size(); i++){
-                     sArray[i] = list.get(i).asString();
-                }
-                return AttributeValue.builder().ns(sArray).build();
-            case Constant.BOOLEAN_TYPE:
-                // Actually Dynamo DB only supports single boolean, so a list/set of them
-                // is impossible.
-           //     return AttributeValue.builder().bs(sArray).build();
-
-        }
-
-        return null;
-    }
-
-
-    protected QDLStem mapToStem(Map<String, AttributeValue> items) {
-
-        QDLStem out = new QDLStem();
-        for (String key : items.keySet()) {
-            AttributeValue attributeValue = items.get(key);
-            out.put(from(key), convertToQDL(attributeValue));
-        }
-        return out;
-    }
-
-    protected Object convertToQDL(AttributeValue attributeValue) {
-        QDLList list;
-        QDLStem stem;
-        switch (attributeValue.type()) {
-            case S:
-                return attributeValue.s();
-            case BOOL:
-                return attributeValue.bool();
-            case B:
-                return convertToB64(attributeValue);
-            case NUL:
-                return QDLNull.getInstance();
-            case N:
-                return convertToNumber(attributeValue.n());
-            case BS: // list of bytes
-                List<SdkBytes> bytesList = attributeValue.bs();
-                list = new QDLList();
-                for (SdkBytes bbb : bytesList) {
-                    list.add(asQDLValue(convertToB64(bbb)));
-                }
-                stem = new QDLStem();
-                stem.setQDLList(list);
-                return stem;
-            case SS: // list fo strings
-                list = new QDLList();
-                list.addAll(attributeValue.ss());
-                stem = new QDLStem();
-                stem.setQDLList(list);
-                return stem;
-            case NS: // list of numbers
-                List<String> numbers = attributeValue.ns();
-                list = new QDLList();
-                for (String n : numbers) {
-                    list.add(asQDLValue(convertToNumber(n)));
-                }
-                stem = new QDLStem();
-                stem.setQDLList(list);
-                return stem;
-            case L: // mixed list type
-                List<AttributeValue> listValues = attributeValue.l();
-                list = new QDLList();
-                for (AttributeValue n : listValues) {
-                    list.add(asQDLValue(convertToQDL(n)));
-                }
-                stem = new QDLStem();
-                stem.setQDLList(list);
-                return stem;
-            case M: // mixed map
-                stem = new QDLStem();
-                Map<String, AttributeValue> m = attributeValue.m();
-                for (String key : m.keySet()) {
-                    stem.put(from(key), convertToQDL(m.get(key)));
-                }
-                return stem;
-            default:
-                throw new IllegalArgumentException("unknown attribute type '" + attributeValue.type() + "'");
-        }
-    }
-
-    Object convertToNumber(String v) {
-        try {
-            return Long.parseLong(v);
-        } catch (NumberFormatException nfx) {
-
-        }
-        return new BigDecimal(v);
-    }
-
-    String convertToB64(SdkBytes sdkBytes) {
-        return Base64.encodeBase64URLSafeString(sdkBytes.asByteArray());
-
-    }
-
-    String convertToB64(AttributeValue attributeValue) {
-        return convertToB64(attributeValue.b());
-    }
 
     private DynamoDbClient dynamoDbClient;
     public static final String ACCESS_KEY_ID = "access_key_id";
@@ -375,9 +224,11 @@ public class DynamoDB implements QDLMetaModule {
     public static final String CLOSE = "close";
     public static final String TABLE_NAME_KEY = "table_name";
     public static final String PARTITION_KEY = "partition_key";
-    public static Region region = DEFAULT_REGION;
-    public static String tableName = null;
-    public static String partitionKey = null;
+    public static final String ADDRESS_KEY = "address_key";
+    public  static Region region = DEFAULT_REGION;
+    // Fix for https://jira.ncsa.illinois.edu/browse/CIL-2478, https://github.com/ncsa/qdl/issues/157
+    public  String tableName = null;
+    public  String partitionKey = null;
 
 
     public class Close implements QDLFunction {
@@ -492,7 +343,7 @@ public class DynamoDB implements QDLMetaModule {
                 case 1:
                     d.add(getName() + "(new_value) - set to the new value, returning the old.");
             }
-            d.add("A default value of '" + DEFAULT_REGION + "' is set initially" );
+            d.add("A default value of '" + DEFAULT_REGION + "' is set initially");
             return d;
         }
     }
@@ -588,5 +439,211 @@ public class DynamoDB implements QDLMetaModule {
     }
 
     public static final String TABLE_NAME_FUNCTION = "table_name";
+    public static final String CREATE_TABLE_FUNCTION = "create_table";
+
+    public class CreateTableFunction implements QDLFunction {
+        @Override
+        public String getName() {
+            return CREATE_TABLE_FUNCTION;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1};
+        }
+
+        @Override
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            DynamoDbWaiter dbWaiter = dynamoDbClient.waiter();
+            String key = null;
+            CreateTableRequest request = CreateTableRequest.builder()
+                    .attributeDefinitions(AttributeDefinition.builder()
+                            .attributeName(key)
+                            .attributeType(ScalarAttributeType.S)
+                            .build())
+                    .keySchema(KeySchemaElement.builder()
+                            .attributeName(key)
+                            .keyType(KeyType.HASH)
+                            .build())
+                    .provisionedThroughput(ProvisionedThroughput.builder()
+                            .readCapacityUnits(new Long(10))
+                            .writeCapacityUnits(new Long(10))
+                            .build())
+                    .tableName(tableName)
+                    .build();
+            String newTable = "";
+            try {
+                CreateTableResponse response = dynamoDbClient.createTable(request);
+                DescribeTableRequest tableRequest = DescribeTableRequest.builder()
+                        .tableName(tableName)
+                        .build();
+
+                // Wait until the Amazon DynamoDB table is created
+                WaiterResponse<DescribeTableResponse> waiterResponse = dbWaiter.waitUntilTableExists(tableRequest);
+                waiterResponse.matched().response().ifPresent(System.out::println);
+
+                newTable = response.tableDescription().tableName();
+                return QDLValue.asQDLValue(newTable);
+
+            } catch (DynamoDbException e) {
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
+
+            return null;
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> d = new ArrayList<>();
+            d.add(getName() + "(stem.) - Create a new table with the given types.");
+            d.add("See the manual for details.");
+            d.add("Example.");
+            d.add("   t. := {\n" +
+                    "         'table_name': 't42',\n" +
+                    "         'billing_mode' : 'PAY_PER_REQUEST',\n" +
+                    "         'attributes':[{'attribute_type':'integer','name':'date'}].\n" +
+                    "         'key':[{'name':'user_uid','key_type':'hash','attribute_type':'string'}]\n" +
+                    "       };\n");
+            d.add("   db#" + getName() + "(t.);");
+                d.add("true");
+            return d;
+        }
+        /* table create stem. Edit as necessary.
+        t. := {
+        'table_name': 't42',
+        'billing_mode' : 'PAY_PER_REQUEST',
+        'attributes':[{'attribute_type':'integer','name':'date'}].
+        'key':[{'name':'user_uid','key_type':'hash','attribute_type':'string'}]
+   };*/
+    }
+
+    public static final String DELETE_TABLE_FUNCTION = "delete_table";
+
+    public class DeleteTableFunction implements QDLFunction {
+        @Override
+        public String getName() {
+            return DELETE_TABLE_FUNCTION;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{1};
+        }
+
+        @Override
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            try {
+
+                // 2. Create the delete request
+                DeleteTableRequest request = DeleteTableRequest.builder()
+                        .tableName(tableName)
+                        .build();
+
+                // 3. Execute the drop operation
+                System.out.println("Deleting table: " + tableName + "...");
+                dynamoDbClient.deleteTable(request);
+                System.out.println("Table deletion request submitted successfully.");
+
+            } catch (DynamoDbException e) {
+                if(DebugUtil.isEnabled()){
+                    e.printStackTrace();
+                }
+                //System.err.println("Error deleting table: " + e.getMessage());
+                return BooleanValue.False;
+            }
+            return BooleanValue.True;
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> d = new ArrayList<>();
+            d.add(DELETE_TABLE_FUNCTION + " table_name - delete a table");
+            d.add("Note that there is no easy recovery from this.");
+            d.add("returns true if successful, false otherwise.");
+            return d;
+        }
+    }
+    public static final String DYNAMO_SCALAR_TYPE_STRING = "S";
+    public static final String DYNAMO_SCALAR_TYPE_NUMERIC = "N";
+    public static final String DYNAMO_SCALAR_TYPE_BINARY = "B";
+    public static final String DYNAMO_SCALAR_TYPE_BOOLEAN = "BOOL";
+    public static final String DYNAMO_SCALAR_TYPE_NULL = "NULL";
+    public static final String DYNAMO_TYPE_LIST = "L";
+    public static final String DYNAMO_TYPE_MAP = "M";
+    public static final String DYNAMO_SET_TYPE_STRING = "SS";
+    public static final String DYNAMO_SET_TYPE_NUMERIC = "NS";
+    public static final String DYNAMO_SET_TYPE_BINARY = "BS";
+
+    /**
+     * Given a QDL type, what is corresponding Dynamo type?
+     */
+    public class DynamoTypes implements QDLVariable {
+        @Override
+        public String getName() {
+            return "DYNAMO_TYPES.";
+        }
+
+        @Override
+        public QDLStem getValue() {
+            QDLStem stem = new QDLStem();
+            stem.put(QDLKey.from(Constant.BOOLEAN_NAME), asQDLValue(DYNAMO_SCALAR_TYPE_BOOLEAN));
+            stem.put(QDLKey.from(Constant.STRING_NAME), asQDLValue(DYNAMO_SCALAR_TYPE_STRING));
+            stem.put(QDLKey.from(Constant.DECIMAL_NAME), asQDLValue(DYNAMO_SCALAR_TYPE_NUMERIC));
+            stem.put(QDLKey.from(Constant.NULL_NAME), asQDLValue(DYNAMO_SCALAR_TYPE_NULL));
+            stem.put(QDLKey.from(Constant.LIST_NAME), asQDLValue(DYNAMO_TYPE_LIST));
+            stem.put(QDLKey.from(Constant.STEM_NAME), asQDLValue(DYNAMO_TYPE_MAP));
+            stem.put(QDLKey.from(Constant.SET_NAME), asQDLValue(DYNAMO_TYPE_MAP));
+            return stem;
+        }
+    }
+    public class QDLTypes implements QDLVariable {
+        @Override
+        public String getName() {
+            return "QDL_TYPES.";
+        }
+
+        @Override
+        public QDLStem  getValue() {
+            QDLStem stem = new QDLStem();
+            stem.put(QDLKey.from(DYNAMO_SCALAR_TYPE_BOOLEAN), asQDLValue(Constant.BOOLEAN_NAME));
+            stem.put(QDLKey.from(DYNAMO_SCALAR_TYPE_NULL), asQDLValue(Constant.NULL_NAME));
+            stem.put(QDLKey.from(DYNAMO_SCALAR_TYPE_NUMERIC), asQDLValue(Constant.DECIMAL_NAME));
+            stem.put(QDLKey.from(DYNAMO_SCALAR_TYPE_STRING), asQDLValue(Constant.STRING_NAME));
+            stem.put(QDLKey.from(DYNAMO_SET_TYPE_BINARY), asQDLValue(Constant.SET_NAME));
+            stem.put(QDLKey.from(DYNAMO_SET_TYPE_STRING), asQDLValue(Constant.SET_NAME));
+            stem.put(QDLKey.from(DYNAMO_SET_TYPE_NUMERIC), asQDLValue(Constant.SET_NAME));
+            stem.put(QDLKey.from(DYNAMO_TYPE_LIST), asQDLValue(Constant.LIST_NAME));
+            stem.put(QDLKey.from(DYNAMO_TYPE_MAP), asQDLValue(Constant.STEM_NAME));
+            return stem;
+        }
+    }
+
+    public static final String VERSION_NAME = "version";
+    public static final String VERSION = "1.1";
+    public class Version implements QDLFunction{
+        @Override
+        public String getName() {
+            return VERSION_NAME;
+        }
+
+        @Override
+        public int[] getArgCount() {
+            return new int[]{0};
+        }
+
+        @Override
+        public QDLValue evaluate(QDLValue[] qdlValues, State state) throws Throwable {
+            return QDLValue.asQDLValue(VERSION);
+        }
+
+        @Override
+        public List<String> getDocumentation(int argCount) {
+            List<String> d = new ArrayList<>();
+            d.add(getName() + "() - the current version of the DynamoDB module.");
+            d.add("This module is at version " + VERSION);
+            return d;
+        }
+    }
 
 }

@@ -18,6 +18,9 @@ import java.util.*;
 public class QDLSet<K extends QDLValue> extends HashSet<K>  {
     public QDLSet() {
     }
+    public QDLSet(int capacity) {
+        super(capacity);
+    }
 
     @Override
     public boolean contains(Object o) {

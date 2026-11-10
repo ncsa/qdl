@@ -38,12 +38,12 @@
             <version>3.1.0</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.qdl-lang</groupId>
             <artifactId>language</artifactId>
             <version>1.6-QDL-SNAPSHOT</version>
             <scope>compile</scope>
-        </dependency>
+        </dependency>-->
     </dependencies>
     <build>
         <finalName>qdl-sas</finalName>
