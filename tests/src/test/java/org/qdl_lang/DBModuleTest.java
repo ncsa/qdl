@@ -205,4 +205,27 @@ public class DBModuleTest extends AbstractQDLTester {
         }
     }
 
+    /**
+     * Serious issue with Dynamo state. Some class variables were made static,
+     * meaning that multiple instances wouold get their connection state confused.
+     * This is a regression test to show that the fix works.
+     * @throws Throwable
+     */
+    public void testDynamoState() throws Throwable {
+        State state = testUtils.getNewState();
+        StringBuffer script = new StringBuffer();
+        QDLInterpreter interpreter = new QDLInterpreter(null, state);
+        // Create 2 dynami instances. Set state, check they don't overwrite each other.
+        addLine(script,
+                "a ≔ j_load('dynamo');\n" +
+                        "b ≔ j_load('dynamo');\n" +
+                        "a#region('A');a#table_name('T');\n" +
+                        "b#region('B');b#table_name('S');\n" +
+                        "a#partition_key('P');b#partition_key('Q');\n" +
+                        "⊨a#region()≡'A'∧ b#region()≡'B' : 'region not set correctly';\n" +
+                        "⊨a#table_name()≡'T' ∧ b#table_name()≡'S':'table name not set correctly';\n" +
+                        "⊨a#partition_key()≡'P' ∧ b#partition_key()≡'Q':'partition key not set correctly';");
+        // Failure is QDL throws an assertion exception.
+        interpreter.execute(script.toString());
+    }
 }
