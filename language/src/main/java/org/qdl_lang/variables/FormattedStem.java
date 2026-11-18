@@ -4,7 +4,6 @@ import edu.uiuc.ncsa.security.core.util.StringUtils;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 
@@ -118,7 +117,7 @@ public class FormattedStem extends FormattedStems<String> {
                         break;
                     case 3:
                         random.nextBytes(rString);
-                        formattedStem.put(row, col, Base64.getEncoder().encodeToString(rString));
+                        formattedStem.put(row, col, StringUtils.base64ToString(rString));
                         break;
                 }
                 lastInt = Math.abs(random.nextInt());

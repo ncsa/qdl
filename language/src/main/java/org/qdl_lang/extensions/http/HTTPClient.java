@@ -966,7 +966,7 @@ public class HTTPClient implements QDLMetaModule {
             String username = URLEncoder.encode(qdlValues[0].asString(), "UTF-8");
             String password = URLEncoder.encode(qdlValues[1].asString(), "UTF-8");
             String raw = username + ":" + password;
-            return asQDLValue(Base64.getEncoder().encodeToString(raw.getBytes(StandardCharsets.UTF_8)));
+            return asQDLValue(StringUtils.base64ToString(raw.getBytes(StandardCharsets.UTF_8)));
         }
 
         @Override
